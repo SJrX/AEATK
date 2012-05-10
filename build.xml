@@ -1,0 +1,56 @@
+<?xml version="1.0"?>
+<project name="ACLib" default="compile">
+	<property name="software.dir" value="/ubc/cs/home/s/seramage/arrowspace/software/"/>
+	<property name="models.build.dir" value="/ubc/cs/project/arrow/seramage/sm-data-files/"/>
+	<property name="deploy.dir" value="${software.dir}/aclib/"/>
+	<path id="compile.classpath">
+		<fileset dir="lib" id="lib">
+			<include name="*.jar"/>
+			<exclude name="*sources.jar"/>
+		</fileset>
+		<fileset dir="${software.dir}/fastrf/" id="fastrf">
+			<include name="fastrf.jar"/>
+		</fileset>
+	</path>	
+	<target name="init"> 
+		<mkdir dir="build/classes/"/>
+		<mkdir dir="dist"/>
+		<mkdir dir="models"/>
+	</target>
+	
+	<target name="clean">
+		<delete dir="build"/>
+		<delete dir="dist"/>
+	</target>
+	<target name="compile" depends="init">
+		<javac srcdir="src" destdir="build/classes">
+		<classpath refid="compile.classpath"/>
+		</javac>
+	</target>
+	<target name="archive" depends="compile">
+		<jar destfile="dist/aclib.jar" basedir="build/classes"/>
+		<copy todir="dist/">
+			<fileset refid="lib"/>
+			<fileset refid="fastrf"/>	
+		</copy>
+	</target>			
+	<target name="deploy" depends="archive">
+		<mkdir dir="${deploy.dir}"/>
+		<buildnumber file="buildnumber-${ant.project.name}"/>
+		<copy todir="${deploy.dir}" force="true">
+			<fileset dir="dist/">
+				<include name="*"/>
+			</fileset>
+		</copy>
+		<chmod perm="444">
+				<fileset dir="${deploy.dir}">
+						<include name="*"/>
+				</fileset>
+		</chmod>
+		<chmod perm="555">
+				<fileset dir="${deploy.dir}">
+						<include name="*.sh"/>
+				</fileset>
+		</chmod>
+	</target>
+</project>
