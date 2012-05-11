@@ -36,7 +36,7 @@ enum LineType
  * 
  * The aim of this file is more readability than simplicity as such some of the data structures like paramNames are redundant.
  * 
- * This object is immutable
+ * This object is effectively immutable (sans random objects)
  * 
  * Historical Note: This class originally was very Collection heavy, however as the ParamConfiguration objects 
  * are all backed by arrays it really would make more sense for this it to be backed by more arrays.
@@ -743,7 +743,7 @@ public class ParamConfigurationSpace implements Serializable {
 		return random;
 	}
 	
-
+	
 	public void setPRNG(Random r)
 	{
 		this.random = r;

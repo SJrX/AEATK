@@ -19,7 +19,7 @@ public class RunConfig implements Serializable{
 	private final ProblemInstanceSeedPair aisp;
 	private final double cutoffTime;
 	private final ParamConfiguration params;
-	private final boolean censoredRun;
+	private final boolean cutoffLessThanMax;
 
 	
 	public RunConfig(ProblemInstanceSeedPair aisp, double cutoffTime, ParamConfiguration params)
@@ -37,13 +37,13 @@ public class RunConfig implements Serializable{
 		this.aisp = aisp;
 		this.cutoffTime = cutoffTime;
 		this.params = params;
-		this.censoredRun = false;
+		this.cutoffLessThanMax = false;
 		
 		
 		
 	}
 	
-	public RunConfig(ProblemInstanceSeedPair aisp, double cutoffTime, ParamConfiguration params, boolean censoredRun)
+	public RunConfig(ProblemInstanceSeedPair aisp, double cutoffTime, ParamConfiguration params, boolean cutoffLessThanMax)
 	{
 		if(aisp == null)
 		{
@@ -61,7 +61,7 @@ public class RunConfig implements Serializable{
 		this.aisp = aisp;
 		this.cutoffTime = cutoffTime;
 		this.params = params;
-		this.censoredRun = censoredRun;
+		this.cutoffLessThanMax = cutoffLessThanMax;
 	}
 	
 
@@ -82,9 +82,9 @@ public class RunConfig implements Serializable{
 		return new ParamConfiguration(params);
 	}
 	
-	public boolean isCensoredRun()
+	public boolean hasCutoffLessThanMax()
 	{
-		return censoredRun;
+		return cutoffLessThanMax;
 	}
 	
 	public boolean equals(Object o)

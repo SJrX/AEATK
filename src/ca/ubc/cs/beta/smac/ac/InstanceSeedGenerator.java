@@ -93,4 +93,10 @@ public class InstanceSeedGenerator implements Serializable {
 	}
 	
 	
+	public boolean hasNextSeed(ProblemInstance pi)
+	{
+		return true;
+	}
+	
+	
 }

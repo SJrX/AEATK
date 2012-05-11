@@ -215,7 +215,7 @@ public class NewRunHistory implements RunHistory {
 		/**
 		 * Add to the capped runs set
 		 */
-		if(run.getRunResult().equals(RunResult.TIMEOUT) && run.getInstanceRunConfig().isCensoredRun())
+		if(run.getRunResult().equals(RunResult.TIMEOUT) && run.getInstanceRunConfig().hasCutoffLessThanMax())
 		{
 			if(!cappedRuns.containsKey(config))
 			{

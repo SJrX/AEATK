@@ -97,6 +97,7 @@ public class SMACConfig {
 	
 	@Parameter(names="--numberOfRandomConfigsInEI", description="Number of Random Configurations to evaluate in EI Search", validateWith=PositiveInteger.class)
 	public int numberOfRandomConfigsInEI = 10000;
+	
 	@Parameter(names="--instanceFeatureFile", description="File that contains the all the instances features")
 	public String instanceFeatureFile;
 
