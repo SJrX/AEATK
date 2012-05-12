@@ -692,11 +692,12 @@ public class ParamConfigurationSpace implements Serializable {
 			case NODB_SYNTAX:
 				
 				ParamConfiguration config = new ParamConfiguration(this, categoricalSize, parameterDomainContinuous, paramKeyIndexMap);
-				String tmpParamString = paramString.replaceAll("'","");
-				String[] params = tmpParamString.split(",\\s");
+				String tmpParamString = " " + paramString.replaceAll("'","");
+				String[] params = tmpParamString.split("\\s-");
 				for(String param : params)
 				{
-					String[] paramSplit = param.split("=");
+					if(param.equals("")) continue;
+					String[] paramSplit = param.trim().split(" ");
 					if(!paramSplit[1].trim().equals("NaN"))
 					{
 						config.put(paramSplit[0].trim(),paramSplit[1].trim());

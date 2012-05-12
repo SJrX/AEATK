@@ -12,7 +12,7 @@ import ca.ubc.cs.beta.smac.RunObjective;
  * @author seramage
  *
  */
-public class ScenarioConfig {
+public class ScenarioConfig extends AbstractConfigToString{
 
 	@ParametersDelegate
 	public AlgoExecConfig algoExecConfig = new AlgoExecConfig();

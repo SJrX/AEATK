@@ -49,7 +49,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 			String runLength = "0";
 			String bestSolution = "0";
 			String seed = String.valueOf(instanceConfig.getAlgorithmInstanceSeedPair().getSeed());
-			resultLine = solved + ", " + runtime + ", " + runLength + ", " + bestSolution + ", " + seed;
+			resultLine = acResult.name() + ", " + runtime + ", " + runLength + ", " + bestSolution + ", " + seed;
 			
 			this.runLength = Integer.valueOf(runLength);
 			this.runtime = Double.valueOf(runtime);
@@ -182,7 +182,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 			String bestSolution = results[3];
 			String seed = results[4];
 			
-			resultLine = solved + ", " + runtime + ", " + runLength + ", " + bestSolution + ", " + seed;
+			resultLine = acResult.name() + ", " + runtime + ", " + runLength + ", " + bestSolution + ", " + seed;
 			
 			
 			try

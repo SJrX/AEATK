@@ -106,8 +106,8 @@ public class RunConfig implements Serializable{
 	
 	public int hashCode()
 	{
-		System.out.println("AISP:" + aisp.hashCode());
-		System.out.println("Params:" + params.hashCode());
+		//System.out.println("AISP:" + aisp.hashCode());
+		//System.out.println("Params:" + params.hashCode());
 		
 		return (int) ( (aisp.hashCode())^ params.hashCode());
 		
