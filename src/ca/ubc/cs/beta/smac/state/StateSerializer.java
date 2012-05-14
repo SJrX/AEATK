@@ -3,7 +3,7 @@ package ca.ubc.cs.beta.smac.state;
 import java.util.Random;
 
 import ca.ubc.cs.beta.configspace.ParamConfiguration;
-import ca.ubc.cs.beta.smac.ac.InstanceSeedGenerator;
+import ca.ubc.cs.beta.probleminstance.InstanceSeedGenerator;
 import ca.ubc.cs.beta.smac.history.RunHistory;
 
 /**

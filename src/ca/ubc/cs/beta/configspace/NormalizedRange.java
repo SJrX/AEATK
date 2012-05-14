@@ -11,11 +11,14 @@ public class NormalizedRange implements Serializable
 	private final double min;
 	private final double max;
 	private final boolean logScale;
-
-	public NormalizedRange(double min, double max, boolean logScale)
+	private final boolean intValuesOnly;
+	
+	
+	public NormalizedRange(double min, double max, boolean logScale, boolean intValuesOnly)
 	{
 		
 		this.logScale = logScale;
+		this.intValuesOnly = intValuesOnly;
 		
 		if(logScale)
 		{
@@ -70,18 +73,31 @@ public class NormalizedRange implements Serializable
 			throw new IllegalArgumentException("Value is outside of [0,1]");
 		}
 		
+		double value; 
 		if(logScale)
 		{
-			return Math.pow(10, x*(max-min) + min);
+			value = Math.pow(10, x*(max-min) + min);
 		} else
 		{
-			return x*(max-min) + min;
+			value = x*(max-min) + min;
+		}
+		
+		if(intValuesOnly)
+		{
+			return Math.round(value);
+		} else
+		{
+			return value;
 		}
 	}
 	
 	public String toString()
 	{
-		return "(NormalizeRange: {Min: " + min + " Max: " + max + "})";
+		return "(NormalizeRange: {Min: " + min + " Max: " + max + ((logScale) ? " LOG " : "") + ((intValuesOnly) ? " INT " : "") + "})";
+	}
+
+	public boolean isIntegerOnly() {
+		return intValuesOnly;
 	}
 	
 	

@@ -1,6 +1,7 @@
 package ca.ubc.cs.beta.configspace;
 
 import java.io.Serializable;
+import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -162,6 +163,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 		}
 	}
 
+	
 
 	@Override
 	public String get(Object key) {
@@ -175,7 +177,15 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 		double value = valueArray[index];
 		if(parameterDomainContinuous[index])
 		{
-			return String.valueOf(configSpace.getNormalizedRangeMap().get(key).unnormalizeValue(value));
+			NormalizedRange range = configSpace.getNormalizedRangeMap().get(key);
+			if(range.isIntegerOnly())
+			{
+				return String.valueOf((long) Math.round(range.unnormalizeValue(value)));
+			} else
+			{
+				return String.valueOf(range.unnormalizeValue(value));
+			}
+			
 		} else
 		{
 			if(value == 0)
@@ -251,8 +261,12 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 		{
 			double d1 = Double.valueOf(get(key));
 			double d2 = Double.valueOf(newValue);
-			if(Math.abs(d2 - d1) >  Math.pow(10, -12))
-				throw new IllegalStateException("Not Sure Why this happened: " + get(key) + " vs. " + newValue);
+			
+			if(Math.abs(d1/d2 - 1) >  Math.pow(10, -12))
+			{
+				System.out.println("Warning got the following value back from map " + get(key) + " put " + newValue + " in");
+			}
+				//throw new IllegalStateException("Not Sure Why this happened: " + get(key) + " vs. " + newValue);
 		} else
 		{
 			if(!get(key).equals(newValue))
@@ -405,10 +419,10 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	public enum StringFormat
 	{
 		NODB_SYNTAX("-"," ", "'", " ", true), //Parameters are prefixed with a -(name) '(value)'
-		NODB_SYNTAX_WITH_INDEX("-"," ", "'", " ", true), //Same as previous except each line starts with (n): where (n) is an integer
-		STATEFILE_SYNTAX(" ","=","'",",",false), 
-		SURROGATE_EXECUTOR("-P","=",""," ",true);
-		
+			NODB_SYNTAX_WITH_INDEX("-"," ", "'", " ", true), //Same as previous except each line starts with (n): where (n) is an integer
+			STATEFILE_SYNTAX(" ","=","'",",",false), 
+			SURROGATE_EXECUTOR("-P","=",""," ",true);
+
 		private final String preKey;
 		private final String keyValSeperator;
 		private final String valDelimiter;

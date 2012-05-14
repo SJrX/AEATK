@@ -22,9 +22,9 @@ import ca.ubc.cs.beta.ac.RunResult;
 import ca.ubc.cs.beta.ac.config.ProblemInstance;
 import ca.ubc.cs.beta.ac.config.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.configspace.ParamConfiguration;
+import ca.ubc.cs.beta.probleminstance.InstanceSeedGenerator;
 import ca.ubc.cs.beta.smac.OverallObjective;
 import ca.ubc.cs.beta.smac.RunObjective;
-import ca.ubc.cs.beta.smac.ac.InstanceSeedGenerator;
 import ca.ubc.cs.beta.smac.ac.runs.AlgorithmRun;
 
 /**

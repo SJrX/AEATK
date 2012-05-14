@@ -28,9 +28,10 @@ import ca.ubc.cs.beta.ac.config.RunConfig;
 import ca.ubc.cs.beta.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.configspace.ParamConfiguration.StringFormat;
+import ca.ubc.cs.beta.probleminstance.InstanceSeedGenerator;
+import ca.ubc.cs.beta.probleminstance.RandomInstanceSeedGenerator;
 import ca.ubc.cs.beta.smac.OverallObjective;
 import ca.ubc.cs.beta.smac.RunObjective;
-import ca.ubc.cs.beta.smac.ac.InstanceSeedGenerator;
 import ca.ubc.cs.beta.smac.ac.runs.AlgorithmRun;
 import ca.ubc.cs.beta.smac.ac.runs.ExistingAlgorithmRun;
 import ca.ubc.cs.beta.smac.exceptions.StateSerializationException;
@@ -62,7 +63,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 	private final EnumMap<RandomPoolType, Random> randomMap;
 	private final int iteration;
 	private final ParamConfiguration incumbent;
-	
+	private static int newSeeds = 1024;	
 	/**
 	 * Stores whether or not we were able to recover a complete state 
 	 */
@@ -127,7 +128,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 				incompleteSavedState = true;
 				randomMap = null;
 				//The RunHistory object will need an instanceseed generator. We will not allow this to be returned to the client however
-				instanceSeedGenerator = new InstanceSeedGenerator(0, 0);
+				instanceSeedGenerator = new RandomInstanceSeedGenerator(0, 0);
 				this.incumbent = null;
 				this.iteration = iteration;
 			}
@@ -156,7 +157,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 					if(lineResults.length != 2) throw new IllegalArgumentException("Configuration Param Strings File is corrupted, no colon detected on line: \"" + line + "\"");
 					
 					Integer configId = Integer.valueOf(lineResults[0]);
-					configMap.put(configId,configSpace.getConfigurationFromString(lineResults[1], StringFormat.NODB_SYNTAX));
+					configMap.put(configId,configSpace.getConfigurationFromString(lineResults[1], StringFormat.STATEFILE_SYNTAX));
 					
 					
 				}
@@ -218,6 +219,11 @@ public class LegacyStateDeserializer implements StateDeserializer {
 						long seed = -1;
 						try {
 							seed = Long.valueOf(runHistoryLine[6]);
+							if(seed == -1)
+							{
+								log.trace("Seed is -1 which means it was deterministic, using a random seed");
+								seed = newSeeds++;
+							}
 						} catch(NumberFormatException e)
 						{
 							seed = Double.valueOf(runHistoryLine[6]).longValue();
@@ -246,7 +252,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 						}
 						
 						RunResult runResult  = (Integer.valueOf(runHistoryLine[9]) == 1) ? RunResult.SAT : RunResult.TIMEOUT;
-						int quality = Integer.valueOf(runHistoryLine[10]);
+						int quality = (int) (double) Double.valueOf(runHistoryLine[10]);
 						int runIteration = Integer.valueOf(runHistoryLine[11]);
 
 						if(runIteration > iteration) break;

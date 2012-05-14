@@ -357,15 +357,24 @@ public class ParamConfigurationSpace implements Serializable {
 		
 		
 		String scale = line.substring(line.indexOf("]",secondBracket+1)+1);
-		if((scale.length() > 0) && (scale.trim().substring(0, 1).equals("l")))
+		
+		
+		
+		boolean logScale = ((scale.length() > 0) && (scale.trim().contains("l")));
+		scale = scale.replaceFirst("l", "").trim();
+		
+		boolean intValuesOnly = ((scale.length() > 0) && (scale.trim().contains("i")));
+		scale = scale.replaceFirst("i", "").trim();		
+		
+		if(scale.trim().length() != 0)
 		{
-			contNormalizedRanges.put(name, new NormalizedRange(min, max, true)); 
-		} else
-		{
-			contNormalizedRanges.put(name, new NormalizedRange(min, max, false));
+			throw new IllegalStateException("Illegal param modifier on line : " + line + " unknown modifier: " + scale);
 		}
+			
+			
+		
+		contNormalizedRanges.put(name, new NormalizedRange(min, max, logScale, intValuesOnly));
 
-		//throw new UnsupportedOperationException("Do not support continuous lines");
 		
 	}
 
@@ -705,7 +714,22 @@ public class ParamConfigurationSpace implements Serializable {
 				}
 				
 				return config;
-				
+			case STATEFILE_SYNTAX:
+
+				config = new ParamConfiguration(this, categoricalSize, parameterDomainContinuous, paramKeyIndexMap);
+				tmpParamString = " " + paramString.replaceAll("'","");
+				params = tmpParamString.split(",");
+				for(String param : params)
+				{
+					if(param.equals("")) continue;
+					String[] paramSplit = param.trim().split("=");
+					if(!paramSplit[1].trim().equals("NaN"))
+					{
+						config.put(paramSplit[0].trim(),paramSplit[1].trim());
+					}
+				}
+
+				return config;
 			default:
 				throw new IllegalArgumentException("Parsing not implemented for String Format");
 			
