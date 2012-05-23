@@ -37,7 +37,7 @@ public class RandomInstanceSeedGenerator implements Serializable, InstanceSeedGe
 
 	public RandomInstanceSeedGenerator(List<ProblemInstance> instances, long seed)
 	{
-		this(instances.size()+1, seed);
+		this(instances.size(), seed);
 	}
 	
 	public RandomInstanceSeedGenerator(int numberOfInstances, long seed)
@@ -66,7 +66,7 @@ public class RandomInstanceSeedGenerator implements Serializable, InstanceSeedGe
 	@Override
 	public void reinit()
 	{
-		log.info("Re-Initializing Instance Seed PRNG with Seed {}", initialSeed);	
+		log.info("Re-Initializing Instance Seed PRNG with Seed {} and instances {} ", initialSeed, initialNumberOfInstances);	
 		nextSeed = initialSeed;
 		randomPool.clear();
 		usedSeeds.clear();
@@ -88,7 +88,7 @@ public class RandomInstanceSeedGenerator implements Serializable, InstanceSeedGe
 	{
 		if(hasNextSeed(pi))
 		{
-			return getNextSeed(pi.getInstanceID());
+			return getNextSeed(pi.getInstanceID()-1);
 		} else
 		{
 			throw new IllegalStateException("No more Seeds for Problem Instance: " + pi.getInstanceName());
@@ -130,11 +130,11 @@ public class RandomInstanceSeedGenerator implements Serializable, InstanceSeedGe
 	@Override
 	public boolean hasNextSeed(ProblemInstance pi)
 	{
-		if(usedSeeds.get(pi.getInstanceID()) == null )
+		if(usedSeeds.get(pi.getInstanceID()-1) == null )
 		{
-			return 1 < maxSeedsPerInstance;
+			return 1 <= maxSeedsPerInstance;
 		}
-		if(usedSeeds.get(pi.getInstanceID()).size() >= maxSeedsPerInstance)
+		if(usedSeeds.get(pi.getInstanceID()-1).size() >= maxSeedsPerInstance)
 		{
 			return false;
 		} else

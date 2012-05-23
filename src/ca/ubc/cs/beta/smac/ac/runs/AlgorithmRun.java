@@ -3,8 +3,8 @@ package ca.ubc.cs.beta.smac.ac.runs;
 import java.io.Serializable;
 
 import ca.ubc.cs.beta.ac.RunResult;
-import ca.ubc.cs.beta.ac.config.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.ac.config.RunConfig;
+import ca.ubc.cs.beta.config.AlgorithmExecutionConfig;
 
 public interface AlgorithmRun extends Runnable, Serializable {
 
@@ -17,10 +17,9 @@ public interface AlgorithmRun extends Runnable, Serializable {
 	public double getRuntime();
 
 
-	public int getRunLength();
+	public double getRunLength();
 
-	//TODO This should be a double
-	public int getQuality();
+	public double getQuality();
 
 	public long getResultSeed();
 

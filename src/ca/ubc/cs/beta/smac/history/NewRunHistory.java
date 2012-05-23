@@ -560,6 +560,17 @@ public class NewRunHistory implements RunHistory {
 		return responseValues;
 	}
 
+	@Override
+	public boolean[] getCensoredFlagForRuns() {
+		boolean[] responseValues = new boolean[runHistoryList.size()];
+		int i=0;
+		for(RunData runData : runHistoryList)
+		{
+			responseValues[i] = runData.getRun().getRunResult().equals(RunResult.TIMEOUT) && runData.getRun().getInstanceRunConfig().hasCutoffLessThanMax();
+			i++;
+		}
+		return responseValues;
+	}
 
 	@Override
 	public Set<ProblemInstance> getUniqueInstancesRan() {
@@ -635,5 +646,7 @@ public class NewRunHistory implements RunHistory {
 	public InstanceSeedGenerator getInstanceSeedGenerator() {
 		return instanceSeedGenerator;
 	}
+
+	
 
 }

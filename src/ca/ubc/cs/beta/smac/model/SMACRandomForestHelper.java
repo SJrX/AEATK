@@ -1,10 +1,8 @@
 package ca.ubc.cs.beta.smac.model;
 
-import ca.ubc.cs.beta.ac.config.RandomForestConfig;
-import ca.ubc.cs.beta.config.SMACConfig;
+import ca.ubc.cs.beta.config.RandomForestConfig;
 import ca.ubc.cs.beta.models.fastrf.RegtreeBuildParams;
 import ca.ubc.cs.beta.random.SeedableRandomSingleton;
-import ec.util.MersenneTwister;
 
 public class SMACRandomForestHelper {
 

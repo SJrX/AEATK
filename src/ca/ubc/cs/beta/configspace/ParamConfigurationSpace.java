@@ -8,14 +8,17 @@ import java.io.IOException;
 import java.io.Serializable;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
+import java.util.Set;
 
 import ca.ubc.cs.beta.configspace.ParamConfiguration.StringFormat;
 import ca.ubc.cs.beta.random.SeedableRandomSingleton;
@@ -112,6 +115,8 @@ public class ParamConfigurationSpace implements Serializable {
 	 * Number of Neighbours a continuous value has
 	 */
 	static final int NEIGHBOURS_FOR_CONTINUOUS = 4;
+	
+
 	
 	/**
 	 * Number of parameters 
@@ -331,6 +336,21 @@ public class ParamConfigurationSpace implements Serializable {
 		
 	}
 	
+	/**
+	 * Continuous Lines consist of:
+	 *   
+	 * <name><w*>[<minValue>,<maxValue>]<w*>[<default>]<*w><i?><l?>#Comment
+	 * where:
+	 * <name> - name of parameter.
+	 * <minValue> - minimum Value in Range
+	 * <maxValue> - maximum Value in Range.
+	 * <default> - default value enclosed in braces.
+	 * <w*> - zero or more whitespace characters
+	 * <i?> - An optional i character that specifies whether or not only integral values are permitted
+	 * <l?> - An optional l character that specifies if the domain should be considered logarithmic (for sampling purposes).
+	 * 
+	 * @param line
+	 */
 	private void parseContinuousLine(String line) 
 	{
 		
@@ -692,52 +712,74 @@ public class ParamConfigurationSpace implements Serializable {
 
 	public ParamConfiguration getConfigurationFromString( String paramString, StringFormat f)
 	{
-		try {
-		switch(f)
+		try 
 		{
-			case NODB_SYNTAX_WITH_INDEX:
-				paramString = paramString.replaceFirst("\\A\\d+:", "");
-				//NOW IT'S A REGULAR NODB STRING
-			case NODB_SYNTAX:
-				
-				ParamConfiguration config = new ParamConfiguration(this, categoricalSize, parameterDomainContinuous, paramKeyIndexMap);
-				String tmpParamString = " " + paramString.replaceAll("'","");
-				String[] params = tmpParamString.split("\\s-");
-				for(String param : params)
-				{
-					if(param.equals("")) continue;
-					String[] paramSplit = param.trim().split(" ");
-					if(!paramSplit[1].trim().equals("NaN"))
+			ParamConfiguration config;
+			switch(f)
+			{
+				case NODB_SYNTAX_WITH_INDEX:
+					paramString = paramString.replaceFirst("\\A\\d+:", "");
+					//NOW IT'S A REGULAR NODB STRING
+				case NODB_SYNTAX:
+					
+					config= new ParamConfiguration(this, categoricalSize, parameterDomainContinuous, paramKeyIndexMap);
+					String tmpParamString = " " + paramString;
+					String[] params = tmpParamString.split("\\s-");
+					
+						
+					for(String param : params)
 					{
-						config.put(paramSplit[0].trim(),paramSplit[1].trim());
+						
+						if(param.equals("")) continue;
+						String[] paramSplit = param.trim().split(" ");
+						try {
+							if(!paramSplit[1].trim().equals("NaN"))
+							{
+								config.put(paramSplit[0].trim(),paramSplit[1].replaceAll("'","").trim());
+							}
+						} catch(ArrayIndexOutOfBoundsException e)
+						{
+							
+							System.out.println(paramString);
+							System.out.println(tmpParamString);
+							System.out.println(f);
+							System.out.println(Arrays.toString(paramSplit));
+							throw e;
+							
+						}
+						
 					}
-				}
-				
-				return config;
-			case STATEFILE_SYNTAX:
-
-				config = new ParamConfiguration(this, categoricalSize, parameterDomainContinuous, paramKeyIndexMap);
-				tmpParamString = " " + paramString.replaceAll("'","");
-				params = tmpParamString.split(",");
-				for(String param : params)
-				{
-					if(param.equals("")) continue;
-					String[] paramSplit = param.trim().split("=");
-					if(!paramSplit[1].trim().equals("NaN"))
+					
+					
+					break;
+				case STATEFILE_SYNTAX:
+	
+					config = new ParamConfiguration(this, categoricalSize, parameterDomainContinuous, paramKeyIndexMap);
+					tmpParamString = " " + paramString.replaceAll("'","");
+					params = tmpParamString.split(",");
+					for(String param : params)
 					{
-						config.put(paramSplit[0].trim(),paramSplit[1].trim());
+						if(param.equals("")) continue;
+						String[] paramSplit = param.trim().split("=");
+						if(!paramSplit[1].trim().equals("NaN"))
+						{
+							config.put(paramSplit[0].trim(),paramSplit[1].trim());
+						}
 					}
-				}
-
-				return config;
-			default:
-				throw new IllegalArgumentException("Parsing not implemented for String Format");
+	
+					break;
+				default:
+					throw new IllegalArgumentException("Parsing not implemented for String Format");
+				
+			}
 			
-		}
+			return config;
 		} catch(IllegalArgumentException e )
 		{
 			throw new IllegalArgumentException(e.getMessage() + " String: " + paramString + " Format: " + f);
 		}
+		
+		
 		
 	}
 	

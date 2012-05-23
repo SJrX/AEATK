@@ -5,8 +5,8 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 
-import ca.ubc.cs.beta.ac.config.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.ac.config.RunConfig;
+import ca.ubc.cs.beta.config.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.smac.ac.runs.AlgorithmRun;
 
 public class ConcurrentAlgorithmRunner extends AbstractAlgorithmRunner {

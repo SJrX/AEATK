@@ -3,8 +3,7 @@ package ca.ubc.cs.beta.smac.model.builder;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ca.ubc.cs.beta.ac.config.RandomForestConfig;
-import ca.ubc.cs.beta.config.SMACConfig;
+import ca.ubc.cs.beta.config.RandomForestConfig;
 import ca.ubc.cs.beta.models.fastrf.RandomForest;
 import ca.ubc.cs.beta.models.fastrf.RegtreeBuildParams;
 import ca.ubc.cs.beta.smac.history.RunHistory;

@@ -36,7 +36,7 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 	private final ParamConfigurationSpace configSpace;
 	private final double[][] configs;
 	
-	
+	private final boolean logModel;
 	/**
 	 * Debugging crap that basically writes the arguments to a file that you can then use to test outside of Matlab
 	 */
@@ -142,7 +142,7 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 		double[] firstStdDev = pca.getRowStdDev(instanceFeaturesT);
 		//double[][] pcaedFeatures =pca.getPCA(instanceFeatures, numPCA); 
 		
-		
+		this.logModel = logModel;
 		if(logModel)
 		{
 			pca.max(responseValues, SanitizedModelData.MINIMUM_RESPONSE_VALUE);
@@ -276,6 +276,17 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 	public int[][][] getCondParentVals()
 	{
 		return configSpace.getCondParentValsArray();
+	}
+
+	public double transformResponseValue(double d) {
+		if(logModel)
+		{
+			
+			return Math.log10(Math.max(d, SanitizedModelData.MINIMUM_RESPONSE_VALUE));
+		} else
+		{
+			return d;
+		}
 	}
 	
 }

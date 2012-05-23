@@ -12,16 +12,16 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 
-import ca.ubc.cs.beta.ac.config.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.ac.config.RunConfig;
 import ca.ubc.cs.beta.ac.RunResult;
+import ca.ubc.cs.beta.config.AlgorithmExecutionConfig;
 
 public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 
 	
 	private static final long serialVersionUID = -70897405824987641L;
 	
-	public static final String AUTOMATIC_CONFIGURATOR_RESULT_REGEX = "(Final)?\\s*[Rr]esult\\s+(?:(for)|(of))\\s+(?:(HAL)|(ParamILS)|(this wrapper)):";
+	public static final String AUTOMATIC_CONFIGURATOR_RESULT_REGEX = "(Final)?\\s*[Rr]esult\\s+(?:(for)|(of))\\s+(?:(HAL)|(ParamILS)|(SMAC)|(this wrapper)):";
 	
 	private static final Pattern pattern = Pattern.compile(AUTOMATIC_CONFIGURATOR_RESULT_REGEX);
 	
@@ -51,9 +51,9 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 			String seed = String.valueOf(instanceConfig.getAlgorithmInstanceSeedPair().getSeed());
 			resultLine = acResult.name() + ", " + runtime + ", " + runLength + ", " + bestSolution + ", " + seed;
 			
-			this.runLength = Integer.valueOf(runLength);
+			this.runLength = Double.valueOf(runLength);
 			this.runtime = Double.valueOf(runtime);
-			this.quality = Integer.valueOf(bestSolution);
+			this.quality = Double.valueOf(bestSolution);
 			this.resultSeed = Long.valueOf(seed);
 			runResultWellFormed = true;
 			
@@ -187,15 +187,23 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 			
 			try
 			{
-				this.runLength = Integer.valueOf(runLength);
+				this.runLength = Double.valueOf(runLength);
 				this.runtime = Double.valueOf(runtime);
-				this.quality = Integer.valueOf(bestSolution);
+				this.quality = Double.valueOf(bestSolution);
 				this.resultSeed = Long.valueOf(seed);
 				runResultWellFormed = true;
 			} catch(NumberFormatException e)
 			{
+				
+				
 				//There was a problem with the output, we just set this flag
-				runResultWellFormed = false;
+				this.runtime = 0;
+				this.runLength = 0;
+				this.quality = 0;
+				this.resultSeed = -1;
+				this.acResult = RunResult.CRASHED;
+				
+				runResultWellFormed = true;
 				
 			}	
 			

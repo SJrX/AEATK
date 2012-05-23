@@ -1,8 +1,8 @@
 package ca.ubc.cs.beta.smac.ac.runs;
 
 import ca.ubc.cs.beta.ac.RunResult;
-import ca.ubc.cs.beta.ac.config.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.ac.config.RunConfig;
+import ca.ubc.cs.beta.config.AlgorithmExecutionConfig;
 
 public class SurrogateAlgorithmRun extends AbstractAlgorithmRun {
 	/**

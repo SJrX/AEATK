@@ -35,6 +35,18 @@ public class KeyObjectManager<V> {
 		
 		if(bidiMap.containsKey(id) || bidiMap.containsValue(obj))
 		{
+			if(bidiMap.containsKey(id))
+			{
+				System.out.println("bidiMap contains key " + id +  " already");
+				System.out.println("Value : " + bidiMap.get(id));
+			}
+			
+			if(bidiMap.containsValue(obj))
+			{
+				System.out.println("bidiMap contains value " + obj +  " already");
+				System.out.println("Key: " + bidiMap.getKey(obj));
+			}
+			
 			if(bidiMap.get(id).equals(obj)) 
 			{
 				return;

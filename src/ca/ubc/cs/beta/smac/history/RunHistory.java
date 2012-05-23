@@ -140,10 +140,18 @@ public interface RunHistory {
 	public Set<ParamConfiguration> getUniqueParamConfigurations();
 	
 	/**
-	 * Not sure what this does
+	 * Returns an Nx2 matrix where each row corresponds to a
+	 * param_configuration instance in getUniqueParamConfigurations
+	 * and instance in getUniqueInstancesRan(), these represent the runs
 	 * @return
 	 */
 	public int[][] getParameterConfigurationInstancesRanByIndex();
+	/**
+	 * Returns an array of the length getRunResponseValues, that tells us whether this run was capped or not.
+	 * 
+	 * @return
+	 */
+	public boolean[] getCensoredFlagForRuns();
 	
 	/**
 	 * Returns the param configurations ran in order

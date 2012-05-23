@@ -1,7 +1,6 @@
 package ca.ubc.cs.beta.configspace;
 
 import java.io.Serializable;
-import java.text.DecimalFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -67,9 +66,29 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	 * we would store 2.0. 
 	 *  
 	 * For continuous parameters we just store there raw value.
+	 * 
+	 * For non active parameters we store a NaN
 	 */
 	private final double[] valueArray;
 	
+	
+	/**
+	 * Stores whether the parameter in the array is active or not
+	 * 
+	 */
+	private final boolean[] activeParams;
+	
+	
+	/**
+	 * Stores whether the map has been changed since the previous read
+	 */
+	private boolean isDirty; 
+	
+	
+	/**
+	 * Value array used in comparisons
+	 */
+	private final double[] valueArrayForComparsion; 
 	
 	/**
 	 * Objects should only be constructed via the ParamConfigurationSpace
@@ -84,25 +103,18 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 		 */
 		this.configSpace = configSpace;
 		this.valueArray = valueArray;
+		
 		this.categoricalSize = categoricalSize;
 		this.parameterDomainContinuous = parameterDomainContinuous;
 		this.paramKeyToValueArrayIndexMap = paramKeyToValueArrayIndexMap;
 		this.myID = idPool.incrementAndGet();
-		
+		this.activeParams = new boolean[valueArray.length];
+		isDirty = true;
+		this.valueArrayForComparsion = new double[valueArray.length];
 	}
 		
-		/*
-		
-		
-		
-		this.paramKeyToValueArrayIndexMap = keyIndexMap.get(parser);
-		this.categoricalSize = categoricalSizeMap.get(parser);
-		this.parameterDomainContinuous = parameterDomainContinuousMap.get(parser);
-		this.valueArray = new double[parser.getParameterNames().size()];
-		
-		this.myID = 0;
-	}
-	*/
+	
+	
 	/**
 	 * Copy constructor
 	 * @param m - configuration to copy
@@ -115,6 +127,9 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 		this.parameterDomainContinuous = m.parameterDomainContinuous;
 		this.paramKeyToValueArrayIndexMap = m.paramKeyToValueArrayIndexMap;
 		this.myID = m.myID;
+		this.activeParams = new boolean[valueArray.length];
+		isDirty = true;
+		this.valueArrayForComparsion = new double[valueArray.length];
 	}
 	
 	/**
@@ -130,6 +145,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 		this(configSpace, new double[categoricalSize.length], categoricalSize, parameterDomainContinuous, paramKeyIndexMap);
 	}
 
+	
 	@Override
 	public int size() {
 		return valueArray.length;
@@ -167,14 +183,24 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 
 	@Override
 	public String get(Object key) {
-
+		
+		
+		
 		Integer index = paramKeyToValueArrayIndexMap.get(key);
 		if(index == null)
 		{
 			return null;
 		}
 		
+		
+		
 		double value = valueArray[index];
+		
+		if(Double.isNaN(value))
+		{
+			return null;
+		}
+		
 		if(parameterDomainContinuous[index])
 		{
 			NormalizedRange range = configSpace.getNormalizedRangeMap().get(key);
@@ -215,6 +241,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 		 * NOTE: i = 1 since the valueArray numbers elements from 1
 		 */
 		
+		isDirty = true;
 
 		Integer index = paramKeyToValueArrayIndexMap.get(key);
 		if(index == null)
@@ -225,7 +252,11 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 		
 		String oldValue = get(key);
 		
-		if(parameterDomainContinuous[index])
+		if(newValue == null)
+		{
+			valueArray[index] = Double.NaN;
+		}
+		else if(parameterDomainContinuous[index])
 		{
 			valueArray[index] = configSpace.getNormalizedRangeMap().get(key).normalizeValue(Double.valueOf(newValue));
 			
@@ -257,7 +288,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 		
 	
 		
-		if(parameterDomainContinuous[index])
+		if(parameterDomainContinuous[index] && newValue != null)
 		{
 			double d1 = Double.valueOf(get(key));
 			double d2 = Double.valueOf(newValue);
@@ -269,7 +300,13 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 				//throw new IllegalStateException("Not Sure Why this happened: " + get(key) + " vs. " + newValue);
 		} else
 		{
-			if(!get(key).equals(newValue))
+			if(get(key) == null)
+			{
+				if(newValue != null)
+				{
+					throw new IllegalStateException("Not Sure Why this happened: " + get(key) + " vs. " + newValue);	
+				}
+			} else if(!get(key).equals(newValue))
 			{
 				throw new IllegalStateException("Not Sure Why this happened: " + get(key) + " vs. " + newValue);
 			}
@@ -349,16 +386,22 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 		if (o instanceof ParamConfiguration)
 		{
 			ParamConfiguration opc = (ParamConfiguration )o;
-			return configSpace.equals(opc.configSpace) && Arrays.equals(valueArray, opc.valueArray);
+			if(isDirty) cleanUp();
+			if(opc.isDirty) opc.cleanUp();
+			
+			return configSpace.equals(opc.configSpace) && Arrays.equals(valueArrayForComparsion, opc.valueArrayForComparsion);
 		} else
 		{
 			return false;
 		}
 	}
 	
+	
 	public int hashCode()	
-	{
-		return configSpace.hashCode() ^ Arrays.hashCode(valueArray);
+	{ 
+		if(isDirty) cleanUp();
+		
+		return configSpace.hashCode() ^ Arrays.hashCode(valueArrayForComparsion);
 	}
 	
 	
@@ -581,6 +624,34 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 		}
 	}
 	
+	/**
+	 * Recomputes the Active Parameters 
+	 */
+	
+	public void cleanUp()
+	{
+
+	
+		Set<String> activeParams = getActiveParameters();
+		
+		for(Entry<String, Integer> keyVal : this.paramKeyToValueArrayIndexMap.entrySet())
+		{
+			
+			
+			this.activeParams[keyVal.getValue()] = activeParams.contains(keyVal.getKey()); 
+			
+			
+			if(this.activeParams[keyVal.getValue()])
+			{
+				this.valueArrayForComparsion[keyVal.getValue()] = valueArray[keyVal.getValue()];
+			} else
+			{
+				this.valueArrayForComparsion[keyVal.getValue()] = Double.NaN;
+			}
+		}
+	
+		isDirty = false;
+	}
 	
 	public Set<String> getActiveParameters()
 	{

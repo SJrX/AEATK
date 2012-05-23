@@ -8,8 +8,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 
-import ca.ubc.cs.beta.ac.config.RandomForestConfig;
-import ca.ubc.cs.beta.config.SMACConfig;
+import ca.ubc.cs.beta.config.RandomForestConfig;
 import ca.ubc.cs.beta.smac.exceptions.TrajectoryDivergenceException;
 import ca.ubc.cs.beta.smac.history.RunHistory;
 import ca.ubc.cs.beta.smac.model.data.SanitizedModelData;

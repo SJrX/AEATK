@@ -5,8 +5,8 @@ import ca.ubc.cs.beta.ac.RunResult;
 
 import org.slf4j.LoggerFactory;
 
-import ca.ubc.cs.beta.ac.config.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.ac.config.RunConfig;
+import ca.ubc.cs.beta.config.AlgorithmExecutionConfig;
 /**
  * Class reperesents an Existing Algorithm Run that we can load 
  * @author seramage

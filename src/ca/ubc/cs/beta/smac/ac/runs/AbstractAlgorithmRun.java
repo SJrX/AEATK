@@ -1,8 +1,8 @@
 package ca.ubc.cs.beta.smac.ac.runs;
 
 import ca.ubc.cs.beta.ac.RunResult;
-import ca.ubc.cs.beta.ac.config.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.ac.config.RunConfig;
+import ca.ubc.cs.beta.config.AlgorithmExecutionConfig;
 
 /**
  * This class represents a single run of the target algorithm given by the AlgorithmExecutionConfig object and the AlgorithmInstanceRunConfig object
@@ -22,8 +22,8 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 	
 	protected RunResult acResult;
 	protected double runtime;
-	protected int runLength;
-	protected int quality;
+	protected double runLength;
+	protected double quality;
 	protected long resultSeed; 
 	
 	
@@ -93,7 +93,7 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 	 * @see ca.ubc.cs.beta.smac.ac.runs.AlgorithmRun#getRunLength()
 	 */
 	@Override
-	public final int getRunLength() {
+	public final double getRunLength() {
 		if(!isRunResultWellFormed()) throw new IllegalStateException("Execution Result was not well formed");
 		return runLength;
 	}
@@ -102,7 +102,7 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 	 * @see ca.ubc.cs.beta.smac.ac.runs.AlgorithmRun#getBestSolution()
 	 */
 	@Override
-	public final int getQuality() {
+	public final double getQuality() {
 		if(!isRunResultWellFormed()) throw new IllegalStateException("Execution Result was not well formed");
 		return quality;
 	}

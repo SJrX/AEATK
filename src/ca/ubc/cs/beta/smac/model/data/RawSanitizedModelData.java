@@ -1,13 +1,7 @@
 package ca.ubc.cs.beta.smac.model.data;
 
-import java.io.File;
-import java.io.FileOutputStream;
-import java.io.IOException;
-import java.io.ObjectOutputStream;
-
 import ca.ubc.cs.beta.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.smac.PCA;
-import ca.ubc.cs.beta.smac.PCA.Operation;
 import ca.ubc.cs.beta.smac.helper.ArrayMathOps;
 
 public class RawSanitizedModelData implements SanitizedModelData {
@@ -24,6 +18,7 @@ public class RawSanitizedModelData implements SanitizedModelData {
 	private double[][] pcaVec;
 	private double[][] pcaFeatures;
 
+	private final boolean logModel;
 	public RawSanitizedModelData(double[][] instanceFeatures, double[][] paramValues, double[] responseValues, int[] usedInstances, boolean logModel)
 	{
 		this(instanceFeatures, paramValues, responseValues, usedInstances, logModel, null);
@@ -33,7 +28,7 @@ public class RawSanitizedModelData implements SanitizedModelData {
 		this.configSpace = configSpace;
 		this.configs = paramValues;
 		this.responseValues = responseValues;
-		
+		this.logModel = logModel;
 		this.prePCAInstanceFeatures = ArrayMathOps.copy(instanceFeatures);
 		
 		
@@ -137,6 +132,17 @@ public class RawSanitizedModelData implements SanitizedModelData {
 	{
 		return configSpace.getCondParentValsArray();
 	}
-	
 
+	@Override
+	public double transformResponseValue(double d) {
+		if(logModel)
+		{
+			
+			return Math.log10(Math.max(d, SanitizedModelData.MINIMUM_RESPONSE_VALUE));
+		} else
+		{
+			return d;
+		}
+	}
+	
 }

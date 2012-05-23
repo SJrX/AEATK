@@ -1,4 +1,4 @@
-package ca.ubc.cs.beta.ac.config;
+package ca.ubc.cs.beta.config;
 
 import java.io.Serializable;
 

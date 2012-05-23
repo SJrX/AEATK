@@ -5,7 +5,6 @@ import java.lang.reflect.Field;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
-import ca.ubc.cs.beta.ac.config.RandomForestConfig;
 import ca.ubc.cs.beta.models.surrogate.helpers.jcommander.validator.ReadableFileConverter;
 import ca.ubc.cs.beta.smac.OverallObjective;
 import ca.ubc.cs.beta.smac.RunObjective;
@@ -24,6 +23,10 @@ import ei.ExpectedImprovementFunctions;
  *
  */
 public class SMACConfig {
+	
+	@ParametersDelegate
+	public ScenarioConfig scenarioConfig = new ScenarioConfig();
+	
 
 	@Parameter(names={"--instanceFile","-i"}, description="File containing instances specified one instance per line", required=true)
 	public String instanceFile;
@@ -128,6 +131,9 @@ public class SMACConfig {
 	
 	@Parameter(names="--capAddSlack", description="Amount to increase computed cap time of challengers by [ general formula:   capTime = capSlack*computedCapTime + capAddSlack ]")
 	public double capAddSlack = 1;
+	
+	@Parameter(names="--imputationIterations", description="Amount of times to impute censored data")
+	public int imputationIterations = 10;
 	
 	@Parameter(names="--maxConcurrentAlgoExecs", description="Maximum number of concurrent target algorithm executions", validateWith=PositiveInteger.class)
 	public int maxConcurrentAlgoExecs = 1;

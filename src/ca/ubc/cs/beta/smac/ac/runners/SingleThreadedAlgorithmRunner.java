@@ -2,8 +2,8 @@ package ca.ubc.cs.beta.smac.ac.runners;
 
 import java.util.List;
 
-import ca.ubc.cs.beta.ac.config.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.ac.config.RunConfig;
+import ca.ubc.cs.beta.config.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.smac.ac.runs.AlgorithmRun;
 
 public class SingleThreadedAlgorithmRunner extends AbstractAlgorithmRunner

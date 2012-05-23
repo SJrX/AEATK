@@ -95,5 +95,8 @@ public abstract class AbstractSanitizedModelData implements SanitizedModelData{
 		return smd.getCondParentVals();
 	}
 
-	
+	@Override
+	public double transformResponseValue(double d) {
+		return d;
+	}
 }

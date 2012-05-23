@@ -52,4 +52,11 @@ public interface SanitizedModelData {
 
 	public int[][][] getCondParentVals();
 	
+	/**
+	 * Transforms a response value
+	 * @param d
+	 * @return
+	 */
+	public double transformResponseValue(double d);
+	
 }
