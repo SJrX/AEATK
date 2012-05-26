@@ -176,8 +176,7 @@ public class ParamConfigurationSpace implements Serializable {
 			
 		} catch (FileNotFoundException e) {
 
-			System.err.println("Parameter File not Found");			
-			e.printStackTrace();
+			throw new IllegalStateException(e);
 		} catch (IOException e) {
 			System.err.println("Some random IO Exception Occured");
 			e.printStackTrace();
@@ -752,6 +751,8 @@ public class ParamConfigurationSpace implements Serializable {
 					
 					
 					break;
+				case STATEFILE_SYNTAX_WITH_INDEX:
+					paramString = paramString.replaceFirst("\\A\\d+:", "");
 				case STATEFILE_SYNTAX:
 	
 					config = new ParamConfiguration(this, categoricalSize, parameterDomainContinuous, paramKeyIndexMap);

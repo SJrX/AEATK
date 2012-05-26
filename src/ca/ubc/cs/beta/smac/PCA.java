@@ -33,8 +33,18 @@ public class PCA {
 		
 		pcaMatrix = flipxflipy(pcaMatrix);
 		
+		/**
+		 * This use to be the following line
+		 * 
+		 * 
+		 * It seemed to have bugs, I don't remember what this code is doing it looks like it's just copying
+		 * 
+		 * The Math.min() section use to just be 'n', but it seemed to cause an out of bounds check. I need to re-examine what this code is doing.
+		 *  
+		 * --scenarioFile /ubc/cs/project/arrow/seramage/smac-test/spear/spear-surrogate.txt --experimentDir /ubc/cs/project/arrow/seramage/smac-test/spear/ --skipInstanceFileCheck --seed 1337892636011
+		 */
 		
-		double[][] pcaMatrixFinal = new double[matrix[0].length][n];
+		double[][] pcaMatrixFinal = new double[matrix[0].length][Math.min(n, pcaMatrix[0].length) ];
 		
 		for(int j=0; j < pcaMatrixFinal.length; j++)
 		{	

@@ -99,16 +99,17 @@ public class RunConfig implements Serializable{
 		}
 	} 
 	
-	static 
-	{
-		System.err.println("RunConfig hashCode ignores cutofftime");
-	}
 	
 	public int hashCode()
 	{
 		//System.out.println("AISP:" + aisp.hashCode());
 		//System.out.println("Params:" + params.hashCode());
 		
+		/**
+		 * Due to adaptive Capping and floating point issues, we don't consider the cutofftime as part of the hashcode.
+		 * Theoretically this may cause certain performance issues in hash based collections
+		 * however it is hoped that the number of re-runs with increasing cap times is small.
+		 */
 		return (int) ( (aisp.hashCode())^ params.hashCode());
 		
 		//System.out.println("CutOff Time:" + (Double.doubleToLongBits(cutoffTime) >>> 32));

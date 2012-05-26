@@ -175,6 +175,8 @@ public class NewRunHistory implements RunHistory {
 				cappedRunsForConfig.remove(pisp); 
 			} else
 			{
+			
+			
 				Object[] args = { run, config, pi};
 				log.error("RunHistory already contains a run with identical config, instance and seed\nRun:{}\nConfig:{}\nInstance:{}", args);
 				throw new IllegalStateException("RunHistory already contains a run with identical config, instance and seed");
@@ -645,6 +647,11 @@ public class NewRunHistory implements RunHistory {
 	@Override
 	public InstanceSeedGenerator getInstanceSeedGenerator() {
 		return instanceSeedGenerator;
+	}
+
+	@Override
+	public int getThetaIdx(ParamConfiguration incumbent) {
+		return paramConfigurationList.getKey(incumbent);
 	}
 
 	

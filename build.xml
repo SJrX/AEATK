@@ -34,7 +34,7 @@
 		<buildnumber file="buildnumber-${ant.project.name}"/>
 		<!--<jar destfile="dist/aclib-v${version.major}_${version.minor}_${build.number}.jar" basedir="build/classes"/>-->
 		<jar destfile="dist/aclib.jar" basedir="build/classes"/>
-		<copy todir="dist/">
+		<copy todir="dist/" force="true">
 			<fileset refid="lib"/>
 			<fileset refid="fastrf"/>	
 		</copy>

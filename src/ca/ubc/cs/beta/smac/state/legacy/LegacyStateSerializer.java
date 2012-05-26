@@ -11,6 +11,7 @@ import java.util.Random;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ca.ubc.cs.beta.ac.RunResult;
 import ca.ubc.cs.beta.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.configspace.ParamConfiguration.StringFormat;
 import ca.ubc.cs.beta.probleminstance.InstanceSeedGenerator;
@@ -118,7 +119,13 @@ public class LegacyStateSerializer implements StateSerializer {
 				runResults.append(thetaIdx).append(","); //1
 				runResults.append(instanceIdx).append(","); //2
 				runResults.append(runHistory.getRunObjective().getObjective(run)).append(","); //3
-				runResults.append("0,"); //Censored 4
+				int isCensored = 0;
+				
+				if(run.getRunResult().equals(RunResult.TIMEOUT) && run.getInstanceRunConfig().hasCutoffLessThanMax())
+				{
+					isCensored = 1;
+				}
+				runResults.append(isCensored + ","); //Censored 4
 				runResults.append(run.getInstanceRunConfig().getCutoffTime()).append(","); //5
 				runResults.append(run.getResultSeed()).append(","); //6
 				runResults.append(run.getRuntime()).append(","); //7

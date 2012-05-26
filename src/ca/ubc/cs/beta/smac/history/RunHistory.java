@@ -197,6 +197,13 @@ public interface RunHistory {
 			Set<ProblemInstanceSeedPair> instanceSet, double cutoffTime,
 			Map<ProblemInstance, Map<Long, Double>> hallucinatedValues);
 
+	/**
+	 * Returns the Index into arrays represented by this configuration
+	 * @param config - Configuration needed (must exist in RunHistory)
+	 * @return
+	 */
+	public int getThetaIdx(ParamConfiguration incumbent);
+
 	
 	
 }

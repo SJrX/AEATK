@@ -12,6 +12,66 @@ import com.beust.jcommander.ParametersDelegate;
 
 public abstract class AbstractConfigToString {
 
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder();
+		
+		sb.append("Configuration\n");
+		try {
+		for(Field f : this.getClass().getDeclaredFields())
+		{
+			if(f.getAnnotation(Parameter.class) != null)
+			sb.append(f.getName());
+			sb.append(" = ");
+			
+			Class<?> o = f.getType();
+			if(o.isPrimitive())
+			{
+				sb.append(f.get(this).toString());
+			} else
+			{
+				Object obj = f.get(this);
+				if(obj == null)
+				{
+					sb.append("null");
+				} else if(obj instanceof File)
+				{
+					sb.append(((File) obj).getAbsolutePath());
+				} else if (obj instanceof String)
+				{
+					sb.append(obj);
+				} else if (obj instanceof Long)
+				{
+					sb.append(obj.toString());
+				} else if(obj instanceof Integer)
+				{
+					sb.append(obj.toString());
+				} else if (obj instanceof Enum)
+				{
+					sb.append(((Enum) obj).name());
+				} else if (obj instanceof AbstractConfigToString)
+				{
+					sb.append(obj.toString());
+				} 
+				else {
+					//We throw this because we have no guarantee that toString() is meaningful
+					throw new IllegalArgumentException("Failed to convert type configuration option to a string " + f.getName() + "=" +  obj + " type: " + o) ;
+				}
+			}
+			sb.append("\n");
+		}
+		return sb.toString();
+		} catch(RuntimeException e)
+		{
+			throw e;
+			
+		} catch(Exception e)
+		{
+			throw new RuntimeException(e); 
+		}
+		
+	}
+			
 
 	public List<String> configToString()
 	{

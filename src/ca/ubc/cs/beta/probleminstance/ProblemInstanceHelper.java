@@ -108,7 +108,7 @@ public class ProblemInstanceHelper {
 			{
 				TreeMap<String, Double> instFeatMap = new TreeMap<String, Double>();
 				
-				featuresMap.put(features.getKeyForDataRow(i), Collections.unmodifiableMap(instFeatMap));
+				featuresMap.put(features.getKeyForDataRow(i).replaceAll("//", "/"), Collections.unmodifiableMap(instFeatMap));
 				
 				for (int j=0; j < features.getNumberOfDataColumns(); j++)
 				{		
@@ -165,13 +165,34 @@ public class ProblemInstanceHelper {
 			Map<String, Double> features;
 			if(featureFileName != null)
 			{
-				features = featuresMap.get(instanceFile);
 				
+				String[] possibleFiles = { instanceFile, instanceFile.replace(experimentDir, ""), instanceFile.replaceAll("//", "/"), instanceFile.replace(experimentDir, "").replaceAll("//","/")};
+				
+				features = null;
+				for(String possibleFile : possibleFiles)
+				{
+					features = featuresMap.get(possibleFile.trim());
+					
+					if(features != null) 
+					{
+						logger.debug("Matched Features for file name : {}",possibleFile);
+						break;
+					} else
+					{
+						logger.debug("No features found for file name : {}",possibleFile);
+					}
+					
+				}
+				/*
 				if(features == null)
 				{
 					String path = instanceFile.replace(experimentDir,"");
 					features = featuresMap.get(path);
-				}
+				}*/
+				
+				
+				
+				
 				if(features == null)
 				{
 					logger.warn("Could not find features for instance {} trying more creative matching, may be error prone and slow [probably not really]", instanceFile);

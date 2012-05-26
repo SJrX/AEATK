@@ -47,8 +47,14 @@ public class LegacyStateFactory implements StateFactory{
 			
 			if(!f.exists())
 			{
-				f.mkdir();
-				log.info("Directory created for states: {}" + f.getAbsolutePath());
+				if(!f.mkdirs())
+				{
+					log.error("Could not create directory to save states: {} " + f.getAbsolutePath());
+					throw new IllegalArgumentException("Could not create directory" + f.getAbsolutePath());
+				} else
+				{
+					log.info("Directory created for states: {}" + f.getAbsolutePath());
+				}
 				
 			} else
 			{

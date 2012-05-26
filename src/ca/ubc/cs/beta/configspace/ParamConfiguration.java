@@ -464,6 +464,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 		NODB_SYNTAX("-"," ", "'", " ", true), //Parameters are prefixed with a -(name) '(value)'
 			NODB_SYNTAX_WITH_INDEX("-"," ", "'", " ", true), //Same as previous except each line starts with (n): where (n) is an integer
 			STATEFILE_SYNTAX(" ","=","'",",",false), 
+			STATEFILE_SYNTAX_WITH_INDEX(" ", "=","'",",", false),
 			SURROGATE_EXECUTOR("-P","=",""," ",true);
 
 		private final String preKey;

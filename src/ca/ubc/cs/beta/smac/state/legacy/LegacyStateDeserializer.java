@@ -117,7 +117,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 					randomMap = (EnumMap<RandomPoolType, Random>) oReader.readObject();
 					instanceSeedGenerator = (InstanceSeedGenerator) oReader.readObject();
 					
-					incumbent = configSpace.getConfigurationFromString((String) oReader.readObject(), StringFormat.NODB_SYNTAX);
+					incumbent = configSpace.getConfigurationFromString((String) oReader.readObject(), StringFormat.STATEFILE_SYNTAX);
 					
 				} finally
 				{
@@ -269,7 +269,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 						
 						
 						ProblemInstanceSeedPair pisp = new ProblemInstanceSeedPair(instanceMap.get(instanceIdx), seed); 
-						RunConfig runConfig = new RunConfig(pisp, cutOffTime, configMap.get(thetaIdx));
+						RunConfig runConfig = new RunConfig(pisp, cutOffTime, configMap.get(thetaIdx),isCensored);
 						
 						
 						
@@ -351,6 +351,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 	
 		Set<String> filenames = new HashSet<String>();
 		
+		if(!restoreDirectory.exists()) throw new IllegalArgumentException("Restore Directory specified: " + path + " does not exist");
 		filenames.addAll(Arrays.asList(restoreDirectory.list()));
 		int savedFileIteration = 0;
 		boolean filesFound = false;

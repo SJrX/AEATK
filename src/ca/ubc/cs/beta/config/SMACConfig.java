@@ -22,56 +22,33 @@ import ei.ExpectedImprovementFunctions;
  * @author seramage
  *
  */
-public class SMACConfig {
+public class SMACConfig extends AbstractConfigToString {
 	
 	@ParametersDelegate
 	public ScenarioConfig scenarioConfig = new ScenarioConfig();
 	
-
-	@Parameter(names={"--instanceFile","-i"}, description="File containing instances specified one instance per line", required=true)
-	public String instanceFile;
-	
-	@Parameter(names={"--rootDir"}, description="Root directory ")
-	public String rootDir = System.getProperty("user.dir");
-	
-	@Parameter(names={"-e","--experimentDir"}, description="Root Directory for Experiments Folder")
-	public String experimentDir = System.getProperty("user.dir") + File.separator + "experiments";
-	
-	@Parameter(names={"-p", "--paramFile"}, description="File containing Parameter Space of Execution", required=true, converter=ReadableFileConverter.class)
-	public File paramFile;
-	
 	@Parameter(names="--seed", description="Seed for Random Number Generator [0 means don't use a seed]")
 	public long seed = 0;
 	
-	@Parameter(names="--runObj", description="Objective Type that we are optimizing for")
-	public RunObjective runObj = RunObjective.RUNTIME;
+	@Parameter(names={"-e","--experimentDir"}, description="Root Directory for Experiments Folder")
+	public String experimentDir = System.getProperty("user.dir") + File.separator + "";
 	
-	@Parameter(names="--overallObj", description="Objective Type that we are optimizing for")
-	public OverallObjective overallObj = OverallObjective.MEAN;
-	
-	@Parameter(names="--cutoffTime", description="Cap Time for an Individual Run")
-	public int cutoffTime = 300;
-	
-	@Parameter(names="--tunerTimeout", description="Total CPU Time to execute for")
-	public int tunerTimeout = Integer.MAX_VALUE;
 
-	@Parameter(names="--runtimeLimit", description = "Total Wall colck time to execute for")
-	public int runtimeLimit = Integer.MAX_VALUE;
+	@Parameter(names={"-p", "--paramFile","--paramfile"}, description="File containing Parameter Space of Execution", required=true)
+	public String paramFile;
 	
-	@Parameter(names="--totalNumRunLimit" , description = "Total number of runs to execute")
-	public int totalNumRunLimit = Integer.MAX_VALUE;
-	
-	@Parameter(names="--numIterations", description = "Total number of loop iterations to perform")
+	@Parameter(names="--numIterations", description = "Total number of iterations to perform")
 	public int numIteratations = Integer.MAX_VALUE;
 	
-	@Parameter(names="--algoExec", description="algorithm call to execute", required=true)
-	public String algoExec;
+	@Parameter(names="--runtimeLimit", description = "Total Wall clock time to execute for")
+	public int runtimeLimit = Integer.MAX_VALUE;
 	
+	@Parameter(names="--totalNumRunLimit" , description = "Total number of target algorithm runs to execute")
+	public int totalNumRunLimit = Integer.MAX_VALUE;
+
 	@Parameter(names="--numTestInstances", description = "Number of instances to test against (Will execute min of this, and number of instances in test Instance File)")
 	public int numberOfTestInstances = 10;
 
-	@Parameter(names={"--testInstanceFile","-t"}, description="File containing list of test instances (1 per line)", required=true)
-	public String testInstanceFile;
 	
 	@Parameter(names="--runHashCodeFile", description="File containing a list of Run Hashes one per line (Either with just the format on each line, or with the following text per line: \"Run Hash Codes: (Hash Code) After (n) runs\". The number of runs in this file need not match the number of runs that we execute, this file only ensures that the sequences never diverge. Note the n is completely ignored so the order they are specified in is the order we expect the hash codes in this version", converter=ReadableFileConverter.class)
 	public File runHashCodeFile;
@@ -84,9 +61,7 @@ public class SMACConfig {
 	@Parameter(names="--runID", description="String that identifies this run for logging purposes")
 	public String runID = "Run-" + (new SimpleDateFormat("yyyy-MM-dd--HH-mm-ss-SSS")).format(new Date());
 	
-	@Parameter(names="--outputDirectory", required=true, description="Output Directory")
-	public String outputDirectory;
-
+	
 	@Parameter(names="--numPCA", description="Number of prinicipal components of features")
 	public int numPCA = 7;
 
@@ -101,8 +76,6 @@ public class SMACConfig {
 	@Parameter(names="--numberOfRandomConfigsInEI", description="Number of Random Configurations to evaluate in EI Search", validateWith=PositiveInteger.class)
 	public int numberOfRandomConfigsInEI = 10000;
 	
-	@Parameter(names="--instanceFeatureFile", description="File that contains the all the instances features")
-	public String instanceFeatureFile;
 
 	@Parameter(names="--stateSerializer", description="Controls how the state will be saved to disk")
 	public StateSerializers stateSerializer = StateSerializers.LEGACY;
@@ -176,6 +149,9 @@ public class SMACConfig {
 				{
 					sb.append(((Enum) obj).name());
 				} else if (obj instanceof RandomForestConfig)
+				{
+					sb.append(obj.toString());
+				} else if(obj instanceof ScenarioConfig)
 				{
 					sb.append(obj.toString());
 				}
