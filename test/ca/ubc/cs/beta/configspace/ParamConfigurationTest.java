@@ -1,5 +1,7 @@
 package ca.ubc.cs.beta.configspace;
 
+import static org.junit.Assert.fail;
+
 import java.io.File;
 import java.net.URL;
 
@@ -25,6 +27,28 @@ public class ParamConfigurationTest {
 		System.out.println(config.getFormattedParamString());
 		
 	}
+	
+	/**
+	 * See Bug #1274
+	 */
+	@Test(expected=IllegalArgumentException.class)
+	public void testInvalidArgumentParameter() {
+		URL url = this.getClass().getClassLoader().getResource("paramFiles/invalidDefaultParam.txt");
+		File f = new File(url.getPath());
+		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(f);
+		try { 
+		ParamConfiguration config = configSpace.getDefaultConfiguration();
+		System.out.println(config.getFormattedParamString());
+		} catch(IllegalArgumentException e)
+		{
+			fail("The Config Space should have thrown this exception");
+			
+		}
+		
+		
+	}
+
+	
 
 	@After
 	public void tearDown()

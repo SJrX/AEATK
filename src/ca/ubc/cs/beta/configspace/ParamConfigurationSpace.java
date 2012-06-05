@@ -259,7 +259,16 @@ public class ParamConfigurationSpace implements Serializable {
 				
 			}
 
-		  		
+		  	
+		
+			
+		/**
+		 * This will basically test that 
+		 * the default configuration is actually valid
+		 * This is a fail fast test in case the parameter values are invalid
+		 */
+		this.getDefaultConfiguration();
+		
 	
 	}
 	
@@ -434,6 +443,8 @@ public class ParamConfigurationSpace implements Serializable {
 		categoricalValueMap.put(name, valueMap);
 		
 		defaultValues.put(name, defaultValue);
+		
+		
 		isContinuous.put(name,Boolean.FALSE);
 		
 		
