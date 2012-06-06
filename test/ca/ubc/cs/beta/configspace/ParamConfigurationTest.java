@@ -1,5 +1,7 @@
 package ca.ubc.cs.beta.configspace;
 
+import static org.junit.Assert.*;
+import static org.junit.Assert.assertFalse;
 import static org.junit.Assert.fail;
 
 import java.io.File;
@@ -17,6 +19,14 @@ public class ParamConfigurationTest {
 		
 	}
 	
+	
+	private ParamConfigurationSpace getConfigSpaceForFile(String f)
+	{
+		URL url = this.getClass().getClassLoader().getResource(f);
+		File file = new File(url.getPath());
+		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(file);
+		return configSpace;
+	}
 	
 	@Test
 	public void testIntegerContinuousParameters() {
@@ -48,6 +58,46 @@ public class ParamConfigurationTest {
 		
 	}
 
+	
+	@Test
+	public void testForbidden() {
+		URL url = this.getClass().getClassLoader().getResource("paramFiles/forbiddenExampleParam.txt");
+		File f = new File(url.getPath());
+		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(f);
+		ParamConfiguration config = configSpace.getDefaultConfiguration();
+		System.out.println(config.getFormattedParamString());
+		
+		assertFalse(config.isForbiddenParamConfiguration());
+		config.put("a", "v2");
+		config.put("b", "w2");
+		assertTrue(config.isForbiddenParamConfiguration());
+		
+	}
+	
+	@Test
+	public void testNameThenSquareBracket()
+	{
+		//name[ may fail
+		ParamConfiguration config = getConfigSpaceForFile("paramFiles/continuousNameNoSpaceParam.txt").getDefaultConfiguration();
+		
+		double d = Double.valueOf(config.get("name"));
+		
+		if( d > 0.45 && d < 0.55)
+		{
+			
+		} else
+		{
+			fail("Value should have been 0.5");
+		}
+		
+		System.out.println("Result: " + config.getFormattedParamString());
+		
+	}
+	
+	public void testEmptyValue()
+	{
+		
+	}
 	
 
 	@After

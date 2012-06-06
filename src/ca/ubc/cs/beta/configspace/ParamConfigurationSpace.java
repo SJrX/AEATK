@@ -27,7 +27,8 @@ enum LineType
 {
 	CATEGORICAL,
 	CONTINUOUS,
-	CONDITIONAL, 
+	CONDITIONAL,
+	FORBIDDEN,
 	OTHER
 	
 }
@@ -106,6 +107,8 @@ public class ParamConfigurationSpace implements Serializable {
 	private final boolean[] parameterDomainContinuous;
 	private final int[] categoricalSize;
 
+	
+	private final List<int[][]> forbiddenParameterValuesList = new ArrayList<int[][]>();
 	/**
 	 * Value to store in the categoricalSize array for continuous parameters
 	 */
@@ -123,12 +126,21 @@ public class ParamConfigurationSpace implements Serializable {
 	 */
 	private final int numberOfParameters;
 	
-	
+	/**
+	 * 
+	 */	
 	private final int[][] condParents;
 
 	private final int[][][] condParentVals;
 
 	private Random random;
+	
+	/**
+	 * Stores forbidden lines for later parsing
+	 */
+	private final List<String> forbiddenLines = new ArrayList<String>();
+	
+	
 	
 	
 	
@@ -189,7 +201,12 @@ public class ParamConfigurationSpace implements Serializable {
 		 * 
 		 * Alot of this is redundant with what's above as this code was added
 		 * as part of refactoring. This class could use a clean up
+		 * 
+		 * This gets the data into a format convenient for Random Forests.
+		 * 
 		 */		
+		
+		  //TODO: Expand on these comments
 		  parameterDomainContinuous = new boolean[paramNames.size()];
 		  categoricalSize = new int[paramNames.size()];
 		  this.numberOfParameters = paramNames.size();
@@ -259,15 +276,24 @@ public class ParamConfigurationSpace implements Serializable {
 				
 			}
 
-		  	
-		
+		  
+			
+			for(String forbiddenLine : forbiddenLines )
+			{
+				parseForbiddenLine(forbiddenLine);
+				
+			}
+			forbiddenLines.clear();
 			
 		/**
 		 * This will basically test that 
 		 * the default configuration is actually valid
 		 * This is a fail fast test in case the parameter values are invalid
 		 */
-		this.getDefaultConfiguration();
+		if(this.getDefaultConfiguration().isForbiddenParamConfiguration())
+		{
+			throw new IllegalArgumentException("Default parameter setting cannot be a forbidden parameter setting");
+		}
 		
 	
 	}
@@ -300,6 +326,7 @@ public class ParamConfigurationSpace implements Serializable {
 		{
 			return;
 		}
+	
 		
 		/** 
 		 * Perhaps not the most robust but the logic here is as follows
@@ -313,10 +340,15 @@ public class ParamConfigurationSpace implements Serializable {
 		if (line.indexOf("|") >= 0)
 		{
 			type = LineType.CONDITIONAL;
+		} else if(line.trim().substring(0, 1).equals("{"))
+		{
+			type = LineType.FORBIDDEN;
 		} else if(line.indexOf("[") < 0)
 		{
 			type = LineType.OTHER;
 			if(line.trim().equals("Conditionals:")) return;
+			if(line.trim().equals("Forbidden:")) return;
+			
 			throw new IllegalArgumentException("Cannot parse the following line:" + line);
 		} else if (line.indexOf("[") != line.lastIndexOf("["))
 		{
@@ -337,6 +369,9 @@ public class ParamConfigurationSpace implements Serializable {
 			case CONTINUOUS:
 				parseContinuousLine(line);
 				break;
+			case FORBIDDEN:
+				forbiddenLines.add(line);
+				break;
 			default:
 				throw new IllegalStateException("Not sure how I can be parsing some other type");
 		}
@@ -344,6 +379,73 @@ public class ParamConfigurationSpace implements Serializable {
 		
 	}
 	
+	private void parseForbiddenLine(String line) {
+		
+		String originalLine = line;
+		
+		if(line.trim().indexOf("{",1) != -1) throw new IllegalArgumentException("Line specifying forbidden parameters contained more than one { in line: " + originalLine);
+		
+		line = line.replace("{", "");
+		
+		
+		if(line.trim().indexOf("}") == -1) throw new IllegalArgumentException("Line specifying forbidden parameters contained no closing brace \"}\" in line: " + originalLine);
+		
+		line = line.replaceFirst("}","");
+		
+		if(line.trim().indexOf("}") != -1) throw new IllegalArgumentException("Line specifying forbidden parameters contained multiple closing braces \"}\" in line: " + originalLine);
+		
+		
+		
+		
+		String[] nameValuePairs = line.split(",");
+		
+		List<int[]> forbiddenIndexValuePairs = new ArrayList<int[]>();
+				
+		for(String nameValuePair : nameValuePairs)
+		{
+			String[] nvPairArr = nameValuePair.split("=");
+			if(nvPairArr.length != 2)
+			{
+				throw new IllegalArgumentException("Line specifying forbidden parameters contained an name value pair that could not be parsed: "+ Arrays.toString(nvPairArr) + " in line: " + originalLine);
+			}
+			
+			String name = nvPairArr[0].trim();
+			Integer indexIntoValueArrays = paramKeyIndexMap.get(name);
+			
+			if(indexIntoValueArrays == null)
+			{
+				throw new IllegalArgumentException("Unknown parameter " + name + " in line: " + originalLine);
+			}
+			
+			String value = nvPairArr[1].trim();
+			
+			if(isContinuous.get(name))
+			{
+				throw new IllegalArgumentException("Forbidden Parameter Declarations can only exclude combinations of categorical parameters " + name + " is continuous; in line: " + line );
+			}
+			
+			Integer valueIndex = categoricalValueMap.get(name).get(value);
+			
+			if(valueIndex == null)
+			{
+				throw new IllegalArgumentException("Invalid parameter value " + value + " for parameter " + name + " in line: " + line);
+				
+			}
+			
+			
+			
+			
+			int[] nvPairArrayForm = new int[2];
+			nvPairArrayForm[0] = indexIntoValueArrays;
+			nvPairArrayForm[1] = valueIndex; 
+			
+			forbiddenIndexValuePairs.add(nvPairArrayForm);
+		}
+		
+		
+		forbiddenParameterValuesList.add(forbiddenIndexValuePairs.toArray(new int[0][0]));
+		
+	}
 	/**
 	 * Continuous Lines consist of:
 	 *   
@@ -375,6 +477,9 @@ public class ParamConfigurationSpace implements Serializable {
 		double min = Double.valueOf(contValues[0]);
 		double max = Double.valueOf(contValues[1]);
 		
+		
+		
+		
 		String defaultValue = getDefault(secondBracket, line);
 		
 		paramNames.add(name);
@@ -384,24 +489,29 @@ public class ParamConfigurationSpace implements Serializable {
 		this.defaultValues.put(name, defaultValue);
 		
 		
-		String scale = line.substring(line.indexOf("]",secondBracket+1)+1);
+		//This gets the rest of the line after the defaultValue
+		String lineRemaining = line.substring(line.indexOf("]",secondBracket+1)+1);
 		
 		
 		
-		boolean logScale = ((scale.length() > 0) && (scale.trim().contains("l")));
-		scale = scale.replaceFirst("l", "").trim();
+		boolean logScale = ((lineRemaining.length() > 0) && (lineRemaining.trim().contains("l")));
+		lineRemaining = lineRemaining.replaceFirst("l", "").trim();
 		
-		boolean intValuesOnly = ((scale.length() > 0) && (scale.trim().contains("i")));
-		scale = scale.replaceFirst("i", "").trim();		
+		boolean intValuesOnly = ((lineRemaining.length() > 0) && (lineRemaining.trim().contains("i")));
+		lineRemaining = lineRemaining.replaceFirst("i", "").trim();		
 		
-		if(scale.trim().length() != 0)
+		if(lineRemaining.trim().length() != 0)
 		{
-			throw new IllegalStateException("Illegal param modifier on line : " + line + " unknown modifier: " + scale);
+			throw new IllegalStateException("Unknown or duplicate modifier(s): " + lineRemaining + " in line: " + line);
 		}
 			
 			
-		
-		contNormalizedRanges.put(name, new NormalizedRange(min, max, logScale, intValuesOnly));
+		try {
+			contNormalizedRanges.put(name, new NormalizedRange(min, max, logScale, intValuesOnly));
+		} catch(IllegalArgumentException e)
+		{
+			throw new IllegalArgumentException(e.getMessage() + "; error occured while parsing line: " +line);
+		}
 
 		
 	}
@@ -444,7 +554,6 @@ public class ParamConfigurationSpace implements Serializable {
 		
 		defaultValues.put(name, defaultValue);
 		
-		
 		isContinuous.put(name,Boolean.FALSE);
 		
 		
@@ -464,12 +573,28 @@ public class ParamConfigurationSpace implements Serializable {
 	 * @param line
 	 */
 	private void parseConditionalLine(String line) {
+		String lineToParse = line;
+		
 		String name1 = getName(line);
+		
 		String name2 = getName(line.substring(line.indexOf("|") + 1));
 		//System.out.println(name1 + " depends on " + name2);
-		if (line.indexOf(" in ") < 0)
+		
+		
+		if(name1.equals(name2))
 		{
-			throw new IllegalStateException("Unknown operator");
+			throw new IllegalArgumentException("Parameter " + name1 + " cannot be conditional on itself in line: " + line);
+		}
+		lineToParse = lineToParse.replaceFirst(name1,"");
+		lineToParse = lineToParse.replaceFirst("|", "");
+		lineToParse = lineToParse.replaceFirst(name2,"");
+		lineToParse = lineToParse.trim();
+		
+		
+				
+		if (lineToParse.indexOf(" in ") < 0)
+		{
+			throw new IllegalStateException("Unknown or missing operator in line: " + line);
 		}
 		List<String> condValues = getValues(line);
 		
@@ -481,6 +606,13 @@ public class ParamConfigurationSpace implements Serializable {
 		}
 	
 		//If multiple lines appear for more than one clause I overwrite the previous value
+		if (dependencies.get(name2) != null)
+		{
+			
+			throw new IllegalArgumentException("Parameter " + name1 + " already has a previous dependency for " + name2 + " values {" + dependencies.get(name2).toString() + "}. Parameter dependencies respecified in line: " + line);
+		}
+			
+			
 		dependencies.put(name2, condValues);
 		
 		
@@ -511,16 +643,26 @@ public class ParamConfigurationSpace implements Serializable {
 		int firstSpace = line.indexOf(" ");
 		int firstPipe = line.indexOf("|");
 		int firstCurly = line.indexOf("{");
+		int firstSquare = line.indexOf("[");
 		
 		if (firstSpace == -1) firstSpace = Integer.MAX_VALUE;
 		if (firstPipe == -1) firstPipe = Integer.MAX_VALUE;
 		if (firstCurly == -1) firstCurly = Integer.MAX_VALUE;
+		if (firstSquare == -1) firstSquare = Integer.MAX_VALUE;
 		
 		
 		int nameBoundary = Math.min(firstSpace,firstPipe);
 		
 		nameBoundary = Math.min(nameBoundary, firstCurly);
-		return line.substring(offset, nameBoundary).trim();
+		nameBoundary = Math.min(nameBoundary, firstSquare);
+		String name =  line.substring(offset, nameBoundary).trim();
+		if(name.length() == 0)
+		{
+			throw new IllegalArgumentException("Did Not Parse a Parameter Name in line: " + line);
+		} else
+		{
+			return name;
+		}
 	}
 	
 	
@@ -531,7 +673,14 @@ public class ParamConfigurationSpace implements Serializable {
 	 * @return
 	 */
 	private String getDefault(int offset, String line) {
-		return line.substring(line.indexOf("[",offset+1)+1, line.indexOf("]",offset+1)).trim();
+		String defaultValue = line.substring(line.indexOf("[",offset+1)+1, line.indexOf("]",offset+1)).trim();
+		if (defaultValue.length() == 0)
+		{
+			throw new IllegalArgumentException("Invalid Default Value specified in line: " + line);
+		} else
+		{
+			return defaultValue;
+		}
 	}
 
 
@@ -542,6 +691,7 @@ public class ParamConfigurationSpace implements Serializable {
 	 */
 	private List<String> getValues(String line) {
 
+		String oLine = line;
 		int start = line.indexOf("{");
 		int end = line.indexOf("}");
 		
@@ -558,13 +708,28 @@ public class ParamConfigurationSpace implements Serializable {
 			while ((value = r.readLine()) != null)
 			{
 				
-					strings.add(value.trim());
+					if (value.trim().length() == 0)
+					{
+						throw new IllegalArgumentException("Value cannot be empty (consist only of whitespace) in line: " + oLine);
+					} else
+					{
+						strings.add(value.trim());
+					}
 				
 			}
 		} catch (IOException e) {
 
 			System.err.println("Some random IOException occured?");
 			e.printStackTrace();
+			
+			throw new IllegalStateException("An exception occured while reading values from (" + oLine + ") we mistakenly thought this would never happen, please contact developer", e);
+		}
+		
+		Set<String> set = new HashSet<String>();
+		set.addAll(strings);
+		if(set.size() < strings.size())
+		{
+			throw new IllegalStateException("Duplicate Value detected in line: " +  oLine);
 		}
 		
 		return strings;
@@ -674,30 +839,40 @@ public class ParamConfigurationSpace implements Serializable {
 	
 	
 	
+	
+	public ParamConfiguration getRandomConfiguration()
+	{
+		return this.getRandomConfiguration(false);
+	}
 	/**
 	 * Returns a random instance for the configuration space
 	 * @param configSpace
 	 * @return
 	 */
-	public ParamConfiguration getRandomConfiguration()
+	public ParamConfiguration getRandomConfiguration(boolean allowForbiddenParameters)
 	{
-
-		double[] valueArray = new double[numberOfParameters];
-		for(int i=0; i < numberOfParameters; i++)
+		while(true)
 		{
-			if (parameterDomainContinuous[i])
+			double[] valueArray = new double[numberOfParameters];
+			for(int i=0; i < numberOfParameters; i++)
 			{
-				valueArray[i] = random.nextDouble();
-			} else
-			{
-				//array values = 0 have invalid values, so we take one less of the categorical size and then + 1
-				valueArray[i] = random.nextInt(categoricalSize[i]) + 1;
-				
+				if (parameterDomainContinuous[i])
+				{
+					valueArray[i] = random.nextDouble();
+				} else
+				{
+					//array values = 0 have invalid values, so we take one less of the categorical size and then + 1
+					valueArray[i] = random.nextInt(categoricalSize[i]) + 1;
+					
+				}
 			}
+			
+			ParamConfiguration p = new ParamConfiguration(this, valueArray, categoricalSize, parameterDomainContinuous, paramKeyIndexMap);
+			if(allowForbiddenParameters || !p.isForbiddenParamConfiguration())
+			{
+				return p;
+			} 
 		}
-		
-		ParamConfiguration p = new ParamConfiguration(this, valueArray, categoricalSize, parameterDomainContinuous, paramKeyIndexMap);
-		return p;
 	}
 	
 	/**
@@ -708,7 +883,7 @@ public class ParamConfigurationSpace implements Serializable {
 	public ParamConfiguration getDefaultConfiguration()
 	{
 
-		ParamConfiguration p = new ParamConfiguration(this, categoricalSize, parameterDomainContinuous, paramKeyIndexMap);
+		ParamConfiguration p = getEmptyConfiguration();
 		Map<String, String> defaultMap = getDefaultValuesMap();
 		p.putAll(defaultMap);	
 		return p;
@@ -826,6 +1001,40 @@ public class ParamConfigurationSpace implements Serializable {
 	public void setPRNG(Random r)
 	{
 		this.random = r;
+	}
+	
+	/**
+	 * Checks the array representation of a configuration to see if it is forbidden
+	 * @param valueArray
+	 * @return
+	 */
+	public boolean isForbiddenParamConfiguration(double[] valueArray) {
+		
+		
+		/**
+		 * Each value is Nx2 where the first is an index into the array, and the second is the 
+		 * index of the categorical value.
+		 */
+		for(int[][] forbiddenParamValues : forbiddenParameterValuesList)
+		{
+			
+			boolean match = true;
+			for(int[] forbiddenParamValue : forbiddenParamValues)
+			{
+				//Value arrays are indexed by 1, and forbidden parameters are 0 indexed
+				if(valueArray[forbiddenParamValue[0]] != forbiddenParamValue[1] + 1)
+				{
+					match = false;
+					break;
+				}
+				
+			}
+			if(match)
+			{
+				return true;
+			}
+		}
+		return false;
 	}
 	
 }

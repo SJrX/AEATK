@@ -24,7 +24,7 @@ public class NormalizedRange implements Serializable
 		{
 			if ((min <= 0) || (max <= 0))
 			{
-				throw new IllegalArgumentException("Log Scales cannot have negative values in Param File: min:" + min + " max: " + max);
+				throw new IllegalArgumentException("Log Scales cannot have negative or zero values in Param File: min:" + min + " max: " + max);
 			}
 			
 			min = Math.log10(min);

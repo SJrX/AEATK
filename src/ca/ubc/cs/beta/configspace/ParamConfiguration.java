@@ -511,7 +511,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	
 	
 	/**
-	 * Returns a list of configurations in the neighbourhood of this one.
+	 * Returns a list of configurations in the neighbourhood of this one (forbidden ones are excluded)
 	 * @return
 	 */
 	public List<ParamConfiguration> getNeighbourhood()
@@ -529,6 +529,9 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 			for(int j=1; j <= numberOfNeighboursForParam(i,activeParams.contains(configSpace.getParameterNamesInAuthorativeOrder().get(i))); j++)
 			{
 				newValueArray[i] = getNeighbourForParam(i,j);
+				
+				if(configSpace.isForbiddenParamConfiguration(newValueArray)) continue;
+				
 				neighbours.add(new ParamConfiguration(configSpace, newValueArray.clone(), categoricalSize, parameterDomainContinuous, paramKeyToValueArrayIndexMap));
 			}
 		}
@@ -767,6 +770,12 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	public int getFriendlyID() {
 		return myID;
 	}
+
+	
+	public boolean isForbiddenParamConfiguration()
+	{
+		return configSpace.isForbiddenParamConfiguration(valueArray);
 		
+	}
 
 }
