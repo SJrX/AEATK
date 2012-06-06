@@ -211,7 +211,14 @@ public class LegacyStateSerializer implements StateSerializer {
 		oWriter.writeInt(iteration);
 		oWriter.writeObject(randomMap);
 		oWriter.writeObject(instanceSeedGenerator);
-		oWriter.writeObject(incumbent.getFormattedParamString(StringFormat.STATEFILE_SYNTAX));
+		
+		if(incumbent != null)
+		{
+			oWriter.writeObject(incumbent.getFormattedParamString(StringFormat.STATEFILE_SYNTAX));
+		} else
+		{
+			oWriter.write(null);
+		}
 		oWriter.close();
 	
 		log.debug("Java Object Dump Saved in {}", f.getAbsolutePath());

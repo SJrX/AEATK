@@ -116,8 +116,16 @@ public class LegacyStateDeserializer implements StateDeserializer {
 					
 					randomMap = (EnumMap<RandomPoolType, Random>) oReader.readObject();
 					instanceSeedGenerator = (InstanceSeedGenerator) oReader.readObject();
+					String paramString = (String) oReader.readObject();
 					
-					incumbent = configSpace.getConfigurationFromString((String) oReader.readObject(), StringFormat.STATEFILE_SYNTAX);
+					if(paramString != null)
+					{
+						incumbent = configSpace.getConfigurationFromString(paramString, StringFormat.STATEFILE_SYNTAX);
+					} else
+					{
+						incumbent = null;
+					}
+					 
 					
 				} finally
 				{
