@@ -46,10 +46,7 @@ public class SMACConfig extends AbstractConfigToString {
 	@Parameter(names="--totalNumRunLimit" , description = "Total number of target algorithm runs to execute")
 	public int totalNumRunLimit = Integer.MAX_VALUE;
 
-	@Parameter(names="--numTestInstances", description = "Number of instances to test against (Will execute min of this, and number of instances in test Instance File)")
-	public int numberOfTestInstances = 10;
 
-	
 	@Parameter(names="--runHashCodeFile", description="File containing a list of Run Hashes one per line (Either with just the format on each line, or with the following text per line: \"Run Hash Codes: (Hash Code) After (n) runs\". The number of runs in this file need not match the number of runs that we execute, this file only ensures that the sequences never diverge. Note the n is completely ignored so the order they are specified in is the order we expect the hash codes in this version", converter=ReadableFileConverter.class)
 	public File runHashCodeFile;
 	
@@ -110,6 +107,22 @@ public class SMACConfig extends AbstractConfigToString {
 	
 	@Parameter(names="--maxConcurrentAlgoExecs", description="Maximum number of concurrent target algorithm executions", validateWith=PositiveInteger.class)
 	public int maxConcurrentAlgoExecs = 1;
+	
+	@Parameter(names="--numberOfTestSeedsPerInstance", description="Number of test seeds to use per instance during validation", validateWith=PositiveInteger.class)
+	public int numberOfTestSeedsPerInstance = 1000;
+	
+	@Parameter(names="--numTestInstances", description = "Number of instances to test against (Will execute min of this, and number of instances in test Instance File)")
+	public int numberOfTestInstances = Integer.MAX_VALUE;
+
+	@Parameter(names="--numberOfValidationRuns", description = "Approximate Number of Validation Runs to do (SMAC will always make sure to do the same number of seeds per instance, and so will round this number")
+	public int numberOfValidationRuns = 1000;
+	
+	@Parameter(names="--validationRoundingMode", description="Whether to round the number of validation runs up or down (to next multiple of numTestInstances")
+	public ValidationRoundingMode validationRoundingMode = ValidationRoundingMode.UP;
+
+	@Parameter(names="--noValidationHeaders", description="Don't put headers on output CSV files for Validation")
+	public boolean noValidationHeaders = false;
+	
 	
 	public String toString()
 	{

@@ -31,7 +31,7 @@ public class ConcurrentAlgorithmRunner extends AbstractAlgorithmRunner {
 		
 		p.shutdown();
 		try {
-			p.awaitTermination(24, TimeUnit.HOURS);
+			p.awaitTermination(24000, TimeUnit.HOURS);
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
 		}
