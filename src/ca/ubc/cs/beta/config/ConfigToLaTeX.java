@@ -1,7 +1,9 @@
 package ca.ubc.cs.beta.config;
 
+import java.io.File;
 import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
+import java.util.Arrays;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParametersDelegate;
@@ -61,8 +63,49 @@ public class ConfigToLaTeX {
 				row.append("\\begin_layout Description\n");
 				
 				row.append(paramName);
+				if(paramName.equals("--runID"))
+				{
+					paramDefault = "Run-YYYY-MM-DD--HH-mm-ss-xxx (where xxx is milli-seconds)";
+				}
 				row.append(" ");
 				row.append(paramDescription);
+				/**
+				 *
+
+ Default: RUNTIME
+\begin_inset Newline newline
+\end_inset
+
+ Values: RUNTIME, RUNLENGTH, APPROX, SPEEDUP, QUALITY
+				 */
+				row.append("\n\\begin_inset Newline newline\n\\end_inset");
+				
+				paramDefault = paramDefault.replaceFirst(System.getProperty("user.dir"), "<current working directory>");
+				row.append("\n Default: " + paramDefault);
+				
+				if(f.get(o) instanceof String)
+				{
+					
+				} else if(f.get(o) instanceof Enum)
+				{
+					row.append("\n\\begin_inset Newline newline\n\\end_inset");
+					row.append("\n Values: ");
+					Enum<?> e = (Enum<?>) f.get(o);
+					Enum<?>[] constants = e.getClass().getEnumConstants();
+					for(int i=0; i < constants.length; i++)
+					{
+						if(i != 0) row.append(", ");
+						Enum<?> constant = constants[i];
+						row.append(constant.name());
+						
+					}
+					
+					
+					
+				}
+				
+				
+				
 				row.append("\n\\end_layout\n");
 						
 						//paramName + " " + paramDescription;

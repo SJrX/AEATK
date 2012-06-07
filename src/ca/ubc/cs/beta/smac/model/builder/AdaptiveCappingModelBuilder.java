@@ -52,6 +52,7 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 		ArrayList<int[]> nonCensoredThetaInst = new ArrayList<int[]>(responseValues.length);
 		ArrayList<Double> nonCensoredResponses = new ArrayList<Double>(responseValues.length);
 		
+		int censoredCount = 0;
 		
 		for(int i=0; i < responseValues.length; i++)
 		{
@@ -62,15 +63,17 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 			} else
 			{
 				censoredThetaInst.add(theta_inst_idxs[i]);
+				censoredCount++;
 			}
 		}
 		
+		log.info("Building Random Forest with {} censored runs out of {} total ", censoredCount, censoredValues.length);
 		int[][] non_cens_theta_inst_idxs = nonCensoredThetaInst.toArray(new int[0][]);
 		double[] non_cens_responses = convertToPrimitive(nonCensoredResponses.toArray(new Double[0]));
 		
 				
 		
-		log.info("Building random forest with non censoled data");
+		log.info("Building random forest with non censored data");
 		RandomForest rf = buildRandomForest(mds,rfConfig,non_cens_theta_inst_idxs, non_cens_responses, false);
 		
 		if(rfConfig.fullTreeBootstrap)

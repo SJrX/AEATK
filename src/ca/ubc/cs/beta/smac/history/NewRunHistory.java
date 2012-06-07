@@ -121,7 +121,7 @@ public class NewRunHistory implements RunHistory {
 	}
 	
 	@Override
-	public void append(AlgorithmRun run) {
+	public void append(AlgorithmRun run) throws DuplicateRunException{
 
 		log.trace("Appending Run {}",run);
 		
@@ -132,7 +132,7 @@ public class NewRunHistory implements RunHistory {
 		
 		Double runResult = runObj.getObjective(run);
 		
-		totalRuntimeSum += Math.max(0.1, RunObjective.RUNTIME.getObjective(run));
+		
 		
 		/**
 		 * Add run data to the list of seeds used by Instance
@@ -177,13 +177,13 @@ public class NewRunHistory implements RunHistory {
 			{
 			
 			
-				Object[] args = { run, config, pi};
-				log.error("RunHistory already contains a run with identical config, instance and seed\nRun:{}\nConfig:{}\nInstance:{}", args);
-				throw new IllegalStateException("RunHistory already contains a run with identical config, instance and seed");
+				Object[] args = { run, config, pi,dOldValue};
+				log.error("RunHistory already contains a run with identical config, instance and seed\nRun:{}\nConfig:{}\nInstance:{}\nPrevious Performance:{}", args);
+				throw new DuplicateRunException("Duplicate Run Detected", run);
 			}
 			
 		}
-		
+		totalRuntimeSum += Math.max(0.1, RunObjective.RUNTIME.getObjective(run));
 		
 		/**
 		 * Add data to the run List

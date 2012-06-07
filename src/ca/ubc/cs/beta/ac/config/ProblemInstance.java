@@ -44,7 +44,7 @@ public class ProblemInstance implements Serializable{
 		this.instanceId = 0;
 		this.featuresMap = Collections.emptyMap();
 		this.featuresDouble = new double[0];
-		this.instanceSpecificInformation = null;
+		this.instanceSpecificInformation = "0";
 	}
 	
 	public ProblemInstance(String instanceName, int id)
@@ -57,7 +57,7 @@ public class ProblemInstance implements Serializable{
 		this.instanceId = id;
 		this.featuresMap = Collections.emptyMap();
 		this.featuresDouble = new double[0];
-		this.instanceSpecificInformation = null;
+		this.instanceSpecificInformation = "0";
 		
 	}
 	public ProblemInstance(String instanceName, int id, Map<String, Double> features)
@@ -77,7 +77,7 @@ public class ProblemInstance implements Serializable{
 		{
 			featuresDouble[i++] = ent.getValue();
 		}
-		this.instanceSpecificInformation = null;
+		this.instanceSpecificInformation = "0";
 		
 	}
 	
@@ -98,7 +98,14 @@ public class ProblemInstance implements Serializable{
 		{
 			featuresDouble[i++] = ent.getValue();
 		}
-		this.instanceSpecificInformation = instanceSpecificInformation;
+		if(instanceSpecificInformation == null)
+		{
+			this.instanceSpecificInformation = "0";
+		} else
+		{
+			this.instanceSpecificInformation = instanceSpecificInformation;
+		}
+		
 		
 	}
 	
@@ -149,6 +156,10 @@ public class ProblemInstance implements Serializable{
 		return featuresDouble.clone();
 	}
 
+	/**
+	 * Returns instance Specific Information
+	 * @return the string specified or 0
+	 */
 	public String getInstanceSpecificInformation() {
 
 		return instanceSpecificInformation;

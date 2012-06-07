@@ -6,7 +6,7 @@ import java.lang.reflect.Field;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.validators.PositiveInteger;
 
-public class RandomForestConfig {
+public class RandomForestConfig extends AbstractConfigToString{
 
 	@Parameter(names = "--splitMin", description = "Minimum number of elements needed to split a node ", validateWith=PositiveInteger.class )
 	public int splitMin = 10;

@@ -130,7 +130,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 		
 		
 		StringBuilder execString = new StringBuilder();
-		execString.append(execConfig.getAlgorithmExecutable()).append(" ").append(instanceConfig.getAlgorithmInstanceSeedPair().getInstance().getInstanceName()).append(" ").append(0).append(" ").append(instanceConfig.getCutoffTime()).append(" ").append(Integer.MAX_VALUE).append(" ").append(instanceConfig.getAlgorithmInstanceSeedPair().getSeed()).append(" ").append(instanceConfig.getParamConfiguration().getFormattedParamString());
+		execString.append(execConfig.getAlgorithmExecutable()).append(" ").append(instanceConfig.getAlgorithmInstanceSeedPair().getInstance().getInstanceName()).append(" ").append(instanceConfig.getAlgorithmInstanceSeedPair().getInstance().getInstanceSpecificInformation()).append(" ").append(instanceConfig.getCutoffTime()).append(" ").append(Integer.MAX_VALUE).append(" ").append(instanceConfig.getAlgorithmInstanceSeedPair().getSeed()).append(" ").append(instanceConfig.getParamConfiguration().getFormattedParamString());
 		return execString.toString();
 	}
 

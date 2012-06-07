@@ -23,8 +23,9 @@ public interface RunHistory {
 	/**
 	 * Append a run to the RunHistory
 	 * @param run - The Run to Log
+	 * @throws DuplicateRunException  - If a previous run has a duplicate config,instance and seed. NOTE: An exception will prevent the run from being logged, but the state of the RunHistory will still be consistent
 	 */
-	public void append(AlgorithmRun run);
+	public void append(AlgorithmRun run) throws DuplicateRunException;
 		
 	/**
 	 * Get the Run Objective we are opitimizing

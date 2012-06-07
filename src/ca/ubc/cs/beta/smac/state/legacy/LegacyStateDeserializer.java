@@ -35,6 +35,7 @@ import ca.ubc.cs.beta.smac.RunObjective;
 import ca.ubc.cs.beta.smac.ac.runs.AlgorithmRun;
 import ca.ubc.cs.beta.smac.ac.runs.ExistingAlgorithmRun;
 import ca.ubc.cs.beta.smac.exceptions.StateSerializationException;
+import ca.ubc.cs.beta.smac.history.DuplicateRunException;
 import ca.ubc.cs.beta.smac.history.NewRunHistory;
 import ca.ubc.cs.beta.smac.history.RunHistory;
 import ca.ubc.cs.beta.smac.state.RandomPoolType;
@@ -198,7 +199,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 			
 				String[] runHistoryLine = null;
 				int i=0;
-				boolean censoredErrorLogged = false;
+				
 				boolean seedErrorLogged = false;
 				boolean runLengthErrorLogged = false;
 				
@@ -214,16 +215,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 						int instanceIdx = Integer.valueOf(runHistoryLine[2]);
 						double y = Double.valueOf(runHistoryLine[3]);
 						boolean isCensored = ((runHistoryLine[4].trim().equals("0") ? false : true));
-						if(isCensored)
-						{
-							if(!censoredErrorLogged)
-							{
-								log.error("Censored Run Detected not supported but continuing on line {} ", i );
-								censoredErrorLogged = true;
-							}
-							
-						}
-						double cutOffTime = Double.valueOf(runHistoryLine[5]);
+												double cutOffTime = Double.valueOf(runHistoryLine[5]);
 						long seed = -1;
 						try {
 							seed = Long.valueOf(runHistoryLine[6]);
@@ -292,7 +284,12 @@ public class LegacyStateDeserializer implements StateDeserializer {
 						AlgorithmRun run = new ExistingAlgorithmRun(execConfig, runConfig, resultLine.toString());
 						
 						log.trace("Appending new run to runHistory: ", run);
-						runHistory.append(run);
+						try {
+							runHistory.append(run);
+						} catch (DuplicateRunException e) {
+							// TODO Auto-generated catch block
+							log.error("Duplicate Run Detected, dropped",run);
+						}
 					} catch(RuntimeException e)
 					{
 						throw new StateSerializationException("Error occured while parsing the following line of the runHistory file: " + i + " data "+ Arrays.toString(runHistoryLine), e);

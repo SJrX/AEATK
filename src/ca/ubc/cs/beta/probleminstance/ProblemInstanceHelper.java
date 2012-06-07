@@ -4,6 +4,7 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
@@ -58,9 +59,14 @@ public class ProblemInstanceHelper {
 		return getInstances(filename, experimentDir, null, checkFileExistsOnDisk);
 	}
 	
-	private static Map<String, ProblemInstance> cachedProblemInstances = new HashMap<String, ProblemInstance>();
+	private static final Map<String, ProblemInstance> cachedProblemInstances = new HashMap<String, ProblemInstance>();
 
 	
+	public static void clearCache()
+	{
+		cachedProblemInstances.clear();
+		
+	}
 	public static InstanceListWithSeeds getInstances(String filename, String experimentDir, String featureFileName, boolean checkFileExistsOnDisk) throws IOException	{
 	
 		return getInstances(filename, experimentDir, featureFileName, checkFileExistsOnDisk, 0, Integer.MAX_VALUE);
@@ -123,6 +129,7 @@ public class ProblemInstanceHelper {
 		
 		List<String> instanceList = new ArrayList<String>(featuresMap.size());
 		InstanceSeedGenerator gen; 
+		Map<String, String> instanceSpecificInfo = Collections.emptyMap();
 		if(filename != null)
 		{
 			
@@ -132,6 +139,7 @@ public class ProblemInstanceHelper {
 			InstanceListWithSeeds insc = getListAndSeedGen(instanceListFile,seed, maxSeedsPerInstance);
 			instanceList = insc.getInstancesByName();
 			gen = insc.getSeedGen();
+			instanceSpecificInfo = insc.getInstanceSpecificInfo();
 			
 			
 			
@@ -159,7 +167,9 @@ public class ProblemInstanceHelper {
 				
 				if(!f.exists())
 				{
-					logger.warn("Instance {} does not exist on disk", f.getAbsolutePath());
+					
+					throw new ParameterException("Instance does not exist on disk "+ f.getAbsolutePath());
+					//logger.warn("Instance {} does not exist on disk", f.getAbsolutePath());
 				}
 			}
 			Map<String, Double> features;
@@ -226,6 +236,8 @@ public class ProblemInstanceHelper {
 				features = Collections.emptyMap();
 			}
 			
+			//Removes // from filenames as some files had this for some reason
+			//We don't use Absolute File Name, because they may not actually exist
 			instanceFile = instanceFile.replaceAll("//", "/");
 			ProblemInstance ai;
 			
@@ -241,7 +253,13 @@ public class ProblemInstanceHelper {
 				
 			} else
 			{
-				ai = new ProblemInstance(instanceFile, instID++, features);
+				Map<String, String> fixedInstanceSpecificInfo = new HashMap<String, String>();
+				for(Entry<String, String> ent : instanceSpecificInfo.entrySet())
+				{
+					fixedInstanceSpecificInfo.put(ent.getKey().replaceAll("//", "/"), ent.getValue());
+				}
+				
+				ai = new ProblemInstance(instanceFile, instID++, features, fixedInstanceSpecificInfo.get(instanceFile));
 				cachedProblemInstances.put(instanceFile, ai);
 			}
 			
@@ -266,8 +284,12 @@ public class ProblemInstanceHelper {
 	{
 		NEW_CSV_SEED_INSTANCE_PER_ROW,
 		NEW_CSV_INSTANCE_PER_ROW,
+		NEW_INSTANCE_SPECIFIC_PER_ROW,
+		NEW_SEED_INSTANCE_SPECIFIC_PER_ROW,
 		LEGACY_INSTANCE_PER_ROW,
-		LEGACY_SEED_INSTANCE_PER_ROW
+		LEGACY_SEED_INSTANCE_PER_ROW, 
+		LEGACY_INSTANCE_SPECIFIC_PER_ROW,
+		LEGACY_SEED_INSTANCE_SPECIFIC_PER_ROW
 	}
 	private static InstanceListWithSeeds getListAndSeedGen(File instanceListFile, long seed, int maxSeedsPerConfig) throws IOException {
 		
@@ -279,18 +301,35 @@ public class ProblemInstanceHelper {
 		logger.debug("Reading instance file detecting format");
 		
 		LinkedHashMap<String, List<Long>> instances;
+		LinkedHashMap<String, String> instanceSpecificInfo;
 		try
 		{
 			CSVReader reader = new CSVReader(new FileReader(instanceListFile),',','"',true);
 			List<String[]> csvContents = reader.readAll();
-			instances = parseCSVContents(csvContents, InstanceFileFormat.NEW_CSV_INSTANCE_PER_ROW, InstanceFileFormat.NEW_CSV_SEED_INSTANCE_PER_ROW);
-			
+			ValueObject v = parseCSVContents(csvContents, InstanceFileFormat.NEW_CSV_INSTANCE_PER_ROW, InstanceFileFormat.NEW_CSV_SEED_INSTANCE_PER_ROW, InstanceFileFormat.NEW_INSTANCE_SPECIFIC_PER_ROW, InstanceFileFormat.NEW_SEED_INSTANCE_SPECIFIC_PER_ROW);
+			instances = v.instanceSeedMap;
+			instanceSpecificInfo = v.instanceSpecificInfoMap;
 		} catch(IllegalArgumentException e)
 		{
 			try { 
-			CSVReader reader = new CSVReader(new FileReader(instanceListFile),' ');
+			
+			/**
+			 * For the old format we trim each line to get rid of spurious whitespace
+			 */
+			BufferedReader bufferedReader = new BufferedReader(new FileReader(instanceListFile));
+			StringBuilder sb = new StringBuilder();
+			while((line = bufferedReader.readLine()) != null)
+			{
+				sb.append(line.trim()).append("\n");
+			}
+			
+				
+			CSVReader reader = new CSVReader(new StringReader(sb.toString().trim()),' ');
 			List<String[]> csvContents = reader.readAll();
-			instances = parseCSVContents(csvContents, InstanceFileFormat.LEGACY_INSTANCE_PER_ROW, InstanceFileFormat.LEGACY_SEED_INSTANCE_PER_ROW);
+			ValueObject v = parseCSVContents(csvContents, InstanceFileFormat.LEGACY_INSTANCE_PER_ROW, InstanceFileFormat.LEGACY_SEED_INSTANCE_PER_ROW, InstanceFileFormat.LEGACY_INSTANCE_SPECIFIC_PER_ROW, InstanceFileFormat.LEGACY_SEED_INSTANCE_SPECIFIC_PER_ROW);
+			instances = v.instanceSeedMap;
+			instanceSpecificInfo = v.instanceSpecificInfoMap;
+					
 			} catch(IllegalArgumentException e2)
 			{
 				throw new ParameterException("Could not parse instanceFile " + instanceListFile.getAbsolutePath());
@@ -304,7 +343,7 @@ public class ProblemInstanceHelper {
 			gen = new SetInstanceSeedGenerator(instances, maxSeedsPerConfig);
 		} else
 		{
-			 gen = new RandomInstanceSeedGenerator(instances.size(),seed, maxSeedsPerConfig);
+			gen = new RandomInstanceSeedGenerator(instances.size(),seed, maxSeedsPerConfig);
 		}
 		
 		/*
@@ -323,10 +362,16 @@ public class ProblemInstanceHelper {
 		}
 		*/
 		instanceList.addAll(instances.keySet());
-		return new InstanceListWithSeeds(gen, null, instanceList);
+		return new InstanceListWithSeeds(gen, null, instanceList, instanceSpecificInfo);
 	}
 	
-	private static LinkedHashMap<String,List<Long>> parseCSVContents(List<String[]> csvContents, InstanceFileFormat instanceOnly, InstanceFileFormat seedPair )
+	static class ValueObject
+	{
+		public LinkedHashMap<String, List<Long>> instanceSeedMap;
+		public LinkedHashMap<String, String> instanceSpecificInfoMap;
+	}
+	
+	private static ValueObject parseCSVContents(List<String[]> csvContents, InstanceFileFormat instanceOnly, InstanceFileFormat seedPair, InstanceFileFormat instanceSpecific, InstanceFileFormat instanceSpecificSeed )
 	{
 		InstanceFileFormat possibleFormat = null;
 	
@@ -334,40 +379,55 @@ public class ProblemInstanceHelper {
 		 * Note we make the determination of which instanceSeedGenerator to use based on the first entries list size()
 		 */
 		LinkedHashMap<String, List<Long>> instanceSeedMap = new LinkedHashMap<String, List<Long>>();
+		
+		/**
+		 * Note we make the determination of which instanceSeedGenerator to use based on the first entries list size()
+		 */
+		LinkedHashMap<String, String> instanceSpecificInfoMap = new LinkedHashMap<String, String>();
+		
 		for(String[] s : csvContents)
 		{
-			
 			
 			if(s.length == 1)
 			{
 				if(s[0].trim().equals("")) throw new IllegalArgumentException();
-				if(possibleFormat == seedPair)
+				
+				if(possibleFormat == null)
 				{
-					logger.debug("Line with only 1 entry found, we are not {}",seedPair);
-					throw new IllegalArgumentException();
-				}  else
-				{
-					if(possibleFormat == null)
-					{
-						possibleFormat = instanceOnly;
-						logger.debug("Line with only 1 entry found, trying {}", possibleFormat);
-					}
-					instanceSeedMap.put(s[0], new LinkedList<Long>());
+					possibleFormat = instanceOnly;
+					logger.debug("Line with only 1 entry found, trying {}", possibleFormat);
 				}
-			} else if(s.length == 2)
-			{
 				if(possibleFormat == instanceOnly)
 				{
 					
-					logger.debug("Line with 2 entries found, we are not {}",instanceOnly);
-					throw new IllegalArgumentException();
-				}  else
+					instanceSeedMap.put(s[0], new LinkedList<Long>());
+				} else
 				{
-					if(possibleFormat == null)
-					{
+					logger.debug("Line with only 1 entry found, we are not {}",possibleFormat);
+					throw new IllegalArgumentException();
+				}
+			} else if(s.length == 2)
+			{
+			
+				if(possibleFormat == null)
+				{
+					try {
 						possibleFormat = seedPair;
 						logger.debug("Line with only 2 entries found, trying {}", possibleFormat);
+						Long.valueOf(s[0]);
+						possibleFormat = seedPair;
+					} catch(NumberFormatException e)
+					{
+						possibleFormat = instanceSpecific;
+						logger.debug("First entry on line 1 not a long value, trying {}", possibleFormat);
 					}
+					
+					
+				}
+				
+				
+				if(possibleFormat.equals(seedPair))
+				{
 					String instanceName = s[1];
 					try {
 						if(instanceSeedMap.get(instanceName) == null)
@@ -383,15 +443,84 @@ public class ProblemInstanceHelper {
 						
 						throw new IllegalArgumentException();
 					}
+				} else if(possibleFormat.equals(instanceSpecific))
+				{
+					String instanceName = s[0];
+					String instanceSpecificInfo = s[1];
+					
+					instanceSpecificInfoMap.put(instanceName, instanceSpecificInfo);
+					instanceSeedMap.put(instanceName, new LinkedList<Long>());
+				} else
+				{
+					logger.debug("Line with 2 entries found, we are not {}",possibleFormat);
+					throw new IllegalArgumentException();
 				}
+			
+			} else if(s.length == 3)
+			{
+				if(possibleFormat == null)
+				{
+					possibleFormat = instanceSpecificSeed;
+				}
+			
+				if(possibleFormat == instanceSpecificSeed)
+				{
+					
+					String instanceName = s[1];
+					if(s[1].trim().length() == 0)
+					{
+						logger.debug("\"{}\" is not a valid instance name (All Whitespace)", s[1]);
+						throw new IllegalArgumentException();
+					}
+					
+					if(instanceSeedMap.get(instanceName) == null)
+					{
+						instanceSeedMap.put(instanceName, new LinkedList<Long>());
+					}
+					
+					try
+					{
+					instanceSeedMap.get(instanceName).add(Long.valueOf(s[0]));
+					
+					} catch(NumberFormatException e)
+					{
+						logger.debug("{} is not a valid long value", s[0]);
+						
+						throw new IllegalArgumentException();
+					}
+					
+					s[2] = s[2].trim();
+					if(instanceSpecificInfoMap.get(instanceName) != null)
+					{
+						if(!s[2].equals(instanceSpecificInfoMap.get(instanceName)))
+						{
+							Object[] args = {instanceName, s[2], instanceSpecificInfoMap.get(instanceName)};
+							logger.debug("Discrepancy detected in instance specific information {} had {} vs. {}  (This is not permitted)", args );
+							throw new IllegalArgumentException();
+						}
+					} else
+					{
+						instanceSpecificInfoMap.put(instanceName, s[2]);
+					}
+					
+					
+				} else
+				{
+					logger.debug("Line with 3 entries found, we are not {}", possibleFormat);
+					throw new IllegalArgumentException();
+				}
+				
 			} else
 			{
 				logger.debug("Line with {} entries found unknown format", s.length);
 				possibleFormat = null;
 				throw new IllegalArgumentException();
 			}
-		}
+	}
 			if(instanceSeedMap.size() == 0) throw new IllegalArgumentException("No Instances Found");
-			return instanceSeedMap;
+			ValueObject v = new ValueObject();
+			v.instanceSeedMap = instanceSeedMap;
+			v.instanceSpecificInfoMap = instanceSpecificInfoMap;
+			return v;
 	}
 }

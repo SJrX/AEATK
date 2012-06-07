@@ -32,6 +32,7 @@ public class ParamConfigurationTest {
 	public void testIntegerContinuousParameters() {
 		URL url = this.getClass().getClassLoader().getResource("paramFiles/integerFormatParam.txt");
 		File f = new File(url.getPath());
+		System.out.println(f.getAbsolutePath());
 		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(f);
 		ParamConfiguration config = configSpace.getDefaultConfiguration();
 		System.out.println(config.getFormattedParamString());

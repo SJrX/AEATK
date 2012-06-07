@@ -3,6 +3,7 @@ package ca.ubc.cs.beta.config;
 import java.io.File;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.List;
 
 import com.beust.jcommander.Parameter;
@@ -52,7 +53,10 @@ public abstract class AbstractConfigToString {
 				} else if (obj instanceof AbstractConfigToString)
 				{
 					sb.append(obj.toString());
-				} 
+				}  else if( obj instanceof List)
+				{
+					sb.append(Arrays.toString(((List<?>) obj).toArray()));
+				}
 				else {
 					//We throw this because we have no guarantee that toString() is meaningful
 					throw new IllegalArgumentException("Failed to convert type configuration option to a string " + f.getName() + "=" +  obj + " type: " + o) ;
