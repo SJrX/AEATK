@@ -150,6 +150,10 @@ public class ProblemInstanceHelper {
 			
 		}
 		
+		//Stores a set of features names that we haven't mapped to an instance 
+		Set<String> unMappedFeatures = new HashSet<String>();
+		unMappedFeatures.addAll(featuresMap.keySet());
+		
 		
 		for(String instanceFile : instanceList)
 		{
@@ -173,6 +177,8 @@ public class ProblemInstanceHelper {
 				}
 			}
 			Map<String, Double> features;
+			
+			
 			if(featureFileName != null)
 			{
 				
@@ -186,6 +192,8 @@ public class ProblemInstanceHelper {
 					if(features != null) 
 					{
 						logger.debug("Matched Features for file name : {}",possibleFile);
+						unMappedFeatures.remove(possibleFile.trim());
+						
 						break;
 					} else
 					{
@@ -274,8 +282,21 @@ public class ProblemInstanceHelper {
 			instancesSet.add(ai);
 			
 		}
+		
+		//In typical use case we will have 50% test and 50% training set.
+		//So this array will be twice the size
+		List<ProblemInstance> instancesFromFeatures = new ArrayList<ProblemInstance>(instances.size() * 2);
+		
+		instancesFromFeatures.addAll(instances);
+		
+		for(String instanceFromFeatureFile : unMappedFeatures)
+		{
+			instancesFromFeatures.add(new ProblemInstance(instanceFromFeatureFile, instID++, featuresMap.get(instanceFromFeatureFile)));
+		}
+		
+	
 		logger.info("Found Instances loaded");
-		return new InstanceListWithSeeds(gen, instances);
+		return new InstanceListWithSeeds(gen, instances, instancesFromFeatures);
 		
 		
 	}
