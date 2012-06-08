@@ -11,7 +11,7 @@ public class ValidationOptions {
 	@Parameter(names="--numTestInstances", description = "Number of instances to test against (Will execute min of this, and number of instances in test Instance File)")
 	public int numberOfTestInstances = Integer.MAX_VALUE;
 
-	@Parameter(names="--numberOfValidationRuns", description = "Approximate Number of Validation Runs to do (SMAC will always make sure to do the same number of seeds per instance, and so will round this number")
+	@Parameter(names="--numberOfValidationRuns", description = "Approximate Number of Validation Runs to do")
 	public int numberOfValidationRuns = 1000;
 	
 	@Parameter(names="--validationRoundingMode", description="Whether to round the number of validation runs up or down (to next multiple of numTestInstances")
