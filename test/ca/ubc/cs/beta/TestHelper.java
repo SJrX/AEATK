@@ -3,8 +3,6 @@ package ca.ubc.cs.beta;
 import java.io.File;
 import java.net.URL;
 
-import ca.ubc.cs.beta.configspace.ParamConfigurationSpace;
-
 public final class TestHelper {
 
 	private TestHelper()

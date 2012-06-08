@@ -1,7 +1,5 @@
 package ca.ubc.cs.beta.jcommander.converter;
 
-import ca.ubc.cs.beta.smac.RunObjective;
-
 import com.beust.jcommander.IStringConverter;
 import com.beust.jcommander.ParameterException;
 

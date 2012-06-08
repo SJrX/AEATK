@@ -1,8 +1,6 @@
 package ca.ubc.cs.beta.config;
 
 import java.io.File;
-import java.lang.reflect.Field;
-
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParametersDelegate;
 

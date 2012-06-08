@@ -1,10 +1,6 @@
 package ca.ubc.cs.beta.config;
 
-import java.io.File;
-import java.lang.annotation.Annotation;
 import java.lang.reflect.Field;
-import java.util.Arrays;
-
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParametersDelegate;
 

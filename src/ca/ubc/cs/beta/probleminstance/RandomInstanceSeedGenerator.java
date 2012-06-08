@@ -1,11 +1,15 @@
 package ca.ubc.cs.beta.probleminstance;
 
 import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
 import java.util.Set;
+import java.util.SortedMap;
+import java.util.TreeMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -141,6 +145,29 @@ public class RandomInstanceSeedGenerator implements Serializable, InstanceSeedGe
 		{
 			return true;
 		}
+	}
+
+
+	@Override
+	public List<ProblemInstance> getProblemInstanceOrder(
+			Collection<ProblemInstance> instances) {
+		SortedMap<Integer, ProblemInstance> instanceMap = new TreeMap<Integer, ProblemInstance>();
+		
+		for(ProblemInstance pi : instances)
+		{
+			instanceMap.put(pi.getInstanceID(), pi);
+		}
+		
+		List<ProblemInstance> instanceList = new ArrayList<ProblemInstance>();
+		
+		
+		instanceList.addAll(instanceMap.values());
+		
+		return instanceList;
+		
+		
+		
+		
 	}
 	
 	

@@ -6,8 +6,6 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import ca.ubc.cs.beta.models.surrogate.helpers.jcommander.validator.ReadableFileConverter;
-import ca.ubc.cs.beta.smac.OverallObjective;
-import ca.ubc.cs.beta.smac.RunObjective;
 import ca.ubc.cs.beta.smac.state.StateSerializers;
 
 import com.beust.jcommander.Parameter;
@@ -108,21 +106,8 @@ public class SMACConfig extends AbstractConfigToString {
 	@Parameter(names="--maxConcurrentAlgoExecs", description="Maximum number of concurrent target algorithm executions", validateWith=PositiveInteger.class)
 	public int maxConcurrentAlgoExecs = 1;
 	
-	@Parameter(names="--numberOfTestSeedsPerInstance", description="Number of test seeds to use per instance during validation", validateWith=PositiveInteger.class)
-	public int numberOfTestSeedsPerInstance = 1000;
-	
-	@Parameter(names="--numTestInstances", description = "Number of instances to test against (Will execute min of this, and number of instances in test Instance File)")
-	public int numberOfTestInstances = Integer.MAX_VALUE;
-
-	@Parameter(names="--numberOfValidationRuns", description = "Approximate Number of Validation Runs to do (SMAC will always make sure to do the same number of seeds per instance, and so will round this number")
-	public int numberOfValidationRuns = 1000;
-	
-	@Parameter(names="--validationRoundingMode", description="Whether to round the number of validation runs up or down (to next multiple of numTestInstances")
-	public ValidationRoundingMode validationRoundingMode = ValidationRoundingMode.UP;
-
-	@Parameter(names="--noValidationHeaders", description="Don't put headers on output CSV files for Validation")
-	public boolean noValidationHeaders = false;
-	
+	@ParametersDelegate
+	public ValidationOptions validationOptions = new ValidationOptions();
 	
 	public String toString()
 	{
@@ -165,6 +150,9 @@ public class SMACConfig extends AbstractConfigToString {
 				{
 					sb.append(obj.toString());
 				} else if(obj instanceof ScenarioConfig)
+				{
+					sb.append(obj.toString());
+				}else if(obj instanceof ValidationOptions)
 				{
 					sb.append(obj.toString());
 				}

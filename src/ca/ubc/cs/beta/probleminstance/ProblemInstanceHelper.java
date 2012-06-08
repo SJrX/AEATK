@@ -323,6 +323,7 @@ public class ProblemInstanceHelper {
 		
 		LinkedHashMap<String, List<Long>> instances;
 		LinkedHashMap<String, String> instanceSpecificInfo;
+		List<String> declaredInstanceOrderForSeeds = null;
 		try
 		{
 			CSVReader reader = new CSVReader(new FileReader(instanceListFile),',','"',true);
@@ -330,6 +331,7 @@ public class ProblemInstanceHelper {
 			ValueObject v = parseCSVContents(csvContents, InstanceFileFormat.NEW_CSV_INSTANCE_PER_ROW, InstanceFileFormat.NEW_CSV_SEED_INSTANCE_PER_ROW, InstanceFileFormat.NEW_INSTANCE_SPECIFIC_PER_ROW, InstanceFileFormat.NEW_SEED_INSTANCE_SPECIFIC_PER_ROW);
 			instances = v.instanceSeedMap;
 			instanceSpecificInfo = v.instanceSpecificInfoMap;
+			declaredInstanceOrderForSeeds = v.declaredInstanceOrderForSeeds;
 		} catch(IllegalArgumentException e)
 		{
 			try { 
@@ -350,6 +352,7 @@ public class ProblemInstanceHelper {
 			ValueObject v = parseCSVContents(csvContents, InstanceFileFormat.LEGACY_INSTANCE_PER_ROW, InstanceFileFormat.LEGACY_SEED_INSTANCE_PER_ROW, InstanceFileFormat.LEGACY_INSTANCE_SPECIFIC_PER_ROW, InstanceFileFormat.LEGACY_SEED_INSTANCE_SPECIFIC_PER_ROW);
 			instances = v.instanceSeedMap;
 			instanceSpecificInfo = v.instanceSpecificInfoMap;
+			declaredInstanceOrderForSeeds = v.declaredInstanceOrderForSeeds;
 					
 			} catch(IllegalArgumentException e2)
 			{
@@ -361,7 +364,11 @@ public class ProblemInstanceHelper {
 		//Then we use our manual instance seed generator
 		if(instances.entrySet().iterator().next().getValue().size() > 0)
 		{
-			gen = new SetInstanceSeedGenerator(instances, maxSeedsPerConfig);
+			if(declaredInstanceOrderForSeeds == null)
+			{
+				throw new IllegalStateException("Expected instanceOrder to be specified, got null.");
+			}
+			gen = new SetInstanceSeedGenerator(instances,declaredInstanceOrderForSeeds, maxSeedsPerConfig);
 		} else
 		{
 			gen = new RandomInstanceSeedGenerator(instances.size(),seed, maxSeedsPerConfig);
@@ -388,6 +395,7 @@ public class ProblemInstanceHelper {
 	
 	static class ValueObject
 	{
+		public List<String> declaredInstanceOrderForSeeds;
 		public LinkedHashMap<String, List<Long>> instanceSeedMap;
 		public LinkedHashMap<String, String> instanceSpecificInfoMap;
 	}
@@ -405,6 +413,8 @@ public class ProblemInstanceHelper {
 		 * Note we make the determination of which instanceSeedGenerator to use based on the first entries list size()
 		 */
 		LinkedHashMap<String, String> instanceSpecificInfoMap = new LinkedHashMap<String, String>();
+		
+		List<String> problemInstanceDeclaredOrder = new ArrayList<String>();
 		
 		for(String[] s : csvContents)
 		{
@@ -464,6 +474,8 @@ public class ProblemInstanceHelper {
 						
 						throw new IllegalArgumentException();
 					}
+					
+					problemInstanceDeclaredOrder.add(instanceName);
 				} else if(possibleFormat.equals(instanceSpecific))
 				{
 					String instanceName = s[0];
@@ -524,6 +536,7 @@ public class ProblemInstanceHelper {
 						instanceSpecificInfoMap.put(instanceName, s[2]);
 					}
 					
+					problemInstanceDeclaredOrder.add(instanceName);
 					
 				} else
 				{
@@ -542,6 +555,7 @@ public class ProblemInstanceHelper {
 			ValueObject v = new ValueObject();
 			v.instanceSeedMap = instanceSeedMap;
 			v.instanceSpecificInfoMap = instanceSpecificInfoMap;
+			v.declaredInstanceOrderForSeeds = problemInstanceDeclaredOrder;
 			return v;
 	}
 }

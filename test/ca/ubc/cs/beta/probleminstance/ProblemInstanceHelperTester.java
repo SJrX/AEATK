@@ -104,6 +104,9 @@ public class ProblemInstanceHelperTester {
 		if(!(ilws.getSeedGen() instanceof RandomInstanceSeedGenerator))
 		{
 			fail("Expected Random Instance Seed Generator");
+		} else
+		{
+			assertEquals(ilws.getSeedGen().getProblemInstanceOrder(ilws.getInstances()).size(),NON_SPACE_INSTANCES+addlInstances);
 		}
 		
 		
@@ -140,6 +143,9 @@ public class ProblemInstanceHelperTester {
 		if(!(ilws.getSeedGen() instanceof SetInstanceSeedGenerator))
 		{
 			fail("Expected Set Instance Seed Generator");
+		} else {
+			//Relies on the way instance seed pairs are used.
+			assertEquals(ilws.getSeedGen().getProblemInstanceOrder(ilws.getInstances()).size(),NON_SPACE_INSTANCES*(NON_SPACE_INSTANCES+1)/2);
 		}
 		
 		
@@ -240,7 +246,11 @@ public class ProblemInstanceHelperTester {
 		if(!(ilws.getSeedGen() instanceof SetInstanceSeedGenerator))
 		{
 			fail("Expected Set Instance Seed Generator");
+		} else {
+			//Relies on the way instance seed pairs are used.
+			assertEquals(NON_SPACE_INSTANCES*(NON_SPACE_INSTANCES+1)/2,ilws.getSeedGen().getProblemInstanceOrder(ilws.getInstances()).size());
 		}
+		
 		
 		
 		List<String> instanceNames = new ArrayList<String>();
@@ -281,6 +291,19 @@ public class ProblemInstanceHelperTester {
 			assertFalse(gen.hasNextSeed(pi));
 
 		}
+		
+		gen.reinit();
+		List<ProblemInstance> pis =  gen.getProblemInstanceOrder(ilws.getInstances());
+		
+		for(ProblemInstance pi : pis)
+		{
+			System.out.println(pi.getInstanceName() + ":" + gen.getNextSeed(pi));
+		}
+		//TODO Check that instance seeds are returned in correct order
+		
+		
+		
+		
 		
 	}
 	
