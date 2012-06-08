@@ -106,6 +106,9 @@ public class SMACConfig extends AbstractConfigToString {
 	@Parameter(names="--maxConcurrentAlgoExecs", description="Maximum number of concurrent target algorithm executions", validateWith=PositiveInteger.class)
 	public int maxConcurrentAlgoExecs = 1;
 	
+	@Parameter(names="--skipValidation", description="Do not perform validation at the end")
+	public boolean skipValidation = false;
+	
 	@ParametersDelegate
 	public ValidationOptions validationOptions = new ValidationOptions();
 	
