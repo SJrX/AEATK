@@ -75,4 +75,56 @@ public class AlgoExecutionInstanceSpecificInfoTest {
 		
 		
 	}
+	
+	@Test
+	public void testInstanceSpecificInfoManju()
+	{
+
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(InstanceSpecificInfoTestExecutor.class.getCanonicalName());
+		
+		
+		
+		
+		File paramFile = TestHelper.getTestFile("testInfoSpecificParamExecution/testParam.txt");
+		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(paramFile);
+		
+		AlgorithmExecutionConfig execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false);
+		TargetAlgorithmEvaluator tae = new TargetAlgorithmEvaluator( execConfig, false);
+		
+		InstanceListWithSeeds ilws = ProblemInstanceHelperTester.getInstanceListWithSeeds("manju.txt", false);
+		
+		ParamConfiguration defaultConfig = configSpace.getDefaultConfiguration();
+		
+		for(int i=0; i < ProblemInstanceHelperTester.NON_SPACE_INSTANCES; i++)
+		{
+			ProblemInstance pi = ilws.getInstances().get(i);
+			
+			InstanceSeedGenerator inst = ilws.getSeedGen();
+			
+			while(inst.hasNextSeed(pi))
+			{
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(pi, inst.getNextSeed(pi)), 300, defaultConfig);
+				AlgorithmRun run = tae.evaluateRun(rc).get(0);
+				
+				try {
+				assertEquals(pi.getInstanceName().hashCode() + 37*pi.getInstanceSpecificInformation().hashCode(), (long) run.getRunLength());
+				} catch(AssertionError e)
+				{
+					System.out.println(run.getResultLine());
+					System.out.println(run.toString());
+					throw e;
+				}
+				
+				
+				
+			}
+			
+		}
+		
+		
+	}
 }
