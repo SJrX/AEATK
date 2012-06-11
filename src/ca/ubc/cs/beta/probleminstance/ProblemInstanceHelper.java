@@ -256,7 +256,7 @@ public class ProblemInstanceHelper {
 				ai = cachedProblemInstances.get(instanceFile);
 				if(!ai.getFeatures().equals(features))
 				{
-					logger.error("We previously loaded an instance for filename {} but the instance Features don't match");
+					logger.error("We previously loaded an instance for filename {} but the instance Features don't match", instanceFile);
 				}
 				
 			} else

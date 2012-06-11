@@ -24,10 +24,6 @@ public class AutomaticConfiguratorFactory {
 	
 	public static AlgorithmRunner getConcurrentAlgorithmRunner(AlgorithmExecutionConfig execConfig, List<RunConfig> instanceConfigs, int nThreads)
 	{
-		if(nThreads > Runtime.getRuntime().availableProcessors())
-		{
-			System.out.println("[WARN]: You have more threads set to be executing that processors, this may change results");
-		}
 		return new ConcurrentAlgorithmRunner(execConfig, instanceConfigs, nThreads);
 	}
 }

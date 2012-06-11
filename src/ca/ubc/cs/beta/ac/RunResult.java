@@ -11,7 +11,8 @@ public enum RunResult {
 	UNSAT(2),
 	WRONG(3, "WRONG", "WRONG ANSWER"),
 	CRASHED(-1),
-	OK(1);
+	OK(1),
+	ABORT(-2);
 	
 	private final int resultCode;
 	private final Set<String> resultKey = new HashSet<String>();
@@ -42,7 +43,7 @@ public enum RunResult {
 				return r;
 			}
 		}
-		throw new IllegalArgumentException("No Match For Result from Automatic Configurator");
+		throw new IllegalArgumentException("No Match For Result from Automatic Configurator: " + key);
 	}
 	
 	public static RunResult getAutomaticConfiguratorResultForCode(int resultCode)
