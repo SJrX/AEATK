@@ -73,8 +73,10 @@ public class BuggyFeatureFilesTester {
 	@Test
 	/**
 	 * Tests that no errors are thrown when training and test set instances aren't disjoint.
+	 * 
+	 * This is a copy and paste of the code that loads instances in AutomaticConfigurator
 	 */
-	public void bug1294ErrorReporting()
+	public void bug1303ErrorReporting()
 	{
 		
 		String feature = TestHelper.getTestFile("featureFiles/sugar-csc09-timeFeats-1.txt").getAbsolutePath();
@@ -97,7 +99,7 @@ public class BuggyFeatureFilesTester {
 		
 		
 		
-		ilws = ProblemInstanceHelper.getInstances(f, instanceFilesRoot + File.separator + ((checkOnDisk) ? "instances/":"no-instances/"), feature, !checkOnDisk);
+		ilws = ProblemInstanceHelper.getInstances(f, instanceFilesRoot + File.separator + ((checkOnDisk) ? "instances/":"no-instances/"), !checkOnDisk);
 		
 		String output = bout.toString();
 		System.setOut(old);

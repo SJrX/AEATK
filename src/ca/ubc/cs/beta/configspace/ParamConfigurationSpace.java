@@ -955,8 +955,31 @@ public class ParamConfigurationSpace implements Serializable {
 					}
 	
 					break;
+				case ARRAY_STRING_SYNTAX:
+					double[] valueArray = new double[numberOfParameters];
+					
+					tmpParamString = paramString;
+					params = tmpParamString.split(",");
+					if(params.length != valueArray.length)
+					{
+						throw new IllegalArgumentException("Param String Value Array expected to be: " + valueArray.length + " but got a string of length " + paramString.length());
+						
+						
+					}
+						
+					for(int i=0; i < valueArray.length; i++)
+					{
+						valueArray[i] = Double.valueOf(params[i]);
+					}
+					config = new ParamConfiguration(this, valueArray,categoricalSize, parameterDomainContinuous, paramKeyIndexMap);
+					break;
+
+					
+					
 				default:
 					throw new IllegalArgumentException("Parsing not implemented for String Format");
+					
+				
 				
 			}
 			

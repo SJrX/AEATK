@@ -254,10 +254,15 @@ public class ProblemInstanceHelper {
 				
 				logger.trace("Instance file has already been loaded once this runtime, using cached instance of {}", instanceFile);
 				ai = cachedProblemInstances.get(instanceFile);
-				if(!ai.getFeatures().equals(features))
+				
+				if(ai.getFeatures().size() > 0 && features.size() > 0)
 				{
-					logger.error("We previously loaded an instance for filename {} but the instance Features don't match", instanceFile);
+					if(!ai.getFeatures().equals(features))
+					{
+						logger.warn("We previously loaded an instance for filename {} but the instance Features don't match", instanceFile);
+					}
 				}
+				
 				
 			} else
 			{

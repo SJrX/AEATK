@@ -13,7 +13,8 @@ import ca.ubc.cs.beta.instancespecificinfo.*;
 	ParamConfigurationTest.class,
 	ProblemInstanceHelperTester.class,
 	AlgoExecutionInstanceSpecificInfoTest.class,
-	TAETestSet.class
+	TAETestSet.class,
+	BuggyFeatureFilesTester.class
 })
 
 public class ACLibTestSuite {

@@ -58,6 +58,7 @@ import ca.ubc.cs.beta.smac.state.StateDeserializer;
 public class LegacyStateDeserializer implements StateDeserializer {
 
 	
+	
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 	private final RunHistory runHistory;
 	private final InstanceSeedGenerator instanceSeedGenerator;
@@ -69,6 +70,12 @@ public class LegacyStateDeserializer implements StateDeserializer {
 	 * Stores whether or not we were able to recover a complete state 
 	 */
 	private final boolean incompleteSavedState;
+	
+	/**
+	 * Stores the index where we expect the run iteration to be.
+	 * This is also used when autodetecting the iterations we can restore
+	 */
+	public static final int RUN_ITERATION_INDEX = 11;
 	
 	@SuppressWarnings("unchecked")
 	public LegacyStateDeserializer(String restoreFromPath, String id, int iteration, ParamConfigurationSpace configSpace, OverallObjective overallObj, RunObjective runObj, List<ProblemInstance> instances, AlgorithmExecutionConfig execConfig) 
@@ -88,7 +95,16 @@ public class LegacyStateDeserializer implements StateDeserializer {
 			f.validate();
 			
 			log.trace("Run and Results File: {}", f.runHistoryFile.getAbsolutePath());
-			log.trace("Param Strings File: {}", f.paramStringsFile.getAbsolutePath());
+			if(f.paramStringsFile != null)
+			{
+				log.trace("Param Strings File: {}", f.paramStringsFile.getAbsolutePath());
+			} 
+			
+			if(f.uniqConfigFile != null)
+			{
+				log.trace("Param Strings File: {}", f.uniqConfigFile.getAbsolutePath());
+			}
+				
 			if(f.javaObjDumpFile != null)
 			{
 				log.trace("Java Objective Dump File: {}",f.javaObjDumpFile.getAbsolutePath());
@@ -154,22 +170,57 @@ public class LegacyStateDeserializer implements StateDeserializer {
 			Map<Integer,ParamConfiguration> configMap = new HashMap<Integer, ParamConfiguration>();
 			
 			try {
-				reader =  new BufferedReader(new FileReader(f.paramStringsFile));
 				
-				String line = null;
-			
-				while( (line = reader.readLine()) != null)
-				{
-					log.trace("Parsing config line: {}", line);
-					String[] lineResults = line.split(":",2);
+					if(f.paramStringsFile != null)
+					{
+						log.info("Parsing Parameter Settings from: {}",f.paramStringsFile.getAbsolutePath());
 					
-					if(lineResults.length != 2) throw new IllegalArgumentException("Configuration Param Strings File is corrupted, no colon detected on line: \"" + line + "\"");
+						reader =  new BufferedReader(new FileReader(f.paramStringsFile));
+						
+						String line = null;
 					
-					Integer configId = Integer.valueOf(lineResults[0]);
-					configMap.put(configId,configSpace.getConfigurationFromString(lineResults[1], StringFormat.STATEFILE_SYNTAX));
+						while( (line = reader.readLine()) != null)
+						{
+							log.trace("Parsing config line: {}", line);
+							String[] lineResults = line.split(":",2);
+							
+							if(lineResults.length != 2) throw new IllegalArgumentException("Configuration Param Strings File is corrupted, no colon detected on line: \"" + line + "\"");
+							
+							Integer configId = Integer.valueOf(lineResults[0]);
+							configMap.put(configId,configSpace.getConfigurationFromString(lineResults[1], StringFormat.STATEFILE_SYNTAX));
+							
+							
+						} 
+					}
+					else if(f.uniqConfigFile != null)
+					{
+						log.info("Parsing Parameter Settings from: {}", f.uniqConfigFile.getAbsolutePath());
+						log.warn("Parameter Settings specified in array format, which is less portable than paramString format");
+						reader =  new BufferedReader(new FileReader(f.uniqConfigFile));
+						
+						String line = null;
 					
-					
-				}
+						while( (line = reader.readLine()) != null)
+						{
+							log.trace("Parsing config line: {}", line);
+							String[] lineResults = line.split(",",2);
+							
+							if(lineResults.length != 2) throw new IllegalArgumentException("Configuration Param Strings File is corrupted, no comma detected on line: \"" + line + "\"");
+							
+							Integer configId = Integer.valueOf(lineResults[0]);
+
+							configMap.put(configId,configSpace.getConfigurationFromString(lineResults[1], StringFormat.ARRAY_STRING_SYNTAX));
+							
+							
+						}
+						
+						
+					} else
+					{
+						throw new IllegalStateException("One of Unique Configuration File, or Param Strings File should have been non-null, cannot continue");
+					}
+				
+				
 			} finally
 			{
 				if (reader != null) reader.close();
@@ -253,7 +304,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 						
 						RunResult runResult  = (Integer.valueOf(runHistoryLine[9]) == 1) ? RunResult.SAT : RunResult.TIMEOUT;
 						int quality = (int) (double) Double.valueOf(runHistoryLine[10]);
-						int runIteration = Integer.valueOf(runHistoryLine[11]);
+						int runIteration = Integer.valueOf(runHistoryLine[LegacyStateDeserializer.RUN_ITERATION_INDEX]);
 
 						if(runIteration > iteration) break;
 						if(runIteration < runHistory.getIteration())
@@ -403,6 +454,37 @@ public class LegacyStateDeserializer implements StateDeserializer {
 			
 		}
 		
+		
+		if(!filesFound)
+		{
+			if(filenames.contains(LegacyStateFactory.getRunAndResultsFilename("", "", "","")))
+			{
+				f.runHistoryFile = new File(LegacyStateFactory.getRunAndResultsFilename(path, "", "",""));
+				if(filenames.contains(LegacyStateFactory.getParamStringsFilename("", "", "","")))
+				{
+					
+					f.paramStringsFile = new File(LegacyStateFactory.getParamStringsFilename(path, "", "",""));
+
+					filesFound = true;
+					
+				} else if(filenames.contains(LegacyStateFactory.getUniqConfigurationsFilename("", "", "", "")))
+				{
+					f.uniqConfigFile = new File(LegacyStateFactory.getUniqConfigurationsFilename(path, "","",""));
+					filesFound = true;
+				} else
+					
+				{ 
+					
+					log.warn("Didn't find paramStrings file: {} but did find Run and Results file: {}, it's possible saved state directory structure is corrupted.", LegacyStateFactory.getParamStringsFilename(path, id, savedFileIteration),f.runHistoryFile.getAbsolutePath() );
+					f.runHistoryFile = null;
+					
+				}
+			}
+			
+			
+		}
+			
+			
 		if(!filesFound)
 		{
 			throw new StateSerializationException("Could not find data files to restore iteration " + iteration + " with id " + id + " in path " + path );
@@ -438,18 +520,12 @@ public class LegacyStateDeserializer implements StateDeserializer {
 			}
 		}
 	 
-			
-			
-			
-		
-		
-		
-		
 		return f;
 		
 	}
 	private class FileLocations
 	{
+		public File uniqConfigFile;
 		public File runHistoryFile;
 		public File paramStringsFile;
 		public File javaObjDumpFile;
@@ -459,6 +535,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 			if ((runHistoryFile != null) && (!runHistoryFile.exists())) throw new StateSerializationException("Run History File does not exist");
 			if ((javaObjDumpFile != null) && (!javaObjDumpFile.exists())) throw new StateSerializationException("Java Object File does not exist");
 			if ((paramStringsFile != null) && (!paramStringsFile.exists())) throw new StateSerializationException("Param Strings File does not exist");
+			if ((uniqConfigFile != null) && (!uniqConfigFile.exists())) throw new StateSerializationException("Unique Config File does not exist");
 			
 		}
 	}

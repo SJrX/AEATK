@@ -223,16 +223,9 @@ public class LegacyStateSerializer implements StateSerializer {
 	
 		log.debug("Java Object Dump Saved in {}", f.getAbsolutePath());
 	}
-	public String getStringFromConfiguration(ParamConfiguration c)
+	public String getStringFromConfiguration(ParamConfiguration config)
 	{
-		double[] valueArray = c.toValueArray();
-		StringBuilder sb = new StringBuilder();
-		for(int i=0; i < valueArray.length; i++)
-		{
-			sb.append(valueArray[i]);
-			if(i+1 != valueArray.length) sb.append(",");
-		}
-		return sb.toString();
+		return config.getFormattedParamString(StringFormat.ARRAY_STRING_SYNTAX);
 	}
 	
 	private void writeStringBuffer(StringBuilder b, File f) throws IOException

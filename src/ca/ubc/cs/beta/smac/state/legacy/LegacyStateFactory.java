@@ -108,27 +108,39 @@ public class LegacyStateFactory implements StateFactory{
 	
 	static String getUniqConfigurationsFilename(String path, String id, int iteration)
 	{
+		return getUniqConfigurationsFilename(path, id, String.valueOf(iteration), "-");
+	}
+	
+	
+	static String getUniqConfigurationsFilename(String path, String id, String iteration, String dash)
+	{
 		if(path.equals(""))
 		{
-			return "uniq_configurations-" + id + iteration + ".csv";
+			return "uniq_configurations" + dash + id + iteration + ".csv";
 		} else
 		{
-			return path + File.separator + "uniq_configurations-" + id + iteration + ".csv";
+			return path + File.separator + "uniq_configurations" + dash + id + iteration + ".csv";
 		}
 	}
 	
+	
 	static String getParamStringsFilename(String path, String id, int iteration) {
-		
-		if(path.equals(""))
-		{ 
-			return "paramstrings-" + id + iteration + ".txt";
-		} else
-		{
-			return path + File.separator + "paramstrings-" + id + iteration + ".txt";
-		}
+		return getParamStringsFilename(path, id, String.valueOf(iteration), "-");
 			
 	}
 	
+	static String getParamStringsFilename(String path, String id, String iteration, String dash) {
+		
+		if(path.equals(""))
+		{ 
+			return "paramstrings" + dash + id + iteration + ".txt";
+		} else
+		{
+			return path + File.separator + "paramstrings-" + dash + id + iteration + ".txt";
+		}
+			
+	}
+
 	static String getRunAndResultsFilename(String path, String id,
 			int iteration) 
 	{
@@ -136,15 +148,23 @@ public class LegacyStateFactory implements StateFactory{
 		return getRunAndResultsFilename(path, id, String.valueOf(iteration));
 	}
 	
+	
 	public static String getRunAndResultsFilename(String path, String id, String iteration)
+	{
+		
+		return getRunAndResultsFilename(path, id, iteration, "-");
+		
+	}
+	
+	public static String getRunAndResultsFilename(String path, String id, String iteration, String dash)
 	{
 		
 		if(!path.equals(""))
 		{
-			return path + File.separator + "runs_and_results-" + id + iteration + ".csv";
+			return path + File.separator + "runs_and_results" + dash + id + iteration + ".csv";
 		} else
 		{
-			return  "runs_and_results-" + id + iteration + ".csv";
+			return  "runs_and_results"+dash + id + iteration + ".csv";
 		}
 		
 	}
@@ -181,6 +201,6 @@ public class LegacyStateFactory implements StateFactory{
 			return -1;
 		}	
 	}
-	
+
 	
 }

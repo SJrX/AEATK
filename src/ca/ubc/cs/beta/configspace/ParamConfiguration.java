@@ -452,7 +452,21 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	public String getFormattedParamString(StringFormat f)
 	{
 		
-		return _getFormattedParamString(f.getPreKey(), f.getKeyValueSeperator(), f.getValueDelimeter(), f.getGlue(), f.hideInactiveParameters());
+		if(f != StringFormat.ARRAY_STRING_SYNTAX)
+		{
+			return _getFormattedParamString(f.getPreKey(), f.getKeyValueSeperator(), f.getValueDelimeter(), f.getGlue(), f.hideInactiveParameters());
+		}  else
+		{
+			double[] valueArray = this.valueArray;
+			StringBuilder sb = new StringBuilder();
+			for(int i=0; i < valueArray.length; i++)
+			{
+				sb.append(valueArray[i]);
+				if(i+1 != valueArray.length) sb.append(",");
+			}
+			return sb.toString();
+		}
+		
 	}
 	/**
 	 * This is a hacky way of dealing with the numerous representations
@@ -465,7 +479,8 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 			NODB_SYNTAX_WITH_INDEX("-"," ", "'", " ", true), //Same as previous except each line starts with (n): where (n) is an integer
 			STATEFILE_SYNTAX(" ","=","'",",",false), 
 			STATEFILE_SYNTAX_WITH_INDEX(" ", "=","'",",", false),
-			SURROGATE_EXECUTOR("-P","=",""," ",true);
+			SURROGATE_EXECUTOR("-P","=",""," ",true), 
+			ARRAY_STRING_SYNTAX("","","","",false);
 
 		private final String preKey;
 		private final String keyValSeperator;
