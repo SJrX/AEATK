@@ -9,16 +9,17 @@ import java.util.Random;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import ca.ubc.cs.beta.TestHelper;
+import ca.ubc.cs.beta.ac.RunResult;
 import ca.ubc.cs.beta.ac.config.ProblemInstance;
 import ca.ubc.cs.beta.ac.config.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.ac.config.RunConfig;
 import ca.ubc.cs.beta.config.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.configspace.ParamConfigurationSpace;
-import ca.ubc.cs.beta.instancespecificinfo.InstanceSpecificInfoTestExecutor;
 import ca.ubc.cs.beta.random.SeedableRandomSingleton;
 import ca.ubc.cs.beta.smac.ac.runners.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.smac.ac.runs.AlgorithmRun;
@@ -33,6 +34,8 @@ public class TAETestSet {
 	private static AlgorithmExecutionConfig execConfig;
 	
 	private static ParamConfigurationSpace configSpace;
+	
+	private static final int TARGET_RUNS_IN_LOOPS = 10;
 	@BeforeClass
 	public static void beforeClass()
 	{
@@ -71,8 +74,8 @@ public class TAETestSet {
 		
 		configSpace.setPRNG(r);
 		
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(100);
-		for(int i=0; i < 100; i++)
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
 			ParamConfiguration config = configSpace.getRandomConfiguration();
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT"))
@@ -131,8 +134,8 @@ public class TAETestSet {
 		
 		configSpace.setPRNG(r);
 		
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(100);
-		for(int i=0; i < 100; i++)
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
 			ParamConfiguration config = configSpace.getRandomConfiguration();
 			config.put("solved","ABORT");
@@ -159,7 +162,7 @@ public class TAETestSet {
 		}
 	}
 		
-	@Test
+	@Test(expected=IllegalArgumentException.class)
 	public void testIllegalCaptimeException()
 	{
 		SeedableRandomSingleton.reinit();
@@ -171,11 +174,44 @@ public class TAETestSet {
 		configSpace.setPRNG(r);
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(100);
-		for(int i=0; i < 100; i++)
+	
+		ParamConfiguration config = configSpace.getRandomConfiguration();
+		
+		RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), -1, config);
+		runConfigs.add(rc);
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+	}
+	
+	
+	
+	/**
+	 * Checks to ensure that a misbehaiving wrapper has it's logical
+	 * output corrected (so a SAT run should always have a time < cutoffTime)
+	 * 
+	 * This test fails currently
+	 */
+	@Ignore("Functionality not implemented yet, this test will fail. The feature that it is testing was pushed back")
+	@Test
+	public void testRuntimeGreaterThanCapTime()
+	{
+		SeedableRandomSingleton.reinit();
+		
+		Random r = SeedableRandomSingleton.getRandom();
+		
+		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
+		
+		configSpace.setPRNG(r);
+		
+		double cutoffTime = 300;
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
 			ParamConfiguration config = configSpace.getRandomConfiguration();
-			config.put("solved","ABORT");
-			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
+			
+			config.put("solved", "SAT");
+			
+			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), cutoffTime, config);
 			runConfigs.add(rc);
 		}
 		
@@ -183,20 +219,29 @@ public class TAETestSet {
 		
 		
 		
-		for(RunConfig run : runConfigs)
+		
+			
+			
+		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+		
+		for(AlgorithmRun run : runs)
 		{
 			
-			try {
-				List<AlgorithmRun> runs = tae.evaluateRun(run);
-			} catch(TargetAlgorithmAbortException e)
-			{ 
-				//This is what we wanted 
-				continue;
+			if(run.getRuntime() >= cutoffTime)
+			{
+				assertEquals(RunResult.TIMEOUT, run.getRunResult());
+			} else
+			{
+				assertEquals(run.getRunResult(), RunResult.valueOf(run.getInstanceRunConfig().getParamConfiguration().get("solved")));
+				assertDEquals(run.getInstanceRunConfig().getParamConfiguration().get("runtime"), run.getRuntime(),0.05);
 			}
-			fail("Should not have reached this point, algorithm should have thrown an error");
-
+			
+			
+			
 		}
+			
+			
 	}
-		
+
 	
 }

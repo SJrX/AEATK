@@ -34,6 +34,10 @@ public class RunConfig implements Serializable{
 			throw new IllegalArgumentException("Params cannot be null");
 		}
 		
+		if(cutoffTime  < 0)
+		{
+			throw new IllegalArgumentException("Cutoff time must be non-negative positive");
+		}
 		this.aisp = aisp;
 		this.cutoffTime = cutoffTime;
 		this.params = params;
@@ -50,9 +54,11 @@ public class RunConfig implements Serializable{
 			throw new IllegalArgumentException("AlgorithmInstanceSeedPair Name cannot be null");
 		}
 		
-		
+		if(cutoffTime  < 0)
+		{
+			throw new IllegalArgumentException("Cutoff time must be non-negative positive");
+		}
 
-		
 		if(params == null)
 		{
 			throw new IllegalArgumentException("ParamString cannot be null");

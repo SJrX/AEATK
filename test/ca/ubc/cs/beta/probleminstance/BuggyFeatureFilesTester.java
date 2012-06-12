@@ -10,7 +10,6 @@ import org.junit.Before;
 import org.junit.Test;
 
 import ca.ubc.cs.beta.TestHelper;
-import ca.ubc.cs.beta.probleminstance.ProblemInstanceHelperTester.RuntimeIOException;
 
 /**
  * Test class for various example feature files that we have 
