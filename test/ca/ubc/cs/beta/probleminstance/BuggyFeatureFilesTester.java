@@ -3,8 +3,11 @@ package ca.ubc.cs.beta.probleminstance;
 import static ca.ubc.cs.beta.TestHelper.getTestFile;
 import static org.junit.Assert.fail;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
+import java.io.PrintStream;
+import java.io.PrintWriter;
 
 import org.junit.Before;
 import org.junit.Test;
@@ -68,12 +71,55 @@ public class BuggyFeatureFilesTester {
 	}
 	
 	@Test
+	/**
+	 * Tests that no errors are thrown when training and test set instances aren't disjoint.
+	 */
 	public void bug1294ErrorReporting()
 	{
-		File f = TestHelper.getTestFile("featureFiles/sugar-csc09-timeFeats-1.txt");
 		
+		String feature = TestHelper.getTestFile("featureFiles/sugar-csc09-timeFeats-1.txt").getAbsolutePath();
+		String f = TestHelper.getTestFile("featureFiles/sugar-csc09.csv").getAbsolutePath();
+		String instanceFilesRoot =  TestHelper.getTestFile("featureFiles/sugar-csc09.csv").getParentFile().getParentFile().toString();
+		
+		boolean checkOnDisk = true;
 		try {
-			ProblemInstanceHelper.getInstances(null, null,f.getAbsolutePath(), false);
+			
+			ByteArrayOutputStream bout = new ByteArrayOutputStream();
+			
+			PrintStream old = System.out;
+			System.setOut(new PrintStream(bout));
+			
+			
+			
+			
+		InstanceListWithSeeds ilws = ProblemInstanceHelper.getInstances(f,instanceFilesRoot + File.separator + ((checkOnDisk) ? "instances/":"no-instances/"), feature, !checkOnDisk);
+		
+		
+		
+		
+		ilws = ProblemInstanceHelper.getInstances(f, instanceFilesRoot + File.separator + ((checkOnDisk) ? "instances/":"no-instances/"), feature, !checkOnDisk);
+		
+		String output = bout.toString();
+		System.setOut(old);
+		System.out.println(output);
+		
+		
+		if(output.contains("but the instance Features don't match"))
+		{
+			fail("Instances didn't match up");
+		} else if(output.contains("ERROR"))
+		{
+			fail("Error detected");
+			
+		} else if(output.contains("Matched Features for file name"))
+		{
+			//No matching output
+		} else
+		{
+			fail("No matching output");
+		}
+		
+			//ProblemInstanceHelper.getInstances(null, null,f.getAbsolutePath(), false);
 		} catch(IOException e)
 		{
 			throw new RuntimeIOException(e);
@@ -82,7 +128,7 @@ public class BuggyFeatureFilesTester {
 		
 		
 		
-		getInstanceListWithSeeds("sugar-csc09-timeFeats-1.txt", false);
+	
 		
 	}
 }
