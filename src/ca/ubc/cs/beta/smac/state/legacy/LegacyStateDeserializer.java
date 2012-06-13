@@ -62,7 +62,10 @@ public class LegacyStateDeserializer implements StateDeserializer {
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 	private final RunHistory runHistory;
 	private final InstanceSeedGenerator instanceSeedGenerator;
+	
+	
 	private final EnumMap<RandomPoolType, Random> randomMap;
+	
 	private final int iteration;
 	private final ParamConfiguration incumbent;
 	private static int newSeeds = 1024;	
@@ -77,6 +80,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 	 */
 	public static final int RUN_ITERATION_INDEX = 11;
 	
+	
 	@SuppressWarnings("unchecked")
 	public LegacyStateDeserializer(String restoreFromPath, String id, int iteration, ParamConfigurationSpace configSpace, OverallObjective overallObj, RunObjective runObj, List<ProblemInstance> instances, AlgorithmExecutionConfig execConfig) 
 	{
@@ -84,6 +88,11 @@ public class LegacyStateDeserializer implements StateDeserializer {
 			if(overallObj == null) throw new IllegalArgumentException("Overall Objective Cannot be null");
 			if(runObj == null) throw new IllegalArgumentException("Run Objective cannot be null");
 			if(instances == null) throw new IllegalArgumentException("Instances cannot be null");
+			
+			if(instances.size() == 0) 
+			{
+				log.warn("Got empty instance list, except in the trivial case this will result in an exception");
+			}
 			if(execConfig == null) throw new IllegalArgumentException("Execution Config cannot be null");
 			
 			Object[] args = { iteration, id, restoreFromPath };
@@ -131,7 +140,8 @@ public class LegacyStateDeserializer implements StateDeserializer {
 					}
 					this.iteration = storedIteration;
 					
-					randomMap = (EnumMap<RandomPoolType, Random>) oReader.readObject();
+					randomMap = ((EnumMap<RandomPoolType, Random>) oReader.readObject());
+					
 					instanceSeedGenerator = (InstanceSeedGenerator) oReader.readObject();
 					String paramString = (String) oReader.readObject();
 					
@@ -264,7 +274,19 @@ public class LegacyStateDeserializer implements StateDeserializer {
 						//Don't need cumulative sum NOR run number (index 0 and 12).
 						int thetaIdx = Integer.valueOf(runHistoryLine[1]);
 						int instanceIdx = Integer.valueOf(runHistoryLine[2]);
-						double y = Double.valueOf(runHistoryLine[3]);
+						
+						
+						ProblemInstance pi = instanceMap.get(instanceIdx);
+						if(pi == null)
+						{
+							throw new StateSerializationException("Run History file referenced a Instance ID that does not exist (Column 3) on line: " + Arrays.toString(runHistoryLine) + " we know about " + instances.size() + " instances" );
+						}
+						
+						
+						// We don't really care what this says, so we don't validate it.
+						//double y = Double.valueOf(runHistoryLine[3]);
+						
+						
 						boolean isCensored = ((runHistoryLine[4].trim().equals("0") ? false : true));
 												double cutOffTime = Double.valueOf(runHistoryLine[5]);
 						long seed = -1;
@@ -272,12 +294,20 @@ public class LegacyStateDeserializer implements StateDeserializer {
 							seed = Long.valueOf(runHistoryLine[6]);
 							if(seed == -1)
 							{
+								//This is for Model Building and is probably a bug for restoring state later
+								
 								log.trace("Seed is -1 which means it was deterministic, using a random seed");
 								seed = newSeeds++;
 							}
 						} catch(NumberFormatException e)
 						{
 							seed = Double.valueOf(runHistoryLine[6]).longValue();
+							
+							if(Double.isNaN(seed) || Double.isInfinite(seed))
+							{
+								throw new StateSerializationException("Encountered Illegal Seed Value (either Infinite or Nan) (Column 7) in line: " + Arrays.toString(runHistoryLine));
+							}
+							
 							if(!seedErrorLogged)
 							{
 								log.warn("Seed value specified in imprecise format on line {}  contents: {}", i,  runHistoryLine);
@@ -285,7 +315,12 @@ public class LegacyStateDeserializer implements StateDeserializer {
 							}
 							
 						}
-						double runtime = Double.valueOf(runHistoryLine[7]);
+						double runtime = Double.valueOf(runHistoryLine[7].trim().replaceAll("Inf$", "Infinity"));
+						
+						if(Double.isNaN(runtime) || Double.isInfinite(runtime))
+						{
+							throw new StateSerializationException("Encountered an Illegal Runtime value (Infinity or NaN) (Column 8) on line: " + Arrays.toString(runHistoryLine));
+						}
 						
 						int runLength = -1;
 						
@@ -293,23 +328,25 @@ public class LegacyStateDeserializer implements StateDeserializer {
 							runLength = Integer.valueOf(runHistoryLine[8]); 
 						} catch(NumberFormatException e)
 						{
-							runLength = Double.valueOf(runHistoryLine[8]).intValue();
+							runLength = Double.valueOf(runHistoryLine[8].trim().replaceAll("Inf$", "Infinity")).intValue();
 							if(!runLengthErrorLogged)
 							{
-								log.warn("RunLength value specified in imprecise format on line {}  contents: {}", i,  runHistoryLine);
+								log.warn("RunLength (Column 9) value specified in imprecise format on line {} contents: {}", i,  runHistoryLine);
 								runLengthErrorLogged = true;
 							}
 							
 						}
 						
 						RunResult runResult  = (Integer.valueOf(runHistoryLine[9]) == 1) ? RunResult.SAT : RunResult.TIMEOUT;
-						int quality = (int) (double) Double.valueOf(runHistoryLine[10]);
+						double quality =  (double) Double.valueOf(runHistoryLine[10].trim().replaceAll("Inf$", "Infinity"));
 						int runIteration = Integer.valueOf(runHistoryLine[LegacyStateDeserializer.RUN_ITERATION_INDEX]);
 
 						if(runIteration > iteration) break;
 						if(runIteration < runHistory.getIteration())
 						{
-							throw new StateSerializationException("Run History File contains run data for iteration " + runIteration + " but we have already played back to " + runHistory.getIteration());
+						
+							log.warn("Out of order run detected in line {} (Column 11), current iteration is: {}, this may be a corrupt file, or MATLAB deleting previously capped runs ", Arrays.toString(runHistoryLine), runHistory.getIteration());
+							runIteration = runHistory.getIteration();
 						}
 						while(runIteration > runHistory.getIteration())
 						{
@@ -319,7 +356,8 @@ public class LegacyStateDeserializer implements StateDeserializer {
 						
 						
 						
-						ProblemInstanceSeedPair pisp = new ProblemInstanceSeedPair(instanceMap.get(instanceIdx), seed); 
+					
+						ProblemInstanceSeedPair pisp = new ProblemInstanceSeedPair(pi, seed); 
 						RunConfig runConfig = new RunConfig(pisp, cutOffTime, configMap.get(thetaIdx),isCensored);
 						
 						
@@ -338,11 +376,15 @@ public class LegacyStateDeserializer implements StateDeserializer {
 						try {
 							runHistory.append(run);
 						} catch (DuplicateRunException e) {
-							// TODO Auto-generated catch block
+
 							log.error("Duplicate Run Detected, dropped",run);
 						}
-					} catch(RuntimeException e)
+					} catch(StateSerializationException e)
 					{
+						 throw e;
+					} catch(RuntimeException e) 
+					{
+					
 						throw new StateSerializationException("Error occured while parsing the following line of the runHistory file: " + i + " data "+ Arrays.toString(runHistoryLine), e);
 					}
 				}

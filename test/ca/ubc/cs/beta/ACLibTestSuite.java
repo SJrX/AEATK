@@ -5,6 +5,7 @@ import org.junit.runners.Suite;
 
 import ca.ubc.cs.beta.configspace.*;
 import ca.ubc.cs.beta.probleminstance.*;
+import ca.ubc.cs.beta.state.legacy.LegacyStateDeserializerTester;
 import ca.ubc.cs.beta.targetalgorithmevaluator.TAETestSet;
 import ca.ubc.cs.beta.instancespecificinfo.*;
 
@@ -14,7 +15,8 @@ import ca.ubc.cs.beta.instancespecificinfo.*;
 	ProblemInstanceHelperTester.class,
 	AlgoExecutionInstanceSpecificInfoTest.class,
 	TAETestSet.class,
-	BuggyFeatureFilesTester.class
+	BuggyFeatureFilesTester.class,
+	LegacyStateDeserializerTester.class
 })
 
 public class ACLibTestSuite {

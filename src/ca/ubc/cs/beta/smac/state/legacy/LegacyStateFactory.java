@@ -136,7 +136,7 @@ public class LegacyStateFactory implements StateFactory{
 			return "paramstrings" + dash + id + iteration + ".txt";
 		} else
 		{
-			return path + File.separator + "paramstrings-" + dash + id + iteration + ".txt";
+			return path + File.separator + "paramstrings" + dash + id + iteration + ".txt";
 		}
 			
 	}
