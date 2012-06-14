@@ -49,7 +49,7 @@ public abstract class AbstractConfigToString {
 					sb.append(obj.toString());
 				} else if (obj instanceof Enum)
 				{
-					sb.append(((Enum) obj).name());
+					sb.append(((Enum<?>) obj).name());
 				} else if (obj instanceof AbstractConfigToString)
 				{
 					sb.append(obj.toString());
@@ -178,9 +178,9 @@ public abstract class AbstractConfigToString {
 					} else if(o instanceof Enum)
 					{
 						sb.append(ant.names()[0]).append(" ");
-						sb.append(((Enum) o).name());
+						sb.append(((Enum<?>) o).name());
 						list.add(ant.names()[0]);
-						list.add(((Enum) o).name());
+						list.add(((Enum<?>) o).name());
 					} else 
 					{
 						System.err.println("No idea what o is " + o.getClass()  +" value:" + o + " name " + ant.names()[0]);

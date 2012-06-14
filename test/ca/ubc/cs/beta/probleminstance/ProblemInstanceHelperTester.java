@@ -21,6 +21,7 @@ import static ca.ubc.cs.beta.TestHelper.*;
  */
 //TODO: Check Features
 //TODO: Check New File Format
+@SuppressWarnings("unused")
 public class ProblemInstanceHelperTester {
 
 	
@@ -49,7 +50,11 @@ public class ProblemInstanceHelperTester {
 	static class RuntimeIOException extends RuntimeException
 	{
 		
-		private IOException e;
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 416643478944307403L;
+		
 
 		RuntimeIOException(IOException e)
 		{
@@ -360,6 +365,7 @@ public class ProblemInstanceHelperTester {
 	@Test(expected=ParameterException.class)
 	public void testClassicInstanceSeedMissingColumn()
 	{
+		
 		InstanceListWithSeeds ilws = getInstanceListWithSeeds("classicFormatInstanceSeedMissingColumn.txt", false);
 	
 	}

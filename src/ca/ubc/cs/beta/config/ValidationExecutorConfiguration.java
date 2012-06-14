@@ -29,4 +29,6 @@ public class ValidationExecutorConfiguration {
 	@ParametersDelegate
 	public ValidationOptions validationOptions = new ValidationOptions();
 
+	@Parameter(names="--tunerTime", description="Tuner Time when Validation occured")
+	public double tunerTime = 0; 
 }

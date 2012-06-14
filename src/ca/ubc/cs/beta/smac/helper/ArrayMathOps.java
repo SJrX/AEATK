@@ -89,7 +89,7 @@ public class ArrayMathOps {
 		if(s.length() > 250)
 		{
 			s = s.substring(0,249)+ "...";
-		}http://shop.lenovo.com/SEUILibrary/controller/e/webca/LenovoPortal/en_CA/catalog.workflow:category.details?current-catalog-id=12F0696583E04D86B9B79B0FEC01C087&current-category-id=A328080E436749CB4CEAE7C4428846A7&action=init
+		}
 	
 		//System.out.println("HASH=>" + s);
 		return Math.abs(Arrays.deepHashCode(matrix)) % 32462867;  //Some prime around 2^25 (to prevent overflows in computation)

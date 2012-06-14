@@ -48,6 +48,7 @@ public strictfp class ExpectedExponentialImprovement implements ExpectedImprovem
 
 
 	/* Univariate Normal PDF */
+	@SuppressWarnings("unused")
 	private double normpdf( double x)
 	{
 	    double pi = 3.14159265358979323846264338327950288419716939937510;

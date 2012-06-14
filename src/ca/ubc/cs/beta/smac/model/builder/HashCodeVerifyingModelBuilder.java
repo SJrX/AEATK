@@ -50,7 +50,7 @@ public class HashCodeVerifyingModelBuilder extends BasicModelBuilder {
 		if(preprocessedForest != null)
 		{
 			int preprocessedCode = preprocessedForest.matlabHashCode();
-			log.info("Preprocessed Forest Built with Hash Code: {}",preprocessedCode);
+			log.info(runHash,"Preprocessed Forest Built with Hash Code: {}",preprocessedCode);
 			
 			if(!preprocessedHashes.isEmpty())
 			{

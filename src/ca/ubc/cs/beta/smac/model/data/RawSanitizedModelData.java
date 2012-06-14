@@ -16,7 +16,7 @@ public class RawSanitizedModelData implements SanitizedModelData {
 	private double[] stdDev;
 	private double[] pcaCoeff;
 	private double[][] pcaVec;
-	private double[][] pcaFeatures;
+	//private double[][] pcaFeatures;
 
 	private final boolean logModel;
 	public RawSanitizedModelData(double[][] instanceFeatures, double[][] paramValues, double[] responseValues, int[] usedInstances, boolean logModel)
@@ -46,7 +46,7 @@ public class RawSanitizedModelData implements SanitizedModelData {
 		double[][] instanceFeaturesT = pca.transpose(instanceFeatures);
 		
 		
-		double[] firstStdDev = pca.getRowStdDev(instanceFeaturesT);
+		//double[] firstStdDev = pca.getRowStdDev(instanceFeaturesT);
 		//double[][] pcaedFeatures =pca.getPCA(instanceFeatures, numPCA); 
 		
 		
@@ -63,7 +63,7 @@ public class RawSanitizedModelData implements SanitizedModelData {
 		stdDev = new double[0];
 		pcaCoeff = new double[0];
 		pcaVec = new double[0][];
-		pcaFeatures = new double[instanceFeatures.length][1];
+		//pcaFeatures = new double[instanceFeatures.length][1];
 
 	}
 	

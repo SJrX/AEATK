@@ -202,6 +202,7 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 		return d;
 	}
 	
+	@SuppressWarnings("unused")
 	private int[] convertToPrimitive(Integer[] arr)
 	{
 		int[] d = new int[arr.length];

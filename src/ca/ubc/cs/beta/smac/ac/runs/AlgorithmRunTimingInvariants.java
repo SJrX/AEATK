@@ -18,6 +18,10 @@ import ca.ubc.cs.beta.config.AlgorithmExecutionConfig;
  */
 public class AlgorithmRunTimingInvariants implements AlgorithmRun {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 4108923561335725916L;
 	private final AlgorithmRun run;
 	
 	

@@ -266,6 +266,21 @@ public class ParamConfigurationSpace implements Serializable {
 					for(int k=0; k < e.getValue().size(); k++)
 					{
 
+						String depValue = e.getValue().get(k);
+						String depKey = e.getKey();
+						
+						if(isContinuous.get(depKey))
+						{
+							throw new IllegalArgumentException("Value depends upon continuous parameter, this is not supported: " + key + " depends on " + depKey + " values: " + depValue);
+						}
+						
+						if(!getCategoricalValueMap().get(depKey).keySet().contains(depValue))
+						{
+							throw new IllegalArgumentException("Value depends upon a non-existant or invalid parameter value: " + key + " depends on " + depKey + " having invalid value: " + depValue);
+						}
+						
+						
+				
 						condParentVals[i][j][k] = getCategoricalValueMap().get(e.getKey()).get(e.getValue().get(k));
 						
 						condParentVals[i][j][k]++;
@@ -974,6 +989,59 @@ public class ParamConfigurationSpace implements Serializable {
 					config = new ParamConfiguration(this, valueArray,categoricalSize, parameterDomainContinuous, paramKeyIndexMap);
 					break;
 
+				case SURROGATE_EXECUTOR:
+					valueArray = new double[numberOfParameters];
+					config = new ParamConfiguration(this, valueArray,categoricalSize, parameterDomainContinuous, paramKeyIndexMap);
+					
+					tmpParamString = paramString.trim().replaceAll("-P", "");
+					
+					params = tmpParamString.split(" "); 
+					Set<String> namesSpecified = new HashSet<String>();
+					
+					for(int i=0; i < params.length; i++)
+					{
+						String[] param = params[i].split("=");
+						
+						if(param.length != 2)
+						{
+							throw new IllegalArgumentException("Param String could not parse portion of string " + paramString + " error occured while seperating: (" + params[i] + ")") ;
+						} else
+						{
+							namesSpecified.add(param[0].trim());
+							config.put(param[0].trim(), param[1].trim());
+						}
+					}
+					
+				
+					
+					if(namesSpecified.equals(config.getActiveParameters()))
+					{
+						break;
+					} else
+					{
+						Set<String> missingButRequired = new HashSet<String>();
+						Set<String> specifiedButNotActive = new HashSet<String>();
+						missingButRequired.addAll(config.getActiveParameters());
+						missingButRequired.removeAll(namesSpecified);
+						
+						specifiedButNotActive.addAll(namesSpecified);
+						specifiedButNotActive.removeAll(config.getActiveParameters());
+						
+						
+						throw new IllegalArgumentException("Param String specified some combination of inactive parameters and/or missed active parameters. \nRequired Parameters: " + config.getActiveParameters().size() + "\nSpecified Parameters: " + namesSpecified.size() + "\nRequired But Missing: " + missingButRequired.toString() + "\nSpecified But Not Required" + specifiedButNotActive.toString());
+						
+						
+						
+						
+						
+						
+						
+					}
+					
+					
+					
+					
+					
 					
 					
 				default:
@@ -986,7 +1054,7 @@ public class ParamConfigurationSpace implements Serializable {
 			return config;
 		} catch(IllegalArgumentException e )
 		{
-			throw new IllegalArgumentException(e.getMessage() + " String: " + paramString + " Format: " + f);
+			throw new IllegalArgumentException(e.getMessage() + "\n String: " + paramString + " Format: " + f);
 		}
 		
 		

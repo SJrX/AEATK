@@ -148,7 +148,7 @@ public class SMACConfig extends AbstractConfigToString {
 					sb.append(obj.toString());
 				} else if (obj instanceof Enum)
 				{
-					sb.append(((Enum) obj).name());
+					sb.append(((Enum<?>) obj).name());
 				} else if (obj instanceof RandomForestConfig)
 				{
 					sb.append(obj.toString());

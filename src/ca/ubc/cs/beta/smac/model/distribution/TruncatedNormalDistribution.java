@@ -21,6 +21,10 @@ import org.apache.commons.math3.distribution.NormalDistribution;
  */
 public class TruncatedNormalDistribution extends AbstractRealDistribution {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -901332698348589236L;
 	private final double mu;
 	private final double variance;
 	private final double sigma;

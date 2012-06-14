@@ -26,7 +26,10 @@ public class BuggyFeatureFilesTester {
 	static class RuntimeIOException extends RuntimeException
 	{
 		
-		private IOException e;
+		/**
+		 * 
+		 */
+		private static final long serialVersionUID = 7573726027415648337L;
 
 		RuntimeIOException(IOException e)
 		{
