@@ -5,11 +5,9 @@ import ca.ubc.cs.beta.smac.PCA;
 import ca.ubc.cs.beta.smac.helper.ArrayMathOps;
 
 public class RawSanitizedModelData implements SanitizedModelData {
-
-	
 	
 	private final ParamConfigurationSpace configSpace;
-	private final double[][] configs;
+	protected final double[][] configs;
 	private final double[] responseValues;
 	private final double[][] prePCAInstanceFeatures;
 	private double[] means;

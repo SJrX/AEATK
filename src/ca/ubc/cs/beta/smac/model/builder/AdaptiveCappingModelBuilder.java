@@ -85,7 +85,7 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 			
 		}
 		/**
-		 * While we are 
+		 * While imputed values change more than a limit, continue.
 		 */
 		double last_mean = Double.NEGATIVE_INFINITY;
 		
