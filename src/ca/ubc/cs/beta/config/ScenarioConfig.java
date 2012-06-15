@@ -17,6 +17,7 @@ import ca.ubc.cs.beta.smac.RunObjective;
  */
 public class ScenarioConfig extends AbstractConfigToString{
 
+	
 	@ParametersDelegate
 	public AlgoExecConfig algoExecConfig = new AlgoExecConfig();
 	
@@ -57,5 +58,7 @@ public class ScenarioConfig extends AbstractConfigToString{
 	@Parameter(names={"--outputDirectory","--outdir"}, required=false, description="Output Directory")
 	public String outputDirectory = System.getProperty("user.dir") + File.separator + "smac-output";
 
+	@ParametersDelegate
+	public ParamFileDelegate paramFile = new ParamFileDelegate();
 	
 }

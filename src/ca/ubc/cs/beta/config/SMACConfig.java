@@ -25,6 +25,7 @@ public class SMACConfig extends AbstractConfigToString {
 	@ParametersDelegate
 	public ScenarioConfig scenarioConfig = new ScenarioConfig();
 	
+	
 	@Parameter(names="--seed", description="Seed for Random Number Generator [0 means don't use a seed]")
 	public long seed = 0;
 	
@@ -32,9 +33,6 @@ public class SMACConfig extends AbstractConfigToString {
 	public String experimentDir = System.getProperty("user.dir") + File.separator + "";
 	
 
-	@Parameter(names={"-p", "--paramFile","--paramfile"}, description="File containing Parameter Space of Execution", required=true)
-	public String paramFile;
-	
 	@Parameter(names="--numIterations", description = "Total number of iterations to perform")
 	public int numIteratations = Integer.MAX_VALUE;
 	

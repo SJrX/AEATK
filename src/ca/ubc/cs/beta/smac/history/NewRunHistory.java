@@ -167,9 +167,11 @@ public class NewRunHistory implements RunHistory {
 			//If the value already existed then either
 			//we have a duplicate run OR the previous run was capped
 			
-			Set<ProblemInstanceSeedPair> cappedRunsForConfig = getCappedAlgorithmInstanceSeedPairs(config);
+			Set<ProblemInstanceSeedPair> cappedRunsForConfig = cappedRuns.get(config);
 			
-			if(cappedRunsForConfig.contains(pisp))
+			
+			
+			if((cappedRunsForConfig != null) && cappedRunsForConfig.contains(pisp))
 			{
 				//We remove it now and will re-add it if this current run was capped
 				cappedRunsForConfig.remove(pisp); 

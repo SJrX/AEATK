@@ -38,9 +38,10 @@ public class JCommanderHelper {
 			 * Not sure how to support multiple objects
 			 */
 			Object o = jCommander.getObjects().get(0);
-		
+			
 			
 			List<Object> objectsToScan = new LinkedList<Object>();
+			objectsToScan.add(o);
 			/**
 			 * Scans the object tree for all @ParametersDelegates
 			 */

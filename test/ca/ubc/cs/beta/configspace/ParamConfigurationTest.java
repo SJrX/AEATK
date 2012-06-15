@@ -29,9 +29,9 @@ public class ParamConfigurationTest {
 	}
 	
 	
-	private ParamConfigurationSpace getConfigSpaceForFile(String f)
+	public static ParamConfigurationSpace getConfigSpaceForFile(String f)
 	{
-		URL url = this.getClass().getClassLoader().getResource(f);
+		URL url = ParamConfigurationSpace.class.getClassLoader().getResource(f);
 		File file = new File(url.getPath());
 		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(file);
 		return configSpace;

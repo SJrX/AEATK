@@ -35,7 +35,7 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 			
 			this.acResult = RunResult.getAutomaticConfiguratorResultForCode(Integer.valueOf(resultLine[0]));
 			this.runtime = Double.valueOf(resultLine[1]);
-			this.runLength = Integer.valueOf(resultLine[2]);
+			this.runLength = Double.valueOf(resultLine[2]);
 			this.quality = Double.valueOf(resultLine[3]);
 			this.resultSeed = Long.valueOf(resultLine[4]);
 			this.resultLine = result;
