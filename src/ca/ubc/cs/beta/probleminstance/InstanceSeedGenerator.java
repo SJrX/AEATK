@@ -1,11 +1,12 @@
 package ca.ubc.cs.beta.probleminstance;
 
+import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 
 import ca.ubc.cs.beta.ac.config.ProblemInstance;
 
-public interface InstanceSeedGenerator {
+public interface InstanceSeedGenerator extends Serializable {
 
 	public void reinit();
 

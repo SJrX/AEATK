@@ -17,7 +17,7 @@ import org.slf4j.LoggerFactory;
 import ca.ubc.cs.beta.ac.config.ProblemInstance;
 import ec.util.MersenneTwister;
 
-public class RandomInstanceSeedGenerator implements Serializable, InstanceSeedGenerator {
+public class RandomInstanceSeedGenerator implements InstanceSeedGenerator {
 
 	/**
 	 * 
