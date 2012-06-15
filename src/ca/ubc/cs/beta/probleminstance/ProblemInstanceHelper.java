@@ -70,13 +70,22 @@ public class ProblemInstanceHelper {
 	public static InstanceListWithSeeds getInstances(String filename, String experimentDir, String featureFileName, boolean checkFileExistsOnDisk) throws IOException	{
 	
 		return getInstances(filename, experimentDir, featureFileName, checkFileExistsOnDisk, 0, Integer.MAX_VALUE);
-		
 	}
 	
+	public static InstanceListWithSeeds getInstances(String filename, String experimentDir, String featureFileName, boolean checkFileExistsOnDisk, long seed, boolean deterministic) throws IOException
+	{
+		return getInstances(filename, experimentDir, featureFileName, checkFileExistsOnDisk, seed, Integer.MAX_VALUE, deterministic);
+	}
 	
-	public static InstanceListWithSeeds getInstances(String filename, String experimentDir, String featureFileName, boolean checkFileExistsOnDisk, long seed, int maxSeedsPerInstance) throws IOException {
+	public static InstanceListWithSeeds getInstances(String filename, String experimentDir, String featureFileName, boolean checkFileExistsOnDisk, long seed, int maxSeedsPerInstance) throws IOException
+	{
 		
-		logger.info("Loading instances from file: {} and experiment dir {}", filename, experimentDir);
+		return getInstances(filename, experimentDir, featureFileName, checkFileExistsOnDisk, seed, Integer.MAX_VALUE, false);
+	}
+	
+	public static InstanceListWithSeeds getInstances(String instanceFileName, String experimentDir, String featureFileName, boolean checkFileExistsOnDisk, long seed, int maxSeedsPerInstance, boolean deterministic) throws IOException {
+		
+		logger.info("Loading instances from file: {} and experiment dir {}", instanceFileName, experimentDir);
 		
 
 		List<ProblemInstance> instances = new ArrayList<ProblemInstance>();
@@ -130,17 +139,41 @@ public class ProblemInstanceHelper {
 		List<String> instanceList = new ArrayList<String>(featuresMap.size());
 		InstanceSeedGenerator gen; 
 		Map<String, String> instanceSpecificInfo = Collections.emptyMap();
-		if(filename != null)
+		if(instanceFileName != null)
 		{
 			
 			
-			File instanceListFile = getFileForPath(experimentDir, filename);
+			File instanceListFile = getFileForPath(experimentDir, instanceFileName);
 			
 			InstanceListWithSeeds insc = getListAndSeedGen(instanceListFile,seed, maxSeedsPerInstance);
 			instanceList = insc.getInstancesByName();
 			gen = insc.getSeedGen();
 			instanceSpecificInfo = insc.getInstanceSpecificInfo();
-			
+			if(deterministic)
+			{
+				if(gen instanceof SetInstanceSeedGenerator)
+				{
+					logger.warn("Detected that seeds have been preloaded, yet the algorithm is listed as deterministic, generally this means we should use -1 as a seed");
+					
+					
+				} else
+				{
+					logger.info("Deterministic Algorithm, selecting hard coded instance seed generator");
+					
+					
+					LinkedHashMap<String, List<Long>> instanceSeedMap = new LinkedHashMap<String, List<Long>>(); 
+					
+					for(String i : instanceList)
+					{
+						List<Long> l = new ArrayList<Long>(1);
+						l.add(-1L);
+						
+						instanceSeedMap.put(i,l);
+					}
+					gen = new SetInstanceSeedGenerator(instanceSeedMap, instanceList, 1);
+				}
+				
+			}
 			
 			
 		} else
