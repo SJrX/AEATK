@@ -278,8 +278,6 @@ public class ParamConfigurationSpace implements Serializable {
 						{
 							throw new IllegalArgumentException("Value depends upon a non-existant or invalid parameter value: " + key + " depends on " + depKey + " having invalid value: " + depValue);
 						}
-						
-						
 				
 						condParentVals[i][j][k] = getCategoricalValueMap().get(e.getKey()).get(e.getValue().get(k));
 						
