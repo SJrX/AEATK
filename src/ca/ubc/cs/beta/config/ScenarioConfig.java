@@ -59,6 +59,6 @@ public class ScenarioConfig extends AbstractConfigToString{
 	public String outputDirectory = System.getProperty("user.dir") + File.separator + "smac-output";
 
 	@ParametersDelegate
-	public ParamFileDelegate paramFile = new ParamFileDelegate();
+	public ParamFileDelegate paramFileDelegate = new ParamFileDelegate();
 	
 }

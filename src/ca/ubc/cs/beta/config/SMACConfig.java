@@ -107,6 +107,9 @@ public class SMACConfig extends AbstractConfigToString {
 	@Parameter(names="--skipValidation", description="Do not perform validation at the end")
 	public boolean skipValidation = false;
 	
+	
+	@Parameter(names="--maxIncumbentRuns", description="Maximum Number of Incumbent Runs allowed", validateWith=PositiveInteger.class)
+	public int maxIncumbentRuns = 2000;
 	@ParametersDelegate
 	public ValidationOptions validationOptions = new ValidationOptions();
 	

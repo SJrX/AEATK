@@ -11,8 +11,6 @@ public class ValidationExecutorConfiguration {
 	@ParametersDelegate
 	public ScenarioConfig scenarioConfig = new ScenarioConfig();
 	
-	@Parameter(names={"-p", "--paramFile","--paramfile"}, description="File containing Parameter Space of Execution", required=true)
-	public String paramFile;
 	
 	@Parameter(names="--maxConcurrentAlgoExecs", description="Maximum number of concurrent target algorithm executions", validateWith=PositiveInteger.class)
 	public int maxConcurrentAlgoExecs = 1;
@@ -31,4 +29,7 @@ public class ValidationExecutorConfiguration {
 
 	@Parameter(names="--tunerTime", description="Tuner Time when Validation occured")
 	public double tunerTime = 0; 
+	
+	@Parameter(names="--useScenarioOutDir")
+	public boolean useScenarioOutDir = false;
 }
