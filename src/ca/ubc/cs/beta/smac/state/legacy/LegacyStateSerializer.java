@@ -14,7 +14,7 @@ import org.slf4j.LoggerFactory;
 import ca.ubc.cs.beta.ac.RunResult;
 import ca.ubc.cs.beta.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.configspace.ParamConfiguration.StringFormat;
-import ca.ubc.cs.beta.probleminstance.InstanceSeedGenerator;
+import ca.ubc.cs.beta.seedgenerator.InstanceSeedGenerator;
 import ca.ubc.cs.beta.smac.ac.runs.AlgorithmRun;
 import ca.ubc.cs.beta.smac.exceptions.StateSerializationException;
 import ca.ubc.cs.beta.smac.history.RunData;

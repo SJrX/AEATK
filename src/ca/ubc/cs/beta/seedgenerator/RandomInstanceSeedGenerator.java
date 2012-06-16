@@ -1,4 +1,4 @@
-package ca.ubc.cs.beta.probleminstance;
+package ca.ubc.cs.beta.seedgenerator;
 
 import java.io.Serializable;
 import java.util.ArrayList;
@@ -168,6 +168,18 @@ public class RandomInstanceSeedGenerator implements InstanceSeedGenerator {
 		
 		
 		
+	}
+
+	@Override
+	public int getInitialSeedCount() {
+
+		return Integer.MAX_VALUE;
+	}
+
+	@Override
+	public boolean allInstancesHaveSameNumberOfSeeds() {
+
+		return true; 
 	}
 	
 	

@@ -17,8 +17,8 @@ import ca.ubc.cs.beta.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.configspace.ParamConfigurationSpace;
 
 import ca.ubc.cs.beta.probleminstance.InstanceListWithSeeds;
-import ca.ubc.cs.beta.probleminstance.InstanceSeedGenerator;
 import ca.ubc.cs.beta.probleminstance.ProblemInstanceHelperTester;
+import ca.ubc.cs.beta.seedgenerator.InstanceSeedGenerator;
 import ca.ubc.cs.beta.smac.ac.runners.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.smac.ac.runs.AlgorithmRun;
 

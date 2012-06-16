@@ -28,8 +28,8 @@ import ca.ubc.cs.beta.config.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.configspace.ParamConfiguration.StringFormat;
-import ca.ubc.cs.beta.probleminstance.InstanceSeedGenerator;
-import ca.ubc.cs.beta.probleminstance.RandomInstanceSeedGenerator;
+import ca.ubc.cs.beta.seedgenerator.InstanceSeedGenerator;
+import ca.ubc.cs.beta.seedgenerator.RandomInstanceSeedGenerator;
 import ca.ubc.cs.beta.smac.OverallObjective;
 import ca.ubc.cs.beta.smac.RunObjective;
 import ca.ubc.cs.beta.smac.ac.runs.AlgorithmRun;
@@ -292,13 +292,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 						long seed = -1;
 						try {
 							seed = Long.valueOf(runHistoryLine[6]);
-							if(seed == -1)
-							{
-								//This is for Model Building and is probably a bug for restoring state later
-								
-								log.trace("Seed is -1 which means it was deterministic, using a random seed");
-								seed = newSeeds++;
-							}
+						
 						} catch(NumberFormatException e)
 						{
 							seed = Double.valueOf(runHistoryLine[6]).longValue();
@@ -377,7 +371,42 @@ public class LegacyStateDeserializer implements StateDeserializer {
 							runHistory.append(run);
 						} catch (DuplicateRunException e) {
 
-							log.error("Duplicate Run Detected, dropped",run);
+							
+							
+							if(seed == -1)
+							{
+								//This is for Model Building and is probably a bug for restoring state later
+								
+								log.trace("Seed is -1 which means it was deterministic, logging run with a new seed");
+								
+								seed = newSeeds++;
+								
+								
+
+								resultLine.append(runResult.getResultCode()).append(", ");
+								resultLine.append(runtime).append(", ");
+								resultLine.append(runLength).append(", ");
+								resultLine.append(quality).append(", ");
+								resultLine.append(seed);
+								
+								run = new ExistingAlgorithmRun(execConfig, runConfig, resultLine.toString());
+								
+								log.trace("Appending new run to runHistory: ", run);
+								try {
+									runHistory.append(run);
+								} catch(DuplicateRunException e2)
+								{
+									log.info("Could not restore run, duplicate run detected again for deterministic run: {} on line {} ", run, Arrays.toString(runHistoryLine));
+								}
+									
+								
+								
+							} else
+							{
+								log.error("Duplicate Run Detected dropped {} from line: {}",run, Arrays.toString(runHistoryLine));
+								
+							}
+							
 						}
 					} catch(StateSerializationException e)
 					{

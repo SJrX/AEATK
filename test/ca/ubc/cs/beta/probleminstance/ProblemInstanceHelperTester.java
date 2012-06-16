@@ -11,6 +11,9 @@ import org.junit.Test;
 import com.beust.jcommander.ParameterException;
 
 import ca.ubc.cs.beta.ac.config.ProblemInstance;
+import ca.ubc.cs.beta.seedgenerator.InstanceSeedGenerator;
+import ca.ubc.cs.beta.seedgenerator.RandomInstanceSeedGenerator;
+import ca.ubc.cs.beta.seedgenerator.SetInstanceSeedGenerator;
 import static org.junit.Assert.*;
 import static ca.ubc.cs.beta.TestHelper.*;
 
@@ -75,6 +78,12 @@ public class ProblemInstanceHelperTester {
 	
 	public static InstanceListWithSeeds getInstanceListWithSeeds(String s, boolean checkOnDisk)
 	{
+		return getInstanceListWithSeeds(s,checkOnDisk, false);
+	}
+	
+	
+	public static InstanceListWithSeeds getInstanceListWithSeeds(String s, boolean checkOnDisk, boolean deterministic)
+	{
 		File f = null;
 		try {
 		 f = getTestFile("instanceFiles" + File.separator +s);
@@ -90,7 +99,7 @@ public class ProblemInstanceHelperTester {
 		
 		
 		try {
-			return ProblemInstanceHelper.getInstances(f.getAbsolutePath(), instanceFilesRoot + File.separator + ((checkOnDisk) ? "instances/":"no-instances/"), checkOnDisk);
+			return ProblemInstanceHelper.getInstances(f.getAbsolutePath(), instanceFilesRoot + File.separator + ((checkOnDisk) ? "instances/":"no-instances/"), checkOnDisk, deterministic);
 		} catch(IOException e)
 		{
 			throw new RuntimeIOException(e);
@@ -114,6 +123,8 @@ public class ProblemInstanceHelperTester {
 			assertEquals(ilws.getSeedGen().getProblemInstanceOrder(ilws.getInstances()).size(),NON_SPACE_INSTANCES+addlInstances);
 		}
 		
+		assertTrue(ilws.getSeedGen().allInstancesHaveSameNumberOfSeeds());
+		assertEquals(Integer.MAX_VALUE, ilws.getSeedGen().getInitialSeedCount());
 		
 		List<String> instanceNames = new ArrayList<String>();
 		
@@ -145,12 +156,13 @@ public class ProblemInstanceHelperTester {
 	{
 
 		
+		int expectedSeedCount = NON_SPACE_INSTANCES*(NON_SPACE_INSTANCES+1)/2;
 		if(!(ilws.getSeedGen() instanceof SetInstanceSeedGenerator))
 		{
 			fail("Expected Set Instance Seed Generator");
 		} else {
 			//Relies on the way instance seed pairs are used.
-			assertEquals(ilws.getSeedGen().getProblemInstanceOrder(ilws.getInstances()).size(),NON_SPACE_INSTANCES*(NON_SPACE_INSTANCES+1)/2);
+			assertEquals(ilws.getSeedGen().getProblemInstanceOrder(ilws.getInstances()).size(),expectedSeedCount);
 		}
 		
 		
@@ -170,6 +182,10 @@ public class ProblemInstanceHelperTester {
 			
 			assertTrue("Could not finding matching instance to instance" + i, match);
 		}
+		
+		assertEquals(ilws.getSeedGen().getInitialSeedCount(),expectedSeedCount);
+		assertFalse(ilws.getSeedGen().allInstancesHaveSameNumberOfSeeds());
+		
 		
 		assertEquals(ilws.getInstances().size(),NON_SPACE_INSTANCES+addlInstances);
 		
@@ -206,6 +222,8 @@ public class ProblemInstanceHelperTester {
 			fail("Expected Random Instance Seed Generator");
 		}
 		
+		assertTrue(ilws.getSeedGen().allInstancesHaveSameNumberOfSeeds());
+		assertEquals(Integer.MAX_VALUE, ilws.getSeedGen().getInitialSeedCount());
 		
 		List<String> instanceNames = new ArrayList<String>();
 		
@@ -274,8 +292,10 @@ public class ProblemInstanceHelperTester {
 			
 			assertTrue("Could not finding matching instance to instance" + i, match);
 		}
-		
+		assertEquals(NON_SPACE_INSTANCES*(NON_SPACE_INSTANCES+1)/2,ilws.getSeedGen().getInitialSeedCount());
 		assertEquals(ilws.getInstances().size(),NON_SPACE_INSTANCES+addlInstances);
+		
+		assertFalse(ilws.getSeedGen().allInstancesHaveSameNumberOfSeeds());
 		
 		InstanceSeedGenerator gen = ilws.getSeedGen();
 		for(int i =0; i < NON_SPACE_INSTANCES+addlInstances; i++)
@@ -361,6 +381,21 @@ public class ProblemInstanceHelperTester {
 		validateClassicNonSpaceInstanceSeed(ilws);
 		
 	}
+	
+	/**
+	 * Verifies that when the instanceSeedFile has an equal number of seeds per instance the
+	 * methods return the correct values  
+	 * 
+	 */
+	@Test
+	public void testClassicInstanceSeedFileValidEvenNumberOfSeeds()
+	{
+		
+		InstanceListWithSeeds ilws = getInstanceListWithSeeds("classicFormatInstanceSeedValidEvenNumberOfSeeds.txt", false);
+		assertEquals(30, ilws.getSeedGen().getInitialSeedCount());
+		assertTrue(ilws.getSeedGen().allInstancesHaveSameNumberOfSeeds());
+	}
+	
 	
 	@Test(expected=ParameterException.class)
 	public void testClassicInstanceSeedMissingColumn()

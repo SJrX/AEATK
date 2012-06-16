@@ -23,6 +23,9 @@ import org.slf4j.LoggerFactory;
 import au.com.bytecode.opencsv.CSVReader;
 import ca.ubc.cs.beta.ac.config.ProblemInstance;
 import ca.ubc.cs.beta.models.surrogate.helpers.csv.ConfigCSVFileHelper;
+import ca.ubc.cs.beta.seedgenerator.InstanceSeedGenerator;
+import ca.ubc.cs.beta.seedgenerator.RandomInstanceSeedGenerator;
+import ca.ubc.cs.beta.seedgenerator.SetInstanceSeedGenerator;
 
 import com.beust.jcommander.ParameterException;
 
@@ -54,10 +57,7 @@ public class ProblemInstanceHelper {
 
 	private static Logger logger = LoggerFactory.getLogger(ProblemInstanceHelper.class);
 	
-	public static InstanceListWithSeeds getInstances(String filename, String experimentDir, boolean checkFileExistsOnDisk) throws IOException
-	{
-		return getInstances(filename, experimentDir, null, checkFileExistsOnDisk);
-	}
+	
 	
 	private static final Map<String, ProblemInstance> cachedProblemInstances = new HashMap<String, ProblemInstance>();
 
@@ -67,6 +67,15 @@ public class ProblemInstanceHelper {
 		cachedProblemInstances.clear();
 		
 	}
+	public static InstanceListWithSeeds getInstances(String filename, String experimentDir, boolean checkFileExistsOnDisk) throws IOException
+	{
+		return getInstances(filename, experimentDir, null, checkFileExistsOnDisk);
+	}
+	public static InstanceListWithSeeds getInstances(String filename, String experimentDir, boolean checkFileExistsOnDisk, boolean deterministic) throws IOException
+	{
+		return getInstances(filename, experimentDir, null, checkFileExistsOnDisk, deterministic);
+	}
+	
 	public static InstanceListWithSeeds getInstances(String filename, String experimentDir, String featureFileName, boolean checkFileExistsOnDisk) throws IOException	{
 	
 		return getInstances(filename, experimentDir, featureFileName, checkFileExistsOnDisk, 0, Integer.MAX_VALUE);
@@ -82,6 +91,12 @@ public class ProblemInstanceHelper {
 		
 		return getInstances(filename, experimentDir, featureFileName, checkFileExistsOnDisk, seed, Integer.MAX_VALUE, false);
 	}
+	
+	public static InstanceListWithSeeds getInstances(String filename, String experimentDir, String featureFileName, boolean checkFileExistsOnDisk, boolean deterministic) throws IOException	{
+		
+		return getInstances(filename, experimentDir, featureFileName, checkFileExistsOnDisk, 0, Integer.MAX_VALUE, deterministic);
+	}
+	
 	
 	public static InstanceListWithSeeds getInstances(String instanceFileName, String experimentDir, String featureFileName, boolean checkFileExistsOnDisk, long seed, int maxSeedsPerInstance, boolean deterministic) throws IOException {
 		
@@ -596,4 +611,5 @@ public class ProblemInstanceHelper {
 			v.declaredInstanceOrderForSeeds = problemInstanceDeclaredOrder;
 			return v;
 	}
+	
 }

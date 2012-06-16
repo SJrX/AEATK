@@ -1,4 +1,4 @@
-package ca.ubc.cs.beta.probleminstance;
+package ca.ubc.cs.beta.seedgenerator;
 
 import java.util.ArrayList;
 import java.util.Collection;
@@ -14,12 +14,20 @@ import ca.ubc.cs.beta.ac.config.ProblemInstance;
 
 public class SetInstanceSeedGenerator implements InstanceSeedGenerator {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 8634557199869232040L;
 	private final LinkedHashMap<String, List<Long>> instances;
 	private final int maxSeedsPerConfig;
 	
 	private final Map<String, Integer> piKeyToIntMap = new HashMap<String, Integer>();
 	private final List<Queue<Long>> seeds;
 	private final List<String> instanceOrder;
+	private final int initialSeedCount;
+	private final boolean allInstanceHaveSameNumberOfSeeds;
+	
+	
 /*
 	public SetInstanceSeedGenerator(
 			LinkedHashMap<String, List<Long>> instances, int maxSeedsPerConfig) {
@@ -48,10 +56,33 @@ public class SetInstanceSeedGenerator implements InstanceSeedGenerator {
 		seeds = new ArrayList<Queue<Long>>(instances.size());
 		int i=0;
 		
-		for(String s : instances.keySet())
+		//Stores the total number of seeds
+		int seedSum = 0;
+		
+		//Stores the total 
+		int lastSeedCount = -1;
+		
+		boolean allSeedsSame = true;
+		for(Entry<String, List<Long>> ent : instances.entrySet())
 		{
-			piKeyToIntMap.put(s, i++);
+			piKeyToIntMap.put(ent.getKey(), i++);
+			
+			seedSum+= ent.getValue().size();
+			
+			if(lastSeedCount != -1)
+			{
+				if(allSeedsSame)
+				{
+					allSeedsSame = lastSeedCount==ent.getValue().size();
+				}
+			} else
+			{
+				lastSeedCount = ent.getValue().size();
+			}
 		}
+		
+		this.initialSeedCount = seedSum;
+		this.allInstanceHaveSameNumberOfSeeds = allSeedsSame;
 		
 		
 		reinit();
@@ -132,6 +163,26 @@ public class SetInstanceSeedGenerator implements InstanceSeedGenerator {
 		}
 		
 		return piOrder;
+	}
+
+
+
+
+
+	@Override
+	public int getInitialSeedCount() {
+
+		return initialSeedCount;
+	}
+
+
+
+
+
+	@Override
+	public boolean allInstancesHaveSameNumberOfSeeds() {
+
+		return allInstanceHaveSameNumberOfSeeds;
 	}
 
 }

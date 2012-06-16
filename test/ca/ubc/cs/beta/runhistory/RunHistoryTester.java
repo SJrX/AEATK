@@ -8,6 +8,7 @@ import java.util.Random;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import ca.ubc.cs.beta.ac.RunResult;
@@ -19,8 +20,9 @@ import ca.ubc.cs.beta.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.configspace.ParamConfigurationTest;
 import ca.ubc.cs.beta.probleminstance.InstanceListWithSeeds;
-import ca.ubc.cs.beta.probleminstance.InstanceSeedGenerator;
+import ca.ubc.cs.beta.probleminstance.ProblemInstanceHelper;
 import ca.ubc.cs.beta.probleminstance.ProblemInstanceHelperTester;
+import ca.ubc.cs.beta.seedgenerator.InstanceSeedGenerator;
 import ca.ubc.cs.beta.smac.OverallObjective;
 import ca.ubc.cs.beta.smac.RunObjective;
 import ca.ubc.cs.beta.smac.ac.runs.AlgorithmRun;
@@ -55,7 +57,7 @@ public class RunHistoryTester {
 	@Before
 	public void setUp()
 	{
-	
+		ProblemInstanceHelper.clearCache();
 	}
 	/**
 	 * Trying to replace a capped run causes an UnsupportedOperationException
@@ -101,6 +103,84 @@ public class RunHistoryTester {
 			
 		}
 		
+	}
+	
+	@Ignore("To fix later, we just crash currently")
+	@Test
+	/**
+	 * This tests what happens when we have various numbers of seeds available for individual instances
+	 * instead of a constant number.
+	 */
+	public void testUnequalInstanceSeedsAvailable()
+	{
+
+		Random rand = new MersenneTwister();
+		InstanceListWithSeeds ilws = ProblemInstanceHelperTester.getInstanceListWithSeeds("classicFormatInstanceSeedValid.txt", false);
+		
+		InstanceSeedGenerator insc = ilws.getSeedGen();
+		RunHistory r = new NewRunHistory(insc, OverallObjective.MEAN, OverallObjective.MEAN, RunObjective.RUNTIME);
+		
+		ParamConfiguration defaultConfig = configSpace.getDefaultConfiguration();
+		
+		try {
+			for(int i=0; i < 55; i++)
+			{
+				
+				ProblemInstanceSeedPair pisp = r.getRandomInstanceSeedWithFewestRunsFor(defaultConfig, ilws.getInstances(), rand);
+				
+				RunConfig runConfig = new RunConfig(pisp, 1, defaultConfig,true);
+				AlgorithmRun run = new ExistingAlgorithmRun(execConfig, runConfig, "0, 1 , 0 , 0, " + pisp.getSeed());
+				
+				
+				
+				r.append(run);
+				//System.out.println(r.getEmpiricalCost(defaultConfig, r.getInstancesRan(defaultConfig), 300));
+			}
+		} catch (DuplicateRunException e) {
+			fail("Should not have gotten a duplicate run exception");
+			
+		}
+
 		
 	}
+	
+	
+	@Test
+	@Ignore("This may not be an error condition (The IllegalStateException)")
+	/**
+	 * This tests what happens when we have no more seeds available
+	 */
+	public void testNoMoreSeedsAvailable()
+	{
+
+		Random rand = new MersenneTwister();
+		InstanceListWithSeeds ilws = ProblemInstanceHelperTester.getInstanceListWithSeeds("classicFormatValid.txt", false, true);
+		
+		InstanceSeedGenerator insc = ilws.getSeedGen();
+		RunHistory r = new NewRunHistory(insc, OverallObjective.MEAN, OverallObjective.MEAN, RunObjective.RUNTIME);
+		
+		ParamConfiguration defaultConfig = configSpace.getDefaultConfiguration();	
+		
+		try {
+			for(int i=0; i < 55; i++)
+			{
+				
+				ProblemInstanceSeedPair pisp = r.getRandomInstanceSeedWithFewestRunsFor(defaultConfig, ilws.getInstances(), rand);
+				
+				RunConfig runConfig = new RunConfig(pisp, 1, defaultConfig,true);
+				AlgorithmRun run = new ExistingAlgorithmRun(execConfig, runConfig, "0, 1 , 0 , 0, " + pisp.getSeed());
+				
+				
+				
+				r.append(run);
+				//System.out.println(r.getEmpiricalCost(defaultConfig, r.getInstancesRan(defaultConfig), 300));
+			}
+		} catch (DuplicateRunException e) {
+			fail("Should not have gotten a duplicate run exception");
+			
+		}
+		
+	}
+	
+	
 }
