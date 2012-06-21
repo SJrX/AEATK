@@ -10,7 +10,6 @@ import org.junit.Test;
 
 import com.beust.jcommander.ParameterException;
 
-import ca.ubc.cs.beta.ac.config.ProblemInstance;
 import ca.ubc.cs.beta.seedgenerator.InstanceSeedGenerator;
 import ca.ubc.cs.beta.seedgenerator.RandomInstanceSeedGenerator;
 import ca.ubc.cs.beta.seedgenerator.SetInstanceSeedGenerator;

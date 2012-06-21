@@ -5,9 +5,9 @@ import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
-import ca.ubc.cs.beta.ac.config.ProblemInstance;
-import ca.ubc.cs.beta.ac.config.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.configspace.ParamConfiguration;
+import ca.ubc.cs.beta.probleminstance.ProblemInstance;
+import ca.ubc.cs.beta.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.seedgenerator.InstanceSeedGenerator;
 import ca.ubc.cs.beta.smac.OverallObjective;
 import ca.ubc.cs.beta.smac.RunObjective;

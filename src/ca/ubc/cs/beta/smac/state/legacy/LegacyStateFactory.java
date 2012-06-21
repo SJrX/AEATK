@@ -9,9 +9,9 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ca.ubc.cs.beta.ac.config.ProblemInstance;
 import ca.ubc.cs.beta.config.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.configspace.ParamConfigurationSpace;
+import ca.ubc.cs.beta.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.smac.OverallObjective;
 import ca.ubc.cs.beta.smac.RunObjective;
 import ca.ubc.cs.beta.smac.exceptions.StateSerializationException;

@@ -10,7 +10,7 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
 
-import ca.ubc.cs.beta.ac.config.ProblemInstance;
+import ca.ubc.cs.beta.probleminstance.ProblemInstance;
 
 public class SetInstanceSeedGenerator implements InstanceSeedGenerator {
 

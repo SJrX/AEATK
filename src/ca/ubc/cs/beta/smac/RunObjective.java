@@ -1,6 +1,6 @@
 package ca.ubc.cs.beta.smac;
 
-import ca.ubc.cs.beta.ac.config.ProblemInstance;
+import ca.ubc.cs.beta.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.smac.ac.runs.AlgorithmRun;
 
 public enum RunObjective {

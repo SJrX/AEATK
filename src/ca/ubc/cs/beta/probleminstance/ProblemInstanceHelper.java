@@ -21,7 +21,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import au.com.bytecode.opencsv.CSVReader;
-import ca.ubc.cs.beta.ac.config.ProblemInstance;
 import ca.ubc.cs.beta.models.surrogate.helpers.csv.ConfigCSVFileHelper;
 import ca.ubc.cs.beta.seedgenerator.InstanceSeedGenerator;
 import ca.ubc.cs.beta.seedgenerator.RandomInstanceSeedGenerator;

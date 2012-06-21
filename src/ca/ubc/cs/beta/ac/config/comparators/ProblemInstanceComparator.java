@@ -2,7 +2,7 @@ package ca.ubc.cs.beta.ac.config.comparators;
 
 import java.util.Comparator;
 
-import ca.ubc.cs.beta.ac.config.ProblemInstance;
+import ca.ubc.cs.beta.probleminstance.ProblemInstance;
 
 public class ProblemInstanceComparator implements Comparator<ProblemInstance> {
 

@@ -14,7 +14,7 @@ import java.util.TreeMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ca.ubc.cs.beta.ac.config.ProblemInstance;
+import ca.ubc.cs.beta.probleminstance.ProblemInstance;
 import ec.util.MersenneTwister;
 
 public class RandomInstanceSeedGenerator implements InstanceSeedGenerator {

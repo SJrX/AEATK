@@ -4,7 +4,7 @@ import java.io.Serializable;
 import java.util.Collection;
 import java.util.List;
 
-import ca.ubc.cs.beta.ac.config.ProblemInstance;
+import ca.ubc.cs.beta.probleminstance.ProblemInstance;
 
 public interface InstanceSeedGenerator extends Serializable {
 

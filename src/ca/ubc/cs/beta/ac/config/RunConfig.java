@@ -3,6 +3,7 @@ package ca.ubc.cs.beta.ac.config;
 import java.io.Serializable;
 
 import ca.ubc.cs.beta.configspace.ParamConfiguration;
+import ca.ubc.cs.beta.probleminstance.ProblemInstanceSeedPair;
 
 /**
  * Immutable Class that stores informations for a specific algorithm run

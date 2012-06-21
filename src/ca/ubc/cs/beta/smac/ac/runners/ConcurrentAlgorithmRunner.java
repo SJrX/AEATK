@@ -45,19 +45,24 @@ public class ConcurrentAlgorithmRunner extends AbstractAlgorithmRunner {
 			
 			p.shutdown();
 			
-			for(AlgorithmRun run : runs)
-			{
-				
-
-				if (run.getRunResult().equals(RunResult.ABORT))
-				{
-					throw new TargetAlgorithmAbortException(run);
-				}
-			}
 			
+			
+						
 			
 			try {
 				p.awaitTermination(24000, TimeUnit.HOURS);
+				
+				for(AlgorithmRun run : runs)
+				{
+					
+
+					if (run.getRunResult().equals(RunResult.ABORT))
+					{
+						throw new TargetAlgorithmAbortException(run);
+					}
+				}
+
+				
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
 			}
