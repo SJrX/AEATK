@@ -15,18 +15,18 @@ public abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 	protected final List<RunConfig> instanceConfigs;
 
 	protected final List<AlgorithmRun> runs;
-	public AbstractAlgorithmRunner(AlgorithmExecutionConfig execConfig, List<RunConfig> instanceConfigs)
+	public AbstractAlgorithmRunner(AlgorithmExecutionConfig execConfig, List<RunConfig> runConfigs)
 	{
-		if(execConfig == null || instanceConfigs == null)
+		if(execConfig == null || runConfigs == null)
 		{
 			throw new IllegalArgumentException("Arguments cannot be null");
 		}
 		
 		this.execConfig = execConfig;
-		this.instanceConfigs = instanceConfigs;
-		List<AlgorithmRun> runs = new ArrayList<AlgorithmRun>(instanceConfigs.size());
+		this.instanceConfigs = runConfigs;
+		List<AlgorithmRun> runs = new ArrayList<AlgorithmRun>(runConfigs.size());
 		
-		for(RunConfig instConf: instanceConfigs)
+		for(RunConfig instConf: runConfigs)
 		{
 			runs.add(new CommandLineAlgorithmRun(execConfig, instConf));
 		}

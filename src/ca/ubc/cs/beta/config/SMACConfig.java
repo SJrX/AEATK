@@ -25,8 +25,7 @@ public class SMACConfig extends AbstractConfigToString {
 	@ParametersDelegate
 	public ScenarioConfig scenarioConfig = new ScenarioConfig();
 	
-	
-	@Parameter(names="--seed", description="Seed for Random Number Generator [0 means don't use a seed]")
+	@Parameter(names={"--seed", "--numRun"}, required=true, description="Seed for Random Number Generator (equivalent to numRun)")
 	public long seed = 0;
 	
 	@Parameter(names={"-e","--experimentDir"}, description="Root Directory for Experiments Folder")
@@ -51,8 +50,11 @@ public class SMACConfig extends AbstractConfigToString {
 	public Object modelHashCodeFile;
 	
 	
-	@Parameter(names="--runID", description="String that identifies this run for logging purposes")
-	public String runID = "Run-" + (new SimpleDateFormat("yyyy-MM-dd--HH-mm-ss-SSS")).format(new Date());
+//	@Parameter(names="--runID", description="String that identifies this run for logging purposes")
+//	public String runID = "Run-" + (new SimpleDateFormat("yyyy-MM-dd--HH-mm-ss-SSS")).format(new Date());
+	
+	@Parameter(names="--runGroupName", description="Name of subfolder of outputdir to save all outputs of this group (different numruns) of runs")
+	public String runGroupName = "RunGroup-" + (new SimpleDateFormat("yyyy-MM-dd--HH-mm-ss-SSS")).format(new Date());
 	
 	
 	@Parameter(names="--numPCA", description="Number of prinicipal components of features")
@@ -63,7 +65,7 @@ public class SMACConfig extends AbstractConfigToString {
 	@Parameter(names="--expectedImprovementFunction", description="Expected Improvement Function to Use")
 	public ExpectedImprovementFunctions expFunc = ExpectedImprovementFunctions.EXPONENTIAL;
 
-	@Parameter(names="--nuberOfChallengers", description="Number of Challengers needed for Local Search", validateWith=PositiveInteger.class)
+	@Parameter(names="--numberOfChallengers", description="Number of Challengers needed for Local Search", validateWith=PositiveInteger.class)
 	public int numberOfChallengers = 10;
 	
 	@Parameter(names="--numberOfRandomConfigsInEI", description="Number of Random Configurations to evaluate in EI Search", validateWith=PositiveInteger.class)
@@ -74,7 +76,7 @@ public class SMACConfig extends AbstractConfigToString {
 	public StateSerializers stateSerializer = StateSerializers.LEGACY;
 
 
-	@Parameter(names="--stateDeserializer", description="Controls how the state will be saved to disk")
+	@Parameter(names="--stateDeserializer", description="Controls how the state will be restored from disk")
 	public StateSerializers statedeSerializer = StateSerializers.LEGACY;
 
 	@Parameter(names="--restoreStateFrom", description="The Location (State Deserializer Dependent) of States")

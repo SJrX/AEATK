@@ -652,8 +652,8 @@ public class NewRunHistory implements RunHistory {
 	}
 
 	@Override
-	public int getThetaIdx(ParamConfiguration incumbent) {
-		return paramConfigurationList.getKey(incumbent);
+	public int getThetaIdx(ParamConfiguration config) {
+		return paramConfigurationList.getKey(config);
 	}
 
 	

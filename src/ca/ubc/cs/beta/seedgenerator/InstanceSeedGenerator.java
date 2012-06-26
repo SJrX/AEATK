@@ -35,7 +35,7 @@ public interface InstanceSeedGenerator extends Serializable {
 	 * 
 	 * @return total number seeds that are first available (not necessarily the number left)
 	 */
-	public int getInitialSeedCount();
+	public int getInitialInstanceSeedCount();
 	
 	/**
 	 * Returns whether or not all instances were initialized with the same number of seeds
