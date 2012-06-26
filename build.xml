@@ -1,11 +1,15 @@
 <?xml version="1.0"?>
 <project name="ACLib" default="compile">
-	<property name="software.dir" value="/ubc/cs/home/s/seramage/arrowspace/software/"/>
-	<property name="models.build.dir" value="/ubc/cs/project/arrow/seramage/sm-data-files/"/>
-	<property name="deploy.dir" value="${software.dir}/aclib/"/>
-	<property name="version.major" value="1"/>
-	<property name="version.minor" value="00"/>
-	
+	<property name="private.buildfile" value="build-resources/private/user-antbuild.properties"/>
+	<property file="${private.buildfile}"/>
+	<property file="build-resources/antbuild.properties"/>
+	<fail message="No Software Directory specified, a private build file should exist in ${private.buildfile} this should specify at the very least 'software.dir'">
+		<condition>
+			<not>
+					<isset property="software.dir"/>
+			</not>
+		</condition>
+	</fail>
 	<path id="compile.classpath">
 		<fileset dir="lib" id="lib">
 			<include name="*.jar"/>
@@ -37,7 +41,7 @@
 		</javadoc>
 	</target>
 	<target name="archive" depends="compile">
-		<buildnumber file="buildnumber-${ant.project.name}"/>
+		<buildnumber file="build-resources/buildnumber-${ant.project.name}"/>
 		<!--<jar destfile="dist/aclib-v${version.major}_${version.minor}_${build.number}.jar" basedir="build/classes"/>-->
 		<jar destfile="dist/aclib.jar" basedir="build/classes"/>
 		<copy todir="dist/" force="true">
