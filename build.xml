@@ -47,6 +47,11 @@
 	</target>			
 	<target name="deploy" depends="archive">
 		<mkdir dir="${deploy.dir}"/>
+		<chmod perm="666">
+						<fileset dir="${deploy.dir}">
+								<include name="*"/>
+						</fileset>
+				</chmod>
 		
 		<copy todir="${deploy.dir}" force="true">
 			<fileset dir="dist/">
