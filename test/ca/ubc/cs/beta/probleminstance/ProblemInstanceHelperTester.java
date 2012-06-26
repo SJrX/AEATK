@@ -123,7 +123,7 @@ public class ProblemInstanceHelperTester {
 		}
 		
 		assertTrue(ilws.getSeedGen().allInstancesHaveSameNumberOfSeeds());
-		assertEquals(Integer.MAX_VALUE, ilws.getSeedGen().getInitialSeedCount());
+		assertEquals(Integer.MAX_VALUE, ilws.getSeedGen().getInitialInstanceSeedCount());
 		
 		List<String> instanceNames = new ArrayList<String>();
 		
@@ -182,7 +182,7 @@ public class ProblemInstanceHelperTester {
 			assertTrue("Could not finding matching instance to instance" + i, match);
 		}
 		
-		assertEquals(ilws.getSeedGen().getInitialSeedCount(),expectedSeedCount);
+		assertEquals(ilws.getSeedGen().getInitialInstanceSeedCount(),expectedSeedCount);
 		assertFalse(ilws.getSeedGen().allInstancesHaveSameNumberOfSeeds());
 		
 		
@@ -222,7 +222,7 @@ public class ProblemInstanceHelperTester {
 		}
 		
 		assertTrue(ilws.getSeedGen().allInstancesHaveSameNumberOfSeeds());
-		assertEquals(Integer.MAX_VALUE, ilws.getSeedGen().getInitialSeedCount());
+		assertEquals(Integer.MAX_VALUE, ilws.getSeedGen().getInitialInstanceSeedCount());
 		
 		List<String> instanceNames = new ArrayList<String>();
 		
@@ -291,7 +291,7 @@ public class ProblemInstanceHelperTester {
 			
 			assertTrue("Could not finding matching instance to instance" + i, match);
 		}
-		assertEquals(NON_SPACE_INSTANCES*(NON_SPACE_INSTANCES+1)/2,ilws.getSeedGen().getInitialSeedCount());
+		assertEquals(NON_SPACE_INSTANCES*(NON_SPACE_INSTANCES+1)/2,ilws.getSeedGen().getInitialInstanceSeedCount());
 		assertEquals(ilws.getInstances().size(),NON_SPACE_INSTANCES+addlInstances);
 		
 		assertFalse(ilws.getSeedGen().allInstancesHaveSameNumberOfSeeds());
@@ -391,7 +391,7 @@ public class ProblemInstanceHelperTester {
 	{
 		
 		InstanceListWithSeeds ilws = getInstanceListWithSeeds("classicFormatInstanceSeedValidEvenNumberOfSeeds.txt", false);
-		assertEquals(30, ilws.getSeedGen().getInitialSeedCount());
+		assertEquals(30, ilws.getSeedGen().getInitialInstanceSeedCount());
 		assertTrue(ilws.getSeedGen().allInstancesHaveSameNumberOfSeeds());
 	}
 	

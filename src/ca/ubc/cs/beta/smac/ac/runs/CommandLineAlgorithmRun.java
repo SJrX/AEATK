@@ -30,7 +30,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	private static transient Marker fullProcessOutputMarker = MarkerFactory.getMarker("Full Process Output");
 	
 	static {
-		log.warn("Target Algorithm Runs have a hard coded quality and run length");
+		log.warn("This version of SMAC hardcodes run length for calls to the target algorithm to {}.", Integer.MAX_VALUE);
 	}
 	
 	

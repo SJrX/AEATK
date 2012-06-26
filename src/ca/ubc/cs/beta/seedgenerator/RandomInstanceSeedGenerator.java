@@ -171,7 +171,7 @@ public class RandomInstanceSeedGenerator implements InstanceSeedGenerator {
 	}
 
 	@Override
-	public int getInitialSeedCount() {
+	public int getInitialInstanceSeedCount() {
 
 		return Integer.MAX_VALUE;
 	}

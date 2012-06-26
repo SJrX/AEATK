@@ -54,12 +54,12 @@ public class TargetAlgorithmEvaluator {
 		
 		if(concurrentExecution)
 		{
-			log.info("Using Concurrent Algorithm Runner");
+			log.info("Using concurrent algorithm runner");
 			return AutomaticConfiguratorFactory.getConcurrentAlgorithmRunner(execConfig,runConfigs);
 			
 		} else
 		{
-			log.info("Using Single Threaded Algorithm Runner");
+			log.info("Using single-threaded algorithm runner");
 			return AutomaticConfiguratorFactory.getSingleThreadedAlgorithmRunner(execConfig,runConfigs);
 		}
 	}

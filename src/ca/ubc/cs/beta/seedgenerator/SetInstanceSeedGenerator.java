@@ -170,7 +170,7 @@ public class SetInstanceSeedGenerator implements InstanceSeedGenerator {
 
 
 	@Override
-	public int getInitialSeedCount() {
+	public int getInitialInstanceSeedCount() {
 
 		return initialSeedCount;
 	}

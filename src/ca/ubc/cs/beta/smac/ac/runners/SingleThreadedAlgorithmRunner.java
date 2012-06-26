@@ -12,8 +12,8 @@ public class SingleThreadedAlgorithmRunner extends AbstractAlgorithmRunner
 {
 
 	public SingleThreadedAlgorithmRunner(AlgorithmExecutionConfig execConfig,
-			List<RunConfig> instanceConfigs) {
-		super(execConfig, instanceConfigs);
+			List<RunConfig> runConfigs) {
+		super(execConfig, runConfigs);
 		
 	}
 
