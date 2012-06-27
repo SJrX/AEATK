@@ -172,7 +172,8 @@ public class ConfigCSVFileHelper implements Serializable {
 	
 	public String getStringDataValue(int row, String key)
 	{
-		return getStringRawValue(row + dataOffsetFromTop, keyIndexMap.get(key));
+		int column = keyIndexMap.get(key);
+		return getStringRawValue(row + dataOffsetFromTop, column);
 	}
 	
 	public Integer getIntegerDataValue(int row, int column)
