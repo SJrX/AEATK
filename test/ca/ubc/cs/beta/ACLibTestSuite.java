@@ -13,6 +13,7 @@ import ca.ubc.cs.beta.instancespecificinfo.*;
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
 	ParamConfigurationTest.class,
+	RandomConfigurationTest.class,
 	ProblemInstanceHelperTester.class,
 	AlgoExecutionInstanceSpecificInfoTest.class,
 	TAETestSet.class,
