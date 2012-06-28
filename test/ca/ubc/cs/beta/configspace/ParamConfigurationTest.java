@@ -6,7 +6,6 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.net.URL;
-import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 
@@ -16,7 +15,6 @@ import org.junit.Test;
 
 import ca.ubc.cs.beta.configspace.ParamConfiguration.StringFormat;
 
-import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.internal.Lists;
 
 

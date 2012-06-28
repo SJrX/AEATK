@@ -1,6 +1,5 @@
 package ca.ubc.cs.beta.seedgenerator;
 
-import java.io.Serializable;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
