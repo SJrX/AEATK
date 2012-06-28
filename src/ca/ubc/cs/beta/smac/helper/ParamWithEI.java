@@ -15,8 +15,7 @@ public class ParamWithEI extends AssociatedValue<Double, ParamConfiguration> {
 	{
 		if (x.length != c.size())
 		{
-			throw new IllegalArgumentException("List of doublse and number of configurations must be the same");
-			
+			throw new IllegalArgumentException("List of double and number of configurations must be the same");
 		}
 		
 		List<ParamWithEI> list = new ArrayList<ParamWithEI>();
@@ -26,44 +25,4 @@ public class ParamWithEI extends AssociatedValue<Double, ParamConfiguration> {
 		}
 		return list;
 	}
-	
-	/* Not sure why most of this code was commented out, in the most recent iteration it was
-	 * everything commented out except the call to super and the eventually return.
-	 * I guess this code should be deleted
-	public int compareTo(ParamWithEI o) {
-		int compValue =  super.compareTo(o);
-		
-		if(compValue == 0)
-		{
-		
-			double[] myArray = this.getValue().toValueArray();
-			double[] oArray = o.getValue().toValueArray();
-			
-			
-			if(myArray.length != oArray.length)
-			{
-				throw new IllegalStateException("Not comparing on the same parameter space");
-			}
-			
-			for(int i=0; i < myArray.length; i++)
-			{
-				double diff = myArray[i] - oArray[i];
-				if(diff == 0) continue;
-				if(diff < 0) 
-				{
-					return -1;
-				} else
-				{
-					return 1;
-				}
-			}
-			
-			
-		} 
-		
-		return compValue;
-		
-	}
-	*/
-
 }

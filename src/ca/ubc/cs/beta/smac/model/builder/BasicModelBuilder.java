@@ -19,17 +19,17 @@ public class BasicModelBuilder implements ModelBuilder{
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
 	
 	
-	public BasicModelBuilder(SanitizedModelData mds, RandomForestConfig rfConfig, RunHistory runHistory)
+	public BasicModelBuilder(SanitizedModelData smd, RandomForestConfig rfConfig, RunHistory runHistory)
 	{
 		
-		double[][] features = mds.getPCAFeatures();
+		double[][] features = smd.getPCAFeatures();
 		
 		
-		double[][] configs = mds.getConfigs();
-		double[] responseValues = mds.getResponseValues();
-		int[] categoricalSize = mds.getCategoricalSize();
-		int[][] condParents = mds.getCondParents();
-		int[][][] condParentVals = mds.getCondParentVals();
+		double[][] configs = smd.getConfigs();
+		double[] responseValues = smd.getResponseValues();
+		int[] categoricalSize = smd.getCategoricalSize();
+		int[][] condParents = smd.getCondParents();
+		int[][][] condParentVals = smd.getCondParentVals();
 		
 		/*
 		System.out.println("y = \n" + Arrays.toString(responseValues));
@@ -43,7 +43,7 @@ public class BasicModelBuilder implements ModelBuilder{
 		 * N x 2 array of response values
 		 */
 		
-		int[] allX; //Instance Features? 
+		//TODO: put these indices through the model sanitizer
 		int[][] theta_inst_idxs = runHistory.getParameterConfigurationInstancesRanByIndex();
 		
 		
