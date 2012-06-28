@@ -82,10 +82,12 @@ public class LegacyStateDeserializer implements StateDeserializer {
 	
 	
 	@SuppressWarnings("unchecked")
-	public LegacyStateDeserializer(String restoreFromPath, String id, int iteration, ParamConfigurationSpace configSpace, OverallObjective overallObj, RunObjective runObj, List<ProblemInstance> instances, AlgorithmExecutionConfig execConfig) 
+	public LegacyStateDeserializer(String restoreFromPath, String id, int iteration, ParamConfigurationSpace configSpace, OverallObjective intraInstanceObjective,OverallObjective interInstanceObjective, RunObjective runObj, List<ProblemInstance> instances, AlgorithmExecutionConfig execConfig) 
 	{
 			if (configSpace == null) throw new IllegalArgumentException("Config Space cannot be null");
-			if(overallObj == null) throw new IllegalArgumentException("Overall Objective Cannot be null");
+			if(interInstanceObjective == null) throw new IllegalArgumentException("Inter Instance Objective cannot be null");
+			if(intraInstanceObjective == null) throw new IllegalArgumentException("Intra Instance Objective cannot be null");
+			
 			if(runObj == null) throw new IllegalArgumentException("Run Objective cannot be null");
 			if(instances == null) throw new IllegalArgumentException("Instances cannot be null");
 			
@@ -251,7 +253,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 			 * Create Run History Object
 			 */
 			
-			runHistory = new NewRunHistory(instanceSeedGenerator, overallObj, overallObj, runObj);
+			runHistory = new NewRunHistory(instanceSeedGenerator, intraInstanceObjective, interInstanceObjective, runObj);
 			
 			
 			CSVReader runlist = null;

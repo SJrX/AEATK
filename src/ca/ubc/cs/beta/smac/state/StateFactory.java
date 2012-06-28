@@ -28,13 +28,14 @@ public interface StateFactory {
 	 * @param id - An identifier for this state
 	 * @param restoreIteration - Iteration to restore
 	 * @param configSpace - Configuration Space to Restore Into
-	 * @param overallObj - Overall Objective
+	 * @param intraInstanceObjective - Objective Function to combine instance seed pairs
+	 * @param interInstanceObjective - Objective Function to combine instances 
 	 * @param runObjective - Individual Run Objective
 	 * @param instances - List of Instances we are configuring over
 	 * @param Execution Config - Execution Config of the target algorithm
 	 * @return
 	 */
-	public StateDeserializer getStateDeserializer(String id, int restoreIteration, 	ParamConfigurationSpace configSpace, OverallObjective overallObj, RunObjective runObj, List<ProblemInstance> instances, AlgorithmExecutionConfig execConfig) throws StateSerializationException;
+	public StateDeserializer getStateDeserializer(String id, int restoreIteration, 	ParamConfigurationSpace configSpace, OverallObjective intraInstanceObjective, OverallObjective interInstanceObjective, RunObjective runObj, List<ProblemInstance> instances, AlgorithmExecutionConfig execConfig) throws StateSerializationException;
 	
 	
 	/**

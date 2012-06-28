@@ -50,7 +50,7 @@ public class LegacyStateDeserializerTester {
 		StateFactory sf = new LegacyStateFactory(null,f.getAbsolutePath());	
 		
 		
-		sf.getStateDeserializer("unknown_instance", 4, configSpace, OverallObjective.MEAN10, RunObjective.RUNTIME, emptyInstanceList, execConfig);
+		sf.getStateDeserializer("unknown_instance", 4, configSpace, OverallObjective.MEAN10,OverallObjective.MEAN, RunObjective.RUNTIME, emptyInstanceList, execConfig);
 	}
 	
 	@Test
@@ -60,7 +60,7 @@ public class LegacyStateDeserializerTester {
 		StateFactory sf = new LegacyStateFactory(null,f.getAbsolutePath());	
 		
 		
-		sf.getStateDeserializer("valid", 4, configSpace, OverallObjective.MEAN10, RunObjective.RUNTIME, instances, execConfig);
+		sf.getStateDeserializer("valid", 4, configSpace, OverallObjective.MEAN10, OverallObjective.MEAN, RunObjective.RUNTIME, instances, execConfig);
 	}
 	
 	@Test
@@ -73,7 +73,7 @@ public class LegacyStateDeserializerTester {
 		StateFactory sf = new LegacyStateFactory(null,f.getAbsolutePath());	
 		
 		
-		sf.getStateDeserializer("inf", 4, configSpace, OverallObjective.MEAN10, RunObjective.RUNTIME, instances, execConfig);
+		sf.getStateDeserializer("inf", 4, configSpace, OverallObjective.MEAN10,OverallObjective.MEAN, RunObjective.RUNTIME, instances, execConfig);
 	}
 	
 }

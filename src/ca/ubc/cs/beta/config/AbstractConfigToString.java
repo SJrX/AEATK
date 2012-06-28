@@ -5,6 +5,7 @@ import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParametersDelegate;
@@ -56,6 +57,9 @@ public abstract class AbstractConfigToString {
 				}  else if( obj instanceof List)
 				{
 					sb.append(Arrays.toString(((List<?>) obj).toArray()));
+				} else if(obj instanceof Map)
+				{
+					sb.append(obj.toString());
 				}
 				else {
 					//We throw this because we have no guarantee that toString() is meaningful

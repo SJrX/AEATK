@@ -82,13 +82,13 @@ public class LegacyStateFactory implements StateFactory{
 		
 	}
 	@Override
-	public StateDeserializer getStateDeserializer(String id, int iteration, ParamConfigurationSpace configSpace, OverallObjective overallObj, RunObjective runObj, List<ProblemInstance> instances, AlgorithmExecutionConfig execConfig) throws StateSerializationException
+	public StateDeserializer getStateDeserializer(String id, int iteration, ParamConfigurationSpace configSpace, OverallObjective intraInstanceObjective, OverallObjective interInstanceObjective, RunObjective runObj, List<ProblemInstance> instances, AlgorithmExecutionConfig execConfig) throws StateSerializationException
 	{
 		if(restoreFromPath == null) 
 		{
 			throw new IllegalArgumentException("This Serializer does not support restoring state");
 		}
-		return new LegacyStateDeserializer(restoreFromPath, id, iteration, configSpace, overallObj, runObj, instances, execConfig);
+		return new LegacyStateDeserializer(restoreFromPath, id, iteration, configSpace, intraInstanceObjective, interInstanceObjective, runObj, instances, execConfig);
 	}
 
 	@Override

@@ -109,11 +109,11 @@ public class NewRunHistory implements RunHistory {
 	private Set<ProblemInstance> instancesRanSet = new HashSet<ProblemInstance>();
 	
 	
-	public NewRunHistory(InstanceSeedGenerator instanceSeedGenerator, OverallObjective perInstanceObjectiveFunction,  OverallObjective aggregateInstanceObjectiveFunction, RunObjective runObj)
+	public NewRunHistory(InstanceSeedGenerator instanceSeedGenerator, OverallObjective intraInstanceObjective,  OverallObjective interInstanceObjective, RunObjective runObj)
 	{
 		this.instanceSeedGenerator = instanceSeedGenerator;
-		this.perInstanceObjectiveFunction = perInstanceObjectiveFunction;
-		this.aggregateInstanceObjectiveFunction = aggregateInstanceObjectiveFunction;
+		this.perInstanceObjectiveFunction = intraInstanceObjective;
+		this.aggregateInstanceObjectiveFunction = interInstanceObjective;
 		this.runObj = runObj;
 	
 		
