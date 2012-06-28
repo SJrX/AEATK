@@ -6,6 +6,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import ca.ubc.cs.beta.models.surrogate.helpers.jcommander.validator.ReadableFileConverter;
+import ca.ubc.cs.beta.smac.logging.LogLevel;
 import ca.ubc.cs.beta.smac.state.StateSerializers;
 
 import com.beust.jcommander.Parameter;
@@ -114,6 +115,9 @@ public class SMACConfig extends AbstractConfigToString {
 	public int maxIncumbentRuns = 2000;
 	@ParametersDelegate
 	public ValidationOptions validationOptions = new ValidationOptions();
+
+	@Parameter(names="--consoleLogLevel",description="Default Error Level of Console Output")
+	public LogLevel consoleLogLevel = LogLevel.INFO;
 	
 	public String toString()
 	{
