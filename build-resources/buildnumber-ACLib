@@ -1,3 +1,8 @@
 #Build Number for ANT. Do not edit!
+<<<<<<< HEAD
 #Thu Jun 28 11:59:15 PDT 2012
 build.number=121
+=======
+#Tue Jun 26 17:34:44 PDT 2012
+build.number=120
+>>>>>>> branch 'master' of file:////ubc/cs/project/arrow/git/AutomaticConfiguratorLibrary.git

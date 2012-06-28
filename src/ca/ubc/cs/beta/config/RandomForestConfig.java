@@ -30,7 +30,7 @@ public class RandomForestConfig extends AbstractConfigToString{
 	public double ratioFeatures = 5.0/6.0;
 
 	@Parameter(names="--preprocessMarginal", description="Build Random Forest with Preprocessed Marginal")
-	public boolean preprocessMarginal = false;
+	public boolean preprocessMarginal = true;	//TODO: cleaner way of setting defaults.
 
 	public String toString()
 	{
