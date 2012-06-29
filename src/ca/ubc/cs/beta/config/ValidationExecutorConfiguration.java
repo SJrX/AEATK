@@ -24,12 +24,23 @@ public class ValidationExecutorConfiguration {
 	@Parameter(names="--configuration", description="Parameter configuration to validate (In the same format calls are made to the algorithm")
 	public String incumbent;
 	
+	@Parameter(names="--trajectoryFile", description="Trajectory File to read configurations from")
+	public File trajectoryFile;
+	
+	
 	@ParametersDelegate
 	public ValidationOptions validationOptions = new ValidationOptions();
 
-	@Parameter(names="--tunerTime", description="Tuner Time when Validation occured")
-	public double tunerTime = 0; 
+	@Parameter(names="--tunerTime", description="Tuner Time when Validation occured (when specifying the configuration this is simply reported in the output file, when using a trajectory file we use the incumbent at this time, if you set this to -1 we use the tuner time from the scenario file or 0 if reading configuration from command line)")
+	public double tunerTime = -1; 
 	
 	@Parameter(names="--useScenarioOutDir")
 	public boolean useScenarioOutDir = false;
+
+	@Parameter(names="--empericalPerformance", description="Estimated performance of configuration on training set (-1 means use the trajectory file value or 0 if not trajectory file)")
+	public double empericalPerformance = -1; 
+	
+	
+	@Parameter(names="--tunerOverheadTime", description="Amount of Tuner Overhead time to report in the output (-1 means use trajectory file overhead or 0 if no trajectory file)")
+	public double tunerOverheadTime = -1;
 }
