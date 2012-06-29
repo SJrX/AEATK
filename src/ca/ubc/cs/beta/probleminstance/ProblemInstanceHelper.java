@@ -163,31 +163,7 @@ public class ProblemInstanceHelper {
 			instanceList = insc.getInstancesByName();
 			gen = insc.getSeedGen();
 			instanceSpecificInfo = insc.getInstanceSpecificInfo();
-			if(deterministic)
-			{
-				if(gen instanceof SetInstanceSeedGenerator)
-				{
-					logger.warn("Detected that seeds have been preloaded, yet the algorithm is listed as deterministic, generally this means we should use -1 as a seed");
-					
-					
-				} else
-				{
-					logger.info("Deterministic Algorithm, selecting hard coded instance seed generator");
-					
-					
-					LinkedHashMap<String, List<Long>> instanceSeedMap = new LinkedHashMap<String, List<Long>>(); 
-					
-					for(String i : instanceList)
-					{
-						List<Long> l = new ArrayList<Long>(1);
-						l.add(-1L);
-						
-						instanceSeedMap.put(i,l);
-					}
-					gen = new SetInstanceSeedGenerator(instanceSeedMap, instanceList, 1);
-				}
-				
-			}
+			
 			
 			
 		} else
@@ -347,6 +323,58 @@ public class ProblemInstanceHelper {
 		}
 		
 	
+		
+		if(deterministic)
+		{
+			if(gen instanceof SetInstanceSeedGenerator)
+			{
+				logger.warn("Detected that seeds have been preloaded, yet the algorithm is listed as deterministic, generally this means we should use -1 as a seed");
+				
+				
+			} else
+			{
+				logger.info("Deterministic Algorithm, selecting hard coded instance seed generator");
+				
+				
+				LinkedHashMap<String, List<Long>> instanceSeedMap = new LinkedHashMap<String, List<Long>>(); 
+				
+				for(ProblemInstance pi : instances)
+				{
+					List<Long> l = new ArrayList<Long>(1);
+					l.add(-1L);
+					
+					instanceSeedMap.put(pi.getInstanceName(),l);
+				}
+				
+				//===== THIS IS SUPER UGLY FIX FOR RELATIVE PATH NAMES
+				List<String> absolutePathList = new ArrayList<String>(instanceList.size());
+				
+				
+				
+topOfLoop:
+				for(String instance : instanceList)
+				{
+					for(ProblemInstance pi : instances)
+					{
+						if(pi.getInstanceName().endsWith(instance.replaceAll("//", "/")))
+						{
+							absolutePathList.add(pi.getInstanceName());
+							continue topOfLoop;
+						}
+						
+						
+					}
+					
+					
+					
+				}
+				
+				if(instanceList.size() != absolutePathList.size()) throw new IllegalStateException("Mapping from Relative to Absolute Path names broke something");
+				gen = new SetInstanceSeedGenerator(instanceSeedMap,absolutePathList, 1);
+			}
+			
+		}
+		
 		logger.info("Found Instances loaded");
 		return new InstanceListWithSeeds(gen, instances, instancesFromFeatures);
 		
