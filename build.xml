@@ -41,7 +41,7 @@
 		</javadoc>
 	</target>
 	<target name="archive" depends="compile">
-		<buildnumber file="build-resources/buildnumber-${ant.project.name}"/>
+		<buildnumber file="/ubc/cs/project/arrow/seramage/software/build-numbers/buildnumber-${ant.project.name}"/>
 		<!--<jar destfile="dist/aclib-v${version.major}_${version.minor}_${build.number}.jar" basedir="build/classes"/>-->
 		<jar destfile="dist/aclib.jar" basedir="build/classes"/>
 		<copy todir="dist/" force="true">
