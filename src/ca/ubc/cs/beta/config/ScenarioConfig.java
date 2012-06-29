@@ -24,8 +24,13 @@ public class ScenarioConfig extends AbstractConfigToString{
 	@Parameter(names={"--runObj","--run_obj"}, description="Per Target Algorithm Run Objective Type that we are optimizing for", converter=RunObjectiveConverter.class)
 	public RunObjective runObj = RunObjective.RUNTIME;
 	
-	@Parameter(names={"--overallObj","--overall_obj"}, description="Aggregate over all Run's Objective Type that we are optimizing for", converter=OverallObjectiveConverter.class)
-	public OverallObjective overallObj = OverallObjective.MEAN;
+	@Parameter(names={"--overallObj","--intraInstanceObj","--overall_obj","--intra_instance_obj"}, description="Aggregate over all Run's Objective Type that we are optimizing for", converter=OverallObjectiveConverter.class)
+	public OverallObjective intraInstanceObj = OverallObjective.MEAN;
+	
+	
+	@Parameter(names={"--interInstanceObj","--inter_instance_obj"}, description="Aggregate over all Run's Objective Type that we are optimizing for", converter=OverallObjectiveConverter.class)
+	public OverallObjective interInstanceObj = OverallObjective.MEAN;
+	
 	
 	@Parameter(names={"--cutoffTime","--cutoff_time"}, description="Cap Time for an Individual Run")
 	public double cutoffTime = 300;
