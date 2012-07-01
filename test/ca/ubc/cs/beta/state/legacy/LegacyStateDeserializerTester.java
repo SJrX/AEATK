@@ -9,14 +9,14 @@ import org.junit.BeforeClass;
 import org.junit.Test;
 
 import ca.ubc.cs.beta.TestHelper;
-import ca.ubc.cs.beta.config.AlgorithmExecutionConfig;
-import ca.ubc.cs.beta.configspace.ParamConfigurationSpace;
-import ca.ubc.cs.beta.probleminstance.ProblemInstance;
-import ca.ubc.cs.beta.smac.OverallObjective;
-import ca.ubc.cs.beta.smac.RunObjective;
-import ca.ubc.cs.beta.smac.state.StateFactory;
-import ca.ubc.cs.beta.smac.state.legacy.LegacyStateFactory;
-import ca.ubc.cs.beta.smac.exceptions.*;
+import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
+import ca.ubc.cs.beta.aclib.exceptions.*;
+import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aclib.objectives.OverallObjective;
+import ca.ubc.cs.beta.aclib.objectives.RunObjective;
+import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
+import ca.ubc.cs.beta.aclib.state.StateFactory;
+import ca.ubc.cs.beta.aclib.state.legacy.LegacyStateFactory;
 
 public class LegacyStateDeserializerTester {
 

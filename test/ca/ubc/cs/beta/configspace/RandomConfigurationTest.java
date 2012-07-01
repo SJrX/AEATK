@@ -8,9 +8,9 @@ import java.util.Set;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import ca.ubc.cs.beta.configspace.ParamConfiguration;
-import ca.ubc.cs.beta.configspace.ParamConfigurationSpace;
-import ca.ubc.cs.beta.configspace.ParamFileHelper;
+import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
+import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
+import ca.ubc.cs.beta.aclib.configspace.ParamFileHelper;
 
 
 public class RandomConfigurationTest {

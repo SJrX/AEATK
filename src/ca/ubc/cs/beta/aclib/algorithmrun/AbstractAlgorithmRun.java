@@ -1,0 +1,182 @@
+package ca.ubc.cs.beta.aclib.algorithmrun;
+
+import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
+
+/**
+ * This class represents a single run of the target algorithm given by the AlgorithmExecutionConfig object and the RunConfig object
+ * 
+ * @author seramage
+ *
+ */
+public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -1860615761848618478L;
+	
+	
+	protected final RunConfig runConfig;
+	protected final AlgorithmExecutionConfig execConfig;
+	
+	/*
+	 * Values reported by the target algorithm
+	 */
+	protected RunResult acResult;
+	
+	protected double runtime;
+	protected double runLength;
+	protected double quality;
+	protected long resultSeed; 
+	
+	/**
+	 * Result line reported by the target algorithm (for debug purposes only), 
+	 * NOTE: This will always be parsable, and may not be what the algorithm reported
+	 */
+	protected String resultLine;
+	
+	/**
+	 * Raw result line reported by the target algorithm (potentially useful if the result line is corrupt)
+	 */
+	protected String rawResultLine;
+	
+	/**
+	 * true if the run is completed 
+	 */
+	protected boolean runCompleted = false;
+	
+	/**
+	 * True if the run was well formed
+	 * Note: We may deprecate this in favor of using CRASHED
+	 */
+	protected boolean runResultWellFormed = false;
+	
+	/**
+	 * Default Constructor
+	 * @param execConfig		execution configuration of the object
+	 * @param runConfig			run configuration we are executing
+	 */
+	public AbstractAlgorithmRun(AlgorithmExecutionConfig execConfig, RunConfig runConfig)
+	{
+		if(execConfig == null || runConfig == null)
+		{
+			throw new IllegalArgumentException("Arguments cannot be null");
+		}
+		
+		this.runConfig = runConfig;
+		this.execConfig = execConfig;
+	}
+	
+	@Override
+	public abstract void run();
+	
+	@Override
+	public final AlgorithmExecutionConfig getExecutionConfig()
+	{
+		return execConfig;
+	}
+	
+	@Override
+	public final RunConfig getRunConfig()
+	{
+		return runConfig;
+	}
+	
+	
+	@Override
+	public final RunResult getRunResult() {
+		if(!isRunResultWellFormed()) throw new IllegalStateException("Execution Result was not well formed");
+		return acResult;
+	}
+
+	@Override
+	public final double getRuntime() {
+		if(!isRunResultWellFormed()) throw new IllegalStateException("Execution Result was not well formed");
+		return runtime;
+	}
+
+	@Override
+	public final double getRunLength() {
+		if(!isRunResultWellFormed()) throw new IllegalStateException("Execution Result was not well formed");
+		return runLength;
+	}
+
+	@Override
+	public final double getQuality() {
+		if(!isRunResultWellFormed()) throw new IllegalStateException("Execution Result was not well formed");
+		return quality;
+	}
+
+	@Override
+	public final long getResultSeed() {
+		if(!isRunResultWellFormed()) throw new IllegalStateException("Execution Result was not well formed");
+		return resultSeed;
+	}
+
+	@Override
+	public final String getResultLine() {
+		if(!isRunResultWellFormed()) throw new IllegalStateException("Execution Result was not well formed");
+		return resultLine;
+	}
+
+	@Override
+	public final synchronized boolean isRunCompleted() {
+		return runCompleted;
+	}
+
+	@Override
+	public final synchronized boolean isRunResultWellFormed() {
+		if(!isRunCompleted()) throw new IllegalStateException("Run has not yet completed");
+		return runResultWellFormed;
+	}
+	
+	@Override
+	public final String rawResultLine()
+	{
+		if(!isRunCompleted()) throw new IllegalStateException("Run has not yet completed");
+		return rawResultLine;
+	}
+	
+	@Override
+	public int hashCode()
+	{
+		//I believe that just instanceConfig and not execConfig hashCodes should be good enough
+		//Since it's rare for two different execConfigs to have identical instanceConfigs
+		return runConfig.hashCode();
+	}
+	
+	/**
+	 * Two AlgorithmRuns are considered equal if they have same runConfig and execConfig
+	 */
+	@Override
+	public boolean equals(Object o)
+	{
+		if(o instanceof AbstractAlgorithmRun)
+		{
+			AbstractAlgorithmRun aro = (AbstractAlgorithmRun) o;
+			return aro.execConfig.equals(execConfig) && aro.runConfig.equals(runConfig);
+		} 
+		return false;
+	}
+	
+	@Override 
+	public String toString()
+	{
+		StringBuilder sb = new StringBuilder();
+		sb.append(execConfig.toString()).append("\n");
+		sb.append(runConfig.toString());
+		sb.append("\nResult Line:" + resultLine) ;
+		sb.append("\nRawResultLine:" + rawResultLine);
+		sb.append("\nrunCompleted:" + runCompleted);
+		sb.append("\nacResult:" + acResult);
+		sb.append("\nClass:" + this.getClass().getSimpleName());
+		return sb.toString();
+		
+		
+	}
+	
+	
+	
+	
+}

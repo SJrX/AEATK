@@ -13,7 +13,9 @@ import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
-import ca.ubc.cs.beta.configspace.ParamConfiguration.StringFormat;
+import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
+import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
+import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration.StringFormat;
 
 import com.beust.jcommander.internal.Lists;
 

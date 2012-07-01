@@ -24,8 +24,8 @@ import Jama.Matrix;
 public class PCA {
 
   /**
-   * Run an example of PCA using data from disk, or canned data. If no file is specified, the canned
-   * data is hard-coded, and is the same as the 10-sample data from Lindsay Smith's fantastic PCA
+   * Run an example of MessyMathHelperClass using data from disk, or canned data. If no file is specified, the canned
+   * data is hard-coded, and is the same as the 10-sample data from Lindsay Smith's fantastic MessyMathHelperClass
    * tutorial:
    * 
    * <pre>
@@ -70,7 +70,7 @@ public class PCA {
         }
       }
     } else {
-      source = "from the Smith PCA tutorial";
+      source = "from the Smith MessyMathHelperClass tutorial";
       matrix = new double[][] {
           {
               2.5, 2.4
@@ -136,7 +136,7 @@ public class PCA {
     bug("Original input adjusted by dimension means (k=" + k + ") :");
     adjustedInput.print(8, 4);
     Matrix xformedData = featuresXpose.times(adjustedInput.transpose());
-    bug("Transformed data into PCA-space (k=" + k + ") :");
+    bug("Transformed data into MessyMathHelperClass-space (k=" + k + ") :");
     xformedData.transpose().print(8, 4);
 
     k = 1;
@@ -159,7 +159,7 @@ public class PCA {
     bug("Original input adjusted by dimension means (k=" + k + ") :");
     adjustedInput.print(8, 4);
     xformedData = featuresXpose.times(adjustedInput.transpose());
-    bug("Transformed data into PCA-space (k=" + k + ") :");
+    bug("Transformed data into MessyMathHelperClass-space (k=" + k + ") :");
     xformedData.transpose().print(8, 4);
 
   }
@@ -196,7 +196,7 @@ public class PCA {
 
   /**
    * Subtracts the mean value from each column. The means must be precomputed, which you get for
-   * free when you make a PCA instance (just call getMeans()).
+   * free when you make a MessyMathHelperClass instance (just call getMeans()).
    * 
    * @param input
    *          Some data, where each row is a sample point, and each column is a dimension.

@@ -1,0 +1,840 @@
+package ca.ubc.cs.beta.aclib.configspace;
+
+import java.io.Serializable;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collection;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
+import java.util.List;
+import java.util.Map;
+import java.util.Random;
+import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
+
+
+/**
+ * This class represents an element in the associated {@link ParamConfigurationSpace} and provides a natural {@link Map} like interface for accessing it's members 
+ * but also uses an effective and fast storage mechanism for this. 
+ * <p>
+ * <b>WARNING:</b>This is neither a general purpose <code>Map</code> implementation, nor a complete one. 
+ * <p>
+ * Differences between this and <code>Map</code>:
+ * <p>
+ * 1) The key and value space are fixed for each parameter to the corresponding ParamConfigurationSpace <br/>
+ * 2) You cannot remove keys, nor can you add keys that don't exist. (i.e. you can only replace existing values)</br>
+ * 3) The fastest way to iterate over this map is through <code>keySet()</code>.</br>
+ * 4) EntrySet and valueSet() are not implemented, size() is constant and unaffected by removing a key<br/>
+ * 5) Two objects are considered equal if and only if all there active parameters are equal. 
+ * 
+ *
+ */
+public class ParamConfiguration implements Map<String, String>, Serializable {
+
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 879997991870028528L;
+
+	/**
+	 *  Stores a map of paramKey to index into the backing arrays
+	 */
+	private final Map<String, Integer> paramKeyToValueArrayIndexMap;
+	
+	/**
+	 * @see ParamConfigurationSpace
+	 * Do _NOT_ write to this array, it is shared with all other configurations 
+	 */
+	private final boolean[] parameterDomainContinuous;
+	
+	/**
+	 * For each numerical index in the backing array, if categorical what is the size of the domain.
+	 * Do _NOT_ write to this array, it is shared with all other configurations
+	 */
+	private final int[] categoricalSize;
+	
+
+	/**
+	 * Configuration space we are from
+	 */
+	private final ParamConfigurationSpace configSpace;
+	
+	/**
+	 * The array that actually stores our values. We store categorical values as their index in
+	 * the configSpace.getValues( key )
+	 * <p>
+	 * e.g. if the List contains three values "foo", "bar" and "dog", and we want to store "bar"
+	 * we would store 2.0. 
+	 * <p>
+	 * For continuous parameters we just store there raw value.
+	 * <p>
+	 * For non active parameters we store a NaN
+	 */
+	private final double[] valueArray;
+	
+	/** 
+	 * Stores whether the map has been changed since the previous read
+	 */
+	private boolean isDirty; 
+	
+	
+	/**
+	 * Stores whether the parameter in the array is active or not (i.e. are all the parameters it is conditional upon set correctly).
+	 * This value is lazily updated whenever it is read if this configuration is marked dirty.
+	 */
+	private final boolean[] activeParams;
+
+	
+	/**
+	 * Value array used in comparisons with equal() and hashCode()
+	 * (All Inactive Parameters are hidden)
+	 */
+	private final double[] valueArrayForComparsion; 
+
+	/**
+	 * Default Constructor 
+	 * @param configSpace 					paramconfigurationspace we are from
+	 * @param valueArray 					array that represents our values. (DO NOT MODIFY THIS)
+	 * @param categoricalSize 				array that has the size of the domain for categorical variables. (DO NOT MODIFY THIS) 
+	 * @param parameterDomainContinuous		array that tells us whether an entry in the value array is continuous. (DO NOT MODIFY THIS)
+	 * @param paramKeyToValueArrayIndexMap	map from param keys to index into the value arry.
+	 */
+	ParamConfiguration(ParamConfigurationSpace configSpace ,double[] valueArray, int[] categoricalSize, boolean[] parameterDomainContinuous, Map<String, Integer> paramKeyToValueArrayIndexMap )
+	{
+		this.configSpace = configSpace;
+		this.valueArray = valueArray;
+		
+		this.categoricalSize = categoricalSize;
+		this.parameterDomainContinuous = parameterDomainContinuous;
+		this.paramKeyToValueArrayIndexMap = paramKeyToValueArrayIndexMap;
+		this.myID = idPool.incrementAndGet();
+		this.activeParams = new boolean[valueArray.length];
+		isDirty = true;
+		this.valueArrayForComparsion = new double[valueArray.length];
+	}
+		
+	
+	
+	/**
+	 * Copy constructor
+	 * @param oConfig - configuration to copy
+	 */
+	public ParamConfiguration(ParamConfiguration oConfig)
+	{
+		this.configSpace = oConfig.configSpace;
+		this.valueArray = oConfig.valueArray.clone();
+		this.categoricalSize = oConfig.categoricalSize;
+		this.parameterDomainContinuous = oConfig.parameterDomainContinuous;
+		this.paramKeyToValueArrayIndexMap = oConfig.paramKeyToValueArrayIndexMap;
+		this.myID = oConfig.myID;
+		this.activeParams = new boolean[valueArray.length];
+		isDirty = true;
+		this.valueArrayForComparsion = new double[valueArray.length];
+	}
+	
+	/**
+	 * Initializes a new / empty map
+	 * 
+	 * @param configSpace 					paramconfigurationspace we are from
+	 * @param categoricalSize 				array that has the size of the domain for categorical variables. (DO NOT MODIFY THIS) 
+	 * @param parameterDomainContinuous		array that tells us whether an entry in the value array is continuous. (DO NOT MODIFY THIS)
+	 * @param paramKeyToValueArrayIndexMap	map from param keys to index into the value arry.
+	 */
+	ParamConfiguration(ParamConfigurationSpace configSpace, int[] categoricalSize, boolean[] parameterDomainContinuous, Map<String, Integer> paramKeyIndexMap)
+	{
+		this(configSpace, new double[categoricalSize.length], categoricalSize, parameterDomainContinuous, paramKeyIndexMap);
+	}
+
+	
+	@Override
+	public int size() {
+		return valueArray.length;
+	}
+
+	@Override
+	public boolean isEmpty() {
+		return (valueArray.length == 0);
+	}
+
+	@Override
+	public boolean containsKey(Object key) {			
+		return ((paramKeyToValueArrayIndexMap.get(key) != null) && (valueArray[paramKeyToValueArrayIndexMap.get(key)] != 0));
+	}
+
+
+	/**
+	 * This method is not implemented
+	 * @throws UnsupportedOperationException
+	 */
+	public boolean containsValue(Object value) {
+		throw new UnsupportedOperationException();
+	}
+
+	
+
+	@Override
+	public String get(Object key) {
+		
+		Integer index = paramKeyToValueArrayIndexMap.get(key);
+		if(index == null)
+		{
+			return null;
+		}
+		
+		
+		
+		double value = valueArray[index];
+		
+		if(Double.isNaN(value))
+		{
+			return null;
+		}
+		
+		if(parameterDomainContinuous[index])
+		{
+			NormalizedRange range = configSpace.getNormalizedRangeMap().get(key);
+			if(range.isIntegerOnly())
+			{
+				return String.valueOf((long) Math.round(range.unnormalizeValue(value)));
+			} else
+			{
+				return String.valueOf(range.unnormalizeValue(value));
+			}
+			
+		} else
+		{
+			if(value == 0)
+			{
+				return null;
+			} else
+			{		
+				return configSpace.getValuesMap().get(key).get((int) value - 1);
+			}
+		}
+	}
+
+
+
+	/**
+	 * Replaces a value in the map
+	 * 
+	 * NOTE: This operation is fairly slow, and could be sped up if the parser file had a Map<String, Integer> mapping Strings to there integer equivilants.
+	 * @param key string name to store
+	 * @param newValue string value to store
+	 * @return previous value in the array
+	 */
+	public String put(String key, String newValue) 
+	{
+		/* We find the index into the valueArray from paramKeyIndexMap,
+		 * then we find the new value to set from it's position in the getValuesMap() for the key. 
+		 * NOTE: i = 1 since the valueArray numbers elements from 1
+		 */
+		
+		isDirty = true;
+
+		Integer index = paramKeyToValueArrayIndexMap.get(key);
+		if(index == null)
+		{
+			throw new IllegalArgumentException("This key does not exist in the Parameter Space: " + key);
+
+		}
+		
+		String oldValue = get(key);
+		
+		if(newValue == null)
+		{
+			valueArray[index] = Double.NaN;
+		}
+		else if(parameterDomainContinuous[index])
+		{
+			valueArray[index] = configSpace.getNormalizedRangeMap().get(key).normalizeValue(Double.valueOf(newValue));
+			
+		} else
+		{
+			List<String> inOrderValues = configSpace.getValuesMap().get(key);
+			int i=1;		
+			boolean valueFound = false;
+			
+			
+			for(String possibleValue : inOrderValues)
+			{
+				if (possibleValue.equals(newValue))
+				{
+					this.valueArray[index] = i;
+					valueFound = true;
+					break;
+				} 
+				i++;
+			}
+			
+			if(valueFound == false)
+			{
+				throw new IllegalArgumentException("Value is not legal for this parameter: " + key + " Value:" + newValue);
+			}
+			
+			
+		}
+		
+	
+		
+		if(parameterDomainContinuous[index] && newValue != null)
+		{
+			double d1 = Double.valueOf(get(key));
+			double d2 = Double.valueOf(newValue);
+			
+			if(Math.abs(d1/d2 - 1) >  Math.pow(10, -12))
+			{
+				System.out.println("Warning got the following value back from map " + get(key) + " put " + newValue + " in");
+			}
+				//throw new IllegalStateException("Not Sure Why this happened: " + get(key) + " vs. " + newValue);
+		} else
+		{
+			if(get(key) == null)
+			{
+				if(newValue != null)
+				{
+					throw new IllegalStateException("Not Sure Why this happened: " + get(key) + " vs. " + newValue);	
+				}
+			} else if(!get(key).equals(newValue))
+			{
+				throw new IllegalStateException("Not Sure Why this happened: " + get(key) + " vs. " + newValue);
+			}
+		}
+		return oldValue;
+	}
+
+	/**
+	 * This method is not implemented
+	 * @throws UnsupportedOperationException
+	 */
+	public String remove(Object key) {
+	
+		throw new UnsupportedOperationException();
+	}
+
+
+	@Override
+	public void putAll(Map<? extends String, ? extends String> m) {
+
+		
+		for(Entry<? extends String, ? extends  String> ent : m.entrySet())
+		{
+			this.put(ent.getKey(), ent.getValue());
+		}
+	
+		
+		
+	}
+
+
+	/**
+	 * This method is not implemented
+	 * @throws UnsupportedOperationException
+	 */
+	public void clear() {
+		throw new UnsupportedOperationException();
+		
+	}
+
+
+	@Override
+	/**
+	 * Returns a Set that will iterate in the order
+	 */
+	public Set<String> keySet() {
+		LinkedHashSet<String> keys = new LinkedHashSet<String>();
+		for(String s : paramKeyToValueArrayIndexMap.keySet())
+		{
+			keys.add(s);
+		}
+		
+		return keys;
+	}
+
+
+	/**
+	 * This method is not implemented
+	 * @throws UnsupportedOperationException
+	 */
+	public Collection<String> values() {
+		throw new UnsupportedOperationException();
+	}
+
+
+	/**
+	 * This method is not implemented
+	 * @throws UnsupportedOperationException
+	 */
+	public Set<java.util.Map.Entry<String, String>> entrySet() {
+		throw new UnsupportedOperationException();
+	}
+	
+	/**
+	 * Returns a copy of the value array
+	 * @return clone of the value array with inactive values intact
+	 */
+	public double[] toValueArray()
+	{
+		return valueArray.clone();
+	}
+	
+	
+	@Override
+	public String toString()
+	{
+		return getFriendlyID() + Arrays.toString(valueArray);
+	}
+	
+	/**
+	 * Two instances are equal if they come from the same configuration space and their active parameters have the same values
+	 * 
+	 * <b>Note:</b> Integer value parameters will fail this test.
+	 * 
+	 * @param o object to check equality with
+	 */
+	public boolean equals(Object o)
+	{
+		if (o instanceof ParamConfiguration)
+		{
+			ParamConfiguration opc = (ParamConfiguration )o;
+			if(isDirty) cleanUp();
+			if(opc.isDirty) opc.cleanUp();
+			
+			return configSpace.equals(opc.configSpace) && Arrays.equals(valueArrayForComparsion, opc.valueArrayForComparsion);
+		} else
+		{
+			return false;
+		}
+	}
+	
+	@Override
+	public int hashCode()	
+	{ 
+		if(isDirty) cleanUp();
+		
+		return configSpace.hashCode() ^ Arrays.hashCode(valueArrayForComparsion);
+	}
+	
+	
+	/**
+	 * Builds a formatted string consisting of the active parameters 
+	 * 
+	 * @param preKey - String to appear before the key name
+	 * @param keyValSeperator - String to appear between the key and value
+	 * @param valueDelimiter - String to appear on either side of the value
+	 * @param glue - String to placed in between various key value pairs
+	 * @return formatted parameter string 
+	 */
+	@Deprecated
+	public String getFormattedParamString(String preKey, String keyValSeperator,String valueDelimiter,String glue)
+	{
+		//Should use the String Format method
+		return _getFormattedParamString(preKey, keyValSeperator, valueDelimiter, glue, true);
+	
+		
+	}
+	/**
+	 * Converts configuration into string format with the given tokens
+	 * 
+	 * @param preKey 					string that occurs before a key
+	 * @param keyValSeperator 			string that occurs between the key and value
+	 * @param valueDelimiter 			string that occurs on either side of the value
+	 * @param glue 						string that occurs between pairs of key values
+	 * @param hideInactiveParameters	<code>true</code> if we should drop inactive parameters, <code>false</code> otherwise
+	 * @return formatted parameter string
+	 */
+	protected String _getFormattedParamString(String preKey, String keyValSeperator,String valueDelimiter,String glue, boolean hideInactiveParameters)
+	{
+		Set<String> activeParams = getActiveParameters();
+		StringBuilder sb = new StringBuilder();
+		boolean isFirstParameterInString = true;
+		
+		for(String key : keySet())
+		{
+			if(get(key) == null) continue;
+			if((!activeParams.contains(key)) && hideInactiveParameters) continue;
+			if(!isFirstParameterInString)
+			{
+				sb.append(glue);
+			}
+			isFirstParameterInString = false;
+			sb.append(preKey).append(key).append(keyValSeperator).append(valueDelimiter).append(get(key)).append(valueDelimiter);
+		}
+		return sb.toString();
+	}
+	
+	/**
+	 * Returns a string representation of this object
+	 * @return string representation of this object
+	 */
+	@Deprecated
+	public String getFormattedParamString()
+	{
+		return _getFormattedParamString("-", " ","'"," ",true);
+	}
+	
+	/**
+	 * Returns a string representation of this object, according to the given {@link StringFormat}
+	 * @param stringFormat stringformat to use
+	 * @return string representation
+	 */
+	public String getFormattedParamString(StringFormat stringFormat)
+	{
+		
+		if(stringFormat != StringFormat.ARRAY_STRING_SYNTAX)
+		{
+			return _getFormattedParamString(stringFormat.getPreKey(), stringFormat.getKeyValueSeperator(), stringFormat.getValueDelimeter(), stringFormat.getGlue(), stringFormat.hideInactiveParameters());
+		}  else
+		{
+			double[] valueArray = this.valueArray;
+			StringBuilder sb = new StringBuilder();
+			for(int i=0; i < valueArray.length; i++)
+			{
+				sb.append(valueArray[i]);
+				if(i+1 != valueArray.length) sb.append(",");
+			}
+			return sb.toString();
+		}
+		
+	}
+	
+	
+	/**
+	 * Stores information about the various string formats we support 
+	 */
+	public enum StringFormat
+	{
+			/**
+			 * Uses a -(name) 'value' -(name) 'value' ... format [hiding inactive parameters]
+			 */
+			NODB_SYNTAX("-"," ", "'", " ", true), //Parameters are prefixed with a -(name) '(value)'
+			/**
+			 * Stores a number and colon before entry of <code>NODB_SYNTAX</code>. Used only for deserializing
+			 */
+			NODB_SYNTAX_WITH_INDEX("-"," ", "'", " ", true),
+			/**
+			 * Stores in a name='value',name='value'... format [preserving inactive parameters]
+			 */
+			STATEFILE_SYNTAX(" ","=","'",",",false), 
+			/**
+			 * Stores a number and colon before an entry of <code>STATEFILE_SYNTAX</code>. Used only for deserializing
+			 */
+			STATEFILE_SYNTAX_WITH_INDEX(" ", "=","'",",", false),
+			/**
+			 * Uses a -Pname=value -Pname=value -Pname=value format
+			 */
+			SURROGATE_EXECUTOR("-P","=",""," ",true),
+			
+			/**
+			 * Stores the values as an array (value array syntax). This format is non human-readable and fragile
+			 */
+			ARRAY_STRING_SYNTAX("","","","",false);
+
+		private final String preKey;
+		private final String keyValSeperator;
+		private final String valDelimiter;
+		private final String glue;
+		private final boolean hideInactive;
+		
+		
+		private StringFormat(String preKey, String keyValSeperator, String valDelimeter, String glue, boolean hideInactive)
+		{
+			this.preKey = preKey;
+			this.keyValSeperator = keyValSeperator;
+			this.valDelimiter = valDelimeter;
+			this.glue = glue;
+			this.hideInactive = hideInactive;
+		}
+
+		public boolean hideInactiveParameters() {
+			return hideInactive;
+		}
+
+		public String getPreKey() {
+			return preKey;
+		}
+		
+		public String getGlue()
+		{
+			return glue;
+		}
+		
+		public String getValueDelimeter()
+		{
+			return valDelimiter;
+		}
+		
+		public String getKeyValueSeperator()
+		{
+			return keyValSeperator;
+		}
+	
+	}
+	
+	
+	
+	/**
+	 * Returns a list of configurations in the neighbourhood of this one (Forbidden Configurations are excluded)
+	 * @return list of configurations in the neighbourhood
+	 */
+	public List<ParamConfiguration> getNeighbourhood()
+	{
+		List<ParamConfiguration> neighbours = new ArrayList<ParamConfiguration>(numberOfNeighbours());
+		Set<String> activeParams = getActiveParameters();
+		/*
+		 * i is the number of parameters
+		 * j is the number of neighbours
+		 */
+		for(int i=0; i < configSpace.getParameterNamesInAuthorativeOrder().size(); i++)
+		{
+			double[] newValueArray = valueArray.clone();
+			
+			for(int j=1; j <= numberOfNeighboursForParam(i,activeParams.contains(configSpace.getParameterNamesInAuthorativeOrder().get(i))); j++)
+			{
+				newValueArray[i] = getNeighbourForParam(i,j);
+				
+				if(configSpace.isForbiddenParamConfiguration(newValueArray)) continue;
+				
+				neighbours.add(new ParamConfiguration(configSpace, newValueArray.clone(), categoricalSize, parameterDomainContinuous, paramKeyToValueArrayIndexMap));
+			}
+		}
+		
+		
+		if(neighbours.size() != numberOfNeighbours()) throw new IllegalStateException("Expected " + numberOfNeighbours() + " neighbours but got " + neighbours.size());
+		return neighbours;
+		
+		
+	}
+	
+	/**
+	 * Returns the number of neighbours for this configuration
+	 * @return number of neighbours that this configuration has
+	 */
+	private int numberOfNeighbours()
+	{
+		int neighbours = 0;
+		
+		Set<String> activeParams = getActiveParameters();
+		
+		for(int i=0; i < configSpace.getParameterNamesInAuthorativeOrder().size(); i++)
+		{
+			
+			neighbours += numberOfNeighboursForParam(i, activeParams.contains(configSpace.getParameterNamesInAuthorativeOrder().get(i)));
+		}
+		return neighbours;
+		
+	}
+	
+	/**
+	 * Returns the number of Neighbours for the specific index into the param Array
+	 * @param valueArrayIndex	index into the valueArray for this parameter
+	 * @param isParameterActive boolean for if this parameter is active
+	 * @return 0 if inactive, number of neighbours if active
+	 */
+	private int numberOfNeighboursForParam(int valueArrayIndex, boolean isParameterActive)
+	{
+		if(isParameterActive == false) return 0;
+
+		if(parameterDomainContinuous[valueArrayIndex])
+		{
+		  return ParamConfigurationSpace.NEIGHBOURS_FOR_CONTINUOUS;
+		} else
+		{
+		  return categoricalSize[valueArrayIndex] - 1;
+		}
+	}
+	
+	/**
+	 * Returns a neighbour for this configuration in array format
+	 * 
+	 * @param valueArrayIndex   index of the parameter which we are generating a neighbour for
+	 * @param neighbourNumber   number of the neighbour to generate
+	 * @return
+	 */
+	private double getNeighbourForParam(int valueArrayIndex, int neighbourNumber)
+	{
+		if(parameterDomainContinuous[valueArrayIndex])
+		{ 
+			//Continuous arrays sample from a
+			//normal distrbution with mean valueArray[i] and stdDeviation 0.2
+			//0.2 is simply a magic constant
+			double mean = valueArray[valueArrayIndex];
+			
+			Random r = configSpace.getPRNG();
+			
+			while(true)
+			{
+				double randValue = 0.2*r.nextGaussian() + mean;
+				
+				if(randValue >= 0 && randValue <= 1)
+				{
+					return randValue;
+				}
+			}
+		}  else
+		{ 
+			//For categorical parameters we return the number of the neighbour 
+			//up to our value in the parameter, and then 1 more than this after
+			
+			//e.g. if our value was 2 we would return
+			//  0 => 0
+			//  1 => 1 
+	        //  2 => 3
+			//  3 => 4
+			//  ...
+			if(neighbourNumber < valueArray[valueArrayIndex])
+			{
+				return neighbourNumber;
+			} else
+			{
+				return neighbourNumber+1;
+			}
+		}
+	}
+	
+	/**
+	 * Recomputes the active parameters and valueArrayForComparision and marks configuration clean again
+	 */
+	private void cleanUp()
+	{	
+		Set<String> activeParams = getActiveParameters();
+		
+		for(Entry<String, Integer> keyVal : this.paramKeyToValueArrayIndexMap.entrySet())
+		{
+			
+			
+			this.activeParams[keyVal.getValue()] = activeParams.contains(keyVal.getKey()); 
+			
+			
+			if(this.activeParams[keyVal.getValue()])
+			{
+				this.valueArrayForComparsion[keyVal.getValue()] = valueArray[keyVal.getValue()];
+			} else
+			{
+				this.valueArrayForComparsion[keyVal.getValue()] = Double.NaN;
+			}
+		}
+	
+		isDirty = false;
+	}
+	
+	/**
+	 * Returns the keys that are currently active
+	 * @return set containing the key names that are currently active
+	 */
+	public Set<String> getActiveParameters()
+	{
+		boolean activeSetChanged = false;
+		Set<String> activeParams= new HashSet<String>();
+		
+		/*
+		 * This code is will loop in worse case ~(n^2) times, the data structures may not be very 
+		 * good either, so gut feeling is probably Omega(n^3) in worse case.
+		 * 
+		 *  This algorithm basically does the following:
+		 *  1) Adds all independent clauses to the active set
+		 *  2) For every dependent value:
+		 *  	- checks if each dependee parameter is active
+		 *  	- if all dependee parameters have an acceptible value, adds it to the active set.
+		 *  3) Terminates when there are no changes to the active set. (controlled by the changed flag) 
+		 */
+		do {
+			/*
+			 * Loop through every parameter to see if it should be added to the activeParams set.
+			 */
+			activeSetChanged = false;
+			List<String> paramNames = this.configSpace.getParameterNames();
+			
+			for(String candidateParam : paramNames)
+			{	
+				
+				if(activeParams.contains(candidateParam))
+				{ 
+					//We already know the Param is active
+					continue;
+				}
+				
+				
+				/*
+				 * Check if this parameter is conditional (if not add it to the activeParam set), if it is check if it's conditions are all satisified. 
+				 */	
+				Map<String,List<String>> dependentOn;
+				if(( dependentOn = configSpace.getDependentValuesMap().get(candidateParam)) != null)
+				{
+					//System.out.print(" is dependent ");
+					
+					
+					boolean dependentValuesSatified = true; 
+					for(String dependentParamName : dependentOn.keySet())
+					{
+						if(activeParams.contains(dependentParamName))
+						{
+							if(dependentOn.get(dependentParamName).contains(get(dependentParamName)))
+							{	
+								//System.out.print("[+]:" +  dependentParamName +  " is " + params.get(dependentParamName)); 
+							} else
+							{	
+								//System.out.print("[-]:" + dependentParamName +  " is " + params.get(dependentParamName));
+								dependentValuesSatified = false;
+								break;
+							}
+								
+						} else
+						{
+							dependentValuesSatified = false;
+							break;		
+						}
+					}
+					
+					if(dependentValuesSatified == true)
+					{
+						
+						activeSetChanged = true;
+						activeParams.add(candidateParam);
+					} else
+					{
+						
+					}
+					
+					
+					
+				} else
+				{ //This Parameter is not dependent
+					if(activeParams.add(candidateParam))
+					{
+						activeSetChanged = true;
+						
+					}
+				}				
+			}
+
+			
+		} while(activeSetChanged == true);
+		
+		
+		return activeParams;
+	}
+	
+	
+	
+	private static final AtomicInteger idPool = new AtomicInteger(0);
+	private final int myID;
+	/**
+	 * Friendly IDs are just unique numbers that identify this configuration for logging purposes
+	 * you should never rely on this
+	 * @return unique id for this param configuration
+	 */
+	public int getFriendlyID() {
+		return myID;
+	}
+
+	/**
+	 * Checks whether this configuration is forbidden
+	 * @return <code>true</code> if the parameter is forbidden, false otherwise
+	 */
+	public boolean isForbiddenParamConfiguration()
+	{
+		return configSpace.isForbiddenParamConfiguration(valueArray);
+	}
+
+}

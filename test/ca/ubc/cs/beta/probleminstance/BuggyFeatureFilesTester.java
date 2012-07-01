@@ -11,6 +11,8 @@ import org.junit.Before;
 import org.junit.Test;
 
 import ca.ubc.cs.beta.TestHelper;
+import ca.ubc.cs.beta.aclib.probleminstance.InstanceListWithSeeds;
+import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceHelper;
 
 /**
  * Test class for various example feature files that we have 

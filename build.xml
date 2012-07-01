@@ -28,6 +28,7 @@
 	<target name="clean">
 		<delete dir="build"/>
 		<delete dir="dist"/>
+		<delete dir="doc"/>
 	</target>
 	<target name="compile" depends="init,doc">
 		<javac srcdir="src" destdir="build/classes" debug="true">
@@ -35,9 +36,9 @@
 		</javac>
 	</target>
 	<target name="doc">
-		<javadoc sourcepath="src/" author="true" destdir="doc/">
-	    <doctitle><![CDATA[<h1>Test</h1>]]></doctitle>
-	    <bottom><![CDATA[<i>Copyright &#169; 2000 Dummy Corp. All Rights Reserved.</i>]]></bottom>
+		<javadoc sourcepath="src/" author="true" destdir="doc/" classpathref="compile.classpath">
+	    <!--doctitle><![CDATA[<h1>Test</h1>]]></doctitle>
+	    <bottom><![CDATA[<i>Copyright &#169; 2000 Dummy Corp. All Rights Reserved.</i>]]></bottom>-->
 		</javadoc>
 	</target>
 	<target name="archive" depends="compile">

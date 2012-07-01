@@ -13,17 +13,17 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import ca.ubc.cs.beta.TestHelper;
-import ca.ubc.cs.beta.ac.RunResult;
-import ca.ubc.cs.beta.ac.config.RunConfig;
-import ca.ubc.cs.beta.config.AlgorithmExecutionConfig;
-import ca.ubc.cs.beta.configspace.ParamConfiguration;
-import ca.ubc.cs.beta.configspace.ParamConfigurationSpace;
-import ca.ubc.cs.beta.probleminstance.ProblemInstance;
-import ca.ubc.cs.beta.probleminstance.ProblemInstanceSeedPair;
-import ca.ubc.cs.beta.random.SeedableRandomSingleton;
-import ca.ubc.cs.beta.smac.ac.runners.TargetAlgorithmEvaluator;
-import ca.ubc.cs.beta.smac.ac.runs.AlgorithmRun;
-import ca.ubc.cs.beta.smac.exceptions.TargetAlgorithmAbortException;
+import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
+import ca.ubc.cs.beta.aclib.algorithmrunner.TargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
+import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
+import ca.ubc.cs.beta.aclib.exceptions.TargetAlgorithmAbortException;
+import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aclib.misc.random.SeedableRandomSingleton;
+import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
+import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
+import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 
 
 public class TAETestSet {
@@ -96,7 +96,7 @@ public class TAETestSet {
 		
 		for(AlgorithmRun run : runs)
 		{
-			ParamConfiguration config  = run.getInstanceRunConfig().getParamConfiguration();
+			ParamConfiguration config  = run.getRunConfig().getParamConfiguration();
 			assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
 			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
 			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
@@ -232,8 +232,8 @@ public class TAETestSet {
 				assertEquals(RunResult.TIMEOUT, run.getRunResult());
 			} else
 			{
-				assertEquals(run.getRunResult(), RunResult.valueOf(run.getInstanceRunConfig().getParamConfiguration().get("solved")));
-				assertDEquals(run.getInstanceRunConfig().getParamConfiguration().get("runtime"), run.getRuntime(),0.05);
+				assertEquals(run.getRunResult(), RunResult.valueOf(run.getRunConfig().getParamConfiguration().get("solved")));
+				assertDEquals(run.getRunConfig().getParamConfiguration().get("runtime"), run.getRuntime(),0.05);
 			}
 			
 			
