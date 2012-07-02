@@ -8,7 +8,7 @@ import com.beust.jcommander.validators.PositiveInteger;
  * Options object controlling validation
  * 
  */
-public class ValidationOptions {
+public class ValidationOptions extends AbstractOptions{
 
 	@Parameter(names="--numSeedsPerTestInstance", description="Number of test seeds to use per instance during validation", validateWith=PositiveInteger.class)
 	public int numberOfTestSeedsPerInstance = 1000;
