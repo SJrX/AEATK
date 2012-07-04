@@ -12,10 +12,13 @@ import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 
 /**
- * Processes Algorithm Run Requests concurrently
+ * Processes Algorithm Run Requests concurrently 
+ * 
  * @author seramage
+ * 
  */
-public class ConcurrentAlgorithmRunner extends AbstractAlgorithmRunner {
+
+class ConcurrentAlgorithmRunner extends AbstractAlgorithmRunner {
 
 	
 	private int numberOfConcurrentExecutions;

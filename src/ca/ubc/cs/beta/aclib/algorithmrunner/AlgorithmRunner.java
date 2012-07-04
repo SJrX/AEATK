@@ -9,6 +9,7 @@ import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
  * 
  * Use the AutomaticConfiguratorFactory to get your Runner
  * @author seramage
+ * 
  */
 public interface AlgorithmRunner {
 

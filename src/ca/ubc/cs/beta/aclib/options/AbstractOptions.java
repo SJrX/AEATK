@@ -18,60 +18,79 @@ public abstract class AbstractOptions {
 
 	public String toString()
 	{
+		return this.toString(0);
+	}
+	public String toString(final int initialTabs)
+	{
 		StringBuilder sb = new StringBuilder();
 		
-		sb.append("Options\n");
+		sb.append("[").append(this.getClass().getSimpleName()).append("]").append("\n");
 		try {
-		for(Field f : this.getClass().getDeclaredFields())
+		for(Field f : this.getClass().getFields())
 		{
-			if(f.getAnnotation(Parameter.class) != null)
-			sb.append(f.getName());
-			sb.append(" = ");
-			
-			Class<?> o = f.getType();
-			if(o.isPrimitive())
+			StringBuilder line = new StringBuilder();
+		
+			if(f.getAnnotation(Parameter.class) != null || f.getAnnotation(ParametersDelegate.class) != null)
 			{
-				sb.append(f.get(this).toString());
-			} else
-			{
-				Object obj = f.get(this);
-				if(obj == null)
+				boolean isAbstractOption = false;
+				for(int i=0; i < initialTabs; i++)
 				{
-					sb.append("null");
-				} else if(obj instanceof File)
-				{
-					sb.append(((File) obj).getAbsolutePath());
-				} else if (obj instanceof String)
-				{
-					sb.append(obj);
-				} else if (obj instanceof Long)
-				{
-					sb.append(obj.toString());
-				} else if(obj instanceof Integer)
-				{
-					sb.append(obj.toString());
-				} else if (obj instanceof Enum)
-				{
-					sb.append(((Enum<?>) obj).name());
-				} else if (obj instanceof AbstractOptions)
-				{
-					sb.append(obj.toString());
-				}  else if( obj instanceof List)
-				{
-					sb.append(Arrays.toString(((List<?>) obj).toArray()));
-				} else if(obj instanceof Map)
-				{
-					sb.append(obj.toString());
+					sb.append("\t");
 				}
-				else {
-					/*
-					 * We take a cautious approach here, we want every object to have a MEANINGFUL toString() method
-					 * so we only add types for things we know provide this
-					 */
-					throw new IllegalArgumentException("Failed to convert type configuration option to a string " + f.getName() + "=" +  obj + " type: " + o) ;
+				
+				line.append(f.getName());
+				line.append(" = ");
+				
+				Class<?> o = f.getType();
+				if(o.isPrimitive())
+				{
+					line.append(f.get(this).toString());
+				} else
+				{
+					Object obj = f.get(this);
+					if(obj == null)
+					{
+						line.append("null");
+					} else if(obj instanceof File)
+					{
+						line.append(((File) obj).getAbsolutePath());
+					} else if (obj instanceof String)
+					{
+						line.append(obj);
+					} else if (obj instanceof Long)
+					{
+						line.append(obj.toString());
+					} else if(obj instanceof Integer)
+					{
+						line.append(obj.toString());
+					} else if (obj instanceof Enum)
+					{
+						line.append(((Enum<?>) obj).name());
+					} else if (obj instanceof AbstractOptions)
+					{
+						isAbstractOption = true;
+						line.append(((AbstractOptions) obj).toString(initialTabs+2));
+					}  else if( obj instanceof List)
+					{
+						line.append(Arrays.toString(((List<?>) obj).toArray()));
+					} else if(obj instanceof Map)
+					{
+						line.append(obj.toString());
+					}
+					else {
+						/*
+						 * We take a cautious approach here, we want every object to have a MEANINGFUL toString() method
+						 * so we only add types for things we know provide this
+						 */
+						throw new IllegalArgumentException("Failed to convert type configuration option to a string " + f.getName() + "=" +  obj + " type: " + o) ;
+					}
 				}
+				if(!isAbstractOption == true)
+				{
+					sb.append(" ");
+				}
+				sb.append(line).append("\n");
 			}
-			sb.append("\n");
 		}
 		return sb.toString();
 		} catch(RuntimeException e)

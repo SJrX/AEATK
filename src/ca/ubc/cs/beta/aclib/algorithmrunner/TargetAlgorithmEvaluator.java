@@ -2,104 +2,52 @@ package ca.ubc.cs.beta.aclib.algorithmrunner;
 
 import java.util.Collections;
 import java.util.List;
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 
 /**
- * Evalutes Given Run Configurations
+ * Executes Target Algorithm Runs (Converts between RunConfig objects to AlgorithmRun objects)
+ * <p>
+ * <b>Implementation Details</b>
+ * <p>
+ * Clients should subtype this interface if they want to allow SMAC or other related projects to execute algorithms through
+ * some other method. All implementations MUST have a constructor that takes a {@link ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig} object.
+ * <p>
+ * Additionally client implementations should probably not validate the output of AlgorithmRuns but rely on other wrappers to do this for them.
+ * <p>
+ * They may through TargetAlgorithmAbortExceptions, but again wrappers will take care of this if. 
  *
+ * @author Steve Ramage
+ * 
  */
-public class TargetAlgorithmEvaluator {
-	
-	/**
-	 * Execution configuration of the target algorithm
-	 */
-	private final AlgorithmExecutionConfig execConfig;
-	
-	//Fields that should be cleaned up when we fix the runHashCode Generation
-	private int runHashCodes = 0;
-	private int runCount = 1;
-	
-	private final Logger log = LoggerFactory.getLogger(getClass());
+public interface TargetAlgorithmEvaluator {
+ 
 
-	/**
-	 * Default Constructor
-	 * @param execConfig	execution configuration of the target algorithm
-	 */
-	public TargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig)
-	{
-		this(execConfig, true);
-	}
-	
-	/**
-	 * Constructs TargetAlgorithmEvaluator
-	 * @param execConfig 			execution configuration of the target algorithm
-	 * @param concurrentExecution	<code>true</code> if we should execute algorithms concurrently, <code>false</code> otherwise
-	 */
-	public TargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig, boolean concurrentExecution)
-	{
-		log.debug("Initalized with the following Execution Configuration {}" , execConfig);
-		this.execConfig = execConfig;
-		this.concurrentExecution = concurrentExecution; 
-	}
-	
-	
-	
 	/**
 	 * Evaluate a run configuration
 	 * @param run RunConfiguration to evaluate
 	 * @return	list containing the <code>AlgorithmRun<code>
+	 * @throws TargetAlgorithmAbortException
 	 */
-	public List<AlgorithmRun> evaluateRun(RunConfig run) 
-	{
-		return evaluateRun(Collections.singletonList(run));
-	}
+	public List<AlgorithmRun> evaluateRun(RunConfig run);
+
 	/**
 	 * Evaluate a sequence of run configurations
 	 * @param runConfigs a list containing run configurations to evaluate
 	 * @return	list containing the <code>AlgorithmRun</code> objects in the same order as runConfigs
+	 * @throws TargetAlgorithmAbortException
 	 */
-	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs)
-	{
-		AlgorithmRunner runner = getAlgorithmRunner(runConfigs);
-		List<AlgorithmRun> runs =  runner.run();
-		return runs;
-	}
-	
-	private final boolean concurrentExecution; 
-	
-	/**
-	 * Helper method which selects the AlgorithmRunner to use
-	 * @param runConfigs 	runConfigs to evaluate
-	 * @return	AlgorithmRunner to use
-	 */
-	private AlgorithmRunner getAlgorithmRunner(List<RunConfig> runConfigs)
-	{
-		
-		if(concurrentExecution)
-		{
-			log.info("Using concurrent algorithm runner");
-			return AutomaticConfiguratorFactory.getConcurrentAlgorithmRunner(execConfig,runConfigs);
-			
-		} else
-		{
-			log.info("Using single-threaded algorithm runner");
-			return AutomaticConfiguratorFactory.getSingleThreadedAlgorithmRunner(execConfig,runConfigs);
-		}
-	}
+	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs);
 	
 	/**
 	 * Returns the number of target algorithm runs that we have executed
 	 * @return	total number of runs evaluated
+	 * 
 	 */
-	public int getRunCount()
-	{
-		return runCount;
-	}
+	public int getRunCount();
+	
 	
 	/**
 	 * May optionally return a unique number that should roughly correspond to a unique sequence of run requests.
@@ -108,12 +56,10 @@ public class TargetAlgorithmEvaluator {
 	 * identical]. Note: This method is optional and may just return zero. 
 	 * 
 	 * @return runHashCode computed
+	 * 
 	 */
-	public int getRunHash()
-	{
-		return runHashCodes;
-	}
-
+	public int getRunHash();
+	
 	/**
 	 * Sets the runCount to the given parameter
 	 * 
@@ -122,9 +68,7 @@ public class TargetAlgorithmEvaluator {
 	 * @see ca.ubc.cs.beta.aclib.state.StateFactory
 	 * @param runs
 	 */
-	public void seek(List<AlgorithmRun> runs) {
-		runCount = runs.size();
-		
-	}
+	public void seek(List<AlgorithmRun> runs);
+	
 	
 }

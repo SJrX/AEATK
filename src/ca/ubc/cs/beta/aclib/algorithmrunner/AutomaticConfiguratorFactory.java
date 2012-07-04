@@ -9,7 +9,7 @@ import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
  * Factory that creates various runners
  * 
  * </b>NOTE:</b> This factory is probably unnecessary, originally it was meant to do more, but things got side tracked.
- * @see TargetAlgorithmEvaluator
+ * @see CommandLineTargetAlgorithmEvaluator
  * @author sjr
  *
  */

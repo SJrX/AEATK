@@ -13,7 +13,7 @@ import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
  * Used to Actually Run the Target Algorithm
  * @author sjr
  */
-public abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
+abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 
 	/**
 	 * Stores the target algorithm execution configuration

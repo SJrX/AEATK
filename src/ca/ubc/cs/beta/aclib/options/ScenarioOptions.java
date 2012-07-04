@@ -2,6 +2,7 @@ package ca.ubc.cs.beta.aclib.options;
 
 import java.io.File;
 import com.beust.jcommander.Parameter;
+import com.beust.jcommander.ParameterFile;
 import com.beust.jcommander.ParametersDelegate;
 
 import ca.ubc.cs.beta.aclib.misc.jcommander.converter.OverallObjectiveConverter;

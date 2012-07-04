@@ -15,6 +15,7 @@ import org.junit.Test;
 import ca.ubc.cs.beta.TestHelper;
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
+import ca.ubc.cs.beta.aclib.algorithmrunner.CommandLineTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.algorithmrunner.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
@@ -57,7 +58,7 @@ public class TAETestSet {
 	@Before
 	public void beforeTest()
 	{
-		tae = new TargetAlgorithmEvaluator( execConfig, false); 	
+		tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false); 	
 	}
 	
 	/**

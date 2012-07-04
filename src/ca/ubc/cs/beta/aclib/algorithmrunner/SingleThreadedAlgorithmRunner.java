@@ -8,7 +8,7 @@ import ca.ubc.cs.beta.aclib.exceptions.TargetAlgorithmAbortException;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 
-public class SingleThreadedAlgorithmRunner extends AbstractAlgorithmRunner
+class SingleThreadedAlgorithmRunner extends AbstractAlgorithmRunner
 {
 
 	/**
