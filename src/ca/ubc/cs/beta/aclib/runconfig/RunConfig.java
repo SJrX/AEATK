@@ -137,7 +137,6 @@ public class RunConfig implements Serializable{
 	@Override
 	public int hashCode()
 	{
-		
 		/*
 		 * Due to adaptive Capping and floating point issues, we don't consider the cutofftime as part of the hashcode.
 		 * Theoretically this may cause certain performance issues in hash based collections
