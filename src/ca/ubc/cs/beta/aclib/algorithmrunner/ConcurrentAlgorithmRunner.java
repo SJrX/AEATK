@@ -46,14 +46,10 @@ class ConcurrentAlgorithmRunner extends AbstractAlgorithmRunner {
 		 * 
 		 */
 		try {
-			for(AlgorithmRun run : runs)
-			{
-				p.submit(run);	
-			}
 			
-			p.shutdown();
+			
 			try {
-				p.awaitTermination(24000, TimeUnit.DAYS);
+				p.invokeAll(runs);
 				for(AlgorithmRun run : runs)
 				{
 					if (run.getRunResult().equals(RunResult.ABORT))

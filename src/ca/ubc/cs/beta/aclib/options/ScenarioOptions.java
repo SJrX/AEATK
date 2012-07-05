@@ -55,8 +55,7 @@ public class ScenarioOptions extends AbstractOptions{
 	@ParameterFile
 	public File scenarioFile = null;
 	
-	@Parameter(names="--deterministic", description="Whether the target algorithm is deterministic (0 no, 1 yes) [An integer due to backwards compatibility]")
-	public int deterministic = 0;
+	
 	
 	@Parameter(names="--skipInstanceFileCheck", description="Do not check if instances files exist on disk")
 	public boolean skipInstanceFileCheck = false;

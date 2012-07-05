@@ -28,35 +28,36 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 	 */
 	public ExistingAlgorithmRun(AlgorithmExecutionConfig execConfig, RunConfig runConfig, String result) {
 		super(execConfig, runConfig);
-		this.rawResultLine = resultLine;
-		this.runCompleted = true;
+		//this.rawResultLine = resultLine;
+		//this.runCompleted = true;
 		String[] resultLine = result.split(", ");
 		
 		try
 		{
-			
+			RunResult acResult;
 			try {
-				this.acResult = RunResult.getAutomaticConfiguratorResultForCode(Integer.valueOf(resultLine[0]));
+				acResult = RunResult.getAutomaticConfiguratorResultForCode(Integer.valueOf(resultLine[0]));
 			} catch(NumberFormatException e)
 			{
-				this.acResult = RunResult.getAutomaticConfiguratorResultForKey(resultLine[0]);
+				acResult = RunResult.getAutomaticConfiguratorResultForKey(resultLine[0]);
 			}
 			
 			
-			this.runtime = Double.valueOf(resultLine[1]);
-			this.runLength = Double.valueOf(resultLine[2]);
-			this.quality = Double.valueOf(resultLine[3]);
-			this.resultSeed = Long.valueOf(resultLine[4]);
-			this.resultLine = result;
+			double runtime = Double.valueOf(resultLine[1]);
+			double runLength = Double.valueOf(resultLine[2]);
+			double quality = Double.valueOf(resultLine[3]);
+			long resultSeed = Long.valueOf(resultLine[4]);
 			
-			runResultWellFormed = true;
+			this.setResult(acResult, runtime, runLength, quality, resultSeed, result);
+			
+			
 		} catch(ArrayIndexOutOfBoundsException e)
 		{ 
 			Object[] args = { execConfig, runConfig, result} ;
 			
 			log.info("Malformed Run Result for Execution (ArrayIndexOutOfBoundsException): {}, Instance: {}, Result: {}", args);
 			log.info("Exception:",e);
-			runResultWellFormed = false;
+			this.setAbortResult(e.getMessage());
 		}catch(NumberFormatException e)
 		{
 			//There was a problem with the output, we just set this flag
@@ -64,8 +65,8 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 			Object[] args = { execConfig, runConfig, result} ;
 			log.info("Malformed Run Result for Execution (NumberFormatException): {}, Instance: {}, Result: {}", args);
 			log.info("Exception:",e);
+			this.setAbortResult(e.getMessage());
 			
-			runResultWellFormed = false;
 			
 		}
 		

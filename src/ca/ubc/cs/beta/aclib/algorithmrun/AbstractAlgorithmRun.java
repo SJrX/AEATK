@@ -23,34 +23,105 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 	/*
 	 * Values reported by the target algorithm
 	 */
-	protected RunResult acResult;
+	private RunResult acResult;
 	
-	protected double runtime;
-	protected double runLength;
-	protected double quality;
-	protected long resultSeed; 
+	private double runtime;
+	private double runLength;
+	private double quality;
+	private  long resultSeed; 
 	
 	/**
 	 * Result line reported by the target algorithm (for debug purposes only), 
 	 * NOTE: This will always be parsable, and may not be what the algorithm reported
 	 */
-	protected String resultLine;
+	private String resultLine;
 	
 	/**
 	 * Raw result line reported by the target algorithm (potentially useful if the result line is corrupt)
 	 */
-	protected String rawResultLine;
+	private String rawResultLine;
 	
 	/**
 	 * true if the run is completed 
 	 */
-	protected boolean runCompleted = false;
+	private boolean runCompleted = false;
 	
 	/**
 	 * True if the run was well formed
 	 * Note: We may deprecate this in favor of using CRASHED
 	 */
-	protected boolean runResultWellFormed = false;
+	private boolean runResultWellFormed = false;
+	
+	
+	/**
+	 * Sets the values for this Algorithm Run
+	 * @param acResult
+	 * @param runtime
+	 * @param runLength
+	 * @param qualtiy
+	 * @param resultSeed
+	 * @param resultLine
+	 * @param rawResultLine
+	 * @param runResultWellFormat
+	 */
+	protected synchronized void setResult(RunResult acResult, double runtime, double runLength, double quality, long resultSeed, String rawResultLine)
+	{
+		
+		this.acResult = acResult;
+		this.runtime = runtime;
+		this.runLength = runLength;
+		this.quality = quality;
+		this.resultSeed = resultSeed;
+		this.resultLine =  acResult.name() + ", " + runtime + ", " + runLength + ", " + quality + ", " + resultSeed;
+		this.rawResultLine = rawResultLine;
+		this.runResultWellFormed = true;
+		this.runCompleted = true;
+	}
+	
+	/**
+	 * Marks this run as aborted
+	 * @param rawResultLine  the raw output that might be relevant to this abort
+	 */
+	protected void setAbortResult(String rawResultLine)
+	{
+		this.setResult(RunResult.ABORT, runConfig.getCutoffTime(), 0, 0, runConfig.getProblemInstanceSeedPair().getSeed(), rawResultLine);
+	}
+	
+	/**
+	 * Marks this run as aborted
+	 * @param rawResultLine  the raw output that might be relevant to this crash
+	 */
+	protected void setCrashResult(String rawResultLine)
+	{
+		this.setResult(RunResult.CRASHED, runConfig.getCutoffTime(), 0, 0, runConfig.getProblemInstanceSeedPair().getSeed(), rawResultLine);
+	}
+	
+	
+	
+	/**
+	 * Sets the values for this Algorithm Run
+	 * @param acResult					RunResult for this run
+	 * @param runtime					runtime measured
+	 * @param runLength					runlength measured
+	 * @param quality					quality measured
+	 * @param resultSeed				resultSeed 
+	 * @param resultLine				well formatted result line 
+	 * @param rawResultLine				raw result line
+	 * @param runResultWellFormed		whether this run has well formed output
+	 */
+	protected synchronized void setResult(RunResult acResult, double runtime, double runLength, double quality, long resultSeed, String resultLine, String rawResultLine, boolean runResultWellFormed)
+	{
+		this.acResult = acResult;
+		this.runtime = runtime;
+		this.runLength = runLength;
+		this.quality = quality;
+		this.resultSeed = resultSeed;
+		this.resultLine = resultLine;
+		this.rawResultLine = rawResultLine;
+		this.runResultWellFormed = runResultWellFormed;
+		this.runCompleted = true;
+	}
+	
 	
 	/**
 	 * Default Constructor
@@ -70,6 +141,21 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 	
 	@Override
 	public abstract void run();
+
+	/**
+	 * Synonym of {@link Run}
+	 * <p>
+	 * <b>Implementation Note:</b> If there is a good reason this method can be made non final 
+	 * but as a rule call should be the same a run().
+	 * 
+	 *  @return null
+	 */
+	@Override
+	public final Object call()
+	{
+		run();
+		return null;
+	}
 	
 	@Override
 	public final AlgorithmExecutionConfig getExecutionConfig()

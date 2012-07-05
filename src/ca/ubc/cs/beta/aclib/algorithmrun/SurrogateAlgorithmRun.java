@@ -28,16 +28,7 @@ public class SurrogateAlgorithmRun extends AbstractAlgorithmRun {
 	public SurrogateAlgorithmRun(AlgorithmExecutionConfig execConfig,RunConfig runConfig, double response  )
 	{
 		super(execConfig, runConfig);
-		
-		this.acResult = RunResult.SAT;
-		this.runtime = response;
-		this.resultSeed = seedValues++;
-		
-	
-		this.resultLine = "SAT, " + runtime + ", 0, 0, " + resultSeed;
-		
-		runResultWellFormed = true;
-		runCompleted = true;
+		this.setResult(RunResult.SAT, response, 0, 0, seedValues++, "No Real Line, just response used");
 	}
 
 	@Override

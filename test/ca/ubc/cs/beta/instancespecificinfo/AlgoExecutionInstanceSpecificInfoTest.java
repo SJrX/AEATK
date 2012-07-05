@@ -10,8 +10,6 @@ import org.junit.Test;
 
 import ca.ubc.cs.beta.TestHelper;
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aclib.algorithmrunner.CommandLineTargetAlgorithmEvaluator;
-import ca.ubc.cs.beta.aclib.algorithmrunner.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
@@ -20,6 +18,8 @@ import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.seedgenerator.InstanceSeedGenerator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.CommandLineTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 
 import ca.ubc.cs.beta.probleminstance.ProblemInstanceHelperTester;
 
@@ -41,7 +41,7 @@ public class AlgoExecutionInstanceSpecificInfoTest {
 		File paramFile = TestHelper.getTestFile("testInfoSpecificParamExecution/testParam.txt");
 		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(paramFile);
 		
-		AlgorithmExecutionConfig execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false);
+		AlgorithmExecutionConfig execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, true);
 		TargetAlgorithmEvaluator tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false);
 		
 		InstanceListWithSeeds ilws = ProblemInstanceHelperTester.getInstanceListWithSeeds("classicFormatInstanceSeedSpecificValid.txt", false);
@@ -93,7 +93,7 @@ public class AlgoExecutionInstanceSpecificInfoTest {
 		File paramFile = TestHelper.getTestFile("testInfoSpecificParamExecution/testParam.txt");
 		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(paramFile);
 		
-		AlgorithmExecutionConfig execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false);
+		AlgorithmExecutionConfig execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, true);
 		TargetAlgorithmEvaluator tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false);
 		
 		InstanceListWithSeeds ilws = ProblemInstanceHelperTester.getInstanceListWithSeeds("manju.txt", false);

@@ -1,4 +1,4 @@
-package ca.ubc.cs.beta.aclib.algorithmrunner;
+package ca.ubc.cs.beta.aclib.targetalgorithmevaluator;
 
 import java.util.Collections;
 import java.util.List;
@@ -6,6 +6,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aclib.algorithmrunner.AlgorithmRunner;
+import ca.ubc.cs.beta.aclib.algorithmrunner.AutomaticConfiguratorFactory;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 

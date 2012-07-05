@@ -62,27 +62,11 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 		
 		if(runConfig.getCutoffTime() <= 0)
 		{
+			
 			log.info("Cap time is negative for {} setting run as timedout", runConfig);
+			String rawResultLine = "[DIDN'T BOTHER TO RUN ALGORITHM AS THE CAPTIME IS NOT POSITIVE NEGATIVE]";
 			
-			acResult =  RunResult.TIMEOUT;
-			rawResultLine = "[DIDN'T BOTHER TO RUN ALGORITHM AS THE CAPTIME IS NEGATIVE]";
-			int solved = acResult.getResultCode();
-			String runtime = "0.0";
-			String runLength = "0";
-			String bestSolution = "0";
-			String seed = String.valueOf(runConfig.getProblemInstanceSeedPair().getSeed());
-			resultLine = acResult.name() + ", " + runtime + ", " + runLength + ", " + bestSolution + ", " + seed;
-			
-			this.runLength = Double.valueOf(runLength);
-			this.runtime = Double.valueOf(runtime);
-			this.quality = Double.valueOf(bestSolution);
-			this.resultSeed = Long.valueOf(seed);
-			runResultWellFormed = true;
-			
-			synchronized(this) 
-			{
-				runCompleted = true;
-			}
+			this.setResult(RunResult.TIMEOUT, 0, 0, 0, runConfig.getProblemInstanceSeedPair().getSeed(), rawResultLine);
 		}
 	}
 
@@ -90,7 +74,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	@Override
 	public synchronized void run() {
 		
-		if(runCompleted)
+		if(isRunCompleted())
 		{
 			return;
 		}
@@ -120,7 +104,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 			throw new IllegalStateException(e1);
 		}
 		
-		runCompleted = true;
+		
 		
 		
 	}
@@ -181,7 +165,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	public void processLine(String line)
 	{
 		Matcher matcher = pattern.matcher(line);
-		rawResultLine = "[No Matching Output Found]";
+		String rawResultLine = "[No Matching Output Found]";
 		log.debug(fullProcessOutputMarker,line);
 		
 
@@ -198,37 +182,25 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 			
 			rawResultLine = acExecResultString;
 			
-			acResult =  RunResult.getAutomaticConfiguratorResultForKey(results[0]);
+			RunResult acResult =  RunResult.getAutomaticConfiguratorResultForKey(results[0]);
 			
 			int solved = acResult.getResultCode();
 			String runtime = results[1];
 			String runLength = results[2];
 			String bestSolution = results[3];
 			String seed = results[4];
-			
-			resultLine = acResult.name() + ", " + runtime + ", " + runLength + ", " + bestSolution + ", " + seed;
-			
-			
+
 			try
 			{
-				this.runLength = Double.valueOf(runLength);
-				this.runtime = Double.valueOf(runtime);
-				this.quality = Double.valueOf(bestSolution);
-				this.resultSeed = Long.valueOf(seed);
-				runResultWellFormed = true;
+				double runLengthD = Double.valueOf(runLength);
+				double runtimeD = Double.valueOf(runtime);
+				double qualityD = Double.valueOf(bestSolution);
+				long resultSeedD = Long.valueOf(seed);
+				
+				this.setResult(acResult, runtimeD, runLengthD, qualityD, resultSeedD, rawResultLine);
 			} catch(NumberFormatException e)
 			{
-				
-				
-				//There was a problem with the output, we just set this flag
-				this.runtime = 0;
-				this.runLength = 0;
-				this.quality = 0;
-				this.resultSeed = -1;
-				this.acResult = RunResult.CRASHED;
-				
-				runResultWellFormed = true;
-				
+				this.setCrashResult(rawResultLine + "\n" + e.getMessage());
 			}	
 			
 			

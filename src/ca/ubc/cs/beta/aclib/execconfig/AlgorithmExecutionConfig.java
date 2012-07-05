@@ -20,13 +20,16 @@ public class AlgorithmExecutionConfig implements Serializable {
 	private final String algorithmExecutionDirectory;
 	private final ParamConfigurationSpace paramFile;
 	private final boolean executeOnCluster;
+	private final boolean deterministicAlgorithm; 
+	
 	
 	public AlgorithmExecutionConfig(String algorithmExecutable, String algorithmExecutionDirectory,
-			ParamConfigurationSpace paramFile, boolean executeOnCluster) {
+			ParamConfigurationSpace paramFile, boolean executeOnCluster, boolean deterministicAlgorithm) {
 		this.algorithmExecutable = algorithmExecutable;
 		this.algorithmExecutionDirectory = algorithmExecutionDirectory;
 		this.paramFile = paramFile;
 		this.executeOnCluster = executeOnCluster;
+		this.deterministicAlgorithm = deterministicAlgorithm;
 	}
 
 	public String getAlgorithmExecutable() {
@@ -43,6 +46,11 @@ public class AlgorithmExecutionConfig implements Serializable {
 
 	public boolean isExecuteOnCluster() {
 		return executeOnCluster;
+	}
+	
+	public boolean isDeterministicAlgorithm()
+	{
+		return deterministicAlgorithm;
 	}
 	
 	public int hashCode()

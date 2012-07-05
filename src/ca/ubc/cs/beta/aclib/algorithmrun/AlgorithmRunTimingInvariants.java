@@ -97,6 +97,12 @@ public class AlgorithmRunTimingInvariants implements AlgorithmRun {
 	public String rawResultLine() {
 		return wrappedRun.rawResultLine();
 	}
+
+	@Override
+	public Object call() {
+		run();
+		return null;
+	}
 	
 
 	

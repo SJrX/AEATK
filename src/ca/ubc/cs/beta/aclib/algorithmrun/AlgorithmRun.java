@@ -1,6 +1,7 @@
 package ca.ubc.cs.beta.aclib.algorithmrun;
 
 import java.io.Serializable;
+import java.util.concurrent.Callable;
 
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
@@ -14,7 +15,7 @@ import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
  * 
  * @author sjr
  */
-public interface AlgorithmRun extends Runnable, Serializable {
+public interface AlgorithmRun extends Runnable, Serializable,  Callable<Object> {
 
 	/**
 	 * Returns the AlgorithmExecutionConfig of the run
@@ -98,6 +99,18 @@ public interface AlgorithmRun extends Runnable, Serializable {
 	 * If this method successfully returns it's guaranteed that isRunCompleted() is true
 	 */
 	public void run();
+	
+	/**
+	 * Runs this Algorithm Run
+	 * 
+	 * Subsequent calls to this should be a noop, and are not error conditions
+	 * 
+	 * If this method successfully returns it's guaranteed that isRunCompleted is true
+	 * 
+	 * @return null (always)
+	 */
+	public Object call();
+	
 
 	/**
 	 * Returns whether this run is completed

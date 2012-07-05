@@ -19,11 +19,15 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 	@Parameter(names={"--execDir","--execdir"}, description="Working directory to execute algorithm in", required=true)
 	public String algoExecDir;
 	
+	@Parameter(names="--deterministic", description="Whether the target algorithm is deterministic (0 no, 1 yes) [An integer due to backwards compatibility]")
+	public int deterministic = 0;
 	
-	 
+	@Parameter(names="--targetAlgorithmEvaluator", description="System we should use to dispatch algorithm requests [ See manual but CLI  (via Command Line) is default and generally what you want ]")
+	public String targetAlgorithmEvaluator = "CLI";
+	
 	public AlgorithmExecutionConfig getAlgorithmExecutionConfig(ParamConfigurationSpace p)
 	{
-		return new AlgorithmExecutionConfig(algoExec, algoExecDir, p, false);
+		return new AlgorithmExecutionConfig(algoExec, algoExecDir, p, false, (deterministic > 0));
 	}
 	
 	
