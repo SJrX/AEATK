@@ -10,8 +10,11 @@ import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.net.URL;
 import java.util.Collections;
+import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.ServiceConfigurationError;
+import java.util.ServiceLoader;
 import java.util.SortedMap;
 import java.util.TreeMap;
 
@@ -26,54 +29,34 @@ import org.slf4j.LoggerFactory;
 public class VersionTracker {
 
 	private static final Logger log = LoggerFactory.getLogger(VersionTracker.class);
-	/**
-	 * Contains a mapping from product name to versions
-	 */
-	private static final SortedMap<String, String> versionMap = new TreeMap<String, String>();
-	
-	/**
-	 * Given a name of a project, and a file in the classpath read it in as the version for the project
-	 * @param name 					name of the project
-	 * @param fileInClassPath		file in classpath
-	 */
-	public static void loadVersionFromClassPath(String name, String fileInClassPath)
+
+
+	private static SortedMap<String, String> init()
 	{
-		try {
 			
-			InputStream inputStream = VersionTracker.class.getResourceAsStream("/"+fileInClassPath);
-			BufferedReader reader =  new BufferedReader(new InputStreamReader(inputStream));
-			String version = reader.readLine();
-			registerVersion(name,version);
-			inputStream.close();
-		} catch (Throwable t) {
-			System.out.println(t);
-			t.printStackTrace();
-			log.debug("Could not retrieve version information",t);
-			registerVersion(name, "No Version Information Found");
+			Iterator<VersionInfo> versionInfo = ServiceLoader.load(VersionInfo.class).iterator();
+			SortedMap<String, String> versionMap = new TreeMap<String, String>();
 			
-		}
-	}
-	
-	static 
-	{
-		loadVersionFromClassPath("Automatic Configurator Library", "aclib-version.txt");
-		loadVersionFromClassPath("Random Forest Library", "fastrf-version.txt");
+			while(versionInfo.hasNext())
+			{
+				try { 
+				VersionInfo info = versionInfo.next();
+				versionMap.put(info.getProductName(),info.getVersion());
+				} catch(ServiceConfigurationError e)
+				{
+					log.warn("Error occured while loading version Information", e);
+				}
+			}
+				
+			
+		return versionMap;
 	}
 	
 	public static void main(String[] args)
 	{
 		logVersions();
 	}
-	
-	/**
-	 * Registers a new version 
-	 * @param productName 	product to register a version for
-	 * @param version     	version of the product
-	 */
-	public static void registerVersion(String productName, String version)
-	{
-		versionMap.put(productName, version);
-	}
+
 	
 	
 	/**
@@ -82,9 +65,10 @@ public class VersionTracker {
 	 */
 	public static Map<String, String> getVersionMap()
 	{
-		return Collections.unmodifiableMap(versionMap);
-		
+		return init();
 	}
+
+	
 	
 	/**
 	 * Gets a string representation of all registered product versions 
@@ -92,6 +76,7 @@ public class VersionTracker {
 	 */
 	public static String getVersionInformation()
 	{
+		SortedMap<String, String> versionMap = init();
 		StringBuilder sb = new StringBuilder();
 		
 		for(Entry<String, String> ent : versionMap.entrySet())
@@ -106,6 +91,7 @@ public class VersionTracker {
 	 */
 	public static void logVersions()
 	{
+		SortedMap<String, String> versionMap = init();
 		for(Entry<String, String> ent : versionMap.entrySet())
 		{
 			log.info("Version of {} is {} ", ent.getKey(), ent.getValue());
