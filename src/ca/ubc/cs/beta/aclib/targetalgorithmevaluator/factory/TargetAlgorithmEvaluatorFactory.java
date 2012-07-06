@@ -22,7 +22,6 @@ public interface TargetAlgorithmEvaluatorFactory {
 	 * for instance if your targetalgorithmevalutor simply returns Random results, it might be used via an option --algoExecSystem RANDOM
 	 * <p> 
 	 * Where RANDOM is what is returned from this method.
-	 * @return 
 	 * 
 	 * @return a friendly name for the command line 
 	 */
@@ -30,11 +29,11 @@ public interface TargetAlgorithmEvaluatorFactory {
 	
 	/**
 	 * Retrieves a Target Algorithm Evaluator
-	 * @param 	execConfig 				The Execution Configuration for the Target Algorithm
-	 * @param   concurrentExeution 		The maximum number of concurrent executions
+	 * @param 	execConfig 				    The Execution Configuration for the Target Algorithm
+	 * @param   maxConcurrentExecutions 	The maximum number of concurrent executions
 	 * @return	the target algorithm evaluator
 	 */
-	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(AlgorithmExecutionConfig config, int maxConcurrentExecutions);
+	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig, int maxConcurrentExecutions);
 	
 	
 }

@@ -58,11 +58,9 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 	 * @param acResult
 	 * @param runtime
 	 * @param runLength
-	 * @param qualtiy
+	 * @param quality
 	 * @param resultSeed
-	 * @param resultLine
 	 * @param rawResultLine
-	 * @param runResultWellFormat
 	 */
 	protected synchronized void setResult(RunResult acResult, double runtime, double runLength, double quality, long resultSeed, String rawResultLine)
 	{
@@ -143,7 +141,7 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 	public abstract void run();
 
 	/**
-	 * Synonym of {@link Run}
+	 * Synonym of {@link AbstractAlgorithmRun#run()}
 	 * <p>
 	 * <b>Implementation Note:</b> If there is a good reason this method can be made non final 
 	 * but as a rule call should be the same a run().

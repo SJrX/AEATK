@@ -3,8 +3,6 @@ package ca.ubc.cs.beta;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
-import ca.ubc.cs.beta.aclib.configspace.*;
-import ca.ubc.cs.beta.aclib.probleminstance.*;
 import ca.ubc.cs.beta.configspace.ParamConfigurationTest;
 import ca.ubc.cs.beta.configspace.RandomConfigurationTest;
 import ca.ubc.cs.beta.probleminstance.BuggyFeatureFilesTester;

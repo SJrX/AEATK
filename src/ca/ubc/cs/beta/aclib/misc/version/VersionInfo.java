@@ -14,13 +14,13 @@ public interface VersionInfo {
 
 	/**
 	 * Retrieve the product name
-	 * @return
+	 * @return name of the product
 	 */
 	public String getProductName();
 	
 	/**
 	 * Retrieve the version of this product
-	 * @return
+	 * @return version of the product
 	 */
 	public String getVersion();
 	

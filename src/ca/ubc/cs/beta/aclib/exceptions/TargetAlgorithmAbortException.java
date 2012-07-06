@@ -14,7 +14,7 @@ public class TargetAlgorithmAbortException extends RuntimeException {
 
 	public TargetAlgorithmAbortException(AlgorithmRun run)
 	{
-		super("Target algorithm execution signaled that we should ABORT");
+		super("Target algorithm execution signaled that we should ABORT " + run.rawResultLine());
 		this.run = run;
 	}
 	
