@@ -18,6 +18,10 @@ public class TargetAlgorithmAbortException extends RuntimeException {
 		this.run = run;
 	}
 	
+	public TargetAlgorithmAbortException(String message) {
+		super(message);
+	}
+
 	public AlgorithmRun getAlgorithmRun()
 	{
 		return run;

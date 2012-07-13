@@ -17,7 +17,7 @@ public class RunConfig implements Serializable{
 	 * 
 	 */
 	private static final long serialVersionUID = 7749039021874017859L;
-	private final ProblemInstanceSeedPair aisp;
+	private final ProblemInstanceSeedPair pisp;
 	private final double cutoffTime;
 	private final ParamConfiguration params;
 	private final boolean cutoffLessThanMax;
@@ -44,7 +44,7 @@ public class RunConfig implements Serializable{
 		{
 			throw new IllegalArgumentException("Cutoff time must be non-negative positive");
 		}
-		this.aisp = pisp;
+		this.pisp = pisp;
 		this.cutoffTime = cutoffTime;
 		this.params = config;
 		this.cutoffLessThanMax = false;
@@ -77,7 +77,7 @@ public class RunConfig implements Serializable{
 			throw new IllegalArgumentException("ParamString cannot be null");
 		}
 		
-		this.aisp = pisp;
+		this.pisp = pisp;
 		this.cutoffTime = cutoffTime;
 		this.params = params;
 		this.cutoffLessThanMax = cutoffLessThanMax;
@@ -91,7 +91,7 @@ public class RunConfig implements Serializable{
 	 */
 	public ProblemInstanceSeedPair getProblemInstanceSeedPair()
 	{
-		return aisp;
+		return pisp;
 	}
 
 	/**
@@ -126,7 +126,7 @@ public class RunConfig implements Serializable{
 		if (o instanceof RunConfig)
 		{
 			RunConfig oar = (RunConfig) o;
-			return (aisp.equals(oar.aisp)) && cutoffTime == oar.cutoffTime && params.equals(oar.params);
+			return (pisp.equals(oar.pisp)) && cutoffTime == oar.cutoffTime && params.equals(oar.params);
 		} else
 		{
 			return false;
@@ -142,14 +142,15 @@ public class RunConfig implements Serializable{
 		 * Theoretically this may cause certain performance issues in hash based collections
 		 * however it is hoped that the number of re-runs with increasing cap times is small.
 		 */
-		return (int) ( (aisp.hashCode())^ params.hashCode());
+	
+		return (int) ( (pisp.hashCode())^ params.hashCode());
 	}
 	
 	@Override
 	public String toString()
 	{
 		StringBuilder sb = new StringBuilder();
-		sb.append("Instance&Seed:\n").append(aisp.toString()).append("\nCutoffTime: ").append(cutoffTime).append("\nParamString: ").append(params.toString());
+		sb.append("Instance&Seed:\n").append(pisp.toString()).append("\nCutoffTime: ").append(cutoffTime).append("\nParamString: ").append(params.toString());
 		return sb.toString();
 		
 	}

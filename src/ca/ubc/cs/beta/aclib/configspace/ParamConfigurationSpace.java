@@ -880,6 +880,7 @@ public class ParamConfigurationSpace implements Serializable {
 	
 	public ParamConfiguration getRandomConfiguration()
 	{
+		
 		return this.getRandomConfiguration(false);
 	}
 	/**
@@ -896,7 +897,10 @@ public class ParamConfigurationSpace implements Serializable {
 			{
 				if (parameterDomainContinuous[i])
 				{
+					//valueArray[i] = Math.round(random.nextDouble()*1000000000000L)/1000000000000.0;
 					valueArray[i] = random.nextDouble();
+					
+					//System.out.println("Generated: " + valueArray[i]);
 				} else
 				{
 					//array values = 0 have invalid values, so we take one less of the categorical size and then + 1
@@ -929,6 +933,25 @@ public class ParamConfigurationSpace implements Serializable {
 	public ParamConfiguration getEmptyConfiguration()
 	{
 		return new ParamConfiguration(this, categoricalSize, parameterDomainContinuous, paramKeyIndexMap);
+	}
+	
+	/**
+	 * Generates a configuration with the corresponding valueArray.
+	 * <p>
+	 * <b>NOTE</b> No validation is done on the aray inputs, using this method is strongly discouraged
+	 * this is primarily for MATLAB synchronization. For this kind of input you should perhaps consider
+	 * {@link ca.ubc.cs.beta.aclib.configspace.ParamConfiguration.StringFormat.ARRAY_STRING_SYNTAX}
+	 * 
+	 * @param valueArray paramValueArray
+	 * @return param configuration
+	 */
+	public ParamConfiguration getConfigurationFromValueArray(double[] valueArray)
+	{
+		if(valueArray.length != categoricalSize.length)
+		{
+			throw new IllegalArgumentException("Value Array Length is not the right size " + valueArray.length + " vs " + categoricalSize.length);
+		}
+		return new ParamConfiguration(this, valueArray.clone(), categoricalSize, parameterDomainContinuous, paramKeyIndexMap);
 	}
 	
 

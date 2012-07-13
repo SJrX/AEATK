@@ -7,6 +7,7 @@ import java.util.List;
 import org.apache.commons.math.stat.StatUtils;
 
 import ca.ubc.cs.beta.aclib.misc.random.SeedableRandomSingleton;
+import ca.ubc.cs.beta.models.fastrf.utils.Hash;
 
 /**
  * Utility class with Math operations on arrays
@@ -152,7 +153,7 @@ public class ArrayMathOps {
 		}
 	
 		//System.out.println("HASH=>" + s);
-		return Math.abs(Arrays.deepHashCode(matrix)) % 32462867;  //Some prime around 2^25 (to prevent overflows in computation)
+		return Math.abs(Hash.hash(matrix)) % 32462867;  //Some prime around 2^25 (to prevent overflows in computation)
 		
 		
 		
@@ -313,4 +314,8 @@ public class ArrayMathOps {
 	public static double maxIgnoreNaNs(double[] values) {
 		return max(stripNans(values));
 	}
+	
+
+	
+
 }

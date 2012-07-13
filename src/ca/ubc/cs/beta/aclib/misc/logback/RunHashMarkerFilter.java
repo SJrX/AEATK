@@ -13,6 +13,7 @@ public class RunHashMarkerFilter extends Filter<ILoggingEvent> {
 
 	@Override
 	public FilterReply decide(ILoggingEvent event) {
+		if(event.getMarker() == null) return FilterReply.ACCEPT;
 		if(!event.getMarker().getName().equals("RUN_HASH"))
 		{
 			return FilterReply.DENY;

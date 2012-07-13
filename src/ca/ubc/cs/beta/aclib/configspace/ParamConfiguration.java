@@ -12,6 +12,8 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import ca.ubc.cs.beta.models.fastrf.utils.Hash;
+
 
 /**
  * This class represents an element in the associated {@link ParamConfigurationSpace} and provides a natural {@link Map} like interface for accessing it's members 
@@ -407,12 +409,36 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 		}
 	}
 	
+	boolean hashSet = false;
+	int lastHash = 0;
+	
 	@Override
 	public int hashCode()	
 	{ 
-		if(isDirty) cleanUp();
+		if(isDirty || hashSet)
+		{
+			cleanUp();
+			
+			float[] values = new float[valueArrayForComparsion.length];
+			
+			
+			for(int i=0; i < values.length; i++)
+			{
+				values[i] = (float) valueArrayForComparsion[i];
+				
+			}
+			
+			lastHash = Hash.hashCode(values); 
+			
+			
+			hashSet = true;
+		}
 		
-		return configSpace.hashCode() ^ Arrays.hashCode(valueArrayForComparsion);
+		
+		return lastHash;
+		
+		
+		
 	}
 	
 	

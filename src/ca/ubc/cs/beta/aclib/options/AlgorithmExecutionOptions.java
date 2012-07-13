@@ -2,7 +2,9 @@ package ca.ubc.cs.beta.aclib.options;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
 
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
@@ -20,13 +22,14 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 	private static final String defaultSearchPath ;
 	
 	static{
-		
+		//==== This builds a giant string to search for other Target Algorithm Executors
 		StringBuilder sb = new StringBuilder();
 		String cwd = System.getProperty("user.dir");
-		
+		Set<String> files = new HashSet<String>();
 		List<String> directoriesToSearch = new ArrayList<String>();
 		
 		directoriesToSearch.add(cwd);
+		
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "surrogates" + File.separator);
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "RunDispatcher" + File.separator);
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "surrogates" + File.separator + "bin" + File.separator);
@@ -35,7 +38,7 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "RunDispatcher" + File.separator + "lib" + File.separator) ;
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "rundispatcher" + File.separator);
 		
-		
+		directoriesToSearch.add(System.getProperty("java.class.path"));
 		for(String dirName : directoriesToSearch)
 		{
 			File dir = new File(dirName);
@@ -51,32 +54,20 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 						{
 							if(fileName.trim().endsWith(".jar"))
 							{
-								sb.append(dir.getAbsolutePath());
-								sb.append(File.separator);
-								sb.append(fileName);
-								sb.append(File.pathSeparator);
+								if(!files.contains(fileName))
+								{
+									sb.append(dir.getAbsolutePath());
+									sb.append(File.separator);
+									sb.append(fileName);
+									sb.append(File.pathSeparator);
+									
+									System.out.println("Adding " + fileName);
+									files.add(fileName);
+								}
 							}
 						}
-						
-						
-						
-						
-						
-					}
-					
-					
-					
-					
-					
-					
-					
+					}	
 				}
-				
-				
-				
-				
-				
-				
 			}
 		}
 		
@@ -98,8 +89,14 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 	@Parameter(names={"--targetAlgorithmEvaluatorSearchPath","--taeSP"}, description="Where we should look for other target algorithm evaluators [ See manual but generally you can ignore this ] ")
 	public String taeSearchPath = defaultSearchPath;
 	
-	public AlgorithmExecutionConfig getAlgorithmExecutionConfig(ParamConfigurationSpace p)
+	public AlgorithmExecutionConfig getAlgorithmExecutionConfig(ParamConfigurationSpace p, File experimentDir)
 	{
+		
+		if(!new File(algoExecDir).isAbsolute())
+		{
+			algoExecDir = experimentDir.getAbsolutePath() + File.separator +algoExecDir; 
+		}
+		
 		return new AlgorithmExecutionConfig(algoExec, algoExecDir, p, false, (deterministic > 0));
 	}
 	

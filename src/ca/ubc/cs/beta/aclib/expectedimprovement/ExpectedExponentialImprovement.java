@@ -95,6 +95,9 @@ public strictfp class ExpectedExponentialImprovement implements ExpectedImprovem
 	            }
 	        }
 	    }
+	    
+	  
+	   
 	    return log_expEI;
 	}
 	@Override
@@ -111,8 +114,14 @@ public strictfp class ExpectedExponentialImprovement implements ExpectedImprovem
 		
 		double[] fmin =  {log10*f_min_samples};
 		double[] expImp = log_exp_exponentiated_imp(fmin, times(log10,predmean), times(log10,sqrt(predvar)));
-
-		return times(-1.0,expImp);
+		 //System.out.println(f_min_samples + "," + predmean[0] + "," + predvar[0] + "=> " + expImp[0]);
+		
+		for(int i=0; i < expImp.length; i++)
+		{
+			expImp[i] = -expImp[i];
+		}
+		
+		return expImp;
 		
 	}
 

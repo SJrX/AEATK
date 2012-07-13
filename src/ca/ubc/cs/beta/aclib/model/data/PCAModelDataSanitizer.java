@@ -9,6 +9,8 @@ import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
+import java.util.Arrays;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -44,43 +46,47 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 	public static final String filename = "/tmp/lastoutput-mds";
 	static boolean writeOutput = true;
 	private Logger log = LoggerFactory.getLogger(getClass());
+	
 	public static void main(String[] args)
 	{
-		/*
-		double[][] m1 = {{ 1,2},{3,4},{5,6}};
-		double[][] m2 = {{1,2,3},{4,5,6}};
-		System.out.println(explode(Arrays.deepToString((new MessyMathHelperClass()).matrixMultiply(m1, m2))));
-		 */
-		File f = new File(filename + "-" + 1);
-		ObjectInputStream in;
-		try {
-			in = new ObjectInputStream(new FileInputStream(f));
+		for(int i=0; i < 10; i++)
+		{
+			/*
+			double[][] m1 = {{ 1,2},{3,4},{5,6}};
+			double[][] m2 = {{1,2,3},{4,5,6}};
+			System.out.println(explode(Arrays.deepToString((new MessyMathHelperClass()).matrixMultiply(m1, m2))));
+			 */
+			File f = new File(filename + "-" + 1);
+			ObjectInputStream in;
+			try {
+				in = new ObjectInputStream(new FileInputStream(f));
+			
+			double[][] instanceFeatures  = (double[][]) in.readObject();
+			double[][] paramValues = (double[][]) in.readObject();
+			double[] responseValues = (double[]) in.readObject();
+			int[] usedInstances = (int[]) in.readObject();
+			in.close();
 		
-		double[][] instanceFeatures  = (double[][]) in.readObject();
-		double[][] paramValues = (double[][]) in.readObject();
-		double[] responseValues = (double[]) in.readObject();
-		in.close();
-	
-		writeOutput = false;
-		
-		int numPCA = 7;
-		
-		boolean logModel = true;
-		
-		
-		SanitizedModelData mdc = new PCAModelDataSanitizer(instanceFeatures, paramValues, numPCA, responseValues, new int[1], logModel);
-		} catch (FileNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (IOException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
-		} catch (ClassNotFoundException e) {
-			// TODO Auto-generated catch block
-			e.printStackTrace();
+			writeOutput = false;
+			
+			int numPCA = 7;
+			
+			boolean logModel = true;
+			
+			
+			SanitizedModelData mdc = new PCAModelDataSanitizer(instanceFeatures, paramValues, numPCA, responseValues, usedInstances, logModel);
+			} catch (FileNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			} catch (ClassNotFoundException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+			
 		}
-		
-		
 	}
 	
 	public static String explode(String s)
@@ -100,8 +106,22 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 		
 		this.prePCAInstanceFeatures = ArrayMathOps.copy(instanceFeatures);
 		
+		
+		
+		for(int i=0; i < instanceFeatures.length; i++)
+		{
+			System.out.println(i+":" + Arrays.toString(instanceFeatures[i]));
+		}
+		System.out.println("Instance Features Hash: " + ArrayMathOps.matlabHashCode(instanceFeatures));
+		System.out.println("Param Values Hash:" + ArrayMathOps.matlabHashCode(paramValues));
+		System.out.println("Used Instance IDs:" + Arrays.toString(usedInstancesIdxs));
+		System.out.println("Num PCA:" + numPCA);
+		System.out.println("Response Values:" +Arrays.toString(responseValues));
+		System.out.println("Log Model: " + logModel);
+		
+		
 		instanceFeatures = ArrayMathOps.copy(instanceFeatures);
-		writeOutput = false;
+		writeOutput = true;
 		if(writeOutput)
 		{
 			File f = new File(filename + "-" + index);
@@ -117,6 +137,7 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 			o.writeObject(instanceFeatures);
 			o.writeObject(paramValues);
 			o.writeObject(responseValues);
+			o.writeObject(usedInstancesIdxs);
 			System.out.println("Calls written & deleted to: " + filename + "-" + index++ );
 			o.close();
 			} catch(IOException e)
@@ -136,6 +157,8 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 		instanceFeatures = pca.removeColumns(instanceFeatures, constFeatures);
 		
 		log.info("Discarding {} constant inputs of {} in total.", constFeatures.length, prePCAInstanceFeatures[0].length);
+		System.out.println("Discarding "+ constFeatures.length + "  constant inputs of " + prePCAInstanceFeatures[0].length +" total ");
+		
 		double[][] instanceFeaturesT = pca.transpose(instanceFeatures);
 		
 		
@@ -183,9 +206,9 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 		//double[][] pcaVecT = pca.transpose(pcaVec);
 		pcaFeatures = pca.matrixMultiply(instanceFeatures, pcaVec);
 		
-		int[] constParams = pca.constantColumns(instanceFeatures);
 		
-		//paramValues = pca.removeConstantColumns(paramValues, constParams);
+		System.out.println("PCA Features Hash: " + ArrayMathOps.matlabHashCode(pcaFeatures));
+		
 	}
 
 	
