@@ -55,9 +55,9 @@ public class MessyMathHelperClass {
 		
 		double[][] pcaMatrixFinal = new double[matrix[0].length][Math.min(n, pcaMatrix[0].length) ];
 		
-		for(int j=0; j < pcaMatrixFinal.length; j++)
+		for(int j=0; j < Math.min(pcaMatrixFinal.length,pcaMatrix.length); j++)
 		{	
-			for(int k=0; k < pcaMatrixFinal[j].length; k++)
+			for(int k=0; k < Math.min(pcaMatrixFinal[j].length,pcaMatrix[j].length); k++)
 			{
 				pcaMatrixFinal[j][k] = pcaMatrix[j][k];
 			}

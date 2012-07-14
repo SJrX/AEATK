@@ -6,6 +6,7 @@ import java.util.Date;
 
 import ca.ubc.cs.beta.aclib.expectedimprovement.ExpectedImprovementFunctions;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.ReadableFileConverter;
+import ca.ubc.cs.beta.aclib.misc.jcommander.validator.ZeroOneHalfOpenRightDouble;
 import ca.ubc.cs.beta.aclib.misc.logging.LogLevel;
 import ca.ubc.cs.beta.aclib.state.StateSerializers;
 
@@ -104,6 +105,10 @@ public class SMACOptions extends AbstractOptions {
 	
 	@Parameter(names="--maxIncumbentRuns", description="Maximum Number of Incumbent Runs allowed", validateWith=PositiveInteger.class)
 	public int maxIncumbentRuns = 2000;
+	
+	@Parameter(names={"--intensificationPercentage","--frac_rawruntime"}, description="Percent of time to spend intensifying versus model learning", validateWith=ZeroOneHalfOpenRightDouble.class)
+	public double intensificationPercentage = 0.50;
+	
 	@ParametersDelegate
 	public ValidationOptions validationOptions = new ValidationOptions();
 
