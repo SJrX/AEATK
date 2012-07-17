@@ -188,7 +188,14 @@ public class SeedableRandomSingleton  {
 		list.addAll( tmpList);
 	}
 		
-		
+	public static double[] getPermutationOfArray(double[] input){
+		int[] permutation = getPermutation(input.length, 0);
+		double result[] = new double[input.length];
+		for (int i = 0; i < permutation.length; i++) {
+			result[i] = input[permutation[i]]; 
+		}
+		return result;
+	}
 		
 		
 }

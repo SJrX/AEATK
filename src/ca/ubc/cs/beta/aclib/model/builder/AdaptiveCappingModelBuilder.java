@@ -1,6 +1,11 @@
 package ca.ubc.cs.beta.aclib.model.builder;
 
 import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Iterator;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
 
 import org.slf4j.Logger;
@@ -35,19 +40,17 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 	
 	/**
 	 * Builds the Model 
-	 * @param mds 						sanatized model data
+	 * @param mds 						sanitized model data
 	 * @param rfOptions					random forest configuration options
 	 * @param runHistory				runhistory object containing the runs to use
 	 * @param rand						random object to use during construction
 	 * @param imputationIterations		the number of imputation iterations
 	 * @param cutoffTime				the max algorithm run time
-	 * @param penaltyFactory			the penalty factor for runs which timed out
+	 * @param penaltyFactor			    the penalty factor for runs which timed out
 	 */
-	public AdaptiveCappingModelBuilder(SanitizedModelData mds, RandomForestOptions rfOptions, RunHistory runHistory, Random rand, int imputationIterations, double cutoffTime, double penaltyFactory)
+	public AdaptiveCappingModelBuilder(SanitizedModelData mds, RandomForestOptions rfOptions, RunHistory runHistory, Random rand, int imputationIterations, double cutoffTime, double penaltyFactor)
 	{
-		
-		
-		double maxValue = mds.transformResponseValue(cutoffTime*penaltyFactory);
+		double maxValue = mds.transformResponseValue(cutoffTime*penaltyFactor);
 		
 		/**
 		 * General Algorithm is as follows
@@ -66,18 +69,29 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 		 *    }
 		 *    
 		 */
+		
+		//=== Get predictors, response values, and censoring indicators from RunHistory.
 		int[][] theta_inst_idxs = runHistory.getParameterConfigurationInstancesRanByIndex();
+		//=== Change to 0-based indexing
+		for(int i=0; i < theta_inst_idxs.length; i++)
+		{
+			theta_inst_idxs[i][0]--;
+			theta_inst_idxs[i][1]--;
+		}
+		
 		double[] responseValues = mds.getResponseValues();
-		boolean[] censoredValues = runHistory.getCensoredFlagForRuns();
+		boolean[] censoringIndicators = runHistory.getCensoredFlagForRuns();
+
+		//=== Initialize subsets corresponding to censored/noncensored values.
 		ArrayList<int[]> censoredThetaInst = new ArrayList<int[]>(responseValues.length);
 		ArrayList<int[]> nonCensoredThetaInst = new ArrayList<int[]>(responseValues.length);
 		ArrayList<Double> nonCensoredResponses = new ArrayList<Double>(responseValues.length);
-		
+
+		//=== Break into censored and noncensored.
 		int censoredCount = 0;
-		
 		for(int i=0; i < responseValues.length; i++)
 		{
-			if(!censoredValues[i])
+			if(!censoringIndicators[i])
 			{
 				nonCensoredThetaInst.add(theta_inst_idxs[i]);
 				nonCensoredResponses.add(responseValues[i]);
@@ -87,14 +101,12 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 				censoredCount++;
 			}
 		}
-		
-		log.info("Building Random Forest with {} censored runs out of {} total ", censoredCount, censoredValues.length);
 		int[][] non_cens_theta_inst_idxs = nonCensoredThetaInst.toArray(new int[0][]);
-		double[] non_cens_responses = convertToPrimitive(nonCensoredResponses.toArray(new Double[0]));
+		double[] non_cens_responses = convertToPrimitiveArray(nonCensoredResponses.toArray(new Double[0]));
 		
-				
+		log.info("Building Random Forest with {} censored runs out of {} total ", censoredCount, censoringIndicators.length);
 		
-		log.info("Building random forest with non censored data");
+		//=== Building random forest with non censored data.
 		RandomForest rf = buildRandomForest(mds,rfOptions,non_cens_theta_inst_idxs, non_cens_responses, false);
 		
 		if(rfOptions.fullTreeBootstrap)
@@ -103,103 +115,124 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 			/**
 			 * This should be an easy fix, we just need to sample correctly.
 			 */
-			
 		}
-		/**
+
+		int numTrees = rfOptions.numTrees;
+		int sampleSize = responseValues.length;
+
+		//=== Initialize map from censored response indices to Map from trees to their dataIdxs for that response (only for trees that actually have that data point).
+		Map<Integer, Map<Integer, List<Integer>>> censoredSampleIdxs = new HashMap<Integer, Map<Integer, List<Integer>>>();
+		for (int i = 0; i < sampleSize; i++) {
+			if(censoringIndicators[i]){
+				censoredSampleIdxs.put(i,new HashMap<Integer,List<Integer>>());
+			}
+		}		
+		
+		//=== Set up dataIdx once and for all (via bootstrap sampling), and keep track of which runs are censored in censoredSampleIdxs.
+	    int[][] dataIdxs = new int[numTrees][sampleSize];
+//		theta_inst_idxs = runHistory.getParameterConfigurationInstancesRanByIndex();
+	    for (int j = 0; j < numTrees; j++) {
+	        for (int k = 0; k < sampleSize; k++) {
+        	   int sampleIdxToUse =  rand.nextInt(sampleSize);
+               dataIdxs[j][k] = sampleIdxToUse;
+               if (censoringIndicators[sampleIdxToUse]){
+            	   if(censoredSampleIdxs.get(sampleIdxToUse).get(j) == null){
+                	   censoredSampleIdxs.get(sampleIdxToUse).put(j, new ArrayList<Integer>());
+            	   }            		   
+            	   censoredSampleIdxs.get(sampleIdxToUse).get(j).add(k);
+               }
+	        }
+	    }
+	    
+	    /**
 		 * While imputed values change more than a limit, continue.
 		 */
-		double last_mean = Double.NEGATIVE_INFINITY;
+		double differenceFromLastMean = 0;
+		double[][] yHallucinated = new double[numTrees][sampleSize];
+		
+		//=== Initialize yHallucinated to the observed data (for censored data points that's a lower bound).
+		for(int tree=0; tree<yHallucinated.length; tree++){
+			for (int sampleCount = 0; sampleCount < yHallucinated[tree].length; sampleCount++){
+				yHallucinated[tree][sampleCount] = responseValues[dataIdxs[tree][sampleCount]];
+			}
+		}
 		
 		for(int i=0; i < imputationIterations; i++)
 		{
-			double imputedValues_sum = 0;
-			double imputedValues_count = 0;
-			// Do bootstrap sampling for data for each tree.
-			int numTrees = rfOptions.numTrees;
-			int sampleSize =responseValues.length;
+			if( censoredSampleIdxs.isEmpty() ) break;
+			//=== Get predictions for all censored values once and for all in this iteration. 
+			int Xlength = mds.getConfigs()[0].length + mds.getPCAFeatures()[0].length;
+			double[][] predictors = new double[censoredSampleIdxs.size()][Xlength];
+			int j=0;
+			//=== Loop over all the censored data points.
+			for (Integer sampleIdxToUse: censoredSampleIdxs.keySet()){
+				double[] configArray = mds.getConfigs()[theta_inst_idxs[sampleIdxToUse][0]];
+				double[] featureArray = mds.getPCAFeatures()[theta_inst_idxs[sampleIdxToUse][1]];
+				for(int m=0; m < configArray.length; m++)
+				{
+					predictors[j][m] = configArray[m];
+				}
+				for(int m=0; m < featureArray.length; m++)
+				{
+					predictors[j][m+configArray.length] = featureArray[m];
+				}
+				j++;
+			}
+			//== Now predict.
+			double[][] prediction = RandomForest.apply(rf, predictors);
 			
-		    int[][] dataIdxs = new int[numTrees][sampleSize];
-		    theta_inst_idxs = runHistory.getParameterConfigurationInstancesRanByIndex();
-		    
-		    double[][] imputedResponses = new double[numTrees][sampleSize];
-		       for (int j = 0; j < numTrees; j++) {
-		    	   
-		    	   ArrayList<double[]> predictionsNeeded = new ArrayList<double[]>(sampleSize);
-		           for (int k = 0; k < sampleSize; k++) {
-		        	   int theta_inst_indx_to_use =  rand.nextInt(sampleSize);
-		               dataIdxs[j][k] = theta_inst_indx_to_use; 
-		               if(censoredValues[k])
-		               {
-		            	   imputedResponses[j][k] = Double.NaN;
-		            	   
-		            	   double[] configArray = mds.getConfigs()[theta_inst_idxs[theta_inst_indx_to_use][0]-1];
-		            	   double[] featureArray = mds.getPCAFeatures()[theta_inst_idxs[theta_inst_indx_to_use][1]-1];
-		            	   int Xlength = configArray.length + featureArray.length;
-		            	   double[] predictionX = new double[Xlength];		            	   
-		            	   for(int m=0; m < configArray.length; m++)
-		            	   {
-		            		   predictionX[m] = configArray[m];
-		            	   }
-		            	   
-		            	   for(int m=0; m < featureArray.length; m++)
-		            	   {
-		            		   predictionX[m+configArray.length] = featureArray[m];
-		            		   
-		            	   }
-		            	   
-		            	   
-		            	   predictionsNeeded.add(predictionX);
-		               } else
-		               {
-		            	   imputedResponses[j][k] = responseValues[k];
-		               }
-		               
-		           }
-		           
-		           double[][] predictions = RandomForest.apply(rf, predictionsNeeded.toArray(new double[0][]));
-		           
-		           int nextPrediction = 0;
-		           for(int k = 0; k < sampleSize; k++)
-		           {
-		        	   if(Double.isNaN(imputedResponses[j][k]))
-		        	   {
-		        		   double[] prediction = predictions[nextPrediction++];
-		        		   TruncatedNormalDistribution tNorm = new TruncatedNormalDistribution(prediction[0], prediction[1],responseValues[k],rand);
-		        		   imputedResponses[j][k] = Math.min(tNorm.sample(),maxValue);
-		        		   imputedValues_sum += imputedResponses[j][k];
-		        		   imputedValues_count++;
-		        		   if(Double.isInfinite(imputedResponses[j][k]))
-		        		   {
-		        			   System.out.println("Hello");
-		        		   }
-		        	   }
-		           }
-		       }
-		       log.info("Building random forest with imputed values iteration {}", i);
-		       rf = buildImputedRandomForest(mds,rfOptions,theta_inst_idxs, dataIdxs, imputedResponses, false);
-		       double meanIncrease = (imputedValues_sum / imputedValues_count) - last_mean;
-		       last_mean = (imputedValues_sum / imputedValues_count);
-		       if(i >= 2 && meanIncrease < Math.pow(10,-10))
-		       {
-		    	   log.info("Means of imputed values stopped increasing in imputation iteration {} (increase {})",i,meanIncrease);
-		    	   break;
-		       } else
-		       {
-		    	   log.info("Mean increase in imputed values in imputation iteration {}:{}", i, meanIncrease);
-		       }
+			j=0;
+			//=== Loop over all the censored data points.
+			for (Entry<Integer, Map<Integer, List<Integer>>> ent : censoredSampleIdxs.entrySet()){
+				int sampleIdxToUse = ent.getKey();
+				
+				//=== Collect number of samples we need to take for this point.
+				Map<Integer, List<Integer>> treeDataIdxsMap = ent.getValue();
+				int numSamplesToGet = 0;
+				for (List<Integer> l : treeDataIdxsMap.values()){
+					numSamplesToGet += l.size();
+				}
+			
+				//=== Get the samples (but cap them at maxValue). 
+				TruncatedNormalDistribution tNorm = new TruncatedNormalDistribution(prediction[j][0], prediction[j][1], responseValues[sampleIdxToUse],rand);
+				j++;
+				double[] samples = tNorm.getValuesAtStratifiedShuffledIntervals(numSamplesToGet);
+				for (int k = 0; k < samples.length; k++) {
+					samples[k] = Math.min(samples[k], maxValue);
+				}
+
+				//=== Populate the trees at their dataIdxs with the samples (and update differenceFromLastMean)
+				int count=0;
+				double increaseThisDataPoint = 0;
+				for( Entry<Integer, List<Integer>> ent2 : treeDataIdxsMap.entrySet() ){
+					int tree = ent2.getKey();
+					List<Integer> responseLocationsInTree = ent2.getValue();
+					for(int k = 0; k<responseLocationsInTree.size(); k++){
+						int responseLocationInTree = responseLocationsInTree.get(k);
+						increaseThisDataPoint += (samples[count] - yHallucinated[tree][responseLocationInTree]);
+						yHallucinated[tree][responseLocationInTree] = samples[count++];
+					}
+				}
+				differenceFromLastMean += (increaseThisDataPoint / count);
+			}
+			differenceFromLastMean /= censoredSampleIdxs.size();			
+			
+			//=== Build a new random forest.
+			log.info("Building random forest with imputed values iteration {}", i);
+			rf = buildImputedRandomForest(mds,rfOptions,theta_inst_idxs, dataIdxs, yHallucinated, false);
+			
+			if(differenceFromLastMean < Math.pow(10,-10))
+			{
+				log.info("Means of imputed values stopped increasing in imputation iteration {} (increase {})",i,differenceFromLastMean);
+				break;
+			} else
+			{
+		    	log.info("Mean increase in imputed values in imputation iteration {}:{}", i, differenceFromLastMean);
+	        }
 		}
 		
-		
-		
-		
-		
-		
 		forest = rf;
-		
 		preprocessedForest = RandomForest.preprocessForest(forest, mds.getPCAFeatures());
-		
-		
-	
 	}
 	
 	
@@ -218,7 +251,7 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 	 * @param arr array of Double[]
 	 * @return primitive value array
 	 */
-	private double[] convertToPrimitive(Double[] arr)
+	private double[] convertToPrimitiveArray(Double[] arr)
 	{
 		double[] d = new double[arr.length];
 		for(int i=0; i < d.length; i++)
@@ -275,13 +308,13 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 		int numTrees = rfOptions.numTrees;
 		
 		
-		
+/*		
 		for(int i=0; i < theta_inst_idxs.length; i++)
 		{
 			theta_inst_idxs[i][0]--;
 			theta_inst_idxs[i][1]--;
 		}
-		
+*/
 		RegtreeBuildParams buildParams = SMACRandomForestHelper.getRandomForestBuildParams(rfOptions, features[0].length, categoricalSize, condParents, condParentVals);
 		
 		log.debug("Building Random Forest with Parameters: {}", buildParams);
@@ -352,12 +385,13 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 		int numTrees = rfOptions.numTrees;
 		
 
-		
+/*		
 		for(int i=0; i < theta_inst_idxs.length; i++)
 		{
 			theta_inst_idxs[i][0]--;
 			theta_inst_idxs[i][1]--;
 		}
+*/		
 		RegtreeBuildParams buildParams = SMACRandomForestHelper.getRandomForestBuildParams(rfOptions, features[0].length, categoricalSize, condParents, condParentVals);
 		
 		log.debug("Building Random Forest with Parameters: {}", buildParams);
