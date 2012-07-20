@@ -146,9 +146,9 @@ public interface RunHistory {
 	
 	/**
 	 * Returns an Nx2 matrix where each row corresponds to a
-	 * param_configuration instance in getUniqueParamConfigurations
-	 * and instance in getUniqueInstancesRan(), these represent the runs
-	 * @return array of entries of the form [thetaInstIdx, instanceIdx]
+	 * tuple of a param_configuration instance (in {@link getUniqueParamConfigurations()})
+	 * and an instance (in {@link getUniqueInstancesRan()}). These represent the run configurations.
+	 * @return array of entries of the form [thetaIdx, instanceIdx]
 	 */
 	public int[][] getParameterConfigurationInstancesRanByIndex();
 	

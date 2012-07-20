@@ -1,11 +1,14 @@
 package ca.ubc.cs.beta.aclib.misc.math.distribution;
 
+import java.util.Collections;
 import java.util.Random;
 
 import net.sf.doodleproject.numerics4j.special.Erf;
 
 import org.apache.commons.math3.distribution.AbstractRealDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
+
+import ca.ubc.cs.beta.aclib.misc.random.SeedableRandomSingleton;
 
 /**
  * Truncated Normal Distribution as defined in:
@@ -119,11 +122,45 @@ public class TruncatedNormalDistribution extends AbstractRealDistribution {
 
 		 */
 		double u = random.nextDouble();
+		return inverseCDF(u);
+	}
+	
+	public double inverseCDF(double u){
 		double PHIl = norm.cumulativeProbability((kappa-mu)/sigma);
 		double PHIr = norm.cumulativeProbability((Double.POSITIVE_INFINITY-mu)/sigma);
-		double samples = mu + sigma*( Math.sqrt(2)*erfinv(2*(PHIl+(PHIr-PHIl)*u)-1) );
+		double sample = mu + sigma*( Math.sqrt(2)*erfinv(2*(PHIl+(PHIr-PHIl)*u)-1) );
 		
-		return samples;
+		return sample;
+	}
+	
+	public double[] getValuesAtStratifiedShuffledIntervals(int numSamples){
+		/* Matlab code:
+         * inc = 1/(numSamples+1);
+         * u = inc:inc:1-inc;
+         * perm = randperm(numSamples);
+         * u = u(perm);
+         * samples = rand_draw_truncated_normal(model.y(cens_idx(i)), inf, mu(i), sigma(i), [1 numSamples], u);
+		 */		
+		
+		//=== Get evenly spaced numbers in [0,1], offset such that the first number is the same distance from zero as from the second number.
+		double increment = 1/(numSamples+1.0);
+		double result[] = new double[numSamples];
+		double current = increment;
+		for (int i = 0; i < result.length; i++) {
+			result[i] = inverseCDF(current);
+			current += increment;
+		}
+		result = SeedableRandomSingleton.getPermutationOfArray(result);
+		return result;
+
+/*		   yHal[j][k] = Math.min(tNorm.sample(),maxValue);
+		   imputedValues_sum += yHal[j][k];
+		   imputedValues_count++;
+		   if(Double.isInfinite(yHal[j][k]))
+		   {
+			   System.out.println("Hello");
+		   }
+*/
 	}
 	
 	@Override
