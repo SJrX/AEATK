@@ -197,21 +197,54 @@ public class MessyMathHelperClass {
 				if(matrix[i][j] == -512 || matrix[i][j] == -1024)
 				{
 					values[i] = Double.NaN; 
+					
 				} else
 				{
 					values[i] = matrix[i][j];
 				}
+				
+				//System.out.println(j+ ":"+values[i]);
+				
 			}
 			
-			double mean = ArrayMathOps.meanIgnoreNaNs(values);
-			double stdDev = ArrayMathOps.stdDevIgnoreNaNs(values);
-			double[] normalized=ArrayMathOps.normalize(values,mean, stdDev);
-			double[] absNormal = ArrayMathOps.abs(normalized);
-			double max = ArrayMathOps.maxIgnoreNaNs(absNormal);
 			
-			if(max < Math.pow(10,-6))
+			
+			double mean = ArrayMathOps.meanIgnoreNaNs(values);
+			
+			 //System.out.println("Mean: " + j + ":" + mean);
+			double stdDev = ArrayMathOps.stdDevIgnoreNaNs(values);
+			
+			 //System.out.println("Stddev: " + j + ":" + stdDev);
+			//double[] normalized=ArrayMathOps.normalize(values,mean, stdDev);
+			
+			
+			
+			/*
+			for(double d : normalized)
+			{
+				if( j == 0)  System.out.println("Normalized: " +  d );
+			}*/
+			//double[] absNormal = ArrayMathOps.abs(normalized);
+			
+			//for(double d : absNormal)
+			//{
+			//	if( j == 48)  System.out.println("Abs Normalized: " +  d );
+			//}
+			//double max = ArrayMathOps.maxIgnoreNaNs(absNormal);
+			
+			//System.out.println("Max:" + j + ":" + stdDev);
+			if(Double.isNaN(stdDev))
+			{
+				stdDev = Double.MIN_VALUE;
+			}
+			
+			
+			if(stdDev < Math.pow(10,-6))
 			{
 				constColumnsList.add(j);
+			} else
+			{
+				//System.out.println("not constant: " + j);
 			}
 
 		}

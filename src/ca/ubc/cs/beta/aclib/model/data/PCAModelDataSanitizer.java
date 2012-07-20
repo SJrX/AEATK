@@ -18,6 +18,7 @@ import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.misc.math.ArrayMathOps;
 import ca.ubc.cs.beta.aclib.misc.math.MessyMathHelperClass;
 import ca.ubc.cs.beta.aclib.misc.math.MessyMathHelperClass.Operation;
+import ca.ubc.cs.beta.models.fastrf.RoundingMode;
 
 /**
  * This class roughly does all the processing for sanitizing data
@@ -98,6 +99,9 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 	{
 		this(instanceFeatures, paramValues, numPCA, responseValues, usedInstances, logModel, null);
 	}
+	
+	public static boolean printFeatures = false;
+	
 	public PCAModelDataSanitizer(double[][] instanceFeatures, double[][] paramValues, int numPCA, double[] responseValues, int[] usedInstancesIdxs, boolean logModel, ParamConfigurationSpace configSpace)
 	{
 		this.configSpace = configSpace;
@@ -106,22 +110,26 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 		
 		this.prePCAInstanceFeatures = ArrayMathOps.copy(instanceFeatures);
 		
-		
-		
-		for(int i=0; i < instanceFeatures.length; i++)
+		if(RoundingMode.ROUND_NUMBERS_FOR_MATLAB_SYNC)
 		{
-			System.out.println(i+":" + Arrays.toString(instanceFeatures[i]));
+			if(!printFeatures)
+			{
+				for(int i=0; i < instanceFeatures.length; i++)
+				{
+					System.out.println(i+":" + Arrays.toString(instanceFeatures[i]));
+				}
+				printFeatures = true;
+			} 
+			System.out.println("Instance Features Hash: " + ArrayMathOps.matlabHashCode(instanceFeatures));
+			System.out.println("Param Values Hash:" + ArrayMathOps.matlabHashCode(paramValues));
+			System.out.println("Used Instance IDs:" + Arrays.toString(usedInstancesIdxs));
+			System.out.println("Num PCA:" + numPCA);
+			System.out.println("Response Values:" +Arrays.toString(responseValues));
+			System.out.println("Log Model: " + logModel);
+		
 		}
-		System.out.println("Instance Features Hash: " + ArrayMathOps.matlabHashCode(instanceFeatures));
-		System.out.println("Param Values Hash:" + ArrayMathOps.matlabHashCode(paramValues));
-		System.out.println("Used Instance IDs:" + Arrays.toString(usedInstancesIdxs));
-		System.out.println("Num PCA:" + numPCA);
-		System.out.println("Response Values:" +Arrays.toString(responseValues));
-		System.out.println("Log Model: " + logModel);
-		
-		
 		instanceFeatures = ArrayMathOps.copy(instanceFeatures);
-		writeOutput = true;
+		writeOutput = false;
 		if(writeOutput)
 		{
 			File f = new File(filename + "-" + index);
@@ -153,10 +161,20 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 		{
 			usedInstanceFeatures[i] = instanceFeatures[usedInstancesIdxs[i]];
 		}
+		
+	
 		int[] constFeatures = pca.constantColumnsWithMissingValues(usedInstanceFeatures);
 		instanceFeatures = pca.removeColumns(instanceFeatures, constFeatures);
 		
 		log.info("Discarding {} constant inputs of {} in total.", constFeatures.length, prePCAInstanceFeatures[0].length);
+		
+		System.out.print("Constant Columns: ");
+		for(int i=0; i < constFeatures.length; i++)
+		{
+			System.out.print(constFeatures[i]+1 + ",");
+		}
+		
+		System.out.println("\n");
 		System.out.println("Discarding "+ constFeatures.length + "  constant inputs of " + prePCAInstanceFeatures[0].length +" total ");
 		
 		double[][] instanceFeaturesT = pca.transpose(instanceFeatures);
@@ -174,12 +192,12 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 		}
 		
 		//TODO: Give this variable an intellegent name
-		sub = pca.getSub(firstStdDev);
+		int[] mySub = pca.getSub(firstStdDev);
 
-		if(sub.length == 0)
+		if(mySub.length == 0)
 		{
 			//throw new IllegalStateException("Not sure what to do in this case at the moment");
-			
+			sub = new int[0];
 			means = new double[0];
 			stdDev = new double[0];
 			pcaCoeff = new double[0];
@@ -187,9 +205,19 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 			pcaFeatures = new double[instanceFeatures.length][1];
 			
 			return;
-		
+		} else if (instanceFeatures[0].length < numPCA)
+		{
+			sub = new int[0];
+			means = new double[0];
+			stdDev = new double[0];
+			pcaCoeff = new double[0];
+			pcaVec = new double[0][];
+			pcaFeatures = instanceFeatures;
+			return;
+		} else
+		{
+			sub = mySub;
 		}
-		
 		instanceFeatures = pca.keepColumns(instanceFeatures, sub);
 		instanceFeaturesT = pca.transpose(instanceFeatures);
 		means = pca.getRowMeans(instanceFeaturesT);
@@ -206,8 +234,10 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 		//double[][] pcaVecT = pca.transpose(pcaVec);
 		pcaFeatures = pca.matrixMultiply(instanceFeatures, pcaVec);
 		
-		
-		System.out.println("PCA Features Hash: " + ArrayMathOps.matlabHashCode(pcaFeatures));
+		if(RoundingMode.ROUND_NUMBERS_FOR_MATLAB_SYNC)
+		{
+			System.out.println("PCA Features Hash: " + ArrayMathOps.matlabHashCode(pcaFeatures));
+		}
 		
 	}
 
