@@ -239,6 +239,7 @@ public class NewRunHistory implements RunHistory {
 		
 		Object[] args = {iteration, paramConfigurationList.getKey(config), pi.getInstanceID(), pisp.getSeed(), format.format(run.getRunConfig().getCutoffTime())};
 		log.info("Iteration {}: running config {} on instance {} with seed {} and captime {}", args);
+		log.info("Config {} has ID: {}", paramConfigurationList.getKey(config), config);
 	
 		
 	}
