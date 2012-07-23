@@ -39,7 +39,7 @@ public class SMACRandomForestHelper {
 	buildParams.logModel = ((rfOptions.logModel) ? 1 : 0);
 	buildParams.storeResponses = rfOptions.storeDataInLeaves;
 	buildParams.random = SeedableRandomSingleton.getRandom();
-	System.out.println("Random: " + buildParams.random.nextInt());
+	//System.out.println("Random: " + buildParams.random.nextInt());
 	buildParams.minVariance = rfOptions.minVariance;
 	
 	

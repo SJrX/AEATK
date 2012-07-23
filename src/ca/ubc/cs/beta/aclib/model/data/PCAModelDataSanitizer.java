@@ -167,16 +167,17 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 		instanceFeatures = pca.removeColumns(instanceFeatures, constFeatures);
 		
 		log.info("Discarding {} constant inputs of {} in total.", constFeatures.length, prePCAInstanceFeatures[0].length);
-		
-		System.out.print("Constant Columns: ");
-		for(int i=0; i < constFeatures.length; i++)
+		if(RoundingMode.ROUND_NUMBERS_FOR_MATLAB_SYNC)
 		{
-			System.out.print(constFeatures[i]+1 + ",");
+			System.out.print("Constant Columns: ");
+			for(int i=0; i < constFeatures.length; i++)
+			{
+				System.out.print(constFeatures[i]+1 + ",");
+			}
+			
+			System.out.println("\n");
+			System.out.println("Discarding "+ constFeatures.length + "  constant inputs of " + prePCAInstanceFeatures[0].length +" total ");
 		}
-		
-		System.out.println("\n");
-		System.out.println("Discarding "+ constFeatures.length + "  constant inputs of " + prePCAInstanceFeatures[0].length +" total ");
-		
 		double[][] instanceFeaturesT = pca.transpose(instanceFeatures);
 		
 		
