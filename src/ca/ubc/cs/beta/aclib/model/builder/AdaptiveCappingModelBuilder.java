@@ -344,7 +344,7 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 		if(preprocessed)
 		{
 			preprocessedForest = RandomForest.preprocessForest(forest, features);
-			RandomForest.save(preprocessedForest);
+			//RandomForest.save(preprocessedForest);
 
 		} else
 		{
@@ -406,7 +406,7 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 		if(preprocessed)
 		{
 			preprocessedForest = RandomForest.preprocessForest(forest, features);
-			RandomForest.save(preprocessedForest);
+			//RandomForest.save(preprocessedForest);
 
 		} else
 		{

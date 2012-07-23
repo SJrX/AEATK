@@ -87,7 +87,7 @@ public class BasicModelBuilder implements ModelBuilder{
 		if(rfConfig.preprocessMarginal)
 		{
 			preprocessedForest = RandomForest.preprocessForest(forest, features);
-			RandomForest.save(preprocessedForest);
+			//RandomForest.save(preprocessedForest);
 
 		} else
 		{
