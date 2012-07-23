@@ -15,16 +15,9 @@ import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
  * Evalutes Given Run Configurations
  *
  */
-public class CommandLineTargetAlgorithmEvaluator implements TargetAlgorithmEvaluator {
+public class CommandLineTargetAlgorithmEvaluator extends AbstractTargetAlgorithmEvaluator {
 	
-	/**
-	 * Execution configuration of the target algorithm
-	 */
-	private final AlgorithmExecutionConfig execConfig;
 	
-	//Fields that should be cleaned up when we fix the runHashCode Generation
-	private int runHashCodes = 0;
-	private int runCount = 1;
 	
 	private final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -44,8 +37,8 @@ public class CommandLineTargetAlgorithmEvaluator implements TargetAlgorithmEvalu
 	 */
 	public CommandLineTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig, boolean concurrentExecution)
 	{
+		super(execConfig);
 		log.debug("Initalized with the following Execution Configuration {}" , execConfig);
-		this.execConfig = execConfig;
 		this.concurrentExecution = concurrentExecution; 
 	}
 	
@@ -62,6 +55,7 @@ public class CommandLineTargetAlgorithmEvaluator implements TargetAlgorithmEvalu
 	{
 		AlgorithmRunner runner = getAlgorithmRunner(runConfigs);
 		List<AlgorithmRun> runs =  runner.run();
+		addRuns(runs);
 		return runs;
 	}
 	
@@ -87,23 +81,7 @@ public class CommandLineTargetAlgorithmEvaluator implements TargetAlgorithmEvalu
 		}
 	}
 	
-	@Override
-	public int getRunCount()
-	{
-		return runCount;
-	}
 	
 
-	@Override
-	public int getRunHash()
-	{
-		return runHashCodes;
-	}
 
-	@Override
-	public void seek(List<AlgorithmRun> runs) {
-		runCount = runs.size();
-		
-	}
-	
 }

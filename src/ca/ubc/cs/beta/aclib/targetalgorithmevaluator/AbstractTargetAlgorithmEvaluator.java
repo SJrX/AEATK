@@ -7,6 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aclib.algorithmrun.CommandLineAlgorithmRun;
+import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration.StringFormat;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 
@@ -25,8 +27,7 @@ public abstract class AbstractTargetAlgorithmEvaluator implements TargetAlgorith
 	protected final AlgorithmExecutionConfig execConfig;
 	
 	//Fields that should be cleaned up when we fix the runHashCode Generation
-	protected  int runHashCodes = 0;
-	protected int runCount = 1;
+	protected int runCount = 0;
 	
 	private final Logger log = LoggerFactory.getLogger(getClass());
 
@@ -59,11 +60,32 @@ public abstract class AbstractTargetAlgorithmEvaluator implements TargetAlgorith
 	@Override
 	public int getRunHash()
 	{
-		return runHashCodes;
+		return 0;
 	}
 
 	@Override
-	public void seek(List<AlgorithmRun> runs) {
+	public void seek(List<AlgorithmRun> runs) 
+	{
 		runCount = runs.size();	
+	}
+
+	protected void addRuns(List<AlgorithmRun> runs)
+	{
+		runCount+= runs.size();
+	}
+
+	@Override
+	public String getManualCallString(RunConfig runConfig) {
+		
+		StringBuilder sb = new StringBuilder();
+		sb.append("cd ").append(execConfig.getAlgorithmExecutionDirectory()).append("\n");
+		sb.append(CommandLineAlgorithmRun.getTargetAlgorithmExecutionCommand(execConfig, runConfig));
+		sb.append("\n");
+		
+		return sb.toString();
+		
+		
+		
+		
 	}
 }

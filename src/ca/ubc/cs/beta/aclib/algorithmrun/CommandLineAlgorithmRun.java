@@ -99,7 +99,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 			procIn.close();
 			proc.destroy();
 		} catch (IOException e1) {
-			String execCmd = getTargetAlgorithmExecutionCommand();
+			String execCmd = getTargetAlgorithmExecutionCommand(execConfig,runConfig);
 			log.error("Failed to execute command: {}", execCmd);
 			throw new IllegalStateException(e1);
 		}
@@ -117,7 +117,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	 */
 	private  Process runProcess() throws IOException
 	{
-		String execCmd = getTargetAlgorithmExecutionCommand();
+		String execCmd = getTargetAlgorithmExecutionCommand(execConfig, runConfig);
 		log.info(execCommandMarker, execCmd);
 		Process proc = Runtime.getRuntime().exec(execCmd,null, new File(execConfig.getAlgorithmExecutionDirectory()));
 	
@@ -131,7 +131,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	 * Gets the execution command string
 	 * @return string containing command
 	 */
-	private String getTargetAlgorithmExecutionCommand()
+	public static String getTargetAlgorithmExecutionCommand(AlgorithmExecutionConfig execConfig, RunConfig runConfig)
 	{
 
 		StringBuilder execString = new StringBuilder();

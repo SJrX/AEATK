@@ -163,7 +163,7 @@ public class RunConfig implements Serializable{
 	{
 		int instID = this.getProblemInstanceSeedPair().getInstance().getInstanceID();
 		long seed = this.getProblemInstanceSeedPair().getSeed();
-		int confID = this.params.getFriendlyID();
+		String confID = this.params.getFriendlyIDHex();
 		return "Run for Instance (" + instID + ") Config (" +confID + ") Seed: (" + seed +")";   
 	}
 	

@@ -98,5 +98,18 @@ public class DebugTargetAlgorithmEvaluator implements TargetAlgorithmEvaluator {
 		tae1.seek(runs);
 		tae2.seek(runs);
 	}
+	
+	
+	@Override
+	public String getManualCallString(RunConfig runConfig) {
+		String callString = tae2.getManualCallString(runConfig);
+		if(tae1.getManualCallString(runConfig).equals(callString))
+		{
+			return callString;
+		} else
+		{
+			throw new IllegalArgumentException("Not Equals");
+		}
+	}
 
 }

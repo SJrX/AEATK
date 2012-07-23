@@ -67,6 +67,22 @@ public interface TargetAlgorithmEvaluator {
 	 * @param runs
 	 */
 	public void seek(List<AlgorithmRun> runs);
+
+	/**
+	 * Returns a String that ought to be useful to the user to reproduce the results of a given run for a given
+	 * runConfig.
+	 * 
+	 * For CommandLineTargetAlgorithmEvaluator this generally means a sample execution string for this algorithm.
+	 * 
+	 * For other evaluators it's implementation dependent, and you are free to return whatever <em>non-null</em> string you want.
+	 *
+	 * If you are lazy, or it really is meaningless for your implementation (say there is no other way to execute this except via SMAC)
+	 * you should return <b>N/A</b> 
+	 * 
+	 * @param runConfig run configuration to generate a call string for
+	 * @return string something the user can execute directly if necessary to reproduce the results
+	 */
+	public String getManualCallString(RunConfig runConfig);
 	
 	
 }

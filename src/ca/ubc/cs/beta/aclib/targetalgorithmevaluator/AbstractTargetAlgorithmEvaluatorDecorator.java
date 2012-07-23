@@ -45,5 +45,9 @@ public abstract class AbstractTargetAlgorithmEvaluatorDecorator implements
 		tae.seek(runs);
 
 	}
+	@Override
+	public String getManualCallString(RunConfig runConfig) {
+		return tae.getManualCallString(runConfig);
+	}
 
 }

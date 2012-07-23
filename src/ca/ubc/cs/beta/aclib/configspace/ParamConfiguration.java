@@ -399,14 +399,8 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 		if(isDirty) cleanUp();
 		
 		
-		String hex = Integer.toHexString(getFriendlyID());
-		
-		StringBuilder sb = new StringBuilder("0x");
-		while(hex.length() + sb.length() < 14)
-		{
-			sb.append("0");
-		}
-		return "PARAMCONFIG "+sb.toString() + hex.toUpperCase();
+	
+		return getFriendlyIDHex();
 	}
 	
 	/**
@@ -886,6 +880,18 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 		return myID;
 	}
 
+	public String getFriendlyIDHex()
+	{
+		String hex = Integer.toHexString(getFriendlyID());
+		
+		StringBuilder sb = new StringBuilder("0x");
+		while(hex.length() + sb.length() < 6)
+		{
+			sb.append("0");
+		}
+		sb.append(hex.toUpperCase());
+		return sb.toString();
+	}
 	/**
 	 * Checks whether this configuration is forbidden
 	 * @return <code>true</code> if the parameter is forbidden, false otherwise

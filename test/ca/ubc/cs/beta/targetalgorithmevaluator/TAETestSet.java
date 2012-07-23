@@ -109,6 +109,48 @@ public class TAETestSet {
 		}
 	}
 	
+	/**
+	 * Tests that the runCount actually increments over time
+	 */
+	@Test
+	public void testRunCountIncrement()
+	{
+	
+			SeedableRandomSingleton.reinit();
+			
+			Random r = SeedableRandomSingleton.getRandom();
+			
+			System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
+			
+			configSpace.setPRNG(r);
+			
+			List<RunConfig> runConfigs = new ArrayList<RunConfig>(2);
+			for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
+			{
+				runConfigs.clear();
+				ParamConfiguration config = configSpace.getRandomConfiguration();
+				if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT"))
+				{
+					//Only want good configurations
+					i--;
+					continue;
+				} else
+				{
+					RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
+					runConfigs.add(rc);
+				}
+				tae.evaluateRun(runConfigs);
+				
+				
+				assertEquals(i+1,tae.getRunCount());
+				
+			}
+			
+	
+		
+		
+	}
+	
 	public void assertDEquals(String d1, double d2, double delta)
 	{
 		assertDEquals(Double.valueOf(d1), d2, delta);
