@@ -25,18 +25,16 @@ public class ScenarioOptions extends AbstractOptions{
 	@Parameter(names={"--runObj","--run_obj"}, description="Per Target Algorithm Run Objective Type that we are optimizing for", converter=RunObjectiveConverter.class)
 	public RunObjective runObj = RunObjective.RUNTIME;
 	
-	@Parameter(names={"--overallObj","--intraInstanceObj","--overall_obj","--intra_instance_obj"}, description="Aggregate over all Run's Objective Type that we are optimizing for", converter=OverallObjectiveConverter.class)
+	@Parameter(names={"--intraInstanceObj","--overallObj", "--overall_obj","--intra_instance_obj"}, description="Objective function used to aggregate multiple runs for a single instance", converter=OverallObjectiveConverter.class)
 	public OverallObjective intraInstanceObj = OverallObjective.MEAN;
 	
-	
-	@Parameter(names={"--interInstanceObj","--inter_instance_obj"}, description="Aggregate over all Run's Objective Type that we are optimizing for", converter=OverallObjectiveConverter.class)
+	@Parameter(names={"--interInstanceObj","--inter_instance_obj"}, description="Objective function used to aggregate over multiple instances (that have already been aggregated under the Intra-Instance Objective)", converter=OverallObjectiveConverter.class)
 	public OverallObjective interInstanceObj = OverallObjective.MEAN;
-	
 	
 	@Parameter(names={"--cutoffTime","--cutoff_time"}, description="Cap Time for an Individual Run")
 	public double cutoffTime = 300;
 	
-	@Parameter(names={"--cutoffLength","--cutoff_length"}, description="Cap Time for an Individual Run", converter=StringToDoubleConverterWithMax.class)
+	@Parameter(names={"--cutoffLength","--cutoff_length"}, description="Cap Time for an Individual Run [Not Implemented Currently]", converter=StringToDoubleConverterWithMax.class)
 	public double cutoffLength = -1.0;
 	
 	@Parameter(names="--tunerTimeout", description="Total CPU Time to execute for")
