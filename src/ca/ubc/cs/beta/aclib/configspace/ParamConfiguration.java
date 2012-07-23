@@ -76,6 +76,8 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	
 	/** 
 	 * Stores whether the map has been changed since the previous read
+	 * 
+	 * Prior to a read if this is true, we will call cleanUp()
 	 */
 	private boolean isDirty; 
 	
@@ -123,15 +125,22 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	 */
 	public ParamConfiguration(ParamConfiguration oConfig)
 	{
+		if(oConfig.isDirty) oConfig.cleanUp();
+		
+		this.isDirty = oConfig.isDirty;
+		
+		this.myID = oConfig.myID;
 		this.configSpace = oConfig.configSpace;
 		this.valueArray = oConfig.valueArray.clone();
 		this.categoricalSize = oConfig.categoricalSize;
 		this.parameterDomainContinuous = oConfig.parameterDomainContinuous;
 		this.paramKeyToValueArrayIndexMap = oConfig.paramKeyToValueArrayIndexMap;
-		this.myID = oConfig.myID;
-		this.activeParams = new boolean[valueArray.length];
-		isDirty = true;
-		this.valueArrayForComparsion = new double[valueArray.length];
+		
+		this.activeParams = oConfig.activeParams.clone();
+		
+		this.valueArrayForComparsion = oConfig.valueArrayForComparsion.clone();
+		this.lastHash = oConfig.lastHash;
+		
 	}
 	
 	/**
@@ -218,9 +227,12 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 
 
 	/**
-	 * Replaces a value in the map
+	 * Replaces a value in the Map
 	 * 
-	 * NOTE: This operation is fairly slow, and could be sped up if the parser file had a Map<String, Integer> mapping Strings to there integer equivilants.
+	 * <b>NOTE:</b> This operation can be slow and could be sped up if the parser file had a Map<String, Integer> mapping Strings to there integer equivilants.
+	 * Also note that calling this method will generally as a side effect change the FriendlyID of this ParamConfiguration Object
+	 * 
+	 * 
 	 * @param key string name to store
 	 * @param newValue string value to store
 	 * @return previous value in the array
@@ -384,7 +396,17 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	@Override
 	public String toString()
 	{
-		return getFriendlyID() + Arrays.toString(valueArray);
+		if(isDirty) cleanUp();
+		
+		
+		String hex = Integer.toHexString(getFriendlyID());
+		
+		StringBuilder sb = new StringBuilder("0x");
+		while(hex.length() + sb.length() < 14)
+		{
+			sb.append("0");
+		}
+		return "PARAMCONFIG "+sb.toString() + hex.toUpperCase();
 	}
 	
 	/**
@@ -417,7 +439,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	{ 
 		if(isDirty || hashSet)
 		{
-			cleanUp();
+			if(isDirty) cleanUp();
 			
 			float[] values = new float[valueArrayForComparsion.length];
 			
@@ -720,9 +742,11 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	
 	/**
 	 * Recomputes the active parameters and valueArrayForComparision and marks configuration clean again
+	 * We also change our friendly ID
 	 */
 	private void cleanUp()
 	{	
+		
 		Set<String> activeParams = getActiveParameters();
 		
 		for(Entry<String, Integer> keyVal : this.paramKeyToValueArrayIndexMap.entrySet())
@@ -740,7 +764,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 				this.valueArrayForComparsion[keyVal.getValue()] = Double.NaN;
 			}
 		}
-	
+		myID = idPool.incrementAndGet();
 		isDirty = false;
 	}
 	
@@ -844,13 +868,21 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	
 	
 	private static final AtomicInteger idPool = new AtomicInteger(0);
-	private final int myID;
+	private int myID;
 	/**
 	 * Friendly IDs are just unique numbers that identify this configuration for logging purposes
-	 * you should never rely on this
+	 * you should never rely on this for programmatic purposes. 
+	 * 
+	 * If you change the configuration the id will be regenerated.
+	 * 
+	 * <b>Note</b>: While a given ID should refer to a specific configuration, the converse is not true.
+	 * 
 	 * @return unique id for this param configuration
 	 */
 	public int getFriendlyID() {
+		
+		if(isDirty) cleanUp();
+		
 		return myID;
 	}
 

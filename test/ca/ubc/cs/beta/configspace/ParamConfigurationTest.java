@@ -6,18 +6,26 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.net.URL;
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Random;
+import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
+import ca.ubc.cs.beta.TestHelper;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration.StringFormat;
+import ca.ubc.cs.beta.aclib.misc.random.SeedableRandomSingleton;
 
 import com.beust.jcommander.internal.Lists;
+
+import ec.util.MersenneTwister;
 
 
 public class ParamConfigurationTest {
@@ -525,7 +533,90 @@ public class ParamConfigurationTest {
 		assertDEquals(result.get(3), 2);
 		assertDEquals(result.get(4), Double.NaN);*/
 	}
+	
+	
+	/**
+	 * Tests that the copy constructor obeys the contracts for hashCode() and equals()
+	 * 
+	 * We test this by generating 100 random elements
+	 * Throwing them in a hash set, then 1000 times select a random element
+	 * seeing if it's in the set.
+	 * Flipping a random value to something else, then checking again
+	 * 
+	 */
+	@Test
+	public void testCopyConstructorEquality()
+	{
+		File paramFile = TestHelper.getTestFile("paramFiles/paramEchoParamFile.txt");
+		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(paramFile);
 		
+		
+		
+		Set<ParamConfiguration> configs = new HashSet<ParamConfiguration>();
+		
+		
+		
+		configs.add(configSpace.getDefaultConfiguration());
+		
+		
+		while(configs.size() < 100)
+		{
+			configs.add(configSpace.getRandomConfiguration());
+		}
+		
+		List<ParamConfiguration> configList = new ArrayList<ParamConfiguration>(100);
+		configList.addAll(configs);
+		Random rand = SeedableRandomSingleton.getRandom();
+		
+		
+		
+		for(int i=0; i < 1000; i++)
+		{
+			int nextConfig = rand.nextInt(100);
+			System.out.println("Getting config: " + nextConfig);
+			ParamConfiguration configToTest = configList.get(nextConfig);
+			System.out.println(configToTest);
+			
+			int loggingID = configToTest.getFriendlyID();
+			
+			if(!configs.contains(configToTest))
+			{
+				fail("Config To Test should have been in the set");
+			}
+			
+			configToTest = new ParamConfiguration(configToTest);
+			
+			if(!configs.contains(configToTest))
+			{
+				fail("Copy of config to test should have been in the set");
+			}
+			
+			if(loggingID != configToTest.getFriendlyID())
+			{
+				fail("Logging ID should not change under copying");
+			}
+
+			String originalValue = configToTest.get("solved");
+			
+			configToTest.put("solved", "CRASHED");
+			
+			if(loggingID == configToTest.getFriendlyID())
+			{
+				fail("Logging ID should have changed when we modified the map");
+			}
+			
+			configToTest.put("solved", originalValue);
+			
+			if(!configs.contains(configToTest))
+			{
+				fail("When we set the value back we should be able to find the original");
+			}
+			
+		}
+		
+		
+		
+	}
 
 	@After
 	public void tearDown()
