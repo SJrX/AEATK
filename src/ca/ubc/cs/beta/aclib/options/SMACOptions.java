@@ -114,6 +114,9 @@ public class SMACOptions extends AbstractOptions {
 
 	@Parameter(names="--consoleLogLevel",description="Default Error Level of Console Output")
 	public LogLevel consoleLogLevel = LogLevel.INFO;
+	
+	@Parameter(names="--abortOnCrash", description="Treat algorithm crashes as Aborts (Useful if the algorithm really should never CRASH)")
+	public boolean abortOnCrash = false;
 			
 	
 }

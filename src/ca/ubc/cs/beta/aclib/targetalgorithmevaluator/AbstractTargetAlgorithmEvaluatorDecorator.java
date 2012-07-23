@@ -13,7 +13,7 @@ import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 public abstract class AbstractTargetAlgorithmEvaluatorDecorator implements
 		TargetAlgorithmEvaluator {
 
-	private final TargetAlgorithmEvaluator tae;
+	protected final TargetAlgorithmEvaluator tae;
 
 	public AbstractTargetAlgorithmEvaluatorDecorator(TargetAlgorithmEvaluator tae)
 	{

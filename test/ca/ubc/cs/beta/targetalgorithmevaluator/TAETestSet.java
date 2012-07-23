@@ -25,6 +25,7 @@ import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.CommandLineTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbortOnCrashTargetAlgorithmEvaluator;
 
 
 public class TAETestSet {
@@ -242,6 +243,72 @@ public class TAETestSet {
 		}
 			
 			
+	}
+	
+	/**
+	 * Tests that an algorithm that reports crash actually triggers an abort exception
+	 */
+	@Test
+	public void testAbortOnCrashTAE()
+	{
+		
+		SeedableRandomSingleton.reinit();
+		
+		Random r = SeedableRandomSingleton.getRandom();
+		
+		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
+		
+		configSpace.setPRNG(r);
+		
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration();
+			config.put("solved","CRASHED");
+			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
+			runConfigs.add(rc);
+		}
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		
+		
+		
+		for(RunConfig run : runConfigs)
+		{
+			
+			try {
+				List<AlgorithmRun> runs = tae.evaluateRun(run);
+			} catch(TargetAlgorithmAbortException e)
+			{ 
+				fail("Should not have crashed here, unwrapped TAE should not be aborting");
+			}
+			
+			continue;
+
+		}
+		
+		
+		TargetAlgorithmEvaluator abortOnCrash = new AbortOnCrashTargetAlgorithmEvaluator(tae);
+		
+		for(RunConfig run : runConfigs)
+		{
+			try {
+				List<AlgorithmRun> runs = abortOnCrash.evaluateRun(run);
+			} catch(TargetAlgorithmAbortException e)
+			{ 
+				//This is what we wanted
+				
+				continue;
+			}
+			
+			fail("We should have gotten the a TargetAlgorithmAbortException");
+
+		}
+		
+		
+		
+		
+		
 	}
 
 	
