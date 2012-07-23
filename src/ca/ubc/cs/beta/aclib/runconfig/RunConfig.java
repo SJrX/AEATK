@@ -103,8 +103,8 @@ public class RunConfig implements Serializable{
 	}
 
 	/**
-	 * 
-	 * @return paramconfiguration for the run
+	 * Returns a COPY of the Param Configuration to be run
+	 * @return a copy of the param configuration to be run
 	 */
 	public ParamConfiguration getParamConfiguration()
 	{

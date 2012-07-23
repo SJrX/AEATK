@@ -26,6 +26,7 @@ import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.CommandLineTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbortOnCrashTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbortOnFirstRunCrashTargetAlgorithmEvaluator;
 
 
 public class TAETestSet {
@@ -309,6 +310,145 @@ public class TAETestSet {
 		
 		
 		
+	}
+
+
+	
+	/**
+	 * Tests that the FirstRunCrashTAE behaves as expected 
+	 * (i.e. if the first run crashes it aborts, otherwise it treats as crashes)
+	 * This test (unlike the next, has a first run actually crash)
+	 * 
+	 */
+	@Test
+	public void testAbortOnFirstRunCrashTAEfirstIsACrash()
+	{
+		
+		SeedableRandomSingleton.reinit();
+		
+		Random r = SeedableRandomSingleton.getRandom();
+		
+		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
+		
+		configSpace.setPRNG(r);
+		
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration();
+			config.put("solved","CRASHED");
+			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
+			runConfigs.add(rc);
+		}
+		
+		
+		
+		
+		for(RunConfig run : runConfigs)
+		{
+			
+			try {
+				List<AlgorithmRun> runs = tae.evaluateRun(run);
+			} catch(TargetAlgorithmAbortException e)
+			{ 
+				fail("Should not have crashed here, unwrapped TAE should not be aborting");
+			}
+			
+			continue;
+
+		}
+		
+		
+		TargetAlgorithmEvaluator abortOnCrash = new AbortOnFirstRunCrashTargetAlgorithmEvaluator(tae);
+		
+		boolean firstRun = true;
+		for(RunConfig run : runConfigs)
+		{
+			try {
+				List<AlgorithmRun> runs = abortOnCrash.evaluateRun(run);
+			} catch(TargetAlgorithmAbortException e)
+			{ 
+
+				if(firstRun) 
+				{
+					//This is what we wanted
+					firstRun = false;
+				} else
+				{
+					fail("Expected only the first run to trigger this");
+				}
+				continue;
+			}
+			
+			
+			if(firstRun)
+			{
+				fail("Expected the first to run trigget a target algorithm abort exception");
+			}
+		}
+	}
+	
+	
+	/**
+	 * Tests that the FirstRunCrashTAE behaves as expected 
+	 * (i.e. if the first run crashes it aborts, otherwise it treats as crashes)
+	 * This tests has the first run not actually crash
+	 * 
+	 */
+	@Test
+	public void testAbortOnFirstRunCrashTAEfirstIsSAT()
+	{
+		
+		SeedableRandomSingleton.reinit();
+		
+		Random r = SeedableRandomSingleton.getRandom();
+		
+		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
+		
+		configSpace.setPRNG(r);
+		
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration();
+			if(i == 0 )
+			{
+				config.put("solved","SAT");
+			} else
+			{
+				config.put("solved","CRASHED");
+			}
+			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
+			runConfigs.add(rc);
+		}
+		
+		
+		
+		for(RunConfig run : runConfigs)
+		{
+			
+			try {
+				List<AlgorithmRun> runs = tae.evaluateRun(run);
+			} catch(TargetAlgorithmAbortException e)
+			{ 
+				fail("Should not have crashed here, unwrapped TAE should not be aborting");
+			}
+			
+			continue;
+
+		}
+		
+		TargetAlgorithmEvaluator abortOnCrash = new AbortOnFirstRunCrashTargetAlgorithmEvaluator(tae);
+
+		for(RunConfig run : runConfigs)
+		{
+			try {
+				abortOnCrash.evaluateRun(run);
+			} catch(TargetAlgorithmAbortException e)
+			{ 
+				fail("Only the first run should be able to trigger this and it was a SAT");				
+			}
+		}
 	}
 
 	
