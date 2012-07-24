@@ -1,32 +1,30 @@
-package ca.ubc.cs.beta.aclib.algorithmrun;
+package ca.ubc.cs.beta.aclib.algorithmrun.decorators;
 
+import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 
 /**
- * Corrects output from misbehaiving wrappers
- * 
- * Specifically it ensures that:
- * 
- * SAT results are always less than the captime.
- * 
- * @author seramage
+ * Abstract class that wraps another AlgorithmRun
+ * @author Steve Ramage 
  *
  */
-public class AlgorithmRunTimingInvariants implements AlgorithmRun {
+public class AbstractAlgorithmRunDecorator implements AlgorithmRun {
 
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = 4108923561335725916L;
+	private static final long serialVersionUID = 6324011218801256306L;
 	
 	private final AlgorithmRun wrappedRun;
 	
+
 	/**
-	 * Wraps the specified run with methods that clean the output
+	 * Wraps the specified run 
 	 * @param run	run to wrap
 	 */
-	public AlgorithmRunTimingInvariants(AlgorithmRun run)
+	public AbstractAlgorithmRunDecorator(AlgorithmRun run)
 	{
 		this.wrappedRun = run;
 		
@@ -45,10 +43,6 @@ public class AlgorithmRunTimingInvariants implements AlgorithmRun {
 
 	@Override
 	public RunResult getRunResult() {
-		if(getRuntime() >= wrappedRun.getRunConfig().getCutoffTime())
-		{ 
-			return RunResult.TIMEOUT; 
-		}
 		return wrappedRun.getRunResult();
 	}
 
@@ -100,13 +94,13 @@ public class AlgorithmRunTimingInvariants implements AlgorithmRun {
 
 	@Override
 	public Object call() {
-		run();
-		return null;
+		return wrappedRun.call();
 	}
-	
 
-	
-	
+	@Override
+	public double getWallclockExecutionTime() {
+		return wrappedRun.getWallclockExecutionTime();
+	}
 	
 
 	

@@ -82,6 +82,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 		Process proc;
 		
 		try {
+			this.startWallclockTimer();
 			proc = runProcess();
 			Scanner procIn = new Scanner(proc.getInputStream());
 		
@@ -98,6 +99,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 			
 			procIn.close();
 			proc.destroy();
+			this.stopWallclockTimer();
 		} catch (IOException e1) {
 			String execCmd = getTargetAlgorithmExecutionCommand(execConfig,runConfig);
 			log.error("Failed to execute command: {}", execCmd);
@@ -184,14 +186,17 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 			
 			RunResult acResult =  RunResult.getAutomaticConfiguratorResultForKey(results[0]);
 			
-			int solved = acResult.getResultCode();
-			String runtime = results[1];
-			String runLength = results[2];
-			String bestSolution = results[3];
-			String seed = results[4];
-
+			
+			
 			try
 			{
+				int solved = acResult.getResultCode();
+				String runtime = results[1];
+				String runLength = results[2];
+				String bestSolution = results[3];
+				String seed = results[4];
+
+				
 				double runLengthD = Double.valueOf(runLength);
 				double runtimeD = Double.valueOf(runtime);
 				double qualityD = Double.valueOf(bestSolution);
@@ -201,7 +206,10 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 			} catch(NumberFormatException e)
 			{
 				this.setCrashResult(rawResultLine + "\n" + e.getMessage());
-			}	
+			} catch(ArrayIndexOutOfBoundsException e)
+			{
+				this.setCrashResult(rawResultLine + "\n Could not parse result " + e.getMessage());
+			}
 			
 			
 		}

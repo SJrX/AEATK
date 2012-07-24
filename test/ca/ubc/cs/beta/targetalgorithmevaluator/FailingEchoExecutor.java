@@ -5,7 +5,7 @@ import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration.StringFormat;
 
-public class ParamEchoExecutor {
+public class FailingEchoExecutor {
 
 	/**
 	 * 
@@ -45,7 +45,7 @@ public class ParamEchoExecutor {
 			
 			/*long returnCutOffLength = instanceName.hashCode() + 37*instanceSpecificInfo.hashCode();*/
 
-			
+			if(Math.random() >= 0.5) throw new RuntimeException("Just a random failure");
 			
 			System.out.println("Result for ParamILS: " + result + "," + runtime + "," + runlength + "," + quality + "," + resultSeed + "\n");
 		} catch(RuntimeException e)

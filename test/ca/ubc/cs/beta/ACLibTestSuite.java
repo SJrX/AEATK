@@ -9,6 +9,7 @@ import ca.ubc.cs.beta.probleminstance.BuggyFeatureFilesTester;
 import ca.ubc.cs.beta.probleminstance.ProblemInstanceHelperTester;
 import ca.ubc.cs.beta.runhistory.RunHistoryTester;
 import ca.ubc.cs.beta.state.legacy.LegacyStateDeserializerTester;
+import ca.ubc.cs.beta.targetalgorithmevaluator.RetryCrashedTAETester;
 import ca.ubc.cs.beta.targetalgorithmevaluator.TAETestSet;
 import ca.ubc.cs.beta.instancespecificinfo.*;
 
@@ -21,7 +22,8 @@ import ca.ubc.cs.beta.instancespecificinfo.*;
 	TAETestSet.class,
 	BuggyFeatureFilesTester.class,
 	LegacyStateDeserializerTester.class,
-	RunHistoryTester.class
+	RunHistoryTester.class, 
+	RetryCrashedTAETester.class
 })
 
 public class ACLibTestSuite {

@@ -136,5 +136,18 @@ public interface AlgorithmRun extends Runnable, Serializable,  Callable<Object> 
 	 * @return string possibly containing a raw result
 	 */
 	public abstract String rawResultLine();
+	
+	/**
+	 * Returns the amount of wallclock time the algorithm executed for
+	 * 
+	 * <b>Implementation Note:</b> This is NOT the runtime of the reported algorithm and may be less than or greater than in certain circumstances
+	 * 
+	 * In cases where the algorithm can determine that it won't solve the algorithm in a given time it may very well be less than the reported RunTime
+	 * 
+	 * In cases where the algorithm has a lot of overhead this may be drastically higher than the algorithm reports.
+	 * 
+	 * @return amount of time in seconds the algorithm ran for 
+	 */
+	public double getWallclockExecutionTime();
 
 }

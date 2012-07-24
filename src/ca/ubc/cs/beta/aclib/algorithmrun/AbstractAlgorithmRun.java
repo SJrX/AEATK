@@ -1,6 +1,7 @@
 package ca.ubc.cs.beta.aclib.algorithmrun;
 
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aclib.misc.watch.StopWatch;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 
 /**
@@ -52,6 +53,16 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 	 */
 	private boolean runResultWellFormed = false;
 	
+	/**
+	 * Wallclock Time to return
+	 */
+	private double wallClockTime = 0;
+	
+	/**
+	 * Watch that can be used to time algorithm runs 
+	 */
+	private	StopWatch wallClockTimer = new StopWatch();
+	
 	
 	/**
 	 * Sets the values for this Algorithm Run
@@ -94,6 +105,16 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 		this.setResult(RunResult.CRASHED, runConfig.getCutoffTime(), 0, 0, runConfig.getProblemInstanceSeedPair().getSeed(), rawResultLine);
 	}
 	
+
+	protected void startWallclockTimer()
+	{
+		wallClockTimer.start();
+	}
+	
+	protected void stopWallclockTimer()
+	{
+		this.wallClockTime = wallClockTimer.stop() / 1000.0;
+	}
 	
 	
 	/**
@@ -258,6 +279,20 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 		return sb.toString();
 		
 		
+	}
+	/**
+	 * Sets the wallclock time for this target algorithm
+	 * @param time time in seconds that the algorithm executed
+	 */
+	protected void setWallclockExecutionTime(double time)
+	{
+		if(time < 0) throw new IllegalArgumentException("Time must be positive");
+		this.wallClockTime = time;
+	}
+	
+	@Override
+	public double getWallclockExecutionTime() {
+		return wallClockTime;
 	}
 	
 	

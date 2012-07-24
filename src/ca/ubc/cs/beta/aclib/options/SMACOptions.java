@@ -120,6 +120,11 @@ public class SMACOptions extends AbstractOptions {
 
 	@Parameter(names="--abortOnFirstRunCrash", description="If the first run of the algorithm CRASHED treat it as an ABORT, otherwise leave it alone")
 	public boolean abortOnFirstRunCrash = false;
+	
+	@Parameter(names="--countSMACTimeAsTunerTime", description="Include the CPU Time of SMAC as part of the tunerTimeout")
+	public boolean countSMACTimeAsTunerTime = false;
 			
+	@Parameter(names="--retryTargetAlgorithmRunCount", description="Number of times to retry an algorithm run before reporting crashed (NOTE: The original crashes DO NOT count towards any time limits, they are in effect lost). Additionally this only retries CRASHED runs, not ABORT runs, this is by design as ABORT is only for cases when we shouldn't bother further runs")
+	public int retryCount = 0;
 	
 }
