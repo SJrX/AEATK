@@ -100,11 +100,12 @@ public class SMACOptions extends AbstractOptions {
 	@Parameter(names="--imputationIterations", description="Amount of times to impute censored data when building model", validateWith=NonNegativeInteger.class)
 	public int imputationIterations = 10;
 	
+	
 	@Parameter(names="--maxConcurrentAlgoExecs", description="Maximum number of concurrent target algorithm executions", validateWith=PositiveInteger.class)
 	public int maxConcurrentAlgoExecs = 1;
 	
-	@Parameter(names="--skipValidation", description="Do not perform validation at the end")
-	public boolean skipValidation = false;
+	@Parameter(names={"--doValidation","--validation"}, description="Perform validation at the end")
+	public boolean doValidation = true;
 	
 	@Parameter(names="--maxIncumbentRuns", description="Maximum Number of Incumbent Runs allowed", validateWith=FixedPositiveInteger.class)
 	public int maxIncumbentRuns = 2000;
@@ -120,7 +121,7 @@ public class SMACOptions extends AbstractOptions {
 	public boolean abortOnCrash = false;
 
 	@Parameter(names="--abortOnFirstRunCrash", description="If the first run of the algorithm CRASHED treat it as an ABORT, otherwise leave it alone")
-	public boolean abortOnFirstRunCrash = false;
+	public boolean abortOnFirstRunCrash = true;
 	
 	@Parameter(names="--countSMACTimeAsTunerTime", description="Include the CPU Time of SMAC as part of the tunerTimeout")
 	public boolean countSMACTimeAsTunerTime = true;

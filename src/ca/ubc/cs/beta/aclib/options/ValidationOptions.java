@@ -23,7 +23,7 @@ public class ValidationOptions extends AbstractOptions{
 	@Parameter(names="--validationRoundingMode", description="Whether to round the number of validation runs up or down (to next multiple of numTestInstances")
 	public ValidationRoundingMode validationRoundingMode = ValidationRoundingMode.UP;
 
-	@Parameter(names="--noValidationHeaders", description="Don't put headers on output CSV files for Validation")
-	public boolean noValidationHeaders = false;
+	@Parameter(names="--validationHeaders", description="Put headers on output CSV files for Validation")
+	public boolean validationHeaders = true;
 	
 }

@@ -54,8 +54,8 @@ public class ScenarioOptions extends AbstractOptions{
 	@ParameterFile
 	public File scenarioFile = null;
 	
-	@Parameter(names="--skipInstanceFileCheck", description="Do not check if instances files exist on disk")
-	public boolean skipInstanceFileCheck = false;
+	@Parameter(names="--checkInstanceFilesExist", description="Check if instances files exist on disk")
+	public boolean checkInstanceFilesExist = false;
 
 	@Parameter(names={"--outputDirectory","--outdir"}, required=false, description="Output Directory")
 	public String outputDirectory = System.getProperty("user.dir") + File.separator + "smac-output";
