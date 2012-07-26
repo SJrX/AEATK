@@ -77,7 +77,6 @@ public class TrajectoryFileParser {
 		
 			String time = configs.getStringDataValue(i, 0);
 			
-			StringBuilder sb = new StringBuilder();
 			
 			String[] dataRow =  configs.getDataRow(i);
 			ParamConfiguration configObj = configSpace.getEmptyConfiguration();

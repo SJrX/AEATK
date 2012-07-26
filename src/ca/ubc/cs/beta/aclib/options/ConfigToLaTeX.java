@@ -33,6 +33,7 @@ public class ConfigToLaTeX {
 			
 				String paramName = param.names()[0];
 				
+				if(param.hidden()) continue;
 				for(int i=0; i < param.names().length; i++)
 				{
 					if(param.names()[i].startsWith("--"))
@@ -77,7 +78,17 @@ public class ConfigToLaTeX {
 				row.append("\n\\begin_inset Newline newline\n\\end_inset");
 				
 				paramDefault = paramDefault.replaceFirst(System.getProperty("user.dir"), "<current working directory>");
-				row.append("\n Default: " + paramDefault);
+				
+				if(paramRequired)
+				{
+					row.append("\n Required ");
+				}
+				if(!paramDefault.trim().equals(""))
+				{
+					row.append("\n Default: " + paramDefault);
+				} 
+					
+					
 				
 				if(f.get(o) instanceof String)
 				{

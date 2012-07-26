@@ -15,7 +15,7 @@ import ec.util.MersenneTwister;
  * <b>THIS CLASS IS NOT THREAD SAFE</b>
  * 
  * @author seramage
- * @deprecated
+ * 
  */
 public class SeedableRandomSingleton  {
 
@@ -132,7 +132,10 @@ public class SeedableRandomSingleton  {
 		
 	}
 	
-	
+	/**
+	 * @deprecated You should not be using this call in general
+	 * @return
+	 */
 	public static Random getRandom()
 	{
 

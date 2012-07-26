@@ -8,6 +8,7 @@ import java.util.Set;
 
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aclib.misc.jcommander.converter.BinaryDigitBooleanConverter;
 
 import com.beust.jcommander.Parameter;
 
@@ -29,7 +30,7 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 		List<String> directoriesToSearch = new ArrayList<String>();
 		
 		directoriesToSearch.add(cwd);
-		
+		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "plugins" + File.separator);
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "surrogates" + File.separator);
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "RunDispatcher" + File.separator);
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "surrogates" + File.separator + "bin" + File.separator);
@@ -80,8 +81,8 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 	@Parameter(names={"--execDir","--execdir"}, description="Working directory to execute algorithm in", required=true)
 	public String algoExecDir;
 	
-	@Parameter(names="--deterministic", description="Whether the target algorithm is deterministic (0 no, 1 yes) [An integer due to backwards compatibility]")
-	public int deterministic = 0;
+	@Parameter(names="--deterministic", description="Whether the target algorithm is deterministic  (Supports integers for backwards compatibility)", converter=BinaryDigitBooleanConverter.class)
+	public boolean deterministic;
 	
 	@Parameter(names={"--targetAlgorithmEvaluator","--tae"}, description="System we should use to dispatch algorithm requests [ See manual but CLI  (via Command Line) is default and generally what you want ]")
 	public String targetAlgorithmEvaluator = "CLI";
@@ -97,7 +98,7 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 			algoExecDir = experimentDir.getAbsolutePath() + File.separator +algoExecDir; 
 		}
 		
-		return new AlgorithmExecutionConfig(algoExec, algoExecDir, p, false, (deterministic > 0));
+		return new AlgorithmExecutionConfig(algoExec, algoExecDir, p, false, deterministic);
 	}
 	
 	

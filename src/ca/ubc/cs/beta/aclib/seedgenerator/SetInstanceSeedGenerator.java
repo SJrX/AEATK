@@ -15,6 +15,7 @@ import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
 /**
  * Generates seeds for instances using a pre-specified list
  *
+ *  
  */
 public class SetInstanceSeedGenerator implements InstanceSeedGenerator {
 
@@ -23,13 +24,13 @@ public class SetInstanceSeedGenerator implements InstanceSeedGenerator {
 	 */
 	private static final long serialVersionUID = 8634557199869232040L;
 	private final LinkedHashMap<String, List<Long>> instances;
-	private final int maxSeedsPerConfig;
 	
 	private final Map<String, Integer> piKeyToIntMap = new HashMap<String, Integer>();
 	private final List<Queue<Long>> seeds;
 	private final List<String> instanceOrder;
 	private final int initialSeedCount;
 	private final boolean allInstanceHaveSameNumberOfSeeds;
+	private int maxSeedsPerConfig;
 	
 	/**
 	 * Standard Constructor
@@ -38,7 +39,7 @@ public class SetInstanceSeedGenerator implements InstanceSeedGenerator {
 	 * before we have created the <class>ProblemInstance</class>  {@link ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceHelper} is what generally creates this
 	 * @param instances 		 map from instance name (string) to a list of seeds (long)
 	 * @param instanceOrder		 list of instance names (string)
-	 * @param maxSeedsPerConfig	 clamp max seeds per config to this value if more seeds are given
+	 * @param maxSeedsPerConfig	 clamp max seeds per config to this value if more seeds are given (Not implemented currently)
 	 */
 	public SetInstanceSeedGenerator(
 			LinkedHashMap<String, List<Long>> instances, List<String> instanceOrder,  int maxSeedsPerConfig) {
@@ -55,18 +56,27 @@ public class SetInstanceSeedGenerator implements InstanceSeedGenerator {
 		//Stores the total 
 		int lastSeedCount = -1;
 		
-		boolean allSeedsSame = true;
+		boolean allInstancesHaveSameNumberOfSeeds = true;
 		for(Entry<String, List<Long>> ent : instances.entrySet())
 		{
 			piKeyToIntMap.put(ent.getKey(), i++);
 			
+			if(ent.getValue().size() > maxSeedsPerConfig)
+			{
+				ent.setValue(ent.getValue().subList(0, maxSeedsPerConfig));
+			}
+				
+			
+			
 			seedSum+= ent.getValue().size();
+			
+			
 			
 			if(lastSeedCount != -1)
 			{
-				if(allSeedsSame)
+				if(allInstancesHaveSameNumberOfSeeds)
 				{
-					allSeedsSame = lastSeedCount==ent.getValue().size();
+					allInstancesHaveSameNumberOfSeeds = lastSeedCount==ent.getValue().size();
 				}
 			} else
 			{
@@ -75,7 +85,7 @@ public class SetInstanceSeedGenerator implements InstanceSeedGenerator {
 		}
 		
 		this.initialSeedCount = seedSum;
-		this.allInstanceHaveSameNumberOfSeeds = allSeedsSame;
+		this.allInstanceHaveSameNumberOfSeeds = allInstancesHaveSameNumberOfSeeds;
 		
 		
 		reinit();

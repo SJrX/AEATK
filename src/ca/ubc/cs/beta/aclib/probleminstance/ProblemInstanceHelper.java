@@ -522,7 +522,7 @@ topOfLoop:
 	private static InstanceListWithSeeds getListAndSeedGen(File instanceListFile, long seed, int maxSeedsPerConfig) throws IOException {
 		
 		String line;
-		BufferedReader br = null;
+		
 		List<String> instanceList = new LinkedList<String>();
 		
 		

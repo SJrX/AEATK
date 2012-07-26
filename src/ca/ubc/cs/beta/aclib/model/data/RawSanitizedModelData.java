@@ -40,7 +40,7 @@ public class RawSanitizedModelData implements SanitizedModelData {
 		instanceFeatures = pca.removeColumns(instanceFeatures, constFeatures);
 		
 		
-		double[][] instanceFeaturesT = pca.transpose(instanceFeatures);
+		
 		
 		
 		

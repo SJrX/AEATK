@@ -9,8 +9,8 @@ public class InstanceSpecificInfoTestExecutor {
 		{
 			String instanceName = args[0];
 			String instanceSpecificInfo = args[1];
-			String cutoffTime = args[2];
-			String cutoffLength = args[3];
+			/*String cutoffTime = args[2];
+			String cutoffLength = args[3];*/
 			String seed = args[4];
 			
 			long returnCutOffLength = instanceName.hashCode() + 37*instanceSpecificInfo.hashCode();

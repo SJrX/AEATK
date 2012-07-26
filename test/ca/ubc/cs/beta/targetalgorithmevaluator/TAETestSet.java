@@ -56,11 +56,15 @@ public class TAETestSet {
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false);
 		
 	}
+	Random r;
 	
 	@Before
 	public void beforeTest()
 	{
-		tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false); 	
+		tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false);
+		SeedableRandomSingleton.reinit();
+		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
+		this.r = SeedableRandomSingleton.getRandom();
 	}
 	
 	/**
@@ -69,11 +73,8 @@ public class TAETestSet {
 	@Test
 	public void testMirror()
 	{
-		SeedableRandomSingleton.reinit();
 		
-		Random r = SeedableRandomSingleton.getRandom();
-		
-		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
+	
 		
 		configSpace.setPRNG(r);
 		
@@ -116,11 +117,7 @@ public class TAETestSet {
 	public void testRunCountIncrement()
 	{
 	
-			SeedableRandomSingleton.reinit();
-			
-			Random r = SeedableRandomSingleton.getRandom();
-			
-			System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
+		
 			
 			configSpace.setPRNG(r);
 			
@@ -171,11 +168,6 @@ public class TAETestSet {
 	@Test
 	public void testABORT()
 	{
-		SeedableRandomSingleton.reinit();
-		
-		Random r = SeedableRandomSingleton.getRandom();
-		
-		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
 		
 		configSpace.setPRNG(r);
 		
@@ -196,7 +188,7 @@ public class TAETestSet {
 		{
 			
 			try {
-				List<AlgorithmRun> runs = tae.evaluateRun(run);
+				tae.evaluateRun(run);
 			} catch(TargetAlgorithmAbortException e)
 			{ 
 				//This is what we wanted 
@@ -210,11 +202,6 @@ public class TAETestSet {
 	@Test(expected=IllegalArgumentException.class)
 	public void testIllegalCaptimeException()
 	{
-		SeedableRandomSingleton.reinit();
-		
-		Random r = SeedableRandomSingleton.getRandom();
-		
-		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
 		
 		configSpace.setPRNG(r);
 		
@@ -240,11 +227,9 @@ public class TAETestSet {
 	@Test
 	public void testRuntimeGreaterThanCapTime()
 	{
-		SeedableRandomSingleton.reinit();
 		
-		Random r = SeedableRandomSingleton.getRandom();
 		
-		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
+	
 		
 		configSpace.setPRNG(r);
 		
@@ -295,11 +280,6 @@ public class TAETestSet {
 	public void testAbortOnCrashTAE()
 	{
 		
-		SeedableRandomSingleton.reinit();
-		
-		Random r = SeedableRandomSingleton.getRandom();
-		
-		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
 		
 		configSpace.setPRNG(r);
 		
@@ -320,7 +300,7 @@ public class TAETestSet {
 		{
 			
 			try {
-				List<AlgorithmRun> runs = tae.evaluateRun(run);
+				 tae.evaluateRun(run);
 			} catch(TargetAlgorithmAbortException e)
 			{ 
 				fail("Should not have crashed here, unwrapped TAE should not be aborting");
@@ -336,7 +316,7 @@ public class TAETestSet {
 		for(RunConfig run : runConfigs)
 		{
 			try {
-				List<AlgorithmRun> runs = abortOnCrash.evaluateRun(run);
+				 abortOnCrash.evaluateRun(run);
 			} catch(TargetAlgorithmAbortException e)
 			{ 
 				//This is what we wanted
@@ -366,11 +346,7 @@ public class TAETestSet {
 	public void testAbortOnFirstRunCrashTAEfirstIsACrash()
 	{
 		
-		SeedableRandomSingleton.reinit();
-		
-		Random r = SeedableRandomSingleton.getRandom();
-		
-		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
+	
 		
 		configSpace.setPRNG(r);
 		
@@ -390,7 +366,7 @@ public class TAETestSet {
 		{
 			
 			try {
-				List<AlgorithmRun> runs = tae.evaluateRun(run);
+					tae.evaluateRun(run);
 			} catch(TargetAlgorithmAbortException e)
 			{ 
 				fail("Should not have crashed here, unwrapped TAE should not be aborting");
@@ -407,7 +383,7 @@ public class TAETestSet {
 		for(RunConfig run : runConfigs)
 		{
 			try {
-				List<AlgorithmRun> runs = abortOnCrash.evaluateRun(run);
+				abortOnCrash.evaluateRun(run);
 			} catch(TargetAlgorithmAbortException e)
 			{ 
 
@@ -441,11 +417,7 @@ public class TAETestSet {
 	public void testAbortOnFirstRunCrashTAEfirstIsSAT()
 	{
 		
-		SeedableRandomSingleton.reinit();
 		
-		Random r = SeedableRandomSingleton.getRandom();
-		
-		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
 		
 		configSpace.setPRNG(r);
 		
@@ -470,7 +442,7 @@ public class TAETestSet {
 		{
 			
 			try {
-				List<AlgorithmRun> runs = tae.evaluateRun(run);
+				tae.evaluateRun(run);
 			} catch(TargetAlgorithmAbortException e)
 			{ 
 				fail("Should not have crashed here, unwrapped TAE should not be aborting");

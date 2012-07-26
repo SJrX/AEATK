@@ -25,8 +25,6 @@ import ca.ubc.cs.beta.aclib.misc.random.SeedableRandomSingleton;
 
 import com.beust.jcommander.internal.Lists;
 
-import ec.util.MersenneTwister;
-
 
 public class ParamConfigurationTest {
 

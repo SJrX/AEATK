@@ -1,8 +1,6 @@
 package ca.ubc.cs.beta.aclib.algorithmrun.decorators;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
-import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 
 /**
  * Corrects output from misbehaiving wrappers

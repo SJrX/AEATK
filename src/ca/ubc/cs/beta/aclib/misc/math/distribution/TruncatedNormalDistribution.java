@@ -1,6 +1,5 @@
 package ca.ubc.cs.beta.aclib.misc.math.distribution;
 
-import java.util.Collections;
 import java.util.Random;
 
 import net.sf.doodleproject.numerics4j.special.Erf;

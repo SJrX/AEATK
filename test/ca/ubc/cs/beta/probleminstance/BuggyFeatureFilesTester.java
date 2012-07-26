@@ -97,12 +97,12 @@ public class BuggyFeatureFilesTester {
 			
 			
 			
-		InstanceListWithSeeds ilws = ProblemInstanceHelper.getInstances(f,instanceFilesRoot + File.separator + ((checkOnDisk) ? "instances/":"no-instances/"), feature, !checkOnDisk);
+		ProblemInstanceHelper.getInstances(f,instanceFilesRoot + File.separator + ((checkOnDisk) ? "instances/":"no-instances/"), feature, !checkOnDisk);
 		
 		
 		
 		
-		ilws = ProblemInstanceHelper.getInstances(f, instanceFilesRoot + File.separator + ((checkOnDisk) ? "instances/":"no-instances/"), !checkOnDisk);
+		ProblemInstanceHelper.getInstances(f, instanceFilesRoot + File.separator + ((checkOnDisk) ? "instances/":"no-instances/"), !checkOnDisk);
 		
 		String output = bout.toString();
 		System.setOut(old);

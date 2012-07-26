@@ -2,7 +2,6 @@ package ca.ubc.cs.beta.aclib.model.builder;
 
 import java.util.ArrayList;
 import java.util.HashMap;
-import java.util.Iterator;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -318,7 +317,7 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 		RegtreeBuildParams buildParams = SMACRandomForestHelper.getRandomForestBuildParams(rfOptions, features[0].length, categoricalSize, condParents, condParentVals);
 		
 		log.debug("Building Random Forest with Parameters: {}", buildParams);
-		RandomForest forest, preprocessedForest;
+		RandomForest forest;
 		
 		if(rfOptions.fullTreeBootstrap)
 		{
@@ -340,7 +339,7 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 		}
 		
 
-		
+		/*
 		if(preprocessed)
 		{
 			preprocessedForest = RandomForest.preprocessForest(forest, features);
@@ -350,7 +349,7 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 		{
 			preprocessedForest = null;
 		}
-		
+		*/
 		return forest;
 	}
 	
@@ -395,14 +394,14 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 		RegtreeBuildParams buildParams = SMACRandomForestHelper.getRandomForestBuildParams(rfOptions, features[0].length, categoricalSize, condParents, condParentVals);
 		
 		log.debug("Building Random Forest with Parameters: {}", buildParams);
-		RandomForest forest, preprocessedForest;
+		RandomForest forest;
 		
 		        
 		        
 		   forest = RandomForest.learnModelImputedValues(numTrees, configs, features, theta_inst_idxs, responseValues, dataIdxs, buildParams);
 		
 
-		
+		/* Check with frank before deleting this
 		if(preprocessed)
 		{
 			preprocessedForest = RandomForest.preprocessForest(forest, features);
@@ -412,7 +411,7 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 		{
 			preprocessedForest = null;
 		}
-		
+		*/
 		return forest;
 	}
 	

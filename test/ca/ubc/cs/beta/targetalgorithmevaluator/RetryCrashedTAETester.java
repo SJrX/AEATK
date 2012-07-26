@@ -1,8 +1,6 @@
 package ca.ubc.cs.beta.targetalgorithmevaluator;
 
 import static org.junit.Assert.*;
-import static org.junit.Assert.assertEquals;
-
 import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
@@ -166,6 +164,7 @@ SeedableRandomSingleton.reinit();
 		tae = new RetryCrashedRunsTargetAlgorithmEvaluator(  (int) (Math.log(TARGET_RUNS_IN_LOOPS)/Math.log(2)) + 10, tae);
 		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
 		
+		assertEquals(runs.size(), tae.getRunCount());
 
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
@@ -187,6 +186,8 @@ SeedableRandomSingleton.reinit();
 				assertEquals(config.get("solved"), run.getRunResult().name());
 			}
 		}
+		
+		
 		
 	}
 	
