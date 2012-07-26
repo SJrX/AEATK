@@ -18,7 +18,7 @@ public class CommandLineTargetAlgorithmEvaluatorFactory implements
 	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(
 			AlgorithmExecutionConfig config,int maximumNumberOfConcurrentExecutions) {
 
-		return new CommandLineTargetAlgorithmEvaluator(config, maximumNumberOfConcurrentExecutions > 0);
+		return new CommandLineTargetAlgorithmEvaluator(config, maximumNumberOfConcurrentExecutions > 1);
 	}
 
 }

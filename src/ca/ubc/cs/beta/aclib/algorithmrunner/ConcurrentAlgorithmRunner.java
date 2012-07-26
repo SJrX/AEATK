@@ -3,6 +3,11 @@ package ca.ubc.cs.beta.aclib.algorithmrunner;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aclib.exceptions.TargetAlgorithmAbortException;
@@ -20,6 +25,7 @@ class ConcurrentAlgorithmRunner extends AbstractAlgorithmRunner {
 
 	
 	private int numberOfConcurrentExecutions;
+	private static final Logger log = LoggerFactory.getLogger(ConcurrentAlgorithmRunner.class);
 	
 	/**
 	 * Default Constructor 
@@ -35,6 +41,8 @@ class ConcurrentAlgorithmRunner extends AbstractAlgorithmRunner {
 
 	@Override
 	public synchronized List<AlgorithmRun> run() {
+		
+		log.debug("Creating Thread Pool Supporting " + numberOfConcurrentExecutions);
 		
 		ExecutorService p = Executors.newFixedThreadPool(numberOfConcurrentExecutions);
 		/*

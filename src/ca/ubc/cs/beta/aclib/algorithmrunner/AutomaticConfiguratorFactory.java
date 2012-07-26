@@ -2,6 +2,9 @@ package ca.ubc.cs.beta.aclib.algorithmrunner;
 
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.CommandLineTargetAlgorithmEvaluator;
@@ -16,6 +19,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.CommandLineTargetAlgorithmE
  */
 public class AutomaticConfiguratorFactory {
 
+	private static Logger log = LoggerFactory.getLogger(AutomaticConfiguratorFactory.class);
 	/**
 	 * Returns an AlgorithmRunner that executes all requests serially
 	 * @param execConfig		execution configuration of the target algorithm
@@ -51,6 +55,7 @@ public class AutomaticConfiguratorFactory {
 	 */
 	public static AlgorithmRunner getConcurrentAlgorithmRunner(AlgorithmExecutionConfig execConfig, List<RunConfig> runConfigs, int nThreads)
 	{
+		log.info("Concurrent Algorithm Runner created allowing {} threads");
 		return new ConcurrentAlgorithmRunner(execConfig, runConfigs, nThreads);
 	}
 }

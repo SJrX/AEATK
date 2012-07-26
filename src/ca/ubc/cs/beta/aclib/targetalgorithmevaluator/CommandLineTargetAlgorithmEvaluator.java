@@ -38,8 +38,9 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractTargetAlgorithm
 	public CommandLineTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig, boolean concurrentExecution)
 	{
 		super(execConfig);
-		log.debug("Initalized with the following Execution Configuration {}" , execConfig);
+		log.debug("Initalized with the following Execution Configuration {} " , execConfig);
 		this.concurrentExecution = concurrentExecution; 
+		log.debug("Concurrent Execution {}");
 	}
 	
 	
