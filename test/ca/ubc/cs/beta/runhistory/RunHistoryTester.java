@@ -51,7 +51,7 @@ public class RunHistoryTester {
 	}
 	
 	private final ParamConfigurationSpace configSpace = ParamConfigurationTest.getConfigSpaceForFile("paramFiles/daisy-chain-param.txt");
-	private final AlgorithmExecutionConfig execConfig = new AlgorithmExecutionConfig("boo", "foo", configSpace, false, false);
+	private final AlgorithmExecutionConfig execConfig = new AlgorithmExecutionConfig("boo", "foo", configSpace, false, false, 500);
 	
 	@Before
 	public void setUp()
@@ -87,14 +87,14 @@ public class RunHistoryTester {
 
 			runConfig = new RunConfig(pisp, 2, defaultConfig,true);
 			
-			assertEquals(1.0,r.getEmpiricalCost(defaultConfig, r.getInstancesRan(defaultConfig), 300),0.01);
+			assertEquals(1.0,r.getEmpiricalCost(defaultConfig, r.getInstancesRan(defaultConfig), 500),0.01);
 			
 			
 			
 			run = new ExistingAlgorithmRun(execConfig, runConfig, "0, 2 , 0 , 0, " + pisp.getSeed());
 			r.append(run);
 			
-			assertEquals(2.0,r.getEmpiricalCost(defaultConfig, r.getInstancesRan(defaultConfig), 300),0.01);
+			assertEquals(2.0,r.getEmpiricalCost(defaultConfig, r.getInstancesRan(defaultConfig), 500),0.01);
 			//System.out.println(r.getEmpiricalCost(defaultConfig, r.getInstancesRan(defaultConfig), 300));
 			
 		} catch (DuplicateRunException e) {

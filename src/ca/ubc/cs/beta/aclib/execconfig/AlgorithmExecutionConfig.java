@@ -20,17 +20,20 @@ public class AlgorithmExecutionConfig implements Serializable {
 	private final String algorithmExecutionDirectory;
 	private final ParamConfigurationSpace paramFile;
 	private final boolean executeOnCluster;
-	private final boolean deterministicAlgorithm; 
+	private final boolean deterministicAlgorithm;
+
+	private final double cutoffTime; 
 
 	
 	
 	public AlgorithmExecutionConfig(String algorithmExecutable, String algorithmExecutionDirectory,
-			ParamConfigurationSpace paramFile, boolean executeOnCluster, boolean deterministicAlgorithm) {
+			ParamConfigurationSpace paramFile, boolean executeOnCluster, boolean deterministicAlgorithm, double cutoffTime) {
 		this.algorithmExecutable = algorithmExecutable;
 		this.algorithmExecutionDirectory = algorithmExecutionDirectory;
 		this.paramFile = paramFile;
 		this.executeOnCluster = executeOnCluster;
 		this.deterministicAlgorithm = deterministicAlgorithm;
+		this.cutoffTime = cutoffTime;
 
 	}
 
@@ -75,6 +78,14 @@ public class AlgorithmExecutionConfig implements Serializable {
 			return (co.algorithmExecutable.equals(algorithmExecutable) && co.algorithmExecutionDirectory.equals(algorithmExecutionDirectory) && (co.executeOnCluster == executeOnCluster) && co.paramFile.equals(paramFile)) && co.deterministicAlgorithm == deterministicAlgorithm ;
 		} 
 		return false;
+	}
+	
+	/**
+	 * Returns the maximum cutoff time
+	 * @return maximum cutoff time for the algorithm
+	 */
+	public double getAlgorithmCutoffTime() {
+		return cutoffTime;
 	}
 	
 	

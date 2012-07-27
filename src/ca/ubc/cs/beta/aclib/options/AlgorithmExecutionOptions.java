@@ -96,7 +96,7 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 	
 	@Parameter(names="--logAllProcessOutput", description="Log all process output")
 	public boolean logAllProcessOutput = false;
-	
+	/*
 	public AlgorithmExecutionConfig getAlgorithmExecutionConfig(ParamConfigurationSpace p, File experimentDir)
 	{
 		
@@ -108,5 +108,5 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 		return new AlgorithmExecutionConfig(algoExec, algoExecDir, p, false, deterministic);
 	}
 	
-	
+	*/
 }

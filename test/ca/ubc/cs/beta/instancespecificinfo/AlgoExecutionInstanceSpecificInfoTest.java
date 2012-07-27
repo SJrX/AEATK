@@ -41,7 +41,7 @@ public class AlgoExecutionInstanceSpecificInfoTest {
 		File paramFile = TestHelper.getTestFile("testInfoSpecificParamExecution/testParam.txt");
 		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(paramFile);
 		
-		AlgorithmExecutionConfig execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, true);
+		AlgorithmExecutionConfig execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, true, 500);
 		TargetAlgorithmEvaluator tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false);
 		
 		InstanceListWithSeeds ilws = ProblemInstanceHelperTester.getInstanceListWithSeeds("classicFormatInstanceSeedSpecificValid.txt", false);
@@ -93,7 +93,7 @@ public class AlgoExecutionInstanceSpecificInfoTest {
 		File paramFile = TestHelper.getTestFile("testInfoSpecificParamExecution/testParam.txt");
 		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(paramFile);
 		
-		AlgorithmExecutionConfig execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, true);
+		AlgorithmExecutionConfig execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, true, 500);
 		TargetAlgorithmEvaluator tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false);
 		
 		InstanceListWithSeeds ilws = ProblemInstanceHelperTester.getInstanceListWithSeeds("manju.txt", false);

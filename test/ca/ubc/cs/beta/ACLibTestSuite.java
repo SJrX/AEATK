@@ -5,6 +5,7 @@ import org.junit.runners.Suite;
 
 import ca.ubc.cs.beta.configspace.ParamConfigurationTest;
 import ca.ubc.cs.beta.configspace.RandomConfigurationTest;
+import ca.ubc.cs.beta.objectives.RunObjectiveTester;
 import ca.ubc.cs.beta.probleminstance.BuggyFeatureFilesTester;
 import ca.ubc.cs.beta.probleminstance.ProblemInstanceHelperTester;
 import ca.ubc.cs.beta.runhistory.RunHistoryTester;
@@ -23,7 +24,8 @@ import ca.ubc.cs.beta.instancespecificinfo.*;
 	BuggyFeatureFilesTester.class,
 	LegacyStateDeserializerTester.class,
 	RunHistoryTester.class, 
-	RetryCrashedTAETester.class
+	RetryCrashedTAETester.class,
+	RunObjectiveTester.class,
 })
 
 public class ACLibTestSuite {
