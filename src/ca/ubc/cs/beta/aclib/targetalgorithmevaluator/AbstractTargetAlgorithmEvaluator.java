@@ -77,7 +77,7 @@ public abstract class AbstractTargetAlgorithmEvaluator implements TargetAlgorith
 		StringBuilder sb = new StringBuilder();
 		sb.append("cd ").append(execConfig.getAlgorithmExecutionDirectory()).append("; ");
 		sb.append(CommandLineAlgorithmRun.getTargetAlgorithmExecutionCommand(execConfig, runConfig));
-		sb.append("\n");
+		sb.append("");
 		
 		return sb.toString();
 		

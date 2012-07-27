@@ -114,8 +114,13 @@ public class SMACOptions extends AbstractOptions {
 	public double intensificationPercentage = 0.50;
 	
 	
-	@Parameter(names="--consoleLogLevel",description="Default Error Level of Console Output")
+	@Parameter(names="--consoleLogLevel",description="Default Error Level of Console Output (Note this cannot be more verbose than the logLevel)")
 	public LogLevel consoleLogLevel = LogLevel.INFO;
+	
+	
+	@Parameter(names="--logLevel",description="Log Level for SMAC")
+	public LogLevel logLevel = LogLevel.INFO;
+	
 	
 	@Parameter(names="--abortOnCrash", description="Treat algorithm crashes as ABORT (Useful if the algorithm really should never CRASH)")
 	public boolean abortOnCrash = false;
