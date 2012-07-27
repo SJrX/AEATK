@@ -27,6 +27,7 @@ import ca.ubc.cs.beta.aclib.objectives.RunObjective;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aclib.seedgenerator.InstanceSeedGenerator;
+import ca.ubc.cs.beta.models.fastrf.RoundingMode;
 
 /**
  * THIS CLASS IS NOT THREAD SAFE!!!
@@ -238,8 +239,13 @@ public class NewRunHistory implements RunHistory {
 		}
 		
 		Object[] args = {iteration, paramConfigurationList.getKey(config), pi.getInstanceID(), pisp.getSeed(), format.format(run.getRunConfig().getCutoffTime())};
-		log.info("Iteration {}: running config {} on instance {} with seed {} and captime {}", args);
-		log.info("Config {} has ID: {}", paramConfigurationList.getKey(config), config);
+		
+		if(RoundingMode.ROUND_NUMBERS_FOR_MATLAB_SYNC)
+		{
+			log.debug("Iteration {}: running config {} on instance {} with seed {} and captime {}", args);
+		}
+		
+		//
 	
 		
 	}
@@ -537,7 +543,7 @@ public class NewRunHistory implements RunHistory {
 			seed = potentialSeeds.get(rand.nextInt(potentialSeeds.size()));
 		}
 		ProblemInstanceSeedPair pisp = new ProblemInstanceSeedPair(pi, seed);
-		log.info("New Problem Instance Seed Pair Selected {}", pisp );
+		log.debug("New Problem Instance Seed Pair Selected {}", pisp );
 		return pisp;
 	}
 	
@@ -663,7 +669,7 @@ public class NewRunHistory implements RunHistory {
 
 	@Override
 	public int getThetaIdx(ParamConfiguration config) {
-		return paramConfigurationList.getKey(config);
+		return paramConfigurationList.getOrCreateKey(config);
 	}
 
 	

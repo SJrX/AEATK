@@ -21,6 +21,7 @@ public class AlgorithmExecutionConfig implements Serializable {
 	private final ParamConfigurationSpace paramFile;
 	private final boolean executeOnCluster;
 	private final boolean deterministicAlgorithm; 
+
 	
 	
 	public AlgorithmExecutionConfig(String algorithmExecutable, String algorithmExecutionDirectory,
@@ -30,6 +31,7 @@ public class AlgorithmExecutionConfig implements Serializable {
 		this.paramFile = paramFile;
 		this.executeOnCluster = executeOnCluster;
 		this.deterministicAlgorithm = deterministicAlgorithm;
+
 	}
 
 	public String getAlgorithmExecutable() {
@@ -53,14 +55,15 @@ public class AlgorithmExecutionConfig implements Serializable {
 		return deterministicAlgorithm;
 	}
 	
+	
 	public int hashCode()
 	{
-		return algorithmExecutable.hashCode() ^ algorithmExecutionDirectory.hashCode() ^ paramFile.hashCode() ^ (executeOnCluster ? 0 : 1);
+		return algorithmExecutable.hashCode() ^ algorithmExecutionDirectory.hashCode() ^ paramFile.hashCode() ^ (executeOnCluster ? 0 : 1) ^ (deterministicAlgorithm ? 0 : 1);
 	}
 	
 	public String toString()
 	{
-		return "algoExec:" + algorithmExecutable + "\nAlgorithmExecutionDirectory:" + algorithmExecutionDirectory + "\n"+paramFile + "\n"+executeOnCluster+"\n";
+		return "algoExec:" + algorithmExecutable + "\nAlgorithmExecutionDirectory:" + algorithmExecutionDirectory + "\n"+paramFile + "\n Cluster:"+executeOnCluster+ "\nDetermininstic:" + deterministicAlgorithm;
 	}
 	
 	public boolean equals(Object o)
@@ -69,7 +72,7 @@ public class AlgorithmExecutionConfig implements Serializable {
 		if (o instanceof AlgorithmExecutionConfig)
 		{
 			AlgorithmExecutionConfig co = (AlgorithmExecutionConfig) o;
-			return (co.algorithmExecutable.equals(algorithmExecutable) && co.algorithmExecutionDirectory.equals(algorithmExecutionDirectory) && (co.executeOnCluster == executeOnCluster) && co.paramFile.equals(paramFile));
+			return (co.algorithmExecutable.equals(algorithmExecutable) && co.algorithmExecutionDirectory.equals(algorithmExecutionDirectory) && (co.executeOnCluster == executeOnCluster) && co.paramFile.equals(paramFile)) && co.deterministicAlgorithm == deterministicAlgorithm ;
 		} 
 		return false;
 	}

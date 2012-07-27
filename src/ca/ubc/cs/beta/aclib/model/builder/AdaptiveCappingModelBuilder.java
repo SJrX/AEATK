@@ -326,6 +326,8 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 		log.debug("Building Random Forest with Parameters: {}", buildParams);
 		RandomForest forest;
 		
+		log.info("Building Random Forest with {} data points ", responseValues.length);
+		
 		if(rfOptions.fullTreeBootstrap)
 		{
 			
@@ -391,6 +393,7 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 		RegtreeBuildParams buildParams = SMACRandomForestHelper.getRandomForestBuildParams(rfOptions, features[0].length, categoricalSize, condParents, condParentVals);
 		
 		log.debug("Building Random Forest with Parameters: {}", buildParams);
+		log.info("Building Random Forest with {} data points ", responseValues.length);
 		RandomForest forest;
 		
 		        

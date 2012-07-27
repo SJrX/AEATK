@@ -90,6 +90,13 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 	@Parameter(names={"--targetAlgorithmEvaluatorSearchPath","--taeSP"}, description="Where we should look for other target algorithm evaluators [ See manual but generally you can ignore this ] ")
 	public String taeSearchPath = defaultSearchPath;
 	
+
+	@Parameter(names="--logAllCallStrings", description="Output in the log every call string")
+	public boolean logAllCallStrings = false;
+	
+	@Parameter(names="--logAllProcessOutput", description="Log all process output")
+	public boolean logAllProcessOutput = false;
+	
 	public AlgorithmExecutionConfig getAlgorithmExecutionConfig(ParamConfigurationSpace p, File experimentDir)
 	{
 		

@@ -62,6 +62,7 @@ public class BasicModelBuilder implements ModelBuilder{
 		RegtreeBuildParams buildParams = SMACRandomForestHelper.getRandomForestBuildParams(rfConfig, features[0].length, categoricalSize, condParents, condParentVals);
 		
 		log.debug("Building Random Forest with Parameters: {}", buildParams);
+		log.info("Building Random Forest with {} data points ", responseValues.length);
 		
 		if(rfConfig.fullTreeBootstrap)
 		{

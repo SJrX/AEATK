@@ -3,6 +3,8 @@ package ca.ubc.cs.beta.aclib.algorithmrun;
 import java.io.File;
 
 import java.io.IOException;
+import java.util.ArrayDeque;
+import java.util.Queue;
 import java.util.Scanner;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -14,6 +16,8 @@ import org.slf4j.MarkerFactory;
 
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration.StringFormat;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aclib.misc.logback.MarkerFilter;
+import ca.ubc.cs.beta.aclib.misc.logging.LoggingMarker;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 
 /**
@@ -38,14 +42,17 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	
 	private static transient Logger log = LoggerFactory.getLogger(CommandLineAlgorithmRun.class);
 	
+	
+	private Queue<String> outputQueue = new ArrayDeque<String>(MAX_LINES_TO_SAVE * 2);
+	
 	/**
 	 * Marker for logging
 	 */
-	private static transient Marker execCommandMarker = MarkerFactory.getMarker("Execution Command");
+	private static transient Marker execCommandMarker = MarkerFactory.getMarker(LoggingMarker.COMMAND_LINE_CALL.name());
 	/**
 	 * Marker for logging
 	 */
-	private static transient Marker fullProcessOutputMarker = MarkerFactory.getMarker("Full Process Output");
+	private static transient Marker fullProcessOutputMarker = MarkerFactory.getMarker(LoggingMarker.FULL_PROCESS_OUTPUT.name());
 	
 	static {
 		log.warn("This version of SMAC hardcodes run length for calls to the target algorithm to {}.", Integer.MAX_VALUE);
@@ -69,6 +76,8 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 			this.setResult(RunResult.TIMEOUT, 0, 0, 0, runConfig.getProblemInstanceSeedPair().getSeed(), rawResultLine);
 		}
 	}
+	
+	private static final int MAX_LINES_TO_SAVE = 1000;
 
 
 	@Override
@@ -81,21 +90,56 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 		
 		Process proc;
 		
+		
+		
 		try {
 			this.startWallclockTimer();
 			proc = runProcess();
 			Scanner procIn = new Scanner(proc.getInputStream());
 		
 			processRunLoop(procIn);
-		
-			procIn = new Scanner(proc.getErrorStream());
 			
-			while(procIn.hasNext())
+			switch(this.getRunResult())
 			{
-				log.warn(fullProcessOutputMarker,procIn.nextLine());
+			case ABORT:
+			case CRASHED:
 				
+				if(!MarkerFilter.log(execCommandMarker.getName()))
+				{
+					
+					log.info( "Failed Run Detected Call: " + getTargetAlgorithmExecutionCommand(execConfig, runConfig));
+				}
+				if(!MarkerFilter.log(fullProcessOutputMarker.getName()))
+				{
+				
+					
+					
+					log.info("Failed Run Detected output last {} lines", outputQueue.size());
+					for(String s : outputQueue)
+					{
+						log.info(s);
+					}
+					log.info("Output complete");
+					
+				}
+			default:
 				
 			}
+			
+			outputQueue.clear();
+			
+			
+			
+			procIn = new Scanner(proc.getErrorStream());
+	
+			while(procIn.hasNext())
+			{	
+				
+				log.warn(procIn.nextLine());
+				
+			}
+			
+			
 			
 			procIn.close();
 			proc.destroy();
@@ -111,6 +155,33 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 		
 	}
 	
+	/**
+	 * Processes all the output of the target algorithm
+	 * 
+	 * Takes a line from the input and tries to parse it 
+	 * 
+	 * @param procIn Scanner of processes output stream
+	 */
+	public void processRunLoop(Scanner procIn)
+	{
+	
+		
+		while(procIn.hasNext())
+		{
+			String line = procIn.nextLine();
+			outputQueue.add(line);
+			if (outputQueue.size() > MAX_LINES_TO_SAVE)
+			{
+				outputQueue.poll();
+			}
+			
+			processLine(line);
+			
+		}	
+		procIn.close();
+	}
+	
+	
 
 	/**
 	 * Starts the target algorithm
@@ -120,7 +191,12 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	private  Process runProcess() throws IOException
 	{
 		String execCmd = getTargetAlgorithmExecutionCommand(execConfig, runConfig);
-		log.info(execCommandMarker, execCmd);
+		
+		if(MarkerFilter.log(execCommandMarker.getName()))
+		{
+			log.info( "Calling: " + execCmd);
+		}
+		
 		Process proc = Runtime.getRuntime().exec(execCmd,null, new File(execConfig.getAlgorithmExecutionDirectory()));
 	
 		
@@ -141,23 +217,6 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 		return execString.toString();
 	}
 
-	/**
-	 * Processes all the output of the target algorithm
-	 * 
-	 * Takes a line from the input and tries to parse it 
-	 * 
-	 * @param procIn Scanner of processes output stream
-	 */
-	public void processRunLoop(Scanner procIn)
-	{
-		while(procIn.hasNext())
-		{
-			String line = procIn.nextLine();
-			processLine(line);
-			
-		}	
-		procIn.close();
-	}
 	
 	
 	/**
@@ -168,7 +227,10 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	{
 		Matcher matcher = pattern.matcher(line);
 		String rawResultLine = "[No Matching Output Found]";
-		log.debug(fullProcessOutputMarker,line);
+		if(MarkerFilter.log(fullProcessOutputMarker.getName()))
+		{
+			log.debug(line);
+		}
 		
 
 		if (matcher.find())
@@ -201,6 +263,10 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 				double runtimeD = Double.valueOf(runtime);
 				double qualityD = Double.valueOf(bestSolution);
 				long resultSeedD = Long.valueOf(seed);
+				if(!MarkerFilter.log(fullProcessOutputMarker.getName()))
+				{
+					log.info("Algorithm Reported: {}" , line);
+				}
 				
 				this.setResult(acResult, runtimeD, runLengthD, qualityD, resultSeedD, rawResultLine);
 			} catch(NumberFormatException e)
