@@ -543,7 +543,7 @@ public class NewRunHistory implements RunHistory {
 			seed = potentialSeeds.get(rand.nextInt(potentialSeeds.size()));
 		}
 		ProblemInstanceSeedPair pisp = new ProblemInstanceSeedPair(pi, seed);
-		log.debug("New Problem Instance Seed Pair Selected {}", pisp );
+		log.trace("New Problem Instance Seed Pair Selected {}", pisp );
 		return pisp;
 	}
 	

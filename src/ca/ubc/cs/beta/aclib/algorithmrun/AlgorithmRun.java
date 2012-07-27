@@ -129,8 +129,8 @@ public interface AlgorithmRun extends Runnable, Serializable,  Callable<Object> 
 	/**
 	 * Returns the raw output of the line we matched (if any), this is for debug purposes only
 	 * and there is no requirement that this actually return any particular string.
-	 * 
-	 * Implementation Note: An example where this is useful is if you use a weaker regex to match a possible output, and 
+	 * <p>
+	 * <b>Implementation Note:</b> An example where this is useful is if you use a weaker regex to match a possible output, and 
 	 * then the stronger parsing fails. The weaker regex match could be returned here
 	 * 
 	 * @return string possibly containing a raw result
@@ -139,14 +139,14 @@ public interface AlgorithmRun extends Runnable, Serializable,  Callable<Object> 
 	
 	/**
 	 * Returns the amount of wallclock time the algorithm executed for
-	 * 
+	 * <p>
 	 * <b>Implementation Note:</b> This is NOT the runtime of the reported algorithm and may be less than or greater than in certain circumstances
-	 * 
+	 * <p>
 	 * In cases where the algorithm can determine that it won't solve the algorithm in a given time it may very well be less than the reported RunTime
-	 * 
+	 * <p>
 	 * In cases where the algorithm has a lot of overhead this may be drastically higher than the algorithm reports.
 	 * 
-	 * @return amount of time in seconds the algorithm ran for 
+	 * @return amount of time in seconds the algorithm ran for in seconds
 	 */
 	public double getWallclockExecutionTime();
 
