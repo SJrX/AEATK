@@ -492,8 +492,8 @@ public class NewRunHistory implements RunHistory {
 		
 		//=== Return a random element of the candidate instance set (it's sad there is no method for that in Java's Set).\
 		int candidateIdx = rand.nextInt(candidates.size());
-		
-		log.debug("Scheduling Run for {}", candidates.get(candidateIdx));
+	
+		log.trace("Selected Instance {}", candidates.get(candidateIdx));
 		return candidates.get(candidateIdx);	
 	}
 

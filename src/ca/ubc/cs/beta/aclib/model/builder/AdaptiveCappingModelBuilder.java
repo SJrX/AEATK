@@ -12,6 +12,8 @@ import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aclib.misc.math.distribution.TruncatedNormalDistribution;
 import ca.ubc.cs.beta.aclib.misc.model.SMACRandomForestHelper;
+import ca.ubc.cs.beta.aclib.misc.watch.AutoStartStopWatch;
+import ca.ubc.cs.beta.aclib.misc.watch.StopWatch;
 import ca.ubc.cs.beta.aclib.model.data.SanitizedModelData;
 import ca.ubc.cs.beta.aclib.options.RandomForestOptions;
 import ca.ubc.cs.beta.aclib.runhistory.RunHistory;
@@ -234,6 +236,7 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 		
 		if(rfOptions.preprocessMarginal)
 		{
+			log.debug("Preprocessing marginal for Random Forest");
 			preprocessedForest = RandomForest.preprocessForest(forest, mds.getPCAFeatures());
 		} else
 		{
@@ -323,11 +326,11 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 */
 		RegtreeBuildParams buildParams = SMACRandomForestHelper.getRandomForestBuildParams(rfOptions, features[0].length, categoricalSize, condParents, condParentVals);
 		
-		log.debug("Building Random Forest with Parameters: {}", buildParams);
+		log.trace("Building Random Forest with Parameters: {}", buildParams);
 		RandomForest forest;
 		
-		log.info("Building Random Forest with {} data points ", responseValues.length);
-		
+		log.debug("Building Random Forest with {} data points ", responseValues.length);
+		StopWatch sw = new StopWatch();
 		if(rfOptions.fullTreeBootstrap)
 		{
 			
@@ -339,14 +342,16 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 		            }
 		        }
 		        
-		        
+		        sw.start();
 		      forest = RandomForest.learnModel(numTrees, configs, features, theta_inst_idxs, responseValues, dataIdxs, buildParams);
 		      
 		} else
 		{
+			sw.start();
 			  forest = RandomForest.learnModel(numTrees, configs, features, theta_inst_idxs, responseValues, buildParams);
 		}
 		
+		log.debug("Building Random Forest took {} seconds ", sw.stop() / 1000.0);
 
 		
 		return forest;
@@ -392,14 +397,17 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 */		
 		RegtreeBuildParams buildParams = SMACRandomForestHelper.getRandomForestBuildParams(rfOptions, features[0].length, categoricalSize, condParents, condParentVals);
 		
-		log.debug("Building Random Forest with Parameters: {}", buildParams);
-		log.info("Building Random Forest with {} data points ", responseValues[0].length);
+		log.trace("Building Random Forest with Parameters: {}", buildParams);
+		log.debug("Building Random Forest with {} data points ", responseValues[0].length);
+		
 		RandomForest forest;
 		
-		        
-		        
-		   forest = RandomForest.learnModelImputedValues(numTrees, configs, features, theta_inst_idxs, responseValues, dataIdxs, buildParams);
+		StopWatch sw = new AutoStartStopWatch();
 		
+		        
+		forest = RandomForest.learnModelImputedValues(numTrees, configs, features, theta_inst_idxs, responseValues, dataIdxs, buildParams);
+		
+		log.debug("Building Random Forest took {} seconds ", sw.stop() / 1000.0);
 
 		
 		return forest;

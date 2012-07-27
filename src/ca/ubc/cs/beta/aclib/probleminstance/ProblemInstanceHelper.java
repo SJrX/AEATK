@@ -337,19 +337,29 @@ public class ProblemInstanceHelper {
 				String[] possibleFiles = { instanceFile, instanceFile.replace(experimentDir, ""), instanceFile.replaceAll("//", "/"), instanceFile.replace(experimentDir, "").replaceAll("//","/")};
 				
 				features = null;
+				
+				boolean firstTry = true;
+				
 				for(String possibleFile : possibleFiles)
 				{
 					features = featuresMap.get(possibleFile.trim());
 					
 					if(features != null) 
 					{
-						logger.debug("Matched Features for file name : {}",possibleFile);
+						if(firstTry)
+						{
+							logger.trace("Matched features for instance named {} in feature file ",possibleFile);
+						} else
+						{
+							logger.debug("Matched features for instance named {} in feature file ",possibleFile);
+						}
 						unMappedFeatureMapEntries.remove(possibleFile.trim());
 						
 						break;
 					} else
 					{
-						logger.debug("No features found for file name : {}",possibleFile);
+						firstTry = false;
+						logger.debug("No match for instance named {} in feature file ",possibleFile);
 					}
 					
 				}
@@ -456,7 +466,7 @@ public class ProblemInstanceHelper {
 				logger.warn("Detected that seeds have been preloaded, yet the algorithm is listed as deterministic, generally this means we should use -1 as a seed");
 			} else
 			{
-				logger.info("Deterministic Algorithm, selecting hard coded instance seed generator");
+				logger.info("Deterministic algorithm, selecting hard coded instance seed generator");
 				
 				LinkedHashMap<String, List<Long>> instanceSeedMap = new LinkedHashMap<String, List<Long>>(); 
 				
@@ -494,7 +504,7 @@ topOfLoop:
 			
 		}
 		
-		logger.info("Found Instances loaded");
+		logger.info("Instances loaded from file named: {}", filename);
 		return new InstanceListWithSeeds(gen, instances, instancesFromFeatures);
 		
 		

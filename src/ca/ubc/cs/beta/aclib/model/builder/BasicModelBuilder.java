@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aclib.misc.model.SMACRandomForestHelper;
+import ca.ubc.cs.beta.aclib.misc.watch.StopWatch;
 import ca.ubc.cs.beta.aclib.model.data.SanitizedModelData;
 import ca.ubc.cs.beta.aclib.options.RandomForestOptions;
 import ca.ubc.cs.beta.aclib.runhistory.RunHistory;
@@ -61,9 +62,10 @@ public class BasicModelBuilder implements ModelBuilder{
 		}
 		RegtreeBuildParams buildParams = SMACRandomForestHelper.getRandomForestBuildParams(rfConfig, features[0].length, categoricalSize, condParents, condParentVals);
 		
-		log.debug("Building Random Forest with Parameters: {}", buildParams);
-		log.info("Building Random Forest with {} data points ", responseValues.length);
+		log.trace("Building Random Forest with Parameters: {}", buildParams);
 		
+		log.info("Building Random Forest with {} data points ", responseValues.length);
+		StopWatch sw = new StopWatch();
 		if(rfConfig.fullTreeBootstrap)
 		{
 			
@@ -75,18 +77,20 @@ public class BasicModelBuilder implements ModelBuilder{
 		            }
 		        }
 		        
-		        
+		        sw.start();
 		      forest = RandomForest.learnModel(numTrees, configs, features, theta_inst_idxs, responseValues, dataIdxs, buildParams);
 		      
 		} else
 		{
+			sw.start();
 			  forest = RandomForest.learnModel(numTrees, configs, features, theta_inst_idxs, responseValues, buildParams);
 		}
-		
+		log.debug("Building Random Forest took {} seconds ", sw.stop() / 1000.0);
 
 		
 		if(rfConfig.preprocessMarginal)
 		{
+			log.debug("Preprocessing marginal for Random Forest");
 			preprocessedForest = RandomForest.preprocessForest(forest, features);
 			//RandomForest.save(preprocessedForest);
 
