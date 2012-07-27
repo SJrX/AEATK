@@ -80,11 +80,16 @@ public class ProblemInstanceHelperTester {
 	
 	public static InstanceListWithSeeds getInstanceListWithSeeds(String s, boolean checkOnDisk)
 	{
-		return getInstanceListWithSeeds(s,checkOnDisk, false);
+		return getInstanceListWithSeeds(s,checkOnDisk, false, Integer.MAX_VALUE);
+	}
+	
+	public static InstanceListWithSeeds getInstanceListWithSeeds(String s, boolean checkOnDisk, boolean determinstic)
+	{
+		return getInstanceListWithSeeds(s,checkOnDisk, false, Integer.MAX_VALUE);
 	}
 	
 	
-	public static InstanceListWithSeeds getInstanceListWithSeeds(String s, boolean checkOnDisk, boolean deterministic)
+	public static InstanceListWithSeeds getInstanceListWithSeeds(String s, boolean checkOnDisk, boolean deterministic, int limit)
 	{
 		File f = null;
 		try {
@@ -101,7 +106,7 @@ public class ProblemInstanceHelperTester {
 		
 		
 		try {
-			return ProblemInstanceHelper.getInstances(f.getAbsolutePath(), instanceFilesRoot + File.separator + ((checkOnDisk) ? "instances/":"no-instances/"), checkOnDisk, deterministic);
+			return ProblemInstanceHelper.getInstances(f.getAbsolutePath(), instanceFilesRoot + File.separator + ((checkOnDisk) ? "instances/":"no-instances/"),null,  checkOnDisk, 0, limit, deterministic);
 		} catch(IOException e)
 		{
 			throw new RuntimeIOException(e);
@@ -482,6 +487,14 @@ public class ProblemInstanceHelperTester {
 	{
 		InstanceListWithSeeds ilws = getInstanceListWithSeeds("classicFormatInstanceSeedSpecificDiscrepancy.txt", false);
 		fail();
+	}
+	
+	@Test
+	public void testClassicInstanceSeedCapped()
+	{
+		InstanceListWithSeeds ilws = getInstanceListWithSeeds("classicFormatInstanceSeedValid.txt", false, true, 2);
+		
+		assertEquals(19, ilws.getSeedGen().getInitialInstanceSeedCount());		
 	}
 	
 	

@@ -30,7 +30,7 @@ public class SetInstanceSeedGenerator implements InstanceSeedGenerator {
 	private final List<String> instanceOrder;
 	private final int initialSeedCount;
 	private final boolean allInstanceHaveSameNumberOfSeeds;
-	private int maxSeedsPerConfig;
+
 	
 	/**
 	 * Standard Constructor
@@ -45,7 +45,6 @@ public class SetInstanceSeedGenerator implements InstanceSeedGenerator {
 			LinkedHashMap<String, List<Long>> instances, List<String> instanceOrder,  int maxSeedsPerConfig) {
 		if(maxSeedsPerConfig < 0) maxSeedsPerConfig = Integer.MAX_VALUE;
 		this.instances = instances;
-		this.maxSeedsPerConfig = maxSeedsPerConfig;
 		this.instanceOrder = instanceOrder;
 		seeds = new ArrayList<Queue<Long>>(instances.size());
 		int i=0;

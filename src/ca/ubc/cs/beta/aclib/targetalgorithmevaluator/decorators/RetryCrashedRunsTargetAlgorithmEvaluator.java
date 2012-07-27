@@ -98,8 +98,14 @@ public class RetryCrashedRunsTargetAlgorithmEvaluator extends
 	}
 
 	@Override
+	public int getRunCount() {
+		return runCount;
+	}
+
+	@Override
 	public void seek(List<AlgorithmRun> runs)
 	{
+		tae.seek(runs);
 		runCount = runs.size();
 	}
 	

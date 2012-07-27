@@ -30,6 +30,7 @@ public class MarkerFilter extends Filter<ILoggingEvent> {
 	
 	public static boolean log(String s)
 	{
+		if(filterDecisions.get(s) == null) return true;
 		if(filterDecisions.get(s).equals(FilterReply.DENY)) return false;
 		
 		return true;
