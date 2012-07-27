@@ -231,7 +231,14 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 		}
 		
 		forest = rf;
-		preprocessedForest = RandomForest.preprocessForest(forest, mds.getPCAFeatures());
+		
+		if(rfOptions.preprocessMarginal)
+		{
+			preprocessedForest = RandomForest.preprocessForest(forest, mds.getPCAFeatures());
+		} else
+		{
+			preprocessedForest = null;
+		}
 	}
 	
 	
@@ -339,17 +346,7 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 		}
 		
 
-		/*
-		if(preprocessed)
-		{
-			preprocessedForest = RandomForest.preprocessForest(forest, features);
-			//RandomForest.save(preprocessedForest);
-
-		} else
-		{
-			preprocessedForest = null;
-		}
-		*/
+		
 		return forest;
 	}
 	
@@ -401,17 +398,7 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 		   forest = RandomForest.learnModelImputedValues(numTrees, configs, features, theta_inst_idxs, responseValues, dataIdxs, buildParams);
 		
 
-		/* Check with frank before deleting this
-		if(preprocessed)
-		{
-			preprocessedForest = RandomForest.preprocessForest(forest, features);
-			//RandomForest.save(preprocessedForest);
-
-		} else
-		{
-			preprocessedForest = null;
-		}
-		*/
+		
 		return forest;
 	}
 	
