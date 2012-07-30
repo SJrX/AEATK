@@ -1,6 +1,7 @@
 package ca.ubc.cs.beta.aclib.model.builder;
 
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -39,19 +40,23 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 	
 	private static final Logger log = LoggerFactory.getLogger(AdaptiveCappingModelBuilder.class);
 	
+
 	/**
-	 * Builds the Model 
-	 * @param mds 						sanitized model data
-	 * @param rfOptions					random forest configuration options
-	 * @param runHistory				runhistory object containing the runs to use
-	 * @param rand						random object to use during construction
-	 * @param imputationIterations		the number of imputation iterations
-	 * @param cutoffTime				the max algorithm run time
-	 * @param penaltyFactor			    the penalty factor for runs which timed out
+	 * Builds an adaptive capping model builder
+	 *  
+	 * @param mds 					    sanitized model data to build model from
+	 * @param rfOptions				    options object that controls the model
+	 * @param rand						random object
+	 * @param imputationIterations		number of imputation iterations
+	 * @param cutoffTime				cutoffTime 
+	 * @param penaltyFactor 		    penalty factor for capped runs
 	 */
-	public AdaptiveCappingModelBuilder(SanitizedModelData mds, RandomForestOptions rfOptions, RunHistory runHistory, Random rand, int imputationIterations, double cutoffTime, double penaltyFactor)
+	public AdaptiveCappingModelBuilder(SanitizedModelData mds, RandomForestOptions rfOptions, Random rand, int imputationIterations, double cutoffTime, double penaltyFactor)
 	{
 		double maxValue = mds.transformResponseValue(cutoffTime*penaltyFactor);
+		int[][] theta_inst_idxs = mds.getThetaInstIdxs();
+		boolean[] censoringIndicators = mds.getCensoredResponses();
+		
 		
 		/**
 		 * General Algorithm is as follows
@@ -71,8 +76,14 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 		 *    
 		 */
 		
+/*		
+		for(int i=0; i < censoringIndicators.length; i++)
+		{
+			System.out.format("%4d : %8s  %b  %8f %n", i, Arrays.toString(theta_inst_idxs[i]), censoringIndicators[i], mds.getResponseValues()[i]);
+		}
+	*/	
 		//=== Get predictors, response values, and censoring indicators from RunHistory.
-		int[][] theta_inst_idxs = runHistory.getParameterConfigurationInstancesRanByIndex();
+		
 		//=== Change to 0-based indexing
 		for(int i=0; i < theta_inst_idxs.length; i++)
 		{
@@ -81,7 +92,7 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 		}
 		
 		double[] responseValues = mds.getResponseValues();
-		boolean[] censoringIndicators = runHistory.getCensoredFlagForRuns();
+	
 
 		//=== Initialize subsets corresponding to censored/noncensored values.
 		ArrayList<int[]> censoredThetaInst = new ArrayList<int[]>(responseValues.length);
@@ -148,7 +159,7 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 	    /**
 		 * While imputed values change more than a limit, continue.
 		 */
-		double differenceFromLastMean = 0;
+		
 		double[][] yHallucinated = new double[numTrees][sampleSize];
 		
 		//=== Initialize yHallucinated to the observed data (for censored data points that's a lower bound).
@@ -160,6 +171,7 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 		
 		for(int i=0; i < imputationIterations; i++)
 		{
+			double differenceFromLastMean = 0;
 			if( censoredSampleIdxs.isEmpty() ) break;
 			//=== Get predictions for all censored values once and for all in this iteration. 
 			int Xlength = mds.getConfigs()[0].length + mds.getPCAFeatures()[0].length;
@@ -195,7 +207,9 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 				}
 			
 				//=== Get the samples (but cap them at maxValue). 
+				StopWatch sw = new AutoStartStopWatch();
 				TruncatedNormalDistribution tNorm = new TruncatedNormalDistribution(prediction[j][0], prediction[j][1], responseValues[sampleIdxToUse],rand);
+				log.debug("Constructing Truncated Normal Distribution took {} seconds" ,sw.stop() / 1000.0);
 				j++;
 				double[] samples = tNorm.getValuesAtStratifiedShuffledIntervals(numSamplesToGet);
 				for (int k = 0; k < samples.length; k++) {
@@ -222,13 +236,13 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 			log.info("Building random forest with imputed values iteration {}", i);
 			rf = buildImputedRandomForest(mds,rfOptions,theta_inst_idxs, dataIdxs, yHallucinated, false);
 			
-			if(differenceFromLastMean < Math.pow(10,-10))
+			if(differenceFromLastMean < Math.pow(10,-10) && i >= 1)
 			{
 				log.info("Means of imputed values stopped increasing in imputation iteration {} (increase {})",i,differenceFromLastMean);
 				break;
 			} else
 			{
-		    	log.info("Mean increase in imputed values in imputation iteration {}:{}", i, differenceFromLastMean);
+		    	log.info("Mean increase in imputed values in imputation iteration {} is {}", i, differenceFromLastMean);
 	        }
 		}
 		
@@ -404,9 +418,26 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 		
 		StopWatch sw = new AutoStartStopWatch();
 		
-		        
-		forest = RandomForest.learnModelImputedValues(numTrees, configs, features, theta_inst_idxs, responseValues, dataIdxs, buildParams);
 		
+		
+		
+				
+		
+		forest = RandomForest.learnModelImputedValues(numTrees, configs, features, theta_inst_idxs, responseValues, dataIdxs, buildParams);
+		/*
+		for(int tree=0; tree < rfOptions.numTrees; tree++)
+		{
+			System.out.format("Tree %4d :", tree);
+			
+			for(int value = 0; value < responseValues[tree].length; value++)
+			{
+				System.out.format( " %8f(%8s) ", responseValues[tree][value], dataIdxs[tree][value]);
+			}
+		
+			System.out.format("%8f" , forest.Trees[tree].nodevar[0]);
+			System.out.format("%n");
+		}
+		*/
 		log.debug("Building Random Forest took {} seconds ", sw.stop() / 1000.0);
 
 		

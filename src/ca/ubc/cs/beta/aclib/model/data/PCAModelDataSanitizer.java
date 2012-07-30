@@ -47,66 +47,70 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 	public static final String filename = "/tmp/lastoutput-mds";
 	static boolean writeOutput = true;
 	private Logger log = LoggerFactory.getLogger(getClass());
-	
-	public static void main(String[] args)
-	{
-		for(int i=0; i < 10; i++)
-		{
-			/*
-			double[][] m1 = {{ 1,2},{3,4},{5,6}};
-			double[][] m2 = {{1,2,3},{4,5,6}};
-			System.out.println(explode(Arrays.deepToString((new MessyMathHelperClass()).matrixMultiply(m1, m2))));
-			 */
-			File f = new File(filename + "-" + 1);
-			ObjectInputStream in;
-			try {
-				in = new ObjectInputStream(new FileInputStream(f));
-			
-			double[][] instanceFeatures  = (double[][]) in.readObject();
-			double[][] paramValues = (double[][]) in.readObject();
-			double[] responseValues = (double[]) in.readObject();
-			int[] usedInstances = (int[]) in.readObject();
-			in.close();
-		
-			writeOutput = false;
-			
-			int numPCA = 7;
-			
-			boolean logModel = true;
-			
-			
-			SanitizedModelData mdc = new PCAModelDataSanitizer(instanceFeatures, paramValues, numPCA, responseValues, usedInstances, logModel);
-			} catch (FileNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (IOException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			} catch (ClassNotFoundException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-			}
-			
-		}
-	}
+	private int[][] theta_inst_idxs;
+	private boolean[] censoredResponseValues;
+//	
+//	public static void main(String[] args)
+//	{
+//		for(int i=0; i < 10; i++)
+//		{
+//			/*
+//			double[][] m1 = {{ 1,2},{3,4},{5,6}};
+//			double[][] m2 = {{1,2,3},{4,5,6}};
+//			System.out.println(explode(Arrays.deepToString((new MessyMathHelperClass()).matrixMultiply(m1, m2))));
+//			 */
+//			File f = new File(filename + "-" + 1);
+//			ObjectInputStream in;
+//			try {
+//				in = new ObjectInputStream(new FileInputStream(f));
+//			
+//			double[][] instanceFeatures  = (double[][]) in.readObject();
+//			double[][] paramValues = (double[][]) in.readObject();
+//			double[] responseValues = (double[]) in.readObject();
+//			int[] usedInstances = (int[]) in.readObject();
+//			in.close();
+//		
+//			writeOutput = false;
+//			
+//			int numPCA = 7;
+//			
+//			boolean logModel = true;
+//			
+//			
+//			SanitizedModelData mdc = new PCAModelDataSanitizer(instanceFeatures, paramValues, numPCA, responseValues, usedInstances, logModel);
+//			} catch (FileNotFoundException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			} catch (IOException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			} catch (ClassNotFoundException e) {
+//				// TODO Auto-generated catch block
+//				e.printStackTrace();
+//			}
+//			
+//		}
+//	}
 	
 	public static String explode(String s)
 	{
 		return s.replaceAll("]","}\n").replaceAll("\\[", "{");
 	}
 	
-	public PCAModelDataSanitizer(double[][] instanceFeatures, double[][] paramValues, int numPCA, double[] responseValues, int[] usedInstances, boolean logModel)
+	public PCAModelDataSanitizer(double[][] instanceFeatures, double[][] paramValues, int numPCA, double[] responseValues, int[] usedInstances, boolean logModel, int[][] theta_inst_idxs, boolean[] censoredResponseValues )
 	{
-		this(instanceFeatures, paramValues, numPCA, responseValues, usedInstances, logModel, null);
+		this(instanceFeatures, paramValues, numPCA, responseValues, usedInstances, logModel,  theta_inst_idxs,  censoredResponseValues , null);
 	}
 	
 	public static boolean printFeatures = false;
 	
-	public PCAModelDataSanitizer(double[][] instanceFeatures, double[][] paramValues, int numPCA, double[] responseValues, int[] usedInstancesIdxs, boolean logModel, ParamConfigurationSpace configSpace)
+	public PCAModelDataSanitizer(double[][] instanceFeatures, double[][] paramValues, int numPCA, double[] responseValues, int[] usedInstancesIdxs, boolean logModel, int[][] theta_inst_idxs, boolean[] censoredResponseValues , ParamConfigurationSpace configSpace)
 	{
 		this.configSpace = configSpace;
 		this.configs = paramValues;
 		this.responseValues = responseValues;
+		this.theta_inst_idxs = theta_inst_idxs;
+		this.censoredResponseValues = censoredResponseValues;
 		
 		this.prePCAInstanceFeatures = ArrayMathOps.copy(instanceFeatures);
 		
@@ -324,6 +328,17 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 		{
 			return d;
 		}
+	}
+
+	@Override
+	public int[][] getThetaInstIdxs() {
+
+		return this.theta_inst_idxs; 
+	}
+
+	@Override
+	public boolean[] getCensoredResponses() {
+		return this.censoredResponseValues;
 	}
 	
 }

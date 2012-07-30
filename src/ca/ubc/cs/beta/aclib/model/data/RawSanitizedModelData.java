@@ -16,17 +16,22 @@ public class RawSanitizedModelData implements SanitizedModelData {
 	private double[][] pcaVec;
 
 	private final boolean logModel;
-	public RawSanitizedModelData(double[][] instanceFeatures, double[][] paramValues, double[] responseValues, int[] usedInstances, boolean logModel)
+	private int[][] theta_inst_idxs;
+	private boolean[] censoredResponseValues;
+	
+	public RawSanitizedModelData(double[][] instanceFeatures, double[][] paramValues, double[] responseValues, int[] usedInstances, boolean logModel, int[][] theta_inst_idxs, boolean[] censoredResponseValues)
 	{
-		this(instanceFeatures, paramValues, responseValues, usedInstances, logModel, null);
+		this(instanceFeatures, paramValues, responseValues, usedInstances, logModel, theta_inst_idxs, censoredResponseValues, null);
 	}
-	public RawSanitizedModelData(double[][] instanceFeatures, double[][] paramValues, double[] responseValues, int[] usedInstancesIdxs, boolean logModel, ParamConfigurationSpace configSpace)
+	public RawSanitizedModelData(double[][] instanceFeatures, double[][] paramValues, double[] responseValues, int[] usedInstancesIdxs, boolean logModel, int[][] theta_inst_idxs, boolean[] censoredResponseValues, ParamConfigurationSpace configSpace)
 	{
 		this.configSpace = configSpace;
 		this.configs = paramValues;
 		this.responseValues = responseValues;
 		this.logModel = logModel;
 		this.prePCAInstanceFeatures = ArrayMathOps.copy(instanceFeatures);
+		this.theta_inst_idxs = theta_inst_idxs;
+		this.censoredResponseValues = censoredResponseValues;
 		
 		
 		MessyMathHelperClass pca = new MessyMathHelperClass();
@@ -137,6 +142,14 @@ public class RawSanitizedModelData implements SanitizedModelData {
 		{
 			return d;
 		}
+	}
+	@Override
+	public int[][] getThetaInstIdxs() {
+		return this.theta_inst_idxs;
+	}
+	@Override
+	public boolean[] getCensoredResponses() {
+		return this.censoredResponseValues;
 	}
 	
 }

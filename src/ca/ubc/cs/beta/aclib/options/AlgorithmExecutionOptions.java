@@ -62,7 +62,7 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 									sb.append(fileName);
 									sb.append(File.pathSeparator);
 									
-									System.out.println("Adding " + fileName);
+									//System.out.println("Adding " + fileName);
 									files.add(fileName);
 								}
 							}

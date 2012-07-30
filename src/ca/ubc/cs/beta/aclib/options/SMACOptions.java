@@ -98,8 +98,15 @@ public class SMACOptions extends AbstractOptions {
 	public double capAddSlack = 1;
 	
 	@Parameter(names="--imputationIterations", description="Amount of times to impute censored data when building model", validateWith=NonNegativeInteger.class)
-	public int imputationIterations = 10;
+	public int imputationIterations = 2;
+
+	@Parameter(names="--treatCensoredDataAsUncensored", description="Builds the model as-if the response values observed for cap values, were the correct ones [NOT RECOMMENDED]")
+	public boolean maskCensoredDataAsUncensored = false;
+
 	
+	@Parameter(names="--penalizeModelInputValues", description = "Penalize the model input values that are at the cutoff time")
+	public boolean penalizeModelInputValues = true;
+
 	
 	@Parameter(names="--maxConcurrentAlgoExecs", description="Maximum number of concurrent target algorithm executions", validateWith=PositiveInteger.class)
 	public int maxConcurrentAlgoExecs = 1;
@@ -119,7 +126,7 @@ public class SMACOptions extends AbstractOptions {
 	
 	
 	@Parameter(names="--logLevel",description="Log Level for SMAC")
-	public LogLevel logLevel = LogLevel.INFO;
+	public LogLevel logLevel = LogLevel.DEBUG;
 	
 	
 	@Parameter(names="--abortOnCrash", description="Treat algorithm crashes as ABORT (Useful if the algorithm really should never CRASH)")
@@ -133,6 +140,8 @@ public class SMACOptions extends AbstractOptions {
 			
 	@Parameter(names="--retryTargetAlgorithmRunCount", description="Number of times to retry an algorithm run before eporting crashed (NOTE: The original crashes DO NOT count towards any time limits, they are in effect lost). Additionally this only retries CRASHED runs, not ABORT runs, this is by design as ABORT is only for cases when we shouldn't bother further runs", validateWith=NonNegativeInteger.class)
 	public int retryCount = 0;
+
+
 	
 	 
 	

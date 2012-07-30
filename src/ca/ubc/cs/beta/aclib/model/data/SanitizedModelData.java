@@ -105,5 +105,18 @@ public interface SanitizedModelData {
 	 * @return the transformed response value
 	 */
 	public double transformResponseValue(double d);
+
+	/**
+	 * Returns the Theta Instance Indexes for the response values 
+	 * @return an Nx2 array where 
+	 */
+	public int[][] getThetaInstIdxs();
+
+	/**
+	 * Returns an array for each response value indicating whether it was censored or not. 
+	 * @return array which for each element says whether response[i] is censored
+	 */
+	public boolean[] getCensoredResponses();
+
 	
 }

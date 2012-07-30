@@ -12,9 +12,9 @@ public class DefaultValueForConditionalsMDS extends RawSanitizedModelData {
 
 	public DefaultValueForConditionalsMDS(double[][] instanceFeatures,
 			double[][] paramValues, double[] responseValues,
-			int[] usedInstancesIdxs, boolean logModel,
+			int[] usedInstancesIdxs, boolean logModel, int[][] theta_inst_idxs, boolean[] censoredRuns,
 			ParamConfigurationSpace configSpace) {
-		super(instanceFeatures, paramValues, responseValues, usedInstancesIdxs, logModel, configSpace);
+		super(instanceFeatures, paramValues, responseValues, usedInstancesIdxs, logModel, theta_inst_idxs, censoredRuns, configSpace);
 
 		double[] defaultValues = configSpace.getDefaultConfiguration().toValueArray();
 		
@@ -32,8 +32,8 @@ public class DefaultValueForConditionalsMDS extends RawSanitizedModelData {
 	public DefaultValueForConditionalsMDS(double[][] instanceFeatures,
 			double[][] paramValues, double[] responseValues,
 			int[] usedInstancesIdxs, boolean logModel,
-			double[] defaultValues) {
-		super(instanceFeatures, paramValues, responseValues, usedInstancesIdxs, logModel);
+			double[] defaultValues ,  int[][] theta_inst_idxs, boolean[] censoredRuns) {
+		super(instanceFeatures, paramValues, responseValues, usedInstancesIdxs, logModel, theta_inst_idxs, censoredRuns);
 
 		//=== Replace NaNs by default values.
 		for (int i = 0; i < paramValues.length; i++) {

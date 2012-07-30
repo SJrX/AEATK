@@ -96,14 +96,32 @@ public abstract class AbstractSanitizedModelData implements SanitizedModelData{
 	}
 
 	@Override
-	public int[][][] getCondParentVals() {
+	public int[][][] getCondParentVals()
+	{
 
 		if(this.smd == null) throw new UnsupportedOperationException("No Wrapped Object and no default implementation");
 		return smd.getCondParentVals();
 	}
 
 	@Override
-	public double transformResponseValue(double d) {
+	public double transformResponseValue(double d)
+	{
 		return d;
 	}
+	
+	@Override
+	public int[][] getThetaInstIdxs() 
+	{
+		if(this.smd == null) throw new UnsupportedOperationException("No Wrapped Object and no default implementation");
+		return smd.getThetaInstIdxs();
+	}
+
+	@Override
+	public boolean[] getCensoredResponses()
+	{
+		if(this.smd == null) throw new UnsupportedOperationException("No Wrapped Object and no default implementation");
+		return smd.getCensoredResponses();	
+	}
+
+	
 }
