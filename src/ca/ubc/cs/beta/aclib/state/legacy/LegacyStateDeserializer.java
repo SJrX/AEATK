@@ -301,6 +301,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 				
 				boolean seedErrorLogged = false;
 				boolean runLengthErrorLogged = false;
+				boolean kappaMaxChangeWarningLogged = false;
 				
 				while((runHistoryLine = runlist.readNext()) != null)
 				{
@@ -326,7 +327,9 @@ public class LegacyStateDeserializer implements StateDeserializer {
 						
 						
 						boolean isCensored = ((runHistoryLine[4].trim().equals("0") ? false : true));
-												double cutOffTime = Double.valueOf(runHistoryLine[5]);
+						
+						double cutOffTime = Double.valueOf(runHistoryLine[5]);
+						
 						long seed = -1;
 						try {
 							seed = Long.valueOf(runHistoryLine[6]);
@@ -386,6 +389,27 @@ public class LegacyStateDeserializer implements StateDeserializer {
 						}
 						
 						
+						if(runtime > execConfig.getAlgorithmCutoffTime())
+						{
+							runtime = execConfig.getAlgorithmCutoffTime();
+							runResult = RunResult.TIMEOUT;
+					
+							log.info("Cutoff time discrepancy detected while restoring state for line {}, marking run as TIMEOUT with runtime {}", Arrays.toString(runHistoryLine), runtime);
+							
+							
+						} else if (runtime < execConfig.getAlgorithmCutoffTime())
+						{
+							if(runResult.equals(RunResult.TIMEOUT) && !isCensored)
+							{
+								
+								log.info("Cutoff time discrepancy detected while restoring state for line {}, marking run as TIMEOUT and Censored with runtime {}", Arrays.toString(runHistoryLine), runtime);
+								isCensored = true;
+								
+								
+							}
+							
+							
+						}
 						
 						
 					

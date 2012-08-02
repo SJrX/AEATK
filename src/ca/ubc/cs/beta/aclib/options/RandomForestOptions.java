@@ -35,6 +35,12 @@ public class RandomForestOptions extends AbstractOptions{
 
 	@Parameter(names="--preprocessMarginal", description="Build Random Forest with Preprocessed Marginal")
 	public boolean preprocessMarginal = true;
+	
+	@Parameter(names="--shuffleImputedValues", description="Shuffle imputed value predictions between trees")
+	public boolean shuffleImputedValues = true;
+
+	@Parameter(names="--ignoreConditionality", description="Ignore Conditionality for building the model")
+	public boolean ignoreConditionality = false;
 
 	
 }

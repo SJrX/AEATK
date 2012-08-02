@@ -53,10 +53,16 @@
 		
 		<!--<jar destfile="dist/aclib-v${version.major}_${version.minor}_${build.number}.jar" basedir="build/classes"/>-->
 		<jar destfile="dist/aclib.jar" basedir="build/classes"/>
+		<jar destfile="dist/aclib-src.jar">
+					<fileset dir="src/">
+						 <include name="**/*.java"/>
+					</fileset>
+		</jar>
 		<copy todir="dist/" force="true">
 			<fileset refid="lib"/>
 			<fileset refid="fastrf"/>	
 		</copy>
+		
 	</target>			
 	<target name="deploy" depends="archive">
 		<mkdir dir="${deploy.dir}"/>

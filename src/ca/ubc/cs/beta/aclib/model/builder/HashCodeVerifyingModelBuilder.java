@@ -33,7 +33,7 @@ public class HashCodeVerifyingModelBuilder extends BasicModelBuilder {
 	
 	public HashCodeVerifyingModelBuilder(SanitizedModelData mds,
 			RandomForestOptions rfConfig, RunHistory runHistory) {
-		super(mds, rfConfig, runHistory);
+		super(mds, rfConfig);
 		
 		int forestCode = forest.matlabHashCode();
 		log.info("Random Forest Built with Hash Code: {}", forestCode);

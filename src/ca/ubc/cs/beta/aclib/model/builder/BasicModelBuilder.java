@@ -1,9 +1,14 @@
 package ca.ubc.cs.beta.aclib.model.builder;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
+import java.util.Arrays;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aclib.misc.model.SMACRandomForestHelper;
+import ca.ubc.cs.beta.aclib.misc.random.SeedableRandomSingleton;
 import ca.ubc.cs.beta.aclib.misc.watch.StopWatch;
 import ca.ubc.cs.beta.aclib.model.data.SanitizedModelData;
 import ca.ubc.cs.beta.aclib.options.RandomForestOptions;
@@ -27,7 +32,7 @@ public class BasicModelBuilder implements ModelBuilder{
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
 	
 	
-	public BasicModelBuilder(SanitizedModelData smd, RandomForestOptions rfConfig, RunHistory runHistory)
+	public BasicModelBuilder(SanitizedModelData smd, RandomForestOptions rfConfig)
 	{
 		
 		double[][] features = smd.getPCAFeatures();
@@ -51,8 +56,8 @@ public class BasicModelBuilder implements ModelBuilder{
 		 * N x 2 array of response values
 		 */
 		
-		//TODO: put these indices through the model sanitizer
-		int[][] theta_inst_idxs = runHistory.getParameterConfigurationInstancesRanByIndex();
+	
+		int[][] theta_inst_idxs = smd.getThetaInstIdxs();
 		
 		
 		for(int i=0; i < theta_inst_idxs.length; i++)
@@ -62,9 +67,42 @@ public class BasicModelBuilder implements ModelBuilder{
 		}
 		RegtreeBuildParams buildParams = SMACRandomForestHelper.getRandomForestBuildParams(rfConfig, features[0].length, categoricalSize, condParents, condParentVals);
 		
-		log.trace("Building Random Forest with Parameters: {}", buildParams);
+		
+		
+	
 		
 		log.info("Building Random Forest with {} data points ", responseValues.length);
+		if(log.isTraceEnabled())
+		{
+			log.trace("Building Random Forest with Parameters: {}", buildParams);
+			StringWriter sWriter = new StringWriter();
+			PrintWriter out = new PrintWriter(sWriter);
+			
+			
+			out.println("==== Theta Inst & Response Values ====");
+			for(int i=0; i < responseValues.length; i++)
+			{
+				out.format("%4d : %8s  %8f %n", i, Arrays.toString(theta_inst_idxs[i]), smd.getResponseValues()[i]);
+			}
+			 
+			out.println("==== Theta Matrix ====");
+			for(int i=0; i < configs.length; i++)
+			{
+				out.format("%4d : %s %n", i, Arrays.toString(configs[i]));
+			}
+			out.println("==== Features Matrix ====");
+			for(int i=0; i < features.length; i++)
+			{
+				out.format("%4d : %s %n", i, Arrays.toString(features[i]));
+			}
+			
+			log.trace("Build  Information \n {}", sWriter.toString());
+		}	
+		
+		
+		
+		//log.info("Next Int {}", SeedableRandomSingleton.getRandom().nextInt());
+		
 		StopWatch sw = new StopWatch();
 		if(rfConfig.fullTreeBootstrap)
 		{

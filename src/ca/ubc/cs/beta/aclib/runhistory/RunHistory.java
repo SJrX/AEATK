@@ -88,6 +88,21 @@ public interface RunHistory {
 	 * @return cost (Double.MAX_VALUE) if we haven't seen the configuration, otherwise the cost 
 	 */
 	double getEmpiricalCost(ParamConfiguration config, Set<ProblemInstance> instanceSet, double cutoffTime,	Map<ProblemInstance, Map<Long, Double>> hallucinatedValues);
+
+	/**
+	 * Compute and return the empirical cost of a parameter configuration on the subset of provided instances we have runs for.
+	 * @param config 		ParamConfiguration to get Cost of
+	 * @param instanceSet   Instances to compute cost over
+	 * @param cutoffTime 	cutoff time for algorithm runs
+	 * @param minimumResponseValue  the minimum legal response value (all values lower than this are replaced)
+	 * @return cost (Double.MAX_VALUE) if we haven't seen the configuration, otherwise the cost 
+	 */
+	double getEmpiricalCost(ParamConfiguration config,
+			Set<ProblemInstance> instanceSet, double cutoffTime,
+			Map<ProblemInstance, Map<Long, Double>> hallucinatedValues,
+			double minimumResponseValue);
+
+	
 	
 
 	/**
@@ -111,6 +126,7 @@ public interface RunHistory {
 	 * @return Random ProblemInstanceSeedPair object
 	 */
 	public ProblemInstanceSeedPair getRandomInstanceSeedWithFewestRunsFor(ParamConfiguration config, List<ProblemInstance> instanceList, Random rand);
+	
 	
 	/**
 	 * Returns the total number of runs for a configuration
@@ -160,7 +176,10 @@ public interface RunHistory {
 	public boolean[] getCensoredFlagForRuns();
 	
 	/**
-	 * Returns the param configurations ran in order
+	 * Returns a list containing all param configurations that ran in order (i.e. in order of theta idx)
+	 * 
+	 * The param configurations are unique
+	 * 
 	 * @return list of param configurations
 	 */
 	public List<ParamConfiguration> getAllParameterConfigurationsRan();
@@ -217,6 +236,11 @@ public interface RunHistory {
 	 * @return index into the theta array for this configuration
 	 */
 	public int getThetaIdx(ParamConfiguration configuration);
+
+	double getEmpiricalCost(ParamConfiguration config,
+			Set<ProblemInstance> instanceSet, double cutoffTime,
+			double minimumResponseValue);
+
 
 	
 	

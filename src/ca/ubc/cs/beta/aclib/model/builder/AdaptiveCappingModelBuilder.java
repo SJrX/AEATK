@@ -1,5 +1,7 @@
 package ca.ubc.cs.beta.aclib.model.builder;
 
+import java.io.PrintWriter;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
@@ -10,6 +12,8 @@ import java.util.Random;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.beust.jcommander.ParameterException;
 
 import ca.ubc.cs.beta.aclib.misc.math.distribution.TruncatedNormalDistribution;
 import ca.ubc.cs.beta.aclib.misc.model.SMACRandomForestHelper;
@@ -76,12 +80,20 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 		 *    
 		 */
 		
-/*		
-		for(int i=0; i < censoringIndicators.length; i++)
+		if(log.isTraceEnabled())
 		{
-			System.out.format("%4d : %8s  %b  %8f %n", i, Arrays.toString(theta_inst_idxs[i]), censoringIndicators[i], mds.getResponseValues()[i]);
+			StringWriter sWriter = new StringWriter();
+			PrintWriter pWriter = new PrintWriter(sWriter);
+			
+			
+			
+			
+			for(int i=0; i < censoringIndicators.length; i++)
+			{
+				pWriter.format("%4d : %8s  %b  %8f %n", i, Arrays.toString(theta_inst_idxs[i]), censoringIndicators[i], mds.getResponseValues()[i]);
+			}
+			log.trace("Adaptive Capping Inputs:\n {} "+ sWriter.toString());
 		}
-	*/	
 		//=== Get predictors, response values, and censoring indicators from RunHistory.
 		
 		//=== Change to 0-based indexing
@@ -123,7 +135,7 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 		
 		if(rfOptions.fullTreeBootstrap)
 		{
-			throw new IllegalStateException("Cannot build random forest with Adaptive Capping on Full Tree Bootstap");
+			throw new ParameterException("Cannot build random forest with Adaptive Capping on Full Tree Bootstap");
 			/**
 			 * This should be an easy fix, we just need to sample correctly.
 			 */
@@ -209,9 +221,18 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 				//=== Get the samples (but cap them at maxValue). 
 				StopWatch sw = new AutoStartStopWatch();
 				TruncatedNormalDistribution tNorm = new TruncatedNormalDistribution(prediction[j][0], prediction[j][1], responseValues[sampleIdxToUse],rand);
-				log.debug("Constructing Truncated Normal Distribution took {} seconds" ,sw.stop() / 1000.0);
+				//log.debug("Constructing Truncated Normal Distribution took {} seconds" ,sw.stop() / 1000.0);
 				j++;
-				double[] samples = tNorm.getValuesAtStratifiedShuffledIntervals(numSamplesToGet);
+				
+				double[] samples;
+				if(rfOptions.shuffleImputedValues)
+				{
+					samples = tNorm.getValuesAtStratifiedShuffledIntervals(numSamplesToGet);
+				} else
+				{
+					samples = tNorm.getValuesAtStratifiedIntervals(numSamplesToGet);
+				}
+				
 				for (int k = 0; k < samples.length; k++) {
 					samples[k] = Math.min(samples[k], maxValue);
 				}
@@ -419,25 +440,47 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 		StopWatch sw = new AutoStartStopWatch();
 		
 		
-		
-		
+		if(log.isTraceEnabled())
+		{
+			StringWriter sWriter = new StringWriter();
+			PrintWriter pWriter = new PrintWriter(sWriter);
+			
+			for(int tree=0; tree < rfOptions.numTrees; tree++)
+			{
+				
+				pWriter.println("==== Theta Matrix ====");
+				for(int i=0; i < configs.length; i++)
+				{
+					pWriter.format("%4d : %s %n", i, Arrays.toString(configs[i]));
+				}
+				pWriter.println("==== Features Matrix ====");
+				for(int i=0; i < features.length; i++)
+				{
+					pWriter.format("%4d : %s %n", i, Arrays.toString(features[i]));
+				}
+				
+				pWriter.println("==== Trees =====");
+			
+				pWriter.format("Tree %4d :", tree);
+				
+				for(int value = 0; value < responseValues[tree].length; value++)
+				{
+					if(value % 10  == 0)
+					{
+						pWriter.format("%n %4d:", value);
+					}
+					pWriter.format( " %8f(%8s) ", responseValues[tree][value], dataIdxs[tree][value]);
+					
+				}
+				pWriter.append("\n");
+				//pWriter.format("%8f" , forest.Trees[tree].nodevar[0])				
+			}
+			log.trace("Model Input Values:\n{} ", sWriter.toString());
+		}
 				
 		
 		forest = RandomForest.learnModelImputedValues(numTrees, configs, features, theta_inst_idxs, responseValues, dataIdxs, buildParams);
-		/*
-		for(int tree=0; tree < rfOptions.numTrees; tree++)
-		{
-			System.out.format("Tree %4d :", tree);
-			
-			for(int value = 0; value < responseValues[tree].length; value++)
-			{
-				System.out.format( " %8f(%8s) ", responseValues[tree][value], dataIdxs[tree][value]);
-			}
 		
-			System.out.format("%8f" , forest.Trees[tree].nodevar[0]);
-			System.out.format("%n");
-		}
-		*/
 		log.debug("Building Random Forest took {} seconds ", sw.stop() / 1000.0);
 
 		

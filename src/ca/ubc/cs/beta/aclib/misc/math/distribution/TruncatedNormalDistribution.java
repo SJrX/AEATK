@@ -44,7 +44,7 @@ public class TruncatedNormalDistribution extends AbstractRealDistribution {
 		this.variance = variance;
 		this.kappa = kappa;
 		this.sigma = Math.sqrt(variance);
-		this.norm = new NormalDistribution(mean, variance);
+		this.norm = new NormalDistribution();
 		this.random = rand;
 		
 	}
@@ -161,6 +161,37 @@ public class TruncatedNormalDistribution extends AbstractRealDistribution {
 		   }
 */
 	}
+	
+	
+	public double[] getValuesAtStratifiedIntervals(int numSamples){
+		/* Matlab code:
+         * inc = 1/(numSamples+1);
+         * u = inc:inc:1-inc;
+         * perm = randperm(numSamples);
+         * u = u(perm);
+         * samples = rand_draw_truncated_normal(model.y(cens_idx(i)), inf, mu(i), sigma(i), [1 numSamples], u);
+		 */		
+		
+		//=== Get evenly spaced numbers in [0,1], offset such that the first number is the same distance from zero as from the second number.
+		double increment = 1/(numSamples+1.0);
+		double result[] = new double[numSamples];
+		double current = increment;
+		for (int i = 0; i < result.length; i++) {
+			result[i] = inverseCDF(current);
+			current += increment;
+		}
+				return result;
+
+/*		   yHal[j][k] = Math.min(tNorm.sample(),maxValue);
+		   imputedValues_sum += yHal[j][k];
+		   imputedValues_count++;
+		   if(Double.isInfinite(yHal[j][k]))
+		   {
+			   System.out.println("Hello");
+		   }
+*/
+	}
+	
 	
 	@Override
 	public double probability(double arg0) {

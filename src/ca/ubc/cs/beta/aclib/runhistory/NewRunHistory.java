@@ -72,7 +72,7 @@ public class NewRunHistory implements RunHistory {
 	/**
 	 * Stores a list of RunData
 	 */
-	private final List<RunData> runHistoryList = new LinkedList<RunData>();
+	private final List<RunData> runHistoryList = new ArrayList<RunData>();
 	
 	
 	private final Logger log = LoggerFactory.getLogger(getClass());
@@ -206,7 +206,7 @@ public class NewRunHistory implements RunHistory {
 	
 		
 		int instanceIdx = pi.getInstanceID();
-		runHistoryList.add(new RunData(iteration, thetaIdx, instanceIdx, run,runResult));
+		runHistoryList.add(new RunData(iteration, thetaIdx, instanceIdx, run,runResult,run.getRunResult().equals(RunResult.TIMEOUT) && run.getRunConfig().hasCutoffLessThanMax()));
 		
 		
 		/*
@@ -260,7 +260,22 @@ public class NewRunHistory implements RunHistory {
 	
 	@Override
 	public double getEmpiricalCost(ParamConfiguration config,
-			Set<ProblemInstance> instanceSet, double cutoffTime, Map<ProblemInstance, Map<Long,Double>> hallucinatedValues) {
+			Set<ProblemInstance> instanceSet, double cutoffTime, double minimumResponseValue)
+	{
+		Map<ProblemInstance, Map<Long, Double>> foo = Collections.emptyMap();
+		return getEmpiricalCost(config, instanceSet, cutoffTime, foo, minimumResponseValue);
+	}
+	
+	
+	public double getEmpiricalCost(ParamConfiguration config,
+			Set<ProblemInstance> instanceSet, double cutoffTime, Map<ProblemInstance, Map<Long,Double>> hallucinatedValues)
+	{
+		return getEmpiricalCost(config, instanceSet, cutoffTime, hallucinatedValues, Double.NEGATIVE_INFINITY);
+	}
+	
+	@Override
+	public double getEmpiricalCost(ParamConfiguration config, Set<ProblemInstance> instanceSet, double cutoffTime, Map<ProblemInstance, Map<Long,Double>> hallucinatedValues, double minimumResponseValue)
+	{
 		if (!configToPerformanceMap.containsKey(config) && hallucinatedValues.isEmpty()){
 			return Double.MAX_VALUE;
 		}
@@ -298,7 +313,7 @@ public class NewRunHistory implements RunHistory {
 			ArrayList<Double> localCosts = new ArrayList<Double>();
 			for(Map.Entry<Long, Double> ent : seedToPerformanceMap.entrySet())
 			{
-					localCosts.add( ent.getValue() );	
+					localCosts.add( Math.max(minimumResponseValue, ent.getValue()) );	
 			}
 			instanceCosts.add( perInstanceObjectiveFunction.aggregate(localCosts,cutoffTime)); 
 		}
@@ -492,7 +507,10 @@ public class NewRunHistory implements RunHistory {
 		
 		//=== Return a random element of the candidate instance set (it's sad there is no method for that in Java's Set).\
 		int candidateIdx = rand.nextInt(candidates.size());
-	
+		
+		//log.error("Always selecting first instance");
+		//int candidateIdx =0;
+		
 		log.trace("Selected Instance {}", candidates.get(candidateIdx));
 		return candidates.get(candidateIdx);	
 	}
@@ -649,7 +667,7 @@ public class NewRunHistory implements RunHistory {
 	public List<AlgorithmRun> getAlgorithmRuns() 
 	{
 		
-		List<AlgorithmRun> runs = new LinkedList<AlgorithmRun>();
+		List<AlgorithmRun> runs = new ArrayList<AlgorithmRun>(this.runHistoryList.size());
 		for(RunData runData : getAlgorithmRunData() )
 		{
 			runs.add(runData.getRun());

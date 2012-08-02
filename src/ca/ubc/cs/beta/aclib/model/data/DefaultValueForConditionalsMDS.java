@@ -3,7 +3,7 @@ package ca.ubc.cs.beta.aclib.model.data;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 
 /**
- * Fixes Conditional Values such that inActive Parameters are replaced by there default values
+ * Fixes Conditional Values such that inactive Parameters are replaced by their default values
  * 
  * @author fhutter
  *

@@ -465,5 +465,42 @@ public class TAETestSet {
 		}
 	}
 
+	/**
+	 * This tests that we get a TargetAlgorithmAbortException if there is no matching output
+	 * 
+	 */
+	@Test(expected=TargetAlgorithmAbortException.class)
+	public void testAbortIfNoMatchingOutput()
+	{
+		
+	
+		
+		configSpace.setPRNG(r);
+		
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		
+		
+		ParamConfiguration config = configSpace.getRandomConfiguration();
+		config.put("solved","SAT");
+		RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
+		runConfigs.add(rc);
+	
+	
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(DoNothingExecutor.class.getCanonicalName());
+		
+		
+		
+		AlgorithmExecutionConfig execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500); 
+		
+		TargetAlgorithmEvaluator tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false);
+		tae.evaluateRun(runConfigs);
+				
+	}
+	
+	
 	
 }

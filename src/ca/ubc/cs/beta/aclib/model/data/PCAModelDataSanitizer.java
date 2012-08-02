@@ -170,6 +170,37 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 		int[] constFeatures = pca.constantColumnsWithMissingValues(usedInstanceFeatures);
 		instanceFeatures = pca.removeColumns(instanceFeatures, constFeatures);
 		
+		/*
+		log.warn("Temporarily changed for debugging: PCAed only used instances");
+		for(int i=0; i < theta_inst_idxs.length; i++)
+		{
+			int oldIndex = theta_inst_idxs[i][1];
+			
+			for(int j=0; j < usedInstancesIdxs.length; j++)
+			{
+				if(oldIndex == (usedInstancesIdxs[j]+1))
+				{
+					theta_inst_idxs[i][1] = j+1;
+				}
+			}
+		}
+		
+		for(int i=0; i < theta_inst_idxs.length; i++)
+		{
+			int oldIndex = theta_inst_idxs[i][1];
+			
+			if(oldIndex > usedInstancesIdxs.length)
+			{
+				throw new IllegalStateException("Couldn't map instance");
+			}
+		}
+		
+		
+		instanceFeatures = pca.removeColumns(usedInstanceFeatures, constFeatures);
+		*/
+		
+		
+		
 		log.info("Discarding {} constant inputs of {} in total.", constFeatures.length, prePCAInstanceFeatures[0].length);
 		if(RoundingMode.ROUND_NUMBERS_FOR_MATLAB_SYNC)
 		{

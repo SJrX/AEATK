@@ -99,21 +99,32 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 		
 			processRunLoop(procIn);
 			
+			procIn = new Scanner(proc.getErrorStream());
+			
+			while(procIn.hasNext())
+			{	
+				
+				log.warn(procIn.nextLine());
+				
+			}
+			
+			
+			if(!this.isRunCompleted())
+			{
+				this.setAbortResult("We did not successfully read anything from the wrapper");
+			}
+			
+			
 			switch(this.getRunResult())
 			{
+			
+			
 			case ABORT:
 			case CRASHED:
 				
-				if(!MarkerFilter.log(execCommandMarker.getName()))
-				{
 					
 					log.info( "Failed Run Detected Call: " + getTargetAlgorithmExecutionCommand(execConfig, runConfig));
-				}
-				if(!MarkerFilter.log(fullProcessOutputMarker.getName()))
-				{
 				
-					
-					
 					log.info("Failed Run Detected output last {} lines", outputQueue.size());
 					for(String s : outputQueue)
 					{
@@ -121,7 +132,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 					}
 					log.info("Output complete");
 					
-				}
+				
 			default:
 				
 			}
@@ -130,14 +141,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 			
 			
 			
-			procIn = new Scanner(proc.getErrorStream());
-	
-			while(procIn.hasNext())
-			{	
-				
-				log.warn(procIn.nextLine());
-				
-			}
+			
 			
 			
 			

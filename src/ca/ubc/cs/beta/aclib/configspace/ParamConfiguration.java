@@ -1,6 +1,8 @@
 package ca.ubc.cs.beta.aclib.configspace;
 
+import java.io.PrintWriter;
 import java.io.Serializable;
+import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
@@ -393,6 +395,13 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	}
 	
 	
+	public double[] toComparisonValueArray() {
+		if(isDirty) cleanUp();
+		
+		return valueArrayForComparsion.clone();
+	}
+	
+	
 	@Override
 	public String toString()
 	{
@@ -523,19 +532,40 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	public String getFormattedParamString(StringFormat stringFormat)
 	{
 		
-		if(stringFormat != StringFormat.ARRAY_STRING_SYNTAX)
+		double[] valueArray = this.valueArray;
+		switch(stringFormat)
 		{
+			case FIXED_WIDTH_ARRAY_STRING_MASK_INACTIVE_SYNTAX:
+				if(isDirty) cleanUp();
+				valueArray = this.valueArrayForComparsion;
+				
+			case FIXED_WIDTH_ARRAY_STRING_SYNTAX:
+				StringWriter sWriter = new StringWriter();
+				PrintWriter pWriter = new PrintWriter(sWriter);
+				
+				for(int i=0; i < valueArray.length; i++)
+				{
+					pWriter.format("%20s", valueArray[i]);
+					if(i+1 != valueArray.length) pWriter.append(",");
+				}
+				return sWriter.toString();
+			
+		
+		
+			case ARRAY_STRING_MASK_INACTIVE_SYNTAX:
+				if(isDirty) cleanUp();
+				valueArray = this.valueArrayForComparsion;
+				
+			case ARRAY_STRING_SYNTAX:
+				StringBuilder sb = new StringBuilder();
+				for(int i=0; i < valueArray.length; i++)
+				{
+					sb.append(valueArray[i]);
+					if(i+1 != valueArray.length) sb.append(",");
+				}
+				return sb.toString();			
+		default:
 			return _getFormattedParamString(stringFormat.getPreKey(), stringFormat.getKeyValueSeperator(), stringFormat.getValueDelimeter(), stringFormat.getGlue(), stringFormat.hideInactiveParameters());
-		}  else
-		{
-			double[] valueArray = this.valueArray;
-			StringBuilder sb = new StringBuilder();
-			for(int i=0; i < valueArray.length; i++)
-			{
-				sb.append(valueArray[i]);
-				if(i+1 != valueArray.length) sb.append(",");
-			}
-			return sb.toString();
 		}
 		
 	}
@@ -567,11 +597,35 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 			 */
 			SURROGATE_EXECUTOR("-P","=",""," ",true),
 			
+			
+
 			/**
 			 * Stores the values as an array (value array syntax). This format is non human-readable and fragile
 			 */
-			ARRAY_STRING_SYNTAX("","","","",false);
-
+			ARRAY_STRING_SYNTAX("","","","",false),
+			
+			/**
+			 * Stores the values as an array (value array syntax). This format is non human-readable and fragile (hides Inactive)
+			 */
+			ARRAY_STRING_MASK_INACTIVE_SYNTAX("","","","", true),
+			
+			
+			/**
+			 * Stores the values as an array (value array syntax). This format is non human-readable and fragile
+			 * All values are spaced to take 15 characters
+			 */
+			FIXED_WIDTH_ARRAY_STRING_SYNTAX("","","","",false),
+			
+			/**
+			 * Stores the values as an array (value array syntax). This format is non human-readable and fragile (hides Inactive)
+			 * All values are spaced to take 15 characters
+			 */
+			FIXED_WIDTH_ARRAY_STRING_MASK_INACTIVE_SYNTAX("","","","", true);
+			
+			
+			
+			
+			
 		private final String preKey;
 		private final String keyValSeperator;
 		private final String valDelimiter;
@@ -900,5 +954,9 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	{
 		return configSpace.isForbiddenParamConfiguration(valueArray);
 	}
+
+
+
+	
 
 }

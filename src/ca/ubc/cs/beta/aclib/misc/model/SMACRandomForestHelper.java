@@ -80,6 +80,12 @@ public class SMACRandomForestHelper {
 		buildParams.condParentVals[i] = new int[0][0];
 	}
 
+	if(rfOptions.ignoreConditionality)
+	{
+		//TODO: Make this a ModelDataSanitizer
+		buildParams.condParents = null;
+		buildParams.condParentVals = null;
+	}
 
 	return buildParams;	
 	}

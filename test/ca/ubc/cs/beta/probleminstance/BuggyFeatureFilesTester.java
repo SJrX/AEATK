@@ -116,7 +116,7 @@ public class BuggyFeatureFilesTester {
 		{
 			fail("Error detected");
 			
-		} else if(output.contains("Matched Features for file name"))
+		} else if(output.contains("Instances loaded from file named:"))
 		{
 			//No matching output
 		} else

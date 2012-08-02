@@ -33,7 +33,7 @@ public class LegacyStateFactory implements StateFactory{
 	private final Logger log = LoggerFactory.getLogger(getClass());
 	/**
 	 * Constructs the LegacyStateFactory
-	 * @param saveStatePath 	Where we should save files from
+	 * @param saveStatePath 	Where we should save files to
 	 * @param restoreFromPath	Where we should restore from
 	 */
 	public LegacyStateFactory(String saveStatePath, String restoreFromPath)

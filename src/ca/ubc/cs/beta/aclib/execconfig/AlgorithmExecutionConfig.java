@@ -2,6 +2,9 @@ package ca.ubc.cs.beta.aclib.execconfig;
 
 import java.io.Serializable;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 
 /**
@@ -24,6 +27,7 @@ public class AlgorithmExecutionConfig implements Serializable {
 
 	private final double cutoffTime; 
 
+	private final Logger log = LoggerFactory.getLogger(getClass());
 	
 	
 	public AlgorithmExecutionConfig(String algorithmExecutable, String algorithmExecutionDirectory,
@@ -33,7 +37,17 @@ public class AlgorithmExecutionConfig implements Serializable {
 		this.paramFile = paramFile;
 		this.executeOnCluster = executeOnCluster;
 		this.deterministicAlgorithm = deterministicAlgorithm;
+		if(cutoffTime < 0)
+		{
+			throw new IllegalArgumentException("Cutoff time must be greater than zero");
+		}
+		
+		if(cutoffTime == 0)
+		{
+			log.warn("Cutoff time is greater than zero");
+		}
 		this.cutoffTime = cutoffTime;
+		
 
 	}
 
