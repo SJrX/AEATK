@@ -9,8 +9,11 @@ import java.util.Set;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.misc.jcommander.converter.BinaryDigitBooleanConverter;
+import ca.ubc.cs.beta.aclib.misc.jcommander.validator.NonNegativeInteger;
+import ca.ubc.cs.beta.aclib.misc.jcommander.validator.ReadableFileConverter;
 
 import com.beust.jcommander.Parameter;
+import com.beust.jcommander.validators.PositiveInteger;
 
 
 /**
@@ -96,6 +99,22 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 	
 	@Parameter(names="--logAllProcessOutput", description="Log all process output")
 	public boolean logAllProcessOutput = false;
+	
+	@Parameter(names="--abortOnCrash", description="Treat algorithm crashes as ABORT (Useful if the algorithm really should never CRASH)")
+	public boolean abortOnCrash = false;
+
+	@Parameter(names="--abortOnFirstRunCrash", description="If the first run of the algorithm CRASHED treat it as an ABORT, otherwise leave it alone")
+	public boolean abortOnFirstRunCrash = true;
+
+	@Parameter(names="--retryTargetAlgorithmRunCount", description="Number of times to retry an algorithm run before eporting crashed (NOTE: The original crashes DO NOT count towards any time limits, they are in effect lost). Additionally this only retries CRASHED runs, not ABORT runs, this is by design as ABORT is only for cases when we shouldn't bother further runs", validateWith=NonNegativeInteger.class)
+	public int retryCount = 0;
+
+	@Parameter(names="--maxConcurrentAlgoExecs", description="Maximum number of concurrent target algorithm executions", validateWith=PositiveInteger.class)
+	public int maxConcurrentAlgoExecs = 1;
+	
+	@Parameter(names="--runHashCodeFile", description="File containing a list of Run Hashes one per line (Either with just the format on each line, or with the following text per line: \"Run Hash Codes: (Hash Code) After (n) runs\". The number of runs in this file need not match the number of runs that we execute, this file only ensures that the sequences never diverge. Note the n is completely ignored so the order they are specified in is the order we expect the hash codes in this version", converter=ReadableFileConverter.class)
+	public File runHashCodeFile;
+		
 	/*
 	public AlgorithmExecutionConfig getAlgorithmExecutionConfig(ParamConfigurationSpace p, File experimentDir)
 	{

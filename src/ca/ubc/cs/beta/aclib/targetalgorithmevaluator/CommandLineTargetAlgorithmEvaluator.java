@@ -81,6 +81,12 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractTargetAlgorithm
 			return AutomaticConfiguratorFactory.getSingleThreadedAlgorithmRunner(execConfig,runConfigs);
 		}
 	}
+
+	@Override
+	public void notifyShutdown() {
+		// We shutdown after ever run anyway
+		
+	}
 	
 	
 

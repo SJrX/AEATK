@@ -17,8 +17,6 @@ public class ValidationExecutorOptions {
 	public ScenarioOptions scenarioConfig = new ScenarioOptions();
 	
 	
-	@Parameter(names="--maxConcurrentAlgoExecs", description="Maximum number of concurrent target algorithm executions", validateWith=PositiveInteger.class)
-	public int maxConcurrentAlgoExecs = 1;
 	
 	@Parameter(names={"-e","--experimentDir"}, description="Root Directory for Experiments Folder")
 	public String experimentDir = System.getProperty("user.dir") + File.separator + "";

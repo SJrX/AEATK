@@ -111,5 +111,10 @@ public class DebugTargetAlgorithmEvaluator implements TargetAlgorithmEvaluator {
 			throw new IllegalArgumentException("Not Equals");
 		}
 	}
+	@Override
+	public void notifyShutdown() {
+		tae1.notifyShutdown();
+		tae2.notifyShutdown();	
+	}
 
 }

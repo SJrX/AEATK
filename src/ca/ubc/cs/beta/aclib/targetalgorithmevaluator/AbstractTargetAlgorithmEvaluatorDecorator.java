@@ -49,5 +49,10 @@ public abstract class AbstractTargetAlgorithmEvaluatorDecorator implements
 	public String getManualCallString(RunConfig runConfig) {
 		return tae.getManualCallString(runConfig);
 	}
+	
+	public void notifyShutdown()
+	{
+		tae.notifyShutdown();
+	}
 
 }

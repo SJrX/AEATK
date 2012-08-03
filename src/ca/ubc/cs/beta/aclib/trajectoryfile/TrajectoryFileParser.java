@@ -49,10 +49,14 @@ public class TrajectoryFileParser {
 				sb.append("").append(dataRow[j]).append(" ");
 			}
 			//System.out.println(time + "=>" + sb.toString());
-			Double overhead = Double.valueOf(dataRow[4]);
-			Double empericalPerformance = Double.valueOf(dataRow[1]);
+			double tunerTime = Double.valueOf(dataRow[0]);
+			double empericalPerformance = Double.valueOf(dataRow[1]);
+			//2 is the stdDeviation of the performance
+			//3 is the theta Idx of it
+			double overhead = Double.valueOf(dataRow[4]);
+			
 
-			TrajectoryFileEntry tfe = new TrajectoryFileEntry(configObj, overhead, empericalPerformance);
+			TrajectoryFileEntry tfe = new TrajectoryFileEntry(configObj,tunerTime, empericalPerformance, overhead );
 			
 			skipList.put(Double.valueOf(time), tfe);
 			
@@ -87,11 +91,13 @@ public class TrajectoryFileParser {
 				configObj.put(paramNames.get(j), dataRow[j+dataOffset]);
 			}
 			//System.out.println(time + "=>" + sb.toString());
-			Double overhead = Double.valueOf(dataRow[4]);
+			double tunerTime = Double.valueOf(dataRow[0]);
 			Double empericalPerformance = Double.valueOf(dataRow[1]);
+			Double overhead = Double.valueOf(dataRow[4]);
+			
 
 			
-			TrajectoryFileEntry tfe = new TrajectoryFileEntry(configObj, overhead, empericalPerformance);
+			TrajectoryFileEntry tfe = new TrajectoryFileEntry(configObj, tunerTime, empericalPerformance, overhead);
 			
 			skipList.put(Double.valueOf(time), tfe);
 			
@@ -145,32 +151,19 @@ public class TrajectoryFileParser {
 		return parseTrajectoryFile(configs, configSpace);
 	}
 	
-	public static class TrajectoryFileEntry
+	public static List<TrajectoryFileEntry> parseTrajectoryFileAsList(File trajectoryFile, ParamConfigurationSpace configSpace) throws FileNotFoundException, IOException
 	{
-		private final ParamConfiguration config;
-		private final double empericalPerformance;
-		private final double acOverhead;
+		 ConcurrentSkipListMap<Double, TrajectoryFileEntry> parseTrajectoryFile = parseTrajectoryFile(trajectoryFile, configSpace);
+		 
+		 List<TrajectoryFileEntry> tfes = new ArrayList<TrajectoryFileEntry>(parseTrajectoryFile.size());
 		
-		public TrajectoryFileEntry(ParamConfiguration config, double acOverhead, double empericalPerformance)
-		{
-			this.config = config;
-			this.empericalPerformance = empericalPerformance;
-			this.acOverhead = acOverhead;
-		}
-		
-		public ParamConfiguration getConfiguration()
-		{
-			return config;
-		}
-		
-		public double getEmpericalPerformance()
-		{
-			return empericalPerformance;
-		}
-		
-		public double getACOverhead()
-		{
-			return acOverhead;
-		}
+		 for(TrajectoryFileEntry tfe : parseTrajectoryFile.values())
+		 {
+			 tfes.add(tfe);
+		 }
+		 
+		 return tfes;
 	}
+	
+	
 }

@@ -83,6 +83,22 @@ public interface TargetAlgorithmEvaluator {
 	 * @return string something the user can execute directly if necessary to reproduce the results
 	 */
 	public String getManualCallString(RunConfig runConfig);
+
+	/**
+	 * Notifies the TargetAlgorithmEvaluator that we are shutting down
+	 * <p> 
+	 * <b>Implementation Note:</b> Depending on what the TargetAlgorithmEvaluator does this can be a noop, the only purpose
+	 * is to allow TargetAlgorithmEvaluators to shutdown any thread pools, that will prevent the JVM from exiting. The 
+	 * TargetAlgorithmEvaluator may also choose to keep resources running for other reasons, and this method 
+	 * should NOT be interpreted as requesting the TargetAlgorithmEvalutor to shutdown. 
+	 * <p>
+	 * Example: If this TAE were to allow for sharing of resources between multiple independent SMAC runs, a call to this method
+	 * should NOT be taken as a requirement to shutdown the TAE, only that there is one less client using it. Once it recieved
+	 * sufficient shutdown notices, it could then decide to shutdown.
+	 * <p>
+	 * Finally, if this method throws an exception, chances are the client will not catch it and will crash.
+	 */
+	public void notifyShutdown();
 	
 	
 }

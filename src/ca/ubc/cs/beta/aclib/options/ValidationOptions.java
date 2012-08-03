@@ -26,4 +26,14 @@ public class ValidationOptions extends AbstractOptions{
 	@Parameter(names="--validationHeaders", description="Put headers on output CSV files for Validation")
 	public boolean validationHeaders = true;
 	
+	@Parameter(names="--maxTimestamp", description="The Relative Timestamp of the config in the trajectory file to min (Defaults to last tuner time)", required=false)
+	public double maxTimestamp = -1;
+	
+	@Parameter(names="--minTimestamp", description="The Relative Timestamp of the config in the trajectory file to max", required=false)
+	public double minTimestamp = 1;
+	
+	@Parameter(names="--multFactor", description="Other timestamps to generate are used as the maxTime*multFactor^-n where n is {1,2,3,4...} while timestamp >= minTimestamp ")
+	public double multFactor = 2;
+
+	
 }
