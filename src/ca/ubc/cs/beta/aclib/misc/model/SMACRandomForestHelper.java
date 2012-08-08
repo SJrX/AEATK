@@ -1,5 +1,8 @@
 package ca.ubc.cs.beta.aclib.misc.model;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ca.ubc.cs.beta.aclib.misc.random.SeedableRandomSingleton;
 import ca.ubc.cs.beta.aclib.options.RandomForestOptions;
 import ca.ubc.cs.beta.models.fastrf.RegtreeBuildParams;
@@ -10,6 +13,8 @@ import ca.ubc.cs.beta.models.fastrf.RegtreeBuildParams;
  */
 public class SMACRandomForestHelper {
 
+	private static final Logger log = LoggerFactory.getLogger(SMACRandomForestHelper.class);
+	
 	/**
 	 * Converts the rfOptions and other parameters into the required RegtreeBuildParams
 	 * 
@@ -42,7 +47,14 @@ public class SMACRandomForestHelper {
 	//System.out.println("Random: " + buildParams.random.nextInt());
 	buildParams.minVariance = rfOptions.minVariance;
 	
-	
+	if(rfOptions.brokenVarianceCalculation)
+	{
+		log.warn("Model set to use broken variance calculation, this may affect performance");
+		buildParams.brokenVarianceCalculation = true;
+	} else
+	{
+		buildParams.brokenVarianceCalculation = false;
+	}
 	
 	//int numberOfParameters = params.getParameterNames().size();
 	//int numberOfFeatures = features.getDataRow(0).length;

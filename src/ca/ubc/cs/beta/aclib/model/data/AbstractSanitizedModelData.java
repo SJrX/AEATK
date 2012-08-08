@@ -106,7 +106,7 @@ public abstract class AbstractSanitizedModelData implements SanitizedModelData{
 	@Override
 	public double transformResponseValue(double d)
 	{
-		return d;
+		return smd.transformResponseValue(d);
 	}
 	
 	@Override

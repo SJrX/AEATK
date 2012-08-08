@@ -42,5 +42,6 @@ public class RandomForestOptions extends AbstractOptions{
 	@Parameter(names="--ignoreConditionality", description="Ignore Conditionality for building the model")
 	public boolean ignoreConditionality = false;
 
-	
+	@Parameter(names="--useBrokenVarianceCalculation", description="Use the broken variance calculation when building the model", hidden=true)
+	public boolean brokenVarianceCalculation = false;
 }

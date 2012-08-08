@@ -82,7 +82,7 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 		 *    }
 		 *    
 		 */
-		
+	
 		if(log.isTraceEnabled())
 		{
 			StringWriter sWriter = new StringWriter();
