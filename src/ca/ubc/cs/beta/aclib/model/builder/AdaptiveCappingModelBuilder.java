@@ -5,6 +5,7 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -57,7 +58,9 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 	 */
 	public AdaptiveCappingModelBuilder(SanitizedModelData mds, RandomForestOptions rfOptions, Random rand, int imputationIterations, double cutoffTime, double penaltyFactor)
 	{
-		double maxValue = mds.transformResponseValue(cutoffTime*penaltyFactor);
+		
+		double maxPenalizedValue = mds.transformResponseValue(cutoffTime*penaltyFactor);
+		
 		int[][] theta_inst_idxs = mds.getThetaInstIdxs();
 		boolean[] censoringIndicators = mds.getCensoredResponses();
 		
@@ -84,9 +87,6 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 		{
 			StringWriter sWriter = new StringWriter();
 			PrintWriter pWriter = new PrintWriter(sWriter);
-			
-			
-			
 			
 			for(int i=0; i < censoringIndicators.length; i++)
 			{
@@ -133,53 +133,71 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 		//=== Building random forest with non censored data.
 		RandomForest rf = buildRandomForest(mds,rfOptions,non_cens_theta_inst_idxs, non_cens_responses, false);
 		
-		if(rfOptions.fullTreeBootstrap)
-		{
-			throw new ParameterException("Cannot build random forest with Adaptive Capping on Full Tree Bootstap");
-			/**
-			 * This should be an easy fix, we just need to sample correctly.
-			 */
-		}
-
+	
 		int numTrees = rfOptions.numTrees;
-		int sampleSize = responseValues.length;
+		
+		int numDataPointsInTree = responseValues.length;
 
 		//=== Initialize map from censored response indices to Map from trees to their dataIdxs for that response (only for trees that actually have that data point).
-		Map<Integer, Map<Integer, List<Integer>>> censoredSampleIdxs = new HashMap<Integer, Map<Integer, List<Integer>>>();
-		for (int i = 0; i < sampleSize; i++) {
+		Map<Integer, Map<Integer, List<Integer>>> censoredSampleIdxs = new LinkedHashMap<Integer, Map<Integer, List<Integer>>>();
+		for (int i = 0; i < numDataPointsInTree; i++) {
 			if(censoringIndicators[i]){
 				censoredSampleIdxs.put(i,new HashMap<Integer,List<Integer>>());
 			}
-		}		
+		}
 		
 		//=== Set up dataIdx once and for all (via bootstrap sampling), and keep track of which runs are censored in censoredSampleIdxs.
-	    int[][] dataIdxs = new int[numTrees][sampleSize];
-//		theta_inst_idxs = runHistory.getParameterConfigurationInstancesRanByIndex();
-	    for (int j = 0; j < numTrees; j++) {
-	        for (int k = 0; k < sampleSize; k++) {
-        	   int sampleIdxToUse =  rand.nextInt(sampleSize);
-               dataIdxs[j][k] = sampleIdxToUse;
-               if (censoringIndicators[sampleIdxToUse]){
-            	   if(censoredSampleIdxs.get(sampleIdxToUse).get(j) == null){
-                	   censoredSampleIdxs.get(sampleIdxToUse).put(j, new ArrayList<Integer>());
+	    int[][] dataIdxs = new int[numTrees][numDataPointsInTree];
+	    
+		if(rfOptions.fullTreeBootstrap)
+		{
+			//==== Use same data points in each tree
+			for (int j = 0; j < numTrees; j++) {
+		        for (int k = 0; k < numDataPointsInTree; k++) {
+	               dataIdxs[j][k] = k;
+		        }
+		    }
+			
+		} else
+		{
+			//==== Random sample data points to use in each tree
+		    for (int j = 0; j < numTrees; j++) {
+		        for (int k = 0; k < numDataPointsInTree; k++) {
+	               dataIdxs[j][k] = rand.nextInt(numDataPointsInTree);
+		        }
+		    }
+
+		}
+		
+        //====Initialize mapping of censored indexes (in responseValue) to tree index and dataIdxs.
+		for (int j = 0; j < numTrees; j++) {
+	        for (int k = 0; k < numDataPointsInTree; k++) {
+	        	int dataIndex = dataIdxs[j][k];
+               if (censoringIndicators[dataIndex]){
+            	   if(censoredSampleIdxs.get(dataIndex).get(j) == null){
+                	   censoredSampleIdxs.get(dataIndex).put(j, new ArrayList<Integer>());
             	   }            		   
-            	   censoredSampleIdxs.get(sampleIdxToUse).get(j).add(k);
+            	   censoredSampleIdxs.get(dataIndex).get(j).add(k);
                }
 	        }
 	    }
+		
 	    
 	    /**
 		 * While imputed values change more than a limit, continue.
 		 */
 		
-		double[][] yHallucinated = new double[numTrees][sampleSize];
+		double[][] yHallucinated = new double[numTrees][numDataPointsInTree];
 		
 		//=== Initialize yHallucinated to the observed data (for censored data points that's a lower bound).
 		for(int tree=0; tree<yHallucinated.length; tree++){
-			for (int sampleCount = 0; sampleCount < yHallucinated[tree].length; sampleCount++){
-				yHallucinated[tree][sampleCount] = responseValues[dataIdxs[tree][sampleCount]];
+			for (int treeResponseValueIndex = 0; treeResponseValueIndex < yHallucinated[tree].length; treeResponseValueIndex++){
+				int responseValueIndex = dataIdxs[tree][treeResponseValueIndex];
+				yHallucinated[tree][treeResponseValueIndex] = responseValues[responseValueIndex];
 			}
 		}
+		
+	
 		
 		for(int i=0; i < imputationIterations; i++)
 		{
@@ -193,6 +211,7 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 			for (Integer sampleIdxToUse: censoredSampleIdxs.keySet()){
 				double[] configArray = mds.getConfigs()[theta_inst_idxs[sampleIdxToUse][0]];
 				double[] featureArray = mds.getPCAFeatures()[theta_inst_idxs[sampleIdxToUse][1]];
+				
 				for(int m=0; m < configArray.length; m++)
 				{
 					predictors[j][m] = configArray[m];
@@ -206,6 +225,37 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 			//== Now predict.
 			double[][] prediction = RandomForest.apply(rf, predictors);
 			
+			/*
+			 * Test code
+			 * if you see it and don't like it feel free to delete it
+			 * 
+			List<Integer> list = new ArrayList<Integer>(censoredSampleIdxs.keySet());
+			double[] lastPrediction = new double[censoredSampleIdxs.size()];
+			double overPredictionSum = 0;
+			double underPredictionSum = 0; 
+			System.out.println("Imputation "+i+":");
+			for(int z=0; z < prediction.length; z++)
+			{
+				
+				
+				double mean = prediction[z][0];
+				double var = prediction[z][1];
+				if(mean > lastPrediction[z])
+				{
+					overPredictionSum += mean - lastPrediction[z];
+				} else
+				{
+					underPredictionSum += lastPrediction[z] - mean;
+				}
+				
+				
+			
+				System.out.println(z+","+  list.get(z) + "," + responseValues[list.get(z)] +","+prediction[z][0]+"," + prediction[z][1] + "," + lastPrediction[z]);
+				lastPrediction[z] = mean;
+			}
+			
+			System.out.println("Over Prediction: " + overPredictionSum + " Under Prediction Sum: " + underPredictionSum);
+			*/
 			j=0;
 			//=== Loop over all the censored data points.
 			for (Entry<Integer, Map<Integer, List<Integer>>> ent : censoredSampleIdxs.entrySet()){
@@ -217,14 +267,18 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 				for (List<Integer> l : treeDataIdxsMap.values()){
 					numSamplesToGet += l.size();
 				}
-			
+				//System.out.println(sampleIdxToUse);
+				
 				//=== Get the samples (but cap them at maxValue). 
 				StopWatch sw = new AutoStartStopWatch();
+				
+				
 				TruncatedNormalDistribution tNorm = new TruncatedNormalDistribution(prediction[j][0], prediction[j][1], responseValues[sampleIdxToUse],rand);
 				//log.debug("Constructing Truncated Normal Distribution took {} seconds" ,sw.stop() / 1000.0);
 				j++;
 				
 				double[] samples;
+				
 				if(rfOptions.shuffleImputedValues)
 				{
 					samples = tNorm.getValuesAtStratifiedShuffledIntervals(numSamplesToGet);
@@ -233,8 +287,9 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 					samples = tNorm.getValuesAtStratifiedIntervals(numSamplesToGet);
 				}
 				
-				for (int k = 0; k < samples.length; k++) {
-					samples[k] = Math.min(samples[k], maxValue);
+				for (int k = 0; k < samples.length; k++) 
+				{
+					samples[k] = Math.min(samples[k], maxPenalizedValue);
 				}
 
 				//=== Populate the trees at their dataIdxs with the samples (and update differenceFromLastMean)
@@ -249,7 +304,10 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 						yHallucinated[tree][responseLocationInTree] = samples[count++];
 					}
 				}
-				differenceFromLastMean += (increaseThisDataPoint / count);
+				if(count != 0)
+				{
+					differenceFromLastMean += (increaseThisDataPoint / count);
+				}
 			}
 			differenceFromLastMean /= censoredSampleIdxs.size();			
 			

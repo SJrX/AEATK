@@ -100,6 +100,10 @@ public class LegacyStateDeserializer implements StateDeserializer {
 	public static final int RUN_ITERATION_INDEX = 11;
 	
 	
+	public final double cutoffTime;
+	
+	private ParamConfiguration potentialIncumbent; 
+	
 	@SuppressWarnings("unchecked")
 	/**
 	 * Generates objects necessary to restore SMAC to the state in the saved files
@@ -126,6 +130,9 @@ public class LegacyStateDeserializer implements StateDeserializer {
 			
 			if(runObj == null) throw new IllegalArgumentException("Run Objective cannot be null");
 			if(instances == null) throw new IllegalArgumentException("Instances cannot be null");
+			
+			if(execConfig == null) throw new IllegalArgumentException("execConfig cannot be null");
+			this.cutoffTime = execConfig.getAlgorithmCutoffTime();
 			
 			if(instances.size() == 0) 
 			{
@@ -188,7 +195,8 @@ public class LegacyStateDeserializer implements StateDeserializer {
 						incumbent = configSpace.getConfigurationFromString(paramString, StringFormat.STATEFILE_SYNTAX);
 					} else
 					{
-						incumbent = null;
+						throw new IllegalStateException("Not sure why a java object file has no incumbent, save state file corrupt. To continue try renaming the object file for this iteration");
+						//incumbent = null;
 					}
 					 
 					
@@ -199,11 +207,20 @@ public class LegacyStateDeserializer implements StateDeserializer {
 			} else
 			{
 				incompleteSavedState = true;
+				
+				
+				
+				
 				randomMap = null;
 				//The RunHistory object will need an instanceseed generator. We will not allow this to be returned to the client however
 				instanceSeedGenerator = new RandomInstanceSeedGenerator(0, 0);
-				this.incumbent = null;
 				this.iteration = iteration;
+				
+				
+				
+			
+				this.incumbent = null;
+			
 			}
 			
 			
@@ -478,6 +495,50 @@ public class LegacyStateDeserializer implements StateDeserializer {
 					
 						throw new StateSerializationException("Error occured while parsing the following line of the runHistory file: " + i + " data "+ Arrays.toString(runHistoryLine), e);
 					}
+
+				}
+				
+				if(this.incumbent == null)
+				{
+					log.info("No incumbent found in state files, doing our best to select the incumbent, may not be identical but should be indistinguishable");
+					
+					RunHistory runHistory = getRunHistory();	
+					Set<ParamConfiguration> configs = runHistory.getUniqueParamConfigurations();
+					Set<ParamConfiguration> possibleIncumbents = new HashSet<ParamConfiguration>();
+					int maxPISPS = 0;
+					for(ParamConfiguration config : configs)
+					{
+						int configPISPCount = runHistory.getNumberOfUniqueProblemInstanceSeedPairsForConfiguration(config);
+						if(maxPISPS < configPISPCount )
+						{
+							maxPISPS =  configPISPCount;
+							possibleIncumbents.clear();
+							possibleIncumbents.add(config);
+						} else if(maxPISPS == configPISPCount)
+						{
+							possibleIncumbents.add(config);
+						}
+					}
+					
+					double minEmpiricalCost = Double.POSITIVE_INFINITY;
+					Set<ProblemInstance> instancesRan = runHistory.getUniqueInstancesRan();
+					ParamConfiguration potentialIncumbent = null;
+					
+					for(ParamConfiguration config : possibleIncumbents)
+					{
+						double thisEmpiricalCost = runHistory.getEmpiricalCost(config, instancesRan, cutoffTime);
+						
+						if(thisEmpiricalCost < minEmpiricalCost)
+						{
+							minEmpiricalCost = thisEmpiricalCost;
+							potentialIncumbent = config;
+						}
+					}
+					
+					this.potentialIncumbent = potentialIncumbent;
+				} else
+				{
+					this.potentialIncumbent = null;
 				}
 			
 			} finally
@@ -690,8 +751,14 @@ public class LegacyStateDeserializer implements StateDeserializer {
 
 	@Override
 	public ParamConfiguration getIncumbent() {
-		if(incompleteSavedState) throw new StateSerializationException("This is an incomplete state with no java objects found");
-		return incumbent;
+		
+		if(incumbent == null && incompleteSavedState)
+		{
+			return potentialIncumbent;
+		} else
+		{
+			return incumbent;
+		}
 	}
 	
 	

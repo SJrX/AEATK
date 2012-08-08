@@ -364,7 +364,13 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 	@Override
 	public int[][] getThetaInstIdxs() {
 
-		return this.theta_inst_idxs; 
+		int[][] theta_inst_idxs = new int[this.theta_inst_idxs.length][0];
+		for(int i=0; i < theta_inst_idxs.length; i++)
+		{
+			theta_inst_idxs[i] = this.theta_inst_idxs[i].clone();
+		}
+				
+		return theta_inst_idxs; 
 	}
 
 	@Override

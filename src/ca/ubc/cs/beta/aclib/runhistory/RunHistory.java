@@ -241,6 +241,16 @@ public interface RunHistory {
 			Set<ProblemInstance> instanceSet, double cutoffTime,
 			double minimumResponseValue);
 
+	/**
+	 * Returns the number of unique problem instance seed pairs run for this configuration 
+	 * (i.e. the number of runs for a configuration, but counting capped runs all as one)
+	 * 
+	 * @param config
+	 * @return
+	 */
+	int getNumberOfUniqueProblemInstanceSeedPairsForConfiguration(
+			ParamConfiguration config);
+
 
 	
 	

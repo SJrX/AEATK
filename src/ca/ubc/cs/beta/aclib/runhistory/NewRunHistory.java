@@ -493,7 +493,7 @@ public class NewRunHistory implements RunHistory {
 		if (candidates.size() == 0){
 			int minNumRuns = Integer.MAX_VALUE;
 			for (Iterator<ProblemInstance> iterator = instanceList.iterator(); iterator.hasNext();) {
-				ProblemInstance inst = (ProblemInstance) iterator.next();
+				ProblemInstance inst = iterator.next();
 				int numRuns = instanceSeedToPerformanceMap.get(inst).size();
 				if (numRuns <= minNumRuns){
 					if (numRuns < minNumRuns){ // new value for fewest runs -> ditch all previous candidates
@@ -690,6 +690,19 @@ public class NewRunHistory implements RunHistory {
 		return paramConfigurationList.getOrCreateKey(config);
 	}
 
-	
+	@Override
+	public int getNumberOfUniqueProblemInstanceSeedPairsForConfiguration(ParamConfiguration config)
+	{
+		 Map<ProblemInstance, LinkedHashMap<Long, Double>> runs = configToPerformanceMap.get(config);
+		 
+		 int total =0;
+		 for(Entry<ProblemInstance, LinkedHashMap<Long, Double>> ent : runs.entrySet())
+		 {
+			 total+=ent.getValue().size();
+		 }
+		 
+		 return total;
+		
+	}
 
 }
