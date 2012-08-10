@@ -32,10 +32,11 @@ public class SMACOptions extends AbstractOptions {
 	@ParametersDelegate
 	public ValidationOptions validationOptions = new ValidationOptions();
 
-	
+	@Parameter(names="--seedOffset", description="Offset of numRun to use from seed (This plus --numRun should be less than LONG_MAX)")
+	public long seedOffset = 0 ;
 	
 	@Parameter(names={"--numRun","--seed"}, required=true, description="Number of this run (and seed)", validateWith=NonNegativeInteger.class)
-	public long seed = 0;
+	public long numRun = 0;
 	
 	@Parameter(names={"-e","--experimentDir"}, description="Root Directory for Experiments Folder")
 	public String experimentDir = System.getProperty("user.dir") + File.separator + "";
@@ -99,12 +100,6 @@ public class SMACOptions extends AbstractOptions {
 
 	@Parameter(names="--treatCensoredDataAsUncensored", description="Builds the model as-if the response values observed for cap values, were the correct ones [NOT RECOMMENDED]")
 	public boolean maskCensoredDataAsUncensored = false;
-
-	
-	@Parameter(names="--penalizeModelInputValues", description = "Penalize the model input values that are at the cutoff time")
-	public boolean penalizeModelInputValues = false;
-
-	
 	
 	@Parameter(names={"--doValidation","--validation"}, description="Perform validation at the end")
 	public boolean doValidation = true;
@@ -115,25 +110,15 @@ public class SMACOptions extends AbstractOptions {
 	@Parameter(names={"--intensificationPercentage","--frac_rawruntime"}, description="Percent of time to spend intensifying versus model learning", validateWith=ZeroOneHalfOpenRightDouble.class)
 	public double intensificationPercentage = 0.50;
 	
-	
 	@Parameter(names="--consoleLogLevel",description="Default Error Level of Console Output (Note this cannot be more verbose than the logLevel)")
 	public LogLevel consoleLogLevel = LogLevel.INFO;
 	
-	
 	@Parameter(names="--logLevel",description="Log Level for SMAC")
-	public LogLevel logLevel = LogLevel.DEBUG;
-	
-	
+	public LogLevel logLevel = LogLevel.DEBUG;	
 		
 	@Parameter(names="--countSMACTimeAsTunerTime", description="Include the CPU Time of SMAC as part of the tunerTimeout")
 	public boolean countSMACTimeAsTunerTime = true;
 	
-
 	@Parameter(names="--maskInactiveConditionalParametersAsDefaultValue")
 	public boolean maskInactiveConditionalParametersAsDefaultValue = true;
-
-
-	
-	 
-	
 }

@@ -138,7 +138,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 			{
 				log.warn("Got empty instance list, except in the trivial case this will result in an exception");
 			}
-			if(execConfig == null) throw new IllegalArgumentException("Execution Config cannot be null");
+			
 			
 			Object[] args = { iteration, id, restoreFromPath };
 			log.info("Trying to restore iteration: {} id: {} from path: {}", args );

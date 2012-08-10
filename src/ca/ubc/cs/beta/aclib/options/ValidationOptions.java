@@ -35,5 +35,7 @@ public class ValidationOptions extends AbstractOptions{
 	@Parameter(names="--multFactor", description="Other timestamps to generate are used as the maxTime*multFactor^-n where n is {1,2,3,4...} while timestamp >= minTimestamp ")
 	public double multFactor = 2;
 
+	@Parameter(names="--validateOnlyLastIncumbent", description="Validate Only the Last Incumbent Found")
+	public boolean validateOnlyLastIncumbent = true;
 	
 }

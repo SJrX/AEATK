@@ -60,7 +60,7 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 	{
 		
 		double maxPenalizedValue = mds.transformResponseValue(cutoffTime*penaltyFactor);
-		
+		double transformedCutoffTime = mds.transformResponseValue(cutoffTime*penaltyFactor);
 		int[][] theta_inst_idxs = mds.getThetaInstIdxs();
 		boolean[] censoringIndicators = mds.getCensoredResponses();
 		
@@ -289,6 +289,11 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 				
 				for (int k = 0; k < samples.length; k++) 
 				{
+					
+					if(rfOptions.penalizeImputedValues && samples[k] >= transformedCutoffTime)
+					{
+						samples[k] = maxPenalizedValue;
+					}
 					samples[k] = Math.min(samples[k], maxPenalizedValue);
 				}
 

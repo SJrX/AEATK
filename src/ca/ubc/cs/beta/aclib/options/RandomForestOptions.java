@@ -37,11 +37,16 @@ public class RandomForestOptions extends AbstractOptions{
 	public boolean preprocessMarginal = true;
 	
 	@Parameter(names="--shuffleImputedValues", description="Shuffle imputed value predictions between trees")
-	public boolean shuffleImputedValues = true;
+	public boolean shuffleImputedValues = false;
 
 	@Parameter(names="--ignoreConditionality", description="Ignore Conditionality for building the model")
 	public boolean ignoreConditionality = false;
 
 	@Parameter(names="--useBrokenVarianceCalculation", description="Use the broken variance calculation when building the model", hidden=true)
 	public boolean brokenVarianceCalculation = false;
+	
+	@Parameter(names="--penalizeImputedValues", description="Treat imputed values that fall above the cutoff time, and below the penalized max time, as the penalized max time")
+	public boolean penalizeImputedValues = false;
+	
+	
 }
