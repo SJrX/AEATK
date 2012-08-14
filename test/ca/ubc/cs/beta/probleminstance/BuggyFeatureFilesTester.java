@@ -7,12 +7,13 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+
 import org.junit.Before;
 import org.junit.Test;
-
 import ca.ubc.cs.beta.TestHelper;
 import ca.ubc.cs.beta.aclib.probleminstance.InstanceListWithSeeds;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceHelper;
+import com.beust.jcommander.ParameterException;
 
 /**
  * Test class for various example feature files that we have 
@@ -21,7 +22,6 @@ import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceHelper;
  *
  */
 public class BuggyFeatureFilesTester {
-
 	
 	static class RuntimeIOException extends RuntimeException
 	{
@@ -30,15 +30,11 @@ public class BuggyFeatureFilesTester {
 		 * 
 		 */
 		private static final long serialVersionUID = 7573726027415648337L;
-
+		
 		RuntimeIOException(IOException e)
-		{
+		{ 
 			super(e);
-			
-		
 		}
-		
-
 	}
 	
 	@Before
@@ -94,14 +90,7 @@ public class BuggyFeatureFilesTester {
 			PrintStream old = System.out;
 			System.setOut(new PrintStream(bout));
 			
-			
-			
-			
 		ProblemInstanceHelper.getInstances(f,instanceFilesRoot + File.separator + ((checkOnDisk) ? "instances/":"no-instances/"), feature, !checkOnDisk);
-		
-		
-		
-		
 		ProblemInstanceHelper.getInstances(f, instanceFilesRoot + File.separator + ((checkOnDisk) ? "instances/":"no-instances/"), !checkOnDisk);
 		
 		String output = bout.toString();
@@ -130,10 +119,63 @@ public class BuggyFeatureFilesTester {
 			throw new RuntimeIOException(e);
 		}
 		
-		
-		
-		
+	}
 	
+	@Test(expected=ParameterException.class)
+	/**
+	 * Tests that we gracefully fail when no header row exists in the feature file
+	 */
+	public void errorOnNoHeaderRow()
+	{
+		
+		String feature = TestHelper.getTestFile("featureFiles/sugar-csc09-timeFeats-1-noheader.txt").getAbsolutePath();
+		String f = TestHelper.getTestFile("featureFiles/sugar-csc09.csv").getAbsolutePath();
+		String instanceFilesRoot =  TestHelper.getTestFile("featureFiles/sugar-csc09.csv").getParentFile().getParentFile().toString();
+		
+		boolean checkOnDisk = true;
+	
+		try {
+			
+			ByteArrayOutputStream bout = new ByteArrayOutputStream();
+			
+			PrintStream old = System.out;
+			System.setOut(new PrintStream(bout));
+			String output;
+			try {
+				
+			ProblemInstanceHelper.getInstances(f,instanceFilesRoot + File.separator + ((checkOnDisk) ? "instances/":"no-instances/"), feature, !checkOnDisk);
+			} finally
+			{
+				output = bout.toString();
+				System.setOut(old);
+				System.out.println(output);
+
+			}
+			
+			
+			if(output.contains("but the instance Features don't match"))
+			{
+				fail("Instances didn't match up");
+			} else if(output.contains("ERROR"))
+			{
+				fail("Error detected");
+				
+			} else if(output.contains("Instances loaded from file named:"))
+			{
+				//No matching output
+			} else
+			{
+				fail("No matching output");
+			}
+			
+				//ProblemInstanceHelper.getInstances(null, null,f.getAbsolutePath(), false);
+		
+			}catch(IOException e)
+			{
+				throw new RuntimeIOException(e);
+			}
+		
 		
 	}
+	
 }

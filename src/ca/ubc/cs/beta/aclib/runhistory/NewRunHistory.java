@@ -196,7 +196,7 @@ public class NewRunHistory implements RunHistory {
 			}
 			
 		}
-		totalRuntimeSum += Math.max(0.1, RunObjective.RUNTIME.getObjective(run));
+		totalRuntimeSum += Math.max(0.1, run.getRuntime());
 		
 		/*
 		 * Add data to the run List

@@ -15,6 +15,14 @@ public class RunObjectiveConverter implements IStringConverter<RunObjective> {
 			return RunObjective.valueOf(arg0.toUpperCase());
 		} catch(IllegalArgumentException e)
 		{
+			/**
+			 * Backwards Compatiblity
+			 */
+			if(arg0.toUpperCase().trim().equals("QUAL")) return RunObjective.QUALITY;
+			if(arg0.toUpperCase().trim().equals("SOLQUAL")) return RunObjective.QUALITY;
+			
+			
+			
 			throw new ParameterException("Illegal value specified for Run Objective ("  + arg0 + "), allowed values are: " + Arrays.toString(RunObjective.values()));
 		}
 	}

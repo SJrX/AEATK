@@ -10,6 +10,7 @@ import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration.StringFormat;
 import ca.ubc.cs.beta.aclib.exceptions.TrajectoryDivergenceException;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.AbstractTargetAlgorithmEvaluatorDecorator;
@@ -59,6 +60,18 @@ public class RunHashCodeVerifyingAlgorithmEvalutor extends AbstractTargetAlgorit
 		{
 			runNumber++;
 			int hashCode = run.hashCode();
+			/*
+			System.out.println("**********");
+			System.out.println(run.getRunConfig().toString());
+			System.out.println(run.getRunConfig().getParamConfiguration().getFormattedParamString(StringFormat.ARRAY_STRING_SYNTAX));
+			System.out.println(run.getRunConfig().getParamConfiguration().getFormattedParamString(StringFormat.ARRAY_STRING_SYNTAX).hashCode());
+			System.out.println(run.getRunConfig().hashCode());
+			System.out.println(run.getRunConfig().getParamConfiguration().hashCode());
+			System.out.println(run.getRunConfig().getParamConfiguration().getConfigurationSpace().hashCode());
+			
+			
+			System.out.println("**********");
+			*/
 			hashCode =  (hashCode == Integer.MIN_VALUE) ? 0 : hashCode;  
 			
 			hashCodesOfRuns = (31*hashCodesOfRuns + Math.abs( hashCode)% 32452867) % 32452867 	; //Some prime around 2^25 (to prevent overflows in computation)

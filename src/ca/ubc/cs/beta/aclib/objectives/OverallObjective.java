@@ -99,6 +99,8 @@ public enum OverallObjective {
 		{
 		case MEAN:
 		case GEOMEAN:
+		case MEDIAN:
+		case Q90:
 			
 			return 1;
 		case MEAN10:

@@ -1013,7 +1013,7 @@ public class ParamConfigurationSpace implements Serializable {
 							config.put(paramSplit[0].trim(),paramSplit[1].trim());
 						}
 					}
-	
+					
 					break;
 				case ARRAY_STRING_SYNTAX:
 					double[] valueArray = new double[numberOfParameters];

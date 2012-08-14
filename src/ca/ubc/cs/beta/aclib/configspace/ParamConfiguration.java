@@ -81,7 +81,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	 * 
 	 * Prior to a read if this is true, we will call cleanUp()
 	 */
-	private boolean isDirty; 
+	private boolean isDirty = true; 
 	
 	
 	/**
@@ -440,7 +440,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	@Override
 	public int hashCode()	
 	{ 
-		if(isDirty || hashSet)
+		if(isDirty || !hashSet)
 		{
 			if(isDirty) cleanUp();
 			
@@ -953,6 +953,15 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	public boolean isForbiddenParamConfiguration()
 	{
 		return configSpace.isForbiddenParamConfiguration(valueArray);
+	}
+
+
+	/**
+	 * Returns the configuration space for this configuartion
+	 * @return configSpace for this configuration
+	 */ 
+	public ParamConfigurationSpace getConfigurationSpace() {
+		return configSpace;
 	}
 
 

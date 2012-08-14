@@ -1,11 +1,13 @@
 package ca.ubc.cs.beta.aclib.misc.watch;
 
+import java.io.Serializable;
+
 /**
  * Allows measuring wallclock time between calls to {@link StopWatch#start()} and {@link StopWatch#stop()}
  * @author sjr
  *
  */
-public class StopWatch {
+public class StopWatch implements Serializable {
 	
 	private long startTime = -1;
 	private long endTime = Long.MAX_VALUE;

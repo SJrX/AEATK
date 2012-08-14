@@ -20,7 +20,7 @@ public enum RunResult {
 	/**
 	 * Signifies that the algorithm completed successfully (and optionally found the result was SATISFIABLE) 
 	 */
-	SAT(1, "SAT","OK"),
+	SAT(1, "SAT","OK","SATISFIABLE"),
 	
 	/**
 	 * Signifies that the algorithm completed successfully, and that the target algorithm result was UNSATISFIABLE.
@@ -29,26 +29,13 @@ public enum RunResult {
 	 * you should almost certainly report SAT when completed. 
 	 */
 	UNSAT(2),
-
 	
-	/**
-	 * Signifies that the algorithm completed but failed some check (for instance it reported the wrong result)
-	 * @deprecated this is not not implemented or supported by wrappers and will probably removed or documented.
-	 */
-	@Deprecated
-	WRONG(3, "WRONG", "WRONG ANSWER"),
 	
 	/**
 	 * Signifies that the algorithm did not complete and unexpectedly crashed or failed.
 	 */
 	CRASHED(-1),
-	
-	/**
-	 * Signifies that an algorithm execution completed successfully (a synonym of SAT)
-	 * @deprecated like warn this isn't currently implemented by anything and may be removed, do not use it.
-	 */
-	@Deprecated
-	OK(1),
+
 	
 	/**
 	 * Signifies not only that the algorithm failed unexpectedly but that it's probable that subsequent attempts are most likely going to fail also

@@ -234,6 +234,7 @@ public class ProblemInstanceHelper {
 		Map<String, Map<String, Double>> featuresMap = new LinkedHashMap<String, Map<String, Double>>();
 		
 		int numberOfFeatures = 0;
+		boolean numericFeatureNames = false;
 		if(featureFileName != null)
 		{
 			//=======Parse Features=====
@@ -248,6 +249,19 @@ public class ProblemInstanceHelper {
 			ConfigCSVFileHelper features = new ConfigCSVFileHelper(featureCSV.readAll(),1,1);
 			
 			numberOfFeatures = features.getNumberOfDataColumns();
+			int column=2;
+			for(String key : features.getDataKeyList())
+			{
+				try {
+					Double.valueOf(key);
+					numericFeatureNames = true;
+					logger.warn("Column {} of Feature file, seems to have a numeric name: {} . This most likely means that you are missing the header row in the feature file, but if nothing goes wrong this is still bad practice", column, key);
+					column++;
+				} catch(NumberFormatException e)
+				{
+					//This is what we want
+				}
+			}
 			logger.info("Feature File specifies: {} features for {} instances", numberOfFeatures, features.getNumberOfDataRows() );
 			
 			
@@ -392,7 +406,14 @@ public class ProblemInstanceHelper {
 				
 				if(features.size() != numberOfFeatures)
 				{
-					throw new ParameterException("Feature file : " + featureFileName + " contains " + features.size() + " for instance: " + instanceFile +  " but expected " + numberOfFeatures );
+					if(numericFeatureNames)
+					{
+						throw new ParameterException("Feature file : " + featureFileName + " is almost certainly missing a header row identifying each of the features in it. Otherwise there is a mismatch between the number of features we found for this instance and the number expected: " +  instanceFile + " found: " + features.size() + " but expected: " + numberOfFeatures );
+					} else
+					{
+						throw new ParameterException("Feature file : " + featureFileName + " contains " + features.size() + " for instance: " + instanceFile +  " but expected " + numberOfFeatures );
+					}
+					
 				}
 			} else
 			{	//No features loaded
