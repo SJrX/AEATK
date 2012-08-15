@@ -469,11 +469,10 @@ public class TAETestSet {
 	}
 
 	/**
-	 * This tests that we get a TargetAlgorithmAbortException if there is no matching output
-	 * 
+	 * Tests to see if we runs with no matching output get treated as CRASHED and logged correctly
 	 */
-	@Test(expected=TargetAlgorithmAbortException.class)
-	public void testAbortIfNoMatchingOutput()
+	@Test
+	public void testCrashIfNoMatchingOutput()
 	{
 		
 	
@@ -500,8 +499,13 @@ public class TAETestSet {
 		AlgorithmExecutionConfig execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500); 
 		
 		TargetAlgorithmEvaluator tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false);
-		tae.evaluateRun(runConfigs);
-				
+		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+		for(AlgorithmRun run : runs)
+		{
+			assertEquals(RunResult.CRASHED,run.getRunResult());
+		}
+			
+		
 	}
 	
 	@Test

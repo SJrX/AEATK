@@ -117,7 +117,8 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 			
 			if(!this.isRunCompleted())
 			{
-				this.setAbortResult("We did not successfully read anything from the wrapper");
+				this.setCrashResult("We did not successfully read anything from the wrapper");
+				log.error("We did not find anything in our target algorithm run output that matched our regex (i.e. We found nothing that looked like \"Result For ParamILS: x,x,x,x,x\", specifically the regex we were matching is: {} ", AUTOMATIC_CONFIGURATOR_RESULT_REGEX );
 			}
 			
 			
