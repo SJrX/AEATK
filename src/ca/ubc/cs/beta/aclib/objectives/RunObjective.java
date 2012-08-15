@@ -12,18 +12,20 @@ public enum RunObjective {
 	 * Uses the runtime
 	 */
 	RUNTIME,
+	
+	
 	/**
 	 * Use the runlength
 	 */
-	RUNLENGTH,
+	//RUNLENGTH,
 	/**
 	 * Not sure what this does (the manual does say) [NOT IMPLEMENTED]
 	 */
-	APPROX,
+	//APPROX,
 	/**
 	 * Use the speedup (NOT IMPLEMENTED)
 	 */
-	SPEEDUP,
+	//SPEEDUP,
 	
 	/**
 	 * Use the quality
@@ -53,7 +55,7 @@ public enum RunObjective {
 			}
 			
 			return (r.getRuntime());
-			
+		/*
 		case RUNLENGTH:
 			return r.getRunLength();
 		case APPROX:
@@ -66,7 +68,7 @@ public enum RunObjective {
 			instanceInfo = r.getRunConfig().getProblemInstanceSeedPair().getInstance().getInstanceSpecificInformation();
 			double originalSpeed = Double.parseDouble(instanceInfo);
 			return originalSpeed / r.getRuntime();
-
+		 */
 		case QUALITY:
 			return r.getQuality();
 			
@@ -82,6 +84,8 @@ public enum RunObjective {
 		{
 		case RUNTIME:
 		case QUALITY:
+			return;
+			/*
 		case RUNLENGTH:
 			return;
 			
@@ -95,7 +99,7 @@ public enum RunObjective {
 				throw new IllegalArgumentException(pi.getInstanceName() + " has an invalid instance specific information (expected integer)");
 			}
 			return;
-			
+		*/
 		default:
 			throw new UnsupportedOperationException(this.toString() + " Run Objective Not Implemented");
 		}

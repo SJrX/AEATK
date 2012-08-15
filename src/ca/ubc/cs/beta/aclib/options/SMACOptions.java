@@ -86,8 +86,8 @@ public class SMACOptions extends AbstractOptions {
 	@Parameter(names="--executionMode", description="Execution mode of the Automatic Configurator")
 	public ExecutionMode execMode = ExecutionMode.SMAC;
 
-	@Parameter(names="--adaptiveCapping", description="Enable Adaptive Capping")
-	public boolean adaptiveCapping = true;
+	@Parameter(names="--adaptiveCapping", description="Enable Adaptive Capping (Defaults to true when optimizing runtime, false otherwise)")
+	public Boolean adaptiveCapping = null;
 
 	@Parameter(names="--capSlack", description="Amount to scale computed cap time of challengers by", validateWith=ZeroInfinityOpenInterval.class)
 	public double capSlack = 1.3;

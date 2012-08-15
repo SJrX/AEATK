@@ -20,15 +20,13 @@ public enum OverallObjective {
 	/**
 	 * Median of the runs
 	 */
-	MEDIAN,
+	//MEDIAN,
 	/**
 	 * The 90th percentile of the runs
 	 */
-	Q90,
-	/**
-	 * Adjusted Mean (NOT IMPLEMENTED)
-	 */
-	ADJ_MEAN,
+	//Q90,
+
+	
 	/**
 	 * Penalized Mean of 1000 for runs that took too long
 	 */
@@ -36,11 +34,11 @@ public enum OverallObjective {
 	/**
 	 * Penalized Mean of 10 for runs that took too long
 	 */
-	MEAN10,
+	MEAN10;
 	/**
 	 * Geometric mean of the runs
 	 */
-	GEOMEAN;
+	//GEOMEAN;
 	
 	
 	
@@ -77,16 +75,15 @@ public enum OverallObjective {
 		case MEAN1000:
 			
 			return StatUtils.mean(values);
-		case MEDIAN:
+		
+		/*case MEDIAN:
 			return StatUtils.percentile(values, 0.5);
 		case Q90:
 			return StatUtils.percentile(values, 0.9);
-		case GEOMEAN:
-			return StatUtils.geometricMean(values);
-		case ADJ_MEAN:
-			
 		
-			
+		case GEOMEAN:
+			return StatUtils.geometricMean(values);		
+			*/
 		default:
 			throw new UnsupportedOperationException(this.toString() + " is not a supported aggregation method");
 		}
@@ -98,15 +95,16 @@ public enum OverallObjective {
 		switch(this)
 		{
 		case MEAN:
-		case GEOMEAN:
-		case MEDIAN:
-		case Q90:
+		//case GEOMEAN:
+		//case MEDIAN:
+		//case Q90:
 			
 			return 1;
 		case MEAN10:
 			return 10;
 		case MEAN1000:
 			return 1000;
+			
 		default: 
 			throw new UnsupportedOperationException(this.toString() + " is not a supported aggregation method");
 		}
