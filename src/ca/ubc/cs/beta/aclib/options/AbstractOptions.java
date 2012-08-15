@@ -76,6 +76,9 @@ public abstract class AbstractOptions {
 					} else if(obj instanceof Map)
 					{
 						line.append(obj.toString());
+					} else if(obj instanceof Boolean)
+					{
+						line.append(obj.toString());
 					}
 					else {
 						/*

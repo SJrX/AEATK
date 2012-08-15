@@ -501,6 +501,125 @@ public class TAETestSet {
 				
 	}
 	
+	@Test
+	public void testSatAliases()
+	{
+		AlgorithmExecutionConfig execConfig;
+		
+		ParamConfigurationSpace configSpace;
+		
+		
+		File paramFile = TestHelper.getTestFile("paramFiles/paramAliasEchoParamFile.txt");
+			configSpace = new ParamConfigurationSpace(paramFile);
+			
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(ParamAliasEchoExecutor.class.getCanonicalName());
+		
+		
+		
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
+			
+		tae = new AbortOnCrashTargetAlgorithmEvaluator(new CommandLineTargetAlgorithmEvaluator( execConfig, false));
+		SeedableRandomSingleton.reinit();
+		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
+		this.r = SeedableRandomSingleton.getRandom();
+		
+		
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+				
+		
+		
+		
+		for(String alias : RunResult.SAT.getAliases())
+		{
+			
+			ParamConfiguration config = configSpace.getRandomConfiguration();
+			config.put("solved", alias);
+			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
+			runConfigs.add(rc);
+		}
+		
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+		
+		
+		for(AlgorithmRun run : runs)
+		{
+			ParamConfiguration config  = run.getRunConfig().getParamConfiguration();
+			assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
+			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
+			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
+			assertDEquals(config.get("seed"), run.getResultSeed(), 0.1);
+			assertEquals(RunResult.getAutomaticConfiguratorResultForKey(config.get("solved")), RunResult.SAT);
+
+		}
+		
+	}
+	
+
+	@Test
+	public void testUnSatAliases()
+	{
+		AlgorithmExecutionConfig execConfig;
+		
+		ParamConfigurationSpace configSpace;
+		
+		
+		File paramFile = TestHelper.getTestFile("paramFiles/paramAliasEchoParamFile.txt");
+			configSpace = new ParamConfigurationSpace(paramFile);
+			
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(ParamAliasEchoExecutor.class.getCanonicalName());
+		
+		
+		
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
+			
+		tae = new AbortOnCrashTargetAlgorithmEvaluator(new CommandLineTargetAlgorithmEvaluator( execConfig, false));
+		SeedableRandomSingleton.reinit();
+		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
+		this.r = SeedableRandomSingleton.getRandom();
+		
+		
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+				
+		
+		
+		
+		for(String alias : RunResult.UNSAT.getAliases())
+		{
+			
+			ParamConfiguration config = configSpace.getRandomConfiguration();
+			config.put("solved", alias);
+			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
+			runConfigs.add(rc);
+		}
+		
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+		
+		
+		for(AlgorithmRun run : runs)
+		{
+			ParamConfiguration config  = run.getRunConfig().getParamConfiguration();
+			assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
+			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
+			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
+			assertDEquals(config.get("seed"), run.getResultSeed(), 0.1);
+			assertEquals(RunResult.getAutomaticConfiguratorResultForKey(config.get("solved")), RunResult.UNSAT);
+
+		}
+		
+	}
+	
 	
 	
 }

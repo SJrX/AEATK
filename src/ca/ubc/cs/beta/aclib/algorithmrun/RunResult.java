@@ -1,11 +1,15 @@
 package ca.ubc.cs.beta.aclib.algorithmrun;
 
 import java.util.Arrays;
+import java.util.Collections;
 import java.util.Set;
 import java.util.HashSet;
 
 /**
  * Enumeration that represents all possible legal values of an AlgorithmRun
+ * <p>
+ * <b>Note:</b> All aliases should be specified in upper case in the enum 
+ * declaration.
  * 
  * @see ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun
  *
@@ -20,7 +24,7 @@ public enum RunResult {
 	/**
 	 * Signifies that the algorithm completed successfully (and optionally found the result was SATISFIABLE) 
 	 */
-	SAT(1, "SAT","OK","SATISFIABLE"),
+	SAT(1, "SAT","SATISFIABLE"),
 	
 	/**
 	 * Signifies that the algorithm completed successfully, and that the target algorithm result was UNSATISFIABLE.
@@ -28,7 +32,7 @@ public enum RunResult {
 	 * <b>NOTE:</b> SAT & UNSAT are hold overs from SAT solvers, neither of these are error conditions. If you are not running a SAT solver
 	 * you should almost certainly report SAT when completed. 
 	 */
-	UNSAT(2),
+	UNSAT(2, "UNSAT", "UNSATISFIABLE"),
 	
 	
 	/**
@@ -81,6 +85,7 @@ public enum RunResult {
 		/*
 		 * Note this method could be faster if just built the map to begin with
 		 */
+		key = key.toUpperCase();
 		for(RunResult r : RunResult.values())
 		{
 			if(r.resultKey.contains(key))
@@ -131,6 +136,14 @@ public enum RunResult {
 	public boolean isSolved()
 	{
 		return this.resultCode == 1;
+	}
+
+	/**
+	 * Returns the aliases for this Run Result
+	 * @return a set containing all equivilant aliases for this result
+	 */
+	public Set<String> getAliases() {
+		return Collections.unmodifiableSet(this.resultKey);
 	}
 	
 	
