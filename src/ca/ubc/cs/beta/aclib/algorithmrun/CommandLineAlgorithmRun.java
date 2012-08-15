@@ -1,11 +1,17 @@
 package ca.ubc.cs.beta.aclib.algorithmrun;
 
+import java.awt.List;
 import java.io.File;
 
 import java.io.IOException;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
 import java.util.Queue;
 import java.util.Scanner;
+import java.util.SortedSet;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -240,22 +246,25 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 		if (matcher.find())
 		{
 			
-			String acExecResultString = line.substring(matcher.end()).trim();
-			
-			String[] results = acExecResultString.split(",");
-			for(int i=0; i < results.length; i++)
-			{
-				results[i] = results[i].trim();
-			}
-			
-			rawResultLine = acExecResultString;
-			
-			RunResult acResult =  RunResult.getAutomaticConfiguratorResultForKey(results[0]);
-			
-			
-			
+			String fullLine = line.trim();
 			try
 			{
+			
+				String acExecResultString = line.substring(matcher.end()).trim();
+				
+				String[] results = acExecResultString.split(",");
+				for(int i=0; i < results.length; i++)
+				{
+					results[i] = results[i].trim();
+				}
+				
+				rawResultLine = acExecResultString;
+				
+				RunResult acResult =  RunResult.getAutomaticConfiguratorResultForKey(results[0]);
+				
+
+		
+			
 				int solved = acResult.getResultCode();
 				String runtime = results[1];
 				String runLength = results[2];
@@ -274,11 +283,40 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 				
 				this.setResult(acResult, runtimeD, runLengthD, qualityD, resultSeedD, rawResultLine);
 			} catch(NumberFormatException e)
-			{
-				this.setCrashResult(rawResultLine + "\n" + e.getMessage());
+			{	 //Numeric value is probably at fault
+				this.setCrashResult("Output:" + fullLine + "\n Exception Message: " + e.getMessage() + "\n Name:" + e.getClass().getCanonicalName());
+				Object[] args = { getTargetAlgorithmExecutionCommand(execConfig, runConfig), fullLine};
+				log.error("Target Algorithm Call failed:{}\nResponse:{}\nComment: Most likely one of the values of runLength, runtime, quality could not be parsed as a Double, or the seed could not be parsed as a valid long", args);
+				log.error("Exception that occured trying to parse result was: ", e);
+				log.error("Run will be counted as {}", RunResult.CRASHED);
+					
+			} catch(IllegalArgumentException e)
+			{ 	//The RunResult probably doesn't match anything
+				this.setCrashResult("Output:" + fullLine + "\n Exception Message: " + e.getMessage() + "\n Name:" + e.getClass().getCanonicalName());
+				
+				
+				ArrayList<String> validValues = new ArrayList<String>();
+				for(RunResult r : RunResult.values())
+				{
+					validValues.addAll(r.getAliases());
+				}
+				Collections.sort(validValues);
+				
+				String[] validArgs = validValues.toArray(new String[0]);
+				
+				
+				Object[] args = { getTargetAlgorithmExecutionCommand(execConfig, runConfig), fullLine, Arrays.toString(validArgs)};
+				log.error("Target Algorithm Call failed:{}\nResponse:{}\nComment: Most likely the Algorithm did not report a result string as one of: {}", args);
+				log.error("Exception that occured trying to parse result was: ", e);
+				log.error("Run will be counted as {}", RunResult.CRASHED);
+				
 			} catch(ArrayIndexOutOfBoundsException e)
-			{
-				this.setCrashResult(rawResultLine + "\n Could not parse result " + e.getMessage());
+			{	//There aren't enough commas in the output
+				this.setCrashResult("Output:" + fullLine + "\n Exception Message: " + e.getMessage() + "\n Name:" + e.getClass().getCanonicalName());
+				Object[] args = { getTargetAlgorithmExecutionCommand(execConfig, runConfig), fullLine};
+				log.error("Target Algorithm Call failed:{}\nResponse:{}\nComment: Most likely the algorithm did not specify all of the required outputs that is <solved>,<runtime>,<runlength>,<quality>,<seed>", args);
+				log.error("Exception that occured trying to parse result was: ", e);
+				log.error("Run will be counted as {}", RunResult.CRASHED);
 			}
 			
 			

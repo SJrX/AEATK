@@ -2,7 +2,10 @@ package ca.ubc.cs.beta.targetalgorithmevaluator;
 
 import static org.junit.Assert.*;
 
+import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
@@ -620,6 +623,236 @@ public class TAETestSet {
 		
 	}
 	
+	
+
+	@Test
+	/**
+	 * This tests to ensure that the runs that don't have a Run Result are treated as crashed and the right error message appears
+	 */
+	public void testRegexMatchButNoRunResultOutput()
+	{
+		AlgorithmExecutionConfig execConfig;
+		
+		ParamConfigurationSpace configSpace;
+		
+		
+		File paramFile = TestHelper.getTestFile("paramFiles/paramAliasEchoParamFile.txt");
+			configSpace = new ParamConfigurationSpace(paramFile);
+			
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(RegexMatchingButIncompleteOutputExecutor.class.getCanonicalName());
+		
+		
+		
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
+			
+		tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false);
+		SeedableRandomSingleton.reinit();
+		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
+		this.r = SeedableRandomSingleton.getRandom();
+		
+		
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+				
+		
+		
+		
+		for(String alias : RunResult.UNSAT.getAliases())
+		{
+			
+			ParamConfiguration config = configSpace.getRandomConfiguration();
+			config.put("solved", alias);
+			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
+			runConfigs.add(rc);
+		}
+		
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		
+		
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		PrintStream pw = new PrintStream(bout);
+		
+		PrintStream oldOut = System.out;
+		
+		System.setOut(pw);
+		List<AlgorithmRun> runs = new ArrayList<AlgorithmRun>();
+		try {
+		runs = tae.evaluateRun(runConfigs);
+		} finally
+		{
+			System.setOut(oldOut);
+			System.out.println(bout.toString());
+			pw.close();
+			
+		}
+		
+		assertEquals(runs.size(), runConfigs.size());
+		assertTrue(bout.toString().contains("Most likely the Algorithm did not report a result string as one of"));
+		
+		
+		for(AlgorithmRun run : runs)
+		{
+			assertEquals( RunResult.CRASHED, run.getRunResult());
+		}
+		
+	}
+	
+
+	@Test
+	/**
+	 * This tests to ensure that the runs that don't have a Run Result are treated as crashed and the right error message appears
+	 */
+	public void testRegexMatchButInvalidNumber()
+	{
+		AlgorithmExecutionConfig execConfig;
+		
+		ParamConfigurationSpace configSpace;
+		
+		
+		File paramFile = TestHelper.getTestFile("paramFiles/paramAliasEchoParamFile.txt");
+			configSpace = new ParamConfigurationSpace(paramFile);
+			
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(RegexMatchingButInvalidNumberOutputExecutor.class.getCanonicalName());
+		
+		
+		
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
+			
+		tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false);
+		SeedableRandomSingleton.reinit();
+		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
+		this.r = SeedableRandomSingleton.getRandom();
+		
+		
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+				
+		
+		
+		
+		for(String alias : RunResult.UNSAT.getAliases())
+		{
+			
+			ParamConfiguration config = configSpace.getRandomConfiguration();
+			config.put("solved", alias);
+			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
+			runConfigs.add(rc);
+		}
+		
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		
+		
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		PrintStream pw = new PrintStream(bout);
+		
+		PrintStream oldOut = System.out;
+		
+		System.setOut(pw);
+		List<AlgorithmRun> runs = new ArrayList<AlgorithmRun>();
+		try {
+		runs = tae.evaluateRun(runConfigs);
+		} finally
+		{
+			System.setOut(oldOut);
+			System.out.println(bout.toString());
+			pw.close();
+			
+		}
+		
+		assertEquals(runs.size(), runConfigs.size());
+		
+		
+		
+		for(AlgorithmRun run : runs)
+		{
+			assertEquals(RunResult.CRASHED, run.getRunResult());
+		}
+		
+		assertTrue(bout.toString().contains("Most likely one of the values of runLength, runtime, quality could not be parsed as a Double, or the seed could not be parsed as a valid long"));
+	}
+	
+	@Test
+	/**
+	 * This tests to ensure that the runs that don't have a Run Result are treated as crashed and the right error message appears
+	 */
+	public void testRegexMatchButMissingCommas()
+	{
+		AlgorithmExecutionConfig execConfig;
+		
+		ParamConfigurationSpace configSpace;
+		
+		
+		File paramFile = TestHelper.getTestFile("paramFiles/paramAliasEchoParamFile.txt");
+			configSpace = new ParamConfigurationSpace(paramFile);
+			
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(RegexMatchingButMissingOutputExecutor.class.getCanonicalName());
+		
+		
+		
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
+			
+		tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false);
+		SeedableRandomSingleton.reinit();
+		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
+		this.r = SeedableRandomSingleton.getRandom();
+		
+		
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+				
+		
+		
+		
+		for(String alias : RunResult.UNSAT.getAliases())
+		{
+			
+			ParamConfiguration config = configSpace.getRandomConfiguration();
+			config.put("solved", alias);
+			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
+			runConfigs.add(rc);
+		}
+		
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		
+		
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		PrintStream pw = new PrintStream(bout);
+		
+		PrintStream oldOut = System.out;
+		
+		System.setOut(pw);
+		List<AlgorithmRun> runs = new ArrayList<AlgorithmRun>();
+		try {
+		runs = tae.evaluateRun(runConfigs);
+		} finally
+		{
+			System.setOut(oldOut);
+			System.out.println(bout.toString());
+			pw.close();
+			
+		}
+		
+		assertEquals(runs.size(), runConfigs.size());
+		
+		for(AlgorithmRun run : runs)
+		{
+			assertEquals( RunResult.CRASHED, run.getRunResult());
+		}
+		
+		assertTrue(bout.toString().contains("Most likely the algorithm did not specify all of the required outputs that is <solved>,<runtime>,<runlength>,<quality>,<seed>"));
+	}
 	
 	
 }
