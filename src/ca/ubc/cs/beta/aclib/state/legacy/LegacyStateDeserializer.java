@@ -390,18 +390,13 @@ public class LegacyStateDeserializer implements StateDeserializer {
 						}
 						
 						
-						int runLength = -1;						
+						double runLength = -1;						
 						try {
-							runLength = Integer.valueOf(runHistoryLine[8]); 
+							runLength = Double.valueOf(runHistoryLine[8].trim().replaceAll("Inf$", "Infinity"));
 						} catch(NumberFormatException e)
 						{
-							runLength = Double.valueOf(runHistoryLine[8].trim().replaceAll("Inf$", "Infinity")).intValue();
-							if(!runLengthErrorLogged)
-							{
-								log.warn("RunLength (Column 9) value specified in imprecise format on line {} contents: {}", i,  runHistoryLine);
-								runLengthErrorLogged = true;
-							}
-							
+						
+							throw new StateSerializationException("Encountered an Illegal Runlength Value (Column 9) on line: " + Arrays.toString(runHistoryLine));
 						}
 						
 						
@@ -416,6 +411,11 @@ public class LegacyStateDeserializer implements StateDeserializer {
 						}
 						
 					
+						String additionalRunData = "";
+						if(runHistoryLine.length >= 15)
+						{
+							additionalRunData = runHistoryLine[14].trim();
+						}
 						double quality =  (double) Double.valueOf(runHistoryLine[10].trim().replaceAll("Inf$", "Infinity"));
 						int runIteration = Integer.valueOf(runHistoryLine[LegacyStateDeserializer.RUN_ITERATION_INDEX]);
 
@@ -468,6 +468,11 @@ public class LegacyStateDeserializer implements StateDeserializer {
 						resultLine.append(runLength).append(", ");
 						resultLine.append(quality).append(", ");
 						resultLine.append(seed);
+						
+						if(additionalRunData.length() > 0)
+						{
+							resultLine.append(",").append(additionalRunData);
+						}
 						
 						AlgorithmRun run = new ExistingAlgorithmRun(execConfig, runConfig, resultLine.toString());
 						

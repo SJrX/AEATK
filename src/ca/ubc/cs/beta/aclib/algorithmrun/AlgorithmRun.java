@@ -92,6 +92,16 @@ public interface AlgorithmRun extends Runnable, Serializable,  Callable<Object> 
 	
 	
 	/**
+	 * Returns a (comma free) String from the algorithm run with additional data
+	 * 
+	 * This data generally has no meaning for SMAC but should be saved and restored in the run history file
+	 * 
+	 * @return a string (possibly empty but never null) that has the additional run data in it. (This string will also generally be trimed())
+	 * 
+	 */
+	public String getAdditionalRunData(); 
+	
+	/**
 	 * Runs this AlgorithmRun
 	 * 
 	 * Subsequent calls to this should be noop, and are not error conditions.
@@ -149,5 +159,7 @@ public interface AlgorithmRun extends Runnable, Serializable,  Callable<Object> 
 	 * @return amount of time in seconds the algorithm ran for in seconds
 	 */
 	public double getWallclockExecutionTime();
+	
+	
 
 }

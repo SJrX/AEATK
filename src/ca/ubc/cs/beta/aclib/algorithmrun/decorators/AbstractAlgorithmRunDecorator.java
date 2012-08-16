@@ -101,6 +101,12 @@ public class AbstractAlgorithmRunDecorator implements AlgorithmRun {
 	public double getWallclockExecutionTime() {
 		return wrappedRun.getWallclockExecutionTime();
 	}
+
+	@Override
+	public String getAdditionalRunData() {
+
+		return wrappedRun.getAdditionalRunData();
+	}
 	
 
 	

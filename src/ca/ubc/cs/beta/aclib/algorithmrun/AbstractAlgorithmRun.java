@@ -29,7 +29,7 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 	private double runtime;
 	private double runLength;
 	private double quality;
-	private  long resultSeed; 
+	private long resultSeed; 
 	
 	/**
 	 * Result line reported by the target algorithm (for debug purposes only), 
@@ -63,17 +63,21 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 	 */
 	private	StopWatch wallClockTimer = new StopWatch();
 	
-	
+	/**
+	 * Stores additional run data
+	 */
+	private String additionalRunData = "";
 	/**
 	 * Sets the values for this Algorithm Run
-	 * @param acResult
-	 * @param runtime
-	 * @param runLength
-	 * @param quality
-	 * @param resultSeed
-	 * @param rawResultLine
+	 * @param acResult					The result of the Run
+	 * @param runtime					Reported runtime of the run
+	 * @param runLength					Reported runlength of the run
+	 * @param quality					Reported quality of the run
+	 * @param resultSeed				Reported seed of the run
+	 * @param rawResultLine				The Raw result line we got
+	 * @param additionalRunData			Additional Run Data
 	 */
-	protected synchronized void setResult(RunResult acResult, double runtime, double runLength, double quality, long resultSeed, String rawResultLine)
+	protected synchronized void setResult(RunResult acResult, double runtime, double runLength, double quality, long resultSeed, String rawResultLine, String additionalRunData)
 	{
 		
 		this.acResult = acResult;
@@ -82,6 +86,12 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 		this.quality = quality;
 		this.resultSeed = resultSeed;
 		this.resultLine =  acResult.name() + ", " + runtime + ", " + runLength + ", " + quality + ", " + resultSeed;
+		if(additionalRunData.trim().length() > 0)
+		{
+			this.resultLine += "," + additionalRunData;
+			this.additionalRunData = additionalRunData;
+		}
+		
 		this.rawResultLine = rawResultLine;
 		this.runResultWellFormed = true;
 		this.runCompleted = true;
@@ -93,7 +103,7 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 	 */
 	protected void setAbortResult(String rawResultLine)
 	{
-		this.setResult(RunResult.ABORT, runConfig.getCutoffTime(), 0, 0, runConfig.getProblemInstanceSeedPair().getSeed(), rawResultLine);
+		this.setResult(RunResult.ABORT, runConfig.getCutoffTime(), 0, 0, runConfig.getProblemInstanceSeedPair().getSeed(), rawResultLine, "");
 	}
 	
 	/**
@@ -102,7 +112,7 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 	 */
 	protected void setCrashResult(String rawResultLine)
 	{
-		this.setResult(RunResult.CRASHED, runConfig.getCutoffTime(), 0, 0, runConfig.getProblemInstanceSeedPair().getSeed(), rawResultLine);
+		this.setResult(RunResult.CRASHED, runConfig.getCutoffTime(), 0, 0, runConfig.getProblemInstanceSeedPair().getSeed(), rawResultLine,"");
 	}
 	
 
@@ -127,8 +137,9 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 	 * @param resultLine				well formatted result line 
 	 * @param rawResultLine				raw result line
 	 * @param runResultWellFormed		whether this run has well formed output
+	 * @param additionalRunData			additional run data from this run
 	 */
-	protected synchronized void setResult(RunResult acResult, double runtime, double runLength, double quality, long resultSeed, String resultLine, String rawResultLine, boolean runResultWellFormed)
+	protected synchronized void setResult(RunResult acResult, double runtime, double runLength, double quality, long resultSeed, String resultLine, String rawResultLine, boolean runResultWellFormed, String additionalRunData)
 	{
 		this.acResult = acResult;
 		this.runtime = runtime;
@@ -139,6 +150,7 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 		this.rawResultLine = rawResultLine;
 		this.runResultWellFormed = runResultWellFormed;
 		this.runCompleted = true;
+		this.additionalRunData = additionalRunData;
 	}
 	
 	
@@ -275,6 +287,7 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 		sb.append("\nRawResultLine:" + rawResultLine);
 		sb.append("\nrunCompleted:" + runCompleted);
 		sb.append("\nacResult:" + acResult);
+		sb.append("\nAdditional Run Data:" + additionalRunData);
 		sb.append("\nClass:" + this.getClass().getSimpleName());
 		return sb.toString();
 		
@@ -295,6 +308,11 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 		return wallClockTime;
 	}
 	
+	@Override
+	public String getAdditionalRunData() {
+	
+		return additionalRunData;
+	}
 	
 	
 	

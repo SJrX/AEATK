@@ -79,7 +79,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 			log.info("Cap time is negative for {} setting run as timedout", runConfig);
 			String rawResultLine = "[DIDN'T BOTHER TO RUN ALGORITHM AS THE CAPTIME IS NOT POSITIVE NEGATIVE]";
 			
-			this.setResult(RunResult.TIMEOUT, 0, 0, 0, runConfig.getProblemInstanceSeedPair().getSeed(), rawResultLine);
+			this.setResult(RunResult.TIMEOUT, 0, 0, 0, runConfig.getProblemInstanceSeedPair().getSeed(), rawResultLine,"");
 		}
 	}
 	
@@ -248,6 +248,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 		{
 			
 			String fullLine = line.trim();
+			String additionalRunData = "";
 			try
 			{
 			
@@ -265,13 +266,24 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 				
 
 		
+				
+				
 			
 				int solved = acResult.getResultCode();
-				String runtime = results[1];
-				String runLength = results[2];
-				String bestSolution = results[3];
-				String seed = results[4];
+				String runtime = results[1].trim();
+				String runLength = results[2].trim();
+				String bestSolution = results[3].trim();
+				String seed = results[4].trim();
+				if(results.length <= 5)
+				{ //This is a good case
 
+				} else if(results.length == 6)
+				{
+					additionalRunData = results[5].trim();
+				} else
+				{
+					log.warn("Too many fields were encounted (expected 5 or 6) when parsing line (Additional Run Data cannot have commas): {}\n ",line);
+				}
 				
 				double runLengthD = Double.valueOf(runLength);
 				double runtimeD = Double.valueOf(runtime);
@@ -282,7 +294,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 					log.info("Algorithm Reported: {}" , line);
 				}
 				
-				this.setResult(acResult, runtimeD, runLengthD, qualityD, resultSeedD, rawResultLine);
+				this.setResult(acResult, runtimeD, runLengthD, qualityD, resultSeedD, rawResultLine, additionalRunData);
 			} catch(NumberFormatException e)
 			{	 //Numeric value is probably at fault
 				this.setCrashResult("Output:" + fullLine + "\n Exception Message: " + e.getMessage() + "\n Name:" + e.getClass().getCanonicalName());
@@ -323,6 +335,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 			
 		}
 	}
+
 	
 	
 	

@@ -47,27 +47,26 @@ public class TAETestSet {
 	{
 		File paramFile = TestHelper.getTestFile("paramFiles/paramEchoParamFile.txt");
 		configSpace = new ParamConfigurationSpace(paramFile);
-		
-		StringBuilder b = new StringBuilder();
-		b.append("java -cp ");
-		b.append(System.getProperty("java.class.path"));
-		b.append(" ");
-		b.append(ParamEchoExecutor.class.getCanonicalName());
-		
-		
-		
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
-		
 	}
 	Random r;
 	
 	@Before
 	public void beforeTest()
 	{
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(ParamEchoExecutor.class.getCanonicalName());
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
+		
 		tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false);
 		SeedableRandomSingleton.reinit();
 		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
 		this.r = SeedableRandomSingleton.getRandom();
+		
+		
+		
 	}
 	
 	/**
@@ -109,9 +108,80 @@ public class TAETestSet {
 			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
 			assertDEquals(config.get("seed"), run.getResultSeed(), 0.1);
 			assertEquals(config.get("solved"), run.getRunResult().name());
+			//This executor should not have any additional run data
+			assertEquals("",run.getAdditionalRunData());
 
 		}
 	}
+	
+	
+	/**
+	 * This just tests to see if ParamEchoExecutor does what it should
+	 */
+	@Test
+	public void testMirrorWithAdditionalData()
+	{
+		
+	
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(ParamEchoExecutorWithGibberish.class.getCanonicalName());
+		
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
+		
+		
+		tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false);
+		SeedableRandomSingleton.reinit();
+		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
+		this.r = SeedableRandomSingleton.getRandom();
+		
+		
+		configSpace.setPRNG(r);
+		
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration();
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
+				runConfigs.add(rc);
+			}
+		}
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+		
+		int i=0; 
+		for(AlgorithmRun run : runs)
+		{
+			ParamConfiguration config  = run.getRunConfig().getParamConfiguration();
+			assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
+			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
+			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
+			assertDEquals(config.get("seed"), run.getResultSeed(), 0.1);
+			assertEquals(config.get("solved"), run.getRunResult().name());
+			//This executor should not have any additional run data
+			
+			try {
+				assertTrue(!run.getAdditionalRunData().equals("")); 
+			} catch(AssertionError e)
+			{
+				System.out.println(run);
+				throw e;
+			}
+			
+
+		}
+	}
+	
 	
 	/**
 	 * Tests that the runCount actually increments over time
@@ -562,6 +632,7 @@ public class TAETestSet {
 			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
 			assertDEquals(config.get("seed"), run.getResultSeed(), 0.1);
 			assertEquals(RunResult.getAutomaticConfiguratorResultForKey(config.get("solved")), RunResult.SAT);
+			assertEquals("",run.getAdditionalRunData()); //No Additional Run Data Expected
 
 		}
 		
@@ -622,6 +693,8 @@ public class TAETestSet {
 			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
 			assertDEquals(config.get("seed"), run.getResultSeed(), 0.1);
 			assertEquals(RunResult.getAutomaticConfiguratorResultForKey(config.get("solved")), RunResult.UNSAT);
+			
+			assertEquals("",run.getAdditionalRunData()); //No Additional Run Data Expected
 
 		}
 		

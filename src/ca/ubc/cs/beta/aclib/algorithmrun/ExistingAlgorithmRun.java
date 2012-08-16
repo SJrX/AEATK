@@ -30,7 +30,7 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 		super(execConfig, runConfig);
 		//this.rawResultLine = resultLine;
 		//this.runCompleted = true;
-		String[] resultLine = result.split(", ");
+		String[] resultLine = result.split(",");
 		
 		try
 		{
@@ -43,12 +43,18 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 			}
 			
 			
-			double runtime = Double.valueOf(resultLine[1]);
-			double runLength = Double.valueOf(resultLine[2]);
-			double quality = Double.valueOf(resultLine[3]);
-			long resultSeed = Long.valueOf(resultLine[4]);
+			double runtime = Double.valueOf(resultLine[1].trim());
+			double runLength = Double.valueOf(resultLine[2].trim());
+			double quality = Double.valueOf(resultLine[3].trim());
+			long resultSeed = Long.valueOf(resultLine[4].trim());
+			String additionalRunData = "";
+			if(resultLine.length == 6)
+			{
+				additionalRunData = resultLine[5].trim();
+			}
 			
-			this.setResult(acResult, runtime, runLength, quality, resultSeed, result);
+			
+			this.setResult(acResult, runtime, runLength, quality, resultSeed, result, additionalRunData);
 			
 			
 		} catch(ArrayIndexOutOfBoundsException e)
@@ -65,7 +71,7 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 			Object[] args = { execConfig, runConfig, result} ;
 			log.info("Malformed Run Result for Execution (NumberFormatException): {}, Instance: {}, Result: {}", args);
 			log.info("Exception:",e);
-			this.setAbortResult(e.getMessage());
+			this.setAbortResult( e.getMessage());
 			
 			
 		}
