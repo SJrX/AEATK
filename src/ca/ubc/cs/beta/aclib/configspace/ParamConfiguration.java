@@ -572,7 +572,9 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	
 	
 	/**
-	 * Stores information about the various string formats we support 
+	 * Stores information about the various string formats we support
+	 * <p>
+	 * <b>Note:</b> Only some of these use the preKey, keyVal seperator, and glue 
 	 */
 	public enum StringFormat
 	{
@@ -592,6 +594,11 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 			 * Stores a number and colon before an entry of <code>STATEFILE_SYNTAX</code>. Used only for deserializing
 			 */
 			STATEFILE_SYNTAX_WITH_INDEX(" ", "=","'",",", false),
+			/**
+			 * Stores in a name='value',name='value'... format [removing inactive parameters]
+			 */
+			STATEFILE_SYNTAX_NO_INACTIVE(" ", "=" , "'" , ",",true),
+			
 			/**
 			 * Uses a -Pname=value -Pname=value -Pname=value format
 			 */
@@ -620,7 +627,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 			 * Stores the values as an array (value array syntax). This format is non human-readable and fragile (hides Inactive)
 			 * All values are spaced to take 15 characters
 			 */
-			FIXED_WIDTH_ARRAY_STRING_MASK_INACTIVE_SYNTAX("","","","", true);
+			FIXED_WIDTH_ARRAY_STRING_MASK_INACTIVE_SYNTAX("","","","", true), ;
 			
 			
 			
