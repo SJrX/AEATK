@@ -10,7 +10,7 @@ import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.CommandLineTargetAlgorithmEvaluator;
 
 /**
- * Factory that creates various runners
+ * Factory that creates various Algorithm Runners for things that request it.
  * 
  * </b>NOTE:</b> This factory is probably unnecessary, originally it was meant to do more, but things got side tracked.
  * @see CommandLineTargetAlgorithmEvaluator
@@ -19,6 +19,24 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.CommandLineTargetAlgorithmE
  */
 public class AutomaticConfiguratorFactory {
 
+	
+	private static int maxThreads = Runtime.getRuntime().availableProcessors();
+	
+	/**
+	 * Sets the maximum number of threads (defaults to the number of available processors)
+	 * <p>
+	 * <b>Note:</b> This method was only added to aid in Unit testing and speeding up some dummy
+	 * algorithm runs. This mechanism in general does not work and should be avoided, if other TargetAlgorithmEvaluators
+	 * need more control over this, that interface should be refactored.
+	 *
+	 * @param threads that can be executed directly
+	 * @deprecated
+	 */
+	public static void setMaximumNumberOfThreads(int threads)
+	{
+		maxThreads = threads;
+	}
+	
 	private static Logger log = LoggerFactory.getLogger(AutomaticConfiguratorFactory.class);
 	/**
 	 * Returns an AlgorithmRunner that executes all requests serially
@@ -43,7 +61,7 @@ public class AutomaticConfiguratorFactory {
 		{
 			return getSingleThreadedAlgorithmRunner(execConfig, runConfigs);
 		}
-		return getConcurrentAlgorithmRunner(execConfig, runConfigs, Runtime.getRuntime().availableProcessors());
+		return getConcurrentAlgorithmRunner(execConfig, runConfigs, maxThreads);
 	}
 	
 	/**

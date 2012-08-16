@@ -112,6 +112,28 @@ public class LegacyStateSerializer implements StateSerializer {
 			i=0;
 			double cumulativeSum = 0;
 			
+			runResults.append(LegacyStateFactory.RUN_NUMBER_HEADING).append(","); //0
+			runResults.append("Run History Configuration ID").append(","); //1
+			runResults.append("Instance ID").append(","); //2
+			runResults.append("Response Value (y)").append(","); //3
+			runResults.append("Censored?").append(","); //4
+			runResults.append("Cutoff Time Used").append(","); //5
+			runResults.append("Seed").append(","); //6
+			runResults.append("Runtime").append(","); //7
+			runResults.append("Run Length").append(","); //8
+			runResults.append("Run Result Code").append(","); //9
+			runResults.append("Run Quality").append(","); //10
+			runResults.append("SMAC Iteration").append(","); //11
+			runResults.append("SMAC Cumulative Runtime").append(","); //12
+			runResults.append("Run Result").append(","); //13
+			runResults.append("Additional Algorithm Run Data").append(","); //14
+			runResults.append("\n");
+			
+			
+			
+			
+			
+			
 			for(RunData runData: runHistory.getAlgorithmRunData())
 			{
 				i++;
@@ -136,11 +158,13 @@ public class LegacyStateSerializer implements StateSerializer {
 				runResults.append(run.getResultSeed()).append(","); //6
 				runResults.append(run.getRuntime()).append(","); //7
 				runResults.append(run.getRunLength()).append(","); //8
-				runResults.append((run.getRunResult().isSolved() ? 1 : 0) ).append(","); //9
+				runResults.append(String.valueOf(run.getRunResult().getResultCode())).append(","); //9
 				runResults.append(run.getQuality()).append(","); //10
 				runResults.append(iteration).append(","); //11
-				cumulativeSum += run.getRuntime(); //12
-				runResults.append(cumulativeSum).append(","); //13
+				cumulativeSum += run.getRuntime(); 
+				runResults.append(cumulativeSum).append(","); //12
+				runResults.append(run.getRunResult().name()).append(","); //13
+				runResults.append(",");//14 (Not Implemented Currently)
 				runResults.append("\n");
 			}
 			
@@ -227,7 +251,7 @@ public class LegacyStateSerializer implements StateSerializer {
 			oWriter.writeObject(incumbent.getFormattedParamString(StringFormat.STATEFILE_SYNTAX));
 		} else
 		{
-			oWriter.write(null);
+			oWriter.writeObject(null);
 		}
 		oWriter.close();
 	

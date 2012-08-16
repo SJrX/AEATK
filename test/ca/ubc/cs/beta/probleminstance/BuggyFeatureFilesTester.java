@@ -143,30 +143,39 @@ public class BuggyFeatureFilesTester {
 			String output;
 			try {
 				
-			ProblemInstanceHelper.getInstances(f,instanceFilesRoot + File.separator + ((checkOnDisk) ? "instances/":"no-instances/"), feature, !checkOnDisk);
+			try {
+				ProblemInstanceHelper.getInstances(f,instanceFilesRoot + File.separator + ((checkOnDisk) ? "instances/":"no-instances/"), feature, !checkOnDisk);
+			} catch(ParameterException e)
+			{
+				System.out.println(e.getMessage());
+				throw e;
+			}
+			
 			} finally
 			{
 				output = bout.toString();
 				System.setOut(old);
 				System.out.println(output);
+				
+				
+				if(output.contains("but the instance Features don't match"))
+				{
+					fail("Instances didn't match up");
+				} else if(output.contains("ERROR"))
+				{
+					fail("Error detected");
+					
+				} else if(output.contains("feature file seems to have a numeric name"))
+				{
+					
+				} else
+				{
+					fail("No matching output");
+				}
 
 			}
 			
-			
-			if(output.contains("but the instance Features don't match"))
-			{
-				fail("Instances didn't match up");
-			} else if(output.contains("ERROR"))
-			{
-				fail("Error detected");
-				
-			} else if(output.contains("Instances loaded from file named:"))
-			{
-				//No matching output
-			} else
-			{
-				fail("No matching output");
-			}
+		
 			
 				//ProblemInstanceHelper.getInstances(null, null,f.getAbsolutePath(), false);
 		

@@ -322,13 +322,24 @@ public class LegacyStateDeserializer implements StateDeserializer {
 				
 				while((runHistoryLine = runlist.readNext()) != null)
 				{
+					
+					
 					i++;
 					try {
 						//The magic constants here are basically from LegacyStateSerializer
 						//Perhaps that should be refactored as this is fragile
 						
-						//Don't need cumulative sum NOR run number (index 0 and 12).
+						//Don't need cumulative sum NOR run number (12 and 0).
+						//Columns 13 (Run Result) and 14 (Algorithm Meta Data) may not appear
+						
+						
+						
+						if(runHistoryLine[0].trim().equals(LegacyStateFactory.RUN_NUMBER_HEADING)) continue;
+						
+						
+						
 						int thetaIdx = Integer.valueOf(runHistoryLine[1]);
+						
 						int instanceIdx = Integer.valueOf(runHistoryLine[2]);
 						
 						
@@ -346,7 +357,9 @@ public class LegacyStateDeserializer implements StateDeserializer {
 						boolean isCensored = ((runHistoryLine[4].trim().equals("0") ? false : true));
 						
 						double cutOffTime = Double.valueOf(runHistoryLine[5]);
-						
+
+						//Try to parse the seed as a long, MATLAB stores seeds as double and these are lossy.
+						//Infinite and NaN seeds are just invalid
 						long seed = -1;
 						try {
 							seed = Long.valueOf(runHistoryLine[6]);
@@ -367,15 +380,17 @@ public class LegacyStateDeserializer implements StateDeserializer {
 							}
 							
 						}
-						double runtime = Double.valueOf(runHistoryLine[7].trim().replaceAll("Inf$", "Infinity"));
 						
+					
+						//Handles some MATLAB Compatibility issues
+						double runtime = Double.valueOf(runHistoryLine[7].trim().replaceAll("Inf$", "Infinity"));
 						if(Double.isNaN(runtime) || Double.isInfinite(runtime))
 						{
 							throw new StateSerializationException("Encountered an Illegal Runtime value (Infinity or NaN) (Column 8) on line: " + Arrays.toString(runHistoryLine));
 						}
 						
-						int runLength = -1;
 						
+						int runLength = -1;						
 						try {
 							runLength = Integer.valueOf(runHistoryLine[8]); 
 						} catch(NumberFormatException e)
@@ -389,7 +404,18 @@ public class LegacyStateDeserializer implements StateDeserializer {
 							
 						}
 						
-						RunResult runResult  = (Integer.valueOf(runHistoryLine[9]) == 1) ? RunResult.SAT : RunResult.TIMEOUT;
+						
+						RunResult runResult;
+						if(runHistoryLine.length >= 14 )
+						{
+							//Index 13 should exist which stores a nicer format
+							runResult = RunResult.getAutomaticConfiguratorResultForKey(runHistoryLine[13]);
+						} else
+						{
+							 runResult  =  RunResult.getAutomaticConfiguratorResultForCode(Integer.valueOf(runHistoryLine[9]));
+						}
+						
+					
 						double quality =  (double) Double.valueOf(runHistoryLine[10].trim().replaceAll("Inf$", "Infinity"));
 						int runIteration = Integer.valueOf(runHistoryLine[LegacyStateDeserializer.RUN_ITERATION_INDEX]);
 
