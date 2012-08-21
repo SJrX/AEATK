@@ -21,8 +21,12 @@
 			<include name="fastrf.jar"/>
 		</fileset>
 	</path>	
+	
+		
+	
 	<target name="init"> 
 		<mkdir dir="build/classes/"/>
+		<mkdir dir="build/testclasses/"/>
 		<mkdir dir="dist"/>
 		<mkdir dir="models"/>
 	</target>
@@ -36,6 +40,24 @@
 		<javac srcdir="src" destdir="build/classes" debug="true">
 		<classpath refid="compile.classpath"/>
 		</javac>
+		<!--
+		<path id="test.compile.classpath">
+							<fileset dir="lib" id="lib">
+								<include name="*.jar"/>
+								<exclude name="*sources.jar"/>
+							</fileset>
+							<fileset dir="${software.dir}/fastrf/" id="fastrf">
+								<include name="fastrf.jar"/>
+							</fileset>
+							<fileset dir="build/classes/"/>
+
+				</path>
+			
+		<javac srcdir="test" destdir="build/testclasses" debug="true" verbose="true">
+				<classpath refid="test.compile.classpath"/>
+		</javac>
+			-->	
+		
 	</target>
 	<target name="doc">
 		<javadoc sourcepath="src/" author="true" destdir="doc/" classpathref="compile.classpath">
@@ -63,7 +85,33 @@
 			<fileset refid="fastrf"/>	
 		</copy>
 		
-	</target>			
+	</target>
+	<!--
+	<target name="test" depends="compile">
+		<path id="test.classpath">
+					<fileset dir="lib" id="lib">
+						<include name="*.jar"/>
+						<exclude name="*sources.jar"/>
+					</fileset>
+					<fileset dir="${software.dir}/fastrf/" id="fastrf">
+						<include name="fastrf.jar"/>
+					</fileset>
+					<fileset dir="build/classes/">
+						<include name="**/*"/>
+					</fileset>
+					<fileset dir="build/testclasess/">
+						<include name="**/*"/>
+					</fileset>
+						
+			</path>
+		
+		<junit>
+			<classpath refid="test.classpath"/>			
+			<test name="ca.ubc.cs.beta.ACLibTestSuite"/>
+		</junit>
+			
+	</target>
+	-->
 	<target name="deploy" depends="archive">
 		<mkdir dir="${deploy.dir}"/>
 		<chmod perm="666">
