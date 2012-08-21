@@ -2,6 +2,8 @@ package ca.ubc.cs.beta.aclib.misc.jcommander.validator;
 
 import java.io.File;
 
+import ca.ubc.cs.beta.aclib.misc.options.DomainDisplay;
+
 import com.beust.jcommander.IStringConverter;
 import com.beust.jcommander.ParameterException;
 
@@ -10,7 +12,7 @@ import com.beust.jcommander.ParameterException;
  * @author sjr
  *
  */
-public class IsWriteableDirectoryValidator implements IStringConverter<File> {
+public class IsWriteableDirectoryValidator implements IStringConverter<File> , DomainDisplay {
 
 	  public File convert(String value) {
 		 
@@ -28,6 +30,11 @@ public class IsWriteableDirectoryValidator implements IStringConverter<File> {
 		
 		return f;
 	     
-	  } 
+	  }
+
+	@Override
+	public String getDomain() {
+		return "{ writable directories }";
+	} 
 
 }

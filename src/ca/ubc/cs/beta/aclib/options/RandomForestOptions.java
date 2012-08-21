@@ -2,6 +2,7 @@ package ca.ubc.cs.beta.aclib.options;
 
 
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.*;
+import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 
 import com.beust.jcommander.Parameter;
 
@@ -10,6 +11,7 @@ import com.beust.jcommander.Parameter;
  * @author sjr
  *
  */
+@UsageTextField(title="Random Forest Options", description="Options used when building the Random Forests")
 public class RandomForestOptions extends AbstractOptions{
 
 	@Parameter(names = "--splitMin", description = "Minimum number of elements needed to split a node ", validateWith=NonNegativeInteger.class )
@@ -21,7 +23,7 @@ public class RandomForestOptions extends AbstractOptions{
 	@Parameter(names = {"--storeDataInLeaves"}, description = "Store full data in leaves of trees")
 	public boolean storeDataInLeaves = false;
 	
-	@Parameter(names = {"--logModel"}, description = "Store data in Log Normal form")
+	@Parameter(names = {"--logModel"}, description = "Store response values in log-normal form")
 	public boolean logModel = true;
 
 	@Parameter(names = {"--nTrees"}, description = "Number of Trees in Random Forest", validateWith=FixedPositiveInteger.class)

@@ -13,9 +13,26 @@ public class NormalizedRange implements Serializable
 	 */
 	private static final long serialVersionUID = -2338679156299268217L;
 	
+	/**
+	 * Stores the minimum value after being transformed
+	 */
+	private final double minNormalizedValue;
+	
+	/**
+	 * Stores the maximum value after being transformed
+	 */
+	private final double maxNormalizedValue;
+	
+	/**
+	 * Stores the minimum legal value we can return
+	 */
 	private final double minUnnormalizedValue;
 	
+	/**
+	 * Stores the maximum legal value we can return
+	 */
 	private final double maxUnnormalizedValue;
+	
 	private final boolean normalizeToLog;
 	private final boolean intValuesOnly;
 	
@@ -31,8 +48,21 @@ public class NormalizedRange implements Serializable
 	public NormalizedRange(double minValue, double maxValue, boolean normalizeToLog, boolean intValuesOnly)
 	{
 		
+		
+		
 		this.normalizeToLog = normalizeToLog;
 		this.intValuesOnly = intValuesOnly;
+		
+		this.minUnnormalizedValue = minValue;
+		this.maxUnnormalizedValue = maxValue;
+		if(intValuesOnly)
+		{
+			minValue -= 0.5;
+			maxValue += 0.5;
+		
+		}
+		
+		
 		
 		if(normalizeToLog)
 		{
@@ -44,10 +74,11 @@ public class NormalizedRange implements Serializable
 			minValue = Math.log10(minValue);
 			maxValue = Math.log10(maxValue);
 		}
-		this.minUnnormalizedValue = minValue;
-		this.maxUnnormalizedValue = maxValue;
 		
-		if(this.minUnnormalizedValue >= this.maxUnnormalizedValue)
+		this.minNormalizedValue = minValue;
+		this.maxNormalizedValue = maxValue;
+		
+		if(this.minNormalizedValue >= this.maxNormalizedValue)
 		{
 			throw new IllegalArgumentException("Min must be strictly less than max: " + minValue + " >= " + maxValue);
 		}
@@ -76,12 +107,12 @@ public class NormalizedRange implements Serializable
 			x = Math.log10(x);
 		}
 		
-		if (x < minUnnormalizedValue || x > maxUnnormalizedValue)
+		if (x < minNormalizedValue || x > maxNormalizedValue)
 		{
-			throw new IllegalArgumentException("Value is outside of domain [" + minUnnormalizedValue + "," + maxUnnormalizedValue + "]");
+			throw new IllegalArgumentException("Value is outside of domain [" + minNormalizedValue + "," + maxNormalizedValue + "]");
 		}
 		
-		return (x - minUnnormalizedValue) / (maxUnnormalizedValue - minUnnormalizedValue);
+		return (x - minNormalizedValue) / (maxNormalizedValue - minNormalizedValue);
 	}
 	
 	/**
@@ -100,25 +131,28 @@ public class NormalizedRange implements Serializable
 		double value; 
 		if(normalizeToLog)
 		{
-			value = Math.pow(10, x*(maxUnnormalizedValue-minUnnormalizedValue) + minUnnormalizedValue);
+			value = Math.pow(10, x*(maxNormalizedValue-minNormalizedValue) + minNormalizedValue);
 		} else
 		{
-			value = x*(maxUnnormalizedValue-minUnnormalizedValue) + minUnnormalizedValue;
+			value = x*(maxNormalizedValue-minNormalizedValue) + minNormalizedValue;
 		}
 		
 		if(intValuesOnly)
 		{
-			return Math.round(value);
-		} else
-		{
-			return value;
+			value = Math.round(value);
 		}
+		
+		value = Math.max(value, minUnnormalizedValue);
+		value = Math.min(value, maxUnnormalizedValue);
+		
+		
+		return value;
 	}
 	
 	@Override
 	public String toString()
 	{
-		return "(NormalizeRange: {Min: " + minUnnormalizedValue + " Max: " + maxUnnormalizedValue + ((normalizeToLog) ? " LOG " : "") + ((intValuesOnly) ? " INT " : "") + "})";
+		return "(NormalizeRange: {Min: " + minNormalizedValue + " Max: " + maxNormalizedValue + ((normalizeToLog) ? " LOG " : "") + ((intValuesOnly) ? " INT " : "") + "})";
 	}
 
 	/**

@@ -5,21 +5,20 @@ import ca.ubc.cs.beta.aclib.misc.options.DomainDisplay;
 import com.beust.jcommander.IParameterValidator;
 import com.beust.jcommander.ParameterException;
 
-public class FixedPositiveInteger implements IParameterValidator, DomainDisplay{
+public class ZeroInfinityHalfOpenIntervalRight implements IParameterValidator, DomainDisplay {
 
 	  public void validate(String name, String value)
 	      throws ParameterException {
-	    int n = Integer.parseInt(value);
-	    if (n <= 0) {
+	    double n = Double.parseDouble(value);
+	    if (n < 0) {
 	      throw new ParameterException("Parameter " + name
-	          + " should be positive (found " + value +")");
+	          + " should be non-negative (found " + value +")");
 	    }
 	  }
-
-	@Override
-	public String getDomain() {
-
-		return "(0, " + Integer.MAX_VALUE + "]";
-	}
+	  
+	  @Override
+	  public String getDomain() {
+			return "[0, " + Double.POSITIVE_INFINITY + ")";
+	  }
 
 	}

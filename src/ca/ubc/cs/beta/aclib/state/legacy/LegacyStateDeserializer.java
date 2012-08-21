@@ -317,8 +317,6 @@ public class LegacyStateDeserializer implements StateDeserializer {
 				int i=0;
 				
 				boolean seedErrorLogged = false;
-				boolean runLengthErrorLogged = false;
-				boolean kappaMaxChangeWarningLogged = false;
 				
 				while((runHistoryLine = runlist.readNext()) != null)
 				{
@@ -416,6 +414,13 @@ public class LegacyStateDeserializer implements StateDeserializer {
 						{
 							additionalRunData = runHistoryLine[14].trim();
 						}
+						
+						
+						double wallClockTime = 0.0;
+						if(runHistoryLine.length >= 16)
+						{
+							wallClockTime = Double.valueOf(runHistoryLine[15].trim());
+						}
 						double quality =  (double) Double.valueOf(runHistoryLine[10].trim().replaceAll("Inf$", "Infinity"));
 						int runIteration = Integer.valueOf(runHistoryLine[LegacyStateDeserializer.RUN_ITERATION_INDEX]);
 
@@ -474,7 +479,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 							resultLine.append(",").append(additionalRunData);
 						}
 						
-						AlgorithmRun run = new ExistingAlgorithmRun(execConfig, runConfig, resultLine.toString());
+						AlgorithmRun run = new ExistingAlgorithmRun(execConfig, runConfig, resultLine.toString(), wallClockTime);
 						
 						log.trace("Appending new run to runHistory: ", run);
 						try {

@@ -1,9 +1,11 @@
 package ca.ubc.cs.beta.aclib.misc.jcommander.validator;
 
+import ca.ubc.cs.beta.aclib.misc.options.DomainDisplay;
+
 import com.beust.jcommander.IParameterValidator;
 import com.beust.jcommander.ParameterException;
 
-public class ZeroOneHalfOpenRightDouble implements IParameterValidator {
+public class ZeroOneHalfOpenRightDouble implements IParameterValidator, DomainDisplay {
 	
 	public void validate(String name, String value) throws ParameterException 
 	{
@@ -17,5 +19,11 @@ public class ZeroOneHalfOpenRightDouble implements IParameterValidator {
 		    
 		  
 	}
+	
+	 @Override
+	  public String getDomain() {
+			return "(0, 1)";
+	  }
+	 
 
 }

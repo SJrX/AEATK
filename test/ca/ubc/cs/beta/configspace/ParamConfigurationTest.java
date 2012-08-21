@@ -5,6 +5,7 @@ package ca.ubc.cs.beta.configspace;
 import static org.junit.Assert.*;
 
 import java.io.File;
+import java.io.StringReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -15,6 +16,7 @@ import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import ca.ubc.cs.beta.TestHelper;
@@ -59,6 +61,7 @@ public class ParamConfigurationTest {
 	}	
 	
 	@Test
+	@Ignore("This test doesn't do anything???")
 	public void testIntegerContinuousParameters() {
 		URL url = this.getClass().getClassLoader().getResource("paramFiles/integerFormatParam.txt");
 		File f = new File(url.getPath());
@@ -66,6 +69,7 @@ public class ParamConfigurationTest {
 		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(f);
 		ParamConfiguration config = configSpace.getDefaultConfiguration();
 		System.out.println(config.getFormattedParamString());
+		
 		
 	}
 	
@@ -616,6 +620,62 @@ public class ParamConfigurationTest {
 		
 	}
 
+	@Test(expected=IllegalArgumentException.class)
+	public void testIllegalArgumentOnNonIntegerLowerBound()
+	{
+		
+		String file = "param [0.1, 10] [1]i";
+		StringReader sr = new StringReader(file);
+		 new ParamConfigurationSpace(sr);
+	}
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void testIllegalArgumentOnNonIntegerUpperBound()
+	{
+		
+		String file = "param [1, 10.5] [1]i";
+		StringReader sr = new StringReader(file);
+		new ParamConfigurationSpace(sr);
+	}
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void testIllegalArgumentOnNonIntegerDefault()
+	{
+		
+		String file = "param [1, 10] [1.5]i";
+		StringReader sr = new StringReader(file);
+		new ParamConfigurationSpace(sr);
+	}
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void testIllegalArgumentOnNonIntegerLowerBoundLog()
+	{
+		
+		String file = "param [1.1, 10] [2]il";
+		StringReader sr = new StringReader(file);
+		 new ParamConfigurationSpace(sr);
+	}
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void testIllegalArgumentOnNonIntegerUpperBoundLog()
+	{
+		
+		String file = "param [1, 10.5] [1]il";
+		StringReader sr = new StringReader(file);
+		new ParamConfigurationSpace(sr);
+	}
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void testIllegalArgumentOnNonIntegerDefaultLog()
+	{
+		
+		String file = "param [1, 10] [1.5]il";
+		StringReader sr = new StringReader(file);
+		new ParamConfigurationSpace(sr);
+	}
+	
+	
+	
 	@After
 	public void tearDown()
 	{

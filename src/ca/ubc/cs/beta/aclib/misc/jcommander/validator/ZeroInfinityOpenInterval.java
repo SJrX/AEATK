@@ -1,9 +1,11 @@
 package ca.ubc.cs.beta.aclib.misc.jcommander.validator;
 
+import ca.ubc.cs.beta.aclib.misc.options.DomainDisplay;
+
 import com.beust.jcommander.IParameterValidator;
 import com.beust.jcommander.ParameterException;
 
-public class ZeroInfinityOpenInterval implements IParameterValidator {
+public class ZeroInfinityOpenInterval implements IParameterValidator, DomainDisplay {
 
 	  public void validate(String name, String value)
 	      throws ParameterException {
@@ -12,6 +14,11 @@ public class ZeroInfinityOpenInterval implements IParameterValidator {
 	      throw new ParameterException("Parameter " + name
 	          + " should be positive (found " + value +")");
 	    }
+	  }
+	  
+	  @Override
+	  public String getDomain() {
+			return "(0, " + Double.POSITIVE_INFINITY + ")";
 	  }
 
 	}

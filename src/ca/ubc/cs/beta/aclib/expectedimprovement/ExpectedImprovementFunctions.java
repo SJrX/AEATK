@@ -14,19 +14,20 @@ public enum ExpectedImprovementFunctions {
 	/**
 	 * A simple expected improvement function
 	 */
-	SIMPLE(SimpleExpectedImprovement.class),
+	SIMPLE(SimpleExpectedImprovement.class);
+	
 	/**
 	 * SPO Improvement Function (NOT IMPLEMENTED)
 	 */
-	SPO,
+	//SPO,
 	/**
 	 * EI Improvement Function (NOT IMPLEMENTED)
 	 */
-	EI,
+	//EI,
 	/**
 	 * EIh Improvement Function (NOT IMPLEMENTED)
 	 */
-	EIh;
+	//EIh;
 	
 	Class<? extends ExpectedImprovementFunction> c;
 	

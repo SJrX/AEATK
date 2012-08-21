@@ -9,6 +9,7 @@ import ca.ubc.cs.beta.aclib.misc.jcommander.converter.OverallObjectiveConverter;
 import ca.ubc.cs.beta.aclib.misc.jcommander.converter.RunObjectiveConverter;
 import ca.ubc.cs.beta.aclib.misc.jcommander.converter.StringToDoubleConverterWithMax;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.*;
+import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aclib.objectives.OverallObjective;
 import ca.ubc.cs.beta.aclib.objectives.RunObjective;
 
@@ -17,11 +18,8 @@ import ca.ubc.cs.beta.aclib.objectives.RunObjective;
  * @author seramage
  *
  */
+@UsageTextField(title="Scenario Options", description="Standard Scenario Options for use with SMAC. In general consider using the --scenarioFile directive to specify these parameters and Algorithm Execution Options")
 public class ScenarioOptions extends AbstractOptions{
-
-	
-	@ParametersDelegate
-	public AlgorithmExecutionOptions algoExecOptions = new AlgorithmExecutionOptions();
 	
 	@Parameter(names={"--runObj","--run_obj"}, description="Per Target Algorithm Run Objective Type that we are optimizing for", converter=RunObjectiveConverter.class, required=true)
 	public RunObjective runObj;
@@ -44,12 +42,14 @@ public class ScenarioOptions extends AbstractOptions{
 	@Parameter(names={"--instanceFile","-i","--instance_file","--instance_seed_file"}, description="File containing instances in either \"<instance filename>\", or \"<seed>,<instance filename>\" format", required=true)
 	public String instanceFile;
 
+	@UsageTextField(defaultValues="")
 	@Parameter(names={"--instanceFeatureFile", "--feature_file"}, description="File that contains the all the instances features")
 	public String instanceFeatureFile;
 	
 	@Parameter(names={"--testInstanceFile","--test_instance_file","--test_instance_seed_file"}, description="File containing instances specified one instance per line", required=true)
 	public String testInstanceFile;
 
+	@UsageTextField(defaultValues="")
 	@Parameter(names="--scenarioFile", description="Scenario File")
 	@ParameterFile
 	public File scenarioFile = null;
@@ -57,10 +57,15 @@ public class ScenarioOptions extends AbstractOptions{
 	@Parameter(names="--checkInstanceFilesExist", description="Check if instances files exist on disk")
 	public boolean checkInstanceFilesExist = false;
 
+	@UsageTextField(defaultValues="<current working directory>/smac-output")
 	@Parameter(names={"--outputDirectory","--outdir"}, required=false, description="Output Directory")
 	public String outputDirectory = System.getProperty("user.dir") + File.separator + "smac-output";
 
 	@ParametersDelegate
 	public ParamFileDelegate paramFileDelegate = new ParamFileDelegate();
+	
+	@ParametersDelegate
+	public AlgorithmExecutionOptions algoExecOptions = new AlgorithmExecutionOptions();
+	
 	
 }

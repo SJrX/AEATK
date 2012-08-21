@@ -336,11 +336,14 @@ public class LegacyStateDeserializerTester {
 			assertEquals(run.getRunResult(),restoredRun.getRunResult());
 			assertDEquals(run.getRunLength(), restoredRun.getRunLength(), 0.01);
 			assertEquals(run.getAdditionalRunData(), restoredRun.getAdditionalRunData());
+			
+			//=== Checks that each run has no additional run data
+			
 			assertEquals("",run.getAdditionalRunData().trim() );
+			assertEquals(run.getWallclockExecutionTime(), restoredRun.getWallclockExecutionTime(), 0.001);
 			
 			
-			
-			//assertEquals(runHistory.getAlgorithmRuns().get(i), restoredRunHistory.getAlgorithmRuns().get(i));
+
 			
 			ParamConfiguration config = run.getRunConfig().getParamConfiguration();
 			
@@ -526,6 +529,8 @@ public class LegacyStateDeserializerTester {
 			double cost1 = runHistory.getEmpiricalCost(config, instanceSet, execConfig.getAlgorithmCutoffTime());
 			double cost2 = restoredRunHistory.getEmpiricalCost(config, instanceSet, execConfig.getAlgorithmCutoffTime()); 
 			assertDEquals(cost1,cost2,0.1);
+			
+			assertEquals(run.getWallclockExecutionTime(), restoredRun.getWallclockExecutionTime(), 0.001);
 			
 			System.out.print(".");
 			

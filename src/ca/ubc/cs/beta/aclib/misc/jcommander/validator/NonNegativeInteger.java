@@ -1,9 +1,11 @@
 package ca.ubc.cs.beta.aclib.misc.jcommander.validator;
 
+import ca.ubc.cs.beta.aclib.misc.options.DomainDisplay;
+
 import com.beust.jcommander.IParameterValidator;
 import com.beust.jcommander.ParameterException;
 
-public class NonNegativeInteger implements IParameterValidator {
+public class NonNegativeInteger implements IParameterValidator , DomainDisplay{
 
 	  public void validate(String name, String value)
 	      throws ParameterException {
@@ -13,5 +15,12 @@ public class NonNegativeInteger implements IParameterValidator {
 	          + " should be non-negative (found " + value +")");
 	    }
 	  }
+	 
+	  @Override
+	  public String getDomain() {
+
+			return "[0, " + Integer.MAX_VALUE + "]";
+	  }
+	  
 
 	}

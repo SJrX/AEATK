@@ -20,19 +20,23 @@ public class VersionTracker {
 
 	private static final Logger log = LoggerFactory.getLogger(VersionTracker.class);
 
+	private static ClassLoader cl = VersionTracker.class.getClassLoader();
+	
 
 	private static SortedMap<String, String> init()
 	{
 			
-			Iterator<VersionInfo> versionInfo = ServiceLoader.load(VersionInfo.class).iterator();
+			Iterator<VersionInfo> versionInfo = ServiceLoader.load(VersionInfo.class, cl).iterator();
 			SortedMap<String, String> versionMap = new TreeMap<String, String>();
 			
 			while(versionInfo.hasNext())
 			{
+				
 				try { 
 				VersionInfo info = versionInfo.next();
+				
 				versionMap.put(info.getProductName(),info.getVersion());
-				} catch(ServiceConfigurationError e)
+				} catch(Exception e)
 				{
 					log.warn("Error occured while loading version Information", e);
 				}
@@ -86,5 +90,11 @@ public class VersionTracker {
 		{
 			log.info("Version of {} is {} ", ent.getKey(), ent.getValue());
 		}
+	}
+	
+	
+	public static void setClassLoader(ClassLoader classLoader) {
+		cl = classLoader;
+		
 	}
 }

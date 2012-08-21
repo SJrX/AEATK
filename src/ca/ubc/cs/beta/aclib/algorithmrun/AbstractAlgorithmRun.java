@@ -95,6 +95,7 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 		this.rawResultLine = rawResultLine;
 		this.runResultWellFormed = true;
 		this.runCompleted = true;
+		
 	}
 	
 	/**

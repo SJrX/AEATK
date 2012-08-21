@@ -11,6 +11,7 @@ import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.misc.jcommander.converter.BinaryDigitBooleanConverter;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.NonNegativeInteger;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.ReadableFileConverter;
+import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.validators.PositiveInteger;
@@ -21,6 +22,7 @@ import com.beust.jcommander.validators.PositiveInteger;
  * @author sjr
  *
  */
+@UsageTextField(title="Algorithm Execution Options", description="Options related to running the target algorithm")
 public class AlgorithmExecutionOptions extends AbstractOptions {
 
 	private static final String defaultSearchPath ;
@@ -37,9 +39,11 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "surrogates" + File.separator);
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "RunDispatcher" + File.separator);
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "surrogates" + File.separator + "bin" + File.separator);
+		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "surrogates" + File.separator + "version" + File.separator);
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "RunDispatcher" + File.separator + "bin" + File.separator) ;
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "surrogates" + File.separator + "lib" + File.separator);
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "RunDispatcher" + File.separator + "lib" + File.separator) ;
+		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "RunDispatcher" + File.separator + "version" + File.separator) ;
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "rundispatcher" + File.separator);
 		
 		directoriesToSearch.add(System.getProperty("java.class.path"));
@@ -90,9 +94,9 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 	@Parameter(names={"--targetAlgorithmEvaluator","--tae"}, description="System we should use to dispatch algorithm requests [ See manual but CLI  (via Command Line) is default and generally what you want ]")
 	public String targetAlgorithmEvaluator = "CLI";
 
+	@UsageTextField(defaultValues="<current working directory>/plugins/ amoung others" )
 	@Parameter(names={"--targetAlgorithmEvaluatorSearchPath","--taeSP"}, description="Where we should look for other target algorithm evaluators [ See manual but generally you can ignore this ] ")
 	public String taeSearchPath = defaultSearchPath;
-	
 
 	@Parameter(names="--logAllCallStrings", description="Output in the log every call string")
 	public boolean logAllCallStrings = false;
@@ -112,6 +116,7 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 	@Parameter(names="--maxConcurrentAlgoExecs", description="Maximum number of concurrent target algorithm executions", validateWith=PositiveInteger.class)
 	public int maxConcurrentAlgoExecs = 1;
 	
+	@UsageTextField(defaultValues="")
 	@Parameter(names="--runHashCodeFile", description="File containing a list of Run Hashes one per line (Either with just the format on each line, or with the following text per line: \"Run Hash Codes: (Hash Code) After (n) runs\". The number of runs in this file need not match the number of runs that we execute, this file only ensures that the sequences never diverge. Note the n is completely ignored so the order they are specified in is the order we expect the hash codes in this version", converter=ReadableFileConverter.class)
 	public File runHashCodeFile;
 		

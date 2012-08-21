@@ -5,6 +5,7 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.Reader;
 import java.io.Serializable;
 import java.io.StringReader;
 import java.util.ArrayList;
@@ -21,6 +22,7 @@ import java.util.Random;
 import java.util.Set;
 
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration.StringFormat;
+import ca.ubc.cs.beta.aclib.misc.java.io.FileReaderNoException.FileReaderNoException;
 import ca.ubc.cs.beta.aclib.misc.random.SeedableRandomSingleton;
 
 enum LineType
@@ -172,28 +174,60 @@ public class ParamConfigurationSpace implements Serializable {
 		this(file,SeedableRandomSingleton.getRandom());
 	}
 	
+	
+	/**
+	 * Creates a Param Configuration Space from the given file, no random object
+	 * @param reader r
+	 */
+	public ParamConfigurationSpace(Reader reader)
+	{
+		this(reader,SeedableRandomSingleton.getRandom(), "ReaderOnly-"+System.currentTimeMillis() +"-" +(int) (Math.random() * 10000000.0));
+	}
+	
 	/**
 	 * Creates a Param Configuration Space from the given file
-	 * @param file file to parse
-	 * @param random random object to parse
+	 * @param file
+	 * @param random
 	 */
 	public ParamConfigurationSpace(File file, Random random)
+	{
+		this(new FileReaderNoException(file), random, file.getAbsolutePath());
+	}
+	
+	
+	/**
+	 * Creates a Param Configuration Space from the given reader
+	 * @param reader that contains the text of the file
+	 * @param random random object to parse
+	 * @param absolute file name of the object (a unique string used for equality)
+	 */
+	public ParamConfigurationSpace(Reader file, Random random, String absoluteFileName)
 	{
 		/*
 		 * Parse File and create configuration space
 		 */
 		this.random = random;
-		absoluteFileName = file.getAbsolutePath();
+		this.absoluteFileName = absoluteFileName;
+		
+		if((absoluteFileName == null) || (absoluteFileName.trim().length() == 0))
+		{
+			throw new IllegalArgumentException("Absolute File Name must be non-empty:" + absoluteFileName);
+		}
 		try {
 			BufferedReader inputData = null;
 			
 			try{
 			
-			inputData = new BufferedReader(new  FileReader(file));
+			inputData = new BufferedReader(file);
 			String line;
 			while((line = inputData.readLine()) != null)
-			{
+			{ try {
 				parseLine(line);
+				} catch(RuntimeException e)
+				{
+					System.err.println("Error occured parsing: " + line);
+					throw e;
+				}
 			}
 			} finally
 			{
@@ -209,8 +243,9 @@ public class ParamConfigurationSpace implements Serializable {
 
 			throw new IllegalStateException(e);
 		} catch (IOException e) {
-			System.err.println("Some random IO Exception Occured");
-			e.printStackTrace();
+			
+			
+			throw new IllegalStateException(e);
 		}
 		
 		
@@ -389,9 +424,12 @@ public class ParamConfigurationSpace implements Serializable {
 		} else if (line.indexOf("[") != line.lastIndexOf("["))
 		{
 			type = LineType.CONTINUOUS;
-		} else
+		} else if(line.trim().indexOf("{") > 1 && line.trim().indexOf("}") > 1 )
 		{
 			type = LineType.CATEGORICAL;
+		} else
+		{
+			throw new IllegalArgumentException("Syntax error parsing line " + line + " probably malformed");
 		}
 		
 		switch(type)
@@ -409,7 +447,7 @@ public class ParamConfigurationSpace implements Serializable {
 				forbiddenLines.add(line);
 				break;
 			default:
-				throw new IllegalStateException("Not sure how I can be parsing some other type");
+				throw new IllegalStateException("Not sure how I can be parsing some other type, ");
 		}
 		
 		
@@ -512,10 +550,7 @@ public class ParamConfigurationSpace implements Serializable {
 		
 		double min = Double.valueOf(contValues[0]);
 		double max = Double.valueOf(contValues[1]);
-		
-		
-		
-		
+
 		String defaultValue = getDefault(secondBracket, line);
 		
 		paramNames.add(name);
@@ -534,11 +569,26 @@ public class ParamConfigurationSpace implements Serializable {
 		lineRemaining = lineRemaining.replaceFirst("l", "").trim();
 		
 		boolean intValuesOnly = ((lineRemaining.length() > 0) && (lineRemaining.trim().contains("i")));
+		
+		if(intValuesOnly)
+		{
+			try {
+			
+			if(!isIntegerDouble(Double.valueOf(contValues[0]))) throw new IllegalArgumentException("This parameter is marked as integer, only integer values are permitted for the bounds and default on line:" + line); 
+			if(!isIntegerDouble(Double.valueOf(contValues[1]))) throw new IllegalArgumentException("This parameter is marked as integer, only integer values are permitted for the bounds and default on line:" + line);
+			if(!isIntegerDouble(Double.valueOf(defaultValue))) throw new IllegalArgumentException("This parameter is marked as integer, only integer values are permitted for the bounds and default on line:" + line);
+			} catch(NumberFormatException e)
+			{
+				throw new IllegalArgumentException("This parameter is marked as integer, only integer values are permitted for the bounds and default on line:" + line);
+			}
+		}
+		
+		
 		lineRemaining = lineRemaining.replaceFirst("i", "").trim();		
 		
 		if(lineRemaining.trim().length() != 0)
 		{
-			throw new IllegalStateException("Unknown or duplicate modifier(s): " + lineRemaining + " in line: " + line);
+			throw new IllegalArgumentException("Unknown or duplicate modifier(s): " + lineRemaining + " in line: " + line);
 		}
 			
 			
@@ -1173,5 +1223,9 @@ public class ParamConfigurationSpace implements Serializable {
 		return false;
 	}
 	
+	private boolean isIntegerDouble(double d)
+	{
+		return (d - Math.floor(d) == 0);
+	}
 }
 

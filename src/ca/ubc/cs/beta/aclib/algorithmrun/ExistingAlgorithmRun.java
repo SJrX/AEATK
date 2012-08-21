@@ -19,6 +19,16 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 	private static final long serialVersionUID = -7798477429606839878L;
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 	
+	/**
+	 * Default Constructor (sets Wallclock time to zero)
+	 * @param execConfig		execution configuration of the object
+	 * @param runConfig			run configuration we are executing
+	 * @param result			result string to parse. The format of this is currently everything after the : in the result line of {@link CommandLineAlgorithmRun}. We support both the String for the RunResult, as well as the Status Code
+	 */
+	public ExistingAlgorithmRun(AlgorithmExecutionConfig execConfig, RunConfig runConfig, String result)
+	{
+		this(execConfig, runConfig, result, 0.0);
+	}
 	
 	/**
 	 * Default Constructor
@@ -26,7 +36,7 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 	 * @param runConfig			run configuration we are executing
 	 * @param result			result string to parse. The format of this is currently everything after the : in the result line of {@link CommandLineAlgorithmRun}. We support both the String for the RunResult, as well as the Status Code
 	 */
-	public ExistingAlgorithmRun(AlgorithmExecutionConfig execConfig, RunConfig runConfig, String result) {
+	public ExistingAlgorithmRun(AlgorithmExecutionConfig execConfig, RunConfig runConfig, String result, double wallClockTime) {
 		super(execConfig, runConfig);
 		//this.rawResultLine = resultLine;
 		//this.runCompleted = true;
@@ -75,7 +85,7 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 			
 			
 		}
-		
+		this.setWallclockExecutionTime(wallClockTime);
 		
 
 	}

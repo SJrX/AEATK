@@ -1,6 +1,7 @@
 package ca.ubc.cs.beta.aclib.misc.version;
 
 import java.io.BufferedReader;
+import java.io.File;
 import java.io.InputStream;
 import java.io.InputStreamReader;
 
@@ -40,11 +41,19 @@ public abstract class AbstractVersionInfo implements VersionInfo {
 			String version = null;
 			try {
 				String fileInClassPath = arg2;
-				InputStream inputStream = VersionTracker.class.getResourceAsStream("/"+fileInClassPath);
-				BufferedReader reader =  new BufferedReader(new InputStreamReader(inputStream));
+				
+				ClassLoader cl = this.getClass().getClassLoader();
+				InputStream inputStream = cl.getResourceAsStream(fileInClassPath);
+				if(inputStream == null)
+				{
+					inputStream = cl.getResourceAsStream(File.separator + fileInClassPath);
+				}
+				BufferedReader reader  =  new BufferedReader(new InputStreamReader(inputStream));
+			
+				
 				version = reader.readLine();
 			
-				inputStream.close();
+				reader.close();
 			} catch (Throwable t) {
 				System.out.println(t);
 				t.printStackTrace();

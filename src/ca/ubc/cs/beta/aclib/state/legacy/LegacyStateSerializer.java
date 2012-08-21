@@ -127,6 +127,7 @@ public class LegacyStateSerializer implements StateSerializer {
 			runResults.append("SMAC Cumulative Runtime").append(","); //12
 			runResults.append("Run Result").append(","); //13
 			runResults.append("Additional Algorithm Run Data").append(","); //14
+			runResults.append("Wall Clock Time").append(","); //15
 			runResults.append("\n");
 			
 			
@@ -164,7 +165,8 @@ public class LegacyStateSerializer implements StateSerializer {
 				cumulativeSum += run.getRuntime(); 
 				runResults.append(cumulativeSum).append(","); //12
 				runResults.append(run.getRunResult().name()).append(","); //13
-				runResults.append(run.getAdditionalRunData()).append(",");//14 (Not Implemented Currently)
+				runResults.append(run.getAdditionalRunData()).append(",");//14
+				runResults.append(run.getWallclockExecutionTime()).append(","); //15;
 				runResults.append("\n");
 			}
 			

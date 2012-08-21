@@ -27,9 +27,9 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.RunHashCodeVerif
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.loader.TargetAlgorithmEvaluatorLoader;
 
 
-public class TargetAlgorithmEvaluatorFactory {
+public class TargetAlgorithmEvaluatorBuilder {
 
-	private static Logger log = LoggerFactory.getLogger(TargetAlgorithmEvaluatorFactory.class);
+	private static Logger log = LoggerFactory.getLogger(TargetAlgorithmEvaluatorBuilder.class);
 
 	
 	public static List<String> getAvailableTargetAlgorithmEvaluators(AlgorithmExecutionOptions config)
@@ -43,7 +43,7 @@ public class TargetAlgorithmEvaluatorFactory {
 	 * Retrieves a modified class loader to do dynamically search for jars
 	 * @return
 	 */
-	private static ClassLoader getClassLoader(AlgorithmExecutionOptions options)
+	public static ClassLoader getClassLoader(AlgorithmExecutionOptions options)
 	{
 		String pathtoSearch = options.taeSearchPath;
 		String[] paths = pathtoSearch.split(File.pathSeparator);
