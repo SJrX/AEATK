@@ -141,6 +141,9 @@ public class ConfigToLaTeX {
 				if(sec.isAttributeHidden(name) && showHidden)
 				{
 					required = "[H]";
+				} else if(sec.isAttributeHidden(name))
+				{
+					continue;
 				} else
 				{
 					required = "   ";
@@ -180,8 +183,12 @@ public class ConfigToLaTeX {
 		
 		pw.flush();
 		
-		System.out.println("\t[R] means a parameter is required");
+		System.out.println("\t[R] denotes a parameter is required");
 		
+		if(showHidden)
+		{
+			System.out.println("\t[H] denotes a parameter that is hidden and not to be trifled with");
+		}
 		
 	}
 	public static void getAllObjects(Object o, Set<Object> objectsToScan) throws IllegalArgumentException, IllegalAccessException

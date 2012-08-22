@@ -61,7 +61,8 @@ public class LegacyStateSerializer implements StateSerializer {
 	public LegacyStateSerializer(String path, String id, int iteration) {
 		this.id = id;
 		this.iteration = iteration;
-		this.path = path;
+		this.path = (new File(path)).getAbsolutePath();
+		
 	}
 
 	@Override
@@ -228,6 +229,7 @@ public class LegacyStateSerializer implements StateSerializer {
 			}
 			
 		
+			
 		log.info("State saved for iteration {} in {} ", iteration, path);
 		log.info("Saving state took {} ms", auto.stop());
 		

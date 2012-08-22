@@ -2,8 +2,10 @@ package ca.ubc.cs.beta.aclib.probleminstance;
 
 import java.io.BufferedReader;
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -245,10 +247,11 @@ public class ProblemInstanceHelper {
 			{
 				throw new ParameterException("Feature file given does not exist " + featureFile);
 			}
-			CSVReader featureCSV = new CSVReader(new FileReader(featureFile));
+			CSVReader featureCSV = new CSVReader(new InputStreamReader(new FileInputStream(featureFile)));
 			ConfigCSVFileHelper features = new ConfigCSVFileHelper(featureCSV.readAll(),1,1);
 			
 			numberOfFeatures = features.getNumberOfDataColumns();
+			
 			int column=2;
 			for(String key : features.getDataKeyList())
 			{
@@ -273,11 +276,23 @@ public class ProblemInstanceHelper {
 				
 				featuresMap.put(features.getKeyForDataRow(i).replaceAll("//", "/"), Collections.unmodifiableMap(instFeatMap));
 				
-				for (int j=0; j < features.getNumberOfDataColumns(); j++)
-				{		
-						String key = features.getDataKeyByIndex(j);
-						Double value = features.getDoubleDataValue(i, j);
-						instFeatMap.put(key, value);
+				String lastValue = "";
+				try {
+					for (int j=0; j < features.getNumberOfDataColumns(); j++)
+					{		
+							String key = features.getDataKeyByIndex(j);
+							lastValue = features.getStringDataValue(i, j);
+							Double value = features.getDoubleDataValue(i, j);
+							instFeatMap.put(key, value);
+					}
+				} catch(NumberFormatException e)
+				{
+					for(int j=0; j < lastValue.length(); j++)
+					{
+						
+						System.out.println(j +":" + lastValue.charAt(j) + ":" + Integer.toHexString(lastValue.getBytes()[j]));
+					}
+					throw new ParameterException("Could not parse feature file "+ featureFileName + " , error on line " + i + " expected double value but got string:" + e.getMessage() + " value " + lastValue );
 				}
 			}
 		}
