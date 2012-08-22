@@ -158,8 +158,8 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 		{
 			
 			numDataPointsInTree *= subsamplePercentage;
-			
-			log.info("Subsampling number in points in imputed trees to {} out of {}",numDataPointsInTree, responseValues.length);
+			Object[] args = { numDataPointsInTree, responseValues.length, subsamplePercentage};
+			log.info("Subsampling number in points in imputed trees to {} out of {} ({} %)",args);
 		}
 		
 		//=== Initialize map from censored response indices to Map from trees to their dataIdxs for that response (only for trees that actually have that data point).

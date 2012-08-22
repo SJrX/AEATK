@@ -50,7 +50,7 @@ public class RandomForestOptions extends AbstractOptions{
 	@Parameter(names="--penalizeImputedValues", description="treat imputed values that fall above the cutoff time, and below the penalized max time, as the penalized max time")
 	public boolean penalizeImputedValues = false;
 	
-	@Parameter(names="--subsampleValuesWhenLowMemory", description="subsample model input values when the amount of memory available drops below a certain threshold (see --subsampleValuesWhenLowMemory)")
+	@Parameter(names={"--subsampleValuesWhenLowOnMemory","--subsampleValuesWhenLowMemory"}, description="subsample model input values when the amount of memory available drops below a certain threshold (see --subsampleValuesWhenLowMemory)")
 	public boolean subsampleValuesWhenLowMemory = false;
 	
 	@Parameter(names="--freeMemoryPecentageToSubsample", description="when free memory percentage drops below this percent we will apply the subsample percentage", validateWith=ZeroOneHalfOpenLeftDouble.class)
