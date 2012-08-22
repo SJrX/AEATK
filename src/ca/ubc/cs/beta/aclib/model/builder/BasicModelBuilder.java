@@ -34,6 +34,10 @@ public class BasicModelBuilder implements ModelBuilder{
 	
 	public BasicModelBuilder(SanitizedModelData smd, RandomForestOptions rfConfig)
 	{
+		this(smd, rfConfig, 1);
+	}
+	public BasicModelBuilder(SanitizedModelData smd, RandomForestOptions rfConfig, double subsamplePercentage)
+	{
 		
 		double[][] features = smd.getPCAFeatures();
 		
@@ -118,11 +122,26 @@ public class BasicModelBuilder implements ModelBuilder{
 		        sw.start();
 		      forest = RandomForest.learnModel(numTrees, configs, features, theta_inst_idxs, responseValues, dataIdxs, buildParams);
 		      
+		} else if(subsamplePercentage < 1)
+		{
+				int N = (int) (subsamplePercentage * responseValues.length);
+				log.info("Subsampling {} points out of {} total", N, responseValues.length);
+				int[][] dataIdxs = new int[numTrees][N];
+		        for (int i = 0; i < numTrees; i++) {
+		            for (int j = 0; j < N; j++) {
+		                dataIdxs[i][j] = buildParams.random.nextInt(N);
+		            }
+		        }   
+		        
+		        sw.start();
+				forest = RandomForest.learnModel(numTrees, configs, features, theta_inst_idxs, responseValues, dataIdxs, buildParams);
+			
 		} else
 		{
-			sw.start();
+			  sw.start();
 			  forest = RandomForest.learnModel(numTrees, configs, features, theta_inst_idxs, responseValues, buildParams);
 		}
+			
 		log.debug("Building Random Forest took {} seconds ", sw.stop() / 1000.0);
 
 		

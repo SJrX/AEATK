@@ -45,7 +45,6 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 	
 	private static final Logger log = LoggerFactory.getLogger(AdaptiveCappingModelBuilder.class);
 	
-
 	/**
 	 * Builds an adaptive capping model builder
 	 *  
@@ -57,6 +56,22 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 	 * @param penaltyFactor 		    penalty factor for capped runs
 	 */
 	public AdaptiveCappingModelBuilder(SanitizedModelData mds, RandomForestOptions rfOptions, Random rand, int imputationIterations, double cutoffTime, double penaltyFactor)
+	{
+		this(mds, rfOptions,rand,imputationIterations,cutoffTime, penaltyFactor,1);
+	}
+
+	/**
+	 * Builds an adaptive capping model builder
+	 *  
+	 * @param mds 					    sanitized model data to build model from
+	 * @param rfOptions				    options object that controls the model
+	 * @param rand						random object
+	 * @param imputationIterations		number of imputation iterations
+	 * @param cutoffTime				cutoffTime 
+	 * @param penaltyFactor 		    penalty factor for capped runs
+	 * @param subsamplePercentage       percentageOfPoints to subsample
+	 */
+	public AdaptiveCappingModelBuilder(SanitizedModelData mds, RandomForestOptions rfOptions, Random rand, int imputationIterations, double cutoffTime, double penaltyFactor, double subsamplePercentage)
 	{
 		
 		double maxPenalizedValue = mds.transformResponseValue(cutoffTime*penaltyFactor);
@@ -131,13 +146,22 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 		log.info("Building Random Forest with {} censored runs out of {} total ", censoredCount, censoringIndicators.length);
 		
 		//=== Building random forest with non censored data.
-		RandomForest rf = buildRandomForest(mds,rfOptions,non_cens_theta_inst_idxs, non_cens_responses, false);
+		RandomForest rf = buildRandomForest(mds,rfOptions,non_cens_theta_inst_idxs, non_cens_responses, false, subsamplePercentage);
 		
 	
 		int numTrees = rfOptions.numTrees;
 		
 		int numDataPointsInTree = responseValues.length;
 
+		
+		if(subsamplePercentage < 1)
+		{
+			
+			numDataPointsInTree *= subsamplePercentage;
+			
+			log.info("Subsampling number in points in imputed trees to {} out of {}",numDataPointsInTree, responseValues.length);
+		}
+		
 		//=== Initialize map from censored response indices to Map from trees to their dataIdxs for that response (only for trees that actually have that data point).
 		Map<Integer, Map<Integer, List<Integer>>> censoredSampleIdxs = new LinkedHashMap<Integer, Map<Integer, List<Integer>>>();
 		for (int i = 0; i < numDataPointsInTree; i++) {
@@ -394,7 +418,7 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 	 * @param preprocessed		<code>true</code> if we should build a model with preprocessed marginals, <code>false</code> otherwise
 	 * @return constructed random forest
 	 */
-	private static RandomForest buildRandomForest(SanitizedModelData mds, RandomForestOptions rfOptions, int[][] theta_inst_idxs, double[] responseValues, boolean preprocessed)
+	private static RandomForest buildRandomForest(SanitizedModelData mds, RandomForestOptions rfOptions, int[][] theta_inst_idxs, double[] responseValues, boolean preprocessed, double subsamplePercentage)
 	{
 		
 		double[][] features = mds.getPCAFeatures();
@@ -443,9 +467,23 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 		        sw.start();
 		      forest = RandomForest.learnModel(numTrees, configs, features, theta_inst_idxs, responseValues, dataIdxs, buildParams);
 		      
+		} else if(subsamplePercentage < 1)
+		{
+				int N = (int) (subsamplePercentage * responseValues.length);
+				log.info("Subsampling {} points out of {} total for random forest construction", N, responseValues.length);
+				int[][] dataIdxs = new int[numTrees][N];
+		        for (int i = 0; i < numTrees; i++) {
+		            for (int j = 0; j < N; j++) {
+		                dataIdxs[i][j] = buildParams.random.nextInt(N);
+		            }
+		        }   
+		        
+		        sw.start();
+				forest = RandomForest.learnModel(numTrees, configs, features, theta_inst_idxs, responseValues, dataIdxs, buildParams);
+			
 		} else
 		{
-			sw.start();
+			  sw.start();
 			  forest = RandomForest.learnModel(numTrees, configs, features, theta_inst_idxs, responseValues, buildParams);
 		}
 		

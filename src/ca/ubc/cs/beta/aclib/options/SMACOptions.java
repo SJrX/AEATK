@@ -11,6 +11,7 @@ import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aclib.state.StateSerializers;
 
 import com.beust.jcommander.Parameter;
+import com.beust.jcommander.ParameterFile;
 import com.beust.jcommander.ParametersDelegate;
 import com.beust.jcommander.validators.PositiveInteger;
 
@@ -33,96 +34,124 @@ public class SMACOptions extends AbstractOptions {
 	@ParametersDelegate
 	public ValidationOptions validationOptions = new ValidationOptions();
 
-	@Parameter(names="--seedOffset", description="Offset of numRun to use from seed (This plus --numRun should be less than LONG_MAX)")
+	@Parameter(names="--seedOffset", description="offset of numRun to use from seed (this plus --numRun should be less than LONG_MAX)")
 	public long seedOffset = 0 ;
 	
-	@Parameter(names={"--numRun","--seed"}, required=true, description="Number of this run (and seed)", validateWith=NonNegativeInteger.class)
+	@Parameter(names={"--numRun","--seed"}, required=true, description="number of this run (and seed)", validateWith=NonNegativeInteger.class)
 	public long numRun = 0;
 	
 	@UsageTextField(defaultValues="<current working directory>")
-	@Parameter(names={"--experimentDir","-e"}, description="Root Directory for Experiments Folder")
+	@Parameter(names={"--experimentDir","-e"}, description="root directory for experiments Folder")
 	public String experimentDir = System.getProperty("user.dir") + File.separator + "";
 
-	@Parameter(names="--numIterations", description = "Total number of iterations to perform", validateWith=FixedPositiveInteger.class)
+	@Parameter(names={"--numIterations","--numberOfIterations"}, description = "limits the number of iterations allowed during automatic configuration phase", validateWith=FixedPositiveInteger.class)
 	public int numIteratations = Integer.MAX_VALUE;
 	
-	@Parameter(names={"--runtimeLimit", "--wallClockLimit"}, description = "Total Wall clock time to execute for", validateWith=FixedPositiveInteger.class)
+	@Parameter(names={"--runtimeLimit", "--wallClockLimit"}, description = "limits the total wall-clock time allowed during the automatic configuration phase", validateWith=FixedPositiveInteger.class)
 	public int runtimeLimit = Integer.MAX_VALUE;
 	
-	@Parameter(names="--totalNumRunLimit" , description = "Total number of target algorithm runs to execute", validateWith=FixedPositiveInteger.class)
-	public int totalNumRunLimit = Integer.MAX_VALUE;
+	@Parameter(names={"--totalNumRunsLimit","--numRunsLimit","--numberOfRunsLimit"} , description = "limits the total number of target algorithm runs allowed during the automatic configuration phase", validateWith=FixedPositiveLong.class)
+	public long totalNumRunsLimit = Long.MAX_VALUE;
 
-	@Parameter(names="--modelHashCodeFile", description="File containing a list of Model Hashes one per line with the following text per line: \"Preprocessed Forest Built With Hash Code: (n)\" or \"Random Forest Built with Hash Code: (n)\" where (n) is the hashcode", converter=ReadableFileConverter.class, hidden = true)
+	@Parameter(names="--modelHashCodeFile", description="file containing a list of model hashes one per line with the following text per line: \"Preprocessed Forest Built With Hash Code: (n)\" or \"Random Forest Built with Hash Code: (n)\" where (n) is the hashcode", converter=ReadableFileConverter.class, hidden = true)
 	public File modelHashCodeFile;
 	
 	@UsageTextField(defaultValues="RunGroup-<current date and time>")
-	@Parameter(names="--runGroupName", description="Name of subfolder of outputdir to save all the output files of this run to")
+	@Parameter(names="--runGroupName", description="name of subfolder of outputdir to save all the output files of this run to")
 	public String runGroupName = "RunGroup-" + (new SimpleDateFormat("yyyy-MM-dd--HH-mm-ss-SSS")).format(new Date());
 	
-	@Parameter(names="--numPCA", description="Number of Prinicipal Components Features to use when building the model", validateWith=FixedPositiveInteger.class)
+	@Parameter(names="--numPCA", description="number of principal components features to use when building the model", validateWith=FixedPositiveInteger.class)
 	public int numPCA = 7;
 
-	@Parameter(names="--expectedImprovementFunction", description="Expected Improvement Function to Use")
+	@Parameter(names="--expectedImprovementFunction", description="expected improvement function to use during local search")
 	public ExpectedImprovementFunctions expFunc = ExpectedImprovementFunctions.EXPONENTIAL;
 
-	@Parameter(names="--numberOfChallengers", description="Number of Challengers needed for Local Search", validateWith=FixedPositiveInteger.class)
+	@Parameter(names={"--numChallengers","--numberOfChallengers"}, description="number of challengers needed for local search", validateWith=FixedPositiveInteger.class)
 	public int numberOfChallengers = 10;
 	
-	@Parameter(names="--numberOfRandomConfigsInEI", description="Number of Random Configurations to evaluate in EI Search", validateWith=NonNegativeInteger.class)
+	@Parameter(names={"--numEIRandomConfigs","--numberOfRandomConfigsInEI","--numRandomConfigsInEI","--numberOfEIRandomConfigs"} , description="number of random configurations to evaluate during EI search", validateWith=NonNegativeInteger.class)
 	public int numberOfRandomConfigsInEI = 10000;
 	
 
-	@Parameter(names="--stateSerializer", description="Determines the format of the files to save the state in")
+	@Parameter(names="--stateSerializer", description="determines the format of the files to save the state in")
 	public StateSerializers stateSerializer = StateSerializers.LEGACY;
 
-	@Parameter(names="--stateDeserializer", description="Determines the format of the files that store the saved state to restore")
+	@Parameter(names="--stateDeserializer", description="determines the format of the files that store the saved state to restore")
 	public StateSerializers statedeSerializer = StateSerializers.LEGACY;
 	
 	@UsageTextField(defaultValues="N/A (No state is being restored)")
-	@Parameter(names="--restoreStateFrom", description="Location (State Deserializer Dependent) of States")
+	@Parameter(names="--restoreStateFrom", description="location of state to restore")
 	public String restoreStateFrom = null;
 
 	@UsageTextField(defaultValues="N/A (No state is being restored)")
-	@Parameter(names={"--restoreStateIteration","--restoreIteration"}, description="The Iteration of the State to Restore")
+	@Parameter(names={"--restoreStateIteration","--restoreIteration"}, description="iteration of the state to restore")
 	public Integer restoreIteration = null;
 	
-	@Parameter(names="--executionMode", description="Execution mode of the Automatic Configurator")
+	@Parameter(names="--executionMode", description="execution mode of the automatic configurator")
 	public ExecutionMode execMode = ExecutionMode.SMAC;
 	
 	@UsageTextField(defaultValues="Defaults to true when --intraInstanceObjective is RUNTIME, false otherwise")
 	@Parameter(names="--adaptiveCapping", description="Use Adaptive Capping")
 	public Boolean adaptiveCapping = null;
 
-	@Parameter(names="--capSlack", description="Amount to scale computed adaptive capping value of challengers by", validateWith=ZeroInfinityOpenInterval.class)
+	@Parameter(names="--capSlack", description="amount to scale computed adaptive capping value of challengers by", validateWith=ZeroInfinityOpenInterval.class)
 	public double capSlack = 1.3;
 	
-	@Parameter(names="--capAddSlack", description="Amount to increase computed adaptive capping value of challengers by (post scaling)", validateWith=ZeroInfinityOpenInterval.class)
+	@Parameter(names="--capAddSlack", description="amount to increase computed adaptive capping value of challengers by (post scaling)", validateWith=ZeroInfinityOpenInterval.class)
 	public double capAddSlack = 1;
 	
-	@Parameter(names="--imputationIterations", description="Amount of times to impute censored data when building model", validateWith=NonNegativeInteger.class)
+	@Parameter(names="--imputationIterations", description="amount of times to impute censored data when building model", validateWith=NonNegativeInteger.class)
 	public int imputationIterations = 2;
 
-	@Parameter(names="--treatCensoredDataAsUncensored", description="Builds the model as-if the response values observed for cap values, were the correct ones [NOT RECOMMENDED]")
+	@Parameter(names="--treatCensoredDataAsUncensored", description="builds the model as-if the response values observed for cap values, were the correct ones [NOT RECOMMENDED]")
 	public boolean maskCensoredDataAsUncensored = false;
 	
-	@Parameter(names={"--doValidation","--validation"}, description="Perform validation on trajectory file")
+	@Parameter(names={"--doValidation","--validation"}, description="perform validation when SMAC completes")
 	public boolean doValidation = true;
 	
-	@Parameter(names="--maxIncumbentRuns", description="Maximum Number of Incumbent Runs allowed", validateWith=FixedPositiveInteger.class)
+	@Parameter(names={"--maxIncumbentRuns","--maxRunsForIncumbent"}, description="maximum number of incumbent runs allowed", validateWith=FixedPositiveInteger.class)
 	public int maxIncumbentRuns = 2000;
 	
-	@Parameter(names={"--intensificationPercentage","--frac_rawruntime"}, description="Percent of time to spend intensifying versus model learning", validateWith=ZeroOneHalfOpenRightDouble.class)
+	@Parameter(names={"--intensificationPercentage","--frac_rawruntime"}, description="percent of time to spend intensifying versus model learning", validateWith=ZeroOneHalfOpenRightDouble.class)
 	public double intensificationPercentage = 0.50;
 	
-	@Parameter(names="--consoleLogLevel",description="Default Error Level of Console Output (Note this cannot be more verbose than the logLevel)")
+	@Parameter(names="--consoleLogLevel",description="default log level of console output (this cannot be more verbose than the logLevel)")
 	public LogLevel consoleLogLevel = LogLevel.INFO;
 	
 	@Parameter(names="--logLevel",description="Log Level for SMAC")
 	public LogLevel logLevel = LogLevel.DEBUG;	
 		
-	@Parameter(names="--countSMACTimeAsTunerTime", description="Include the CPU Time of SMAC as part of the tunerTimeout")
+	@Parameter(names="--countSMACTimeAsTunerTime", description="include the CPU Time of SMAC as part of the tunerTimeout")
 	public boolean countSMACTimeAsTunerTime = true;
 	
-	@Parameter(names="--maskInactiveConditionalParametersAsDefaultValue", description="When building the model treat inactive conditional values as the default value")
+	@Parameter(names="--maskInactiveConditionalParametersAsDefaultValue", description="build the model treating inactive conditional values as the default value")
 	public boolean maskInactiveConditionalParametersAsDefaultValue = true;
+	
+	@UsageTextField(defaultValues="")
+	@ParameterFile
+	@Parameter(names="--optionFile", description="read options from file")
+	public File optionFile;
+	
+	@UsageTextField(defaultValues="")
+	@ParameterFile
+	@Parameter(names={"--optionFile2","--secondaryOptionsFile"}, description="read options from file")
+	public File optionFile2;
+	
+	/**
+	 * Note most of these actually will never be read as we will silently scan for them in the input arguments to avoid logging
+	 */
+	@UsageTextField(defaultValues="", domain="")
+	@Parameter(names="--showHiddenParameters", description="show hidden parameters that no one has use for, and probably just break SMAC (no-arguments)")
+	public boolean showHiddenParameters = false;
+	
+	@UsageTextField(defaultValues="", domain="")
+	@Parameter(names={"--help","-?","/?","-h"}, description="show help")
+	public boolean showHelp = false;
+	
+	@UsageTextField(defaultValues="", domain="")
+	@Parameter(names={"-v","--version"}, description="print version and exit")
+	public boolean showVersion = false;
+	
+	
+	
 }

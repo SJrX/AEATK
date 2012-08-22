@@ -17,7 +17,6 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 	 */
 	private static final long serialVersionUID = -1860615761848618478L;
 	
-	
 	protected final RunConfig runConfig;
 	protected final AlgorithmExecutionConfig execConfig;
 	

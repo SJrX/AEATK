@@ -1,5 +1,6 @@
 package ca.ubc.cs.beta.aclib.misc.options;
 
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Map;
@@ -17,9 +18,10 @@ public class UsageSection implements Iterable<String> {
 	private final String description;
 	private final Map<String, String> attributesToDescriptionMap = new TreeMap<String, String>();
 	private final Set<String> requiredAttributes = new HashSet<String>();
-	private final Map<String, String> defaultValues = new TreeMap<String, String>();
-	private final Map<String, String> domainMap = new TreeMap<String, String>();
-	private final Map<String, String> aliasMap = new TreeMap<String, String>();
+	private final Map<String, String> defaultValues = new HashMap<String, String>();
+	private final Map<String, String> domainMap = new HashMap<String, String>();
+	private final Map<String, String> aliasMap = new HashMap<String, String>();
+	private final Map<String, Boolean> hiddenMap = new HashMap<String, Boolean>();
 	private final boolean hidden;
 	
 	/**
@@ -54,8 +56,9 @@ public class UsageSection implements Iterable<String> {
 	 * @param required		<code>true</code> if this attribute is required
 	 * @param domain		A human readable string that tells us what arguments are allowed
 	 * @param allAliases	A human readable string that tells us about all the aliases for the name
+	 * @param hidden	    <code>true</code> if this attribute is hidden
 	 */
-	public void addAttribute(String name, String description, String defaultValue, boolean required, String domain, String allAliases)
+	public void addAttribute(String name, String description, String defaultValue, boolean required, String domain, String allAliases, boolean hidden)
 	{
 		if(name == null) throw new IllegalArgumentException("name can't be null");
 		name = name.trim();
@@ -71,6 +74,7 @@ public class UsageSection implements Iterable<String> {
 		
 		domainMap.put(name, domain);
 		aliasMap.put(name,allAliases);
+		hiddenMap.put(name, hidden);
 	}
 
 	@Override
@@ -136,6 +140,12 @@ public class UsageSection implements Iterable<String> {
 	public boolean isSectionHidden() {
 
 		return hidden;
+	}
+
+
+	public boolean isAttributeHidden(String name) {
+
+		return hiddenMap.get(name);
 	}
 
 }

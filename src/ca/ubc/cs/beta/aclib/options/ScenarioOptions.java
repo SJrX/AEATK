@@ -21,51 +21,56 @@ import ca.ubc.cs.beta.aclib.objectives.RunObjective;
 @UsageTextField(title="Scenario Options", description="Standard Scenario Options for use with SMAC. In general consider using the --scenarioFile directive to specify these parameters and Algorithm Execution Options")
 public class ScenarioOptions extends AbstractOptions{
 	
-	@Parameter(names={"--runObj","--run_obj"}, description="Per Target Algorithm Run Objective Type that we are optimizing for", converter=RunObjectiveConverter.class, required=true)
+	@Parameter(names={"--runObj","--run_obj"}, description="per target algorithm run objective type that we are optimizing for", converter=RunObjectiveConverter.class, required=true)
 	public RunObjective runObj;
 	
-	@Parameter(names={"--intraInstanceObj","--overallObj", "--overall_obj","--intra_instance_obj"}, description="Objective function used to aggregate multiple runs for a single instance", converter=OverallObjectiveConverter.class, required=true)
+	@Parameter(names={"--intraInstanceObj","--overallObj", "--overall_obj","--intra_instance_obj"}, description="objective function used to aggregate multiple runs for a single instance", converter=OverallObjectiveConverter.class, required=true)
 	public OverallObjective intraInstanceObj;
 	
-	@Parameter(names={"--interInstanceObj","--inter_instance_obj"}, description="Objective function used to aggregate over multiple instances (that have already been aggregated under the Intra-Instance Objective)", converter=OverallObjectiveConverter.class)
+	@Parameter(names={"--interInstanceObj","--inter_instance_obj"}, description="objective function used to aggregate over multiple instances (that have already been aggregated under the Intra-Instance Objective)", converter=OverallObjectiveConverter.class)
 	public OverallObjective interInstanceObj = OverallObjective.MEAN;
 	
-	@Parameter(names={"--cutoffTime","--cutoff_time"}, description="Cap Time for an Individual Run", required=true, validateWith=ZeroInfinityOpenInterval.class)
+	@Parameter(names={"--cutoffTime","--cutoff_time"}, description="CPU time limit for an individual target algorithm run", required=true, validateWith=ZeroInfinityOpenInterval.class)
 	public double cutoffTime;
 	
-	@Parameter(names={"--cutoffLength","--cutoff_length"}, description="Cap Time for an Individual Run [Not Implemented Currently]", converter=StringToDoubleConverterWithMax.class, hidden=true)
+	@Parameter(names={"--cutoffLength","--cutoff_length"}, description="cap limit for an individual run [not implemented currently]", converter=StringToDoubleConverterWithMax.class, hidden=true)
 	public double cutoffLength = -1.0;
 	
-	@Parameter(names="--tunerTimeout", description="Total CPU Time to execute for", validateWith=NonNegativeInteger.class)
+	@Parameter(names="--tunerTimeout", description="limits the total cpu time allowed between SMAC and the target algorithm runs during the automatic configuration phase", validateWith=NonNegativeInteger.class)
 	public int tunerTimeout = Integer.MAX_VALUE;
 	
-	@Parameter(names={"--instanceFile","-i","--instance_file","--instance_seed_file"}, description="File containing instances in either \"<instance filename>\", or \"<seed>,<instance filename>\" format", required=true)
+	@Parameter(names={"--instanceFile","-i","--instance_file","--instance_seed_file"}, description="file containing a list of instances to use during the automatic configuration phase (see Instance File Format section of the manual)", required=true)
 	public String instanceFile;
 
 	@UsageTextField(defaultValues="")
-	@Parameter(names={"--instanceFeatureFile", "--feature_file"}, description="File that contains the all the instances features")
+	@Parameter(names={"--instanceFeatureFile", "--feature_file"}, description="file that contains the all the instances features")
 	public String instanceFeatureFile;
 	
-	@Parameter(names={"--testInstanceFile","--test_instance_file","--test_instance_seed_file"}, description="File containing instances specified one instance per line", required=true)
+	@Parameter(names={"--testInstanceFile","--test_instance_file","--test_instance_seed_file"}, description="file containing a list of instances to use during the validation phase (see Instance File Format section of the manual)", required=true)
 	public String testInstanceFile;
 
 	@UsageTextField(defaultValues="")
-	@Parameter(names="--scenarioFile", description="Scenario File")
+	@Parameter(names="--scenarioFile", description="scenario file")
 	@ParameterFile
 	public File scenarioFile = null;
 	
-	@Parameter(names="--checkInstanceFilesExist", description="Check if instances files exist on disk")
+	@Parameter(names="--checkInstanceFilesExist", description="check if instances files exist on disk")
 	public boolean checkInstanceFilesExist = false;
 
 	@UsageTextField(defaultValues="<current working directory>/smac-output")
 	@Parameter(names={"--outputDirectory","--outdir"}, required=false, description="Output Directory")
 	public String outputDirectory = System.getProperty("user.dir") + File.separator + "smac-output";
 
+	@Parameter(names="--leakMemory", hidden=true, description="leaks some amount of memory for every run")
+	public boolean leakMemory = false;
+	
+	@Parameter(names="--leakMemoryAmount", hidden=true, description="amount of memory in bytes to leak")
+	public int leakMemoryAmount = 1024;
+	
 	@ParametersDelegate
 	public ParamFileDelegate paramFileDelegate = new ParamFileDelegate();
 	
 	@ParametersDelegate
 	public AlgorithmExecutionOptions algoExecOptions = new AlgorithmExecutionOptions();
-	
-	
+
 }

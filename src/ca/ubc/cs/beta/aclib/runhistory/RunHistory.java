@@ -193,9 +193,12 @@ public interface RunHistory {
 	public double[][] getAllConfigurationsRanInValueArrayForm();
 	
 	/**
-	 * Returns a list of all the runs
+	 * Returns a new list containing all the runs we have done.
+	 * <p>
+	 * <b>Implementation Note:</b>Implementors must return a list that clients can modify directly without
+	 * corrupting internal state.
 	 * 
-	 * @return list of runs
+	 * @return list of runs that we have recorded 
 	 */
 	public List<AlgorithmRun> getAlgorithmRuns();
 	

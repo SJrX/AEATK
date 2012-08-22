@@ -22,7 +22,7 @@ public class FileReaderNoException extends Reader
 			this.fileReader = new FileReader(f);
 		} catch (FileNotFoundException e) {
 
-			throw new IllegalArgumentException(e);
+			throw new IllegalStateException(e);
 		}
 	}
 	

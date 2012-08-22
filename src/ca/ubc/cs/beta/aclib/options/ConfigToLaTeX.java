@@ -53,7 +53,9 @@ public class ConfigToLaTeX {
 			pw.append("\t\\begin{description}");
 			for(String name : sec)
 			{
-				String printedName = name.replaceAll("-", "-~\\$\\\\!\\\\!\\$");
+				
+				if(sec.isAttributeHidden(name)) continue;
+				String printedName = name.replaceAll("-", "-~\\$\\\\!\\$");
 				pw.append("\t\t\\item[").append(printedName).append("]");
 				String description = sec.getAttributeDescription(name);
 				//== Escape some special characters
@@ -62,7 +64,7 @@ public class ConfigToLaTeX {
 				description = description.replaceAll("<","\\$<\\$");
 				description = description.replaceAll(">","\\$>\\$");
 				description = description.replaceAll("\\*", "\\$\\\\times\\$");
-				
+				description = description.replaceAll("--", "-~\\$\\\\!\\$-");
 				
 				pw.append(" ").append(description).append("\n\n");
 				
@@ -74,10 +76,13 @@ public class ConfigToLaTeX {
 				{
 					pw.append("\t\t\t\\item[REQUIRED]\n");
 				}
-				pw.format("\t\t\t\\item[Aliases:] %s %n", sec.getAttributeAliases(name).replaceAll("\\_", "\\\\_").replaceFirst("-", "-~\\$\\\\!\\\\!\\$"));
+				pw.format("\t\t\t\\item[Aliases:] %s %n", sec.getAttributeAliases(name).replaceAll("\\_", "\\\\_").replaceAll("--", "-~\\$\\\\!\\$-"));
 				if(sec.getAttributeDefaultValues(name).length() > 0)
 				{
-					pw.format("\t\t\t\\item[Default Value:] %s %n", sec.getAttributeDefaultValues(name));
+					String defaultValue = sec.getAttributeDefaultValues(name);
+					defaultValue = defaultValue.replaceAll("<","\\$<\\$");
+					defaultValue = defaultValue.replaceAll(">","\\$>\\$");
+					pw.format("\t\t\t\\item[Default Value:] %s %n", defaultValue);
 				}
 				
 				if(sec.getAttributeDomain(name).length() > 0)
@@ -112,6 +117,11 @@ public class ConfigToLaTeX {
 	
 	public static void usage(List<UsageSection> sections)
 	{
+		usage(sections, false);
+	}
+	
+	public static void usage(List<UsageSection> sections, boolean showHidden)
+	{
 		PrintWriter pw = new PrintWriter(System.out);
 		
 		System.out.println("Usage:\n");
@@ -126,12 +136,22 @@ public class ConfigToLaTeX {
 			for(String name : sec)
 			{
 				
-				String required = "";
+				String required = "    ";
+				
+				if(sec.isAttributeHidden(name) && showHidden)
+				{
+					required = "[H]";
+				} else
+				{
+					required = "   ";
+				}
 				
 				if(sec.isAttributeRequired(name))
 				{
-					required = "   [R]";
+					required = "[R]";
 				}
+				
+				
 				pw.format("%-10s %s %n", required, sec.getAttributeAliases(name));
 				if(sec.getAttributeDescription(name).trim().length() > 0)
 				{
@@ -216,15 +236,16 @@ public class ConfigToLaTeX {
 				{
 					
 					Parameter param = getParameterAnnotation(f);
-					if(param.hidden()) continue;
+					
 					String name = getNameForField(f);
 					String defaultValue = getDefaultValueForField(f,obj);
 					String description = getDescriptionForField(f,obj);
 					boolean required = getRequiredForField(f,obj);
 					String aliases = getAliases(f, obj);
 					String domain = getDomain(f,obj);
+					boolean hidden = param.hidden();
 					
-					sec.addAttribute(name, description, defaultValue, required,domain, aliases );
+					sec.addAttribute(name, description, defaultValue, required,domain, aliases , hidden);
 					
 				}
 				

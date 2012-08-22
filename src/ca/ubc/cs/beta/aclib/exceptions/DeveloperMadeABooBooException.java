@@ -19,4 +19,8 @@ public class DeveloperMadeABooBooException extends SMACException {
 		super("The developers of SMAC thought this exception would never EVER happen, honest and aren't our faces red now", e);
 	}
 
+	public DeveloperMadeABooBooException(String string) {
+		super(string);
+	}
+
 }

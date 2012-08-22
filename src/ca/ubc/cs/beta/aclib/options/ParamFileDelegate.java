@@ -11,7 +11,7 @@ import com.beust.jcommander.Parameter;
 @UsageTextField(hiddenSection = true)
 public class ParamFileDelegate extends AbstractOptions{
 	
-	@Parameter(names={"-p", "--paramFile","--paramfile"}, description="File containing Parameter Space of Execution", required=true)
+	@Parameter(names={"-p", "--paramFile","--paramfile"}, description="File containing algorithm parameter space information (see Algorithm Parameter File in the Manual)", required=true)
 	public String paramFile;
 
 }

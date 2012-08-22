@@ -22,6 +22,7 @@ import ca.ubc.cs.beta.aclib.options.AlgorithmExecutionOptions;
 import ca.ubc.cs.beta.aclib.options.ScenarioOptions;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbortOnCrashTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbortOnFirstRunCrashTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.LeakingMemoryTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.RetryCrashedRunsTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.RunHashCodeVerifyingAlgorithmEvalutor;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.loader.TargetAlgorithmEvaluatorLoader;
@@ -126,6 +127,18 @@ public class TargetAlgorithmEvaluatorBuilder {
 		//==== Run Hash Code Verification should be last
 		if(hashVerifiersAllowed)
 		{
+			
+			if(options.leakMemory)
+			{
+				LeakingMemoryTargetAlgorithmEvaluator.leakMemoryAmount(options.leakMemoryAmount);
+				log.warn("Target Algorithm Evaluators will leak memory. I hope you know what you are doing");
+				algoEval = new LeakingMemoryTargetAlgorithmEvaluator(algoEval);
+				
+			}
+			
+			
+			
+			
 			if(options.algoExecOptions.runHashCodeFile != null)
 			{
 				log.info("Algorithm Execution will verify run Hash Codes");

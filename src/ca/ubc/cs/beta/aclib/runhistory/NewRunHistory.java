@@ -127,8 +127,6 @@ public class NewRunHistory implements RunHistory {
 		this.aggregateInstanceObjectiveFunction = interInstanceObjective;
 		this.runObj = runObj;
 	
-		
-		
 	}
 	
 	@Override
