@@ -56,7 +56,7 @@ public class LegacyStateFactory implements StateFactory{
 					throw new IllegalArgumentException("Could not create directory" + f.getAbsolutePath());
 				} else
 				{
-					log.info("Directory created for states: {}" + f.getAbsolutePath());
+					log.info("Directory created for states: {}",  f.getAbsolutePath());
 				}
 				
 			} else
