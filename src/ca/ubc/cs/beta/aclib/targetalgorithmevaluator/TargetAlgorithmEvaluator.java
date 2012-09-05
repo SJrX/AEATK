@@ -15,8 +15,12 @@ import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
  * <p>
  * Additionally client implementations should probably not validate the output of AlgorithmRuns but rely on other wrappers to do this for them.
  * <p>
- * They may through TargetAlgorithmAbortExceptions, but again wrappers will take care of this if. 
- *
+ * They may throw TargetAlgorithmAbortExceptions, but again other wrappers ought to take care of it
+ * <p>
+ * <b>NOTE:</b>Implementations MUST be thread safe, and ideally concurrent calls to evaluateRun() should all be serialized in such a way 
+ * that honours the concurrency requirements of the evaluator (in other words, if concurrency is limited to N processors, then 
+ * regardless of how many times evaluateRun is called concurrently only N actual runs of the target algorithm should be running at any given time)
+ * 
  * @author Steve Ramage
  * 
  */

@@ -4,11 +4,13 @@ import static org.junit.Assert.*;
 
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
+import java.util.Scanner;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -30,6 +32,8 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.CommandLineTargetAlgorithmE
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbortOnCrashTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbortOnFirstRunCrashTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.targetalgorithmevaluator.ldlibrarypathfix.CLICallee;
+import ca.ubc.cs.beta.targetalgorithmevaluator.ldlibrarypathfix.CLIExecutor;
 
 
 public class TAETestSet {
@@ -931,5 +935,58 @@ public class TAETestSet {
 		assertTrue(bout.toString().contains("Most likely the algorithm did not specify all of the required outputs that is <solved>,<runtime>,<runlength>,<quality>,<seed>"));
 	}
 	
+	
+	//You can delete this if you see it
+//	
+//	/***
+//	 * This is related to Task 1442, 
+//	 * 
+//	 * Long story short, The target algorithms see a modified LD_LIBRARY_PATH with 
+//	 * java paths prepended, this can cause problems in certain circumstances.
+//	 * {@link http://bugs.sun.com/view_bug.do?bug_id=6670965}
+//	 */
+//	
+//	public void testLDLibraryPathNotModified()
+//	{
+//		/**
+//		 * This test does the following and is only useful in Sun Java 6
+//		 * Calls an executable, that executes another
+//		 * executable with a specific LD_LIBRARY_PATH set, 
+//		 * and this one Command Line Target Algorithm Executable
+//		 * That outputs the LD_LIBRARY_PATH as the additional algorithm run data.
+//		 * Then the executable outputs this value back to us. 
+//		 * 
+//		 */
+//		
+//		String execString = TestHelper.getJavaExecString() + CLIExecutor.class.getCanonicalName();
+//		String[] envp = { "LD_LIBRARY_PATH=foo" };
+//		Process proc;
+//		try {
+//			proc = Runtime.getRuntime().exec(execString, envp );
+//			Scanner procIn = new Scanner(proc.getInputStream());
+//			
+//			
+//			while(procIn.hasNext())
+//			{
+//				String line = procIn.nextLine();
+//				//I expect that the wrapper script we execute only outputs the LD_LIBRARY PATH
+//				System.out.println(line.trim());
+//				String expected = "LD_LIBRARY_PATH=foo";
+//				System.out.println(expected);
+//				assertEquals(expected, line.trim());
+//				return;
+//			}
+//			
+//			
+//			fail("Did not find matching line");
+//		} catch (IOException e) {
+//			e.printStackTrace();
+//			fail("Execption Occurred");
+//		}
+//		
+//		
+//				
+//		
+//	}
 	
 }

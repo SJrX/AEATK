@@ -53,6 +53,7 @@ class ConcurrentAlgorithmRunner extends AbstractAlgorithmRunner {
 		 */
 		try {
 			
+	
 			
 			try {
 				p.invokeAll(runs);

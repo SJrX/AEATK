@@ -77,7 +77,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 		{
 			
 			log.info("Cap time is negative for {} setting run as timedout", runConfig);
-			String rawResultLine = "[DIDN'T BOTHER TO RUN ALGORITHM AS THE CAPTIME IS NOT POSITIVE NEGATIVE]";
+			String rawResultLine = "[DIDN'T BOTHER TO RUN ALGORITHM AS THE CAPTIME IS NOT POSITIVE]";
 			
 			this.setResult(RunResult.TIMEOUT, 0, 0, 0, runConfig.getProblemInstanceSeedPair().getSeed(), rawResultLine,"");
 		}

@@ -13,6 +13,17 @@ public class OverallObjectiveConverter implements IStringConverter<OverallObject
 	@Override
 	public OverallObjective convert(String arg0) {
 		try { 
+			
+		if(arg0.toUpperCase().equals("PAR10"))
+		{
+			return OverallObjective.MEAN10;
+		}
+		
+		if(arg0.toUpperCase().equals("PAR1000"))
+		{
+			return OverallObjective.MEAN1000;
+		}
+		
 		return OverallObjective.valueOf(arg0.toUpperCase());
 		} catch(IllegalArgumentException e)
 		{

@@ -18,4 +18,17 @@ public final class TestHelper {
 		return file;
 	}
 	
+	
+	public static String getJavaExecString()
+	{
+		
+		
+		StringBuilder b = new StringBuilder();
+		b.append(System.getProperty("java.home") + File.separator + "bin" + File.separator + "java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		
+		return b.toString();
+	}
+	
 }
