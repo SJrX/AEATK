@@ -12,10 +12,12 @@ import java.util.List;
 import java.util.Random;
 import java.util.Scanner;
 
+import org.apache.commons.io.output.NullOutputStream;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+import org.slf4j.MarkerFactory;
 
 import ca.ubc.cs.beta.TestHelper;
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
@@ -24,6 +26,8 @@ import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.exceptions.TargetAlgorithmAbortException;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aclib.misc.logback.MarkerFilter;
+import ca.ubc.cs.beta.aclib.misc.logging.LoggingMarker;
 import ca.ubc.cs.beta.aclib.misc.random.SeedableRandomSingleton;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
@@ -34,6 +38,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbortOnCrashTarg
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbortOnFirstRunCrashTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.targetalgorithmevaluator.ldlibrarypathfix.CLICallee;
 import ca.ubc.cs.beta.targetalgorithmevaluator.ldlibrarypathfix.CLIExecutor;
+import ca.ubc.cs.beta.targetalgorithmevaluator.massiveoutput.MassiveOutputParamEchoExecutor;
 
 
 public class TAETestSet {
@@ -934,6 +939,138 @@ public class TAETestSet {
 		
 		assertTrue(bout.toString().contains("Most likely the algorithm did not specify all of the required outputs that is <solved>,<runtime>,<runlength>,<quality>,<seed>"));
 	}
+	
+	
+	
+	/**
+	 * This just tests to see if ParamEchoExecutor does what it should
+	 * This tested for out of memory issues with the regular expression but
+	 * didn't conclusively find anything.
+	 * 
+	 */
+	@Test
+	@Ignore
+	public void testMassiveOutput()
+	{
+		
+		MarkerFilter.deny(LoggingMarker.FULL_PROCESS_OUTPUT);
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(MassiveOutputParamEchoExecutor.class.getCanonicalName());
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
+		
+		tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false);
+		SeedableRandomSingleton.reinit();
+		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
+		this.r = SeedableRandomSingleton.getRandom();
+		
+		
+		configSpace.setPRNG(r);
+		
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(1);
+		for(int i=0; i < 1; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration();
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
+				runConfigs.add(rc);
+			}
+		}
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		System.out.println("Suppressing Output");
+		PrintStream out = System.out;
+		System.setOut(new PrintStream(new NullOutputStream()));
+		List<AlgorithmRun> runs;
+		try {
+		 runs = tae.evaluateRun(runConfigs);
+		} finally{
+			System.setOut(out);
+		}
+		
+		
+		for(AlgorithmRun run : runs)
+		{
+			ParamConfiguration config  = run.getRunConfig().getParamConfiguration();
+			assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
+			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
+			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
+			assertDEquals(config.get("seed"), run.getResultSeed(), 0.1);
+			assertEquals(config.get("solved"), run.getRunResult().name());
+			//This executor should not have any additional run data
+			assertEquals("",run.getAdditionalRunData());
+
+		}
+	}
+	
+	
+	/**
+	 * This tests to see if the Random white space executor and various other supported
+	 * output formats are matched correctly
+	 */
+	@Test
+	public void testWhiteSpaceInExecutorStart()
+	{
+		
+	
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(RandomWhitespaceParamEchoExecutor.class.getCanonicalName());
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
+		
+		tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false);
+		SeedableRandomSingleton.reinit();
+		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
+		this.r = SeedableRandomSingleton.getRandom();
+		
+		
+		configSpace.setPRNG(r);
+		
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration();
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
+				runConfigs.add(rc);
+			}
+		}
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+		
+		
+		for(AlgorithmRun run : runs)
+		{
+			ParamConfiguration config  = run.getRunConfig().getParamConfiguration();
+			assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
+			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
+			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
+			assertDEquals(config.get("seed"), run.getResultSeed(), 0.1);
+			assertEquals(config.get("solved"), run.getRunResult().name());
+			//This executor should not have any additional run data
+			assertEquals("",run.getAdditionalRunData());
+
+		}
+	}
+	
+	
 	
 	
 	//You can delete this if you see it
