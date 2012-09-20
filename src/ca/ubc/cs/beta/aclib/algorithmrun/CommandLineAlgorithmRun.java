@@ -12,6 +12,9 @@ import java.util.Queue;
 import java.util.Scanner;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -64,6 +67,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 		log.warn("This version of SMAC hardcodes run length for calls to the target algorithm to {}.", Integer.MAX_VALUE);
 	}
 	
+	public static ExecutorService threadPoolExecutor = Executors.newCachedThreadPool(); 
 	/**
 	 * Default Constructor
 	 * @param execConfig		execution configuration of the object
@@ -101,18 +105,40 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 		try {
 			this.startWallclockTimer();
 			proc = runProcess();
+			
+			final Process innerProcess = proc; 
+			
+			final Semaphore stdErrorDone = new Semaphore(0);
+			
+			Runnable standardErrorReader = new Runnable()
+			{
+
+				@Override
+				public void run() {
+					
+					try { 
+					Scanner procIn = new Scanner(innerProcess.getErrorStream());
+					
+					while(procIn.hasNext())
+					{	
+						log.warn(procIn.nextLine());
+					}
+					
+					procIn.close();
+					} finally
+					{
+						stdErrorDone.release();
+					}
+					
+				}
+				
+			};
+			
+			threadPoolExecutor.execute(standardErrorReader);
 			Scanner procIn = new Scanner(proc.getInputStream());
 		
 			processRunLoop(procIn);
-			
-			procIn = new Scanner(proc.getErrorStream());
-			
-			while(procIn.hasNext())
-			{	
-				
-				log.warn(procIn.nextLine());
-				
-			}
+		
 			
 			
 			if(!this.isRunCompleted())
@@ -153,6 +179,9 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 			
 			
 			procIn.close();
+			
+			stdErrorDone.acquireUninterruptibly();
+			
 			proc.destroy();
 			this.stopWallclockTimer();
 		} catch (IOException e1) {
