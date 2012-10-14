@@ -23,6 +23,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import au.com.bytecode.opencsv.CSVReader;
+import ca.ubc.cs.beta.aclib.exceptions.FeatureNotFoundException;
 import ca.ubc.cs.beta.aclib.misc.csvhelpers.ConfigCSVFileHelper;
 import ca.ubc.cs.beta.aclib.seedgenerator.InstanceSeedGenerator;
 import ca.ubc.cs.beta.aclib.seedgenerator.RandomInstanceSeedGenerator;
@@ -417,7 +418,7 @@ public class ProblemInstanceHelper {
 				}
 				if(features == null)
 				{
-					throw new ParameterException("Feature file : " + featureFileName + " does not contain feature data for instance: " + instanceFile);
+					throw new FeatureNotFoundException("Feature file : " + featureFileName + " does not contain feature data for instance: " + instanceFile);
 				}
 				
 				
