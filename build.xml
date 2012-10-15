@@ -58,7 +58,7 @@
 	
 	
 	<target name="compile-test" depends="compile">
-			<path id="test.compile.classpath">
+		<path id="test.compile.classpath">
 	            <fileset dir="lib" id="lib">
 	                <include name="*.jar"/>
 	                <exclude name="*sources.jar"/>
@@ -66,10 +66,13 @@
 	            <fileset dir="${software.dir}/fastrf/" id="fastrf">
 	                <include name="fastrf.jar"/>
 	            </fileset>
+                    <fileset dir="testlib">
+                        <include name="*.jar"/>
+                    </fileset>
 	            <pathelement path="build/classes/"/>
 	        </path>
 				
-	 		<javac srcdir="test" destdir="build/testclasses" debug="true" verbose="true">
+	 	<javac srcdir="test" destdir="build/testclasses" debug="true" verbose="true" target="1.6">
 					
 	            <classpath refid="test.compile.classpath" />
 			</javac>
