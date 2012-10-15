@@ -7,8 +7,6 @@
 	<!-- If you don't specify a buildnumber file we will use this -->
 	<property name="buildnumberpath" value="build/classes/"/>
 
-	
-	
 	<property name="version.file" value="aclib-version.txt"/>
 	<property name="version.file.dev" value="version/${version.file}"/>
 	<fail message="No Software Directory specified, a private build file should exist in ${private.buildfile} this should specify at the very least 'software.dir'">
@@ -43,12 +41,20 @@
 		<delete dir="doc"/>
 	</target>
 	
-	<target name="compile" depends="init,doc" description="Compiles the source">
+	<target name="compile" depends="init" description="Compiles the source">
 		<javac srcdir="src" destdir="build/classes" debug="true" includeantruntime="false">
 		<classpath refid="compile.classpath"/>
 		</javac>		
 	</target>
 	
+	<target name="get-git-branch"> 
+		<exec executable="git" outputproperty="git.branch">
+			<arg value="rev-parse"/>
+			<arg value="--abbrev-ref"/>
+			<arg value="HEAD"/>
+		</exec>
+		<echo>${git.branch}</echo>
+	</target>
 	
 	
 	<target name="compile-test" depends="compile">
@@ -94,6 +100,9 @@
 	                <include name="*.jar"/>
 	                <exclude name="*sources.jar"/>
 	            </fileset>
+	       		<fileset dir="testlib">
+	       			<include name="*.jar"/>
+	       		</fileset>
 	            <fileset dir="${software.dir}/fastrf/" id="fastrf">
 	                <include name="fastrf.jar"/>
 	            </fileset>
@@ -109,10 +118,10 @@
 			</junit>
 	</target>
 		
-	<target name="archive" depends="compile" description="Creates JAR Archives">
+	<target name="archive" depends="compile,doc, get-git-branch" description="Creates JAR Archives">
 		<buildnumber file="${buildnumberpath}/buildnumber-${ant.project.name}"/>
-		<property name="version.string" value="v${version.major}.${version.minor}.${version.revision}${version.beta}-${build.number}"/>
-		<property name="version.devstring" value="v${version.major}.${version.minor}.${version.revision}dev-${build.number}"/>
+		<property name="version.string" value="v${version.major}.${version.minor}.${version.revision}${version.beta}-${git.branch}-${build.number}"/>
+		<property name="version.devstring" value="v${version.major}.${version.minor}.${version.revision}dev-${git.branch}-${build.number}"/>
 		<echo file="${version.file.dev}">${version.devstring}</echo>
 		<echo file="build/classes/${version.file}">${version.string}</echo>
 		
@@ -130,30 +139,30 @@
 		</copy>
 	</target>
 	
-	<target name="deploy" depends="archive" description="Deploy JAR Archives to deploy dir">
-		<mkdir dir="${deploy.dir}"/>
+	<target name="deploy" depends="archive, get-git-branch" description="Deploy JAR Archives to deploy dir">
+		<mkdir dir="${deploy.dir}-${git.branch}"/>
 		<chmod perm="666">
-						<fileset dir="${deploy.dir}">
+						<fileset dir="${deploy.dir}-${git.branch}">
 								<include name="*"/>
 						</fileset>
 				</chmod>
 		
-		<copy todir="${deploy.dir}" force="true">
+		<copy todir="${deploy.dir}-${git.branch}" force="true">
 			<fileset dir="dist/">
 				<include name="*"/>
 			</fileset>
 		</copy>
 		<chmod perm="444">
-				<fileset dir="${deploy.dir}">
+				<fileset dir="${deploy.dir}-${git.branch}">
 						<include name="*"/>
 				</fileset>
 		</chmod>
 		<chmod perm="555">
-				<fileset dir="${deploy.dir}">
+				<fileset dir="${deploy.dir}-${git.branch}">
 						<include name="*.sh"/>
 				</fileset>
 		</chmod>
 		
-		<echo>Deployed version ${version.string} to ${deploy.dir}</echo>
+		<echo>Deployed version ${version.string} to ${deploy.dir}-${git.branch}</echo>
 	</target>
 </project>
