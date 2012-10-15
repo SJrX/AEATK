@@ -1,9 +1,12 @@
 package ca.ubc.cs.beta.aclib.targetalgorithmevaluator;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import com.beust.jcommander.ParameterException;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrunner.AlgorithmRunner;
@@ -41,6 +44,12 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractTargetAlgorithm
 		log.debug("Initalized with the following Execution Configuration {} " , execConfig);
 		this.concurrentExecution = concurrentExecution; 
 		log.debug("Concurrent Execution {}", concurrentExecution);
+		
+		File execDir = new File(execConfig.getAlgorithmExecutionDirectory());
+		if(!execDir.exists()) throw new ParameterException("The Algorithm Execution Directory does not exist (" + execConfig.getAlgorithmExecutionDirectory() + ")");
+		if(!execDir.isDirectory()) throw new ParameterException("The Algorithm Execution Directory is NOT a directory (" + execConfig.getAlgorithmExecutionDirectory() + ")");
+		
+
 	}
 	
 	

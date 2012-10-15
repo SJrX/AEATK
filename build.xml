@@ -3,6 +3,10 @@
 	<property name="private.buildfile" value="build-resources/private/user-antbuild.properties"/>
 	<property file="${private.buildfile}"/>
 	<property file="build-resources/antbuild.properties"/>
+	
+	<!-- If you don't specify a buildnumber file we will use this -->
+	<property name="buildnumberpath" value="build/classes/"/>
+
 	<property name="version.file" value="aclib-version.txt"/>
 	<property name="version.file.dev" value="version/${version.file}"/>
 	<fail message="No Software Directory specified, a private build file should exist in ${private.buildfile} this should specify at the very least 'software.dir'">
@@ -12,6 +16,8 @@
 			</not>
 		</condition>
 	</fail>
+	
+
 	<path id="compile.classpath">
 		<fileset dir="lib" id="lib">
 			<include name="*.jar"/>
@@ -22,53 +28,100 @@
 		</fileset>
 	</path>	
 	
-		
-	
-	<target name="init"> 
+	<target name="init" description="Creates build environment"> 
 		<mkdir dir="build/classes/"/>
 		<mkdir dir="build/testclasses/"/>
 		<mkdir dir="dist"/>
 		<mkdir dir="models"/>
 	</target>
 	
-	<target name="clean">
+	<target name="clean" description="Cleans up build environment">
 		<delete dir="build"/>
 		<delete dir="dist"/>
 		<delete dir="doc"/>
 	</target>
-	<target name="compile" depends="init,doc">
-		<javac srcdir="src" destdir="build/classes" debug="true">
+	
+	<target name="compile" depends="init" description="Compiles the source">
+		<javac srcdir="src" destdir="build/classes" debug="true" includeantruntime="false">
 		<classpath refid="compile.classpath"/>
-		</javac>
-		<!--
-		<path id="test.compile.classpath">
-							<fileset dir="lib" id="lib">
-								<include name="*.jar"/>
-								<exclude name="*sources.jar"/>
-							</fileset>
-							<fileset dir="${software.dir}/fastrf/" id="fastrf">
-								<include name="fastrf.jar"/>
-							</fileset>
-							<fileset dir="build/classes/"/>
-
-				</path>
+		</javac>		
+	</target>
+	
+	<target name="get-git-branch"> 
+		<exec executable="git" outputproperty="git.branch">
+			<arg value="rev-parse"/>
+			<arg value="--abbrev-ref"/>
+			<arg value="HEAD"/>
+		</exec>
+		<echo>${git.branch}</echo>
+	</target>
+	
+	
+	<target name="compile-test" depends="compile">
+			<path id="test.compile.classpath">
+	            <fileset dir="lib" id="lib">
+	                <include name="*.jar"/>
+	                <exclude name="*sources.jar"/>
+	            </fileset>
+	            <fileset dir="${software.dir}/fastrf/" id="fastrf">
+	                <include name="fastrf.jar"/>
+	            </fileset>
+	            <pathelement path="build/classes/"/>
+	        </path>
+				
+	 		<javac srcdir="test" destdir="build/testclasses" debug="true" verbose="true">
+					
+	            <classpath refid="test.compile.classpath" />
+			</javac>
+	 </target>
+	
+	<target name="javadoc" depends="setjavaprop,doc" description="Make Javadoc"/>
+	
+	<target name="setjavaprop">
+		<property name="build.javadoc" value="true"/>
+	</target>
+	
+	
+	
+	<target name="doc" depends="javadoc-internal,nodoc"/>
 			
-		<javac srcdir="test" destdir="build/testclasses" debug="true" verbose="true">
-				<classpath refid="test.compile.classpath"/>
-		</javac>
-			-->	
+			
+	<target name="javadoc-internal"  if="build.javadoc">
+		<javadoc sourcepath="src/" author="true" destdir="doc/" classpathref="compile.classpath" />
+	</target>
+	<target name="nodoc" unless="build.javadoc">
+		<echo>build.javadoc property not set so skipping building of javadoc</echo>
+	</target>
+	
+	
+	 <target name="test" depends="compile-test" description="Run JUnit Tests">
+	       <path id="test.classpath">
+	            <fileset dir="lib" id="lib">
+	                <include name="*.jar"/>
+	                <exclude name="*sources.jar"/>
+	            </fileset>
+	       		<fileset dir="testlib">
+	       			<include name="*.jar"/>
+	       		</fileset>
+	            <fileset dir="${software.dir}/fastrf/" id="fastrf">
+	                <include name="fastrf.jar"/>
+	            </fileset>
+	            <pathelement path="build/classes/" /> 
+	            <pathelement path="build/testclasses/" />
+	            <pathelement path="test-files/" />
+	        </path>
+	 		
+	        <junit fork="yes" printsummary="true" showoutput="false"> 
+				<classpath refid="test.classpath"/>			
+	 			<test name="ca.ubc.cs.beta.ACLibTestSuite"/>
+	            <formatter type="plain" usefile="false" />
+			</junit>
+	</target>
 		
-	</target>
-	<target name="doc">
-		<javadoc sourcepath="src/" author="true" destdir="doc/" classpathref="compile.classpath">
-	    <!--doctitle><![CDATA[<h1>Test</h1>]]></doctitle>
-	    <bottom><![CDATA[<i>Copyright &#169; 2000 Dummy Corp. All Rights Reserved.</i>]]></bottom>-->
-		</javadoc>
-	</target>
-	<target name="archive" depends="compile">
-		<buildnumber file="/ubc/cs/project/arrow/seramage/software/build-numbers/buildnumber-${ant.project.name}"/>
-		<property name="version.string" value="v${version.major}.${version.minor}.${version.revision}${version.beta}-${build.number}"/>
-		<property name="version.devstring" value="v${version.major}.${version.minor}.${version.revision}dev-${build.number}"/>
+	<target name="archive" depends="compile,doc, get-git-branch" description="Creates JAR Archives">
+		<buildnumber file="${buildnumberpath}/buildnumber-${ant.project.name}"/>
+		<property name="version.string" value="v${version.major}.${version.minor}.${version.revision}${version.beta}-${git.branch}-${build.number}"/>
+		<property name="version.devstring" value="v${version.major}.${version.minor}.${version.revision}dev-${git.branch}-${build.number}"/>
 		<echo file="${version.file.dev}">${version.devstring}</echo>
 		<echo file="build/classes/${version.file}">${version.string}</echo>
 		
@@ -84,56 +137,32 @@
 			<fileset refid="lib"/>
 			<fileset refid="fastrf"/>	
 		</copy>
-		
 	</target>
-	<!--
-	<target name="test" depends="compile">
-		<path id="test.classpath">
-					<fileset dir="lib" id="lib">
-						<include name="*.jar"/>
-						<exclude name="*sources.jar"/>
-					</fileset>
-					<fileset dir="${software.dir}/fastrf/" id="fastrf">
-						<include name="fastrf.jar"/>
-					</fileset>
-					<fileset dir="build/classes/">
-						<include name="**/*"/>
-					</fileset>
-					<fileset dir="build/testclasess/">
-						<include name="**/*"/>
-					</fileset>
-						
-			</path>
-		
-		<junit>
-			<classpath refid="test.classpath"/>			
-			<test name="ca.ubc.cs.beta.ACLibTestSuite"/>
-		</junit>
-			
-	</target>
-	-->
-	<target name="deploy" depends="archive">
-		<mkdir dir="${deploy.dir}"/>
+	
+	<target name="deploy" depends="archive, get-git-branch" description="Deploy JAR Archives to deploy dir">
+		<mkdir dir="${deploy.dir}-${git.branch}"/>
 		<chmod perm="666">
-						<fileset dir="${deploy.dir}">
+						<fileset dir="${deploy.dir}-${git.branch}">
 								<include name="*"/>
 						</fileset>
 				</chmod>
 		
-		<copy todir="${deploy.dir}" force="true">
+		<copy todir="${deploy.dir}-${git.branch}" force="true">
 			<fileset dir="dist/">
 				<include name="*"/>
 			</fileset>
 		</copy>
 		<chmod perm="444">
-				<fileset dir="${deploy.dir}">
+				<fileset dir="${deploy.dir}-${git.branch}">
 						<include name="*"/>
 				</fileset>
 		</chmod>
 		<chmod perm="555">
-				<fileset dir="${deploy.dir}">
+				<fileset dir="${deploy.dir}-${git.branch}">
 						<include name="*.sh"/>
 				</fileset>
 		</chmod>
+		
+		<echo>Deployed version ${version.string} to ${deploy.dir}-${git.branch}</echo>
 	</target>
 </project>

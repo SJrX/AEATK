@@ -42,4 +42,7 @@ public class ValidationOptions extends AbstractOptions{
 	@Parameter(names="--validateOnlyLastIncumbent", description="validate only the last incumbent found")
 	public boolean validateOnlyLastIncumbent = true;
 	
+	@Parameter(names="--outputFileSuffix", description="Suffix to add to validation run files (for grouping)")
+	public String outputFileSuffix = "";
+	
 }
