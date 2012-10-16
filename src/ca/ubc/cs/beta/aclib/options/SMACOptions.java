@@ -21,6 +21,8 @@ import com.beust.jcommander.validators.PositiveInteger;
  * 
  * @author seramage
  *
+ *
+ *
  */
 @UsageTextField(title="SMAC Options", description="General Options for Running SMAC")
 public class SMACOptions extends AbstractOptions {
