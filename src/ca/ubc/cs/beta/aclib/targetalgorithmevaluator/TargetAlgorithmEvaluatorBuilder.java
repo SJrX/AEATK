@@ -84,6 +84,10 @@ public class TargetAlgorithmEvaluatorBuilder {
 		return getTargetAlgorithmEvaluator(scenarioOptions, execConfig, true);
 	}
 	
+	
+	
+	
+	
 	/**
 	 * Generates the TargetAlgorithmEvaluator with the given runtime behaivor
 	 * @param options
@@ -93,14 +97,31 @@ public class TargetAlgorithmEvaluatorBuilder {
 	 */
 	public static TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(ScenarioOptions options, AlgorithmExecutionConfig execConfig, boolean hashVerifiersAllowed)
 	{
+		return getTargetAlgorithmEvaluator(options, execConfig, hashVerifiersAllowed, null);
+	}
+	
+	/**
+	 * Generates the TargetAlgorithmEvaluator with the given runtime behaivor
+	 * @param options          options control how to decorate the TAE.
+	 * @param execConfig       exec configuration passed to the TAE.
+	 * @param noHashVerifiers  whether to put hashVerifiers on the TAE.
+	 * @param algoEval         tae to wrap, if set to null, we load one from SMACOptions.
+	 * 
+	 * @see TargetAlgorithmEvaluatorLoader.getTargetAlgorithmEvaluator for how to get a base one to pass in.
+	 * @return
+	 */
+	public static TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(ScenarioOptions options, AlgorithmExecutionConfig execConfig, boolean hashVerifiersAllowed, TargetAlgorithmEvaluator algoEval)
+	{
 		
 		ClassLoader cl = getClassLoader(options.algoExecOptions);
 		//TargetAlgorithmEvaluator cli = TargetAlgorithmEvaluatorLoader.getTargetAlgorithmEvaluator(execConfig, options.maxConcurrentAlgoExecs, "CLI",cl);
 		//TargetAlgorithmEvaluator surrogate = TargetAlgorithmEvaluatorLoader.getTargetAlgorithmEvaluator(execConfig, options.maxConcurrentAlgoExecs, options.scenarioConfig.algoExecOptions.targetAlgorithmEvaluator,cl);
 		
-		 
-		TargetAlgorithmEvaluator algoEval = TargetAlgorithmEvaluatorLoader.getTargetAlgorithmEvaluator(execConfig, options.algoExecOptions.maxConcurrentAlgoExecs, options.algoExecOptions.targetAlgorithmEvaluator,cl);
-		
+		//TODO Remove loading here, users should always just pass one in I think.
+		if(algoEval == null)
+		{
+			 algoEval = TargetAlgorithmEvaluatorLoader.getTargetAlgorithmEvaluator(execConfig, options.algoExecOptions.maxConcurrentAlgoExecs, options.algoExecOptions.targetAlgorithmEvaluator,cl);
+		};
 		//===== Note the decorators are not in general commutative
 		//Specifically Run Hash codes should only see the same runs the rest of the applications see
 		//Additionally retrying of crashed runs should probably happen before Abort on Crash

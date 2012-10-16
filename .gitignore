@@ -3,4 +3,5 @@
 /dist
 /models
 .classpath
+.directory
 /doc
