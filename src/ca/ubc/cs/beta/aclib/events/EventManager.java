@@ -64,10 +64,9 @@ public class EventManager {
 	
 	public synchronized void registerHandler(Class< ? extends AutomaticConfiguratorEvent> event, EventHandler<?> handler )
 	{
-		
-		
-		List<EventHandler<?>> handlers =  handlerMap.putIfAbsent(event, new ArrayList<EventHandler<?>>());
-		
+
+		handlerMap.putIfAbsent(event, new ArrayList<EventHandler<?>>());
+		List<EventHandler<?>> handlers = handlerMap.get(event);
 		handlers.add(handler);
 	}
 	
