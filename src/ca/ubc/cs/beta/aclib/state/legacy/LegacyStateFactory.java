@@ -4,7 +4,10 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +34,13 @@ public class LegacyStateFactory implements StateFactory{
 	private final String saveStatePath;
 	private final String restoreFromPath;
 	private final Logger log = LoggerFactory.getLogger(getClass());
+	
+	/**
+	 * Stores for each iteration a set of files written
+	 */
+	private final ConcurrentSkipListMap<Integer, Set<String>> savedFilesPerIteration = new ConcurrentSkipListMap<Integer, Set<String>>();
+	
+	
 	/**
 	 * Constructs the LegacyStateFactory
 	 * @param saveStatePath 	Where we should save files to
@@ -101,7 +111,7 @@ public class LegacyStateFactory implements StateFactory{
 		{
 			throw new IllegalArgumentException("This Serializer does not support saving State");
 		}
-		return new LegacyStateSerializer(saveStatePath, id, iteration);
+		return new LegacyStateSerializer(saveStatePath, id, iteration, this);
 	}
 
 
@@ -278,4 +288,52 @@ public class LegacyStateFactory implements StateFactory{
 	
 	
 	static final String RUN_NUMBER_HEADING = "Run Number";
+	@Override
+	public void purgePreviousStates() {
+		
+		
+		if(savedFilesPerIteration.size() == 0)
+		{ //No iterations
+			return;
+		}
+		
+		Set<String> filesToDelete = new HashSet<String>();
+		
+		for(Set<String> files : savedFilesPerIteration.values())
+		{
+			filesToDelete.addAll(files);
+		}
+		
+		
+		filesToDelete.removeAll(savedFilesPerIteration.lastEntry().getValue());
+		
+		Integer lastIteration = savedFilesPerIteration.lastKey();
+		
+		log.info("Deleting all saved state files except those applicable to iteration {} ", lastIteration);
+		
+		
+		if(log.isDebugEnabled())
+		{
+			for(String filename : filesToDelete)
+			{
+				log.debug("Deleting file {}", filename);
+				if(!(new File(filename)).delete())
+				{
+					log.warn("Could not delete file {} ", filename);
+				}
+				
+			}
+		}
+		
+		
+		
+	}
+	
+	void addWrittenFilesForIteration(int iteration,
+			Set<String> savedFiles) {
+		
+			 this.savedFilesPerIteration.putIfAbsent(iteration, new HashSet<String>());
+			 Set<String> iterationFiles = this.savedFilesPerIteration.get(iteration);
+			iterationFiles.addAll(savedFiles);
+	}
 }

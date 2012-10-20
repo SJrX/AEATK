@@ -42,6 +42,8 @@ import ca.ubc.cs.beta.aclib.state.StateSerializer;
 import ca.ubc.cs.beta.aclib.state.legacy.LegacyStateFactory;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.CommandLineTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.EqualTargetAlgorithmEvaluatorTester;
+import ca.ubc.cs.beta.targetalgorithmevaluator.EchoTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.targetalgorithmevaluator.ParamEchoExecutor;
 import ca.ubc.cs.beta.targetalgorithmevaluator.ParamEchoExecutorWithGibberish;
 import ec.util.MersenneTwister;
@@ -242,49 +244,23 @@ public class LegacyStateDeserializerTester {
 		
 		
 		
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(1000);
-		for(int i=0; i < 200; i++)
-		{
-			ParamConfiguration config = configSpace.getRandomConfiguration();
-			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("TIMEOUT"))
-			{
-				//Only want good configurations
-				i--;
-				continue;
-			} else
-			{
-				ProblemInstance pi = pis.get(r.nextInt(pis.size()));
-				
-				ProblemInstanceSeedPair pisp = new ProblemInstanceSeedPair(pi, isg.getNextSeed(pi));
-				RunConfig rc = new RunConfig(pisp, 1001, config);
-				runConfigs.add(rc);
-			}
-		}
+		List<RunConfig> runConfigs = getValidRunConfigurations(pis, r, isg, configSpace);
 		
-		
-		AutomaticConfiguratorFactory.setMaximumNumberOfThreads(10);
-		
-		TargetAlgorithmEvaluator tae = new CommandLineTargetAlgorithmEvaluator( execConfig, true);
+	
+		TargetAlgorithmEvaluator tae = new EchoTargetAlgorithmEvaluator( execConfig);
 		
 		RunHistory runHistory = new NewRunHistory(isg, OverallObjective.MEAN10, OverallObjective.MEAN, RunObjective.RUNTIME);
-		
+		for(int i=0; i < 10; i++)
+		{
+			runHistory.incrementIteration();
+		}
 		
 		
 		System.out.println("Performing " + runConfigs.size() + " runs");
 		PrintStream ps = System.out;
-		List<AlgorithmRun> runs;
+		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
 		
-		//=== Suppress System output to speed up test execution
-		System.out.println("Suppressing System output");
-		System.setOut(null);
 		
-		try {
-			runs = tae.evaluateRun(runConfigs);
-		} finally
-		{
-			System.setOut(ps);
-			System.out.println("Restoring System Output");
-		}
 		for(AlgorithmRun run : runs)
 		{
 			runHistory.append(run);
@@ -314,58 +290,7 @@ public class LegacyStateDeserializerTester {
 		StateDeserializer stateD =  sf.getStateDeserializer("deleteMe-unitTest", 10, configSpace, OverallObjective.MEAN10, OverallObjective.MEAN, RunObjective.RUNTIME, pis, execConfig);
 		
 		
-		RunHistory restoredRunHistory = stateD.getRunHistory();
-		
-		assertEquals(runHistory.getIteration(), restoredRunHistory.getIteration());
-		
-		Set<ProblemInstance> instanceSet = new HashSet<ProblemInstance>();
-		instances.addAll(pis);
-		
-		for(int i=0; i < runs.size(); i++)
-		{
-			//==== We check equality on each member directly
-			//==== So we can easily debug cases where it's broken
-			
-			AlgorithmRun run = runHistory.getAlgorithmRuns().get(i);
-			
-			AlgorithmRun restoredRun = restoredRunHistory.getAlgorithmRuns().get(i);
-			
-			assertDEquals(run.getQuality(), restoredRun.getQuality(),0.01);
-			assertDEquals(run.getRuntime(),restoredRun.getRuntime(),0.01);
-			assertEquals(run.getResultSeed(), restoredRun.getResultSeed());
-			assertEquals(run.getRunResult(),restoredRun.getRunResult());
-			assertDEquals(run.getRunLength(), restoredRun.getRunLength(), 0.01);
-			assertEquals(run.getAdditionalRunData(), restoredRun.getAdditionalRunData());
-			
-			//=== Checks that each run has no additional run data
-			
-			assertEquals("",run.getAdditionalRunData().trim() );
-			assertEquals(run.getWallclockExecutionTime(), restoredRun.getWallclockExecutionTime(), 0.001);
-			
-			
-
-			
-			ParamConfiguration config = run.getRunConfig().getParamConfiguration();
-			
-			assertEquals(runHistory.getCensoredFlagForRuns()[i],restoredRunHistory.getCensoredFlagForRuns()[i]);
-			double cost1 = runHistory.getEmpiricalCost(config, instanceSet, execConfig.getAlgorithmCutoffTime());
-			double cost2 = restoredRunHistory.getEmpiricalCost(config, instanceSet, execConfig.getAlgorithmCutoffTime()); 
-			assertDEquals(cost1,cost2,0.1);
-			
-			System.out.print(".");
-			
-			if(i % 40 == 0) System.out.println("");
-			
-			
-			
-			
-			
-			
-			
-			
-			
-		}
-		
+		compareRestoredStateWithOriginalRunHistory(stateD, runHistory, pis, runs.size());
 		
 		
 		
@@ -417,55 +342,19 @@ public class LegacyStateDeserializerTester {
 		{
 			pis.add(new ProblemInstance("TestInstance_" + i,i));
 		}
-		
-		
-		InstanceSeedGenerator isg = new RandomInstanceSeedGenerator(pis, 1);
-		
-		
-		
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(1000);
-		for(int i=0; i < 50; i++)
-		{
-			ParamConfiguration config = configSpace.getRandomConfiguration();
-			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("TIMEOUT"))
-			{
-				//Only want good configurations
-				i--;
-				continue;
-			} else
-			{
-				ProblemInstance pi = pis.get(r.nextInt(pis.size()));
 				
-				ProblemInstanceSeedPair pisp = new ProblemInstanceSeedPair(pi, isg.getNextSeed(pi));
-				RunConfig rc = new RunConfig(pisp, 1001, config);
-				runConfigs.add(rc);
-			}
-		}
+		InstanceSeedGenerator isg = new RandomInstanceSeedGenerator(pis, 1);
+
+		List<RunConfig> runConfigs = getValidRunConfigurations(pis, r, isg, configSpace);
 		
-		
-		AutomaticConfiguratorFactory.setMaximumNumberOfThreads(10);
-		
-		TargetAlgorithmEvaluator tae = new CommandLineTargetAlgorithmEvaluator( execConfig, true);
-		
+		TargetAlgorithmEvaluator tae = new EchoTargetAlgorithmEvaluator( execConfig);
 		RunHistory runHistory = new NewRunHistory(isg, OverallObjective.MEAN10, OverallObjective.MEAN, RunObjective.RUNTIME);
-		
-		
-		
+				
 		System.out.println("Performing " + runConfigs.size() + " runs");
-		PrintStream ps = System.out;
-		List<AlgorithmRun> runs;
-		
 		//=== Suppress System output to speed up test execution
-		System.out.println("Suppressing System output");
-		System.setOut(null);
+
+		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
 		
-		try {
-			runs = tae.evaluateRun(runConfigs);
-		} finally
-		{
-			System.setOut(ps);
-			System.out.println("Restoring System Output");
-		}
 		for(AlgorithmRun run : runs)
 		{
 			runHistory.append(run);
@@ -494,15 +383,186 @@ public class LegacyStateDeserializerTester {
 		
 		StateDeserializer stateD =  sf.getStateDeserializer("deleteMe-unitTest-gibberish", 10, configSpace, OverallObjective.MEAN10, OverallObjective.MEAN, RunObjective.RUNTIME, pis, execConfig);
 		
+		compareRestoredStateWithOriginalRunHistory(stateD, runHistory, pis, runs.size());
 		
+	}
+	
+	
+	/**
+	 * Tests that before a purge we could restore some number of states, and after a perge we can only restore the last two.
+	 *
+	 * This test does not preserve invariants that we would expect SMAC to preserve 
+	 * (such as Incumbent always has the most number of runs or that Incumbent
+	 * always has the same Problem INstance Seed Pairs as any challenger.)
+	 * 
+	 * At the time of writing it seems to make sense that RunHistory actually doesn't
+	 * care about these invariants.
+	 * 
+	 */
+	@SuppressWarnings("deprecation")
+	@Test
+	public void stateSerializationPurge() throws DuplicateRunException
+	{
+		
+		  
+				
+		File paramFile = TestHelper.getTestFile("paramFiles/paramEchoParamFile.txt");
+		ParamConfigurationSpace configSpace;
+		
+		
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(ParamEchoExecutor.class.getCanonicalName());
+		
+		long seed = System.currentTimeMillis();
+		//seed = 1;
+		System.out.println("Seed was:" + seed);
+		Random r = new MersenneTwister(seed);
+		
+		configSpace = new ParamConfigurationSpace(paramFile,r);
+		
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 5000);
+		List<ProblemInstance> pis = new ArrayList<ProblemInstance>();
+		for(int i=0; i < 10; i++)
+		{
+			pis.add(new ProblemInstance("TestInstance_" + i,i));
+		}
+
+		InstanceSeedGenerator isg = new RandomInstanceSeedGenerator(pis, 1);
+		
+		File randomDirectory;
+		try {
+			randomDirectory = File.createTempFile("smac", "junitTest");
+			randomDirectory.delete();
+			if(!randomDirectory.mkdirs())
+			{
+				throw new IllegalStateException("Couldn't create directory");
+			}
+			
+		} catch (IOException e) {
+			throw new IllegalStateException("Couldn't create directory");
+		}
+		
+		TargetAlgorithmEvaluator tae =  new EchoTargetAlgorithmEvaluator( execConfig);
+		
+		RunHistory runHistory = new NewRunHistory(isg, OverallObjective.MEAN10, OverallObjective.MEAN, RunObjective.RUNTIME);
+		
+		
+		for(int i=0; i < 10; i++)
+		{
+			runHistory.incrementIteration();
+		}
+		
+		
+		
+		StateFactory sf = new LegacyStateFactory(randomDirectory.getAbsolutePath(),randomDirectory.getAbsolutePath());
+		
+		List<AlgorithmRun> allRuns = new ArrayList<AlgorithmRun>();
+		for(int i=0; i < 20; i++)
+		{
+			List<RunConfig> runConfigs = getValidRunConfigurations(pis, r, isg, configSpace);
+			
+			System.out.println("Performing " + runConfigs.size() + " runs");
+		
+			List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+			allRuns.addAll(runs);
+			for(AlgorithmRun run : runs)
+			{
+				runHistory.append(run);
+			}
+			
+			
+			StateSerializer stateS = sf.getStateSerializer("deleteMe-unitTest", 10+i);
+			
+			if(i%5 == 0) stateS.setRunHistory(runHistory); //Test quick restore
+			 
+			stateS.setIncumbent(runs.get(0).getRunConfig().getParamConfiguration());
+			stateS.save();
+			
+			if(i%5 == 0 )
+			{ //Only try to restore every 5th one because we need a runhistory later to even test this
+				StateDeserializer stateD =  sf.getStateDeserializer("deleteMe-unitTest", 10+i, configSpace, OverallObjective.MEAN10, OverallObjective.MEAN, RunObjective.RUNTIME, pis, execConfig);
+				compareRestoredStateWithOriginalRunHistory(stateD, runHistory, pis, allRuns.size());
+			}
+			
+				runHistory.incrementIteration();
+		}
+		
+		StateSerializer stateS = sf.getStateSerializer("deleteMe-unitTest", 100);
+		stateS.setRunHistory(runHistory); //Test quick restore
+		stateS.setIncumbent(allRuns.get(0).getRunConfig().getParamConfiguration());
+		stateS.save();
+		
+		for(int i=0; i < 20; i++)
+		{
+			StateDeserializer stateD =  sf.getStateDeserializer("deleteMe-unitTest", 10+i, configSpace, OverallObjective.MEAN10, OverallObjective.MEAN, RunObjective.RUNTIME, pis, execConfig);
+			assertEquals(stateD.getIteration(),(10+i));
+			assertEquals(stateD.getRunHistory().getAlgorithmRuns().size() , 200*(i+1));	
+		}
+	
+		sf.purgePreviousStates();
+	
+		for(int i=0; i < 20; i++)
+		{
+			StateDeserializer stateD =  sf.getStateDeserializer("deleteMe-unitTest", 10+i, configSpace, OverallObjective.MEAN10, OverallObjective.MEAN, RunObjective.RUNTIME, pis, execConfig);
+			assertEquals(stateD.getIteration(),(10+i));
+			assertEquals(stateD.getRunHistory().getAlgorithmRuns().size() , 200*(i+1));	
+		}
+	
+	
+		
+	
+		
+		
+	
+	
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	}
+	
+	
+	public List<RunConfig> getValidRunConfigurations(List<ProblemInstance> pis, Random r, InstanceSeedGenerator isg, ParamConfigurationSpace configSpace)
+	{
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(1000);
+		for(int i=0; i < 200; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration();
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("TIMEOUT") || config.get("solved").equals("CRASHED"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				ProblemInstance pi = pis.get(r.nextInt(pis.size()));
+				
+				ProblemInstanceSeedPair pisp = new ProblemInstanceSeedPair(pi, isg.getNextSeed(pi));
+				RunConfig rc = new RunConfig(pisp, 1001, config);
+				runConfigs.add(rc);
+			}
+		}
+		return runConfigs;
+	}
+	
+	
+	public void compareRestoredStateWithOriginalRunHistory(StateDeserializer stateD, RunHistory runHistory,List<ProblemInstance> pis, int runsSize )
+	{
 		RunHistory restoredRunHistory = stateD.getRunHistory();
-		
 		assertEquals(runHistory.getIteration(), restoredRunHistory.getIteration());
-		
 		Set<ProblemInstance> instanceSet = new HashSet<ProblemInstance>();
 		instances.addAll(pis);
 		
-		for(int i=0; i < runs.size(); i++)
+		
+		for(int i=0; i < runsSize; i++)
 		{
 			//==== We check equality on each member directly
 			//==== So we can easily debug cases where it's broken
@@ -518,10 +578,13 @@ public class LegacyStateDeserializerTester {
 			assertDEquals(run.getRunLength(), restoredRun.getRunLength(), 0.01);
 			assertEquals(run.getAdditionalRunData(), restoredRun.getAdditionalRunData());
 			
-			//==== Test that two runs are 
-			assertTrue(!"".equals(run.getAdditionalRunData()));
+			//=== Checks that each run has no additional run data
 			
-			//assertEquals(runHistory.getAlgorithmRuns().get(i), restoredRunHistory.getAlgorithmRuns().get(i));
+			assertEquals("",run.getAdditionalRunData().trim() );
+			assertEquals(run.getWallclockExecutionTime(), restoredRun.getWallclockExecutionTime(), 0.001);
+			
+			
+
 			
 			ParamConfiguration config = run.getRunConfig().getParamConfiguration();
 			
@@ -530,13 +593,13 @@ public class LegacyStateDeserializerTester {
 			double cost2 = restoredRunHistory.getEmpiricalCost(config, instanceSet, execConfig.getAlgorithmCutoffTime()); 
 			assertDEquals(cost1,cost2,0.1);
 			
-			assertEquals(run.getWallclockExecutionTime(), restoredRun.getWallclockExecutionTime(), 0.001);
-			
 			System.out.print(".");
 			
-			if(i % 40 == 0) System.out.println("");		
+			if(i % 40 == 0) System.out.println("");
+			
+			
+			
 		}
-		
 	}
 	
 	

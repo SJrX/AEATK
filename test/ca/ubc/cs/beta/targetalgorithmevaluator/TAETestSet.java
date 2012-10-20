@@ -36,6 +36,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.CommandLineTargetAlgorithmE
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbortOnCrashTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbortOnFirstRunCrashTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.EqualTargetAlgorithmEvaluatorTester;
 import ca.ubc.cs.beta.targetalgorithmevaluator.ldlibrarypathfix.CLICallee;
 import ca.ubc.cs.beta.targetalgorithmevaluator.ldlibrarypathfix.CLIExecutor;
 import ca.ubc.cs.beta.targetalgorithmevaluator.massiveoutput.MassiveOutputParamEchoExecutor;
@@ -122,6 +123,54 @@ public class TAETestSet {
 
 		}
 	}
+	
+	
+	/**
+	 * This just tests to see if EchoTargetAlgorithmEvaluator matches the CLI Version
+	 */
+	@Test
+	public void testCLIAndDirectEquality()
+	{
+		
+	
+		
+		configSpace.setPRNG(r);
+		
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration();
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
+				runConfigs.add(rc);
+			}
+		}
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		TargetAlgorithmEvaluator tae = new EqualTargetAlgorithmEvaluatorTester(TAETestSet.tae, new EchoTargetAlgorithmEvaluator(execConfig));
+		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+		
+		
+		for(AlgorithmRun run : runs)
+		{
+			ParamConfiguration config  = run.getRunConfig().getParamConfiguration();
+			assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
+			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
+			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
+			assertDEquals(config.get("seed"), run.getResultSeed(), 0.1);
+			assertEquals(config.get("solved"), run.getRunResult().name());
+			//This executor should not have any additional run data
+			assertEquals("",run.getAdditionalRunData());
+
+		}
+	}
+	
 	
 	
 	/**

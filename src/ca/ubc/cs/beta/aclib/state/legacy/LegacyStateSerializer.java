@@ -6,7 +6,9 @@ import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
 import java.util.EnumMap;
+import java.util.HashSet;
 import java.util.Random;
+import java.util.Set;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -48,20 +50,24 @@ public class LegacyStateSerializer implements StateSerializer {
 	private final int iteration;
 	private final String path;
 	
+	private final LegacyStateFactory legacyStateFactory;
+	
+	private final Logger log = LoggerFactory.getLogger(this.getClass());
 	
 	
-	private Logger log = LoggerFactory.getLogger(this.getClass());
-	
+	private final Set<String> savedFiles = new HashSet<String>();
 	/**
 	 * Constructs the Legacy State Serializer
 	 * @param path      	string representing directory we should save to
 	 * @param id			the id of the save (generally "it" or "CRASH")
 	 * @param iteration		the iteration we are saving
+	 * @param legacyStateFactory 
 	 */
-	public LegacyStateSerializer(String path, String id, int iteration) {
+	LegacyStateSerializer(String path, String id, int iteration, LegacyStateFactory legacyStateFactory) {
 		this.id = id;
 		this.iteration = iteration;
 		this.path = (new File(path)).getAbsolutePath();
+		this.legacyStateFactory = legacyStateFactory;
 		
 	}
 
@@ -85,7 +91,12 @@ public class LegacyStateSerializer implements StateSerializer {
 		
 	}
 	
-
+	@Override
+	public void setIncumbent(ParamConfiguration incumbent) {
+		this.incumbent = incumbent;
+		
+	}
+	
 	
 	
 	@Override
@@ -131,11 +142,7 @@ public class LegacyStateSerializer implements StateSerializer {
 			runResults.append("Wall Clock Time").append(","); //15
 			runResults.append("\n");
 			
-			
-			
-			
-			
-			
+
 			for(RunData runData: runHistory.getAlgorithmRunData())
 			{
 				i++;
@@ -176,15 +183,18 @@ public class LegacyStateSerializer implements StateSerializer {
 				
 				//Write Unique Configurations File
 				File f= new File(LegacyStateFactory.getUniqConfigurationsFilename(path, id, iteration));
+				addFileToSet(f);
 				writeStringBuffer(uniqConfigurations, f);
 				log.debug("Unique Configurations Saved in {}", f.getAbsolutePath());
 				
 				f = new File(LegacyStateFactory.getParamStringsFilename(path, id, iteration));
+				addFileToSet(f);
 				writeStringBuffer(paramStrings, f);
 				log.debug("Parameter Strings Saved in {}", f.getAbsolutePath());
 				
 				
 				f = new File(LegacyStateFactory.getRunAndResultsFilename(path, id, iteration));
+				addFileToSet(f);
 				writeStringBuffer(runResults, f);			
 				log.debug("Run Results Saved in {}", f.getAbsolutePath());
 				
@@ -201,14 +211,19 @@ public class LegacyStateSerializer implements StateSerializer {
 			
 			try {
 				if(fullSave)
-				{ //We are a full dump so we will save everything
+				{ 
+					//We are a full dump so we will save everything
 					File f = new File(LegacyStateFactory.getJavaObjectDumpFilename(path, id, iteration));
+					
 					if(!f.createNewFile()) throw new IllegalStateException("File: " + f.getAbsolutePath() + " already exists ");
 					saveToFile(f);
+					addFileToSet(f);
 				} else
 				{
+					//Do not add the quick files to the save File set, as they shouldn't be deleted
 					File currentFile = new File(LegacyStateFactory.getJavaQuickObjectDumpFilename(path, id, iteration));
 					File oldFile = new File(LegacyStateFactory.getJavaQuickBackObjectDumpFilename(path, id, iteration));
+					
 					if(currentFile.exists())
 					{
 						if(oldFile.exists()) oldFile.delete();
@@ -221,6 +236,8 @@ public class LegacyStateSerializer implements StateSerializer {
 					
 					saveToFile(currentFile);
 					
+
+					
 				}
 				
 			} catch (IOException e) {
@@ -229,12 +246,15 @@ public class LegacyStateSerializer implements StateSerializer {
 			}
 			
 		
-			
+		legacyStateFactory.addWrittenFilesForIteration(iteration, savedFiles);
 		log.info("State saved for iteration {} in {} ", iteration, path);
 		log.info("Saving state took {} ms", auto.stop());
 		
 	}
 
+
+	
+	
 	
 	/**
 	 * Saves all java objects to file
@@ -285,10 +305,13 @@ public class LegacyStateSerializer implements StateSerializer {
 		writer.close();
 	}
 
-	@Override
-	public void setIncumbent(ParamConfiguration incumbent) {
-		this.incumbent = incumbent;
-		
+	/**
+	 * Adds a file to the set of files written for this iteration.
+	 * @param f
+	 */
+	private void addFileToSet(File f)
+	{
+		this.savedFiles.add(f.getAbsolutePath());
 	}
 
 }

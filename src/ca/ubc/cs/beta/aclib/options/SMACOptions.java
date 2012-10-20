@@ -89,6 +89,9 @@ public class SMACOptions extends AbstractOptions {
 	@Parameter(names={"--restoreStateIteration","--restoreIteration"}, description="iteration of the state to restore")
 	public Integer restoreIteration = null;
 	
+	@Parameter(names={"--cleanOldStateOnSuccess"}, description="will clean up much of the useless state files if smac completes successfully")
+	public boolean cleanOldStatesOnSuccess = true;
+	
 	@Parameter(names="--executionMode", description="execution mode of the automatic configurator")
 	public ExecutionMode execMode = ExecutionMode.SMAC;
 	
