@@ -7,6 +7,10 @@ import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 /**
  * Abstract Decorator class for TargetAlgorithmEvalutator
  * 
+ * <b>Implementation Note:</b>  Almost every decorator that is doing something interesting, will
+ * in fact redirect evaluateRun(RunConfig) to it's own local evaluateRun(List<RunConfig>) method.
+ * You should not rely on evaluateRun() being called directly.
+ *  
  * @author Steve Ramage 
  *
  */
@@ -20,6 +24,8 @@ public abstract class AbstractTargetAlgorithmEvaluatorDecorator implements
 		this.tae = tae;
 		
 	}
+	
+	
 	@Override
 	public List<AlgorithmRun> evaluateRun(RunConfig run) {
 		return tae.evaluateRun(run);

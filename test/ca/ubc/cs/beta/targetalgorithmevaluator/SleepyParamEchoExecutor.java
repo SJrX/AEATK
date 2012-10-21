@@ -5,7 +5,7 @@ import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration.StringFormat;
 
-public class ParamEchoExecutor {
+public class SleepyParamEchoExecutor {
 
 	/**
 	 * 
@@ -32,6 +32,11 @@ public class ParamEchoExecutor {
 			
 			ParamConfigurationSpace configSpace = new ParamConfigurationSpace(TestHelper.getTestFile("paramFiles/paramEchoParamFile.txt"));
 			
+			try {
+				Thread.sleep(1024);
+			} catch (InterruptedException e) {
+				//DO NOTHING this is a simple task
+			}
 			
 			
 			

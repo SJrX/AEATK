@@ -22,6 +22,7 @@ import ca.ubc.cs.beta.aclib.options.AlgorithmExecutionOptions;
 import ca.ubc.cs.beta.aclib.options.ScenarioOptions;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbortOnCrashTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbortOnFirstRunCrashTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.TimingCheckerTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.LeakingMemoryTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.RetryCrashedRunsTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.RunHashCodeVerifyingAlgorithmEvalutor;
@@ -152,6 +153,9 @@ public class TargetAlgorithmEvaluatorBuilder {
 			}
 
 		}
+		
+		
+		algoEval = new TimingCheckerTargetAlgorithmEvaluator(execConfig, algoEval);
 		
 		return algoEval;
 	}

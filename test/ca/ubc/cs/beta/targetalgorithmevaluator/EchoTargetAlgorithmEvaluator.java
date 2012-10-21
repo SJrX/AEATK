@@ -34,6 +34,8 @@ public class EchoTargetAlgorithmEvaluator  extends AbstractTargetAlgorithmEvalua
 		
 	}
     
+	
+	public double wallClockTime = 0;
 	@Override
 	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs) {
 		
@@ -63,7 +65,7 @@ public class EchoTargetAlgorithmEvaluator  extends AbstractTargetAlgorithmEvalua
 			
 			
 			
-			results.add(new ExistingAlgorithmRun(execConfig, rc, sb.toString()));
+			results.add(new ExistingAlgorithmRun(execConfig, rc, sb.toString(),wallClockTime));
 			
 			
 			
