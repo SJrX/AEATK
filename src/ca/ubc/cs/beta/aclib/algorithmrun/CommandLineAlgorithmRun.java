@@ -1,6 +1,5 @@
 package ca.ubc.cs.beta.aclib.algorithmrun;
 
-import java.awt.List;
 import java.io.File;
 
 import java.io.IOException;
@@ -10,8 +9,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Queue;
 import java.util.Scanner;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
@@ -156,7 +153,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 			case CRASHED:
 				
 					
-					log.info( "Failed Run Detected Call: " + getTargetAlgorithmExecutionCommand(execConfig, runConfig));
+					log.info( "Failed Run Detected Call: cd {} ;  {} ", execConfig.getAlgorithmExecutionDirectory(), getTargetAlgorithmExecutionCommand(execConfig, runConfig));
 				
 					log.info("Failed Run Detected output last {} lines", outputQueue.size());
 					for(String s : outputQueue)
