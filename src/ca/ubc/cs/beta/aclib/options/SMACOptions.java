@@ -13,7 +13,6 @@ import ca.ubc.cs.beta.aclib.state.StateSerializers;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterFile;
 import com.beust.jcommander.ParametersDelegate;
-import com.beust.jcommander.validators.PositiveInteger;
 
 
 /**
@@ -88,6 +87,9 @@ public class SMACOptions extends AbstractOptions {
 	@UsageTextField(defaultValues="N/A (No state is being restored)")
 	@Parameter(names={"--restoreStateIteration","--restoreIteration"}, description="iteration of the state to restore")
 	public Integer restoreIteration = null;
+	
+	@Parameter(names={"--cleanOldStateOnSuccess"}, description="will clean up much of the useless state files if smac completes successfully")
+	public boolean cleanOldStatesOnSuccess = true;
 	
 	@Parameter(names="--executionMode", description="execution mode of the automatic configurator")
 	public ExecutionMode execMode = ExecutionMode.SMAC;

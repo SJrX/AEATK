@@ -2,7 +2,6 @@ package ca.ubc.cs.beta.aclib.options;
 
 
 import com.beust.jcommander.Parameter;
-import com.beust.jcommander.validators.PositiveInteger;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.*;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 

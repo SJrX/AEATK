@@ -6,7 +6,6 @@ import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParametersDelegate;
-import com.beust.jcommander.validators.PositiveInteger;
 
 /**
  * Options controlling the Stand Alone Validation Utility

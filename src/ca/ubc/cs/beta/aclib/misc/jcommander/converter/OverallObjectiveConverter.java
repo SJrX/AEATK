@@ -3,8 +3,6 @@ package ca.ubc.cs.beta.aclib.misc.jcommander.converter;
 import java.util.Arrays;
 
 import ca.ubc.cs.beta.aclib.objectives.OverallObjective;
-import ca.ubc.cs.beta.aclib.objectives.RunObjective;
-
 import com.beust.jcommander.IStringConverter;
 import com.beust.jcommander.ParameterException;
 

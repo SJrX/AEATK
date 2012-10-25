@@ -3,7 +3,6 @@ package ca.ubc.cs.beta.aclib.misc.version;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Map.Entry;
-import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 import java.util.SortedMap;
 import java.util.TreeMap;

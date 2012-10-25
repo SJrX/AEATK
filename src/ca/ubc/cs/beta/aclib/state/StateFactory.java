@@ -49,6 +49,17 @@ public interface StateFactory {
 	public StateSerializer getStateSerializer(String id, int iteration) throws StateSerializationException;
 	
 
+	/**
+	 * Purges all the previous states that were saved
+	 * 
+	 * <b>Implementation Note:</b> This is an optional method, and it is not defined what specifically this method does
+	 * if requested the user is hoping to free up resources. What should be true though is that after this method is called
+	 * a user should still be able to restore to the most recent iteration. This method can do nothing necessary 
+	 * 
+	 */
+	public void purgePreviousStates();
+	
+	
 
 
 	

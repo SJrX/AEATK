@@ -10,7 +10,6 @@ import java.util.HashSet;
 import java.util.Map;
 import java.util.Set;
 
-import org.apache.commons.math3.stat.StatUtils;
 import org.junit.Ignore;
 import org.junit.Test;
 

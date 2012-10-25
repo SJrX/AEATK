@@ -6,8 +6,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
-import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.misc.jcommander.converter.BinaryDigitBooleanConverter;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.NonNegativeInteger;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.ReadableFileConverter;

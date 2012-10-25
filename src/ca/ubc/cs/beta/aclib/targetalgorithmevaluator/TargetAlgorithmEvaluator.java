@@ -29,6 +29,10 @@ public interface TargetAlgorithmEvaluator {
 
 	/**
 	 * Evaluate a run configuration
+	 * 
+	 * <b>Implementation Note:</b> Any implementation of this method MUST be the same as calling 
+	 * evaluateRun(List<RunConfig>) with that same run in the list.
+	 * 
 	 * @param run RunConfiguration to evaluate
 	 * @return	list containing the <code>AlgorithmRun<code>
 	 * @throws TargetAlgorithmAbortException
