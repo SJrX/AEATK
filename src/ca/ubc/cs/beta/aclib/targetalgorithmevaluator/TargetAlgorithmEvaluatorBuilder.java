@@ -125,6 +125,12 @@ public class TargetAlgorithmEvaluatorBuilder {
 			}
 		}
 		
+		
+		if(options.algoExecOptions.verifySAT)
+		{
+			algoEval = new VerifySATTargetAlgorithmEvaluator(algoEval);
+			
+		}
 		//==== Run Hash Code Verification should be last
 		if(hashVerifiersAllowed)
 		{

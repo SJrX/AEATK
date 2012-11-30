@@ -197,8 +197,8 @@ public class LegacyStateDeserializer implements StateDeserializer {
 						incumbent = configSpace.getConfigurationFromString(paramString, StringFormat.STATEFILE_SYNTAX);
 					} else
 					{
-						throw new IllegalStateException("Not sure why a java object file has no incumbent, save state file corrupt. To continue try renaming the object file for this iteration");
-						//incumbent = null;
+						//throw new IllegalStateException("Not sure why a java object file has no incumbent, save state file corrupt. To continue try renaming the object file for this iteration");
+						incumbent = null;
 					}
 					 
 					

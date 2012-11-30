@@ -90,7 +90,7 @@ public class RandomInstanceSeedGenerator implements InstanceSeedGenerator {
 	@Override
 	public void reinit()
 	{
-		log.info("Re-Initializing Instance Seed PRNG with Seed {} and instances {} ", initialSeed, initialNumberOfInstances);	
+		log.debug("Re-Initializing Instance Seed PRNG with Seed {} and instances {} ", initialSeed, initialNumberOfInstances);	
 		nextSeed = initialSeed;
 		randomPool.clear();
 		usedSeeds.clear();

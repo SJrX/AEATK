@@ -155,6 +155,7 @@ public class NewRunHistory implements RunHistory {
 		instanceSeedList.add(seed);
 		
 		
+	
 		Map<ProblemInstance, LinkedHashMap<Long, Double>> instanceToPerformanceMap = configToPerformanceMap.get(config);
 		if(instanceToPerformanceMap == null)
 		{ //Initialize Map if non-existant

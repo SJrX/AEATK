@@ -118,6 +118,9 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 	@UsageTextField(defaultValues="")
 	@Parameter(names="--runHashCodeFile", description="file containing a list of run hashes one per line: Each line should be: \"Run Hash Codes: (Hash Code) After (n) runs\". The number of runs in this file need not match the number of runs that we execute, this file only ensures that the sequences never diverge. Note the n is completely ignored so the order they are specified in is the order we expect the hash codes in this version. Finally note you can simply point this at a previous log and other lines will be disregarded", converter=ReadableFileConverter.class)
 	public File runHashCodeFile;
+
+	@Parameter(names="--verifySAT", description="Check SAT/UNSAT/UNKNOWN responses against Instance specific information (if null then performs check if all instance specific information is in {SAT, UNSAT, UNKNOWN, SATISFIABLE, UNSATISFIABLE}")
+	public Boolean verifySAT;
 		
 	/*
 	public AlgorithmExecutionConfig getAlgorithmExecutionConfig(ParamConfigurationSpace p, File experimentDir)

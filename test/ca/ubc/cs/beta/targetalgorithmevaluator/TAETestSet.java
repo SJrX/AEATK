@@ -7,7 +7,10 @@ import java.io.File;
 import java.io.PrintStream;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import org.apache.commons.io.output.NullOutputStream;
 import org.junit.Before;
@@ -29,6 +32,7 @@ import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.CommandLineTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.VerifySATTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbortOnCrashTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbortOnFirstRunCrashTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.TimingCheckerTargetAlgorithmEvaluator;
@@ -53,6 +57,25 @@ public class TAETestSet {
 		configSpace = new ParamConfigurationSpace(paramFile);
 	}
 	Random r;
+	
+	PrintStream old;
+	ByteArrayOutputStream bout;
+	public void startOutputCapture()
+	{
+	
+		bout = new ByteArrayOutputStream();
+		old = System.out;
+		System.setOut(new PrintStream(bout));
+	}
+	
+	
+	public String stopOutputCapture()
+	{
+		System.setOut(old);
+		String boutString = bout.toString();
+		System.out.println(boutString);
+		return boutString;
+	}
 	
 	@Before
 	public void beforeTest()
@@ -1199,6 +1222,115 @@ public class TAETestSet {
 		}
 	}
 	
+	
+	/**
+	 * This tests to make sure that VerifySATTargetAlgorithmEvaluator fires warnings when it is suppose to
+	 */
+	@Test
+	public void testVerifySATTargetAlgorithmEvaluator()
+	{
+		
+	
+		
+		configSpace.setPRNG(r);
+		
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration();
+			config.put("solved", "SAT");
+			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("SAT",1,new HashMap<String, Double>(),"SAT"), Long.valueOf(config.get("seed"))), 1001, config);
+			runConfigs.add(rc);
+		
+			config = configSpace.getRandomConfiguration();
+			config.put("solved", "SAT");
+			rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("UNSAT",2,new HashMap<String, Double>(),"UNSAT"), Long.valueOf(config.get("seed"))), 1001, config);
+			runConfigs.add(rc);
+			
+			config = configSpace.getRandomConfiguration();
+			config.put("solved", "UNSAT");
+			rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("UNSAT",2,new HashMap<String, Double>(),"UNSAT"), Long.valueOf(config.get("seed"))), 1001, config);
+			runConfigs.add(rc);
+			
+			
+			config = configSpace.getRandomConfiguration();
+			config.put("solved", "UNSAT");
+			rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("SAT",1,new HashMap<String, Double>(),"SAT"), Long.valueOf(config.get("seed"))), 1001, config);
+			runConfigs.add(rc);
+			
+			
+			config = configSpace.getRandomConfiguration();
+			config.put("solved", "TIMEOUT");
+			rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("SAT",1,new HashMap<String, Double>(),"SAT"), Long.valueOf(config.get("seed"))), 1001, config);
+			runConfigs.add(rc);
+		
+			config = configSpace.getRandomConfiguration();
+			config.put("solved", "SAT");
+			rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("UNKNOWN",2,new HashMap<String, Double>(),"UNKNOWN"), Long.valueOf(config.get("seed"))), 1001, config);
+			runConfigs.add(rc);
+			
+		}	
+			
+			
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		TargetAlgorithmEvaluator tae =  new VerifySATTargetAlgorithmEvaluator(new EchoTargetAlgorithmEvaluator(execConfig));
+		
+		
+		
+		for(RunConfig rc : runConfigs)
+		{
+			
+			
+			
+			startOutputCapture();
+			List<AlgorithmRun> runs = tae.evaluateRun(rc);
+			String output = stopOutputCapture();
+			//System.out.println("<<<<<\n" + output+"\n<<<<<<");
+			
+			
+			AlgorithmRun run = runs.get(0);
+			
+			
+			switch(run.getRunResult())
+			{
+				case SAT:
+					if(run.getRunConfig().getProblemInstanceSeedPair().getInstance().getInstanceName().equals("SAT"))
+					{
+						assertFalse(output.contains("Mismatch occured between instance specific information"));
+					} else
+					{
+						assertTrue(output.contains("Mismatch occured between instance specific information"));
+					}
+					
+					break;
+				case UNSAT:
+					
+					if(run.getRunConfig().getProblemInstanceSeedPair().getInstance().getInstanceName().equals("UNSAT"))
+					{
+				
+						assertFalse(output.contains("Mismatch occured between instance specific information"));
+					} else
+					{
+						assertTrue(output.contains("Mismatch occured between instance specific information"));
+					}
+					
+					break;
+			
+				default:
+					assertFalse(output.contains("Mismatch occured between instance specific information"));	
+			}
+			ParamConfiguration config  = run.getRunConfig().getParamConfiguration();
+			assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
+			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
+			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
+			assertDEquals(config.get("seed"), run.getResultSeed(), 0.1);
+			assertEquals(config.get("solved"), run.getRunResult().name());
+			//This executor should not have any additional run data
+			assertEquals("",run.getAdditionalRunData());
+
+		}
+	}
 	
 	
 	

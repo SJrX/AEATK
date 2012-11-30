@@ -149,7 +149,7 @@ public class SeedableRandomSingleton  {
 		
 	}
 	
-	public static int[] getPermutation(int n, int offset)
+	public static int[] getPermutation(int n, int offset, Random rand)
 	{
 		if (n < 0)
 		{
@@ -174,6 +174,12 @@ public class SeedableRandomSingleton  {
 		return perm;
 	}
 	
+
+	public static int[] getPermutation(int n, int offset)
+	{
+	
+		return getPermutation(n,offset, rand);
+	}
 	
 	
 	public static void permuteList(List list, int[] permutations)
