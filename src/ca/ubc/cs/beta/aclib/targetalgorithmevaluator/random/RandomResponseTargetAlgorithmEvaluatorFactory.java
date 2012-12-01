@@ -10,6 +10,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.factory.TargetAlgorithmEval
 public class RandomResponseTargetAlgorithmEvaluatorFactory implements
 		TargetAlgorithmEvaluatorFactory {
 
+	
 	@Override
 	public String getName() {
 		return "RANDOM";
