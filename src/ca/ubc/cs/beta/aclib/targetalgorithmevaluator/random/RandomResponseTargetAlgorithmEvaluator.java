@@ -12,9 +12,12 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.AbstractTargetAlgorithmEval
 public class RandomResponseTargetAlgorithmEvaluator extends
 		AbstractTargetAlgorithmEvaluator {
 
+	double scale = 1.0; 
 	public RandomResponseTargetAlgorithmEvaluator(
 			AlgorithmExecutionConfig execConfig) {
 		super(execConfig);
+		scale = Math.abs(Double.valueOf(execConfig.getAlgorithmExecutable()));
+		
 	}
 
 	@Override
@@ -28,7 +31,7 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 		List<AlgorithmRun> ar = new ArrayList<AlgorithmRun>(runConfigs.size());
 		for(RunConfig rc : runConfigs)
 		{
-			ar.add(new ExistingAlgorithmRun(execConfig, rc, "SAT, " + Math.random() + ",-1,0," + rc.getProblemInstanceSeedPair().getSeed()));
+			ar.add(new ExistingAlgorithmRun(execConfig, rc, "SAT, " + Math.random()*scale + ",-1,0," + rc.getProblemInstanceSeedPair().getSeed()));
 		}
 		
 		return ar;

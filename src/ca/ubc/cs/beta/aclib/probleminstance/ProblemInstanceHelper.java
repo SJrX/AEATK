@@ -209,6 +209,14 @@ public class ProblemInstanceHelper {
 		
 	}
 	
+	public static InstanceListWithSeeds getTestInstances(ScenarioOptions scenarioOptions, String experimentDir, long seed) throws IOException {
+		
+		return getInstances(scenarioOptions.testInstanceFile,experimentDir, scenarioOptions.instanceFeatureFile, scenarioOptions.checkInstanceFilesExist,   seed,  Integer.MAX_VALUE, scenarioOptions.algoExecOptions.deterministic);
+		
+		
+	}
+	
+	
 	/**
 	 * Returns the InstanceList and Seed Generator for the given parameters 
 	 * 
