@@ -136,6 +136,8 @@ public class ParamConfigurationSpace implements Serializable {
 
 	private Random random;
 	
+	private boolean hasRealParameterFile = true;
+	
 	/**
 	 * Stores forbidden lines for later parsing
 	 */
@@ -181,6 +183,7 @@ public class ParamConfigurationSpace implements Serializable {
 	public ParamConfigurationSpace(Reader reader)
 	{
 		this(reader,SeedableRandomSingleton.getRandom(), "ReaderOnly-"+System.currentTimeMillis() +"-" +(int) (Math.random() * 10000000.0));
+		hasRealParameterFile = false;
 	}
 	
 	/**
@@ -1225,6 +1228,15 @@ public class ParamConfigurationSpace implements Serializable {
 	private boolean isIntegerDouble(double d)
 	{
 		return (d - Math.floor(d) == 0);
+	}
+	
+	/**
+	 * Returns <code>true</code> if the file is real, or if we constructed this from a Reader
+	 * @return
+	 */
+	public boolean hasRealParameterFile()
+	{
+		return hasRealParameterFile;
 	}
 }
 

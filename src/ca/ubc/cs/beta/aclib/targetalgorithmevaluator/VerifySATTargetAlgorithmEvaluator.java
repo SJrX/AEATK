@@ -1,9 +1,10 @@
 package ca.ubc.cs.beta.aclib.targetalgorithmevaluator;
 
+import java.util.Arrays;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.List;
-import java.util.concurrent.ConcurrentHashMap;
-
+import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -20,6 +21,19 @@ public class VerifySATTargetAlgorithmEvaluator extends
 		AbstractTargetAlgorithmEvaluatorDecorator {
 
 	private static transient Logger log = LoggerFactory.getLogger(VerifySATTargetAlgorithmEvaluator.class);
+	
+	private static final Set<String> satResponses = new HashSet<String>();
+	private static final Set<String> unsatResponses = new HashSet<String>();
+	
+	static
+	{
+		String[] mySatResponses = {"SAT", "SATISFIABLE"};
+		String[] myUnsatResponses = {"UNSAT", "UNSATISFIABLE"};
+		
+		satResponses.addAll(Arrays.asList(mySatResponses));
+		unsatResponses.addAll(Arrays.asList(myUnsatResponses));
+	}
+	
 	 
 	public VerifySATTargetAlgorithmEvaluator(TargetAlgorithmEvaluator tae) {
 		super(tae);
@@ -40,7 +54,7 @@ public class VerifySATTargetAlgorithmEvaluator extends
 			switch(run.getRunResult())
 			{
 				case SAT:
-					if(run.getRunConfig().getProblemInstanceSeedPair().getInstance().getInstanceSpecificInformation().equals("UNSAT"))
+					if(unsatResponses.contains(run.getRunConfig().getProblemInstanceSeedPair().getInstance().getInstanceSpecificInformation()))
 					{
 						Object[] args = { run.getRunResult(), run.getRunConfig().getProblemInstanceSeedPair().getInstance().getInstanceSpecificInformation(), run};
 						log.error("Mismatch occured between instance specific information and target algorithm for run (Saw: <{}>, Expected: <{}>): {} ", args);
@@ -52,7 +66,7 @@ public class VerifySATTargetAlgorithmEvaluator extends
 					break;
 					
 				case UNSAT:
-					if(run.getRunConfig().getProblemInstanceSeedPair().getInstance().getInstanceSpecificInformation().equals("SAT"))
+					if(satResponses.contains(run.getRunConfig().getProblemInstanceSeedPair().getInstance().getInstanceSpecificInformation()))
 					{
 						Object[] args = { run.getRunResult(), run.getRunConfig().getProblemInstanceSeedPair().getInstance().getInstanceSpecificInformation(), run};
 						log.error("Mismatch occured between instance specific information and target algorithm for run (Saw: <{}>, Expected: <{}> ): {} ", args);

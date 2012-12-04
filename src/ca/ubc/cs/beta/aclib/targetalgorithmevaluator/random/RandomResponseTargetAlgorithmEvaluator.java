@@ -18,7 +18,12 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 	public RandomResponseTargetAlgorithmEvaluator(
 			AlgorithmExecutionConfig execConfig) {
 		super(execConfig);
-		scale = Math.abs(Double.valueOf(execConfig.getAlgorithmExecutable()));
+		try {
+			scale = Math.abs(Double.valueOf(execConfig.getAlgorithmExecutable()));
+		}catch(NumberFormatException e)
+		{
+			scale = 10.0;
+		}
 		
 	}
 

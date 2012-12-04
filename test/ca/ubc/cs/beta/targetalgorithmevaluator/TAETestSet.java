@@ -7,10 +7,8 @@ import java.io.File;
 import java.io.PrintStream;
 import java.io.StringWriter;
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
-import java.util.Map;
 import java.util.Random;
 import org.apache.commons.io.output.NullOutputStream;
 import org.junit.Before;
@@ -1225,6 +1223,10 @@ public class TAETestSet {
 	
 	/**
 	 * This tests to make sure that VerifySATTargetAlgorithmEvaluator fires warnings when it is suppose to
+	 * 
+	 * 
+	 * 
+	 * 
 	 */
 	@Test
 	public void testVerifySATTargetAlgorithmEvaluator()
@@ -1257,6 +1259,36 @@ public class TAETestSet {
 			config.put("solved", "UNSAT");
 			rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("SAT",1,new HashMap<String, Double>(),"SAT"), Long.valueOf(config.get("seed"))), 1001, config);
 			runConfigs.add(rc);
+			
+			
+			
+			
+			config = configSpace.getRandomConfiguration();
+			config.put("solved", "SAT");
+			rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("SATISFIABLE",3,new HashMap<String, Double>(),"SATISFIABLE"), Long.valueOf(config.get("seed"))), 1001, config);
+			runConfigs.add(rc);
+		
+			config = configSpace.getRandomConfiguration();
+			config.put("solved", "SAT");
+			rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("UNSATISFIABLE",4,new HashMap<String, Double>(),"UNSATISFIABLE"), Long.valueOf(config.get("seed"))), 1001, config);
+			runConfigs.add(rc);
+			
+			config = configSpace.getRandomConfiguration();
+			config.put("solved", "UNSAT");
+			rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("UNSATISFIABLE",4,new HashMap<String, Double>(),"UNSATISFIABLE"), Long.valueOf(config.get("seed"))), 1001, config);
+			runConfigs.add(rc);
+			
+			
+			config = configSpace.getRandomConfiguration();
+			config.put("solved", "UNSAT");
+			rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("SATISFIABLE",3,new HashMap<String, Double>(),"SATISFIABLE"), Long.valueOf(config.get("seed"))), 1001, config);
+			runConfigs.add(rc);
+			
+			
+			
+			
+			
+			
 			
 			
 			config = configSpace.getRandomConfiguration();
@@ -1295,7 +1327,7 @@ public class TAETestSet {
 			switch(run.getRunResult())
 			{
 				case SAT:
-					if(run.getRunConfig().getProblemInstanceSeedPair().getInstance().getInstanceName().equals("SAT"))
+					if(run.getRunConfig().getProblemInstanceSeedPair().getInstance().getInstanceName().startsWith("SAT"))
 					{
 						assertFalse(output.contains("Mismatch occured between instance specific information"));
 					} else
@@ -1306,7 +1338,7 @@ public class TAETestSet {
 					break;
 				case UNSAT:
 					
-					if(run.getRunConfig().getProblemInstanceSeedPair().getInstance().getInstanceName().equals("UNSAT"))
+					if(run.getRunConfig().getProblemInstanceSeedPair().getInstance().getInstanceName().startsWith("UNSAT"))
 					{
 				
 						assertFalse(output.contains("Mismatch occured between instance specific information"));
