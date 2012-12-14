@@ -10,6 +10,7 @@ import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterFile;
 
+@UsageTextField(title="MySQL Options", description="Options that control how to connect to the MySQL Server")
 public class MySQLConfig extends AbstractOptions {
 
 	@Parameter(names="--mysqlHostName", description="Hostname of database server" )
