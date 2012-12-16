@@ -676,7 +676,7 @@ public class LegacyStateDeserializerTester {
 		
 		outputMem();
 		
-		List<RunConfig> runConfigs = getValidRunConfigurations(pis, r, isg, configSpace, 20000 );
+		List<RunConfig> runConfigs = getValidRunConfigurations(pis, r, isg, configSpace, 25000 );
 		outputMem();
 		
 	
