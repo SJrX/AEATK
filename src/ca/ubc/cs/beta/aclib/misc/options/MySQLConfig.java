@@ -16,12 +16,9 @@ public class MySQLConfig extends AbstractOptions {
 	@Parameter(names="--mysqlHostName", description="Hostname of database server" )
 	public String host = "arrowdb.cs.ubc.ca";
 	
-	/*
-	 * Do not make a parameter until the no password is fixed
-	 * and this should read it from a file.
+	
 	@Parameter(names="--mysqlPassword", description="Password of database server" )
-	*/
-	public String password = null;
+	public String password = "";
 	
 	@Parameter(names="--mysqlDatabaseName", description="Name of Database" )
 	public String databaseName = "mysql_db_tae";

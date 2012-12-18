@@ -41,6 +41,8 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 	 */
 	private String rawResultLine;
 	
+	
+	
 	/**
 	 * true if the run is completed 
 	 */
@@ -84,7 +86,7 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 		this.runLength = runLength;
 		this.quality = quality;
 		this.resultSeed = resultSeed;
-		this.resultLine =  acResult.name() + ", " + runtime + ", " + runLength + ", " + quality + ", " + resultSeed;
+		this.resultLine = acResult.name() + ", " + runtime + ", " + runLength + ", " + quality + ", " + resultSeed;
 		if(additionalRunData.trim().length() > 0)
 		{
 			this.resultLine += "," + additionalRunData;
