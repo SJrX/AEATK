@@ -208,7 +208,7 @@ public class LegacyStateSerializer implements StateSerializer {
 						runResults.flush();
 					}
 				}
-					
+					runResults.close();
 			} catch (IOException e) {
 	
 				throw new StateSerializationException(e);

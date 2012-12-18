@@ -1,5 +1,6 @@
 package ca.ubc.cs.beta.aclib.state;
 
+import java.io.File;
 import java.util.List;
 
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
@@ -58,6 +59,16 @@ public interface StateFactory {
 	 * 
 	 */
 	public void purgePreviousStates();
+
+
+	
+	/**
+	 * Copies the file to the State Directory
+	 * 
+	 * @param name name of the file to write
+	 * @param f source file
+	 */
+	public void copyFileToStateDir(String name, File f);
 	
 	
 

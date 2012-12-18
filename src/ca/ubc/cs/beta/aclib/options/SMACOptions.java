@@ -91,6 +91,9 @@ public class SMACOptions extends AbstractOptions {
 	@Parameter(names={"--cleanOldStateOnSuccess"}, description="will clean up much of the useless state files if smac completes successfully")
 	public boolean cleanOldStatesOnSuccess = true;
 	
+	@Parameter(names={"--saveContext","--saveContextWithState" }, description="saves some context with the state folder so that the data is mostly self-describing (Scenario, Instance File, Feature File, Param File are saved)")
+	public boolean saveContextWithState = true;
+	
 	@Parameter(names="--executionMode", description="execution mode of the automatic configurator")
 	public ExecutionMode execMode = ExecutionMode.SMAC;
 	
@@ -161,6 +164,8 @@ public class SMACOptions extends AbstractOptions {
 	@UsageTextField(defaultValues="", domain="")
 	@Parameter(names={"-v","--version"}, description="print version and exit")
 	public boolean showVersion = false;
+
+	
 	
 	
 	
