@@ -6,7 +6,6 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
-import ca.ubc.cs.beta.aclib.misc.jcommander.converter.BinaryDigitBooleanConverter;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.NonNegativeInteger;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.ReadableFileConverter;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
@@ -14,15 +13,9 @@ import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.validators.PositiveInteger;
 
-
-/**
- * Options object that defines arguments for Target Algorithm Execution
- * @author sjr
- *
- */
-@UsageTextField(title="Algorithm Execution Options", description="Options related to running the target algorithm")
-public class AlgorithmExecutionOptions extends AbstractOptions {
-
+@UsageTextField(title="Target Algorithm Evaluator Options", description="Options that describe and control the policy and mechanisms for algorithm execution")
+public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
+	
 	private static final String defaultSearchPath ;
 	
 	static{
@@ -42,17 +35,13 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "RunDispatcher" + File.separator + "bin" + File.separator) ;
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "surrogates" + File.separator + "lib" + File.separator);
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "RunDispatcher" + File.separator + "lib" + File.separator) ;
+		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "RunDispatcher" + File.separator + "version" + File.separator) ;
+		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "rundispatcher" + File.separator);
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "MySQLDBTAE" + File.separator) ;
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "MySQLDBTAE" + File.separator + "lib" + File.separator) ;
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "MySQLDBTAE" + File.separator + "version" + File.separator) ;
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "MySQLDBTAE" + File.separator + "bin" + File.separator) ;
 		
-		
-		
-		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "RunDispatcher" + File.separator + "lib" + File.separator) ;
-		
-		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "RunDispatcher" + File.separator + "version" + File.separator) ;
-		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "rundispatcher" + File.separator);
 		
 		directoriesToSearch.add(System.getProperty("java.class.path"));
 		for(String dirName : directoriesToSearch)
@@ -90,14 +79,6 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 		defaultSearchPath = sb.toString();
 		
 	}
-	@Parameter(names={"--algoExec", "--algo"}, description="command string to execute algorithm with", required=true)
-	public String algoExec;
-	
-	@Parameter(names={"--execDir","--execdir"}, description="working directory to execute algorithm in", required=true)
-	public String algoExecDir;
-	
-	@Parameter(names="--deterministic", description="treat the target algorithm as deterministic", converter=BinaryDigitBooleanConverter.class)
-	public boolean deterministic;
 	
 	@UsageTextField(domain="")
 	@Parameter(names={"--targetAlgorithmEvaluator","--tae"}, description="Target Algorithm Evaluator to use when making target algorithm calls")
@@ -129,20 +110,16 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 	@Parameter(names="--runHashCodeFile", description="file containing a list of run hashes one per line: Each line should be: \"Run Hash Codes: (Hash Code) After (n) runs\". The number of runs in this file need not match the number of runs that we execute, this file only ensures that the sequences never diverge. Note the n is completely ignored so the order they are specified in is the order we expect the hash codes in this version. Finally note you can simply point this at a previous log and other lines will be disregarded", converter=ReadableFileConverter.class)
 	public File runHashCodeFile;
 
-	@Parameter(names="--verifySAT", description="Check SAT/UNSAT/UNKNOWN responses against Instance specific information (if null then performs check if every instance has specific information in the following domain {SAT, UNSAT, UNKNOWN, SATISFIABLE, UNSATISFIABLE}")
-	public Boolean verifySAT;
-		
-	/*
-	public AlgorithmExecutionConfig getAlgorithmExecutionConfig(ParamConfigurationSpace p, File experimentDir)
-	{
-		
-		if(!new File(algoExecDir).isAbsolute())
-		{
-			algoExecDir = experimentDir.getAbsolutePath() + File.separator +algoExecDir; 
-		}
-		
-		return new AlgorithmExecutionConfig(algoExec, algoExecDir, p, false, deterministic);
-	}
+	@Parameter(names="--leakMemoryAmount", hidden=true, description="amount of memory in bytes to leak")
+	public int leakMemoryAmount = 1024;
+
+	@Parameter(names="--leakMemory", hidden=true, description="leaks some amount of memory for every run")
+	public boolean leakMemory = false;
 	
-	*/
+	@Parameter(names="--verifySAT", description="Check SAT/UNSAT/UNKNOWN responses against Instance specific information (if null then performs check if all instance specific information is in {SAT, UNSAT, UNKNOWN, SATISFIABLE, UNSATISFIABLE}")
+	public Boolean verifySAT;
+
+	
+	
+
 }

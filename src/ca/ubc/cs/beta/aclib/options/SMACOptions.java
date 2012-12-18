@@ -91,6 +91,9 @@ public class SMACOptions extends AbstractOptions {
 	@Parameter(names={"--cleanOldStateOnSuccess"}, description="will clean up much of the useless state files if smac completes successfully")
 	public boolean cleanOldStatesOnSuccess = true;
 	
+	@Parameter(names={"--saveContext","--saveContextWithState" }, description="saves some context with the state folder so that the data is mostly self-describing (Scenario, Instance File, Feature File, Param File are saved)")
+	public boolean saveContextWithState = true;
+	
 	@Parameter(names="--executionMode", description="execution mode of the automatic configurator")
 	public ExecutionMode execMode = ExecutionMode.SMAC;
 	
@@ -115,6 +118,12 @@ public class SMACOptions extends AbstractOptions {
 	
 	@Parameter(names={"--maxIncumbentRuns","--maxRunsForIncumbent"}, description="maximum number of incumbent runs allowed", validateWith=FixedPositiveInteger.class)
 	public int maxIncumbentRuns = 2000;
+	
+	@Parameter(names={"--initialN","--initialChallenge"}, description="initial amount of runs to request when intensifying on a challenger", validateWith=FixedPositiveInteger.class)
+	public int initialChallengeRuns = 1;
+	
+	@Parameter(names={"--initialIncumbentRuns","--defaultConfigRuns"}, description="initial amount of runs to schedule against for the default configuration", validateWith=FixedPositiveInteger.class)
+	public int initialIncumbentRuns = 1;
 	
 	@Parameter(names={"--intensificationPercentage","--frac_rawruntime"}, description="percent of time to spend intensifying versus model learning", validateWith=ZeroOneHalfOpenRightDouble.class)
 	public double intensificationPercentage = 0.50;
@@ -155,6 +164,8 @@ public class SMACOptions extends AbstractOptions {
 	@UsageTextField(defaultValues="", domain="")
 	@Parameter(names={"-v","--version"}, description="print version and exit")
 	public boolean showVersion = false;
+
+	
 	
 	
 	

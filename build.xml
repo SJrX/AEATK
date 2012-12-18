@@ -42,7 +42,7 @@
 	</target>
 	
 	<target name="compile" depends="init" description="Compiles the source">
-		<javac srcdir="src" destdir="build/classes" debug="true" includeantruntime="false">
+		<javac srcdir="src" destdir="build/classes" debug="true" includeantruntime="false" >
 		<classpath refid="compile.classpath"/>
 		</javac>		
 	</target>

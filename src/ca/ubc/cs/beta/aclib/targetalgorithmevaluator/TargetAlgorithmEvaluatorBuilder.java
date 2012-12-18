@@ -20,6 +20,7 @@ import org.slf4j.LoggerFactory;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.options.AlgorithmExecutionOptions;
 import ca.ubc.cs.beta.aclib.options.ScenarioOptions;
+import ca.ubc.cs.beta.aclib.options.TargetAlgorithmEvaluatorOptions;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbortOnCrashTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbortOnFirstRunCrashTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.TimingCheckerTargetAlgorithmEvaluator;
@@ -34,6 +35,11 @@ public class TargetAlgorithmEvaluatorBuilder {
 	private static Logger log = LoggerFactory.getLogger(TargetAlgorithmEvaluatorBuilder.class);
 
 	
+	/**
+	 * @param config
+	 * @return
+	 */
+	@Deprecated
 	public static List<String> getAvailableTargetAlgorithmEvaluators(AlgorithmExecutionOptions config)
 	{
 		ClassLoader cl = getClassLoader(config);
@@ -41,6 +47,16 @@ public class TargetAlgorithmEvaluatorBuilder {
 		return TargetAlgorithmEvaluatorLoader.getAvailableTargetAlgorithmEvaluators(cl);
 		
 	}
+	
+	
+	public static List<String> getAvailableTargetAlgorithmEvaluators(TargetAlgorithmEvaluatorOptions config)
+	{
+		ClassLoader cl = getClassLoader(config);
+		
+		return TargetAlgorithmEvaluatorLoader.getAvailableTargetAlgorithmEvaluators(cl);
+		
+	}
+	
 	/**
 	 * Retrieves a modified class loader to do dynamically search for jars
 	 * @return
@@ -79,7 +95,48 @@ public class TargetAlgorithmEvaluatorBuilder {
 		
 	}
 	
+	/**
+	 * Retrieves a modified class loader to do dynamically search for jars
+	 * @return
+	 */
+	public static ClassLoader getClassLoader(TargetAlgorithmEvaluatorOptions options)
+	{
+		String pathtoSearch = options.taeSearchPath;
+		String[] paths = pathtoSearch.split(File.pathSeparator);
+		
+		ArrayList<URL> urls = new ArrayList<URL>(paths.length);
+				
+		for(String path : paths)
+		{
+			
+			File f = new File(path);
+			
+			try {
+				urls.add(f.toURI().toURL());
+				
+			} catch (MalformedURLException e) {
+				log.info("Could not parse path {}, got {}", path, e );
+			}
+			
+			
+		}
+		
+		
+		URL[] urlsArr = urls.toArray(new URL[0]);
+		
+		
+		URLClassLoader ucl = new URLClassLoader(urlsArr);
+		
+		return ucl;
+		
+		
+		
+	}
 	
+	
+	
+	
+	@Deprecated
 	public static TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(ScenarioOptions scenarioOptions, AlgorithmExecutionConfig execConfig)
 	{
 		return getTargetAlgorithmEvaluator(scenarioOptions, execConfig, true);
@@ -92,6 +149,7 @@ public class TargetAlgorithmEvaluatorBuilder {
 	 * @param noHashVerifiers
 	 * @return
 	 */
+	@Deprecated
 	public static TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(ScenarioOptions options, AlgorithmExecutionConfig execConfig, boolean hashVerifiersAllowed)
 	{
 		
@@ -125,6 +183,13 @@ public class TargetAlgorithmEvaluatorBuilder {
 			}
 		}
 		
+		
+		if(options.algoExecOptions.verifySAT)
+		{
+			log.debug("Verifying SAT Responses");
+			algoEval = new VerifySATTargetAlgorithmEvaluator(algoEval);
+			
+		}
 		//==== Run Hash Code Verification should be last
 		if(hashVerifiersAllowed)
 		{
@@ -159,6 +224,94 @@ public class TargetAlgorithmEvaluatorBuilder {
 		
 		return algoEval;
 	}
+	
+	
+	/**
+	 * Generates the TargetAlgorithmEvaluator with the given runtime behaivor
+	 * @param options 
+	 * @param execConfig
+	 * @param noHashVerifiers
+	 * @return
+	 */
+	public static TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(TargetAlgorithmEvaluatorOptions options, AlgorithmExecutionConfig execConfig, boolean hashVerifiersAllowed)
+	{
+		
+		ClassLoader cl = getClassLoader(options);
+		//TargetAlgorithmEvaluator cli = TargetAlgorithmEvaluatorLoader.getTargetAlgorithmEvaluator(execConfig, options.maxConcurrentAlgoExecs, "CLI",cl);
+		//TargetAlgorithmEvaluator surrogate = TargetAlgorithmEvaluatorLoader.getTargetAlgorithmEvaluator(execConfig, options.maxConcurrentAlgoExecs, options.scenarioConfig.algoExecOptions.targetAlgorithmEvaluator,cl);
+		
+		 
+		TargetAlgorithmEvaluator algoEval = TargetAlgorithmEvaluatorLoader.getTargetAlgorithmEvaluator(execConfig, options.maxConcurrentAlgoExecs, options.targetAlgorithmEvaluator,cl);
+		
+		//===== Note the decorators are not in general commutative
+		//Specifically Run Hash codes should only see the same runs the rest of the applications see
+		//Additionally retrying of crashed runs should probably happen before Abort on Crash
+		
+		algoEval = new RetryCrashedRunsTargetAlgorithmEvaluator(options.retryCount, algoEval);
+		
+		
+		if(options.abortOnCrash)
+		{
+			algoEval = new AbortOnCrashTargetAlgorithmEvaluator(algoEval);
+		}
+		
+		
+		if(options.abortOnFirstRunCrash)
+		{
+			algoEval = new AbortOnFirstRunCrashTargetAlgorithmEvaluator(algoEval);
+			
+			if(options.abortOnCrash)
+			{
+				log.warn("Configured to treat all crashes as aborts, it is redundant to also treat the first as an abort");
+			}
+		}
+		
+		
+		if(options.verifySAT != null)
+		{
+			if(options.verifySAT)
+			{
+				log.debug("Verifying SAT Responses");
+				algoEval = new VerifySATTargetAlgorithmEvaluator(algoEval);
+				
+			}
+		}
+		//==== Run Hash Code Verification should be last
+		if(hashVerifiersAllowed)
+		{
+			
+			if(options.leakMemory)
+			{
+				LeakingMemoryTargetAlgorithmEvaluator.leakMemoryAmount(options.leakMemoryAmount);
+				log.warn("Target Algorithm Evaluators will leak memory. I hope you know what you are doing");
+				algoEval = new LeakingMemoryTargetAlgorithmEvaluator(algoEval);
+				
+			}
+			
+			
+			
+			
+			if(options.runHashCodeFile != null)
+			{
+				log.info("Algorithm Execution will verify run Hash Codes");
+				Queue<Integer> runHashCodes = parseRunHashCodes(options.runHashCodeFile);
+				algoEval = new RunHashCodeVerifyingAlgorithmEvalutor(algoEval, runHashCodes);
+				 
+			} else
+			{
+				log.info("Algorithm Execution will NOT verify run Hash Codes");
+				algoEval = new RunHashCodeVerifyingAlgorithmEvalutor(algoEval);
+			}
+
+		}
+		
+		
+		algoEval = new TimingCheckerTargetAlgorithmEvaluator(execConfig, algoEval);
+		
+		return algoEval;
+	}
+	
+	
 	
 	private static Pattern RUN_HASH_CODE_PATTERN = Pattern.compile("^Run Hash Codes:\\d+( After \\d+ runs)?\\z");
 	

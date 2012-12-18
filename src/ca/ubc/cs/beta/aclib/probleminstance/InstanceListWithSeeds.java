@@ -31,6 +31,9 @@ public class InstanceListWithSeeds {
 
 	private final List<ProblemInstance> instancesFromFeatures;
 	
+	private final String instanceFileAbsolutePath;
+	
+	private final String instanceFeatureFileAbsolutePath;
 	
 	public InstanceListWithSeeds(InstanceSeedGenerator seedGen, List<ProblemInstance> instances)
 	{
@@ -39,25 +42,22 @@ public class InstanceListWithSeeds {
 		this.instanceNames = Collections.emptyList();
 		this.instanceSpecificInfo = Collections.emptyMap();
 		this.instancesFromFeatures = Collections.emptyList();
+		this.instanceFileAbsolutePath = null;
+		this.instanceFeatureFileAbsolutePath = null;
 	}
 	
-	public InstanceListWithSeeds(InstanceSeedGenerator seedGen, List<ProblemInstance> instances, List<ProblemInstance> instancesByFeatures)
+	public InstanceListWithSeeds(InstanceSeedGenerator seedGen, List<ProblemInstance> instances, List<ProblemInstance> instancesByFeatures, String instanceFileAbsolutePath, String instanceFeatureFileAbsolutePath)
 	{
 		this.seedGen = seedGen;
 		this.instances = instances;
 		this.instanceNames = Collections.emptyList();
 		this.instanceSpecificInfo = Collections.emptyMap();
 		this.instancesFromFeatures = instancesByFeatures;
+		this.instanceFileAbsolutePath = instanceFileAbsolutePath;
+		this.instanceFeatureFileAbsolutePath = instanceFeatureFileAbsolutePath;
+		
 	}
-	/*
-	InstanceListWithSeeds(InstanceSeedGenerator seedGen, List<ProblemInstance> instances, List<String> instanceNames)
-	{
-		this.seedGen = seedGen;
-		this.instanceNames = instanceNames;
-		this.instances = ((instances == null) ? new LinkedList<ProblemInstance>() : instances);
-		this.instanceSpecificInfo = Collections.emptyMap();
-	}*/
-
+	
 	
 
 	InstanceListWithSeeds(InstanceSeedGenerator seedGen, List<ProblemInstance> instances,
@@ -68,6 +68,8 @@ public class InstanceListWithSeeds {
 		this.instances = ((instances == null) ? new LinkedList<ProblemInstance>() : instances);
 		this.instanceSpecificInfo = instanceSpecificInfo;
 		this.instancesFromFeatures = Collections.emptyList();
+		this.instanceFileAbsolutePath = null;
+		this.instanceFeatureFileAbsolutePath = null;
 	}
 	
 	
@@ -100,6 +102,14 @@ public class InstanceListWithSeeds {
 	Map<String,String> getInstanceSpecificInfo()
 	{
 		return instanceSpecificInfo;
+	}
+
+	public String getInstanceFileAbsolutePath() {
+		return instanceFileAbsolutePath;
+	}
+
+	public String getInstanceFeatureFileAbsolutePath() {
+		return instanceFeatureFileAbsolutePath;
 	}
 	
 }

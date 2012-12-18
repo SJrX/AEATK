@@ -6,8 +6,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.IOException;
 import java.io.PrintStream;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
@@ -527,8 +529,13 @@ public class LegacyStateDeserializerTester {
 	
 	public List<RunConfig> getValidRunConfigurations(List<ProblemInstance> pis, Random r, InstanceSeedGenerator isg, ParamConfigurationSpace configSpace)
 	{
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(1000);
-		for(int i=0; i < 200; i++)
+		return getValidRunConfigurations(pis, r, isg, configSpace, 200);
+	}
+	
+	public List<RunConfig> getValidRunConfigurations(List<ProblemInstance> pis, Random r, InstanceSeedGenerator isg, ParamConfigurationSpace configSpace, int number)
+	{
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(number+2);
+		for(int i=0; i < number; i++)
 		{
 			ParamConfiguration config = configSpace.getRandomConfiguration();
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("TIMEOUT") || config.get("solved").equals("CRASHED"))
@@ -615,5 +622,113 @@ public class LegacyStateDeserializerTester {
 		
 	}
 
+	
+	private void outputMem()
+	{
+		System.out.println("DATE: " + (new SimpleDateFormat()).format(new Date()));
+		System.out.println("MAX: " + Runtime.getRuntime().maxMemory() / 1024.0 / 1024 + "MB");
+		System.out.println("TOTAL: " + Runtime.getRuntime().totalMemory() / 1024.0 / 1024 + " MB");
+		System.out.println("FREE: " + Runtime.getRuntime().freeMemory() / 1024.0 / 1024 + " MB");
+		
+	}
+	/**
+	 * This test is related to 
+	 * 
+	 */
+	@SuppressWarnings("deprecation")
+	@Test
+	public void stateSerializationMemHeavy() throws DuplicateRunException
+	{
+	
+		if(Runtime.getRuntime().maxMemory() / 1024.0 / 1024  > 64)
+		{
+			fail("Too much memory this test will fail");
+		}
+		  
+				
+		File paramFile = TestHelper.getTestFile("paramFiles/paramEchoParamFile.txt");
+		ParamConfigurationSpace configSpace;
+		
+		
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(ParamEchoExecutor.class.getCanonicalName());
+		
+		long seed = System.currentTimeMillis();
+		//seed = 1;
+		System.out.println("Seed was:" + seed);
+		Random r = new MersenneTwister(seed);
+		
+		configSpace = new ParamConfigurationSpace(paramFile,r);
+		
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 5000);
+		List<ProblemInstance> pis = new ArrayList<ProblemInstance>();
+		for(int i=0; i < 2000; i++)
+		{
+			pis.add(new ProblemInstance("TestInstance_" + i,i));
+		}
+		
+		
+		InstanceSeedGenerator isg = new RandomInstanceSeedGenerator(pis, 1);
+		
+		
+		outputMem();
+		
+		List<RunConfig> runConfigs = getValidRunConfigurations(pis, r, isg, configSpace, 25000 );
+		outputMem();
+		
+	
+		
+		TargetAlgorithmEvaluator tae = new EchoTargetAlgorithmEvaluator( execConfig);
+		
+		RunHistory runHistory = new NewRunHistory(isg, OverallObjective.MEAN10, OverallObjective.MEAN, RunObjective.RUNTIME);
+		for(int i=0; i < 10; i++)
+		{
+			runHistory.incrementIteration();
+		}
+		
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		PrintStream ps = System.out;
+		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+		
+		
+		for(AlgorithmRun run : runs)
+		{
+			runHistory.append(run);
+		}
+		outputMem();
+		
+		File f;
+		try {
+			f = File.createTempFile("smac", "junitTest");
+			f.delete();
+			if(!f.mkdirs())
+			{
+				throw new IllegalStateException("Couldn't create directory");
+			}
+			
+		} catch (IOException e) {
+			throw new IllegalStateException("Couldn't create directory");
+		}
+		outputMem();
+		
+		StateFactory sf = new LegacyStateFactory(f.getAbsolutePath(),f.getAbsolutePath());
+		outputMem();
+		StateSerializer stateS = sf.getStateSerializer("deleteMe-unitTest", 10);
+		
+		stateS.setRunHistory(runHistory);
+		
+		stateS.setIncumbent(runs.get(0).getRunConfig().getParamConfiguration());
+		stateS.save();
+		
+				
+		
+		
+	}
+	
+	
 	
 }

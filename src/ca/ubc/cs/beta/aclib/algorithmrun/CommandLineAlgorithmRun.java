@@ -73,7 +73,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	public CommandLineAlgorithmRun(AlgorithmExecutionConfig execConfig, RunConfig runConfig) 
 	{
 		super(execConfig, runConfig);
-		
+		//TODO Test
 		if(runConfig.getCutoffTime() <= 0)
 		{
 			

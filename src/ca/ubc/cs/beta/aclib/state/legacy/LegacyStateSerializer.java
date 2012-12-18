@@ -108,96 +108,107 @@ public class LegacyStateSerializer implements StateSerializer {
 		AutoStartStopWatch auto = new AutoStartStopWatch();
 		if(runHistory != null)
 		{
-			StringBuilder paramStrings = new StringBuilder();
-			StringBuilder uniqConfigurations = new StringBuilder();
-			
-			
-			int i=1; 
-			for(ParamConfiguration config : runHistory.getAllParameterConfigurationsRan())
-			{
-				paramStrings.append(i + ":" + config.getFormattedParamString(StringFormat.STATEFILE_SYNTAX) + "\n");
-				uniqConfigurations.append(i).append(",").append(getStringFromConfiguration(config)).append("\n");
-				i++;
-			}	
-			
-			StringBuilder runResults = new StringBuilder();
-			i=0;
-			double cumulativeSum = 0;
-			
-			runResults.append(LegacyStateFactory.RUN_NUMBER_HEADING).append(","); //0
-			runResults.append("Run History Configuration ID").append(","); //1
-			runResults.append("Instance ID").append(","); //2
-			runResults.append("Response Value (y)").append(","); //3
-			runResults.append("Censored?").append(","); //4
-			runResults.append("Cutoff Time Used").append(","); //5
-			runResults.append("Seed").append(","); //6
-			runResults.append("Runtime").append(","); //7
-			runResults.append("Run Length").append(","); //8
-			runResults.append("Run Result Code").append(","); //9
-			runResults.append("Run Quality").append(","); //10
-			runResults.append("SMAC Iteration").append(","); //11
-			runResults.append("SMAC Cumulative Runtime").append(","); //12
-			runResults.append("Run Result").append(","); //13
-			runResults.append("Additional Algorithm Run Data").append(","); //14
-			runResults.append("Wall Clock Time").append(","); //15
-			runResults.append("\n");
-			
-
-			for(RunData runData: runHistory.getAlgorithmRunData())
-			{
-				i++;
-				Integer thetaIdx = runData.getThetaIdx();
-				Integer instanceIdx = runData.getInstanceidx();
-				Integer iteration = runData.getIteration();
-				
-				AlgorithmRun run = runData.getRun();
-				//Comments are just for dev reference when comparing code with LegacyStateDeserializer
-				runResults.append(i).append(","); //0
-				runResults.append(thetaIdx).append(","); //1
-				runResults.append(instanceIdx).append(","); //2
-				runResults.append(runHistory.getRunObjective().getObjective(run)).append(","); //3
-				int isCensored = 0;
-				
-				if(run.getRunResult().equals(RunResult.TIMEOUT) && run.getRunConfig().hasCutoffLessThanMax())
-				{
-					isCensored = 1;
-				}
-				runResults.append(isCensored + ","); //Censored 4
-				runResults.append(run.getRunConfig().getCutoffTime()).append(","); //5
-				runResults.append(run.getResultSeed()).append(","); //6
-				runResults.append(run.getRuntime()).append(","); //7
-				runResults.append(run.getRunLength()).append(","); //8
-				runResults.append(String.valueOf(run.getRunResult().getResultCode())).append(","); //9
-				runResults.append(run.getQuality()).append(","); //10
-				runResults.append(iteration).append(","); //11
-				cumulativeSum += run.getRuntime(); 
-				runResults.append(cumulativeSum).append(","); //12
-				runResults.append(run.getRunResult().name()).append(","); //13
-				runResults.append(run.getAdditionalRunData()).append(",");//14
-				runResults.append(run.getWallclockExecutionTime()).append(","); //15;
-				runResults.append("\n");
-			}
-			
-			
 			try {
-				
-				//Write Unique Configurations File
 				File f= new File(LegacyStateFactory.getUniqConfigurationsFilename(path, id, iteration));
 				addFileToSet(f);
-				writeStringBuffer(uniqConfigurations, f);
 				log.debug("Unique Configurations Saved in {}", f.getAbsolutePath());
 				
+				FileWriter uniqConfigurations = new FileWriter(f);
+				
+				
+				log.debug("Parameter Strings Saved in {}", f.getAbsolutePath());
 				f = new File(LegacyStateFactory.getParamStringsFilename(path, id, iteration));
 				addFileToSet(f);
-				writeStringBuffer(paramStrings, f);
-				log.debug("Parameter Strings Saved in {}", f.getAbsolutePath());
+				FileWriter paramStrings = new FileWriter(f);
 				
+				//StringBuilder paramStrings = new StringBuilder();
+				//StringBuilder uniqConfigurations = new StringBuilder();
+				
+				
+				int i=1; 
+				for(ParamConfiguration config : runHistory.getAllParameterConfigurationsRan())
+				{
+					
+					paramStrings.append(i + ":" + config.getFormattedParamString(StringFormat.STATEFILE_SYNTAX) + "\n");
+					
+					uniqConfigurations.append(i+",").append(getStringFromConfiguration(config)).append("\n");
+					
+					i++;
+				}	
+				
+				paramStrings.close();
+				uniqConfigurations.close();
+				paramStrings = null;
+				uniqConfigurations = null;
 				
 				f = new File(LegacyStateFactory.getRunAndResultsFilename(path, id, iteration));
 				addFileToSet(f);
-				writeStringBuffer(runResults, f);			
+				//writeStringBuffer(runResults, f);			
 				log.debug("Run Results Saved in {}", f.getAbsolutePath());
+				FileWriter runResults = new FileWriter(f);
 				
+				//StringBuilder runResults = new StringBuilder();
+				i=0;
+				double cumulativeSum = 0;
+				
+				runResults.append(LegacyStateFactory.RUN_NUMBER_HEADING).append(","); //0
+				runResults.append("Run History Configuration ID").append(","); //1
+				runResults.append("Instance ID").append(","); //2
+				runResults.append("Response Value (y)").append(","); //3
+				runResults.append("Censored?").append(","); //4
+				runResults.append("Cutoff Time Used").append(","); //5
+				runResults.append("Seed").append(","); //6
+				runResults.append("Runtime").append(","); //7
+				runResults.append("Run Length").append(","); //8
+				runResults.append("Run Result Code").append(","); //9
+				runResults.append("Run Quality").append(","); //10
+				runResults.append("SMAC Iteration").append(","); //11
+				runResults.append("SMAC Cumulative Runtime").append(","); //12
+				runResults.append("Run Result").append(","); //13
+				runResults.append("Additional Algorithm Run Data").append(","); //14
+				runResults.append("Wall Clock Time").append(","); //15
+				runResults.append("\n");
+				
+	
+				for(RunData runData: runHistory.getAlgorithmRunData())
+				{
+					i++;
+					Integer thetaIdx = runData.getThetaIdx();
+					Integer instanceIdx = runData.getInstanceidx();
+					Integer iteration = runData.getIteration();
+					
+					AlgorithmRun run = runData.getRun();
+					//Comments are just for dev reference when comparing code with LegacyStateDeserializer
+					runResults.append(i+","); //0
+					runResults.append(thetaIdx+","); //1
+					runResults.append(instanceIdx+","); //2
+					runResults.append(runHistory.getRunObjective().getObjective(run)+","); //3
+					int isCensored = 0;
+					
+					if(run.getRunResult().equals(RunResult.TIMEOUT) && run.getRunConfig().hasCutoffLessThanMax())
+					{
+						isCensored = 1;
+					}
+					runResults.append(isCensored + ","); //Censored 4
+					runResults.append(run.getRunConfig().getCutoffTime()+","); //5
+					runResults.append(run.getResultSeed()+","); //6
+					runResults.append(run.getRuntime()+","); //7
+					runResults.append(run.getRunLength()+","); //8
+					runResults.append(String.valueOf(run.getRunResult().getResultCode())+","); //9
+					runResults.append(run.getQuality()+","); //10
+					runResults.append(iteration+","); //11
+					cumulativeSum += run.getRuntime(); 
+					runResults.append(cumulativeSum+","); //12
+					runResults.append(run.getRunResult().name()+","); //13
+					runResults.append(run.getAdditionalRunData()+",");//14
+					runResults.append(run.getWallclockExecutionTime()+","); //15;
+					runResults.append("\n");
+					
+					if(i % 100 == 0) {
+						runResults.flush();
+					}
+				}
+					runResults.close();
 			} catch (IOException e) {
 	
 				throw new StateSerializationException(e);

@@ -70,7 +70,7 @@ public class TargetAlgorithmEvaluatorLoader {
 			
 			} catch(ServiceConfigurationError e)
 			{
-				log.warn("Error occured while retrieving instance", e);
+				log.warn("Error occured while retrieving Target Algorithm Evaluator", e);
 			}
 		}
 			
