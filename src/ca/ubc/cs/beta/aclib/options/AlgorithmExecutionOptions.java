@@ -132,17 +132,5 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 	@Parameter(names="--verifySAT", description="Check SAT/UNSAT/UNKNOWN responses against Instance specific information (if null then performs check if every instance has specific information in the following domain {SAT, UNSAT, UNKNOWN, SATISFIABLE, UNSATISFIABLE}")
 	public Boolean verifySAT;
 		
-	/*
-	public AlgorithmExecutionConfig getAlgorithmExecutionConfig(ParamConfigurationSpace p, File experimentDir)
-	{
-		
-		if(!new File(algoExecDir).isAbsolute())
-		{
-			algoExecDir = experimentDir.getAbsolutePath() + File.separator +algoExecDir; 
-		}
-		
-		return new AlgorithmExecutionConfig(algoExec, algoExecDir, p, false, deterministic);
-	}
 	
-	*/
 }
