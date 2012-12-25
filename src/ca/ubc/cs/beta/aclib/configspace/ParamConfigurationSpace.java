@@ -1078,7 +1078,8 @@ public class ParamConfigurationSpace implements Serializable {
 						
 						
 					}
-						
+					
+					
 					for(int i=0; i < valueArray.length; i++)
 					{
 						valueArray[i] = Double.valueOf(params[i]);
