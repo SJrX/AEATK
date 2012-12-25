@@ -1,5 +1,6 @@
 package ca.ubc.cs.beta.aclib.state;
 
+import java.io.File;
 import java.util.List;
 
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
@@ -49,6 +50,27 @@ public interface StateFactory {
 	public StateSerializer getStateSerializer(String id, int iteration) throws StateSerializationException;
 	
 
+	/**
+	 * Purges all the previous states that were saved
+	 * 
+	 * <b>Implementation Note:</b> This is an optional method, and it is not defined what specifically this method does
+	 * if requested the user is hoping to free up resources. What should be true though is that after this method is called
+	 * a user should still be able to restore to the most recent iteration. This method can do nothing necessary 
+	 * 
+	 */
+	public void purgePreviousStates();
+
+
+	
+	/**
+	 * Copies the file to the State Directory
+	 * 
+	 * @param name name of the file to write
+	 * @param f source file
+	 */
+	public void copyFileToStateDir(String name, File f);
+	
+	
 
 
 	

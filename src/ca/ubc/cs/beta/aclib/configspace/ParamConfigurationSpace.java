@@ -3,7 +3,6 @@ package ca.ubc.cs.beta.aclib.configspace;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
-import java.io.FileReader;
 import java.io.IOException;
 import java.io.Reader;
 import java.io.Serializable;
@@ -137,6 +136,8 @@ public class ParamConfigurationSpace implements Serializable {
 
 	private Random random;
 	
+	private boolean hasRealParameterFile = true;
+	
 	/**
 	 * Stores forbidden lines for later parsing
 	 */
@@ -182,6 +183,7 @@ public class ParamConfigurationSpace implements Serializable {
 	public ParamConfigurationSpace(Reader reader)
 	{
 		this(reader,SeedableRandomSingleton.getRandom(), "ReaderOnly-"+System.currentTimeMillis() +"-" +(int) (Math.random() * 10000000.0));
+		hasRealParameterFile = false;
 	}
 	
 	/**
@@ -1076,7 +1078,8 @@ public class ParamConfigurationSpace implements Serializable {
 						
 						
 					}
-						
+					
+					
 					for(int i=0; i < valueArray.length; i++)
 					{
 						valueArray[i] = Double.valueOf(params[i]);
@@ -1226,6 +1229,15 @@ public class ParamConfigurationSpace implements Serializable {
 	private boolean isIntegerDouble(double d)
 	{
 		return (d - Math.floor(d) == 0);
+	}
+	
+	/**
+	 * Returns <code>true</code> if the file is real, or if we constructed this from a Reader
+	 * @return
+	 */
+	public boolean hasRealParameterFile()
+	{
+		return hasRealParameterFile;
 	}
 }
 

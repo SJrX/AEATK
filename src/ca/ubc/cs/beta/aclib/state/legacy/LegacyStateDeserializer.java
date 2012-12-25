@@ -14,6 +14,8 @@ import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -122,7 +124,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 	 * @param execConfig					The execution configuration used in the run
 	 * @throws StateSerializationException  If we cannot restore the state
 	 */
-	public LegacyStateDeserializer(String restoreFromPath, String id, int iteration, ParamConfigurationSpace configSpace, OverallObjective intraInstanceObjective,OverallObjective interInstanceObjective, RunObjective runObj, List<ProblemInstance> instances, AlgorithmExecutionConfig execConfig) 
+	LegacyStateDeserializer(String restoreFromPath, String id, int iteration, ParamConfigurationSpace configSpace, OverallObjective intraInstanceObjective,OverallObjective interInstanceObjective, RunObjective runObj, List<ProblemInstance> instances, AlgorithmExecutionConfig execConfig) 
 	{
 			if (configSpace == null) throw new IllegalArgumentException("Config Space cannot be null");
 			if(interInstanceObjective == null) throw new IllegalArgumentException("Inter Instance Objective cannot be null");
@@ -195,8 +197,8 @@ public class LegacyStateDeserializer implements StateDeserializer {
 						incumbent = configSpace.getConfigurationFromString(paramString, StringFormat.STATEFILE_SYNTAX);
 					} else
 					{
-						throw new IllegalStateException("Not sure why a java object file has no incumbent, save state file corrupt. To continue try renaming the object file for this iteration");
-						//incumbent = null;
+						//throw new IllegalStateException("Not sure why a java object file has no incumbent, save state file corrupt. To continue try renaming the object file for this iteration");
+						incumbent = null;
 					}
 					 
 					
@@ -643,8 +645,12 @@ public class LegacyStateDeserializer implements StateDeserializer {
 		filenames.addAll(Arrays.asList(restoreDirectory.list()));
 		int savedFileIteration = 0;
 		boolean filesFound = false;
-		for(savedFileIteration=iteration; savedFileIteration <= 2*iteration; savedFileIteration++ )
-		{
+		
+		int maxIteration = getMaxIterationInDirectory(restoreDirectory, id);
+		
+	
+		for(savedFileIteration=iteration; savedFileIteration <= 2*maxIteration; savedFileIteration++ )
+		{ //We scan for the closest, because MATLAB generally overwrites previous runs in place.
 			
 			if(filenames.contains(LegacyStateFactory.getRunAndResultsFilename("", id, savedFileIteration)))
 			{
@@ -753,6 +759,45 @@ public class LegacyStateDeserializer implements StateDeserializer {
 		}
 	 
 		return f;
+		
+	}
+	private int getMaxIterationInDirectory(File restoreDirectory, String id) {
+		
+		String[] subfiles = restoreDirectory.list();
+		
+		
+		Pattern p = Pattern.compile(Pattern.quote(id)+"(\\d+)\\z");
+		
+		 int maxIteration = 0;
+		 
+		for(String file : subfiles)
+		{
+			//Strip file extension
+			file = file.trim().substring(0, file.trim().length() - 4);
+			Matcher m = p.matcher(file);
+			
+			while(m.find())
+			{
+				int myIteration = 0;
+				try {
+					myIteration = Integer.valueOf(m.group(1));
+				} catch(NumberFormatException e)
+				{
+					log.warn("Weird filename encountered that looked like a integer, but wasn't {}, while autodetecting iteration", file);
+					continue;
+				}
+				if(myIteration > maxIteration)
+				{
+					maxIteration = myIteration;
+				}
+			}
+			
+			
+		}
+			
+			
+		return maxIteration;
+		
 		
 	}
 	/**

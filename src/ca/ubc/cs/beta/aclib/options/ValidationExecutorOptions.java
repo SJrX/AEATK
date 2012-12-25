@@ -2,16 +2,18 @@ package ca.ubc.cs.beta.aclib.options;
 
 import java.io.File;
 
+import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
+
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParametersDelegate;
-import com.beust.jcommander.validators.PositiveInteger;
 
 /**
  * Options controlling the Stand Alone Validation Utility
  * 
  * @see ValidationOptions 
  */
-public class ValidationExecutorOptions {
+@UsageTextField(title="Validation Executor Options", description="Options that control the stand-alone validator")
+public class ValidationExecutorOptions extends AbstractOptions {
 	
 	@ParametersDelegate
 	public ScenarioOptions scenarioConfig = new ScenarioOptions();
@@ -21,10 +23,14 @@ public class ValidationExecutorOptions {
 	@Parameter(names={"-e","--experimentDir"}, description="Root Directory for Experiments Folder")
 	public String experimentDir = System.getProperty("user.dir") + File.separator + "";
 	
-	@Parameter(names="--seed", description="Seed for Random Number Generator [0 means don't use a seed]")
+	@Parameter(names="--seed", description="Seed for Random Number Generator")
 	public long seed = 0;
 	
-	@Parameter(names="--configuration", description="Parameter configuration to validate (In the same format calls are made to the algorithm")
+	@Parameter(names="--numRun", description="Number of Run the Run", required=true)
+	public long numRun = 0;
+	
+	
+	@Parameter(names="--configuration", description="Parameter configuration to validate (In the same format calls are made to the algorithm) [Use <DEFAULT> to validate the default]")
 	public String incumbent;
 	
 	@Parameter(names="--trajectoryFile", description="Trajectory File to read configurations from")
@@ -44,4 +50,7 @@ public class ValidationExecutorOptions {
 	
 	@Parameter(names="--tunerOverheadTime", description="Amount of Tuner Overhead time to report in the output (-1 means use trajectory file overhead or 0 if no trajectory file)")
 	public double tunerOverheadTime = -1;
+	
+	@Parameter(names="--validateTestInstances")
+	public boolean validateTestInstances = true;
 }

@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -23,7 +24,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import au.com.bytecode.opencsv.CSVReader;
+import ca.ubc.cs.beta.aclib.exceptions.FeatureNotFoundException;
 import ca.ubc.cs.beta.aclib.misc.csvhelpers.ConfigCSVFileHelper;
+import ca.ubc.cs.beta.aclib.options.ScenarioOptions;
 import ca.ubc.cs.beta.aclib.seedgenerator.InstanceSeedGenerator;
 import ca.ubc.cs.beta.aclib.seedgenerator.RandomInstanceSeedGenerator;
 import ca.ubc.cs.beta.aclib.seedgenerator.SetInstanceSeedGenerator;
@@ -198,6 +201,22 @@ public class ProblemInstanceHelper {
 		return getInstances(filename, experimentDir, featureFileName, checkFileExistsOnDisk, 0, Integer.MAX_VALUE, deterministic);
 	}
 	
+	
+	public static InstanceListWithSeeds getInstances(ScenarioOptions scenarioOptions, String experimentDir, long seed) throws IOException {
+	
+		return getInstances(scenarioOptions.instanceFile,experimentDir, scenarioOptions.instanceFeatureFile, scenarioOptions.checkInstanceFilesExist,   seed,  Integer.MAX_VALUE, scenarioOptions.algoExecOptions.deterministic);
+		
+		
+	}
+	
+	public static InstanceListWithSeeds getTestInstances(ScenarioOptions scenarioOptions, String experimentDir, long seed) throws IOException {
+		
+		return getInstances(scenarioOptions.testInstanceFile,experimentDir, scenarioOptions.instanceFeatureFile, scenarioOptions.checkInstanceFilesExist,   seed,  Integer.MAX_VALUE, scenarioOptions.algoExecOptions.deterministic);
+		
+		
+	}
+	
+	
 	/**
 	 * Returns the InstanceList and Seed Generator for the given parameters 
 	 * 
@@ -216,13 +235,15 @@ public class ProblemInstanceHelper {
 	 */
 	public static InstanceListWithSeeds getInstances(String filename, String experimentDir, String featureFileName, boolean checkFileExistsOnDisk, long seed, int maxSeedsPerInstance, boolean deterministic) throws IOException {
 		
-		logger.info("Loading instances from file: {} and experiment dir {}", filename, experimentDir);
+		logger.debug("Loading instances from file: {} and experiment dir {}", filename, experimentDir);
 		
 
 		List<ProblemInstance> instances = new ArrayList<ProblemInstance>();
 		Set<ProblemInstance> instancesSet = new HashSet<ProblemInstance>();
 		
+		String instanceFileAbsolutePath = null;
 		
+		String instanceFeatureFileAbsolutePath = null;
 		
 		String line = "";
 		
@@ -240,13 +261,16 @@ public class ProblemInstanceHelper {
 		if(featureFileName != null)
 		{
 			//=======Parse Features=====
-			logger.info("Feature File specified reading features from: {} ", featureFileName);
+			logger.debug("Feature File specified reading features from: {} ", featureFileName);
 			File featureFile = getFileForPath(experimentDir, featureFileName);
 			
 			if(!featureFile.exists())
 			{
 				throw new ParameterException("Feature file given does not exist " + featureFile);
 			}
+			
+			instanceFeatureFileAbsolutePath = featureFile.getAbsolutePath();
+			
 			CSVReader featureCSV = new CSVReader(new InputStreamReader(new FileInputStream(featureFile)));
 			ConfigCSVFileHelper features = new ConfigCSVFileHelper(featureCSV.readAll(),1,1);
 			
@@ -267,7 +291,7 @@ public class ProblemInstanceHelper {
 				}
 				column++;
 			}
-			logger.info("Feature File specifies: {} features for {} instances", numberOfFeatures, features.getNumberOfDataRows() );
+			logger.debug("Feature File specifies: {} features for {} instances", numberOfFeatures, features.getNumberOfDataRows() );
 			
 			
 			for(int i=0; i  < features.getNumberOfDataRows(); i++)
@@ -316,7 +340,7 @@ public class ProblemInstanceHelper {
 		{	
 			//====Parse Instance File=====
 			File instanceListFile = getFileForPath(experimentDir, filename);
-			
+			instanceFileAbsolutePath = instanceListFile.getAbsolutePath();
 			InstanceListWithSeeds insc = getListAndSeedGen(instanceListFile,seed, maxSeedsPerInstance);
 			instanceList = insc.getInstancesByName();
 			gen = insc.getSeedGen();
@@ -417,7 +441,7 @@ public class ProblemInstanceHelper {
 				}
 				if(features == null)
 				{
-					throw new ParameterException("Feature file : " + featureFileName + " does not contain feature data for instance: " + instanceFile);
+					throw new FeatureNotFoundException("Feature file : " + featureFileName + " does not contain feature data for instance: " + instanceFile);
 				}
 				
 				
@@ -542,8 +566,8 @@ topOfLoop:
 			
 		}
 		
-		logger.info("Instances loaded from file named: {}", filename);
-		return new InstanceListWithSeeds(gen, instances, instancesFromFeatures);
+		logger.debug("Instances loaded from file named: {}", filename);
+		return new InstanceListWithSeeds(gen, instances, instancesFromFeatures, instanceFileAbsolutePath, instanceFeatureFileAbsolutePath);
 		
 		
 	}
@@ -822,5 +846,28 @@ topOfLoop:
 			v.declaredInstanceOrderForSeeds = problemInstanceDeclaredOrder;
 			return v;
 	}
+	
+	public static boolean isVerifySATCompatible(Collection<ProblemInstance> pis)
+	{
+		HashSet<String> validValues = new HashSet<String>();
+		
+		validValues.add("SAT");
+		validValues.add("SATISFIABLE");
+		validValues.add("UNKNOWN");
+		validValues.add("UNSAT");
+		validValues.add("UNSATISFIABLE");
+		
+		for(ProblemInstance pi : pis)
+		{
+			if(!validValues.contains(pi.getInstanceSpecificInformation()))
+			{
+				return false;
+			
+			}
+		}
+		
+		return true;
+	}
+	
 	
 }

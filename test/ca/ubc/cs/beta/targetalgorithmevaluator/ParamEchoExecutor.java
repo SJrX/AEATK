@@ -47,7 +47,10 @@ public class ParamEchoExecutor {
 
 			
 			
+			
+			//System.err.println("Process Running done");
 			System.out.println("Result for ParamILS: " + result + "," + runtime + "," + runlength + "," + quality + "," + resultSeed + "\n");
+			
 		} catch(RuntimeException e)
 		{
 			System.out.println("Result for ParamILS: CRASHED, 0.000, 0, 0," + args[4] + "\n");

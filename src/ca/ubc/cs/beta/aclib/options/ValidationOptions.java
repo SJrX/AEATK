@@ -2,7 +2,6 @@ package ca.ubc.cs.beta.aclib.options;
 
 
 import com.beust.jcommander.Parameter;
-import com.beust.jcommander.validators.PositiveInteger;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.*;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 
@@ -41,5 +40,8 @@ public class ValidationOptions extends AbstractOptions{
 
 	@Parameter(names="--validateOnlyLastIncumbent", description="validate only the last incumbent found")
 	public boolean validateOnlyLastIncumbent = true;
+	
+	@Parameter(names="--outputFileSuffix", description="Suffix to add to validation run files (for grouping)")
+	public String outputFileSuffix = "";
 	
 }

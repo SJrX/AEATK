@@ -1,6 +1,5 @@
 package ca.ubc.cs.beta.aclib.misc.logback;
 
-import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.Map;
 

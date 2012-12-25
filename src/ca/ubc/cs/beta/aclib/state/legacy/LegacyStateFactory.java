@@ -2,9 +2,15 @@ package ca.ubc.cs.beta.aclib.state.legacy;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
+import java.io.OutputStream;
+import java.util.HashSet;
 import java.util.List;
+import java.util.Set;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -31,6 +37,13 @@ public class LegacyStateFactory implements StateFactory{
 	private final String saveStatePath;
 	private final String restoreFromPath;
 	private final Logger log = LoggerFactory.getLogger(getClass());
+	
+	/**
+	 * Stores for each iteration a set of files written
+	 */
+	private final ConcurrentSkipListMap<Integer, Set<String>> savedFilesPerIteration = new ConcurrentSkipListMap<Integer, Set<String>>();
+	
+	
 	/**
 	 * Constructs the LegacyStateFactory
 	 * @param saveStatePath 	Where we should save files to
@@ -101,9 +114,58 @@ public class LegacyStateFactory implements StateFactory{
 		{
 			throw new IllegalArgumentException("This Serializer does not support saving State");
 		}
-		return new LegacyStateSerializer(saveStatePath, id, iteration);
+		return new LegacyStateSerializer(saveStatePath, id, iteration, this);
 	}
 
+	
+	/**
+	 * Copies the file to the State Dir
+	 * @param name name of the file to write
+	 * @param f source file
+	 */
+	@Override
+	public void copyFileToStateDir(String name, File f)
+	{
+		if(saveStatePath == null)
+		{
+			throw new IllegalArgumentException("This Serializer does not support saving State");
+		}
+		
+		if(!f.isFile())
+		{
+			throw new IllegalArgumentException("Input file f is not a file :" + f.getAbsolutePath());
+		}
+		
+		if(!f.exists())
+		{
+			throw new IllegalArgumentException("Input file f does not exist :" + f.getAbsolutePath());
+		}
+		
+		File outputFile = new File(saveStatePath + File.separator + name);
+		
+		try {
+			InputStream in = new FileInputStream(f);
+			OutputStream out = new FileOutputStream(outputFile);
+			
+			
+			byte[] buf = new byte[8172];
+			int len;
+			
+			while((len = in.read(buf)) > 0)
+			{
+				out.write(buf, 0, len);
+			}
+			in.close();
+			out.close();
+			log.info("File copied to {} ", outputFile.getAbsolutePath());
+			
+		} catch(IOException e)
+		{
+			throw new IllegalStateException("IOException occured :",e);
+		}
+		
+		
+	}
 
 	/**
 	 * Generates the filename on disk that we should use to store uniq_configurations (array format of configurations)
@@ -278,4 +340,52 @@ public class LegacyStateFactory implements StateFactory{
 	
 	
 	static final String RUN_NUMBER_HEADING = "Run Number";
+	@Override
+	public void purgePreviousStates() {
+		
+		
+		if(savedFilesPerIteration.size() == 0)
+		{ //No iterations
+			return;
+		}
+		
+		Set<String> filesToDelete = new HashSet<String>();
+		
+		for(Set<String> files : savedFilesPerIteration.values())
+		{
+			filesToDelete.addAll(files);
+		}
+		
+		
+		filesToDelete.removeAll(savedFilesPerIteration.lastEntry().getValue());
+		
+		Integer lastIteration = savedFilesPerIteration.lastKey();
+		
+		log.info("Deleting all saved state files except those applicable to iteration {} ", lastIteration);
+		
+		
+		if(log.isDebugEnabled())
+		{
+			for(String filename : filesToDelete)
+			{
+				log.debug("Deleting file {}", filename);
+				if(!(new File(filename)).delete())
+				{
+					log.warn("Could not delete file {} ", filename);
+				}
+				
+			}
+		}
+		
+		
+		
+	}
+	
+	void addWrittenFilesForIteration(int iteration,
+			Set<String> savedFiles) {
+		
+			 this.savedFilesPerIteration.putIfAbsent(iteration, new HashSet<String>());
+			 Set<String> iterationFiles = this.savedFilesPerIteration.get(iteration);
+			iterationFiles.addAll(savedFiles);
+	}
 }

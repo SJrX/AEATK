@@ -682,7 +682,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	 */
 	public List<ParamConfiguration> getNeighbourhood()
 	{
-		List<ParamConfiguration> neighbours = new ArrayList<ParamConfiguration>(numberOfNeighbours());
+		List<ParamConfiguration> neighbours = new ArrayList<ParamConfiguration>(numberOfNeighboursExcludingForbidden());
 		Set<String> activeParams = getActiveParameters();
 		/*
 		 * i is the number of parameters
@@ -703,7 +703,10 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 		}
 		
 		
-		if(neighbours.size() != numberOfNeighbours()) throw new IllegalStateException("Expected " + numberOfNeighbours() + " neighbours but got " + neighbours.size());
+		if(neighbours.size() > numberOfNeighboursExcludingForbidden())
+		{
+			throw new IllegalStateException("Expected " + numberOfNeighboursExcludingForbidden() + " neighbours (should be greater than or equal to) but got " + neighbours.size());
+		}
 		return neighbours;
 		
 		
@@ -713,7 +716,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	 * Returns the number of neighbours for this configuration
 	 * @return number of neighbours that this configuration has
 	 */
-	private int numberOfNeighbours()
+	private int numberOfNeighboursExcludingForbidden()
 	{
 		int neighbours = 0;
 		

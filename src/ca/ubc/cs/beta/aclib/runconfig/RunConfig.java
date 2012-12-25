@@ -112,6 +112,9 @@ public class RunConfig implements Serializable{
 		return new ParamConfiguration(params);
 	}
 	
+	/**
+	 * @return <code>true</code> if this run has a cutoff less than the cutoff time less than kappaMax.
+	 */
 	public boolean hasCutoffLessThanMax()
 	{
 		return cutoffLessThanMax;
