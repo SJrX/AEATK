@@ -1,6 +1,10 @@
 package ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators;
 
+import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import net.jcip.annotations.ThreadSafe;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
@@ -8,6 +12,7 @@ import ca.ubc.cs.beta.aclib.exceptions.TargetAlgorithmAbortException;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.AbstractTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred.TAECallback;
 
 /**
  * If the first run is a crash we will abort otherwise we ignore it
@@ -15,6 +20,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
  * @author Steve Ramage 
  *
  */
+@ThreadSafe
 public class AbortOnFirstRunCrashTargetAlgorithmEvaluator extends
 		AbstractTargetAlgorithmEvaluatorDecorator {
 
@@ -34,18 +40,16 @@ public class AbortOnFirstRunCrashTargetAlgorithmEvaluator extends
 	}
 	
 
-	private boolean firstRunChecked = false;
+	private final AtomicBoolean firstRunChecked = new AtomicBoolean(false);
+	
 	private List<AlgorithmRun> validate(List<AlgorithmRun> runs)
 	{
-		
-		if(firstRunChecked) 
+	
+		if(firstRunChecked.getAndSet(true)) 
 		{
 			return runs;
 		} else
-		{	
-			
-			firstRunChecked = true;
-			
+		{		
 			//Note if runs.get(0) is non existant that is a bug with
 			//the TAE implementation, NOT with this check.
 			if(runs.get(0).getRunResult().equals(RunResult.CRASHED))
@@ -55,5 +59,42 @@ public class AbortOnFirstRunCrashTargetAlgorithmEvaluator extends
 			
 		}
 		return runs;
+		
+	}
+
+	@Override
+	public void evaluateRunsAsync(RunConfig runConfig, TAECallback handler) {
+		evaluateRunsAsync(Collections.singletonList(runConfig), handler);
+	}
+
+	@Override
+	public void evaluateRunsAsync(List<RunConfig> runConfigs,
+			final TAECallback handler) {
+		
+		
+		TAECallback myHandler = new TAECallback()
+		{
+
+			@Override
+			public void onSuccess(List<AlgorithmRun> runs) {
+				try {
+					validate(runs);
+					handler.onSuccess(runs);
+				} catch(TargetAlgorithmAbortException e)
+				{
+					handler.onFailure(e);
+				}
+				
+			}
+
+			@Override
+			public void onFailure(RuntimeException t) {
+				handler.onFailure(t);
+				
+			}
+			
+		};
+		
+		tae.evaluateRunsAsync(runConfigs, myHandler);
 	}
 }

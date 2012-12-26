@@ -4,6 +4,8 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Queue;
 
+import net.jcip.annotations.ThreadSafe;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
@@ -15,7 +17,13 @@ import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.AbstractTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 
-public class RunHashCodeVerifyingAlgorithmEvalutor extends AbstractTargetAlgorithmEvaluatorDecorator {
+/**
+ * 
+ * @author sjr
+ *
+ */
+@ThreadSafe
+public class RunHashCodeVerifyingAlgorithmEvalutor extends AbstractForEachRunTargetAlgorithmEvaluatorDecorator {
 
 	private final Queue<Integer> runHashQueue;
 	private int hashCodesOfRuns = 0;
@@ -23,6 +31,10 @@ public class RunHashCodeVerifyingAlgorithmEvalutor extends AbstractTargetAlgorit
 	private final Logger log = LoggerFactory.getLogger(getClass());
 	private final Marker runHash = MarkerFactory.getMarker("RUN_HASH");
 	
+	
+	public RunHashCodeVerifyingAlgorithmEvalutor(TargetAlgorithmEvaluator tae) {
+		this(tae, new LinkedList<Integer>());
+	}
 	
 	public RunHashCodeVerifyingAlgorithmEvalutor(TargetAlgorithmEvaluator tae, Queue<Integer> runHashes) {
 		super(tae);
@@ -37,68 +49,43 @@ public class RunHashCodeVerifyingAlgorithmEvalutor extends AbstractTargetAlgorit
 		}
 	}
 	
-	public RunHashCodeVerifyingAlgorithmEvalutor(TargetAlgorithmEvaluator tae) {
-		this(tae, new LinkedList<Integer>());
+
+	boolean outOfHashCodesDisplayed = false;
+
+	@Override
+	public synchronized void seek(List<AlgorithmRun> runs)
+	{
+		super.seek(runs);
+		processRuns(runs);
+		
 	}
 
 	@Override
-	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs)
-	{
-		//NOTE: runs are guaranteed to be in the same order as runConfigs
-		//So we can just compute the runHash from the list iterator
-		List<AlgorithmRun> runs = super.evaluateRun(runConfigs);
-		validateRunHashCodes(runs);
-		
-		return runs;
+	protected synchronized AlgorithmRun processRun(AlgorithmRun run) {
+		runNumber++;
+		int hashCode = run.hashCode();
 	
-	}
-	boolean outOfHashCodesDisplayed = false;
-	private void validateRunHashCodes(List<AlgorithmRun> runs)
-	{
-		for(AlgorithmRun run: runs)
-		{
-			runNumber++;
-			int hashCode = run.hashCode();
-			/*
-			System.out.println("**********");
-			System.out.println(run.getRunConfig().toString());
-			System.out.println(run.getRunConfig().getParamConfiguration().getFormattedParamString(StringFormat.ARRAY_STRING_SYNTAX));
-			System.out.println(run.getRunConfig().getParamConfiguration().getFormattedParamString(StringFormat.ARRAY_STRING_SYNTAX).hashCode());
-			System.out.println(run.getRunConfig().hashCode());
-			System.out.println(run.getRunConfig().getParamConfiguration().hashCode());
-			System.out.println(run.getRunConfig().getParamConfiguration().getConfigurationSpace().hashCode());
-			
-			
-			System.out.println("**********");
-			*/
-			hashCode =  (hashCode == Integer.MIN_VALUE) ? 0 : hashCode;  
-			
-			hashCodesOfRuns = (31*hashCodesOfRuns + Math.abs( hashCode)% 32452867) % 32452867 	; //Some prime around 2^25 (to prevent overflows in computation)
-			log.debug(runHash, "Run Hash Codes:{} After {} runs",hashCodesOfRuns, runNumber);
-			
-			Integer expectedHashCode = runHashQueue.poll();
-			if(expectedHashCode == null)
-			{
-				if(!outOfHashCodesDisplayed)
-				{
-					log.debug("No More Hash Codes To Verify");
-					outOfHashCodesDisplayed = true;
-				}
-			} else if(hashCodesOfRuns != expectedHashCode)
-			{
-				throw new TrajectoryDivergenceException(expectedHashCode, hashCodesOfRuns, runNumber);
-			} else
-			{
-				log.debug("Hash Code {} matched {}", expectedHashCode, hashCodesOfRuns);
-			}
-		}
-	}
-	@Override
-	public void seek(List<AlgorithmRun> runs)
-	{
-		super.seek(runs);
-		validateRunHashCodes(runs);
+		hashCode =  (hashCode == Integer.MIN_VALUE) ? 0 : hashCode;  
 		
+		hashCodesOfRuns = (31*hashCodesOfRuns + Math.abs( hashCode)% 32452867) % 32452867 	; //Some prime around 2^25 (to prevent overflows in computation)
+		log.debug(runHash, "Run Hash Codes:{} After {} runs",hashCodesOfRuns, runNumber);
+		
+		Integer expectedHashCode = runHashQueue.poll();
+		if(expectedHashCode == null)
+		{
+			if(!outOfHashCodesDisplayed)
+			{
+				log.debug("No More Hash Codes To Verify");
+				outOfHashCodesDisplayed = true;
+			}
+		} else if(hashCodesOfRuns != expectedHashCode)
+		{
+			throw new TrajectoryDivergenceException(expectedHashCode, hashCodesOfRuns, runNumber);
+		} else
+		{
+			log.debug("Hash Code {} matched {}", expectedHashCode, hashCodesOfRuns);
+		}
+		return run;
 	}
 
 }

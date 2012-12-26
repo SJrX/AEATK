@@ -9,7 +9,7 @@ import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
  * @author Steve Ramage 
  *
  */
-public interface DeferredTargetAlgorithmEvaluatorHandler {
+public interface TAECallback {
 
 	/**
 	 * Invoked if/when the runs complete

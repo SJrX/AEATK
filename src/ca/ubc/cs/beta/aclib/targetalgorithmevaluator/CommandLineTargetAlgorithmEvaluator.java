@@ -18,7 +18,7 @@ import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
  * Evalutes Given Run Configurations
  *
  */
-public class CommandLineTargetAlgorithmEvaluator extends AbstractTargetAlgorithmEvaluator {
+public class CommandLineTargetAlgorithmEvaluator extends AbstractBlockingTargetAlgorithmEvaluator {
 	
 	
 	
@@ -95,6 +95,16 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractTargetAlgorithm
 	public void notifyShutdown() {
 		// We shutdown after ever run anyway
 		
+	}
+
+	@Override
+	public boolean isRunFinal() {
+		return false;
+	}
+
+	@Override
+	public boolean areRunsPersisteted() {
+		return false;
 	}
 	
 	

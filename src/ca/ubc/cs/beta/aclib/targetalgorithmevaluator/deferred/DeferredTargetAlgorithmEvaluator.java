@@ -21,19 +21,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 public interface DeferredTargetAlgorithmEvaluator extends
 		TargetAlgorithmEvaluator {
 
-	/**
-	 * Evaluates the given configuration, and when complete the handler is invoked
-	 * @param runConfig  run configuration to evaluate
-	 * @param handler    handler to invoke on completion or failure
-	 */
-	public void evaluateRunsAsync(RunConfig runConfig, DeferredTargetAlgorithmEvaluatorHandler handler );
-	
-	/**
-	 * Evaluates the given configuration, and when complete the handler is invoked
-	 * @param runConfigs list of run configuration to evaluate
-	 * @param handler    handler to invoke on completion or failure
-	 */
-	public void evaluateRunsAsync(List<RunConfig> runConfigs, DeferredTargetAlgorithmEvaluatorHandler handler);
+
 	
 	
 	

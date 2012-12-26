@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import net.jcip.annotations.ThreadSafe;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,20 +14,23 @@ import ca.ubc.cs.beta.aclib.algorithmrun.ExistingAlgorithmRun;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.misc.random.SeedableRandomSingleton;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.AbstractBlockingTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.AbstractTargetAlgorithmEvaluator;
 
+@ThreadSafe
 public class RandomResponseTargetAlgorithmEvaluator extends
-		AbstractTargetAlgorithmEvaluator {
+		AbstractBlockingTargetAlgorithmEvaluator {
 
-	private double scale = 1.0;
+	private final double scale;
 	
-	private boolean sleep = false;
+	private final boolean sleep;
 	
 	private static final Logger log = LoggerFactory.getLogger(RandomResponseTargetAlgorithmEvaluator.class);
 	
 	public RandomResponseTargetAlgorithmEvaluator(
 			AlgorithmExecutionConfig execConfig) {
 		super(execConfig);
+		double scale;
 		try {
 			scale = Math.abs(Double.valueOf(execConfig.getAlgorithmExecutable()));
 		}catch(NumberFormatException e)
@@ -33,6 +38,7 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 			scale = 10.0;
 		}
 		
+		this.scale = scale;
 		sleep = execConfig.isDeterministicAlgorithm();
 		
 	}
@@ -68,6 +74,16 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 		}
 		
 		return ar;
+	}
+
+	@Override
+	public boolean isRunFinal() {
+		return false;
+	}
+
+	@Override
+	public boolean areRunsPersisteted() {
+		return false;
 	}
 
 }

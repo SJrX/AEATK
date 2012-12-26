@@ -4,6 +4,7 @@ import java.util.List;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred.TAECallback;
 
 /**
  * Debugging class that verifies two evaluators output the same value.
@@ -115,6 +116,26 @@ public class DebugTargetAlgorithmEvaluator implements TargetAlgorithmEvaluator {
 	public void notifyShutdown() {
 		tae1.notifyShutdown();
 		tae2.notifyShutdown();	
+	}
+	@Override
+	public void evaluateRunsAsync(RunConfig runConfig,
+			TAECallback handler) {
+		throw new UnsupportedOperationException("Not Implemented at the moment");
+		
+	}
+	@Override
+	public void evaluateRunsAsync(List<RunConfig> runConfigs,
+			TAECallback handler) {
+		throw new UnsupportedOperationException("Not Implemented at the moment");
+		
+	}
+	@Override
+	public boolean isRunFinal() {
+		return false;
+	}
+	@Override
+	public boolean areRunsPersisteted() {
+		return false;
 	}
 
 }

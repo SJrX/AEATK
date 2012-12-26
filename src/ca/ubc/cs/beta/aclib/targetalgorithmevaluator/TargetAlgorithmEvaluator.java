@@ -4,6 +4,7 @@ import java.util.List;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred.TAECallback;
 
 /**
  * Executes Target Algorithm Runs (Converts between RunConfig objects to AlgorithmRun objects)
@@ -46,6 +47,22 @@ public interface TargetAlgorithmEvaluator {
 	 * @throws TargetAlgorithmAbortException
 	 */
 	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs);
+	
+	
+	/**
+	 * Evaluates the given configuration, and when complete the handler is invoked
+	 * @param runConfig  run configuration to evaluate
+	 * @param handler    handler to invoke on completion or failure
+	 */
+	public void evaluateRunsAsync(RunConfig runConfig, TAECallback handler );
+	
+	/**
+	 * Evaluates the given configuration, and when complete the handler is invoked
+	 * @param runConfigs list of run configuration to evaluate
+	 * @param handler    handler to invoke on completion or failure
+	 */
+	public void evaluateRunsAsync(List<RunConfig> runConfigs, TAECallback handler);
+	
 	
 	/**
 	 * Returns the number of target algorithm runs that we have executed
@@ -107,6 +124,27 @@ public interface TargetAlgorithmEvaluator {
 	 * Finally, if this method throws an exception, chances are the client will not catch it and will crash.
 	 */
 	public void notifyShutdown();
+	
+	/**
+	 * Returns <code>true</code> if the TargetAlgorithmEvaluator run requests are final, that is
+	 * rerunning the same request again would give you an identical answer.
+	 * <p>
+	 * <b>Implementation Note:</b> This is primarily of use to prevent decorators from trying to 
+	 * get a different answer if they don't like the first one (for instance retry crashing runs, etc).
+	 *
+	 * @return <code>true</code> if run answers are final
+	 */
+	public boolean isRunFinal();
+	
+	/**
+	 * Retruns <code>true</code> if all the runs made to the TargetAlgorithmEvaluator will be persisted.
+	 * <p> 
+	 *<b>Implementation Note:</b> This is used to allow some programs to basically hand-off execution to some
+	 * external process, say a pool of workers, and then if re-executed can get the same answer later. 
+	 *
+	 * @return <code>true</code> if runs can be retrieved externally of this currently running program
+	 */
+	public boolean areRunsPersisteted();
 	
 	
 }

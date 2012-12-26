@@ -8,6 +8,7 @@ import ca.ubc.cs.beta.aclib.algorithmrun.ExistingAlgorithmRun;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.AbstractBlockingTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.AbstractTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 
@@ -16,13 +17,10 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
  * Only works with the paramEchoParamFile
  * 
  * 
-
-
-
  * @author Steve Ramage 
  *
  */
-public class EchoTargetAlgorithmEvaluator  extends AbstractTargetAlgorithmEvaluator  implements TargetAlgorithmEvaluator{
+public class EchoTargetAlgorithmEvaluator  extends AbstractBlockingTargetAlgorithmEvaluator  implements TargetAlgorithmEvaluator{
 
 	public EchoTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig) {
 		super(execConfig);
@@ -34,8 +32,9 @@ public class EchoTargetAlgorithmEvaluator  extends AbstractTargetAlgorithmEvalua
 		
 	}
     
+	@Deprecated
+	public volatile double wallClockTime = 0;
 	
-	public double wallClockTime = 0;
 	@Override
 	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs) {
 		
@@ -72,6 +71,16 @@ public class EchoTargetAlgorithmEvaluator  extends AbstractTargetAlgorithmEvalua
 		}
 		
 		return results;
+	}
+
+	@Override
+	public boolean isRunFinal() {
+		return true;
+	}
+
+	@Override
+	public boolean areRunsPersisteted() {
+		return false;
 	}
 
 	

@@ -22,6 +22,7 @@
 	<classpathentry kind="lib" path="lib/jcommander.jar" sourcepath="/home/sjr/git/jcommander-github/src/main/java"/>
 	<classpathentry kind="lib" path="lib/spi-0.2.4.jar"/>
 	<classpathentry kind="lib" path="lib/StructureGraphic.jar"/>
+	<classpathentry kind="lib" path="lib/jcip-annotations.jar" sourcepath="lib/jcip-annotations-src.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/RandomForests"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="src" path=".apt_generated">

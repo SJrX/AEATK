@@ -30,7 +30,7 @@ public abstract class AbstractDeferredTargetAlgorithmEvaluator extends
 		final AtomicReference<RuntimeException> rt = new AtomicReference<RuntimeException>(); 
 		
 		
-		evaluateRunsAsync(runConfigs, new DeferredTargetAlgorithmEvaluatorHandler(){
+		evaluateRunsAsync(runConfigs, new TAECallback(){
 
 			@Override
 			public void onSuccess(List<AlgorithmRun> runs) {

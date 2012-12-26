@@ -5,6 +5,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import net.jcip.annotations.ThreadSafe;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +17,7 @@ import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.AbstractTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred.TAECallback;
 
 /**
  * Retries crashed runs some number of times
@@ -23,10 +27,11 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
  * @author Steve Ramage 
  *
  */
+@ThreadSafe
 public class RetryCrashedRunsTargetAlgorithmEvaluator extends
 		AbstractTargetAlgorithmEvaluatorDecorator {
 
-	private int runCount = 0;
+	private AtomicInteger runCount = new AtomicInteger(0);
 	private final int retryCount; 
 	private final Logger log = LoggerFactory.getLogger(getClass());
 	
@@ -38,6 +43,10 @@ public class RetryCrashedRunsTargetAlgorithmEvaluator extends
 		}
 		this.retryCount = retryCount;
 		
+		if(tae.isRunFinal())
+		{
+			log.warn("Target Algorithm Evaluator {} issues final runs, retrying will be a waste of time", tae.getClass().getSimpleName());
+		}
 	}
 	
 	@Override
@@ -90,7 +99,7 @@ public class RetryCrashedRunsTargetAlgorithmEvaluator extends
 			}
 		}	
 		
-		runCount += runs.size();
+		runCount.addAndGet(runs.size());
 		return runs;
 		
 		
@@ -99,14 +108,28 @@ public class RetryCrashedRunsTargetAlgorithmEvaluator extends
 
 	@Override
 	public int getRunCount() {
-		return runCount;
+		//Override this because internal TAE's have probably seen more runs
+		return runCount.get();
 	}
 
 	@Override
 	public void seek(List<AlgorithmRun> runs)
 	{
 		tae.seek(runs);
-		runCount = runs.size();
+		runCount.addAndGet(runs.size());
+	}
+
+	@Override
+	public void evaluateRunsAsync(RunConfig runConfig, TAECallback handler) {
+		throw new UnsupportedOperationException("Can't retry runs that are asynchronous atm");
+		
+	}
+
+	@Override
+	public void evaluateRunsAsync(List<RunConfig> runConfigs,
+			TAECallback handler) {
+		throw new UnsupportedOperationException("Can't retry runs that are asynchronous atm");
+		
 	}
 	
 

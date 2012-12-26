@@ -6,6 +6,7 @@ import java.util.List;
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred.TAECallback;
 
 /**
  * Utility TargetAlgorithmEvaluator that wraps two, and checks that they always return the same value.
@@ -79,7 +80,30 @@ public class EqualTargetAlgorithmEvaluatorTester implements
 
 	@Override
 	public void notifyShutdown() {
+		tae1.notifyShutdown();
+		tae2.notifyShutdown();
+	}
+
+	@Override
+	public void evaluateRunsAsync(RunConfig runConfig, TAECallback handler) {
+		throw new UnsupportedOperationException("This TAE does not support Asynchronous Execution at the moment");
 		
+	}
+
+	@Override
+	public void evaluateRunsAsync(List<RunConfig> runConfigs,
+			TAECallback handler) {
+		throw new UnsupportedOperationException("This TAE does not support Asynchronous Execution at the moment");
+	}
+
+	@Override
+	public boolean isRunFinal() {
+		return false;
+	}
+
+	@Override
+	public boolean areRunsPersisteted() {
+		return false;
 	}
 
 }

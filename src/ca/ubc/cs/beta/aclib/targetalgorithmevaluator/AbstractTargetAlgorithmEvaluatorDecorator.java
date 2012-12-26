@@ -2,6 +2,8 @@ package ca.ubc.cs.beta.aclib.targetalgorithmevaluator;
 
 import java.util.List;
 
+import net.jcip.annotations.ThreadSafe;
+
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 /**
@@ -56,9 +58,22 @@ public abstract class AbstractTargetAlgorithmEvaluatorDecorator implements
 		return tae.getManualCallString(runConfig);
 	}
 	
+	@Override
 	public void notifyShutdown()
 	{
 		tae.notifyShutdown();
+	}
+	
+	@Override
+	public boolean isRunFinal()
+	{
+		return tae.isRunFinal();
+	}
+	
+	@Override
+	public boolean areRunsPersisteted()
+	{
+		return tae.areRunsPersisteted();
 	}
 
 }
