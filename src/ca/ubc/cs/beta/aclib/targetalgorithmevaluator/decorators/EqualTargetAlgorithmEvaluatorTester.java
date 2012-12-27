@@ -48,6 +48,16 @@ public class EqualTargetAlgorithmEvaluatorTester implements
 				throw new IllegalStateException(runTae1.get(i) + " did not equals " + runTae2.get(i) );
 				
 			}
+			
+			if(Math.abs(runTae1.get(i).getRuntime() - runTae2.get(i).getRuntime()) > 0.1) throw new IllegalStateException("Runtimes did not agree");
+			if(runTae1.get(i).getResultSeed() != runTae2.get(i).getResultSeed()) throw new IllegalStateException("Result Seeds did not agree");
+			if(Math.abs(runTae1.get(i).getQuality() - runTae2.get(i).getQuality()) > 0.1) throw new IllegalStateException("Quality did not agree");
+			if(!runTae1.get(i).getRunResult().equals(runTae2.get(i).getRunResult())) throw new IllegalStateException("Run Results did not agree");
+			
+			
+			
+			
+			
 		}
 		
 		return runTae1;

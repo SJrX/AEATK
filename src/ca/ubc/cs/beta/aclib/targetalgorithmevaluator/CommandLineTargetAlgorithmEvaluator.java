@@ -52,8 +52,6 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractBlockingTargetA
 
 	}
 	
-	
-	
 	@Override
 	public List<AlgorithmRun> evaluateRun(RunConfig run) 
 	{
@@ -93,8 +91,7 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractBlockingTargetA
 
 	@Override
 	public void notifyShutdown() {
-		// We shutdown after ever run anyway
-		
+	
 	}
 
 	@Override
