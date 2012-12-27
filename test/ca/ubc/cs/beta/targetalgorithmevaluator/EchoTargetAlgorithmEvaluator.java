@@ -79,7 +79,7 @@ public class EchoTargetAlgorithmEvaluator  extends AbstractBlockingTargetAlgorit
 	}
 
 	@Override
-	public boolean areRunsPersisteted() {
+	public boolean areRunsPersisted() {
 		return false;
 	}
 

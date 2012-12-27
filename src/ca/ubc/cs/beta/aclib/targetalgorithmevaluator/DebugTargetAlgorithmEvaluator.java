@@ -134,7 +134,7 @@ public class DebugTargetAlgorithmEvaluator implements TargetAlgorithmEvaluator {
 		return false;
 	}
 	@Override
-	public boolean areRunsPersisteted() {
+	public boolean areRunsPersisted() {
 		return false;
 	}
 

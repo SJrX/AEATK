@@ -71,9 +71,9 @@ public abstract class AbstractTargetAlgorithmEvaluatorDecorator implements
 	}
 	
 	@Override
-	public boolean areRunsPersisteted()
+	public boolean areRunsPersisted()
 	{
-		return tae.areRunsPersisteted();
+		return tae.areRunsPersisted();
 	}
 
 }

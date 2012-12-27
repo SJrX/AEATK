@@ -44,7 +44,14 @@ public class TargetAlgorithmEvaluatorBuilder {
 	public static List<String> getAvailableTargetAlgorithmEvaluators(AlgorithmExecutionOptions config)
 	{
 		ClassLoader cl = getClassLoader(config);
-		
+		String[] searchPath = config.taeSearchPath.split(File.pathSeparator);
+		if(log.isDebugEnabled())
+		{
+			for(String s : searchPath)
+			{
+				log.debug("Plugin Search Path Includes {} ", s);
+			}
+		}
 		return TargetAlgorithmEvaluatorLoader.getAvailableTargetAlgorithmEvaluators(cl);
 		
 	}
@@ -53,7 +60,14 @@ public class TargetAlgorithmEvaluatorBuilder {
 	public static List<String> getAvailableTargetAlgorithmEvaluators(TargetAlgorithmEvaluatorOptions config)
 	{
 		ClassLoader cl = getClassLoader(config);
-		
+		String[] searchPath = config.taeSearchPath.split(File.pathSeparator);
+		if(log.isDebugEnabled())
+		{
+			for(String s : searchPath)
+			{
+				log.debug("Plugin Search Path Includes {} ", s);
+			}
+		}
 		return TargetAlgorithmEvaluatorLoader.getAvailableTargetAlgorithmEvaluators(cl);
 		
 	}
@@ -154,6 +168,13 @@ public class TargetAlgorithmEvaluatorBuilder {
 	public static TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(ScenarioOptions options, AlgorithmExecutionConfig execConfig, boolean hashVerifiersAllowed)
 	{
 		
+		List<String> names = TargetAlgorithmEvaluatorBuilder.getAvailableTargetAlgorithmEvaluators(options.algoExecOptions);
+		
+		for(String name : names)
+		{
+			log.debug("Target Algorithm Evaluator Available {} ", name);
+		}
+		
 		ClassLoader cl = getClassLoader(options.algoExecOptions);
 		//TargetAlgorithmEvaluator cli = TargetAlgorithmEvaluatorLoader.getTargetAlgorithmEvaluator(execConfig, options.maxConcurrentAlgoExecs, "CLI",cl);
 		//TargetAlgorithmEvaluator surrogate = TargetAlgorithmEvaluatorLoader.getTargetAlgorithmEvaluator(execConfig, options.maxConcurrentAlgoExecs, options.scenarioConfig.algoExecOptions.targetAlgorithmEvaluator,cl);
@@ -240,6 +261,13 @@ public class TargetAlgorithmEvaluatorBuilder {
 		ClassLoader cl = getClassLoader(options);
 		//TargetAlgorithmEvaluator cli = TargetAlgorithmEvaluatorLoader.getTargetAlgorithmEvaluator(execConfig, options.maxConcurrentAlgoExecs, "CLI",cl);
 		//TargetAlgorithmEvaluator surrogate = TargetAlgorithmEvaluatorLoader.getTargetAlgorithmEvaluator(execConfig, options.maxConcurrentAlgoExecs, options.scenarioConfig.algoExecOptions.targetAlgorithmEvaluator,cl);
+		
+		List<String> names = TargetAlgorithmEvaluatorBuilder.getAvailableTargetAlgorithmEvaluators(options);
+		
+		for(String name : names)
+		{
+			log.debug("Target Algorithm Evaluator Available {} ", name);
+		}
 		
 		 
 		TargetAlgorithmEvaluator algoEval = TargetAlgorithmEvaluatorLoader.getTargetAlgorithmEvaluator(execConfig, options.maxConcurrentAlgoExecs, options.targetAlgorithmEvaluator,cl);

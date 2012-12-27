@@ -112,7 +112,7 @@ public class EqualTargetAlgorithmEvaluatorTester implements
 	}
 
 	@Override
-	public boolean areRunsPersisteted() {
+	public boolean areRunsPersisted() {
 		return false;
 	}
 

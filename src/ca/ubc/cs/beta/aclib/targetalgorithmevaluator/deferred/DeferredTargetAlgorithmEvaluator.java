@@ -18,6 +18,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
  * @author Steve Ramage 
  *
  */
+@Deprecated
 public interface DeferredTargetAlgorithmEvaluator extends
 		TargetAlgorithmEvaluator {
 

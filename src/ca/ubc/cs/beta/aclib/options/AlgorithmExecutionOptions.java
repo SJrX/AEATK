@@ -28,8 +28,7 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 
 	private static final String defaultSearchPath ;
 	
-	private static Logger log = LoggerFactory.getLogger(AlgorithmExecutionOptions.class);
-	
+
 	static{
 		//==== This builds a giant string to search for other Target Algorithm Executors
 		StringBuilder sb = new StringBuilder();
@@ -79,7 +78,7 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 									sb.append(File.separator);
 									sb.append(fileName);
 									sb.append(File.pathSeparator);
-									log.debug("Adding {} to classpath for TAE", dir.getAbsolutePath() + File.separator +  fileName);
+									
 									//System.out.println("Adding " + fileName);
 									files.add(fileName);
 								}
@@ -93,6 +92,8 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 		defaultSearchPath = sb.toString();
 		
 	}
+	
+	
 	@Parameter(names={"--algoExec", "--algo"}, description="command string to execute algorithm with", required=true)
 	public String algoExec;
 	

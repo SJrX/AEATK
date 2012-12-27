@@ -82,7 +82,7 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 	}
 
 	@Override
-	public boolean areRunsPersisteted() {
+	public boolean areRunsPersisted() {
 		return false;
 	}
 

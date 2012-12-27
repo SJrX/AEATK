@@ -158,7 +158,7 @@ public interface TargetAlgorithmEvaluator {
 	 *
 	 * @return <code>true</code> if runs can be retrieved externally of this currently running program
 	 */
-	public boolean areRunsPersisteted();
+	public boolean areRunsPersisted();
 	
 	
 }

@@ -20,7 +20,7 @@ import com.beust.jcommander.validators.PositiveInteger;
 public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	
 	private static final String defaultSearchPath ;
-	private static Logger log = LoggerFactory.getLogger(TargetAlgorithmEvaluatorOptions.class);
+
 	static{
 		//==== This builds a giant string to search for other Target Algorithm Executors
 		StringBuilder sb = new StringBuilder();
@@ -69,7 +69,7 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 									sb.append(fileName);
 									sb.append(File.pathSeparator);
 									
-									log.debug("Adding {} to classpath for TAE", fileName);
+
 									files.add(fileName);
 								}
 							}
@@ -82,6 +82,8 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 		defaultSearchPath = sb.toString();
 		
 	}
+	
+
 	
 	@UsageTextField(domain="")
 	@Parameter(names={"--targetAlgorithmEvaluator","--tae"}, description="Target Algorithm Evaluator to use when making target algorithm calls")
