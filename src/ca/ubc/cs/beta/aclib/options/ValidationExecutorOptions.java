@@ -51,6 +51,9 @@ public class ValidationExecutorOptions extends AbstractOptions {
 	@Parameter(names="--tunerOverheadTime", description="Amount of Tuner Overhead time to report in the output (-1 means use trajectory file overhead or 0 if no trajectory file)")
 	public double tunerOverheadTime = -1;
 	
-	@Parameter(names="--validateTestInstances")
+	@Parameter(names="--validateTestInstances", description="Use the test instances for validation")
 	public boolean validateTestInstances = true;
+	
+	@Parameter(names="--waitForPersistedRunCompletion", description="If the Target Algorithm Evaluator is persistent, then you can optionally not wait for it to finish, and come back later")
+	public boolean waitForPersistedRunCompletion = true;
 }

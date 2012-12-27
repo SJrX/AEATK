@@ -6,6 +6,9 @@ import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.NonNegativeInteger;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.ReadableFileConverter;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
@@ -17,7 +20,7 @@ import com.beust.jcommander.validators.PositiveInteger;
 public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	
 	private static final String defaultSearchPath ;
-	
+	private static Logger log = LoggerFactory.getLogger(TargetAlgorithmEvaluatorOptions.class);
 	static{
 		//==== This builds a giant string to search for other Target Algorithm Executors
 		StringBuilder sb = new StringBuilder();
@@ -26,6 +29,10 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 		List<String> directoriesToSearch = new ArrayList<String>();
 		
 		directoriesToSearch.add(cwd);
+		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "MySQLDBTAE" + File.separator) ;
+		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "MySQLDBTAE" + File.separator + "lib" + File.separator) ;
+		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "MySQLDBTAE" + File.separator + "version" + File.separator) ;
+		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "MySQLDBTAE" + File.separator + "bin" + File.separator) ;
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "plugins" + File.separator);
 		directoriesToSearch.add(new File(cwd) + File.separator + "plugins" + File.separator);
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "surrogates" + File.separator);
@@ -37,10 +44,6 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "RunDispatcher" + File.separator + "lib" + File.separator) ;
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "RunDispatcher" + File.separator + "version" + File.separator) ;
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "rundispatcher" + File.separator);
-		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "MySQLDBTAE" + File.separator) ;
-		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "MySQLDBTAE" + File.separator + "lib" + File.separator) ;
-		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "MySQLDBTAE" + File.separator + "version" + File.separator) ;
-		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "MySQLDBTAE" + File.separator + "bin" + File.separator) ;
 		
 		
 		directoriesToSearch.add(System.getProperty("java.class.path"));
@@ -66,7 +69,7 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 									sb.append(fileName);
 									sb.append(File.pathSeparator);
 									
-									//System.out.println("Adding " + fileName);
+									log.debug("Adding {} to classpath for TAE", fileName);
 									files.add(fileName);
 								}
 							}

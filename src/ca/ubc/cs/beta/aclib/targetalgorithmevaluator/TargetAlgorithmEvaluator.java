@@ -50,7 +50,14 @@ public interface TargetAlgorithmEvaluator {
 	
 	
 	/**
-	 * Evaluates the given configuration, and when complete the handler is invoked
+	 * Evaluates the given configuration, and when complete the handler is invoked.
+	 * <p>
+	 * <b>Note:</b>You are guaranteed that when this method returns your runs have been 'delivered'
+	 * to the eventual processor. In other words if the runs are dispatched to some external
+	 * processing system, you can safely shutdown after this method call completes and know that they have been
+	 * delivered. Additionally if the runs are already complete, the call back is guaranteed to fire to completion <i>before</i> 
+	 * this method is returned.	 * 
+	 *  
 	 * @param runConfig  run configuration to evaluate
 	 * @param handler    handler to invoke on completion or failure
 	 */
@@ -58,6 +65,13 @@ public interface TargetAlgorithmEvaluator {
 	
 	/**
 	 * Evaluates the given configuration, and when complete the handler is invoked
+	 * <p>
+	 * <b>Note:</b>You are guaranteed that when this method returns your runs have been 'delivered'
+	 * to the eventual processor. In other words if the runs are dispatched to some external
+	 * processing system, you can safely shutdown after this method call completes and know that they have been
+	 * delivered. Additionally if the runs are already complete, the call back is guaranteed to fire to completion <i>before</i> 
+	 * this method is returned.
+	 * 
 	 * @param runConfigs list of run configuration to evaluate
 	 * @param handler    handler to invoke on completion or failure
 	 */

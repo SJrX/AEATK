@@ -48,14 +48,15 @@ public abstract class AbstractForEachRunTargetAlgorithmEvaluatorDecorator extend
 
 	@Override
 	public final void evaluateRunsAsync(List<RunConfig> runConfigs,
-			TAECallback handler) {
+			final TAECallback oHandler) {
 		
 		//We need to make sure wrapped versions are called in the same order
 		//as there unwrapped versions.
 	
 		TAECallback myHandler = new TAECallback()
 		{
-			private TAECallback handler;
+			private final TAECallback handler = oHandler;
+			
 
 			@Override
 			public void onSuccess(List<AlgorithmRun> runs) {
@@ -69,6 +70,8 @@ public abstract class AbstractForEachRunTargetAlgorithmEvaluatorDecorator extend
 				
 			}
 		};
+		
+		tae.evaluateRunsAsync(runConfigs, myHandler);
 
 	}
 

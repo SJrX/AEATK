@@ -121,15 +121,16 @@ public class RetryCrashedRunsTargetAlgorithmEvaluator extends
 
 	@Override
 	public void evaluateRunsAsync(RunConfig runConfig, TAECallback handler) {
-		throw new UnsupportedOperationException("Can't retry runs that are asynchronous atm");
+		log.warn("Cannot retry runs that are asynchronous at the moment");
+		tae.evaluateRunsAsync(runConfig, handler);
 		
 	}
 
 	@Override
 	public void evaluateRunsAsync(List<RunConfig> runConfigs,
 			TAECallback handler) {
-		throw new UnsupportedOperationException("Can't retry runs that are asynchronous atm");
-		
+		log.warn("Cannot retry runs that are asynchronous at the moment");
+		tae.evaluateRunsAsync(runConfigs, handler);
 	}
 	
 
