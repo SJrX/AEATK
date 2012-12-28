@@ -37,7 +37,40 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 		List<String> directoriesToSearch = new ArrayList<String>();
 		
 		directoriesToSearch.add(cwd);
-		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "plugins" + File.separator);
+		
+		String[] classpath = System.getProperty("java.class.path").split(File.pathSeparator);
+		
+		String pluginDirectory = System.getProperty("user.dir");
+		for(String location : classpath)
+		{
+			if(location.endsWith("aclib.jar"))
+			{
+				File f = new File(location);
+				
+				pluginDirectory = f.getParentFile().getAbsolutePath();
+				break;
+			}
+				
+		}
+		
+		pluginDirectory =new File(pluginDirectory) + File.separator + "plugins" + File.separator;
+		
+		directoriesToSearch.add(pluginDirectory);
+		
+		File pluginDir = new File(pluginDirectory);
+		//We will look in the plugins directory and all sub directories, but not further
+		if(pluginDir.exists())
+		{
+			for(File f : pluginDir.listFiles())
+			{
+				
+				if(f.isDirectory())
+				{
+					directoriesToSearch.add(f.getAbsolutePath());
+				}
+			}
+		}
+		
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "MySQLDBTAE" + File.separator) ;
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "MySQLDBTAE" + File.separator + "lib" + File.separator) ;
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "MySQLDBTAE" + File.separator + "version" + File.separator) ;

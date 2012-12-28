@@ -45,11 +45,11 @@ public class TargetAlgorithmEvaluatorBuilder {
 	{
 		ClassLoader cl = getClassLoader(config);
 		String[] searchPath = config.taeSearchPath.split(File.pathSeparator);
-		if(log.isDebugEnabled())
+		if(log.isTraceEnabled())
 		{
 			for(String s : searchPath)
 			{
-				log.debug("Plugin Search Path Includes {} ", s);
+				log.trace("Plugin Search Path Includes {} ", s);
 			}
 		}
 		return TargetAlgorithmEvaluatorLoader.getAvailableTargetAlgorithmEvaluators(cl);
@@ -61,11 +61,11 @@ public class TargetAlgorithmEvaluatorBuilder {
 	{
 		ClassLoader cl = getClassLoader(config);
 		String[] searchPath = config.taeSearchPath.split(File.pathSeparator);
-		if(log.isDebugEnabled())
+		if(log.isTraceEnabled())
 		{
 			for(String s : searchPath)
 			{
-				log.debug("Plugin Search Path Includes {} ", s);
+				log.trace("Plugin Search Path Includes {} ", s);
 			}
 		}
 		return TargetAlgorithmEvaluatorLoader.getAvailableTargetAlgorithmEvaluators(cl);

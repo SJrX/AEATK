@@ -28,12 +28,46 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 		Set<String> files = new HashSet<String>();
 		List<String> directoriesToSearch = new ArrayList<String>();
 		
+		
 		directoriesToSearch.add(cwd);
+		String[] classpath = System.getProperty("java.class.path").split(File.pathSeparator);
+		
+		String pluginDirectory = System.getProperty("user.dir");
+		for(String location : classpath)
+		{
+			if(location.endsWith("aclib.jar"))
+			{
+				File f = new File(location);
+				
+				pluginDirectory = f.getParentFile().getAbsolutePath();
+				break;
+			}
+				
+		}
+		
+		pluginDirectory =new File(pluginDirectory) + File.separator + "plugins" + File.separator;
+		
+		directoriesToSearch.add(pluginDirectory);
+		
+		File pluginDir = new File(pluginDirectory);
+		//We will look in the plugins directory and all sub directories, but not further
+		if(pluginDir.exists())
+		{
+			for(File f : pluginDir.listFiles())
+			{
+				
+				if(f.isDirectory())
+				{
+					directoriesToSearch.add(f.getAbsolutePath());
+				}
+			}
+		}
+		
+		
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "MySQLDBTAE" + File.separator) ;
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "MySQLDBTAE" + File.separator + "lib" + File.separator) ;
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "MySQLDBTAE" + File.separator + "version" + File.separator) ;
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "MySQLDBTAE" + File.separator + "bin" + File.separator) ;
-		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "plugins" + File.separator);
 		directoriesToSearch.add(new File(cwd) + File.separator + "plugins" + File.separator);
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "surrogates" + File.separator);
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "RunDispatcher" + File.separator);
@@ -89,7 +123,7 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	@Parameter(names={"--targetAlgorithmEvaluator","--tae"}, description="Target Algorithm Evaluator to use when making target algorithm calls")
 	public String targetAlgorithmEvaluator = "CLI";
 
-	@UsageTextField(defaultValues="<current working directory>/plugins/ amoung others" )
+	@UsageTextField(defaultValues="all directories under <current working directory>/plugins/ amoung others" )
 	@Parameter(names={"--targetAlgorithmEvaluatorSearchPath","--taeSP"}, description="location to look for other target algorithm evaluators [ See manual but generally you can ignore this ] ")
 	public String taeSearchPath = defaultSearchPath;
 
