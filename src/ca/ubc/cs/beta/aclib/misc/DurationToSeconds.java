@@ -3,10 +3,6 @@ package ca.ubc.cs.beta.aclib.misc;
 import java.util.LinkedList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-
-import org.slf4j.Logger;
-import org.slf4j.LoggerFactory;
-
 /**
  * Utility class that converts some strings to seconds
  * 
@@ -15,10 +11,6 @@ import org.slf4j.LoggerFactory;
 public class DurationToSeconds {
 
 
-	public static Logger log = LoggerFactory.getLogger(DurationToSeconds.class);
-	
-	
-	
 	private static final Pattern firstFormat = Pattern.compile("\\A\\s*(\\d+:)?(\\d+:)?(\\d+:)?(\\d+)\\s*\\z");
 	
 	private static final Pattern secondFormat = Pattern.compile("\\A\\s*(\\d+d)?(\\d+h)?(\\d+m)?(\\d+s?)?\\s*\\z");
@@ -76,7 +68,6 @@ public class DurationToSeconds {
 			}
 			
 			int returnValue =  values.get(0) + values.get(1)*60 + values.get(2)*3600 + values.get(3)*86400;
-			log.trace("Converted {} into {} seconds ", s, returnValue);
 			return returnValue;
 		}
 		
@@ -141,7 +132,6 @@ public class DurationToSeconds {
 			}
 			
 			int returnValue = seconds + minutes*60 + hours*3600 + days*86400;
-			log.trace("Converted {} into {} seconds ", s, returnValue);
 			return returnValue;
 		}
 
