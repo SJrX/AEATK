@@ -1,5 +1,6 @@
 package ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -22,6 +23,9 @@ public abstract class AbstractDeferredTargetAlgorithmEvaluator extends
 
 	@Override
 	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs) {
+		
+		
+		if(runConfigs.size() == 0) return Collections.emptyList();
 		
 		final Semaphore b = new Semaphore(0);
 		

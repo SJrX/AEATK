@@ -61,6 +61,12 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractBlockingTargetA
 	@Override
 	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs)
 	{
+		
+		if(runConfigs.size() == 0)
+		{
+			return Collections.emptyList();
+		}
+		
 		AlgorithmRunner runner = getAlgorithmRunner(runConfigs);
 		List<AlgorithmRun> runs =  runner.run();
 		addRuns(runs);
@@ -76,6 +82,7 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractBlockingTargetA
 	 */
 	private AlgorithmRunner getAlgorithmRunner(List<RunConfig> runConfigs)
 	{
+		
 		
 		if(concurrentExecution)
 		{

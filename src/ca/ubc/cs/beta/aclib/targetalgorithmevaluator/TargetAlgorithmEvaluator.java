@@ -42,8 +42,8 @@ public interface TargetAlgorithmEvaluator {
 
 	/**
 	 * Evaluate a sequence of run configurations
-	 * @param runConfigs a list containing run configurations to evaluate
-	 * @return	list containing the <code>AlgorithmRun</code> objects in the same order as runConfigs
+	 * @param runConfigs a list containing zero or more run configurations to evaluate
+	 * @return	list of the exact same size as input containing the <code>AlgorithmRun</code> objects in the same order as runConfigs
 	 * @throws TargetAlgorithmAbortException
 	 */
 	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs);
@@ -72,7 +72,7 @@ public interface TargetAlgorithmEvaluator {
 	 * delivered. Additionally if the runs are already complete, the call back is guaranteed to fire to completion <i>before</i> 
 	 * this method is returned.
 	 * 
-	 * @param runConfigs list of run configuration to evaluate
+	 * @param runConfigs list of zero or more run configuration to evaluate
 	 * @param handler    handler to invoke on completion or failure
 	 */
 	public void evaluateRunsAsync(List<RunConfig> runConfigs, TAECallback handler);

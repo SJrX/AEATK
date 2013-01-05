@@ -80,8 +80,8 @@ public class EventManager {
 	public synchronized void fireEvent(AutomaticConfiguratorEvent event)
 	{
 		
-		final List<EventHandler<?>> handlers =  handlerMap.putIfAbsent(event.getClass(), new ArrayList<EventHandler<?>>());
-		
+		handlerMap.putIfAbsent(event.getClass(), new ArrayList<EventHandler<?>>());
+		final List<EventHandler<?>> handlers = handlerMap.get(event.getClass());
 		
 		for(EventHandler<?> handler : handlers)
 		{

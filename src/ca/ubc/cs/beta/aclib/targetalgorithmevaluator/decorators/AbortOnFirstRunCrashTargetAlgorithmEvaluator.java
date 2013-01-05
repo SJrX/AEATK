@@ -44,14 +44,17 @@ public class AbortOnFirstRunCrashTargetAlgorithmEvaluator extends
 	
 	private List<AlgorithmRun> validate(List<AlgorithmRun> runs)
 	{
+		if(runs.size() == 0)
+		{
+			return runs;
+		}
 	
 		if(firstRunChecked.getAndSet(true)) 
 		{
 			return runs;
 		} else
 		{		
-			//Note if runs.get(0) is non existant that is a bug with
-			//the TAE implementation, NOT with this check.
+		
 			if(runs.get(0).getRunResult().equals(RunResult.CRASHED))
 			{
 				throw new TargetAlgorithmAbortException("First Run Crashed : " + runs.get(0).getRunConfig().toString()); 

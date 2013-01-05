@@ -207,7 +207,10 @@ public class TargetAlgorithmEvaluatorBuilder {
 		//Specifically Run Hash codes should only see the same runs the rest of the applications see
 		//Additionally retrying of crashed runs should probably happen before Abort on Crash
 		
-		algoEval = new RetryCrashedRunsTargetAlgorithmEvaluator(options.algoExecOptions.retryCount, algoEval);
+		if(options.algoExecOptions.retryCount > 0)
+		{
+			algoEval = new RetryCrashedRunsTargetAlgorithmEvaluator(options.algoExecOptions.retryCount, algoEval);
+		}
 		
 		
 		if(options.algoExecOptions.abortOnCrash)
