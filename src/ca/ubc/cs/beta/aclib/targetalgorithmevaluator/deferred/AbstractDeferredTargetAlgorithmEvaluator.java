@@ -10,6 +10,7 @@ import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.AbstractTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 
 public abstract class AbstractDeferredTargetAlgorithmEvaluator extends
 		AbstractTargetAlgorithmEvaluator implements DeferredTargetAlgorithmEvaluator{
@@ -23,8 +24,18 @@ public abstract class AbstractDeferredTargetAlgorithmEvaluator extends
 
 	@Override
 	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs) {
-		
-		
+		return evaluateRunSyncToAsync(runConfigs,this);
+	}
+
+	/***
+	 * Utility method people can use to turn adapt a synchronous call to an Asynchronous TAE.
+	 * 
+	 * @param runConfigs - outstanding run configurations
+	 * @param tae - Target Algorithm Evaluator to run asynchronously and wait for the callback to execute with
+	 * @return runs - Algorithm runs
+	 */
+	public static List<AlgorithmRun> evaluateRunSyncToAsync(List<RunConfig> runConfigs, TargetAlgorithmEvaluator tae)
+	{
 		if(runConfigs.size() == 0) return Collections.emptyList();
 		
 		final Semaphore b = new Semaphore(0);
@@ -34,7 +45,7 @@ public abstract class AbstractDeferredTargetAlgorithmEvaluator extends
 		final AtomicReference<RuntimeException> rt = new AtomicReference<RuntimeException>(); 
 		
 		
-		evaluateRunsAsync(runConfigs, new TAECallback(){
+		tae.evaluateRunsAsync(runConfigs, new TAECallback(){
 
 			@Override
 			public void onSuccess(List<AlgorithmRun> runs) {
@@ -62,7 +73,5 @@ public abstract class AbstractDeferredTargetAlgorithmEvaluator extends
 			throw rt.get();
 		}
 	}
-
-
 
 }
