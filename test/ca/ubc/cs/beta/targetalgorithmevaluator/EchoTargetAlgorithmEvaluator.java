@@ -27,10 +27,7 @@ public class EchoTargetAlgorithmEvaluator  extends AbstractBlockingTargetAlgorit
 		// TODO Auto-generated constructor stub
 	}
 
-	@Override
-	public void notifyShutdown() {
-		
-	}
+
     
 	@Deprecated
 	public volatile double wallClockTime = 0;
@@ -81,6 +78,12 @@ public class EchoTargetAlgorithmEvaluator  extends AbstractBlockingTargetAlgorit
 	@Override
 	public boolean areRunsPersisted() {
 		return false;
+	}
+
+	@Override
+	protected void subtypeShutdown() {
+		
+		
 	}
 
 	

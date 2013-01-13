@@ -96,11 +96,7 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractBlockingTargetA
 		}
 	}
 
-	@Override
-	public void notifyShutdown() {
 	
-	}
-
 	@Override
 	public boolean isRunFinal() {
 		return false;
@@ -109,6 +105,12 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractBlockingTargetA
 	@Override
 	public boolean areRunsPersisted() {
 		return false;
+	}
+
+	@Override
+	protected void subtypeShutdown() {
+		// TODO Auto-generated method stub
+		
 	}
 	
 	

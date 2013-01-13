@@ -43,10 +43,7 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 		
 	}
 
-	@Override
-	public void notifyShutdown() {
 
-	}
 
 	@Override
 	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs) {
@@ -84,6 +81,12 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 	@Override
 	public boolean areRunsPersisted() {
 		return false;
+	}
+
+	@Override
+	protected void subtypeShutdown() {
+		// TODO Auto-generated method stub
+		
 	}
 
 }

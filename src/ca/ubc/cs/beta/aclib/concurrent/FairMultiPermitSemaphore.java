@@ -48,6 +48,7 @@ public class FairMultiPermitSemaphore {
 	 */
 	public synchronized int getUpToNPermits(int N) throws InterruptedException
 	{
+		//System.out.println("A1:" + permits.get() + "," + semaphore.availablePermits() + "," + N);
 		semaphore.acquire();
 		
 		int availablePermits;
@@ -55,6 +56,7 @@ public class FairMultiPermitSemaphore {
 		int remainingPermits;
 		try
 		{
+			//System.out.println("A2:" + permits.get() + "," + semaphore.availablePermits() + "," + N);
 			this.mutexLock.lock();
 			//Lock to ensure that I see a consistent number of availablePermits and semaphores can only increase
 			do {
@@ -70,12 +72,13 @@ public class FairMultiPermitSemaphore {
 			}
 		} finally
 		{
+			//System.out.println("A3:" + permits.get() + "," + semaphore.availablePermits() + "," + N);
 			this.mutexLock.unlock();
 		}
 		
 		//Semaphores can only increase when we unlock and now.
 		semaphore.acquire(grabbedPermits - 1);
-		
+		//System.out.println("A4:" + permits.get() + "," + semaphore.availablePermits() + "," + N);
 		return grabbedPermits;
 	}
 	
@@ -88,9 +91,11 @@ public class FairMultiPermitSemaphore {
 	{
 
 		this.mutexLock.lock();
-		try { 
+		try {
+			//System.out.println("R-:" +permits.get() + "," + semaphore.availablePermits() + "," + N);
 			permits.addAndGet(N);
 			semaphore.release(N);
+			//System.out.println("R+:" +permits.get() + "," + semaphore.availablePermits() + "," + N);
 		} finally {
 			this.mutexLock.unlock();
 		}

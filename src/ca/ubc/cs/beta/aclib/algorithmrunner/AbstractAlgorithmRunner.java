@@ -49,7 +49,7 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 			runs.add(new CommandLineAlgorithmRun(execConfig, instConf));
 		}
 		
-		this.runs = Collections.unmodifiableList(runs);
+		this.runs = runs;
 	}
 	
 	

@@ -86,7 +86,7 @@ public class BoundedTargetAlgorithmEvaluator extends
 			while((numberOfDispatchedRuns < runConfigs.size()) && !failureOccured.get())
 			{
 				
-				System.out.println((numberOfDispatchedRuns < runConfigs.size()) && !failureOccured.get());
+				
 				int oRcToRun;
 				try {
 					oRcToRun = availableRuns.getUpToNPermits(runConfigs.size()-numberOfDispatchedRuns);
@@ -97,9 +97,9 @@ public class BoundedTargetAlgorithmEvaluator extends
 				}
 				final int rcToRun = oRcToRun;
 	
-				System.out.println((numberOfDispatchedRuns < runConfigs.size()) && !failureOccured.get());
 				
-				log.debug("Got permission to run {} things, total for this batch is {} " , rcToRun,numberOfDispatchedRuns);
+				Object[] logMsg = {runConfigs.size()-numberOfDispatchedRuns, rcToRun,numberOfDispatchedRuns};
+				log.debug("Asked for permission to run {} things, got permission to run {} things, total completed for this batch {} " , logMsg );
 				
 				List<RunConfig> subList = runConfigs.subList(numberOfDispatchedRuns, numberOfDispatchedRuns+rcToRun);
 				

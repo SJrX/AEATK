@@ -30,7 +30,7 @@ public class ValidationExecutorOptions extends AbstractOptions {
 	public long numRun = 0;
 	
 	
-	@Parameter(names="--configuration", description="Parameter configuration to validate (In the same format calls are made to the algorithm) [Use <DEFAULT> to validate the default]")
+	@Parameter(names="--configuration", description="Parameter configuration to validate (In the same format calls are made to the algorithm) [Use 'DEFAULT' to validate the default]")
 	public String incumbent;
 	
 	@Parameter(names="--trajectoryFile", description="Trajectory File to read configurations from")
@@ -56,4 +56,8 @@ public class ValidationExecutorOptions extends AbstractOptions {
 	
 	@Parameter(names="--waitForPersistedRunCompletion", description="If the Target Algorithm Evaluator is persistent, then you can optionally not wait for it to finish, and come back later")
 	public boolean waitForPersistedRunCompletion = true;
+
+
+	@Parameter(names="--randomConfigurations", description="Number of random configurations to validate")
+	public int randomConfigurations = 0;
 }
