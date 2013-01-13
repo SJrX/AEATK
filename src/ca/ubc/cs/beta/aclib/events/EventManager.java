@@ -53,7 +53,7 @@ public class EventManager {
 			 
 		};
 		
-		
+		t.setName("Event Manager Dispatch Thread");
 		t.setDaemon(true);
 		t.start();
 		

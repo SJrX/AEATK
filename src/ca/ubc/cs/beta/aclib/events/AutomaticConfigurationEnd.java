@@ -8,12 +8,15 @@ public class AutomaticConfigurationEnd extends AbstractTimeEvent {
 
 	private final ParamConfiguration incumbent;
 	private final double empericalPerformance;
+	private final long wallTime;
+	private final double cpuTime;
 
-	public AutomaticConfigurationEnd(UUID uuid, ParamConfiguration incumbent, ConfigurationTimeLimits limits, double empericalPerformance) {
+	public AutomaticConfigurationEnd(UUID uuid, ParamConfiguration incumbent, ConfigurationTimeLimits limits, double empericalPerformance, long wallClockTime, double tunerTime) {
 		super(uuid, limits);
 		this.incumbent = incumbent;
 		this.empericalPerformance = empericalPerformance;
-		
+		this.wallTime = wallClockTime;
+		this.cpuTime = tunerTime;
 		
 	}
 
@@ -21,7 +24,14 @@ public class AutomaticConfigurationEnd extends AbstractTimeEvent {
 		return incumbent;
 	}
 
-		
+	public long getWallTime() {
+		return wallTime;
+	}
+
+	public double getTunerTime() {
+		return cpuTime;
+	}
+	
 	
 
 }

@@ -50,6 +50,7 @@ public class KeyObjectManager<V> {
 		
 		if(bidiMap.containsKey(id) || bidiMap.containsValue(obj))
 		{
+			System.out.println("Trying to add < " + id + "," + obj + ">");
 			if(bidiMap.containsKey(id))
 			{
 				System.out.println("bidiMap contains key " + id +  " already");
@@ -62,6 +63,7 @@ public class KeyObjectManager<V> {
 				System.out.println("Key: " + bidiMap.getKey(obj));
 			}
 			
+			try {
 			if(bidiMap.get(id).equals(obj)) 
 			{
 				return;
@@ -69,6 +71,11 @@ public class KeyObjectManager<V> {
 			{
 				if(bidiMap.containsKey(id)) throw new IllegalArgumentException("Cannot replace index");
 				if(bidiMap.containsValue(obj)) throw new IllegalArgumentException("Cannot replace value");
+			}
+			} catch(NullPointerException e)
+			{
+				System.err.println("Help me data structure corruption");
+				throw e;
 			}
 		} 
 		

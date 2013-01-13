@@ -14,7 +14,7 @@ public class CPUTime {
 	 * 
 	 * @return cpu time for this jvm if enabled&supported 0 otherwise
 	 */
-	public static long getCPUTime()
+	public static double getCPUTime()
 	{
 		try 
 		{
@@ -34,7 +34,7 @@ public class CPUTime {
 				
 				cpuTime += threadTime;
 			}
-			return cpuTime / 1000 / 1000 / 1000;
+			return cpuTime / 1000.0 / 1000.0 / 1000.0;
 		} catch(UnsupportedOperationException e)
 		{
 			log.debug("JVM does not support CPU Time measurements");
