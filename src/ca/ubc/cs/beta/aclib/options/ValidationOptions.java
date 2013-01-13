@@ -43,5 +43,7 @@ public class ValidationOptions extends AbstractOptions{
 	
 	@Parameter(names="--outputFileSuffix", description="Suffix to add to validation run files (for grouping)")
 	public String outputFileSuffix = "";
-	
+
+	@Parameter(names="--validateAll",description="Validate every entry in the trajectory file (overrides other validation options)")
+	public boolean validateAll = false;
 }

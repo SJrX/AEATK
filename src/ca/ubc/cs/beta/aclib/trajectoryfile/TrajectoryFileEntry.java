@@ -58,7 +58,10 @@ public class TrajectoryFileEntry implements Comparable<TrajectoryFileEntry>
 			return -1;
 		} else if( tunerTime - o.tunerTime == 0)
 		{
-			return 0;
+			
+			if(config.equals(o.config)) return 0;
+			
+			return (config.getFriendlyID() - o.config.getFriendlyID());
 		} else
 		{
 			return 1;
