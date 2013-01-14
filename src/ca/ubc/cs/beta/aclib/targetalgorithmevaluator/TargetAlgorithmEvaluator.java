@@ -4,6 +4,7 @@ import java.util.List;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred.TAECallback;
 
 /**
@@ -27,6 +28,8 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred.TAECallback;
  */
 public interface TargetAlgorithmEvaluator {
  
+	
+	
 
 	/**
 	 * Evaluate a run configuration
@@ -47,6 +50,15 @@ public interface TargetAlgorithmEvaluator {
 	 * @throws TargetAlgorithmAbortException
 	 */
 	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs);
+
+	/**
+	 * Evaluate a sequence of run configurations
+	 * @param runConfigs a list containing zero or more run configurations to evaluate
+	 * @param obs 		 observer that will be notified of the current run status
+	 * @return	list of the exact same size as input containing the <code>AlgorithmRun</code> objects in the same order as runConfigs
+	 * @throws TargetAlgorithmAbortException
+	 */
+	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, CurrentRunStatusObserver obs);
 	
 	
 	/**
@@ -76,7 +88,21 @@ public interface TargetAlgorithmEvaluator {
 	 * @param handler    handler to invoke on completion or failure
 	 */
 	public void evaluateRunsAsync(List<RunConfig> runConfigs, TAECallback handler);
-	
+
+	/**
+	 * Evaluates the given configuration, and when complete the handler is invoked
+	 * <p>
+	 * <b>Note:</b>You are guaranteed that when this method returns your runs have been 'delivered'
+	 * to the eventual processor. In other words if the runs are dispatched to some external
+	 * processing system, you can safely shutdown after this method call completes and know that they have been
+	 * delivered. Additionally if the runs are already complete, the call back is guaranteed to fire to completion <i>before</i> 
+	 * this method is returned.
+	 * 
+	 * @param runConfigs list of zero or more run configuration to evaluate
+	 * @param handler    handler to invoke on completion or failure
+	 * @param obs 		 observer that will be notified of the current run status
+	 */
+	public void evaluateRunsAsync(List<RunConfig> runConfigs, TAECallback handler, CurrentRunStatusObserver obs);
 	
 	/**
 	 * Returns the number of target algorithm runs that we have executed
@@ -151,7 +177,7 @@ public interface TargetAlgorithmEvaluator {
 	public boolean isRunFinal();
 	
 	/**
-	 * Retruns <code>true</code> if all the runs made to the TargetAlgorithmEvaluator will be persisted.
+	 * Returns <code>true</code> if all the runs made to the TargetAlgorithmEvaluator will be persisted.
 	 * <p> 
 	 *<b>Implementation Note:</b> This is used to allow some programs to basically hand-off execution to some
 	 * external process, say a pool of workers, and then if re-executed can get the same answer later. 
@@ -159,6 +185,15 @@ public interface TargetAlgorithmEvaluator {
 	 * @return <code>true</code> if runs can be retrieved externally of this currently running program
 	 */
 	public boolean areRunsPersisted();
+	
+	/**
+	 * Returns <code>true</code> if all the runs made to the TargetAlgorithmEvaluator are observable
+	 * <p>
+	 * <b>Implementation Note:</b> The notification of observers is made on a best-effort basis,
+	 * if this TAE just won't notify us then it should return false. This can allow for better logging 
+	 * or experience for the user 
+	 */
+	public boolean areRunsObservable();
 	
 	
 }

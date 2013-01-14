@@ -8,6 +8,7 @@ import java.util.concurrent.Executors;
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred.TAECallback;
 
 /**
@@ -30,12 +31,18 @@ public abstract class AbstractBlockingTargetAlgorithmEvaluator extends
 	@Override
 	public void evaluateRunsAsync(RunConfig runConfig,
 			TAECallback handler) {
-		this.evaluateRunsAsync(Collections.singletonList(runConfig), handler);
+		this.evaluateRunsAsync(Collections.singletonList(runConfig), handler, null);
 	}
 
 	@Override
 	public  void evaluateRunsAsync(final List<RunConfig> runConfigs,
 			final TAECallback handler) {
+				evaluateRunsAsync(runConfigs, handler, null);
+			}
+
+	@Override
+	public  void evaluateRunsAsync(final List<RunConfig> runConfigs,
+			final TAECallback handler, final CurrentRunStatusObserver obs) {
 		
 		Runnable run = new Runnable()
 		{
@@ -47,7 +54,7 @@ public abstract class AbstractBlockingTargetAlgorithmEvaluator extends
 					List<AlgorithmRun> runs;
 					synchronized(this)
 					{
-						runs = AbstractBlockingTargetAlgorithmEvaluator.this.evaluateRun(runConfigs);
+						runs = AbstractBlockingTargetAlgorithmEvaluator.this.evaluateRun(runConfigs, obs);
 					}
 					handler.onSuccess(runs);
 				} catch(RuntimeException e)

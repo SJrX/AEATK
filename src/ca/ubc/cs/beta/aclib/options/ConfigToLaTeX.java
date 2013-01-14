@@ -219,10 +219,7 @@ public class ConfigToLaTeX {
 		Set<Object> objectsToScan = new LinkedHashSet<Object>();
 		
 		objectsToScan.add(o);
-		
 		getAllObjects(o, objectsToScan);
-				
-		StringBuilder sb = new StringBuilder();
 		
 		List<UsageSection> sections = new ArrayList<UsageSection>();
 		

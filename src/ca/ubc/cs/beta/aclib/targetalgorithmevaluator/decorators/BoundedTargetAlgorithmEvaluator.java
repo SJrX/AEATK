@@ -2,15 +2,11 @@ package ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators;
 
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.concurrent.locks.ReentrantLock;
 
 import org.slf4j.Logger;
@@ -21,6 +17,7 @@ import ca.ubc.cs.beta.aclib.concurrent.FairMultiPermitSemaphore;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.AbstractTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred.AbstractDeferredTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred.TAECallback;
 /**
@@ -50,11 +47,16 @@ public class BoundedTargetAlgorithmEvaluator extends
 
 	@Override
 	public void evaluateRunsAsync(RunConfig runConfig, TAECallback handler) {
-		this.evaluateRunsAsync(Collections.singletonList(runConfig), handler);
+		this.evaluateRunsAsync(Collections.singletonList(runConfig), handler, null);
 	}
 
 	@Override
 	public void evaluateRunsAsync(final List<RunConfig> runConfigs, final TAECallback handler) {
+		evaluateRunsAsync(runConfigs, handler, null);
+	}
+
+	@Override
+	public void evaluateRunsAsync(final List<RunConfig> runConfigs, final TAECallback handler, CurrentRunStatusObserver obs) {
 
 		if(runConfigs.isEmpty())
 		{
@@ -159,7 +161,7 @@ public class BoundedTargetAlgorithmEvaluator extends
 					
 					
 					
-				});
+				}, obs);
 			
 				numberOfDispatchedRuns+=rcToRun;
 			}
@@ -176,6 +178,11 @@ public class BoundedTargetAlgorithmEvaluator extends
 
 	@Override
 	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs) {
-		return AbstractDeferredTargetAlgorithmEvaluator.evaluateRunSyncToAsync(runConfigs, this);
+		return evaluateRun(runConfigs, null);
+	}
+
+	@Override
+	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, CurrentRunStatusObserver obs) {
+		return AbstractDeferredTargetAlgorithmEvaluator.evaluateRunSyncToAsync(runConfigs, this, obs);
 	}
 }

@@ -6,6 +6,7 @@ import java.util.List;
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred.TAECallback;
 
 /**
@@ -35,9 +36,14 @@ public class EqualTargetAlgorithmEvaluatorTester implements
 
 	@Override
 	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs) {
+		return evaluateRun(runConfigs, null);
+	}
+
+	@Override
+	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, CurrentRunStatusObserver obs) {
 		
-		List<AlgorithmRun> runTae1 = tae1.evaluateRun(runConfigs);
-		List<AlgorithmRun> runTae2 = tae2.evaluateRun(runConfigs);
+		List<AlgorithmRun> runTae1 = tae1.evaluateRun(runConfigs, obs);
+		List<AlgorithmRun> runTae2 = tae2.evaluateRun(runConfigs, obs);
 
 		if(runTae1.size() != runTae2.size()) throw new IllegalStateException("Run sizes did not match");
 		
@@ -103,6 +109,13 @@ public class EqualTargetAlgorithmEvaluatorTester implements
 	@Override
 	public void evaluateRunsAsync(List<RunConfig> runConfigs,
 			TAECallback handler) {
+				evaluateRunsAsync(runConfigs, handler, null);
+			}
+
+	@Override
+	public void evaluateRunsAsync(List<RunConfig> runConfigs,
+			TAECallback handler, CurrentRunStatusObserver obs) {
+		//Drop obs if this is implemented
 		throw new UnsupportedOperationException("This TAE does not support Asynchronous Execution at the moment");
 	}
 
@@ -113,6 +126,11 @@ public class EqualTargetAlgorithmEvaluatorTester implements
 
 	@Override
 	public boolean areRunsPersisted() {
+		return false;
+	}
+
+	@Override
+	public boolean areRunsObservable() {
 		return false;
 	}
 

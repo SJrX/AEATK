@@ -11,6 +11,7 @@ import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.AbstractTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
 
 public abstract class AbstractDeferredTargetAlgorithmEvaluator extends
 		AbstractTargetAlgorithmEvaluator implements DeferredTargetAlgorithmEvaluator{
@@ -24,7 +25,12 @@ public abstract class AbstractDeferredTargetAlgorithmEvaluator extends
 
 	@Override
 	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs) {
-		return evaluateRunSyncToAsync(runConfigs,this);
+		return evaluateRun(runConfigs, null);
+	}
+
+	@Override
+	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, CurrentRunStatusObserver obs) {
+		return evaluateRunSyncToAsync(runConfigs,this,obs);
 	}
 
 	/***
@@ -34,7 +40,7 @@ public abstract class AbstractDeferredTargetAlgorithmEvaluator extends
 	 * @param tae - Target Algorithm Evaluator to run asynchronously and wait for the callback to execute with
 	 * @return runs - Algorithm runs
 	 */
-	public static List<AlgorithmRun> evaluateRunSyncToAsync(List<RunConfig> runConfigs, TargetAlgorithmEvaluator tae)
+	public static List<AlgorithmRun> evaluateRunSyncToAsync(List<RunConfig> runConfigs, TargetAlgorithmEvaluator tae, CurrentRunStatusObserver obs)
 	{
 		if(runConfigs.size() == 0) return Collections.emptyList();
 		
@@ -61,7 +67,7 @@ public abstract class AbstractDeferredTargetAlgorithmEvaluator extends
 				b.release();
 			}
 			
-		});
+		}, obs);
 
 		b.acquireUninterruptibly();
 		

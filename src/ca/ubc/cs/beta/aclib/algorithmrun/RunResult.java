@@ -46,8 +46,15 @@ public enum RunResult {
 	 * and that we should simply not continue with any attempts 
 	 *
 	 */
-	ABORT(-2);
+	ABORT(-2),
 	
+	
+	/**
+	 * Signifies that the algorithm is still currently running
+	 * In general this should be used with care, there is 
+	 * no guarantee that anything in this state is consistent. 
+	 */
+	RUNNING(Integer.MIN_VALUE);
 	/**
 	 * Stores the numeric result code used in some serializations of run results
 	 * @see ca.ubc.cs.beta.aclib.state.legacy.LegacyStateFactory

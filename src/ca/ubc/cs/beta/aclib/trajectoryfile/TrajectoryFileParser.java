@@ -145,10 +145,14 @@ public class TrajectoryFileParser {
 	public static ConcurrentSkipListMap<Double, TrajectoryFileEntry> parseTrajectoryFile(File trajectoryFile, ParamConfigurationSpace configSpace) throws FileNotFoundException, IOException
 	{
 		CSVReader configCSV = new CSVReader(new FileReader(trajectoryFile));
-		
+		try {
 		ConfigCSVFileHelper configs = new ConfigCSVFileHelper(configCSV.readAll(),1,0);
-		
 		return parseTrajectoryFile(configs, configSpace);
+		} finally
+		{
+			configCSV.close();
+		}
+		
 	}
 	
 	public static List<TrajectoryFileEntry> parseTrajectoryFileAsList(File trajectoryFile, ParamConfigurationSpace configSpace) throws FileNotFoundException, IOException

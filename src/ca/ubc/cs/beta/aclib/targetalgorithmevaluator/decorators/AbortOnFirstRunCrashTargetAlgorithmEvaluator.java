@@ -12,6 +12,7 @@ import ca.ubc.cs.beta.aclib.exceptions.TargetAlgorithmAbortException;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.AbstractTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred.TAECallback;
 
 /**
@@ -36,7 +37,12 @@ public class AbortOnFirstRunCrashTargetAlgorithmEvaluator extends
 
 	@Override
 	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs) {
-		return validate(super.evaluateRun(runConfigs));
+		return evaluateRun(runConfigs, null);
+	}
+
+	@Override
+	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, CurrentRunStatusObserver obs) {
+		return validate(super.evaluateRun(runConfigs, null));
 	}
 	
 
@@ -67,12 +73,18 @@ public class AbortOnFirstRunCrashTargetAlgorithmEvaluator extends
 
 	@Override
 	public void evaluateRunsAsync(RunConfig runConfig, TAECallback handler) {
-		evaluateRunsAsync(Collections.singletonList(runConfig), handler);
+		evaluateRunsAsync(Collections.singletonList(runConfig), handler, null);
 	}
 
 	@Override
 	public void evaluateRunsAsync(List<RunConfig> runConfigs,
 			final TAECallback handler) {
+				evaluateRunsAsync(runConfigs, handler, null);
+			}
+
+	@Override
+	public void evaluateRunsAsync(List<RunConfig> runConfigs,
+			final TAECallback handler, CurrentRunStatusObserver obs) {
 		
 		
 		TAECallback myHandler = new TAECallback()
@@ -98,6 +110,6 @@ public class AbortOnFirstRunCrashTargetAlgorithmEvaluator extends
 			
 		};
 		
-		tae.evaluateRunsAsync(runConfigs, myHandler);
+		tae.evaluateRunsAsync(runConfigs, myHandler, obs);
 	}
 }

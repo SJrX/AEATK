@@ -8,7 +8,10 @@ public abstract class AutomaticConfiguratorEvent {
 	public AutomaticConfiguratorEvent(UUID uuid)
 	{
 		this.uuid = uuid;
-		
 	}
 	
+	public UUID getUUID()
+	{
+		return uuid;
+	}
 }

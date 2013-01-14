@@ -18,6 +18,7 @@ import org.junit.Test;
 import ca.ubc.cs.beta.TestHelper;
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
+import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableAlgorithmRun;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.exceptions.TargetAlgorithmAbortException;
@@ -30,6 +31,7 @@ import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.CommandLineTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbortOnCrashTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbortOnFirstRunCrashTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.TimingCheckerTargetAlgorithmEvaluator;
@@ -222,6 +224,7 @@ public class TAETestSet {
 		
 		tae.notifyShutdown();
 	}
+	
 	
 	
 	
@@ -1365,58 +1368,106 @@ public class TAETestSet {
 	}
 	
 	
+	/**
+	 * Tests whether warnings are generated for Algorithms exceeding there runtime
+	 */
+	@Test
+	public void testDynamicAdaptiveCapping()
+	{
+		
 	
-	//You can delete this if you see it
-//	
-//	/***
-//	 * This is related to Task 1442, 
-//	 * 
-//	 * Long story short, The target algorithms see a modified LD_LIBRARY_PATH with 
-//	 * java paths prepended, this can cause problems in certain circumstances.
-//	 * {@link http://bugs.sun.com/view_bug.do?bug_id=6670965}
-//	 */
-//	
-//	public void testLDLibraryPathNotModified()
-//	{
-//		/**
-//		 * This test does the following and is only useful in Sun Java 6
-//		 * Calls an executable, that executes another
-//		 * executable with a specific LD_LIBRARY_PATH set, 
-//		 * and this one Command Line Target Algorithm Executable
-//		 * That outputs the LD_LIBRARY_PATH as the additional algorithm run data.
-//		 * Then the executable outputs this value back to us. 
-//		 * 
-//		 */
-//		
-//		String execString = TestHelper.getJavaExecString() + CLIExecutor.class.getCanonicalName();
-//		String[] envp = { "LD_LIBRARY_PATH=foo" };
-//		Process proc;
-//		try {
-//			proc = Runtime.getRuntime().exec(execString, envp );
-//			Scanner procIn = new Scanner(proc.getInputStream());
-//			
-//			
-//			while(procIn.hasNext())
-//			{
-//				String line = procIn.nextLine();
-//				//I expect that the wrapper script we execute only outputs the LD_LIBRARY PATH
-//				System.out.println(line.trim());
-//				String expected = "LD_LIBRARY_PATH=foo";
-//				System.out.println(expected);
-//				assertEquals(expected, line.trim());
-//				return;
-//			}
-//			
-//			
-//			fail("Did not find matching line");
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//			fail("Execption Occurred");
-//		}
-//		
-//		
-//				
-//		
-//	}
+		
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(TrueSleepyParamEchoExecutor.class.getCanonicalName());
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
+		
+		tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false);	
+		
+		assertTrue(tae.areRunsObservable());
+		configSpace.setPRNG(r);
+		
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(10);
+		for(int i=0; i < 10; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration();
+			config.put("runtime", ""+(i));
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config);
+				runConfigs.add(rc);
+			}
+		}
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		
+		//StringWriter sw = new StringWriter();
+		//ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		
+		//PrintStream out = System.out;
+		//System.setOut(new PrintStream(bout));
+		
+		CurrentRunStatusObserver obs = new CurrentRunStatusObserver()
+		{
+			
+			@Override
+			public void currentStatus(List<? extends KillableAlgorithmRun> runs) {
+				
+				double runtimeSum = 0.0; 
+				for(AlgorithmRun run : runs)
+				{
+					runtimeSum += run.getRuntime();
+				}
+				
+				//System.out.println(runtimeSum);
+				if(runtimeSum > 5)
+				{
+					for(KillableAlgorithmRun run : runs)
+					{
+						run.kill();
+					}
+				}
+			}
+			
+		};
+		
+		long startTime  = System.currentTimeMillis();
+		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs,obs);
+		long endTime = System.currentTimeMillis();
+		//System.setOut(out);
+		//System.out.println(bout.toString());
+		
+		for(AlgorithmRun run : runs)
+		{
+			System.out.println(run.getResultLine());
+			
+			ParamConfiguration config  = run.getRunConfig().getParamConfiguration();
+			
+			if(run.getRunResult().equals(RunResult.TIMEOUT))
+			{
+				continue;
+			}
+			assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
+			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
+			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
+			assertDEquals(config.get("seed"), run.getResultSeed(), 0.1);
+			assertEquals(config.get("solved"), run.getRunResult().name());
+			//This executor should not have any additional run data
+			assertEquals("",run.getAdditionalRunData());
+			
+
+		}
+		
+		tae.notifyShutdown();
+		
+		assertTrue("Should have taken less than five seconds to run, it took " + (endTime - startTime)/1000.0 + " seconds", (endTime - startTime) < (long) 5000);
+	}
 	
 }

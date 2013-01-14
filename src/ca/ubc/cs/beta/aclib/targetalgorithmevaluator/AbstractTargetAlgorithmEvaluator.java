@@ -7,6 +7,7 @@ import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.CommandLineAlgorithmRun;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
 
 /**
  * Abstract Target Algorithm Evalutar
@@ -38,11 +39,15 @@ public abstract class AbstractTargetAlgorithmEvaluator implements TargetAlgorith
 	@Override
 	public List<AlgorithmRun> evaluateRun(RunConfig run) 
 	{
-		return evaluateRun(Collections.singletonList(run));
+		return evaluateRun(Collections.singletonList(run), null);
 	}
 	
 	@Override
 	public abstract List<AlgorithmRun>  evaluateRun(List<RunConfig> runConfigs);
+
+
+	@Override
+	public abstract List<AlgorithmRun>  evaluateRun(List<RunConfig> runConfigs, CurrentRunStatusObserver obs);
 	
 	@Override
 	public int getRunCount()

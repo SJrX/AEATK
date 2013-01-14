@@ -17,6 +17,7 @@ import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.AbstractTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred.TAECallback;
 
 /**
@@ -56,7 +57,12 @@ public class RetryCrashedRunsTargetAlgorithmEvaluator extends
 
 	@Override
 	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs) {
-		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+		return evaluateRun(runConfigs, null);
+	}
+
+	@Override
+	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, CurrentRunStatusObserver obs) {
+		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs, obs);
 		
 		runs = new ArrayList<AlgorithmRun>(runs);
 		
@@ -90,7 +96,7 @@ public class RetryCrashedRunsTargetAlgorithmEvaluator extends
 			crashRCs.addAll(crashedRuns.keySet());
 			
 			
-			List<AlgorithmRun> retriedRuns = tae.evaluateRun(crashRCs);
+			List<AlgorithmRun> retriedRuns = tae.evaluateRun(crashRCs, obs);
 			
 			
 			for(AlgorithmRun run : retriedRuns)
@@ -129,8 +135,14 @@ public class RetryCrashedRunsTargetAlgorithmEvaluator extends
 	@Override
 	public void evaluateRunsAsync(List<RunConfig> runConfigs,
 			TAECallback handler) {
+				evaluateRunsAsync(runConfigs, handler,null);
+			}
+
+	@Override
+	public void evaluateRunsAsync(List<RunConfig> runConfigs,
+			TAECallback handler, CurrentRunStatusObserver obs) {
 		log.warn("Cannot retry runs that are asynchronous at the moment");
-		tae.evaluateRunsAsync(runConfigs, handler);
+		tae.evaluateRunsAsync(runConfigs, handler, obs);
 	}
 	
 

@@ -1,7 +1,6 @@
 package ca.ubc.cs.beta.aclib.events;
 
 import java.util.ArrayList;
-import java.util.HashMap;
 import java.util.List;
 import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -43,7 +42,7 @@ public class EventManager {
 					{
 						log.error("Unexpected Exception occured", e);
 					} catch (InterruptedException e) {
-						this.currentThread().interrupt();
+						Thread.currentThread().interrupt();
 					}
 				}
 			}

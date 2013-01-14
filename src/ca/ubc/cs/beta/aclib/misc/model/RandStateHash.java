@@ -21,7 +21,7 @@ public class RandStateHash {
 	
 	private static int nextHash(int prevHash, int newValue)
 	{
-		int mediumPrime = 32452867;
+		
 		return Math.abs(31*prevHash + newValue) % 32452867;
 	}
 	

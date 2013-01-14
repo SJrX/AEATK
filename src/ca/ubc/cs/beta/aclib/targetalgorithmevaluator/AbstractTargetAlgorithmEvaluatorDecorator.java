@@ -2,10 +2,9 @@ package ca.ubc.cs.beta.aclib.targetalgorithmevaluator;
 
 import java.util.List;
 
-import net.jcip.annotations.ThreadSafe;
-
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
 /**
  * Abstract Decorator class for TargetAlgorithmEvalutator
  * 
@@ -35,7 +34,13 @@ public abstract class AbstractTargetAlgorithmEvaluatorDecorator implements
 
 	@Override
 	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs) {
-		return tae.evaluateRun(runConfigs);
+		return evaluateRun(runConfigs, null);
+	}
+
+
+	@Override
+	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, CurrentRunStatusObserver obs) {
+		return tae.evaluateRun(runConfigs, obs);
 	}
 
 	@Override
@@ -75,5 +80,11 @@ public abstract class AbstractTargetAlgorithmEvaluatorDecorator implements
 	{
 		return tae.areRunsPersisted();
 	}
-
+	
+	@Override
+	public boolean areRunsObservable()
+	{
+		return tae.areRunsObservable();
+	}
+	
 }

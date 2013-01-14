@@ -15,7 +15,7 @@ import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.misc.random.SeedableRandomSingleton;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.AbstractBlockingTargetAlgorithmEvaluator;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.AbstractTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
 
 @ThreadSafe
 public class RandomResponseTargetAlgorithmEvaluator extends
@@ -47,6 +47,13 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 
 	@Override
 	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs) {
+		return evaluateRun(runConfigs,null);
+	}
+
+
+
+	@Override
+	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, CurrentRunStatusObserver obs) {
 		Random rand = SeedableRandomSingleton.getRandom();
 		
 		List<AlgorithmRun> ar = new ArrayList<AlgorithmRun>(runConfigs.size());
@@ -87,6 +94,13 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 	protected void subtypeShutdown() {
 		// TODO Auto-generated method stub
 		
+	}
+
+
+
+	@Override
+	public boolean areRunsObservable() {
+		return false;
 	}
 
 }

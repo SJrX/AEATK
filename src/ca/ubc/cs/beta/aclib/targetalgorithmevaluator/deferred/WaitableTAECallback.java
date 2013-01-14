@@ -2,8 +2,6 @@ package ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred;
 
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Semaphore;
-
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 
 /**

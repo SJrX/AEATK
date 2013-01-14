@@ -254,7 +254,7 @@ public class LegacyStateDeserializerTester {
 		
 		
 		System.out.println("Performing " + runConfigs.size() + " runs");
-		PrintStream ps = System.out;
+		//PrintStream ps = System.out;
 		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
 		
 		
@@ -463,7 +463,7 @@ public class LegacyStateDeserializerTester {
 			
 			System.out.println("Performing " + runConfigs.size() + " runs");
 		
-			List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+			List<AlgorithmRun> runs = tae.evaluateRun(runConfigs,null);
 			allRuns.addAll(runs);
 			for(AlgorithmRun run : runs)
 			{
@@ -691,7 +691,7 @@ public class LegacyStateDeserializerTester {
 		
 		
 		System.out.println("Performing " + runConfigs.size() + " runs");
-		PrintStream ps = System.out;
+		//PrintStream ps = System.out;
 		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
 		
 		
