@@ -27,6 +27,7 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 		
 		directoriesToSearch.add(cwd);
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "plugins" + File.separator);
+		directoriesToSearch.add(new File(cwd) + File.separator + "plugins" + File.separator);
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "surrogates" + File.separator);
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "RunDispatcher" + File.separator);
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "surrogates" + File.separator + "bin" + File.separator);

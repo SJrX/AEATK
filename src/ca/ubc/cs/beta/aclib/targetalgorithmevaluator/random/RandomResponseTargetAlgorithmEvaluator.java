@@ -4,6 +4,9 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.ExistingAlgorithmRun;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
@@ -14,7 +17,12 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.AbstractTargetAlgorithmEval
 public class RandomResponseTargetAlgorithmEvaluator extends
 		AbstractTargetAlgorithmEvaluator {
 
-	double scale = 1.0; 
+	private double scale = 1.0;
+	
+	private boolean sleep = false;
+	
+	private static final Logger log = LoggerFactory.getLogger(RandomResponseTargetAlgorithmEvaluator.class);
+	
 	public RandomResponseTargetAlgorithmEvaluator(
 			AlgorithmExecutionConfig execConfig) {
 		super(execConfig);
@@ -24,6 +32,8 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 		{
 			scale = 10.0;
 		}
+		
+		sleep = execConfig.isDeterministicAlgorithm();
 		
 	}
 
@@ -38,8 +48,23 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 		
 		List<AlgorithmRun> ar = new ArrayList<AlgorithmRun>(runConfigs.size());
 		for(RunConfig rc : runConfigs)
-		{
-			ar.add(new ExistingAlgorithmRun(execConfig, rc, "SAT, " + rand.nextDouble()*scale + ",-1,0," + rc.getProblemInstanceSeedPair().getSeed()));
+		{ 
+			double time = rand.nextDouble()*scale;
+			
+			if(sleep)
+			{
+				log.debug("Sleeping");
+				
+				try {
+					Thread.sleep( (long) time*1000);
+				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
+				}
+				
+				
+			}
+			
+			ar.add(new ExistingAlgorithmRun(execConfig, rc, "SAT, " + time + ",-1,0," + rc.getProblemInstanceSeedPair().getSeed()));
 		}
 		
 		return ar;

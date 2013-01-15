@@ -241,7 +241,9 @@ public class ProblemInstanceHelper {
 		List<ProblemInstance> instances = new ArrayList<ProblemInstance>();
 		Set<ProblemInstance> instancesSet = new HashSet<ProblemInstance>();
 		
+		String instanceFileAbsolutePath = null;
 		
+		String instanceFeatureFileAbsolutePath = null;
 		
 		String line = "";
 		
@@ -266,6 +268,9 @@ public class ProblemInstanceHelper {
 			{
 				throw new ParameterException("Feature file given does not exist " + featureFile);
 			}
+			
+			instanceFeatureFileAbsolutePath = featureFile.getAbsolutePath();
+			
 			CSVReader featureCSV = new CSVReader(new InputStreamReader(new FileInputStream(featureFile)));
 			ConfigCSVFileHelper features = new ConfigCSVFileHelper(featureCSV.readAll(),1,1);
 			
@@ -335,7 +340,7 @@ public class ProblemInstanceHelper {
 		{	
 			//====Parse Instance File=====
 			File instanceListFile = getFileForPath(experimentDir, filename);
-			
+			instanceFileAbsolutePath = instanceListFile.getAbsolutePath();
 			InstanceListWithSeeds insc = getListAndSeedGen(instanceListFile,seed, maxSeedsPerInstance);
 			instanceList = insc.getInstancesByName();
 			gen = insc.getSeedGen();
@@ -562,7 +567,7 @@ topOfLoop:
 		}
 		
 		logger.debug("Instances loaded from file named: {}", filename);
-		return new InstanceListWithSeeds(gen, instances, instancesFromFeatures);
+		return new InstanceListWithSeeds(gen, instances, instancesFromFeatures, instanceFileAbsolutePath, instanceFeatureFileAbsolutePath);
 		
 		
 	}

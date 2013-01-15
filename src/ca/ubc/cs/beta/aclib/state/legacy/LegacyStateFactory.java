@@ -2,8 +2,11 @@ package ca.ubc.cs.beta.aclib.state.legacy;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectInputStream;
+import java.io.OutputStream;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -114,6 +117,53 @@ public class LegacyStateFactory implements StateFactory{
 		return new LegacyStateSerializer(saveStatePath, id, iteration, this);
 	}
 
+	
+	/**
+	 * Copies the file to the State Dir
+	 * @param name name of the file to write
+	 * @param f source file
+	 */
+	@Override
+	public void copyFileToStateDir(String name, File f)
+	{
+		if(saveStatePath == null)
+		{
+			throw new IllegalArgumentException("This Serializer does not support saving State");
+		}
+		
+		if(!f.isFile())
+		{
+			throw new IllegalArgumentException("Input file f is not a file :" + f.getAbsolutePath());
+		}
+		
+		if(!f.exists())
+		{
+			throw new IllegalArgumentException("Input file f does not exist :" + f.getAbsolutePath());
+		}
+		
+		File outputFile = new File(saveStatePath + File.separator + name);
+		
+		try {
+			InputStream in = new FileInputStream(f);
+			OutputStream out = new FileOutputStream(outputFile);
+			
+			
+			byte[] buf = new byte[8172];
+			int len;
+			
+			while((len = in.read(buf)) > 0)
+			{
+				out.write(buf, 0, len);
+			}
+			log.info("File copied to {} ", outputFile.getAbsolutePath());
+			
+		} catch(IOException e)
+		{
+			throw new IllegalStateException("IOException occured :",e);
+		}
+		
+		
+	}
 
 	/**
 	 * Generates the filename on disk that we should use to store uniq_configurations (array format of configurations)
