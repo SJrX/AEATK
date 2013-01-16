@@ -5,6 +5,7 @@ import java.text.SimpleDateFormat;
 import java.util.Date;
 
 import ca.ubc.cs.beta.aclib.expectedimprovement.ExpectedImprovementFunctions;
+import ca.ubc.cs.beta.aclib.initialization.InitializationMode;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.*;
 import ca.ubc.cs.beta.aclib.misc.logging.LogLevel;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
@@ -165,8 +166,17 @@ public class SMACOptions extends AbstractOptions {
 	@Parameter(names={"-v","--version"}, description="print version and exit")
 	public boolean showVersion = false;
 
-	
-	
-	
+	@Parameter(names={"--initMode","--initializationMode"}, description="Initialization Mode")
+	public InitializationMode initializationMode = InitializationMode.CLASSIC;
+
+	@Parameter(names={"--iterativeCappingK"}, description="Iterative Capping K")
+	public int iterativeCappingK = 1;
+
+	@Parameter(names={"--iterativeCappingBreakOnFirstCompletion"}, description="In Phase 2 of the initialization phase, we will abort the first time something completes and not look at anything else with the same kappa limits")
+	public boolean iterativeCappingBreakOnFirstCompletion = false;
+
+	@Parameter(names={"--maskCensoredDataAsKappaMax"}, description="Mask censored data as kappa Max")
+	public boolean maskCensoredDataAsKappaMax = false;  
+
 	
 }
