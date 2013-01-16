@@ -30,7 +30,7 @@ public class ValidationExecutorOptions extends AbstractOptions {
 	public long numRun = 0;
 	
 	
-	@Parameter(names="--configuration", description="Parameter configuration to validate (In the same format calls are made to the algorithm")
+	@Parameter(names="--configuration", description="Parameter configuration to validate (In the same format calls are made to the algorithm) [Use <DEFAULT> to validate the default]")
 	public String incumbent;
 	
 	@Parameter(names="--trajectoryFile", description="Trajectory File to read configurations from")
@@ -50,4 +50,7 @@ public class ValidationExecutorOptions extends AbstractOptions {
 	
 	@Parameter(names="--tunerOverheadTime", description="Amount of Tuner Overhead time to report in the output (-1 means use trajectory file overhead or 0 if no trajectory file)")
 	public double tunerOverheadTime = -1;
+	
+	@Parameter(names="--validateTestInstances")
+	public boolean validateTestInstances = true;
 }

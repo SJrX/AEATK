@@ -155,6 +155,8 @@ public class LegacyStateFactory implements StateFactory{
 			{
 				out.write(buf, 0, len);
 			}
+			in.close();
+			out.close();
 			log.info("File copied to {} ", outputFile.getAbsolutePath());
 			
 		} catch(IOException e)
