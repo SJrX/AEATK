@@ -159,11 +159,11 @@ public class KeyObjectManager<V> {
 	
 		try {
 			myLock.writeLock().lock();	
-			
+			myLock.readLock().lock();
 			if(bidiMap.containsValue(obj))
 			{ 
 				//Downgrade lock
-				myLock.readLock().lock();
+				
 				myLock.writeLock().unlock();
 			
 				return (Integer) bidiMap.getKey(obj);

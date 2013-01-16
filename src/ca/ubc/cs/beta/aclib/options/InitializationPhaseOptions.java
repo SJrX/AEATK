@@ -6,13 +6,13 @@ import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aclib.options.enums.InitializationOptions;
 
 @UsageTextField(title="Initalization Phase Options", description="Options related to how we warm up the automatic configurator [WARNING]: This probably has no effect in anything other than dSMAC at this moment")
-public class InitializationPhaseOptions {
+public class InitializationPhaseOptions extends AbstractOptions {
 
 	@Parameter(names={"--initType","--initializationType"},description="Describes how we will warm up the automatic configurator")
 	public InitializationOptions initType = InitializationOptions.INCREMENTAL_CAPPING_K_CONFIGS;
 	
 	@Parameter(names={"--initialConfigs","--kConfigs"}, description="Number of initial configurations (Default will result in the number of cores)")
-	public Integer kConfigs = null;
+	public Integer kConfigs =  Runtime.getRuntime().availableProcessors();
 	
 	
 	

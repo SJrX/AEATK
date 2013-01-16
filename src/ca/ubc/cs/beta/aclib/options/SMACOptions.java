@@ -167,6 +167,4 @@ public class SMACOptions extends AbstractOptions {
 
 	
 	
-	
-	
 }
