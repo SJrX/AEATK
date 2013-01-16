@@ -553,8 +553,12 @@ public class NewRunHistory implements RunHistory {
 		long seed;
 		if(potentialSeeds.size() == 0)
 		{
-			//We generate only positive seeds 
-			 seed = instanceSeedGenerator.getNextSeed(pi);
+			 
+			synchronized(instanceSeedGenerator)
+			{	
+				//We generate only positive seeds
+				seed = instanceSeedGenerator.getNextSeed(pi);
+			}
 		} else
 		{
 			seed = potentialSeeds.get(rand.nextInt(potentialSeeds.size()));
