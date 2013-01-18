@@ -73,8 +73,9 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 				
 				
 			}
+			ar.add(new ExistingAlgorithmRun(execConfig, rc, "TIMEOUT, " + rc.getCutoffTime() + ",-1,0," + rc.getProblemInstanceSeedPair().getSeed()));
 			
-			ar.add(new ExistingAlgorithmRun(execConfig, rc, "SAT, " + time + ",-1,0," + rc.getProblemInstanceSeedPair().getSeed()));
+			//ar.add(new ExistingAlgorithmRun(execConfig, rc, "SAT, " + time + ",-1,0," + rc.getProblemInstanceSeedPair().getSeed()));
 		}
 		
 		return ar;

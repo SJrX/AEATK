@@ -27,6 +27,7 @@ import ca.ubc.cs.beta.aclib.objectives.RunObjective;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aclib.seedgenerator.InstanceSeedGenerator;
+import ca.ubc.cs.beta.aclib.seedgenerator.SetInstanceSeedGenerator;
 import ca.ubc.cs.beta.models.fastrf.RoundingMode;
 
 /**
@@ -276,7 +277,7 @@ public class NewRunHistory implements RunHistory {
 	public double getEmpiricalCost(ParamConfiguration config, Set<ProblemInstance> instanceSet, double cutoffTime, Map<ProblemInstance, Map<Long,Double>> hallucinatedValues, double minimumResponseValue)
 	{
 		if (!configToPerformanceMap.containsKey(config) && hallucinatedValues.isEmpty()){
-			return Double.MAX_VALUE;
+			return Double.POSITIVE_INFINITY;
 		}
 		ArrayList<Double> instanceCosts = new ArrayList<Double>();
 		
@@ -557,7 +558,20 @@ public class NewRunHistory implements RunHistory {
 			synchronized(instanceSeedGenerator)
 			{	
 				//We generate only positive seeds
-				seed = instanceSeedGenerator.getNextSeed(pi);
+				if(instanceSeedGenerator instanceof SetInstanceSeedGenerator)
+				{
+					if(instanceSeedGenerator.hasNextSeed(pi))
+					{
+						seed = instanceSeedGenerator.getNextSeed(pi); 
+					} else
+					{
+						seed = -1;
+					}
+				} else
+				{
+					seed = instanceSeedGenerator.getNextSeed(pi); 
+				}
+				
 			}
 		} else
 		{

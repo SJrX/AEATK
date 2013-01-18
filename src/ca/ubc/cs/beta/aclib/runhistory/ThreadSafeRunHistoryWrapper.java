@@ -23,7 +23,7 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 
 	private final RunHistory runHistory;
 	
-	private final ReentrantReadWriteLock myLock = new ReentrantReadWriteLock();
+	private final ReentrantReadWriteLock myLock = new ReentrantReadWriteLock(true);
 	
 	private final static Logger log = LoggerFactory.getLogger(ThreadSafeRunHistoryWrapper.class);
 	
@@ -62,6 +62,16 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 	
 	@Override
 	public void append(AlgorithmRun run) throws DuplicateRunException {
+		
+		
+		try 
+		{
+			myLock.readLock().unlock();
+			throw new IllegalStateException(" I should not be releasable");
+		} catch(IllegalMonitorStateException ex)
+		{
+			//System.out.println("I'm okay");
+		}
 		
 			myLock.writeLock().lock();
 		try {

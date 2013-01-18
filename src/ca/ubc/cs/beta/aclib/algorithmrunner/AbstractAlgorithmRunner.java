@@ -123,7 +123,10 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 
 						try {
 							List<KillableAlgorithmRun> runList = Arrays.asList(runs);
-							obs.currentStatus(runList);
+							if(obs != null)
+							{
+								obs.currentStatus(runList);
+							}
 						} catch(RuntimeException e)
 						{
 							log.error("Error occured while notifying observer ", e);

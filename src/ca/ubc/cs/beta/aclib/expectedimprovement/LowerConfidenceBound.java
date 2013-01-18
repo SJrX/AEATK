@@ -14,7 +14,9 @@ public class LowerConfidenceBound implements ExpectedImprovementFunction {
 	@Override
 	public double[] computeNegativeExpectedImprovement(double k,
 			double[] predmean, double[] predvar) {
-			return add(times(-1,predmean),	times(k,sqrt(predvar)));
+			return	add( predmean,	times(-k,sqrt(predvar)));
+								
+						
 		
 	}
 

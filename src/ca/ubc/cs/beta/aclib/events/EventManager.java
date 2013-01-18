@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 
 public class EventManager {
 
-	private static UUID eventManagerUUID = UUID.randomUUID();
+	private static final UUID eventManagerUUID = UUID.randomUUID();
 	
 	private static final ConcurrentHashMap<Class<? extends AutomaticConfiguratorEvent>, List<EventHandler<?>>> handlerMap = new ConcurrentHashMap<Class<? extends AutomaticConfiguratorEvent>, List<EventHandler<?>>>();
 	
@@ -88,7 +88,7 @@ public class EventManager {
 		staticRegisterHandler(event, handler);
 	}
 	
-	public synchronized UUID getUUID()
+	public UUID getUUID()
 	{
 		return eventManagerUUID;
 	}
