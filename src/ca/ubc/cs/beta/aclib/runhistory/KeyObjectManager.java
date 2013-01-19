@@ -141,7 +141,15 @@ public class KeyObjectManager<V> {
 	{
 		try {
 			myLock.readLock().lock();
-			return (Integer) bidiMap.getKey(obj);
+			
+			Integer i = (Integer) bidiMap.getKey(obj);
+			if(i == null)
+			{
+				return -1;
+			} else
+			{
+				return i;
+			}
 		} finally
 		{
 			myLock.readLock().unlock();
@@ -155,6 +163,10 @@ public class KeyObjectManager<V> {
 	 */
 	public int getOrCreateKey(V obj)
 	{
+		if(obj == null)
+		{
+			throw new IllegalStateException("Can't write a null key");
+		}
 		boolean needToWrite = true;
 	
 		try {

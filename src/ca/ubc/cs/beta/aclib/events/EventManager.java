@@ -98,7 +98,7 @@ public class EventManager {
 	public synchronized void fireEvent(AutomaticConfiguratorEvent event)
 	{
 		
-		log.debug("Event requested for dispatch {}",event.getClass().getSimpleName());
+		log.trace("Event requested for dispatch {}",event.getClass().getSimpleName());
 		handlerMap.putIfAbsent(event.getClass(), new ArrayList<EventHandler<?>>());
 		final List<EventHandler<?>> handlers = handlerMap.get(event.getClass());
 		
@@ -117,7 +117,7 @@ public class EventManager {
 				public void run()
 				{
 					try { 
-						log.debug("Dispatching event {} ", event2.getClass().getSimpleName());
+						log.trace("Dispatching event {} ", event2.getClass().getSimpleName());
 						handler2.handleEvent(event2);
 					} catch(Throwable t)
 					{

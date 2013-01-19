@@ -48,7 +48,7 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 		try {
 			for(AlgorithmRun run : runs)
 			{
-				log.debug("Atomically appending run {} " + run.getRunConfig());
+				//log.debug("Atomically appending run {} " + run.getRunConfig());
 				runHistory.append(run);
 			}
 			
@@ -75,7 +75,7 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 		
 			myLock.writeLock().lock();
 		try {
-			log.debug("Appending single run {} " + run.getRunConfig());
+			//log.debug("Appending single run {} " + run.getRunConfig());
 			runHistory.append(run);
 		} finally
 		{
@@ -450,6 +450,18 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 	public void releaseReadLock() {
 		myLock.readLock().unlock();
 		
+	}
+
+	@Override
+	public List<AlgorithmRun> getAlgorithmRunData(ParamConfiguration config) {
+		myLock.readLock().lock();
+		try {
+			return runHistory.getAlgorithmRunData(config);
+		} finally
+		{
+			myLock.readLock().unlock();
+	
+		}
 	}
 
 

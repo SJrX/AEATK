@@ -210,6 +210,13 @@ public interface RunHistory {
 	public List<RunData> getAlgorithmRunData();
 
 	/**
+	 * Returns the list of run data for challenger 
+	 * @param config
+	 * @return
+	 */
+	public List<AlgorithmRun> getAlgorithmRunData(ParamConfiguration config);
+	
+	/**
 	 * Returns the Instance Seed Generator
 	 * 
 	 * @return instance seed generator

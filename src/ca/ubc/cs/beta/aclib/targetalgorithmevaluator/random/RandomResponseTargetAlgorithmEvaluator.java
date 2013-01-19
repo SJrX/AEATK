@@ -32,7 +32,7 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 		super(execConfig);
 		double scale;
 		try {
-			scale = Math.abs(Double.valueOf(execConfig.getAlgorithmExecutable()));
+			scale = Math.abs(Double.valueOf(execConfig.getAlgorithmExecutable())) * Math.random();
 		}catch(NumberFormatException e)
 		{
 			scale = 10.0;

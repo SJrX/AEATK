@@ -46,6 +46,7 @@ public class ParamConfigurationOriginLogger implements EventHandler<AutomaticCon
 	public void handleEvent(AutomaticConfigurationEnd event) {
 	
 		try {
+			(new File(outputDir)).mkdirs();
 			File saveFile = new File(outputDir + File.separator + "configuration-generation.csv");
 			FileWriter writer = new FileWriter(saveFile); 
 			StringBuilder sb = new StringBuilder();

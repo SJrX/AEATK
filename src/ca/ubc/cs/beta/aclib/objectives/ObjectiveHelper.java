@@ -32,14 +32,23 @@ public class ObjectiveHelper {
 	}
 	
 	/**
+	 * Too lazy to pass this object around properly, you can delete this method and refactor what breaks
+	 * @return
+	 */
+	public RunObjective getRunObjective()
+	{
+		return runObj;
+	}
+	/**
 	 * Computes the objective for a given set of runs 
 	 * @param runs				- a set of runs that all have the same configuration
+	 * @param capSlack 
 	 * @param runObj			- Run Objective
 	 * @param intraObjective	- Intra Instance Objective
 	 * @param interObjective	- Inter Instance Objective
 	 * @return
 	 */
-	public double computeObjective(List<? extends AlgorithmRun> runs)
+	public double computeObjective(List<? extends AlgorithmRun> runs, final double capSlack)
 	{
 		
 		List<ProblemInstance> instances = new ArrayList<ProblemInstance>(runs.size());
@@ -47,6 +56,7 @@ public class ObjectiveHelper {
 		ConcurrentHashMap<ProblemInstance, List<Double>> performance = new ConcurrentHashMap<ProblemInstance, List<Double>>();
 		
 		
+		double remainingCapSlack = capSlack;
 		for(AlgorithmRun run : runs)
 		{
 			ProblemInstance pi = run.getRunConfig().getProblemInstanceSeedPair().getInstance();
@@ -56,7 +66,20 @@ public class ObjectiveHelper {
 			performance.putIfAbsent(pi,new ArrayList<Double>());
 		
 			map.get(pi).add(run.getRunConfig().getProblemInstanceSeedPair());
-			performance.get(pi).add(runObj.getObjective(run));
+			
+			double obj = runObj.getObjective(run);
+			obj -= remainingCapSlack;
+			
+			if(obj < 0)
+			{ //Remaining slack left over
+				remainingCapSlack = -obj;
+				obj = 0;
+			} else
+			{
+				remainingCapSlack = 0;
+			}
+			
+			performance.get(pi).add(obj);
 			
 		}
 		
@@ -72,6 +95,10 @@ public class ObjectiveHelper {
 		
 		
 		return interObjective.aggregate(intraInstanceObjectiveValues, cutoffTime);
+	}
+
+	public double computeObjective(List<? extends AlgorithmRun> runs) {
+		return computeObjective(runs,0);
 	}
 	
 	

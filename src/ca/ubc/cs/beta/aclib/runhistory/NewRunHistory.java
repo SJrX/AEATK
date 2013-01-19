@@ -15,6 +15,9 @@ import java.util.Random;
 import java.util.Set;
 import java.util.Map.Entry;
 
+import net.jcip.annotations.NotThreadSafe;
+import net.jcip.annotations.ThreadSafe;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,10 +34,11 @@ import ca.ubc.cs.beta.aclib.seedgenerator.SetInstanceSeedGenerator;
 import ca.ubc.cs.beta.models.fastrf.RoundingMode;
 
 /**
- * THIS CLASS IS NOT THREAD SAFE!!!
+ * 
  * @author seramage
  *
  */
+@NotThreadSafe
 public class NewRunHistory implements RunHistory {
 
 	
@@ -114,6 +118,7 @@ public class NewRunHistory implements RunHistory {
 	private Set<ProblemInstance> instancesRanSet = new HashSet<ProblemInstance>();
 	
 	
+	private final HashMap<ParamConfiguration, List<AlgorithmRun>> configToRunMap = new HashMap<ParamConfiguration, List<AlgorithmRun>>();
 	/**
 	 * Creates NewRunHistory object
 	 * @param instanceSeedGenerator		instanceSeedGenerator to use when getting new instances
@@ -196,6 +201,13 @@ public class NewRunHistory implements RunHistory {
 			}
 			
 		}
+		
+		if(this.configToRunMap.get(config) == null)
+		{
+			this.configToRunMap.put(config, new ArrayList<AlgorithmRun>());
+		}
+		
+		this.configToRunMap.get(config).add(run);
 		totalRuntimeSum += Math.max(0.1, run.getRuntime());
 		
 		/*
@@ -277,7 +289,7 @@ public class NewRunHistory implements RunHistory {
 	public double getEmpiricalCost(ParamConfiguration config, Set<ProblemInstance> instanceSet, double cutoffTime, Map<ProblemInstance, Map<Long,Double>> hallucinatedValues, double minimumResponseValue)
 	{
 		if (!configToPerformanceMap.containsKey(config) && hallucinatedValues.isEmpty()){
-			return Double.POSITIVE_INFINITY;
+			return Double.MAX_VALUE;
 		}
 		ArrayList<Double> instanceCosts = new ArrayList<Double>();
 		
@@ -704,7 +716,15 @@ public class NewRunHistory implements RunHistory {
 
 	@Override
 	public int getThetaIdx(ParamConfiguration config) {
-		return paramConfigurationList.getOrCreateKey(config);
+		Integer thetaIdx = paramConfigurationList.getKey(config);
+		if(thetaIdx == null)
+		{
+			return -1;
+		} else
+		{
+			return thetaIdx;
+		}
+		//return paramConfigurationList.getOrCreateKey(config);
 	}
 
 	@Override
@@ -720,6 +740,20 @@ public class NewRunHistory implements RunHistory {
 		 
 		 return total;
 		
+	}
+
+	@Override
+	public List<AlgorithmRun> getAlgorithmRunData(ParamConfiguration config) {
+		
+		List<AlgorithmRun> runs = this.configToRunMap.get(config);
+		
+		if(runs != null)
+		{
+			return Collections.unmodifiableList(runs);
+		} else
+		{
+			return Collections.emptyList();
+		}
 	}
 
 }
