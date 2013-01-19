@@ -14,7 +14,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred.TAECallback;
 /**
  * Abstract type that simple blocks on asynchronous requests
  * 
- * Useful if you don't expect that there will be any gain with concurrency
+ * Useful if you you just want to implement something without dealing with the callbacks
  * 
  * @author sjr
  */
