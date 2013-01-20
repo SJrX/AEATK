@@ -407,7 +407,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 							runResult = RunResult.getAutomaticConfiguratorResultForKey(runHistoryLine[13]);
 						} else
 						{
-							 runResult  =  RunResult.getAutomaticConfiguratorResultForCode(Integer.valueOf(runHistoryLine[9]));
+							 runResult = RunResult.getAutomaticConfiguratorResultForCode(Integer.valueOf(runHistoryLine[9]));
 						}
 						
 					
@@ -443,7 +443,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 						{
 							runtime = execConfig.getAlgorithmCutoffTime();
 							runResult = RunResult.TIMEOUT;
-					
+							cutOffTime = runtime;
 							log.info("Cutoff time discrepancy detected while restoring state for line {}, marking run as TIMEOUT with runtime {}", Arrays.toString(runHistoryLine), runtime);
 							
 							
