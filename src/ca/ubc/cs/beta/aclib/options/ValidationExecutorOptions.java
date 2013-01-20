@@ -73,6 +73,14 @@ public class ValidationExecutorOptions extends AbstractOptions {
 
 	@Parameter(names="--configurationSeed", description="Seed to use when generating random configurations")
 	public long configurationSeed = 1234;
+
+
+	@Parameter(names="--wallTime", description="Wall Time when Validation occured (when specifying the configuration this is simply reported in the output file, when using a trajectory file we use the incumbent at this time, if you set this to -1 we use the wall time from the scenario file or 0 if reading configuration from command line)")
+	public double wallTime;
+
+
+	@Parameter(names="--useTunerTimeIfNoWallTime", description="Use the tuner time as walltime if there is no walltime in the file")
+	public boolean useTunerTimeIfNoWallTime;
 	
 
 }
