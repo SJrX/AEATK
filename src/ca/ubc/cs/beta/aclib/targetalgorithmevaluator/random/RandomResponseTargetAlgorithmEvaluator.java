@@ -33,7 +33,7 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 			scale = 10.0;
 		}
 		
-		sleep = execConfig.isDeterministicAlgorithm();
+		//sleep = execConfig.isDeterministicAlgorithm();
 		
 	}
 
