@@ -113,7 +113,7 @@ public class ParamConfigurationSpace implements Serializable {
 	/**
 	 * Value to store in the categoricalSize array for continuous parameters
 	 */
-	static final int INVALID_CATEGORICAL_SIZE = 0;
+	public static final int INVALID_CATEGORICAL_SIZE = 0;
 	
 	/**
 	 * Number of Neighbours a continuous value has
