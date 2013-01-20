@@ -186,6 +186,9 @@ private static TargetAlgorithmEvaluator tae;
 	@Test
 	public void testCappedTimeoutReportedAsTimeoutValue()
 	{
+		/**
+		 * See Task 1567
+		 */
 		
 		configSpace.setPRNG(r);
 		
