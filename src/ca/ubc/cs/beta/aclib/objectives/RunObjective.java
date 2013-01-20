@@ -38,21 +38,17 @@ public enum RunObjective {
 		switch(this)
 		{
 		case RUNTIME:
-			//We always count a runtime as taking atleast 0.1 seconds
-			//System.err.println("RunObjective I am not rounding up to 0.1 seconds");
-			//Allegedly this use to occur on dorun.m line 25
-			if(!r.getRunConfig().hasCutoffLessThanMax())
-			{
 				switch(r.getRunResult())
 				{
 					case CRASHED:
 					case TIMEOUT:
-					
-						return r.getExecutionConfig().getAlgorithmCutoffTime();
+						//Return the requested cutoff time for the run ( <kappaMax if requested to be censored)
+						return r.getRunConfig().getCutoffTime();
 					default:
-					 
+					
+						
 				}
-			}
+			
 			
 			return (r.getRuntime());
 		/*
