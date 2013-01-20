@@ -74,7 +74,7 @@ private static TargetAlgorithmEvaluator tae;
 			ParamConfiguration config = configSpace.getRandomConfiguration();
 			config.put("solved","TIMEOUT");
 			config.put("runtime", String.valueOf(runtime));
-			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
+			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), kappaMax, config);
 			runConfigs.add(rc);
 		}
 		
@@ -104,7 +104,7 @@ private static TargetAlgorithmEvaluator tae;
 			ParamConfiguration config = configSpace.getRandomConfiguration();
 			config.put("solved","TIMEOUT");
 			config.put("runtime", String.valueOf(runtime));
-			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, true);
+			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), runtime, config, true);
 			runConfigs.add(rc);
 		}
 		
@@ -136,7 +136,7 @@ private static TargetAlgorithmEvaluator tae;
 			ParamConfiguration config = configSpace.getRandomConfiguration();
 			config.put("solved","CRASHED");
 			config.put("runtime", String.valueOf(runtime));
-			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
+			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), kappaMax, config);
 			runConfigs.add(rc);
 		}
 		
@@ -167,7 +167,7 @@ private static TargetAlgorithmEvaluator tae;
 			ParamConfiguration config = configSpace.getRandomConfiguration();
 			config.put("solved","SAT");
 			config.put("runtime", String.valueOf(runtime));
-			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
+			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), kappaMax, config);
 			runConfigs.add(rc);
 		}
 		
@@ -183,6 +183,36 @@ private static TargetAlgorithmEvaluator tae;
 		}
 	}
 	
+	@Test
+	public void testCappedTimeoutReportedAsTimeoutValue()
+	{
+		
+		configSpace.setPRNG(r);
+		
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(1);
+		double capTimeRequest = 5;
+		
+		for(int i=0; i < 10; i++)
+		{
+			double runtime = Math.max(0,(double) Math.random() * kappaMax - 1.0);
+			ParamConfiguration config = configSpace.getRandomConfiguration();
+			config.put("solved","TIMEOUT");
+			config.put("runtime", "0.1");
+			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))),capTimeRequest, config,true);
+			runConfigs.add(rc);
+		}
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		
+		
+		
+		for(RunConfig rc : runConfigs)
+		{
+				AlgorithmRun run = tae.evaluateRun(rc).get(0);
+				assertDEquals(RunObjective.RUNTIME.getObjective(run),capTimeRequest,0.1);
+				assertDEquals(Double.valueOf(run.getRunConfig().getParamConfiguration().get("runtime")), run.getRuntime(), 0.1);
+		}
+	}
 
 	
 	
@@ -201,8 +231,8 @@ private static TargetAlgorithmEvaluator tae;
 	
 	public void assertDEquals(double d1, double d2, double delta)
 	{
-		if(d1 - d2 > delta) throw new AssertionError("Expected "  + (d1 - d2)+ " < " + delta);
-		if(d2 - d1 > delta) throw new AssertionError("Expected "  + (d1 - d2)+ " < " + delta);
+		if(d1 - d2 > delta) throw new AssertionError("Expected "  + (d1 + "-"+ d2)+ " < " + delta);
+		if(d2 - d1 > delta) throw new AssertionError("Expected "  + (d1 + "-"+ d2)+ " < " + delta);
 		
 	}
 		
