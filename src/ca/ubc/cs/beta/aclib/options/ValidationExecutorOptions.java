@@ -72,5 +72,9 @@ public class ValidationExecutorOptions extends AbstractOptions {
 
 	@Parameter(names="--configurationSeed", description="Seed to use when generating random configurations")
 	public long configurationSeed = 1234;
+
+
+	@Parameter(names="--autoIncrementTunerTime", description="Auto Increment Tuner Time")
+	public boolean autoIncrementTunerTime = true;
 	
 }
