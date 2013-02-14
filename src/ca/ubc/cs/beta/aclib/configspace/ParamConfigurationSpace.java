@@ -182,7 +182,7 @@ public class ParamConfigurationSpace implements Serializable {
 	 */
 	public ParamConfigurationSpace(Reader reader)
 	{
-		this(reader,SeedableRandomSingleton.getRandom(), "ReaderOnly-"+System.currentTimeMillis() +"-" +(int) (Math.random() * 10000000.0));
+ 		this(reader,SeedableRandomSingleton.getRandom(), "ReaderOnly-"+System.currentTimeMillis() +"-" +(int) (Math.random() * 10000000.0));
 		hasRealParameterFile = false;
 	}
 	
@@ -562,6 +562,9 @@ public class ParamConfigurationSpace implements Serializable {
 		this.defaultValues.put(name, defaultValue);
 		
 		
+		
+		
+		
 		//This gets the rest of the line after the defaultValue
 		String lineRemaining = line.substring(line.indexOf("]",secondBracket+1)+1);
 		
@@ -602,6 +605,16 @@ public class ParamConfigurationSpace implements Serializable {
 		}
 
 		
+		//Check for gibberish between ] [  
+		String subString = line.substring(line.indexOf("]") +1, line.indexOf("[", line.indexOf("]"))).trim();
+		
+		
+		if(subString.length() > 0)
+		{
+			throw new IllegalArgumentException("Invalid Characters detected between domain and default value on line : " + line);
+		}
+		
+		
 	}
 
 	/**
@@ -630,6 +643,10 @@ public class ParamConfigurationSpace implements Serializable {
 		//Map is all that is necessary
 		Map<String, Integer> valueMap = new LinkedHashMap<String, Integer>();
 		
+		int lastIndexOf = line.lastIndexOf("]");
+		
+		
+	
 		
 		int i=0;
 		for(String value : paramValues)
@@ -644,8 +661,22 @@ public class ParamConfigurationSpace implements Serializable {
 		
 		isContinuous.put(name,Boolean.FALSE);
 		
+		String remaining = line.substring(lastIndexOf+1).trim();
 		
+		if(remaining.contains("i")) {
+			throw new IllegalArgumentException("Cannot set categorical value as having integral only values on line " +  line );
+		}
+		
+		if(remaining.contains("l")) {
+			throw new IllegalArgumentException("Cannot set categorical value as being selected with a log distribution" + line );
+		}
+		
+		if(remaining.length() > 0)
+		{
+			throw new IllegalArgumentException("Extra flags set for categorical value (flags are not permitted on categorical values) on line : " + line);
+		}
 	}
+	
 	
 	/**
 	 * Conditional Lines consist of:

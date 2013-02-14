@@ -674,7 +674,73 @@ public class ParamConfigurationTest {
 		new ParamConfigurationSpace(sr);
 	}
 	
+	@Test(expected=IllegalArgumentException.class)
+	public void testIllegalArgumentOnLogCategorial()
+	{
+		
+		String file = "param {1,2,3} [1] il";
+		StringReader sr = new StringReader(file);
+		new ParamConfigurationSpace(sr);
+	}
 	
+	@Test(expected=IllegalArgumentException.class)
+	public void testIllegalArgumentOnIntegralCategorial()
+	{
+		
+		String file = "param {1,2,3} [1] il";
+		StringReader sr = new StringReader(file);
+		new ParamConfigurationSpace(sr);
+	}
+	
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void testIllegalIntegralFlagsSetInIncorrectOrder()
+	{
+		
+		String file = "-numPCA [1,10]i [1]";
+		StringReader sr = new StringReader(file);
+		new ParamConfigurationSpace(sr);
+	}
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void testIllegalLogFlagSetInIncorrectOrder()
+	{
+		
+		String file = "-numPCA [1,10]l [1]";
+		StringReader sr = new StringReader(file);
+		new ParamConfigurationSpace(sr);
+	}
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void testIllegalBothFlagSetInIncorrectOrder()
+	{
+		
+		String file = "-numPCA [1,10]li [1]";
+		StringReader sr = new StringReader(file);
+		new ParamConfigurationSpace(sr);
+	}
+	
+	
+	
+	@Test
+	public void testIntegralValue()
+	{
+		File paramFile = TestHelper.getTestFile("paramFiles/smac-param.txt");
+		
+		
+		String file = "-numPCA [1,20] [7]i\n-numberSearch [1,10000000] [2000]i\n";
+		StringReader sr = new StringReader(file);
+		String exec = new ParamConfigurationSpace(sr).getDefaultConfiguration().getFormattedParamString(StringFormat.NODB_SYNTAX);
+		System.out.println(exec);
+		assertEquals( "Expected no decimal places (decimal point occured):",  exec.indexOf("."),-1);
+		
+		//System.out.println(new ParamConfigurationSpace(paramFile).getDefaultConfiguration().getFormattedParamString(StringFormat.NODB_SYNTAX));
+		//System.out.println(new ParamConfigurationSpace(sr).getDefaultConfiguration().getFormattedParamString(StringFormat.NODB_SYNTAX));
+		System.out.println("Test Hello");
+		
+		
+		
+	}
 	
 	@After
 	public void tearDown()

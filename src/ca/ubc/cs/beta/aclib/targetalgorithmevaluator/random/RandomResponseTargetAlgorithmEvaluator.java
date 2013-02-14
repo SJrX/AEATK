@@ -21,6 +21,7 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 	
 	private boolean sleep = false;
 	
+	private double maxValue = 0;
 	private static final Logger log = LoggerFactory.getLogger(RandomResponseTargetAlgorithmEvaluator.class);
 	
 	public RandomResponseTargetAlgorithmEvaluator(
@@ -34,6 +35,7 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 		}
 		
 		sleep = execConfig.isDeterministicAlgorithm();
+		maxValue = execConfig.getAlgorithmCutoffTime();
 		
 	}
 
@@ -49,8 +51,8 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 		List<AlgorithmRun> ar = new ArrayList<AlgorithmRun>(runConfigs.size());
 		for(RunConfig rc : runConfigs)
 		{ 
-			double time = rand.nextDouble()*scale;
-			
+			double time = rand.nextDouble()*maxValue;
+			/*
 			if(sleep)
 			{
 				log.debug("Sleeping");
@@ -62,9 +64,17 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 				}
 				
 				
-			}
+			}*/
 			
-			ar.add(new ExistingAlgorithmRun(execConfig, rc, "SAT, " + time + ",-1,0," + rc.getProblemInstanceSeedPair().getSeed()));
+			
+			
+			if(time >= rc.getCutoffTime())
+			{
+				ar.add(new ExistingAlgorithmRun(execConfig, rc, "TIMEOUT," + rc.getCutoffTime() + ",-1,0," + rc.getProblemInstanceSeedPair().getSeed()));
+			} else
+			{
+				ar.add(new ExistingAlgorithmRun(execConfig, rc, "SAT, " + time + ",-1,0," + rc.getProblemInstanceSeedPair().getSeed()));
+			}
 		}
 		
 		return ar;
