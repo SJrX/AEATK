@@ -526,6 +526,8 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	
 	/**
 	 * Returns a string representation of this object, according to the given {@link StringFormat}
+	 * <br/>
+	 * <b>Implementation Note:</b>No new String Formats should be able to generate the Strings "DEFAULT","<DEFAULT>","RANDOM","<RANDOM>", no matter how obnoxious the user specifying the param file is
 	 * @param stringFormat stringformat to use
 	 * @return string representation
 	 */
@@ -563,7 +565,9 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 					sb.append(valueArray[i]);
 					if(i+1 != valueArray.length) sb.append(",");
 				}
-				return sb.toString();			
+				return sb.toString();		
+			//case SILLY:
+			//	return "RANDOM";
 		default:
 			return _getFormattedParamString(stringFormat.getPreKey(), stringFormat.getKeyValueSeperator(), stringFormat.getValueDelimeter(), stringFormat.getGlue(), stringFormat.hideInactiveParameters());
 		}
@@ -575,6 +579,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	 * Stores information about the various string formats we support
 	 * <p>
 	 * <b>Note:</b> Only some of these use the preKey, keyVal seperator, and glue 
+	 * <b>WARNING:</b>DEFAULT, &gt;DEFAULT&lt;,RANDOM, &gt;RANDOM&lt; cannot be valid configuration strings for all format, because we will always parse these back as the default or random configuration respectively.
 	 */
 	public enum StringFormat
 	{
@@ -627,7 +632,11 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 			 * Stores the values as an array (value array syntax). This format is non human-readable and fragile (hides Inactive)
 			 * All values are spaced to take 15 characters
 			 */
-			FIXED_WIDTH_ARRAY_STRING_MASK_INACTIVE_SYNTAX("","","","", true), ;
+			FIXED_WIDTH_ARRAY_STRING_MASK_INACTIVE_SYNTAX("","","","", true),
+			
+			
+			//SILLY("","","","",false)
+			;
 			
 			
 			

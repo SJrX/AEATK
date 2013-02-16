@@ -1043,6 +1043,22 @@ public class ParamConfigurationSpace implements Serializable {
 		try 
 		{
 			ParamConfiguration config;
+			
+			String trySpecialParamString = paramString.trim().toUpperCase();
+			//If the string is DEFAULT, <DEFAULT>,RANDOM,<RANDOM> we generate the default or a random as needed
+			
+			if((trySpecialParamString.equals("DEFAULT") || trySpecialParamString.equals("<DEFAULT>")))
+			{
+				return this.getDefaultConfiguration();
+			}
+			
+			if((trySpecialParamString.equals("RANDOM") || trySpecialParamString.equals("<RANDOM>")))
+			{
+				return this.getRandomConfiguration();
+			}
+			
+			
+			
 			switch(f)
 			{
 				case NODB_SYNTAX_WITH_INDEX:
