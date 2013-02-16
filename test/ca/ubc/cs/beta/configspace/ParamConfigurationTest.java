@@ -674,6 +674,147 @@ public class ParamConfigurationTest {
 		new ParamConfigurationSpace(sr);
 	}
 	
+	@Test(expected=IllegalArgumentException.class)
+	public void testIllegalArgumentOnLogCategorial()
+	{
+		
+		String file = "param {1,2,3} [1] il";
+		StringReader sr = new StringReader(file);
+		new ParamConfigurationSpace(sr);
+	}
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void testIllegalArgumentOnIntegralCategorial()
+	{
+		
+		String file = "param {1,2,3} [1] il";
+		StringReader sr = new StringReader(file);
+		new ParamConfigurationSpace(sr);
+	}
+	
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void testIllegalIntegralFlagsSetInIncorrectOrder()
+	{
+		
+		String file = "-numPCA [1,10]i [1]";
+		StringReader sr = new StringReader(file);
+		new ParamConfigurationSpace(sr);
+	}
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void testIllegalLogFlagSetInIncorrectOrder()
+	{
+		
+		String file = "-numPCA [1,10]l [1]";
+		StringReader sr = new StringReader(file);
+		new ParamConfigurationSpace(sr);
+	}
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void testIllegalBothFlagSetInIncorrectOrder()
+	{
+		
+		String file = "-numPCA [1,10]li [1]";
+		StringReader sr = new StringReader(file);
+		new ParamConfigurationSpace(sr);
+	}
+	
+	
+	
+	@Test
+	public void testIntegralValue()
+	{
+		File paramFile = TestHelper.getTestFile("paramFiles/smac-param.txt");
+		
+		
+		String file = "-numPCA [1,20] [7]i\n-numberSearch [1,10000000] [2000]i\n";
+		StringReader sr = new StringReader(file);
+		String exec = new ParamConfigurationSpace(sr).getDefaultConfiguration().getFormattedParamString(StringFormat.NODB_SYNTAX);
+		System.out.println(exec);
+		assertEquals( "Expected no decimal places (decimal point occured):",  exec.indexOf("."),-1);
+		
+		//System.out.println(new ParamConfigurationSpace(paramFile).getDefaultConfiguration().getFormattedParamString(StringFormat.NODB_SYNTAX));
+		//System.out.println(new ParamConfigurationSpace(sr).getDefaultConfiguration().getFormattedParamString(StringFormat.NODB_SYNTAX));
+		System.out.println("Test Hello");
+		
+		
+		
+	}
+	
+	@Test
+	public void testDefaultFromSpecialString()
+	{
+		StringReader sr = new StringReader("-foo [1,100] [82.22]l");
+		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(sr);
+		ParamConfiguration defaultConfiguration = configSpace.getDefaultConfiguration();
+		
+		
+		for(StringFormat f : StringFormat.values())
+		{
+			assertEquals(defaultConfiguration, configSpace.getConfigurationFromString("DEFAULT", f));
+			assertEquals(defaultConfiguration, configSpace.getConfigurationFromString("<DEFAULT>", f));
+		}
+	}
+	
+	@Test
+	public void testRandomFromSpecialString()
+	{
+		StringReader sr = new StringReader("-foo [1,100] [82.22]l");
+		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(sr);
+		ParamConfiguration defaultConfiguration = configSpace.getDefaultConfiguration();
+		
+		
+		for(StringFormat f : StringFormat.values())
+		{
+			assertFalse("Expected that two configurations that I generated would be different", configSpace.getConfigurationFromString("<RANDOM>", f).equals(configSpace.getConfigurationFromString("<RANDOM>", f)));
+			assertFalse("Expected that two configurations that I generated would be different", configSpace.getConfigurationFromString("RANDOM", f).equals(configSpace.getConfigurationFromString("RANDOM", f)));
+		}
+	}
+
+	@Test
+	public void testNoDefaultFromConfiguration()
+	{ //Tries to prevent a newly implemented StringFormat from creating a representation of DEFAULT
+	  
+		StringReader sr = new StringReader("DEFAULT {DEFAULT} [DEFAULT] ");
+		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(sr);
+		ParamConfiguration defaultConfiguration = configSpace.getDefaultConfiguration();
+		for(StringFormat f : StringFormat.values())
+		{
+			assertFalse("Was able to get a DEFAULT as a string representation for StringFormat " + f.toString(), defaultConfiguration.getFormattedParamString(f).trim().toUpperCase().equals("DEFAULT"));
+		}
+		
+		StringReader sr2 = new StringReader("<DEFAULT> {<DEFAULT>} [<DEFAULT>]");
+		ParamConfigurationSpace configSpace2 = new ParamConfigurationSpace(sr2);
+		ParamConfiguration defaultConfiguration2 = configSpace2.getDefaultConfiguration();
+		for(StringFormat f : StringFormat.values())
+		{
+			assertFalse("Was able to get a <DEFAULT> as a string representation for StringFormat " + f.toString(), defaultConfiguration2.getFormattedParamString(f).trim().toUpperCase().equals("<DEFAULT>"));
+		}
+		
+	}
+	
+	@Test
+	public void testNoRandomFromConfiguration()
+	{ //Tries to prevent a newly implemented StringFormat from creating a representation of a RANDOM configuration
+	  
+		StringReader sr = new StringReader("RANDOM {RANDOM} [RANDOM] ");
+		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(sr);
+		ParamConfiguration defaultConfiguration = configSpace.getDefaultConfiguration();
+		for(StringFormat f : StringFormat.values())
+		{
+			assertFalse("Was able to get a RANDOM as a string representation for StringFormat " + f.toString(), defaultConfiguration.getFormattedParamString(f).trim().toUpperCase().equals("RANDOM"));
+		}
+		
+		StringReader sr2 = new StringReader("<RANDOM> {<RANDOM>} [<RANDOM>]");
+		ParamConfigurationSpace configSpace2 = new ParamConfigurationSpace(sr2);
+		ParamConfiguration defaultConfiguration2 = configSpace2.getDefaultConfiguration();
+		for(StringFormat f : StringFormat.values())
+		{
+			assertFalse("Was able to get a <RANDOM> as a string representation for StringFormat " + f.toString(), defaultConfiguration2.getFormattedParamString(f).trim().toUpperCase().equals("<RANDOM>"));
+		}
+		
+	}
 	
 	
 	@After

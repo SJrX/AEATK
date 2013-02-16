@@ -4,6 +4,7 @@ import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
 
+import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration.StringFormat;
 import ca.ubc.cs.beta.aclib.expectedimprovement.ExpectedImprovementFunctions;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.*;
 import ca.ubc.cs.beta.aclib.misc.logging.LogLevel;
@@ -157,7 +158,7 @@ public class SMACOptions extends AbstractOptions {
 	@Parameter(names="--showHiddenParameters", description="show hidden parameters that no one has use for, and probably just break SMAC (no-arguments)")
 	public boolean showHiddenParameters = false;
 	
-	@UsageTextField(defaultValues="", domain="")
+	@UsageTextField(defaultValues="", domain="" )
 	@Parameter(names={"--help","-?","/?","-h"}, description="show help")
 	public boolean showHelp = false;
 	
@@ -165,6 +166,8 @@ public class SMACOptions extends AbstractOptions {
 	@Parameter(names={"-v","--version"}, description="print version and exit")
 	public boolean showVersion = false;
 
+	@Parameter(names={"--initialIncumbent"}, description="Initial Incumbent to use for configuration (you can use RANDOM, or DEFAULT as a special string to get a RANDOM or the DEFAULT configuration as needed). Other configurations are specified as: -(name) 'value' -(name) 'value' ...")
+	public String initialIncumbent = "DEFAULT";
 	
 	
 	

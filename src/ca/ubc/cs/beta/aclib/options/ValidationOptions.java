@@ -15,7 +15,7 @@ public class ValidationOptions extends AbstractOptions{
 	@Parameter(names={"--numSeedsPerTestInstance","--numberOfSeedsPerTestInstance"}, description="number of test seeds to use per instance during validation", validateWith=FixedPositiveInteger.class)
 	public int numberOfTestSeedsPerInstance = 1000;
 	
-	@Parameter(names={"--numTestInstances","--numberOfTestInstances"}, description = "number of instances to test against (will execute min of this, and number of instances in test Instance File)", validateWith=FixedPositiveInteger.class)
+	@Parameter(names={"--numTestInstances","--numberOfTestInstances"}, description = "number of instances to test against (will execute min of this, and number of instances in test instance file). To disable validation in SMAC see the --doValidation option", validateWith=FixedPositiveInteger.class)
 	public int numberOfTestInstances = Integer.MAX_VALUE;
 
 	@Parameter(names={"--numValidationRuns","--numberOfValidationRuns"}, description = "approximate number of validation runs to do", validateWith=FixedPositiveInteger.class)
