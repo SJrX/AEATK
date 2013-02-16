@@ -231,12 +231,11 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 		
 		if(MarkerFilter.log(execCommandMarker.getName()))
 		{
-			log.info( "Calling: " + execCmd);
+			log.info( "Call: cd {} ;  {} ", execConfig.getAlgorithmExecutionDirectory(), execCmd);
 		}
 		
 		Process proc = Runtime.getRuntime().exec(execCmd,null, new File(execConfig.getAlgorithmExecutionDirectory()));
-	
-		
+
 		return proc;
 	}
 	
