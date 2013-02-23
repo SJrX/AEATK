@@ -152,8 +152,11 @@ public class RunConfig implements Serializable{
 	@Override
 	public String toString()
 	{
+		int instID = this.getProblemInstanceSeedPair().getInstance().getInstanceID();
+		long seed = this.getProblemInstanceSeedPair().getSeed();
+		String confID = this.params.getFriendlyIDHex();
 		StringBuilder sb = new StringBuilder();
-		sb.append("Instance&Seed:\n").append(pisp.toString()).append("\nCutoffTime: ").append(cutoffTime).append("\nParamString: ").append(params.toString());
+		sb.append("<Instance:" +instID + ", Seed:" + seed + ", Config:" + confID+", Kappa:" + cutoffTime+">");
 		return sb.toString();
 		
 	}

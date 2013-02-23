@@ -1,8 +1,5 @@
 package ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators;
 
-import java.util.Collections;
-import java.util.List;
-
 import net.jcip.annotations.ThreadSafe;
 
 import org.slf4j.Logger;
@@ -10,8 +7,6 @@ import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
-import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.AbstractTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 
 
@@ -71,7 +66,6 @@ public class TimingCheckerTargetAlgorithmEvaluator extends	AbstractForEachRunTar
 	protected synchronized AlgorithmRun processRun(AlgorithmRun run) {
 		
 		double runtimeOverhead = run.getRuntime() - run.getRunConfig().getCutoffTime();
-		
 		
 		totalRuntimeOverhead += Math.max(runtimeOverhead, 0);
 		

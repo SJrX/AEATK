@@ -10,6 +10,8 @@ import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.AbstractBlockingTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.AbstractNonBlockingTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred.TAECallback;
 
 public class ConstantTargetAlgorithmEvaluator extends AbstractNonBlockingTargetAlgorithmEvaluator {
 
@@ -48,6 +50,24 @@ public class ConstantTargetAlgorithmEvaluator extends AbstractNonBlockingTargetA
 	protected void subtypeShutdown() {
 		// TODO Auto-generated method stub
 		
+	}
+
+	@Override
+	public void evaluateRunsAsync(List<RunConfig> runConfigs,
+			TAECallback handler, CurrentRunStatusObserver obs) {
+		throw new UnsupportedOperationException("Too lazy to implement properly");
+		
+	}
+
+	@Override
+	public boolean areRunsObservable() {
+		return false;
+	}
+
+	@Override
+	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs,
+			CurrentRunStatusObserver obs) {
+		throw new UnsupportedOperationException("Too lazy to implement properly");
 	}
 
 }

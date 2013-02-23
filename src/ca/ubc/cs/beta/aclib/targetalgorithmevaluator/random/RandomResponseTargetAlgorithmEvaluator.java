@@ -15,7 +15,7 @@ import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.misc.random.SeedableRandomSingleton;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.AbstractBlockingTargetAlgorithmEvaluator;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.AbstractTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
 
 @ThreadSafe
 public class RandomResponseTargetAlgorithmEvaluator extends
@@ -32,7 +32,7 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 		super(execConfig);
 		double scale;
 		try {
-			scale = Math.abs(Double.valueOf(execConfig.getAlgorithmExecutable()));
+			scale = Math.abs(Double.valueOf(execConfig.getAlgorithmExecutable())) * Math.random();
 		}catch(NumberFormatException e)
 		{
 			scale = 10.0;
@@ -43,13 +43,17 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 		
 	}
 
-	@Override
-	public void notifyShutdown() {
 
-	}
 
 	@Override
 	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs) {
+		return evaluateRun(runConfigs,null);
+	}
+
+
+
+	@Override
+	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, CurrentRunStatusObserver obs) {
 		Random rand = SeedableRandomSingleton.getRandom();
 		
 		List<AlgorithmRun> ar = new ArrayList<AlgorithmRun>(runConfigs.size());
@@ -69,8 +73,9 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 				
 				
 			}
+			ar.add(new ExistingAlgorithmRun(execConfig, rc, "TIMEOUT, " + rc.getCutoffTime() + ",-1,0," + rc.getProblemInstanceSeedPair().getSeed()));
 			
-			ar.add(new ExistingAlgorithmRun(execConfig, rc, "SAT, " + time + ",-1,0," + rc.getProblemInstanceSeedPair().getSeed()));
+			//ar.add(new ExistingAlgorithmRun(execConfig, rc, "SAT, " + time + ",-1,0," + rc.getProblemInstanceSeedPair().getSeed()));
 		}
 		
 		return ar;
@@ -83,6 +88,19 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 
 	@Override
 	public boolean areRunsPersisted() {
+		return false;
+	}
+
+	@Override
+	protected void subtypeShutdown() {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+
+	@Override
+	public boolean areRunsObservable() {
 		return false;
 	}
 

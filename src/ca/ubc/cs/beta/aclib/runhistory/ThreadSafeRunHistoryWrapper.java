@@ -7,6 +7,9 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.exceptions.DuplicateRunException;
@@ -20,7 +23,9 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 
 	private final RunHistory runHistory;
 	
-	private final ReentrantReadWriteLock myLock = new ReentrantReadWriteLock();
+	private final ReentrantReadWriteLock myLock = new ReentrantReadWriteLock(true);
+	
+	private final static Logger log = LoggerFactory.getLogger(ThreadSafeRunHistoryWrapper.class);
 	
 	public ThreadSafeRunHistoryWrapper(RunHistory runHistory)
 	{
@@ -43,6 +48,7 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 		try {
 			for(AlgorithmRun run : runs)
 			{
+				//log.debug("Atomically appending run {} " + run.getRunConfig());
 				runHistory.append(run);
 			}
 			
@@ -57,8 +63,19 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 	@Override
 	public void append(AlgorithmRun run) throws DuplicateRunException {
 		
+		
+		try 
+		{
+			myLock.readLock().unlock();
+			throw new IllegalStateException(" I should not be releasable");
+		} catch(IllegalMonitorStateException ex)
+		{
+			//System.out.println("I'm okay");
+		}
+		
 			myLock.writeLock().lock();
 		try {
+			//log.debug("Appending single run {} " + run.getRunConfig());
 			runHistory.append(run);
 		} finally
 		{
@@ -433,6 +450,18 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 	public void releaseReadLock() {
 		myLock.readLock().unlock();
 		
+	}
+
+	@Override
+	public List<AlgorithmRun> getAlgorithmRunData(ParamConfiguration config) {
+		myLock.readLock().lock();
+		try {
+			return runHistory.getAlgorithmRunData(config);
+		} finally
+		{
+			myLock.readLock().unlock();
+	
+		}
 	}
 
 

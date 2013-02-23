@@ -9,8 +9,8 @@ import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.AbstractBlockingTargetAlgorithmEvaluator;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.AbstractTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
 
 /**
  * Faster way of echoing results back
@@ -27,16 +27,18 @@ public class EchoTargetAlgorithmEvaluator  extends AbstractBlockingTargetAlgorit
 		// TODO Auto-generated constructor stub
 	}
 
-	@Override
-	public void notifyShutdown() {
-		
-	}
+
     
 	@Deprecated
 	public volatile double wallClockTime = 0;
 	
 	@Override
 	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs) {
+		return evaluateRun(runConfigs, null);
+	}
+
+	@Override
+	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, CurrentRunStatusObserver obs) {
 		
 		List<AlgorithmRun> results = new ArrayList<AlgorithmRun>();
 		
@@ -80,6 +82,17 @@ public class EchoTargetAlgorithmEvaluator  extends AbstractBlockingTargetAlgorit
 
 	@Override
 	public boolean areRunsPersisted() {
+		return false;
+	}
+
+	@Override
+	protected void subtypeShutdown() {
+		
+		
+	}
+
+	@Override
+	public boolean areRunsObservable() {
 		return false;
 	}
 

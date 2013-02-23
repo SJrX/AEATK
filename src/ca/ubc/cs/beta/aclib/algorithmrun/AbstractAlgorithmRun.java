@@ -1,5 +1,6 @@
 package ca.ubc.cs.beta.aclib.algorithmrun;
 
+import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableAlgorithmRun;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.misc.watch.StopWatch;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
@@ -97,6 +98,15 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 		this.runResultWellFormed = true;
 		this.runCompleted = true;
 		
+		if(!(this instanceof KillableAlgorithmRun))
+		{
+			
+			if(this.acResult.equals(RunResult.RUNNING))
+			{
+				throw new IllegalStateException("Only " + KillableAlgorithmRun.class.getSimpleName() + " may be set as " + RunResult.RUNNING);
+			}
+		}
+		
 	}
 	
 	/**
@@ -128,7 +138,10 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 		this.wallClockTime = wallClockTimer.stop() / 1000.0;
 	}
 	
-	
+	protected long getCurrentWallClockTime()
+	{
+		return this.wallClockTimer.time();
+	}
 	/**
 	 * Sets the values for this Algorithm Run
 	 * @param acResult					RunResult for this run
@@ -153,6 +166,14 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 		this.runResultWellFormed = runResultWellFormed;
 		this.runCompleted = true;
 		this.additionalRunData = additionalRunData;
+		if(!(this instanceof KillableAlgorithmRun))
+		{
+			
+			if(this.acResult.equals(RunResult.RUNNING))
+			{
+				throw new IllegalStateException("Only " + KillableAlgorithmRun.class.getSimpleName() + " may be set as " + RunResult.RUNNING);
+			}
+		}
 	}
 	
 	

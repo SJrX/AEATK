@@ -113,7 +113,7 @@ public class ParamConfigurationSpace implements Serializable {
 	/**
 	 * Value to store in the categoricalSize array for continuous parameters
 	 */
-	static final int INVALID_CATEGORICAL_SIZE = 0;
+	public static final int INVALID_CATEGORICAL_SIZE = 0;
 	
 	/**
 	 * Number of Neighbours a continuous value has
@@ -142,9 +142,11 @@ public class ParamConfigurationSpace implements Serializable {
 	 * Stores forbidden lines for later parsing
 	 */
 	private final List<String> forbiddenLines = new ArrayList<String>();
-	
-	
-	
+
+	/**
+	 * Gets the default configuration
+	 */
+	private final double[] defaultConfigurationValueArray;
 	
 	/**
 	 * Creates a Param Configuration Space from the given file and random
@@ -354,6 +356,8 @@ public class ParamConfigurationSpace implements Serializable {
 			}
 			forbiddenLines.clear();
 			
+		this.defaultConfigurationValueArray = _getDefaultConfiguration().toValueArray();
+		
 		/*
 		 * This will basically test that 
 		 * the default configuration is actually valid
@@ -974,6 +978,11 @@ public class ParamConfigurationSpace implements Serializable {
 	 * @return	paramconfiguration representing the default
 	 */
 	public ParamConfiguration getDefaultConfiguration()
+	{
+		return getConfigurationFromValueArray(this.defaultConfigurationValueArray);
+	}
+	
+	private ParamConfiguration _getDefaultConfiguration()
 	{
 
 		ParamConfiguration p = getEmptyConfiguration();

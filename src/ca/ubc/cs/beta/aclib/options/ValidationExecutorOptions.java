@@ -31,7 +31,7 @@ public class ValidationExecutorOptions extends AbstractOptions {
 	public long numRun = 0;
 	
 	
-	@Parameter(names="--configuration", description="Parameter configuration to validate (In the same format calls are made to the algorithm) [Use <DEFAULT> to validate the default]")
+	@Parameter(names="--configuration", description="Parameter configuration to validate (In the same format calls are made to the algorithm) [Use 'DEFAULT' to validate the default]")
 	public String incumbent;
 	
 	@Parameter(names="--trajectoryFile", description="Trajectory File to read configurations from")
@@ -58,6 +58,7 @@ public class ValidationExecutorOptions extends AbstractOptions {
 	@Parameter(names="--waitForPersistedRunCompletion", description="If the Target Algorithm Evaluator is persistent, then you can optionally not wait for it to finish, and come back later")
 	public boolean waitForPersistedRunCompletion = true;
 
+
 	@Parameter(names={"--randomConfigurations","--random"}, description="Number of random configurations to validate", validateWith=FixedPositiveInteger.class)
 	public int randomConfigurations = 0;
 
@@ -73,8 +74,15 @@ public class ValidationExecutorOptions extends AbstractOptions {
 	@Parameter(names="--configurationSeed", description="Seed to use when generating random configurations")
 	public long configurationSeed = 1234;
 
-
+	
 	@Parameter(names="--autoIncrementTunerTime", description="Auto Increment Tuner Time")
 	public boolean autoIncrementTunerTime = true;
+
+	@Parameter(names="--wallTime", description="Wall Time when Validation occured (when specifying the configuration this is simply reported in the output file, when using a trajectory file we use the incumbent at this time, if you set this to -1 we use the wall time from the scenario file or 0 if reading configuration from command line)")
+	public double wallTime;
+
+	@Parameter(names="--useTunerTimeIfNoWallTime", description="Use the tuner time as walltime if there is no walltime in the file")
+	public boolean useTunerTimeIfNoWallTime;
 	
+
 }

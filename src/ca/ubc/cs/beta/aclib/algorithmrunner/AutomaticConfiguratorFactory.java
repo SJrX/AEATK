@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.CommandLineTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
 
 /**
  * Factory that creates various Algorithm Runners for things that request it.
@@ -44,9 +45,9 @@ public class AutomaticConfiguratorFactory {
 	 * @param runConfigs		run configurations to execute
 	 * @return	algorithmrunner which will run it
 	 */
-	public static AlgorithmRunner getSingleThreadedAlgorithmRunner(AlgorithmExecutionConfig execConfig, List<RunConfig> runConfigs)
+	public static AlgorithmRunner getSingleThreadedAlgorithmRunner(AlgorithmExecutionConfig execConfig, List<RunConfig> runConfigs, CurrentRunStatusObserver obs)
 	{
-		return new SingleThreadedAlgorithmRunner(execConfig, runConfigs);
+		return new SingleThreadedAlgorithmRunner(execConfig, runConfigs,obs);
 	}
 	
 	/**
@@ -55,13 +56,13 @@ public class AutomaticConfiguratorFactory {
 	 * @param runConfigs		run configurations to execute
 	 * @return	algorithmrunner which will run it
 	 */	
-	public static AlgorithmRunner getConcurrentAlgorithmRunner(AlgorithmExecutionConfig execConfig, List<RunConfig> runConfigs)
+	public static AlgorithmRunner getConcurrentAlgorithmRunner(AlgorithmExecutionConfig execConfig, List<RunConfig> runConfigs, CurrentRunStatusObserver obs)
 	{
 		if(runConfigs.size() == 1)
 		{
-			return getSingleThreadedAlgorithmRunner(execConfig, runConfigs);
+			return getSingleThreadedAlgorithmRunner(execConfig, runConfigs,obs);
 		}
-		return getConcurrentAlgorithmRunner(execConfig, runConfigs, maxThreads);
+		return getConcurrentAlgorithmRunner(execConfig, runConfigs, maxThreads, obs);
 	}
 	
 	/**
@@ -71,9 +72,16 @@ public class AutomaticConfiguratorFactory {
 	 * @param nThreads			number of concurrent executions to allow
 	 * @return	algorithmrunner which will run it
 	 */
-	public static AlgorithmRunner getConcurrentAlgorithmRunner(AlgorithmExecutionConfig execConfig, List<RunConfig> runConfigs, int nThreads)
+	public static AlgorithmRunner getConcurrentAlgorithmRunner(AlgorithmExecutionConfig execConfig, List<RunConfig> runConfigs, int nThreads, CurrentRunStatusObserver obs)
 	{
 		log.info("Concurrent Algorithm Runner created allowing {} threads");
-		return new ConcurrentAlgorithmRunner(execConfig, runConfigs, nThreads);
+		return new ConcurrentAlgorithmRunner(execConfig, runConfigs, nThreads, obs);
+	}
+
+	/**
+	 * Shutsdown the target algorithm evaluator
+	 */
+	public static void shutdown() {
+		AbstractAlgorithmRunner.shutdown();
 	}
 }

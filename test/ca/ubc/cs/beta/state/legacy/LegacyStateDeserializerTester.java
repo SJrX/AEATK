@@ -133,7 +133,7 @@ public class LegacyStateDeserializerTester {
 		StateFactory sf = new LegacyStateFactory(null,f.getAbsolutePath());	
 		
 		 AlgorithmExecutionConfig execConfig = new AlgorithmExecutionConfig("foo", "bar", configSpace, false, false, 1);
-		 startOutputCapture();
+		startOutputCapture();
 		StateDeserializer sd = sf.getStateDeserializer("valid", 4, configSpace, OverallObjective.MEAN10, OverallObjective.MEAN, RunObjective.RUNTIME, instances, execConfig);
 		String output = stopOutputCapture();
 		assertTrue(output.contains("Cutoff time discrepancy"));
@@ -254,7 +254,7 @@ public class LegacyStateDeserializerTester {
 		
 		
 		System.out.println("Performing " + runConfigs.size() + " runs");
-		PrintStream ps = System.out;
+		//PrintStream ps = System.out;
 		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
 		
 		
@@ -463,7 +463,7 @@ public class LegacyStateDeserializerTester {
 			
 			System.out.println("Performing " + runConfigs.size() + " runs");
 		
-			List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+			List<AlgorithmRun> runs = tae.evaluateRun(runConfigs,null);
 			allRuns.addAll(runs);
 			for(AlgorithmRun run : runs)
 			{
@@ -691,7 +691,7 @@ public class LegacyStateDeserializerTester {
 		
 		
 		System.out.println("Performing " + runConfigs.size() + " runs");
-		PrintStream ps = System.out;
+		//PrintStream ps = System.out;
 		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
 		
 		

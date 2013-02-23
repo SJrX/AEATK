@@ -272,7 +272,10 @@ public class ProblemInstanceHelper {
 			instanceFeatureFileAbsolutePath = featureFile.getAbsolutePath();
 			
 			CSVReader featureCSV = new CSVReader(new InputStreamReader(new FileInputStream(featureFile)));
+			
 			ConfigCSVFileHelper features = new ConfigCSVFileHelper(featureCSV.readAll(),1,1);
+			
+			featureCSV.close();
 			
 			numberOfFeatures = features.getNumberOfDataColumns();
 			
@@ -619,11 +622,15 @@ topOfLoop:
 			 * For the old format we trim each line to get rid of spurious whitespace
 			 */
 			BufferedReader bufferedReader = new BufferedReader(new FileReader(instanceListFile));
+			
 			StringBuilder sb = new StringBuilder();
 			while((line = bufferedReader.readLine()) != null)
 			{
 				sb.append(line.trim()).append("\n");
 			}
+			
+			bufferedReader.close();
+			
 			
 				
 			CSVReader reader = new CSVReader(new StringReader(sb.toString().trim()),' ');

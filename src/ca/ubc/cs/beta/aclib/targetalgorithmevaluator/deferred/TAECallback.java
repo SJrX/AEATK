@@ -6,7 +6,7 @@ import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 
 /**
  * Handler interface for Deferred Target Algorithm Evaluator runs
- * @author Steve Ramage 
+ * @author Steve Ramage <seramage@cs.ubc.ca>
  *
  */
 public interface TAECallback {

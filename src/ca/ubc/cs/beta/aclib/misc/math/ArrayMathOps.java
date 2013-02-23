@@ -317,5 +317,18 @@ public class ArrayMathOps {
 	
 
 	
+	public static double[] add(double[] operL, double[] operR) {
+		double[] result = new double[operL.length];
+		
+		for(int i=0; i < result.length; i++)
+		{
+			result[i] = operL[i]+operR[i];
+		}
+		
+		return result;
+		
+	}
+	
+	
 
 }

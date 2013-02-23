@@ -1,8 +1,5 @@
 package ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred;
 
-import java.util.List;
-
-import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 
 /**

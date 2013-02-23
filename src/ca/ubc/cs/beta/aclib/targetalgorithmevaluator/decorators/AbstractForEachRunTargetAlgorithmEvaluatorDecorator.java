@@ -7,8 +7,8 @@ import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.AbstractTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred.TAECallback;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred.WrappedTAECallback;
 /**
  * Abstraact Decorator for TargetAlgorithmEvaluators 
  * 
@@ -34,7 +34,13 @@ public abstract class AbstractForEachRunTargetAlgorithmEvaluatorDecorator extend
 
 	@Override
 	public final List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs) {
-		return processRuns(tae.evaluateRun(runConfigs));
+		return evaluateRun(runConfigs, null);
+	}
+
+
+	@Override
+	public final List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, CurrentRunStatusObserver obs) {
+		return processRuns(tae.evaluateRun(runConfigs, obs));
 	}
 
 
@@ -42,13 +48,20 @@ public abstract class AbstractForEachRunTargetAlgorithmEvaluatorDecorator extend
 	public final void evaluateRunsAsync(RunConfig runConfig,
 			final TAECallback handler) {
 		
-		evaluateRunsAsync(Collections.singletonList(runConfig), handler);
+		evaluateRunsAsync(Collections.singletonList(runConfig), handler, null);
 	}
 
 
 	@Override
 	public final void evaluateRunsAsync(List<RunConfig> runConfigs,
 			final TAECallback oHandler) {
+				evaluateRunsAsync(runConfigs, oHandler, null);
+			}
+
+
+	@Override
+	public final void evaluateRunsAsync(List<RunConfig> runConfigs,
+			final TAECallback oHandler, CurrentRunStatusObserver obs) {
 		
 		//We need to make sure wrapped versions are called in the same order
 		//as there unwrapped versions.
@@ -71,7 +84,7 @@ public abstract class AbstractForEachRunTargetAlgorithmEvaluatorDecorator extend
 			}
 		};
 		
-		tae.evaluateRunsAsync(runConfigs, myHandler);
+		tae.evaluateRunsAsync(runConfigs, myHandler, obs);
 
 	}
 

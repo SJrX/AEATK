@@ -12,6 +12,7 @@ import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.AbstractTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred.TAECallback;
 
 /**
@@ -52,7 +53,12 @@ public class LeakingMemoryTargetAlgorithmEvaluator extends AbstractTargetAlgorit
 
 	@Override
 	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs) {
-		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+		return evaluateRun(runConfigs,null);
+	}
+
+	@Override
+	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, CurrentRunStatusObserver obs) {
+		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs, obs);
 		leak(runConfigs.size());
 		return runs;
 	}
@@ -67,7 +73,12 @@ public class LeakingMemoryTargetAlgorithmEvaluator extends AbstractTargetAlgorit
 
 	@Override
 	public void evaluateRunsAsync(List<RunConfig> runConfigs, TAECallback handler) {
-		tae.evaluateRunsAsync(runConfigs, handler);
+		evaluateRunsAsync(runConfigs, handler, null);
+	}
+
+	@Override
+	public void evaluateRunsAsync(List<RunConfig> runConfigs, TAECallback handler, CurrentRunStatusObserver obs) {
+		tae.evaluateRunsAsync(runConfigs, handler, obs);
 		leak(runConfigs.size());
 	}
 

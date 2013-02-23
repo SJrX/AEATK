@@ -52,4 +52,7 @@ public class ValidationOptions extends AbstractOptions{
 
 	@Parameter(names={"--saveStateFile"}, description="Save a state file consisting of all the runs we did")
 	public boolean saveStateFile;
+
+	@Parameter(names={"--validateByWallClockTime"}, description="Use wallclock times")
+	public boolean useWallClockTime;
 }
