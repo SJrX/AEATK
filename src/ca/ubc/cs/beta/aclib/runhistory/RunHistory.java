@@ -64,7 +64,7 @@ public interface RunHistory {
 	public Set<ProblemInstance> getInstancesRan(ParamConfiguration config);
 
 	/**
-	 * Returns the set of instance seed pairs we have run a Param Configuration on.
+	 * Returns a copy of the set of instance seed pairs we have run a Param Configuration on.
 	 * @param config	configuration to get ProblemInstanceSeedPairs for
 	 * @return	set of ProblemInstanceSeedPairs
 	 */
@@ -209,6 +209,13 @@ public interface RunHistory {
 	 */
 	public List<RunData> getAlgorithmRunData();
 
+	/**
+	 * Returns the list of run data for challenger 
+	 * @param config
+	 * @return
+	 */
+	public List<AlgorithmRun> getAlgorithmRunData(ParamConfiguration config);
+	
 	/**
 	 * Returns the Instance Seed Generator
 	 * 

@@ -31,8 +31,6 @@ public class CLIExecutor {
 		}
 		
 		
-		StringBuilder b = new StringBuilder();
-		
 		String execString = TestHelper.getJavaExecString();
 		
 		execString += CLICallee.class.getCanonicalName();

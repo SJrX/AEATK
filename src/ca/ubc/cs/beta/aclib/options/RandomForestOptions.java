@@ -57,5 +57,8 @@ public class RandomForestOptions extends AbstractOptions{
 	public double freeMemoryPercentageToSubsample=0.25;
 	
 	@Parameter(names="--subsamplePercentage", description="multiply the number of points used when building model by this value", validateWith=ZeroOneHalfOpenLeftDouble.class)
-	public double subsamplePercentage = 0.9; 
+	public double subsamplePercentage = 0.9;
+
+	@Parameter(names="--imputeMean", description="impute the mean value for the all censored data points")
+	public boolean imputeMean; 
 }

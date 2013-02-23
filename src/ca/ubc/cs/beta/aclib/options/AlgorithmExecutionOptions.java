@@ -25,6 +25,7 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 
 	private static final String defaultSearchPath ;
 	
+
 	static{
 		//==== This builds a giant string to search for other Target Algorithm Executors
 		StringBuilder sb = new StringBuilder();
@@ -33,7 +34,44 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 		List<String> directoriesToSearch = new ArrayList<String>();
 		
 		directoriesToSearch.add(cwd);
-		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "plugins" + File.separator);
+		
+		String[] classpath = System.getProperty("java.class.path").split(File.pathSeparator);
+		
+		String pluginDirectory = System.getProperty("user.dir");
+		for(String location : classpath)
+		{
+			if(location.endsWith("aclib.jar"))
+			{
+				File f = new File(location);
+				
+				pluginDirectory = f.getParentFile().getAbsolutePath();
+				break;
+			}
+				
+		}
+		
+		pluginDirectory =new File(pluginDirectory) + File.separator + "plugins" + File.separator;
+		
+		directoriesToSearch.add(pluginDirectory);
+		
+		File pluginDir = new File(pluginDirectory);
+		//We will look in the plugins directory and all sub directories, but not further
+		if(pluginDir.exists())
+		{
+			for(File f : pluginDir.listFiles())
+			{
+				
+				if(f.isDirectory())
+				{
+					directoriesToSearch.add(f.getAbsolutePath());
+				}
+			}
+		}
+		
+		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "MySQLDBTAE" + File.separator) ;
+		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "MySQLDBTAE" + File.separator + "lib" + File.separator) ;
+		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "MySQLDBTAE" + File.separator + "version" + File.separator) ;
+		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "MySQLDBTAE" + File.separator + "bin" + File.separator) ;
 		directoriesToSearch.add(new File(cwd) + File.separator + "plugins" + File.separator);
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "surrogates" + File.separator);
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "RunDispatcher" + File.separator);
@@ -42,12 +80,6 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "RunDispatcher" + File.separator + "bin" + File.separator) ;
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "surrogates" + File.separator + "lib" + File.separator);
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "RunDispatcher" + File.separator + "lib" + File.separator) ;
-		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "MySQLDBTAE" + File.separator) ;
-		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "MySQLDBTAE" + File.separator + "lib" + File.separator) ;
-		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "MySQLDBTAE" + File.separator + "version" + File.separator) ;
-		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "MySQLDBTAE" + File.separator + "bin" + File.separator) ;
-		
-		
 		
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "RunDispatcher" + File.separator + "lib" + File.separator) ;
 		
@@ -90,6 +122,8 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 		defaultSearchPath = sb.toString();
 		
 	}
+	
+	
 	@Parameter(names={"--algoExec", "--algo"}, description="command string to execute algorithm with", required=true)
 	public String algoExec;
 	
@@ -122,7 +156,7 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 	@Parameter(names="--retryTargetAlgorithmRunCount", description="number of times to retry an algorithm run before eporting crashed (NOTE: The original crashes DO NOT count towards any time limits, they are in effect lost). Additionally this only retries CRASHED runs, not ABORT runs, this is by design as ABORT is only for cases when we shouldn't bother further runs", validateWith=NonNegativeInteger.class)
 	public int retryCount = 0;
 
-	@Parameter(names={"--numConcurrentAlgoExecs","--maxConcurrentAlgoExecs","--numberOfConcurrentAlgoExecs"}, description="maximum number of concurrent target algorithm executions", validateWith=PositiveInteger.class)
+	@Parameter(names={"--cores","--numConcurrentAlgoExecs","--maxConcurrentAlgoExecs","--numberOfConcurrentAlgoExecs"}, description="maximum number of concurrent target algorithm executions", validateWith=PositiveInteger.class)
 	public int maxConcurrentAlgoExecs = 1;
 	
 	@UsageTextField(defaultValues="")
@@ -132,17 +166,5 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 	@Parameter(names="--verifySAT", description="Check SAT/UNSAT/UNKNOWN responses against Instance specific information (if null then performs check if every instance has specific information in the following domain {SAT, UNSAT, UNKNOWN, SATISFIABLE, UNSATISFIABLE}")
 	public Boolean verifySAT;
 		
-	/*
-	public AlgorithmExecutionConfig getAlgorithmExecutionConfig(ParamConfigurationSpace p, File experimentDir)
-	{
-		
-		if(!new File(algoExecDir).isAbsolute())
-		{
-			algoExecDir = experimentDir.getAbsolutePath() + File.separator +algoExecDir; 
-		}
-		
-		return new AlgorithmExecutionConfig(algoExec, algoExecDir, p, false, deterministic);
-	}
 	
-	*/
 }

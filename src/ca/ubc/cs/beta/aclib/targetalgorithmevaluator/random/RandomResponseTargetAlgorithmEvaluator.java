@@ -4,6 +4,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 
+import net.jcip.annotations.ThreadSafe;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -12,14 +14,16 @@ import ca.ubc.cs.beta.aclib.algorithmrun.ExistingAlgorithmRun;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.misc.random.SeedableRandomSingleton;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.AbstractTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.AbstractBlockingTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
 
+@ThreadSafe
 public class RandomResponseTargetAlgorithmEvaluator extends
-		AbstractTargetAlgorithmEvaluator {
+		AbstractBlockingTargetAlgorithmEvaluator {
 
-	private double scale = 1.0;
+	private final double scale;
 	
-	private boolean sleep = false;
+	private final boolean sleep;
 	
 	private double maxValue = 0;
 	private static final Logger log = LoggerFactory.getLogger(RandomResponseTargetAlgorithmEvaluator.class);
@@ -27,25 +31,31 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 	public RandomResponseTargetAlgorithmEvaluator(
 			AlgorithmExecutionConfig execConfig) {
 		super(execConfig);
+		double scale;
 		try {
-			scale = Math.abs(Double.valueOf(execConfig.getAlgorithmExecutable()));
+			scale = Math.abs(Double.valueOf(execConfig.getAlgorithmExecutable())) * Math.random();
 		}catch(NumberFormatException e)
 		{
 			scale = 10.0;
 		}
 		
+		this.scale = scale;
 		sleep = execConfig.isDeterministicAlgorithm();
 		maxValue = execConfig.getAlgorithmCutoffTime();
 		
 	}
 
-	@Override
-	public void notifyShutdown() {
 
-	}
 
 	@Override
 	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs) {
+		return evaluateRun(runConfigs,null);
+	}
+
+
+
+	@Override
+	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, CurrentRunStatusObserver obs) {
 		Random rand = SeedableRandomSingleton.getRandom();
 		
 		List<AlgorithmRun> ar = new ArrayList<AlgorithmRun>(runConfigs.size());
@@ -62,10 +72,9 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 				} catch (InterruptedException e) {
 					Thread.currentThread().interrupt();
 				}
+				*/
 				
-				
-			}*/
-			
+
 			
 			
 			if(time >= rc.getCutoffTime())
@@ -78,6 +87,29 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 		}
 		
 		return ar;
+	}
+
+	@Override
+	public boolean isRunFinal() {
+		return false;
+	}
+
+	@Override
+	public boolean areRunsPersisted() {
+		return false;
+	}
+
+	@Override
+	protected void subtypeShutdown() {
+		// TODO Auto-generated method stub
+		
+	}
+
+
+
+	@Override
+	public boolean areRunsObservable() {
+		return false;
 	}
 
 }

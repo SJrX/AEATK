@@ -254,7 +254,7 @@ public class LegacyStateDeserializerTester {
 		
 		
 		System.out.println("Performing " + runConfigs.size() + " runs");
-		PrintStream ps = System.out;
+		//PrintStream ps = System.out;
 		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
 		
 		
@@ -463,7 +463,7 @@ public class LegacyStateDeserializerTester {
 			
 			System.out.println("Performing " + runConfigs.size() + " runs");
 		
-			List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+			List<AlgorithmRun> runs = tae.evaluateRun(runConfigs,null);
 			allRuns.addAll(runs);
 			for(AlgorithmRun run : runs)
 			{
@@ -632,7 +632,7 @@ public class LegacyStateDeserializerTester {
 		
 	}
 	/**
-	 * This test is related to 
+	 * This test is related to Task 
 	 * 
 	 */
 	@SuppressWarnings("deprecation")
@@ -640,9 +640,9 @@ public class LegacyStateDeserializerTester {
 	public void stateSerializationMemHeavy() throws DuplicateRunException
 	{
 	
-		if(Runtime.getRuntime().maxMemory() / 1024.0 / 1024  > 64)
+		if(Runtime.getRuntime().maxMemory() / 1024.0 / 1024  > 80)
 		{
-			fail("Too much memory this test will fail");
+			fail("Too much memory this test will not make any sense");
 		}
 		  
 				
@@ -691,7 +691,7 @@ public class LegacyStateDeserializerTester {
 		
 		
 		System.out.println("Performing " + runConfigs.size() + " runs");
-		PrintStream ps = System.out;
+		//PrintStream ps = System.out;
 		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
 		
 		

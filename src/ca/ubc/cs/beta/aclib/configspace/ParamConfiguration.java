@@ -81,7 +81,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	 * 
 	 * Prior to a read if this is true, we will call cleanUp()
 	 */
-	private boolean isDirty = true; 
+	private volatile boolean isDirty = true; 
 	
 	
 	/**

@@ -299,14 +299,21 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 				j++;
 				
 				double[] samples;
+					if(rfOptions.imputeMean)
+					{
+						samples = new double[numSamplesToGet];
+						for(int k=0; k < samples.length; k++)
+						{
+							samples[k] = prediction[j][0];
+						}
+					} else if(rfOptions.shuffleImputedValues)
+					{
+						samples = tNorm.getValuesAtStratifiedShuffledIntervals(numSamplesToGet);
+					} else
+					{
+						samples = tNorm.getValuesAtStratifiedIntervals(numSamplesToGet);
+					}
 				
-				if(rfOptions.shuffleImputedValues)
-				{
-					samples = tNorm.getValuesAtStratifiedShuffledIntervals(numSamplesToGet);
-				} else
-				{
-					samples = tNorm.getValuesAtStratifiedIntervals(numSamplesToGet);
-				}
 				
 				for (int k = 0; k < samples.length; k++) 
 				{
@@ -318,6 +325,7 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 					samples[k] = Math.min(samples[k], maxPenalizedValue);
 				}
 
+				
 				//=== Populate the trees at their dataIdxs with the samples (and update differenceFromLastMean)
 				int count=0;
 				double increaseThisDataPoint = 0;

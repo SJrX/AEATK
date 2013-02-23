@@ -43,5 +43,16 @@ public class ValidationOptions extends AbstractOptions{
 	
 	@Parameter(names="--outputFileSuffix", description="Suffix to add to validation run files (for grouping)")
 	public String outputFileSuffix = "";
-	
+
+	@Parameter(names="--validateAll",description="Validate every entry in the trajectory file (overrides other validation options)")
+	public boolean validateAll = false;
+
+	@Parameter(names={"--writeConfigurationMatrix","--writeThetaMatrix"}, description="Write the configuration matrix")
+	public boolean writeThetaMatrix;
+
+	@Parameter(names={"--saveStateFile"}, description="Save a state file consisting of all the runs we did")
+	public boolean saveStateFile;
+
+	@Parameter(names={"--validateByWallClockTime"}, description="Use wallclock times")
+	public boolean useWallClockTime;
 }

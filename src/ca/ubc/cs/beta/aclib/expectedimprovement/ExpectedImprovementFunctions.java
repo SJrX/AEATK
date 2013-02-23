@@ -14,7 +14,11 @@ public enum ExpectedImprovementFunctions {
 	/**
 	 * A simple expected improvement function
 	 */
-	SIMPLE(SimpleExpectedImprovement.class);
+	SIMPLE(SimpleExpectedImprovement.class),
+	/**
+	 * Lower Confidence Bound
+	 */
+	LCB(LowerConfidenceBound.class);
 	
 	/**
 	 * SPO Improvement Function (NOT IMPLEMENTED)

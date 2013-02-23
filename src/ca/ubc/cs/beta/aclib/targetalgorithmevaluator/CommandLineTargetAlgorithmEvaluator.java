@@ -13,12 +13,13 @@ import ca.ubc.cs.beta.aclib.algorithmrunner.AlgorithmRunner;
 import ca.ubc.cs.beta.aclib.algorithmrunner.AutomaticConfiguratorFactory;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
 
 /**
  * Evalutes Given Run Configurations
  *
  */
-public class CommandLineTargetAlgorithmEvaluator extends AbstractTargetAlgorithmEvaluator {
+public class CommandLineTargetAlgorithmEvaluator extends AbstractBlockingTargetAlgorithmEvaluator {
 	
 	
 	
@@ -52,8 +53,6 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractTargetAlgorithm
 
 	}
 	
-	
-	
 	@Override
 	public List<AlgorithmRun> evaluateRun(RunConfig run) 
 	{
@@ -63,12 +62,25 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractTargetAlgorithm
 	@Override
 	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs)
 	{
-		AlgorithmRunner runner = getAlgorithmRunner(runConfigs);
+		return evaluateRun(runConfigs,null);
+	}
+
+	@Override
+	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, CurrentRunStatusObserver obs)
+	{
+		
+		if(runConfigs.size() == 0)
+		{
+			return Collections.emptyList();
+		}
+		
+		AlgorithmRunner runner = getAlgorithmRunner(runConfigs,obs);
 		List<AlgorithmRun> runs =  runner.run();
 		addRuns(runs);
 		return runs;
 	}
 	
+
 	private final boolean concurrentExecution; 
 	
 	/**
@@ -76,25 +88,42 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractTargetAlgorithm
 	 * @param runConfigs 	runConfigs to evaluate
 	 * @return	AlgorithmRunner to use
 	 */
-	private AlgorithmRunner getAlgorithmRunner(List<RunConfig> runConfigs)
+	private AlgorithmRunner getAlgorithmRunner(List<RunConfig> runConfigs,CurrentRunStatusObserver obs)
 	{
+		
 		
 		if(concurrentExecution)
 		{
 			log.info("Using concurrent algorithm runner");
-			return AutomaticConfiguratorFactory.getConcurrentAlgorithmRunner(execConfig,runConfigs);
+			return AutomaticConfiguratorFactory.getConcurrentAlgorithmRunner(execConfig,runConfigs,obs);
 			
 		} else
 		{
 			log.info("Using single-threaded algorithm runner");
-			return AutomaticConfiguratorFactory.getSingleThreadedAlgorithmRunner(execConfig,runConfigs);
+			return AutomaticConfiguratorFactory.getSingleThreadedAlgorithmRunner(execConfig,runConfigs,obs);
 		}
 	}
 
+	
 	@Override
-	public void notifyShutdown() {
-		// We shutdown after ever run anyway
+	public boolean isRunFinal() {
+		return false;
+	}
+
+	@Override
+	public boolean areRunsPersisted() {
+		return false;
+	}
+
+	@Override
+	protected void subtypeShutdown() {
+		AutomaticConfiguratorFactory.shutdown();
 		
+	}
+
+	@Override
+	public boolean areRunsObservable() {
+		return true;
 	}
 	
 	
