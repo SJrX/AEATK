@@ -816,10 +816,150 @@ public class ParamConfigurationTest {
 		
 	}
 	
+	@Test
+	public void testSubspaceDeclaration()
+	{
+		StringReader sr = new StringReader("foo { a, b, c, d } [a]\n foo = a");
+		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(sr);
+		assertEquals("No neighbours", 0, configSpace.getDefaultConfiguration().getNeighbourhood().size());
+		assertEquals("Default correct", "a", configSpace.getDefaultConfiguration().get("foo"));
+		/**
+		 * Only one parameter possible so we should always get the same thing
+		 */
+		assertTrue(configSpace.getRandomConfiguration().equals(configSpace.getRandomConfiguration()));
+		assertTrue(configSpace.getRandomConfiguration().equals(configSpace.getRandomConfiguration()));
+		assertTrue(configSpace.getRandomConfiguration().equals(configSpace.getRandomConfiguration()));
+		assertTrue(configSpace.getDefaultConfiguration().equals(configSpace.getRandomConfiguration()));
+		assertTrue(configSpace.getDefaultConfiguration().equals(configSpace.getRandomConfiguration()));
+		assertTrue(configSpace.getDefaultConfiguration().equals(configSpace.getRandomConfiguration()));
+		
+	}
+	
+
+	@Test
+	public void testSubspaceDeclarationDefault()
+	{
+		StringReader sr = new StringReader("foo { a, b, c, d } [b]\n foo = <DEFAULT>");
+		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(sr);
+		assertEquals("No neighbours", 0, configSpace.getDefaultConfiguration().getNeighbourhood().size());
+		assertEquals("Default correct", "b", configSpace.getDefaultConfiguration().get("foo"));
+		
+		/**
+		 * Only one parameter possible so we should always get the same thing
+		 */
+		assertTrue(configSpace.getRandomConfiguration().equals(configSpace.getRandomConfiguration()));
+		assertTrue(configSpace.getRandomConfiguration().equals(configSpace.getRandomConfiguration()));
+		assertTrue(configSpace.getRandomConfiguration().equals(configSpace.getRandomConfiguration()));
+		assertTrue(configSpace.getDefaultConfiguration().equals(configSpace.getRandomConfiguration()));
+		assertTrue(configSpace.getDefaultConfiguration().equals(configSpace.getRandomConfiguration()));
+		assertTrue(configSpace.getDefaultConfiguration().equals(configSpace.getRandomConfiguration()));
+		
+		
+	}
+
+	@Test
+	public void testSubspaceDeclarationRandom()
+	{
+		StringReader sr = new StringReader("foo { a, b, c, d } [a]\n foo = <RANDOM>");
+		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(sr);
+		assertEquals("No neighbours", 0, configSpace.getDefaultConfiguration().getNeighbourhood().size());
+		
+		/**
+		 * Only one parameter possible so we should always get the same thing
+		 */
+		assertTrue(configSpace.getRandomConfiguration().equals(configSpace.getRandomConfiguration()));
+		assertTrue(configSpace.getRandomConfiguration().equals(configSpace.getRandomConfiguration()));
+		assertTrue(configSpace.getRandomConfiguration().equals(configSpace.getRandomConfiguration()));
+		assertTrue(configSpace.getDefaultConfiguration().equals(configSpace.getRandomConfiguration()));
+		assertTrue(configSpace.getDefaultConfiguration().equals(configSpace.getRandomConfiguration()));
+		assertTrue(configSpace.getDefaultConfiguration().equals(configSpace.getRandomConfiguration()));
+		
+		
+	}
+
+	
+	@Test
+	public void testSubspaceDeclarationNotDefault()
+	{
+		StringReader sr = new StringReader("foo { a, b, c, d } [d]\n foo = a");
+		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(sr);
+		assertEquals("No neighbours", 0, configSpace.getDefaultConfiguration().getNeighbourhood().size());
+		assertEquals("Default correct", "a", configSpace.getDefaultConfiguration().get("foo"));
+		
+		/**
+		 * Only one parameter possible so we should always get the same thing
+		 */
+		assertTrue(configSpace.getRandomConfiguration().equals(configSpace.getRandomConfiguration()));
+		assertTrue(configSpace.getRandomConfiguration().equals(configSpace.getRandomConfiguration()));
+		assertTrue(configSpace.getRandomConfiguration().equals(configSpace.getRandomConfiguration()));
+		assertTrue(configSpace.getDefaultConfiguration().equals(configSpace.getRandomConfiguration()));
+		assertTrue(configSpace.getDefaultConfiguration().equals(configSpace.getRandomConfiguration()));
+		assertTrue(configSpace.getDefaultConfiguration().equals(configSpace.getRandomConfiguration()));
+		
+		
+	}
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void testSubspaceDeclarationSubspaceIsForbidden()
+	{
+		try {
+		StringReader sr = new StringReader("foo { a, b, c, d } [d]\n foo = a \n {foo = a}");
+		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(sr);
+		assertEquals("No neighbours", 0, configSpace.getDefaultConfiguration().getNeighbourhood().size());
+		} catch(RuntimeException e)
+		{
+			System.err.println(e.getMessage());
+			throw e;
+		}
+		
+		
+	}
+	
+	@Test
+	/**
+	 * Tests to see that forbidden parameters are treated correctly when we subspace stuff
+	 */
+	public void testSubspaceDeclarationSubspaceAndForbidden()
+	{
+		StringReader sr = new StringReader(
+				"foo { a, b, c, d } [d]\n" +
+				"bar { 1,2,3,4} [1]\n" +
+				"foo = a\n" +
+				"{foo = a, bar= 2}");
+		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(sr);
+		assertEquals("Should have 2 neighbours", 2, configSpace.getDefaultConfiguration().getNeighbourhood().size());
+	}
+	
+
+	@Test
+	/**
+	 * Tests to see that forbidden parameters are treated correctly when we subspace stuff
+	 */
+	public void testSubspaceDeclarationSubspaceAndForbiddenNewDefault()
+	{
+		StringReader sr = new StringReader(
+				"foo { a, b, c, d } [d]\n" +
+				"bar { 1,2,3,4} [1]\n" +
+				"foo = a\n" +
+				"{foo = d, bar= 2}");
+		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(sr);
+		assertEquals("Should have 3 neighbours", 3, configSpace.getDefaultConfiguration().getNeighbourhood().size());
+	}
+	
+	
+	
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void testInvalidSubspaceOperator()
+	{
+		StringReader sr = new StringReader("foo { a, b, c, d } [d]\n foo in a");
+		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(sr);
+	}
+	
 	
 	@After
 	public void tearDown()
 	{
-		System.out.println("Done");
+		//System.out.println("Done");
 	}
 }

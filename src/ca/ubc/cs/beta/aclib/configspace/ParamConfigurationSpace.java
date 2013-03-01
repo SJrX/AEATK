@@ -12,6 +12,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -30,7 +31,8 @@ enum LineType
 	CONTINUOUS,
 	CONDITIONAL,
 	FORBIDDEN,
-	OTHER
+	OTHER, 
+	SUBSPACE
 	
 }
 
@@ -138,11 +140,19 @@ public class ParamConfigurationSpace implements Serializable {
 	
 	private boolean hasRealParameterFile = true;
 	
+	
+	private final Set<String> subspacedParameters = new HashSet<String>();
+	
 	/**
 	 * Stores forbidden lines for later parsing
 	 */
 	private final List<String> forbiddenLines = new ArrayList<String>();
 
+	
+	/**
+	 * Stores a list of subspaces lines for later parsing
+	 */
+	private final List<String> subspaceLines = new ArrayList<String>();
 	/**
 	 * Gets the default configuration
 	 */
@@ -252,6 +262,14 @@ public class ParamConfigurationSpace implements Serializable {
 			throw new IllegalStateException(e);
 		}
 		
+		/**
+		 * Parse the subspace declarations
+		 */
+		
+		for(String subSpaceLine : this.subspaceLines)
+		{
+			parseSubspaceLine(subSpaceLine);
+		}
 		
 		
 		/*
@@ -408,6 +426,7 @@ public class ParamConfigurationSpace implements Serializable {
 		/** 
 		 * Perhaps not the most robust but the logic here is as follows
 		 * if we see a "|" it's a conditional line
+		 * if we see a "=" it's a subspace line
 		 * otherwise we expect to see a "[" (if we don't we have no idea) what it is. 
 		 * If we see two (Or more) "[" then allegedly it's continous (one specifies the range the other the default).
 		 * Otherwise we must be categorical
@@ -420,7 +439,11 @@ public class ParamConfigurationSpace implements Serializable {
 		} else if(line.trim().substring(0, 1).equals("{"))
 		{
 			type = LineType.FORBIDDEN;
-		} else if(line.indexOf("[") < 0)
+		} else if (line.trim().contains("="))
+		{
+			type = LineType.SUBSPACE;
+			
+		}else if(line.indexOf("[") < 0)
 		{
 			type = LineType.OTHER;
 			if(line.trim().equals("Conditionals:")) return;
@@ -438,6 +461,8 @@ public class ParamConfigurationSpace implements Serializable {
 			throw new IllegalArgumentException("Syntax error parsing line " + line + " probably malformed");
 		}
 		
+		
+		
 		switch(type)
 		{
 			case CONDITIONAL:
@@ -452,14 +477,89 @@ public class ParamConfigurationSpace implements Serializable {
 			case FORBIDDEN:
 				forbiddenLines.add(line);
 				break;
+			case SUBSPACE:
+				subspaceLines.add(line);
+				break;
 			default:
-				throw new IllegalStateException("Not sure how I can be parsing some other type, ");
+				throw new IllegalStateException("Not sure how I can be parsing some other type ");
 		}
 		
 		
 	}
 	
-	private void parseForbiddenLine(String line) {
+	
+	/**
+	 * Subspace lines have the form:
+	 * <name><w*>[<op>]<w*><value>
+	 * where:
+	 * <name> - name of parameter.
+	 * <op> - operator (currently only = is supported)
+	 * <value> - the value corresponding to the operator (may be { } or just a single value). Special values are "<DEFAULT>" are "<RANDOM>".
+	 * <w*> - zero or more whitespace characters
+	 * 
+	 * This method is implemented by manhandling the Collections we built to have only this subspace.
+	 * 
+	 * @param line - Line to parse
+	 */
+	private void parseSubspaceLine(String line)
+	{
+		String[] newLine = line.split("=");
+		
+		
+		if(newLine.length != 2)
+		{
+			throw new IllegalArgumentException("Unfamiliar operator in subspace in line: " + line);
+		}
+		
+		String name = newLine[0].trim();
+		String value = newLine[1].trim();
+		
+		
+		
+		if(this.isContinuous.get(name) == null)
+		{
+			throw new IllegalArgumentException("Unknown parameter name in subspace in line: " + line);
+		}
+		
+		if(this.isContinuous.get(name))
+		{
+			throw new IllegalArgumentException("Cannot make subspaces of numerical parameters " + name +  " currently in line: " + line);
+		}
+		
+		
+		if(value.equals("<DEFAULT>"))
+		{
+			value = this.defaultValues.get(name);
+		}
+		
+		if(value.equals("<RANDOM>"))
+		{
+			List<String> values = this.values.get(name);
+			int randomValue = this.random.nextInt(values.size());
+			value = this.values.get(name).get(randomValue);
+		}
+
+		Iterator<String> it = this.values.get(name).iterator();
+		
+		while(it.hasNext())		
+		{
+			String currentValue = it.next();
+			if(currentValue.equals(value))
+			{
+				continue;
+			}
+			it.remove();
+		}
+		
+		this.defaultValues.put(name, value);
+		this.categoricalValueMap.get(name).clear();
+		this.categoricalValueMap.get(name).put(value, 0);
+		this.subspacedParameters.add(name);
+	}
+	
+	
+	private void parseForbiddenLine(String line)
+	{
 		
 		String originalLine = line;
 		
@@ -506,13 +606,21 @@ public class ParamConfigurationSpace implements Serializable {
 			
 			Integer valueIndex = categoricalValueMap.get(name).get(value);
 			
-			if(valueIndex == null)
+			if((valueIndex == null) && (!this.subspacedParameters.contains(name)))
 			{
 				throw new IllegalArgumentException("Invalid parameter value " + value + " for parameter " + name + " in line: " + line);
 				
 			}
 			
 			
+			if(this.subspacedParameters.contains(name))
+			{
+				if(!this.defaultValues.get(name).equals(value))
+				{
+					//This forbidden parameter is no longer applicable and so we should drop it
+					return;
+				}
+			}
 			
 			
 			int[] nvPairArrayForm = new int[2];
