@@ -32,12 +32,6 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 	private long resultSeed; 
 	
 	/**
-	 * Result line reported by the target algorithm (for debug purposes only), 
-	 * NOTE: This will always be parsable, and may not be what the algorithm reported
-	 */
-	private String resultLine;
-	
-	/**
 	 * Raw result line reported by the target algorithm (potentially useful if the result line is corrupt)
 	 */
 	private String rawResultLine;
@@ -86,14 +80,12 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 		this.runLength = runLength;
 		this.quality = quality;
 		this.resultSeed = resultSeed;
-		this.resultLine = acResult.name() + ", " + runtime + ", " + runLength + ", " + quality + ", " + resultSeed;
-		if(additionalRunData.trim().length() > 0)
-		{
-			this.resultLine += "," + additionalRunData;
-			this.additionalRunData = additionalRunData;
-		}
+		this.additionalRunData = additionalRunData;
 		
-		this.rawResultLine = rawResultLine;
+		if(this.saveRawResultLine())
+		{
+			this.rawResultLine = rawResultLine;
+		}
 		this.runResultWellFormed = true;
 		
 		this.resultSet = true;
@@ -162,8 +154,12 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 		this.runLength = runLength;
 		this.quality = quality;
 		this.resultSeed = resultSeed;
-		this.resultLine = resultLine;
-		this.rawResultLine = rawResultLine;
+		
+		if(this.saveRawResultLine())
+		{
+			this.rawResultLine = rawResultLine;
+		}
+		
 		this.runResultWellFormed = runResultWellFormed;
 
 		this.additionalRunData = additionalRunData;
@@ -255,11 +251,21 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 		if(!isRunResultWellFormed()) throw new IllegalStateException("Execution Result was not well formed");
 		return resultSeed;
 	}
-
+	
+	private final String _getResultLine()
+	{
+		String resultLine = acResult.name() + ", " + runtime + ", " + runLength + ", " + quality + ", " + resultSeed;
+		if(additionalRunData.trim().length() > 0)
+		{
+			resultLine += "," + additionalRunData;
+		}
+		return resultLine;
+	}
+	
 	@Override
 	public final String getResultLine() {
 		if(!isRunResultWellFormed()) throw new IllegalStateException("Execution Result was not well formed");
-		return resultLine;
+		return _getResultLine();
 	}
 
 	@Override
@@ -283,7 +289,15 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 	public final String rawResultLine()
 	{
 		if(!isResultSet()) throw new IllegalStateException("Run has not yet completed: " + this.toString());
-		return rawResultLine;
+		
+		if(saveRawResultLine())
+		{
+			return rawResultLine;
+		} else
+		{
+			return "[Raw Result Line Not Saved]";
+		}
+		
 	}
 	
 	@Override
@@ -314,9 +328,9 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 		StringBuilder sb = new StringBuilder();
 		sb.append(execConfig.toString()).append("\n");
 		sb.append(runConfig.toString());
-		sb.append("\nResult Line:" + resultLine) ;
 		sb.append("\nRawResultLine:" + rawResultLine);
 		sb.append("\nrunCompleted:" + isRunCompleted());
+		sb.append("\nresultLine:" + this._getResultLine());
 		sb.append("\nacResult:" + acResult);
 		sb.append("\nAdditional Run Data:" + additionalRunData);
 		sb.append("\nClass:" + this.getClass().getSimpleName());
@@ -348,6 +362,11 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 	protected boolean isResultSet()
 	{
 		return resultSet;
+	}
+	
+	private boolean saveRawResultLine()
+	{
+		return false;
 	}
 	
 	
