@@ -112,10 +112,11 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	@Override
 	public synchronized void run() {
 		
-		if(isRunCompleted())
+		if(this.isRunCompleted())
 		{
 			return;
 		}
+		
 		if(killHandler.isKilled())
 		{
 			

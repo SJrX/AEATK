@@ -41,14 +41,13 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 	 * Raw result line reported by the target algorithm (potentially useful if the result line is corrupt)
 	 */
 	private String rawResultLine;
-	
-	
-	
+		
 	/**
-	 * true if the run is completed 
+	 * true if the result has been set,
+	 * if this is false most methods will throw an IllegalStateException
 	 */
-	private boolean runCompleted = false;
 	
+	private boolean resultSet = false;
 	/**
 	 * True if the run was well formed
 	 * Note: We may deprecate this in favor of using CRASHED
@@ -96,7 +95,9 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 		
 		this.rawResultLine = rawResultLine;
 		this.runResultWellFormed = true;
-		this.runCompleted = true;
+		
+		this.resultSet = true;
+		
 		
 		if(!(this instanceof KillableAlgorithmRun))
 		{
@@ -164,8 +165,9 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 		this.resultLine = resultLine;
 		this.rawResultLine = rawResultLine;
 		this.runResultWellFormed = runResultWellFormed;
-		this.runCompleted = true;
+
 		this.additionalRunData = additionalRunData;
+		this.resultSet = true;
 		if(!(this instanceof KillableAlgorithmRun))
 		{
 			
@@ -262,19 +264,25 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 
 	@Override
 	public final synchronized boolean isRunCompleted() {
-		return runCompleted;
+		if(acResult == null)
+		{
+			return false;
+		} else
+		{
+			return !acResult.equals(RunResult.RUNNING);
+		}
 	}
 
 	@Override
 	public final synchronized boolean isRunResultWellFormed() {
-		if(!isRunCompleted()) throw new IllegalStateException("Run has not yet completed: " + this.toString());
+		if(!isResultSet()) throw new IllegalStateException("Run has not yet completed: " + this.toString());
 		return runResultWellFormed;
 	}
 	
 	@Override
 	public final String rawResultLine()
 	{
-		if(!isRunCompleted()) throw new IllegalStateException("Run has not yet completed: " + this.toString());
+		if(!isResultSet()) throw new IllegalStateException("Run has not yet completed: " + this.toString());
 		return rawResultLine;
 	}
 	
@@ -308,7 +316,7 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 		sb.append(runConfig.toString());
 		sb.append("\nResult Line:" + resultLine) ;
 		sb.append("\nRawResultLine:" + rawResultLine);
-		sb.append("\nrunCompleted:" + runCompleted);
+		sb.append("\nrunCompleted:" + isRunCompleted());
 		sb.append("\nacResult:" + acResult);
 		sb.append("\nAdditional Run Data:" + additionalRunData);
 		sb.append("\nClass:" + this.getClass().getSimpleName());
@@ -337,6 +345,10 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 		return additionalRunData;
 	}
 	
+	protected boolean isResultSet()
+	{
+		return resultSet;
+	}
 	
 	
 }

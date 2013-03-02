@@ -7,6 +7,11 @@ import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 
 public class KillableWrappedAlgorithmRun implements KillableAlgorithmRun {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -8430387600111279170L;
+	
 	private final AlgorithmRun run;
 	
 	public KillableWrappedAlgorithmRun(AlgorithmRun run)
@@ -62,10 +67,6 @@ public class KillableWrappedAlgorithmRun implements KillableAlgorithmRun {
 		return run.call();
 	}
 
-	public boolean isRunCompleted() {
-		return run.isRunCompleted();
-	}
-
 	public boolean isRunResultWellFormed() {
 		return run.isRunResultWellFormed();
 	}
@@ -81,6 +82,12 @@ public class KillableWrappedAlgorithmRun implements KillableAlgorithmRun {
 	@Override
 	public void kill() {
 		//NOOP this run is done
+	}
+
+	@Override
+	public boolean isRunCompleted() {
+
+		return run.isRunCompleted();
 	}
 
 }

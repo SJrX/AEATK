@@ -34,11 +34,14 @@ public interface AlgorithmRun extends Runnable, Serializable,  Callable<Object> 
 	/**
 	 * Get the Run Result
 	 * 
+	 * <b>Implementation Notes:</b>
 	 *  The Run Result should be TIMEOUT, CRASHED or ABORT if and only if the runtime() is >= the associated cutoff time.
 	 * 
 	 *  The Run Result should be TIMEOUT if the cutoff time is zero, and we probably shouldn't bother doing anything 
 	 *  
 	 *  The Run Result should NEVER be RUNNING, unless this is an appropriate subtype that supports Killing.
+	 *  
+	 *  If the result is RUNNING then isRunComplete() should return <code>false</code> otherwise it should return </code>true</code>
 	 *  
 	 * @return RunResult for run
 	 * @throws IllegalStateException if the run has not completed
@@ -125,8 +128,12 @@ public interface AlgorithmRun extends Runnable, Serializable,  Callable<Object> 
 	
 
 	/**
-	 * Returns whether this run is completed
+	 * Returns true if the run is complete
+	 * <b>Implementation Note:</b>This should always be the same as run.getRunResult().equals(RunResult.RUNNING)
+	 * 
 	 * @return <code>true</code> if this run has finished executing, <code>false</code> otherwise
+	 * 
+	 * 
 	 */
 	public boolean isRunCompleted();
 
