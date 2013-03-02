@@ -217,6 +217,78 @@ public class ParamConfigurationSpace implements Serializable {
 	 */
 	public ParamConfigurationSpace(Reader file, Random random, String absoluteFileName)
 	{
+		this(file,random,absoluteFileName, true);
+	}
+	
+	/**
+	 * Creates a Param Configuration Space from the given reader
+	 * @param reader that contains the text of the file
+	 * @param random random object to parse
+	 * @param absolute file name of the object (a unique string used for equality)
+	 * @param processSubSpace Whether we should process the subspace or not;
+	 */
+	private ParamConfigurationSpace(Reader file, Random random, String absoluteFileName, boolean processSubspace)
+	{
+		
+		/**
+		 * For subspaces we need to do two passes, 
+		 * and so take the reader and read everything into a String
+		 * which we then wrap with a StringReader in the existing code
+		 */
+		StringBuilder sb = new StringBuilder();
+		try {
+		
+			BufferedReader inputData = null;
+			try {
+				inputData = new BufferedReader(file);
+				String line;
+				while((line = inputData.readLine()) != null)
+				{ try {
+					sb.append(line + "\n");
+					} catch(RuntimeException e)
+					{
+						System.err.println("Error occured parsing: " + line);
+						throw e;
+					}
+				}
+			} finally
+			{
+				
+				if (inputData != null)
+				{
+					inputData.close();
+				}
+			}
+		
+		}  catch (FileNotFoundException e) {
+
+			throw new IllegalStateException(e);
+		} catch (IOException e) {
+			
+			
+			throw new IllegalStateException(e);
+		}
+		
+			
+		StringReader reader = new StringReader(sb.toString());
+			
+		if(processSubspace)
+		{
+			//We will create the configuration space without the subspace 
+			//this will do full validation, then if this passes 
+			//we can make the validation a bit weaker (since some values may be illegal)
+			try 
+			{
+				new ParamConfigurationSpace(reader, new Random(), absoluteFileName, false);
+				reader = new StringReader(sb.toString());
+			} catch(RuntimeException e)
+			{
+				throw e;
+			}
+		}
+		
+		
+		
 		/*
 		 * Parse File and create configuration space
 		 */
@@ -232,7 +304,7 @@ public class ParamConfigurationSpace implements Serializable {
 			
 			try{
 			
-			inputData = new BufferedReader(file);
+			inputData = new BufferedReader(reader);
 			String line;
 			while((line = inputData.readLine()) != null)
 			{ try {
@@ -266,11 +338,13 @@ public class ParamConfigurationSpace implements Serializable {
 		 * Parse the subspace declarations
 		 */
 		
-		for(String subSpaceLine : this.subspaceLines)
+		if(processSubspace)
 		{
-			parseSubspaceLine(subSpaceLine);
+			for(String subSpaceLine : this.subspaceLines)
+			{
+				parseSubspaceLine(subSpaceLine);
+			}
 		}
-		
 		
 		/*
 		 * Create data structures necessary for ParamConfiguration objects
@@ -338,7 +412,10 @@ public class ParamConfigurationSpace implements Serializable {
 					
 					
 					condParents[i][j] = paramKeyIndexMap.get(e.getKey()) ;
-					condParentVals[i][j] = new int[e.getValue().size()]; 
+					condParentVals[i][j] = null;
+							
+					ArrayList<Integer> values = new ArrayList<Integer>();
+					
 					for(int k=0; k < e.getValue().size(); k++)
 					{
 
@@ -350,16 +427,29 @@ public class ParamConfigurationSpace implements Serializable {
 							throw new IllegalArgumentException("Value depends upon continuous parameter, this is not supported: " + key + " depends on " + depKey + " values: " + depValue);
 						}
 						
-						if(!getCategoricalValueMap().get(depKey).keySet().contains(depValue))
+						if((!getCategoricalValueMap().get(depKey).keySet().contains(depValue)) && (!this.subspacedParameters.contains(depKey)))
 						{
 							throw new IllegalArgumentException("Value depends upon a non-existant or invalid parameter value: " + key + " depends on " + depKey + " having invalid value: " + depValue);
 						}
 				
-						condParentVals[i][j][k] = getCategoricalValueMap().get(e.getKey()).get(e.getValue().get(k));
+						Integer value = getCategoricalValueMap().get(e.getKey()).get(e.getValue().get(k));
 						
-						condParentVals[i][j][k]++;
-						
+						if(value != null)
+						{
+							values.add(value);
+						}
+					
 					}
+					
+					condParentVals[i][j] = new int[values.size()];
+					int x=0;
+					for(Integer val: values)
+					{
+						condParentVals[i][j][x] = val;
+						condParentVals[i][j][x]++;
+						x++;
+					}
+					
 					j++;	
 				}
 				
@@ -448,6 +538,8 @@ public class ParamConfigurationSpace implements Serializable {
 			type = LineType.OTHER;
 			if(line.trim().equals("Conditionals:")) return;
 			if(line.trim().equals("Forbidden:")) return;
+			if(line.trim().equals("Subspaces:")) return;
+			if(line.trim().equals("Subspace:")) return;
 			
 			throw new IllegalArgumentException("Cannot parse the following line:" + line);
 		} else if (line.indexOf("[") != line.lastIndexOf("["))

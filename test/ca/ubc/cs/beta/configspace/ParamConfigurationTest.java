@@ -946,6 +946,66 @@ public class ParamConfigurationTest {
 		assertEquals("Should have 3 neighbours", 3, configSpace.getDefaultConfiguration().getNeighbourhood().size());
 	}
 	
+	@Test
+	/**
+	 * Tests to see that forbidden parameters are treated correctly when we subspace stuff
+	 */
+	public void testSubspaceDeclarationSubspaceAndConditionalInactive()
+	{
+		StringReader sr = new StringReader(
+				"foo { a, b, c, d } [d]\n" +
+				"bar { 1,2,3,4} [1]\n" +
+				"foo = a\n" +
+				"bar | foo in { c,b }");
+		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(sr);
+		assertEquals("Should have 0 neighbours", 0, configSpace.getDefaultConfiguration().getNeighbourhood().size());
+	}
+	
+	@Test
+	/**
+	 * Tests to see that forbidden parameters are treated correctly when we subspace stuff
+	 */
+	public void testSubspaceDeclarationSubspaceAndConditional()
+	{
+		StringReader sr = new StringReader(
+				"foo { a, b, c, d } [d]\n" +
+				"bar { 1,2,3,4} [1]\n" +
+				"foo = a\n" +
+				"bar | foo in { a,b }");
+		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(sr);
+		assertEquals("Should have 3 neighbours", 3, configSpace.getDefaultConfiguration().getNeighbourhood().size());
+	}
+	
+	@Test(expected=IllegalArgumentException.class)
+	/**
+	 * Tests to see that forbidden parameters are treated correctly when we subspace stuff
+	 */
+	public void testSubspaceDeclarationSubspaceAndConditionalIllegal()
+	{
+		StringReader sr = new StringReader(
+				"foo { a, b, c, d } [d]\n" +
+				"bar { 1,2,3,4} [1]\n" +
+				"foo = a\n" +
+				"bar | foo in { a,b, IllegalValue }");
+		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(sr);
+		assertEquals("Should have 3 neighbours", 3, configSpace.getDefaultConfiguration().getNeighbourhood().size());
+	}
+	
+	
+	@Test(expected=IllegalArgumentException.class)
+	/**
+	 * Tests to see that forbidden parameters are treated correctly when we subspace stuff
+	 */
+	public void testSubspaceDeclarationSubspaceAndIllegalDefault()
+	{
+		StringReader sr = new StringReader(
+				"foo { a, b, c, d } [d]\n" +
+				"bar { 1,2,3,4} [1]\n" +
+				"foo = a\n" +
+				"{ foo = a, bar = 1}");
+		new ParamConfigurationSpace(sr);
+		
+	}
 	
 	
 	
@@ -953,7 +1013,7 @@ public class ParamConfigurationTest {
 	public void testInvalidSubspaceOperator()
 	{
 		StringReader sr = new StringReader("foo { a, b, c, d } [d]\n foo in a");
-		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(sr);
+		new ParamConfigurationSpace(sr);
 	}
 	
 	
