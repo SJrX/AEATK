@@ -77,6 +77,7 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractBlockingTargetA
 		AlgorithmRunner runner = getAlgorithmRunner(runConfigs,obs);
 		List<AlgorithmRun> runs =  runner.run();
 		addRuns(runs);
+		runner.shutdownThreadPool();
 		return runs;
 	}
 	
@@ -117,8 +118,7 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractBlockingTargetA
 
 	@Override
 	protected void subtypeShutdown() {
-		AutomaticConfiguratorFactory.shutdown();
-		
+		//We don't create any ThreadPools currently
 	}
 
 	@Override

@@ -1495,5 +1495,16 @@ public class ParamConfigurationSpace implements Serializable {
 	{
 		return hasRealParameterFile;
 	}
+	
+	/**
+	 * Returns a configuration space with a single parameter and single value
+	 * 
+	 * @return a valid configuration space that is effectively empty
+	 */
+	public static ParamConfigurationSpace getSingletonConfigurationSpace()
+	{
+		return new ParamConfigurationSpace(new StringReader("singleton { singleton } [singleton]"));
+	}
+	
 }
 

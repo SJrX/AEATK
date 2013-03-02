@@ -78,10 +78,4 @@ public class AutomaticConfiguratorFactory {
 		return new ConcurrentAlgorithmRunner(execConfig, runConfigs, nThreads, obs);
 	}
 
-	/**
-	 * Shutsdown the target algorithm evaluator
-	 */
-	public static void shutdown() {
-		AbstractAlgorithmRunner.shutdown();
-	}
 }

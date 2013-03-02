@@ -159,9 +159,11 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 	@Override
 	public abstract List<AlgorithmRun> run();
 	
-	public static void shutdown()
-	{
-		//execService.shutdownNow();
+	@Override
+	public void shutdownThreadPool() {
+		this.execService.shutdown();
+		
 	}
+
 	
 }
