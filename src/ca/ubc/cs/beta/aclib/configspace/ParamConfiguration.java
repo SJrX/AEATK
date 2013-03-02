@@ -241,64 +241,21 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	 */
 	public String put(String key, String newValue) 
 	{
-		/* We find the index into the valueArray from paramKeyIndexMap,
-		 * then we find the new value to set from it's position in the getValuesMap() for the key. 
-		 * NOTE: i = 1 since the valueArray numbers elements from 1
-		 */
-		
+	
 		isDirty = true;
 
-		Integer index = paramKeyToValueArrayIndexMap.get(key);
-		if(index == null)
-		{
-			throw new IllegalArgumentException("This key does not exist in the Parameter Space: " + key);
 
-		}
-		
 		String oldValue = get(key);
 		
-		if(newValue == null)
-		{
-			valueArray[index] = Double.NaN;
-		}
-		else if(parameterDomainContinuous[index])
-		{
-			valueArray[index] = configSpace.getNormalizedRangeMap().get(key).normalizeValue(Double.valueOf(newValue));
-			
-		} else
-		{
-			List<String> inOrderValues = configSpace.getValuesMap().get(key);
-			int i=1;		
-			boolean valueFound = false;
-			
-			
-			for(String possibleValue : inOrderValues)
-			{
-				if (possibleValue.equals(newValue))
-				{
-					this.valueArray[index] = i;
-					valueFound = true;
-					break;
-				} 
-				i++;
-			}
-			
-			if(valueFound == false)
-			{
-				throw new IllegalArgumentException("Value is not legal for this parameter: " + key + " Value:" + newValue);
-			}
-			
-			
-		}
+		configSpace.setValueInArray(valueArray,key,newValue);
 		
-	
-		
+		int index = paramKeyToValueArrayIndexMap.get(key);
 		if(parameterDomainContinuous[index] && newValue != null)
 		{
 			double d1 = Double.valueOf(get(key));
 			double d2 = Double.valueOf(newValue);
 			
-			if(Math.abs(d1/d2 - 1) >  Math.pow(10, -12))
+			if(Math.abs(d1/d2 - 1) >  EPSILON)
 			{
 				System.out.println("Warning got the following value back from map " + get(key) + " put " + newValue + " in");
 			}
@@ -444,6 +401,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 		{
 			if(isDirty) cleanUp();
 			
+			/*
 			float[] values = new float[valueArrayForComparsion.length];
 			
 			
@@ -452,8 +410,9 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 				values[i] = (float) valueArrayForComparsion[i];
 				
 			}
-			
-			lastHash = Hash.hashCode(values); 
+			*/
+			lastHash = Arrays.hashCode(valueArrayForComparsion);
+			//lastHash = Hash.hashCode(values); 
 			
 			
 			hashSet = true;
@@ -749,7 +708,9 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	private int numberOfNeighboursForParam(int valueArrayIndex, boolean isParameterActive)
 	{
 		if(isParameterActive == false) return 0;
-
+		
+		if(configSpace.searchSubspaceActive[valueArrayIndex]) return 0;
+		
 		if(parameterDomainContinuous[valueArrayIndex])
 		{
 		  return ParamConfigurationSpace.NEIGHBOURS_FOR_CONTINUOUS;
@@ -981,6 +942,25 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	 */ 
 	public ParamConfigurationSpace getConfigurationSpace() {
 		return configSpace;
+	}
+
+
+	private static final double EPSILON = Math.pow(10, -14);
+
+	public boolean isInSearchSubspace() {
+		
+		for(int i=0; i < valueArray.length; i++)
+		{
+			if(configSpace.searchSubspaceActive[i])
+			{
+				if(Math.abs(valueArray[i]-configSpace.searchSubspaceValues[i]) > EPSILON)
+				{
+					return false;
+				}
+			}
+		}
+		
+		return true;
 	}
 
 

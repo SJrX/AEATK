@@ -12,7 +12,6 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -31,8 +30,7 @@ enum LineType
 	CONTINUOUS,
 	CONDITIONAL,
 	FORBIDDEN,
-	OTHER, 
-	SUBSPACE
+	OTHER
 	
 }
 
@@ -136,27 +134,35 @@ public class ParamConfigurationSpace implements Serializable {
 
 	private final int[][][] condParentVals;
 
+	
+	
+	
+	
 	private Random random;
 	
 	private boolean hasRealParameterFile = true;
-	
-	
-	private final Set<String> subspacedParameters = new HashSet<String>();
 	
 	/**
 	 * Stores forbidden lines for later parsing
 	 */
 	private final List<String> forbiddenLines = new ArrayList<String>();
 
-	
-	/**
-	 * Stores a list of subspaces lines for later parsing
-	 */
-	private final List<String> subspaceLines = new ArrayList<String>();
 	/**
 	 * Gets the default configuration
 	 */
 	private final double[] defaultConfigurationValueArray;
+	
+	/**
+	 * For each parameter stores the subspace value we are looking at.
+	 */
+	final double[] searchSubspaceValues;
+	
+	/**
+	 * Stores whether we should only be looking at the subspace for the parameter.
+	 */
+	final boolean[]  searchSubspaceActive;
+	
+	
 	
 	/**
 	 * Creates a Param Configuration Space from the given file and random
@@ -187,6 +193,17 @@ public class ParamConfigurationSpace implements Serializable {
 		this(file,SeedableRandomSingleton.getRandom());
 	}
 	
+	/**
+	 * 
+	 * @param reader
+	 * @param searchSubspace
+	 */
+	public ParamConfigurationSpace(Reader reader, Map<String, String> searchSubspace)
+	{
+		this(reader,SeedableRandomSingleton.getRandom(), "ReaderOnly-"+System.currentTimeMillis() +"-" +(int) (Math.random() * 10000000.0), searchSubspace);
+		hasRealParameterFile = false;
+	}
+	
 	
 	/**
 	 * Creates a Param Configuration Space from the given file, no random object
@@ -198,6 +215,7 @@ public class ParamConfigurationSpace implements Serializable {
 		hasRealParameterFile = false;
 	}
 	
+	
 	/**
 	 * Creates a Param Configuration Space from the given file
 	 * @param file
@@ -208,16 +226,16 @@ public class ParamConfigurationSpace implements Serializable {
 		this(new FileReaderNoException(file), random, file.getAbsolutePath());
 	}
 	
-	
 	/**
 	 * Creates a Param Configuration Space from the given reader
 	 * @param reader that contains the text of the file
 	 * @param random random object to parse
 	 * @param absolute file name of the object (a unique string used for equality)
 	 */
+	@SuppressWarnings("unchecked")
 	public ParamConfigurationSpace(Reader file, Random random, String absoluteFileName)
 	{
-		this(file,random,absoluteFileName, true);
+		this(file, random, absoluteFileName, Collections.EMPTY_MAP);
 	}
 	
 	/**
@@ -225,69 +243,9 @@ public class ParamConfigurationSpace implements Serializable {
 	 * @param reader that contains the text of the file
 	 * @param random random object to parse
 	 * @param absolute file name of the object (a unique string used for equality)
-	 * @param processSubSpace Whether we should process the subspace or not;
 	 */
-	private ParamConfigurationSpace(Reader file, Random random, String absoluteFileName, boolean processSubspace)
+	public ParamConfigurationSpace(Reader file, Random random, String absoluteFileName, Map<String, String> searchSubspace)
 	{
-		
-		/**
-		 * For subspaces we need to do two passes, 
-		 * and so take the reader and read everything into a String
-		 * which we then wrap with a StringReader in the existing code
-		 */
-		StringBuilder sb = new StringBuilder();
-		try {
-		
-			BufferedReader inputData = null;
-			try {
-				inputData = new BufferedReader(file);
-				String line;
-				while((line = inputData.readLine()) != null)
-				{ try {
-					sb.append(line + "\n");
-					} catch(RuntimeException e)
-					{
-						System.err.println("Error occured parsing: " + line);
-						throw e;
-					}
-				}
-			} finally
-			{
-				
-				if (inputData != null)
-				{
-					inputData.close();
-				}
-			}
-		
-		}  catch (FileNotFoundException e) {
-
-			throw new IllegalStateException(e);
-		} catch (IOException e) {
-			
-			
-			throw new IllegalStateException(e);
-		}
-		
-			
-		StringReader reader = new StringReader(sb.toString());
-			
-		if(processSubspace)
-		{
-			//We will create the configuration space without the subspace 
-			//this will do full validation, then if this passes 
-			//we can make the validation a bit weaker (since some values may be illegal)
-			try 
-			{
-				new ParamConfigurationSpace(reader, new Random(), absoluteFileName, false);
-				reader = new StringReader(sb.toString());
-			} catch(RuntimeException e)
-			{
-				throw e;
-			}
-		}
-		
-		
 		
 		/*
 		 * Parse File and create configuration space
@@ -304,7 +262,7 @@ public class ParamConfigurationSpace implements Serializable {
 			
 			try{
 			
-			inputData = new BufferedReader(reader);
+			inputData = new BufferedReader(file);
 			String line;
 			while((line = inputData.readLine()) != null)
 			{ try {
@@ -334,17 +292,7 @@ public class ParamConfigurationSpace implements Serializable {
 			throw new IllegalStateException(e);
 		}
 		
-		/**
-		 * Parse the subspace declarations
-		 */
 		
-		if(processSubspace)
-		{
-			for(String subSpaceLine : this.subspaceLines)
-			{
-				parseSubspaceLine(subSpaceLine);
-			}
-		}
 		
 		/*
 		 * Create data structures necessary for ParamConfiguration objects
@@ -383,16 +331,26 @@ public class ParamConfigurationSpace implements Serializable {
 		  condParentVals = new int[numberOfParameters][][];
 		  
 			Map<String, Map<String, List<String>>> depValueMap = getDependentValuesMap();
+			
+			for(String key : depValueMap.keySet())
+			{
+				if(!this.paramKeyIndexMap.keySet().contains(key))
+				{
+					throw new IllegalArgumentException("Illegal independent value ("+ key+") specified on conditional line.");
+				}
+			}
 			for(i=numberOfParameters; i < numberOfParameters;i++)
 			{
 				condParents[i] = new int[0];
 				condParentVals[i] = new int[0][];
 			}
 			
+			
 			for( i=0; i < numberOfParameters; i++)
 			{
 				
 				String key = getParameterNames().get(i);
+				
 				//System.out.println("key => " + key);
 
 				Map<String, List<String>> depValues = depValueMap.get(key); 
@@ -410,12 +368,13 @@ public class ParamConfigurationSpace implements Serializable {
 				for(Entry<String, List<String>> e : depValues.entrySet())
 				{
 					
+					if(paramKeyIndexMap.get(e.getKey())  == null)
+					{
+						throw new IllegalArgumentException("Illegal dependant parameter ("+ e.getKey()+ ") on conditional line in param file: "); 
+					}
 					
 					condParents[i][j] = paramKeyIndexMap.get(e.getKey()) ;
-					condParentVals[i][j] = null;
-							
-					ArrayList<Integer> values = new ArrayList<Integer>();
-					
+					condParentVals[i][j] = new int[e.getValue().size()]; 
 					for(int k=0; k < e.getValue().size(); k++)
 					{
 
@@ -427,29 +386,16 @@ public class ParamConfigurationSpace implements Serializable {
 							throw new IllegalArgumentException("Value depends upon continuous parameter, this is not supported: " + key + " depends on " + depKey + " values: " + depValue);
 						}
 						
-						if((!getCategoricalValueMap().get(depKey).keySet().contains(depValue)) && (!this.subspacedParameters.contains(depKey)))
+						if(!getCategoricalValueMap().get(depKey).keySet().contains(depValue))
 						{
 							throw new IllegalArgumentException("Value depends upon a non-existant or invalid parameter value: " + key + " depends on " + depKey + " having invalid value: " + depValue);
 						}
 				
-						Integer value = getCategoricalValueMap().get(e.getKey()).get(e.getValue().get(k));
+						condParentVals[i][j][k] = getCategoricalValueMap().get(e.getKey()).get(e.getValue().get(k));
 						
-						if(value != null)
-						{
-							values.add(value);
-						}
-					
+						condParentVals[i][j][k]++;
+						
 					}
-					
-					condParentVals[i][j] = new int[values.size()];
-					int x=0;
-					for(Integer val: values)
-					{
-						condParentVals[i][j][x] = val;
-						condParentVals[i][j][x]++;
-						x++;
-					}
-					
 					j++;	
 				}
 				
@@ -476,7 +422,25 @@ public class ParamConfigurationSpace implements Serializable {
 			throw new IllegalArgumentException("Default parameter setting cannot be a forbidden parameter setting");
 		}
 		
-	
+		this.searchSubspaceValues = new double[this.defaultConfigurationValueArray.length];
+		this.searchSubspaceActive = new boolean[this.defaultConfigurationValueArray.length];
+		
+		for(Entry<String, String> subspaceProfile : searchSubspace.entrySet())
+		{
+			String param = subspaceProfile.getKey();
+			String value = subspaceProfile.getValue();
+			
+			if(value.equals("<DEFAULT>"))
+			{
+				value = this.getDefaultConfiguration().get(param);
+			}
+			
+			int index = this.paramKeyIndexMap.get(param);
+			
+			
+			setValueInArray(this.searchSubspaceValues, param, value);
+			this.searchSubspaceActive[index] = true;
+		}
 	}
 	
 	/**
@@ -516,7 +480,6 @@ public class ParamConfigurationSpace implements Serializable {
 		/** 
 		 * Perhaps not the most robust but the logic here is as follows
 		 * if we see a "|" it's a conditional line
-		 * if we see a "=" it's a subspace line
 		 * otherwise we expect to see a "[" (if we don't we have no idea) what it is. 
 		 * If we see two (Or more) "[" then allegedly it's continous (one specifies the range the other the default).
 		 * Otherwise we must be categorical
@@ -529,17 +492,11 @@ public class ParamConfigurationSpace implements Serializable {
 		} else if(line.trim().substring(0, 1).equals("{"))
 		{
 			type = LineType.FORBIDDEN;
-		} else if (line.trim().contains("="))
-		{
-			type = LineType.SUBSPACE;
-			
-		}else if(line.indexOf("[") < 0)
+		} else if(line.indexOf("[") < 0)
 		{
 			type = LineType.OTHER;
 			if(line.trim().equals("Conditionals:")) return;
 			if(line.trim().equals("Forbidden:")) return;
-			if(line.trim().equals("Subspaces:")) return;
-			if(line.trim().equals("Subspace:")) return;
 			
 			throw new IllegalArgumentException("Cannot parse the following line:" + line);
 		} else if (line.indexOf("[") != line.lastIndexOf("["))
@@ -552,8 +509,6 @@ public class ParamConfigurationSpace implements Serializable {
 		{
 			throw new IllegalArgumentException("Syntax error parsing line " + line + " probably malformed");
 		}
-		
-		
 		
 		switch(type)
 		{
@@ -569,89 +524,14 @@ public class ParamConfigurationSpace implements Serializable {
 			case FORBIDDEN:
 				forbiddenLines.add(line);
 				break;
-			case SUBSPACE:
-				subspaceLines.add(line);
-				break;
 			default:
-				throw new IllegalStateException("Not sure how I can be parsing some other type ");
+				throw new IllegalStateException("Not sure how I can be parsing some other type, ");
 		}
 		
 		
 	}
 	
-	
-	/**
-	 * Subspace lines have the form:
-	 * <name><w*>[<op>]<w*><value>
-	 * where:
-	 * <name> - name of parameter.
-	 * <op> - operator (currently only = is supported)
-	 * <value> - the value corresponding to the operator (may be { } or just a single value). Special values are "<DEFAULT>" are "<RANDOM>".
-	 * <w*> - zero or more whitespace characters
-	 * 
-	 * This method is implemented by manhandling the Collections we built to have only this subspace.
-	 * 
-	 * @param line - Line to parse
-	 */
-	private void parseSubspaceLine(String line)
-	{
-		String[] newLine = line.split("=");
-		
-		
-		if(newLine.length != 2)
-		{
-			throw new IllegalArgumentException("Unfamiliar operator in subspace in line: " + line);
-		}
-		
-		String name = newLine[0].trim();
-		String value = newLine[1].trim();
-		
-		
-		
-		if(this.isContinuous.get(name) == null)
-		{
-			throw new IllegalArgumentException("Unknown parameter name in subspace in line: " + line);
-		}
-		
-		if(this.isContinuous.get(name))
-		{
-			throw new IllegalArgumentException("Cannot make subspaces of numerical parameters " + name +  " currently in line: " + line);
-		}
-		
-		
-		if(value.equals("<DEFAULT>"))
-		{
-			value = this.defaultValues.get(name);
-		}
-		
-		if(value.equals("<RANDOM>"))
-		{
-			List<String> values = this.values.get(name);
-			int randomValue = this.random.nextInt(values.size());
-			value = this.values.get(name).get(randomValue);
-		}
-
-		Iterator<String> it = this.values.get(name).iterator();
-		
-		while(it.hasNext())		
-		{
-			String currentValue = it.next();
-			if(currentValue.equals(value))
-			{
-				continue;
-			}
-			it.remove();
-		}
-		
-		this.defaultValues.put(name, value);
-		this.categoricalValueMap.get(name).clear();
-		this.categoricalValueMap.get(name).put(value, 0);
-		this.subspacedParameters.add(name);
-	}
-	
-	
-	private void parseForbiddenLine(String line)
-	{
+	private void parseForbiddenLine(String line) {
 		
 		String originalLine = line;
 		
@@ -698,21 +578,13 @@ public class ParamConfigurationSpace implements Serializable {
 			
 			Integer valueIndex = categoricalValueMap.get(name).get(value);
 			
-			if((valueIndex == null) && (!this.subspacedParameters.contains(name)))
+			if(valueIndex == null)
 			{
 				throw new IllegalArgumentException("Invalid parameter value " + value + " for parameter " + name + " in line: " + line);
 				
 			}
 			
 			
-			if(this.subspacedParameters.contains(name))
-			{
-				if(!this.defaultValues.get(name).equals(value))
-				{
-					//This forbidden parameter is no longer applicable and so we should drop it
-					return;
-				}
-			}
 			
 			
 			int[] nvPairArrayForm = new int[2];
@@ -1170,6 +1042,10 @@ public class ParamConfigurationSpace implements Serializable {
 		
 		return this.getRandomConfiguration(false);
 	}
+	
+	
+	
+	
 	/**
 	 * Returns a random instance for the configuration space
 	 * @param allowForbiddenParameters  <code>true</code> if we can return parameters that are forbidden, <code>false</code> otherwise.
@@ -1177,20 +1053,19 @@ public class ParamConfigurationSpace implements Serializable {
 	 */
 	public ParamConfiguration getRandomConfiguration(boolean allowForbiddenParameters)
 	{
-		while(true)
+		for(int j=0; j < 1000000; j++)
 		{
 			double[] valueArray = new double[numberOfParameters];
 			for(int i=0; i < numberOfParameters; i++)
 			{
-				if (parameterDomainContinuous[i])
+				if(searchSubspaceActive[i])
+				{		
+					valueArray[i] = searchSubspaceValues[i];
+				}	else if (parameterDomainContinuous[i])
 				{
-					//valueArray[i] = Math.round(random.nextDouble()*1000000000000L)/1000000000000.0;
 					valueArray[i] = random.nextDouble();
-					
-					//System.out.println("Generated: " + valueArray[i]);
 				} else
 				{
-					//array values = 0 have invalid values, so we take one less of the categorical size and then + 1
 					valueArray[i] = random.nextInt(categoricalSize[i]) + 1;
 					
 				}
@@ -1202,6 +1077,8 @@ public class ParamConfigurationSpace implements Serializable {
 				return p;
 			} 
 		}
+		
+		throw new IllegalArgumentException("After 1,000,000 attempts at generating a random configurations we have failed to generate even one that isn't forbidden. It is likely that your forbidden parameter settings are too restrictive. Try excluding smaller regions of the space.");
 	}
 	
 	/**
@@ -1504,6 +1381,57 @@ public class ParamConfigurationSpace implements Serializable {
 	public static ParamConfigurationSpace getSingletonConfigurationSpace()
 	{
 		return new ParamConfigurationSpace(new StringReader("singleton { singleton } [singleton]"));
+	}
+
+	void setValueInArray(double[] valueArray, String key, String newValue) {
+		
+		/* We find the index into the valueArray from paramKeyIndexMap,
+		 * then we find the new value to set from it's position in the getValuesMap() for the key. 
+		 * NOTE: i = 1 since the valueArray numbers elements from 1
+		 */
+		
+		
+		Integer index = paramKeyIndexMap.get(key);
+		if(index == null)
+		{
+			throw new IllegalArgumentException("This key does not exist in the Parameter Space: " + key);
+
+		}
+		
+		if(newValue == null)
+		{
+			valueArray[index] = Double.NaN;
+		}
+		else if(parameterDomainContinuous[index])
+		{
+			valueArray[index] = getNormalizedRangeMap().get(key).normalizeValue(Double.valueOf(newValue));
+			
+		} else
+		{
+			List<String> inOrderValues = getValuesMap().get(key);
+			int i=1;		
+			boolean valueFound = false;
+			
+			
+			for(String possibleValue : inOrderValues)
+			{
+				if (possibleValue.equals(newValue))
+				{
+					valueArray[index] = i;
+					valueFound = true;
+					break;
+				} 
+				i++;
+			}
+			
+			if(valueFound == false)
+			{
+				throw new IllegalArgumentException("Value is not legal for this parameter: " + key + " Value:" + newValue);
+			}
+			
+			
+		}
+		
 	}
 	
 }
