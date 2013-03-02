@@ -5,6 +5,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
+import java.util.TreeSet;
 
 import ca.ubc.cs.beta.aclib.misc.jcommander.converter.BinaryDigitBooleanConverter;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.NonNegativeInteger;
@@ -31,7 +32,7 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 		StringBuilder sb = new StringBuilder();
 		String cwd = System.getProperty("user.dir");
 		Set<String> files = new HashSet<String>();
-		List<String> directoriesToSearch = new ArrayList<String>();
+		Set<String> directoriesToSearch = new TreeSet<String>();
 		
 		directoriesToSearch.add(cwd);
 		
@@ -55,15 +56,28 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 		directoriesToSearch.add(pluginDirectory);
 		
 		File pluginDir = new File(pluginDirectory);
+		boolean errorOccured = false;
 		//We will look in the plugins directory and all sub directories, but not further
 		if(pluginDir.exists())
 		{
-			for(File f : pluginDir.listFiles())
+			//System.out.println(pluginDirectory);
+			//System.exit(0);
+			if(!pluginDir.canRead())
 			{
+				System.err.println("WARNING: The plugin directory (" + pluginDir.getAbsolutePath()+ ") is not readable, plugins may not be available");
+				System.err.flush();
+				System.out.println("WARNING: The plugin directory (" + pluginDir.getAbsolutePath()+ ") is not readable, plugins may not be available");
+				System.out.flush();
+				errorOccured = true;
+			} else {
 				
-				if(f.isDirectory())
+				for(File f : pluginDir.listFiles())
 				{
-					directoriesToSearch.add(f.getAbsolutePath());
+					
+					if(f.isDirectory())
+					{
+						directoriesToSearch.add(f.getAbsolutePath());
+					}
 				}
 			}
 		}
@@ -100,8 +114,20 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 					{
 						for(String fileName : dir.list())
 						{
+							
 							if(fileName.trim().endsWith(".jar"))
 							{
+								//System.out.println(fileName);
+								File jarFile = new File(dir.getAbsolutePath() + File.separator + fileName);
+								if(!jarFile.canRead())
+								{
+									System.err.println("WARNING: The jar file (" + jarFile.getAbsolutePath()+ ") is not readable, plugins may not be available");
+									System.err.flush();
+									System.out.println("WARNING: The jar file (" + jarFile.getAbsolutePath()+ ") is not readable, plugins may not be available");
+									System.out.flush();
+									errorOccured = true;
+								}
+								
 								if(!files.contains(fileName))
 								{
 									sb.append(dir.getAbsolutePath());
@@ -121,6 +147,20 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 		
 		defaultSearchPath = sb.toString();
 		
+		if(errorOccured)
+		{
+			System.out.println("Warnings have occured sleeping for 30 seconds");
+		
+			try {
+				for(int i=0; i < 30; i++)
+				{
+					Thread.sleep(1000);
+					System.out.print(".");
+				}
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+			}
+		}
 	}
 	
 	
