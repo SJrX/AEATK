@@ -3,6 +3,7 @@ package ca.ubc.cs.beta.aclib.targetalgorithmevaluator.random;
 import org.mangosdk.spi.ProviderFor;
 
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.factory.TargetAlgorithmEvaluatorFactory;
 
@@ -18,8 +19,15 @@ public class RandomResponseTargetAlgorithmEvaluatorFactory implements
 
 	@Override
 	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(
-			AlgorithmExecutionConfig execConfig, int maxConcurrentExecutions) {
-		return new RandomResponseTargetAlgorithmEvaluator(execConfig);
+			AlgorithmExecutionConfig execConfig, AbstractOptions options) {
+		return new RandomResponseTargetAlgorithmEvaluator(execConfig,(RandomResponseTargetAlgorithmEvaluatorOptions) options);
 	}
+
+	@Override
+	public AbstractOptions getOptionObject() {
+		return new RandomResponseTargetAlgorithmEvaluatorOptions();
+	}
+	
+	
 
 }

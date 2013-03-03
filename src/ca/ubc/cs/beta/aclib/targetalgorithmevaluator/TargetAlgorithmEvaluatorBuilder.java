@@ -10,6 +10,7 @@ import java.net.URLClassLoader;
 import java.util.ArrayList;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -18,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 import ca.ubc.cs.beta.aclib.options.AlgorithmExecutionOptions;
 import ca.ubc.cs.beta.aclib.options.ScenarioOptions;
 import ca.ubc.cs.beta.aclib.options.TargetAlgorithmEvaluatorOptions;
@@ -152,9 +154,9 @@ public class TargetAlgorithmEvaluatorBuilder {
 	
 	
 	@Deprecated
-	public static TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(ScenarioOptions scenarioOptions, AlgorithmExecutionConfig execConfig)
+	public static TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(ScenarioOptions scenarioOptions, AlgorithmExecutionConfig execConfig, Map<String, AbstractOptions> taeOptionsMap)
 	{
-		return getTargetAlgorithmEvaluator(scenarioOptions, execConfig, true);
+		return getTargetAlgorithmEvaluator(scenarioOptions, execConfig, true, taeOptionsMap);
 	}
 	
 	
@@ -169,9 +171,9 @@ public class TargetAlgorithmEvaluatorBuilder {
 	 * @return
 	 */
 	@Deprecated
-	public static TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(ScenarioOptions options, AlgorithmExecutionConfig execConfig, boolean hashVerifiersAllowed)
+	public static TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(ScenarioOptions options, AlgorithmExecutionConfig execConfig, boolean hashVerifiersAllowed, Map<String,AbstractOptions> taeOptionsMap)
 	{
-		return getTargetAlgorithmEvaluator(options, execConfig, hashVerifiersAllowed, null);
+		return getTargetAlgorithmEvaluator(options, execConfig, hashVerifiersAllowed, null, taeOptionsMap);
 	}
 	
 	/**
@@ -184,7 +186,7 @@ public class TargetAlgorithmEvaluatorBuilder {
 	 * @see TargetAlgorithmEvaluatorLoader.getTargetAlgorithmEvaluator for how to get a base one to pass in.
 	 * @return
 	 */
-	public static TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(ScenarioOptions options, AlgorithmExecutionConfig execConfig, boolean hashVerifiersAllowed, TargetAlgorithmEvaluator algoEval)
+	public static TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(ScenarioOptions options, AlgorithmExecutionConfig execConfig, boolean hashVerifiersAllowed, TargetAlgorithmEvaluator algoEval, Map<String, AbstractOptions> taeOptionsMap)
 	{
 		
 		List<String> names = TargetAlgorithmEvaluatorBuilder.getAvailableTargetAlgorithmEvaluators(options.algoExecOptions);
@@ -198,10 +200,16 @@ public class TargetAlgorithmEvaluatorBuilder {
 		//TargetAlgorithmEvaluator cli = TargetAlgorithmEvaluatorLoader.getTargetAlgorithmEvaluator(execConfig, options.maxConcurrentAlgoExecs, "CLI",cl);
 		//TargetAlgorithmEvaluator surrogate = TargetAlgorithmEvaluatorLoader.getTargetAlgorithmEvaluator(execConfig, options.maxConcurrentAlgoExecs, options.scenarioConfig.algoExecOptions.targetAlgorithmEvaluator,cl);
 		
+		
+		String taeKey = options.algoExecOptions.targetAlgorithmEvaluator;
+		
+		AbstractOptions taeOptions = taeOptionsMap.get(taeKey);
+		
+		
 		//TODO Remove loading here, users should always just pass one in I think.
 		if(algoEval == null)
 		{
-			 algoEval = TargetAlgorithmEvaluatorLoader.getTargetAlgorithmEvaluator(execConfig, options.algoExecOptions.maxConcurrentAlgoExecs, options.algoExecOptions.targetAlgorithmEvaluator,cl);
+			 algoEval = TargetAlgorithmEvaluatorLoader.getTargetAlgorithmEvaluator(execConfig, options.algoExecOptions.maxConcurrentAlgoExecs,taeKey,cl, taeOptions);
 		};
 		//===== Note the decorators are not in general commutative
 		//Specifically Run Hash codes should only see the same runs the rest of the applications see
@@ -279,9 +287,13 @@ public class TargetAlgorithmEvaluatorBuilder {
 	 * @param noHashVerifiers
 	 * @return
 	 */
-	public static TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(TargetAlgorithmEvaluatorOptions options, AlgorithmExecutionConfig execConfig, boolean hashVerifiersAllowed)
+	public static TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(TargetAlgorithmEvaluatorOptions options, AlgorithmExecutionConfig execConfig, boolean hashVerifiersAllowed, Map<String, AbstractOptions> taeOptionsMap)
 	{
 		
+		if(taeOptionsMap == null)
+		{
+			throw new IllegalArgumentException("taeOptionsMap must be non-null and contain the option objects for all target algorithm evaluators");
+		}
 		ClassLoader cl = getClassLoader(options);
 		//TargetAlgorithmEvaluator cli = TargetAlgorithmEvaluatorLoader.getTargetAlgorithmEvaluator(execConfig, options.maxConcurrentAlgoExecs, "CLI",cl);
 		//TargetAlgorithmEvaluator surrogate = TargetAlgorithmEvaluatorLoader.getTargetAlgorithmEvaluator(execConfig, options.maxConcurrentAlgoExecs, options.scenarioConfig.algoExecOptions.targetAlgorithmEvaluator,cl);
@@ -292,9 +304,10 @@ public class TargetAlgorithmEvaluatorBuilder {
 		{
 			log.debug("Target Algorithm Evaluator Available {} ", name);
 		}
+		String taeKey = options.targetAlgorithmEvaluator;
 		
-		 
-		TargetAlgorithmEvaluator algoEval = TargetAlgorithmEvaluatorLoader.getTargetAlgorithmEvaluator(execConfig, options.maxConcurrentAlgoExecs, options.targetAlgorithmEvaluator,cl);
+		AbstractOptions taeOptions = taeOptionsMap.get(taeKey);
+		TargetAlgorithmEvaluator algoEval = TargetAlgorithmEvaluatorLoader.getTargetAlgorithmEvaluator(execConfig, options.maxConcurrentAlgoExecs, taeKey,cl,taeOptions);
 		
 		//===== Note the decorators are not in general commutative
 		//Specifically Run Hash codes should only see the same runs the rest of the applications see

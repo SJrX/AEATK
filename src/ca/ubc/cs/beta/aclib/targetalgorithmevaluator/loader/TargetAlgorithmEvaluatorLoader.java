@@ -9,6 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.factory.TargetAlgorithmEvaluatorFactory;
 
@@ -17,7 +18,7 @@ public class TargetAlgorithmEvaluatorLoader {
 
 	private static final Logger log = LoggerFactory.getLogger(TargetAlgorithmEvaluatorLoader.class);
 	
-	public static TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig, int maxConcurrentExecutions, String name, ClassLoader loader)
+	public static TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig, int maxConcurrentExecutions, String name, ClassLoader loader, AbstractOptions options)
 	{
 		Iterator<TargetAlgorithmEvaluatorFactory> taeIt = ServiceLoader.load(TargetAlgorithmEvaluatorFactory.class, loader).iterator();
 		
@@ -34,7 +35,7 @@ public class TargetAlgorithmEvaluatorLoader {
 				}
 				if(tae.getName().trim().equals(name.trim()))
 				{
-					return tae.getTargetAlgorithmEvaluator(execConfig, maxConcurrentExecutions);
+					return tae.getTargetAlgorithmEvaluator(execConfig, options);
 				}
 			
 			} catch(ServiceConfigurationError e)

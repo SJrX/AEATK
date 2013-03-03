@@ -15,12 +15,14 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred.TAECallback;
 
 public class ConstantTargetAlgorithmEvaluator extends AbstractNonBlockingTargetAlgorithmEvaluator {
 
-	public ConstantTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig) {
+	private final ConstantTargetAlgorithmEvaluatorOptions options;
+	
+	public ConstantTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig, ConstantTargetAlgorithmEvaluatorOptions options) {
 		super(execConfig);
-		if(execConfig.getAlgorithmCutoffTime() <= 0.01)
-		{
-			throw new IllegalArgumentException("To use the Constant TAE, cutoff time must be greater than 0.01 seconds");
-		}
+		this.options = options;
+		
+		
+		
 	}
 
 	@Override
@@ -39,7 +41,14 @@ public class ConstantTargetAlgorithmEvaluator extends AbstractNonBlockingTargetA
 		
 		for(RunConfig rc : runConfigs)
 		{
-			runs.add(new ExistingAlgorithmRun(execConfig, rc, "SAT,0.01,0,0," + rc.getProblemInstanceSeedPair().getSeed()));
+			String addlRunData = "";
+			
+			if((options.additionalRunData != null) && (options.additionalRunData.trim().length() > 0))
+			{
+				addlRunData = "," + options.additionalRunData;
+			}
+			
+			runs.add(new ExistingAlgorithmRun(execConfig, rc, options.runResult + "," + options.runtime + "," + options.runlength + "," + options.quality + "," + rc.getProblemInstanceSeedPair().getSeed() + addlRunData));
 		}
 		
 		return runs;

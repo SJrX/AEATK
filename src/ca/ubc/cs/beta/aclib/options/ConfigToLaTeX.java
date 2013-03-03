@@ -2,6 +2,7 @@ package ca.ubc.cs.beta.aclib.options;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -226,32 +227,35 @@ public class ConfigToLaTeX {
 	}
 	public static void getAllObjects(Object o, Set<Object> objectsToScan) throws IllegalArgumentException, IllegalAccessException
 	{
-		
-		
-		
-		for(Field f : o.getClass().getFields())
+		if(o.getClass().isArray())
 		{
-		
-			if(f.isAnnotationPresent(ParametersDelegate.class))
+			for(int i=0; i < Array.getLength(o); i++)
 			{
-			
-				objectsToScan.add(f.get(o));
-				getAllObjects(f.get(o), objectsToScan);
-		
+				getAllObjects(Array.get(o, i), objectsToScan);
 				
 			}
+		} else 
+		{	
+			objectsToScan.add(o);
+			for(Field f : o.getClass().getFields())
+			{
+			
+				if(f.isAnnotationPresent(ParametersDelegate.class))
+				{
+				
+					objectsToScan.add(f.get(o));
+					getAllObjects(f.get(o), objectsToScan);
+			
+					
+				}
+			}
 		}
-		
 	}
 	public static List<UsageSection> getParameters(Object o) throws IllegalArgumentException, IllegalAccessException, InstantiationException
 	{
-		
-	
-		
-		
+			
 		Set<Object> objectsToScan = new LinkedHashSet<Object>();
-		
-		objectsToScan.add(o);
+	
 		getAllObjects(o, objectsToScan);
 		
 		List<UsageSection> sections = new ArrayList<UsageSection>();

@@ -20,8 +20,9 @@ import ca.ubc.cs.beta.aclib.misc.random.SeedableRandomSingleton;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.CommandLineTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.cli.CommandLineTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.cli.CommandLineTargetAlgorithmEvaluatorFactory;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.RetryCrashedRunsTargetAlgorithmEvaluator;
 
 public class RetryCrashedTAETester {
@@ -57,7 +58,7 @@ private static TargetAlgorithmEvaluator tae;
 	@Before
 	public void beforeTest()
 	{
-		tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false); 	
+		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
 	}
 	
 	
