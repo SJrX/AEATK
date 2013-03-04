@@ -8,14 +8,17 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.SortedSet;
 import java.util.TreeSet;
+import java.util.Map.Entry;
 
 import ca.ubc.cs.beta.aclib.misc.options.DomainDisplay;
 import ca.ubc.cs.beta.aclib.misc.options.UsageSection;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 
+import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParametersDelegate;
 
@@ -251,6 +254,24 @@ public class ConfigToLaTeX {
 			}
 		}
 	}
+	
+	
+	public static List<UsageSection> getParameters(Object o, Map<String, AbstractOptions> options) throws IllegalArgumentException, IllegalAccessException, InstantiationException
+	{
+	
+		ArrayList<Object> allOptions = new ArrayList<Object>();
+		
+		allOptions.add(o);
+		for(Entry<String, AbstractOptions> ent : options.entrySet())
+		{
+			if(ent.getValue() != null)
+			{
+				allOptions.add(ent.getValue());
+			}
+		}
+		return getParameters(allOptions.toArray());
+	}
+	
 	public static List<UsageSection> getParameters(Object o) throws IllegalArgumentException, IllegalAccessException, InstantiationException
 	{
 			
