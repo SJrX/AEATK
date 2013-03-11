@@ -10,6 +10,8 @@ import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.apache.commons.io.output.NullOutputStream;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -38,6 +40,8 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbortOnFirstRunC
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.TimingCheckerTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.EqualTargetAlgorithmEvaluatorTester;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.VerifySATTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred.TAECallback;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred.WaitableTAECallback;
 import ca.ubc.cs.beta.targetalgorithmevaluator.massiveoutput.MassiveOutputParamEchoExecutor;
 
 
@@ -165,33 +169,42 @@ public class DynamicCappingTestSet {
 		
 		//PrintStream out = System.out;
 		//System.setOut(new PrintStream(bout));
-		
+		final AtomicBoolean evaluateDone = new AtomicBoolean(false);
+		final AtomicBoolean failure = new AtomicBoolean(false);
 		CurrentRunStatusObserver obs = new CurrentRunStatusObserver()
 		{
 			
 			@Override
 			public void currentStatus(List<? extends KillableAlgorithmRun> runs) {
 				
+				if(evaluateDone.get())
+				{
+					failure.set(true);
+				}
 				double runtimeSum = 0.0; 
 				for(AlgorithmRun run : runs)
 				{
 					runtimeSum += run.getRuntime();
 				}
 				
-				//System.out.println(runtimeSum);
+				System.out.println(runtimeSum);
 				if(runtimeSum > 3)
 				{
+					System.out.println("Trying to kill");
 					for(KillableAlgorithmRun run : runs)
 					{
 						run.kill();
 					}
 				}
+				
+				//System.out.println("CALLBACK");
 			}
 			
 		};
 		
 		long startTime  = System.currentTimeMillis();
 		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs,obs);
+		evaluateDone.set(true);
 		long endTime = System.currentTimeMillis();
 		//System.setOut(out);
 		//System.out.println(bout.toString());
@@ -218,8 +231,10 @@ public class DynamicCappingTestSet {
 		}
 		
 		tae.notifyShutdown();
+		assertFalse("Callback fired after evaluateRun was done ", failure.get());
 		
 		assertTrue("Should have taken less than five seconds to run, it took " + (endTime - startTime)/1000.0 + " seconds", (endTime - startTime) < (long) 6000);
+		
 	}
 	
 	
@@ -431,6 +446,196 @@ public class DynamicCappingTestSet {
 		
 		assertTrue("Should have taken less than five seconds to run, it took " + (endTime - startTime)/1000.0 + " seconds", (endTime - startTime) < (long) 6000);
 	}
+	
+	
+	
+
+	/**
+	 * Tests whether the Observer is fired after the evaluateRuns() method completes
+	 * See Task #1575
+	 */
+	@Test
+	public void testCallbackOnlyBeforeDone()
+	{
+		
+	
+		for(int j=0; j < 5; j++)
+		{
+			StringBuilder b = new StringBuilder();
+			b.append("java -cp ");
+			b.append(System.getProperty("java.class.path"));
+			b.append(" ");
+			b.append(TrueSleepyParamEchoExecutor.class.getCanonicalName());
+			execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
+			
+			tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig, 50);	
+			
+			assertTrue(tae.areRunsObservable());
+			configSpace.setPRNG(r);
+			
+			List<RunConfig> runConfigs = new ArrayList<RunConfig>(1);
+			for(int i=0; i < 1; i++)
+			{
+				ParamConfiguration config = configSpace.getRandomConfiguration();
+				config.put("runtime", "1");
+				if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
+				{
+					//Only want good configurations
+					i--;
+					continue;
+				} else
+				{
+					RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config);
+					runConfigs.add(rc);
+				}
+			}
+			
+			System.out.println("Performing " + runConfigs.size() + " runs");
+			
+			
+			final AtomicBoolean evaluateDone = new AtomicBoolean(false);
+			final AtomicBoolean failure = new AtomicBoolean(false);
+			CurrentRunStatusObserver obs = new CurrentRunStatusObserver()
+			{
+				
+				@Override
+				public void currentStatus(List<? extends KillableAlgorithmRun> runs) {
+					
+					if(evaluateDone.get())
+					{
+						failure.set(true);
+						System.out.println("Failed");
+					}
+					
+					//System.out.println("Callback: " + runs.get(0).getRuntime());
+				}
+				
+			};
+			
+			long startTime  = System.currentTimeMillis();
+			List<AlgorithmRun> runs = tae.evaluateRun(runConfigs,obs);
+			evaluateDone.set(true);
+			System.out.println("DONE");
+			System.out.flush();
+			long endTime = System.currentTimeMillis();
+			//System.setOut(out);
+			//System.out.println(bout.toString());
+			try {
+				Thread.sleep(200);
+			} catch (InterruptedException e) {
+				Thread.currentThread();
+			}
+			
+			tae.notifyShutdown();
+			assertFalse("Callback fired after evaluateRun was done ", failure.get());
+
+		}
+		
+		
+	}
+	
+
+	/**
+	 * Tests whether the Observer is fired after the onSuccess method is.
+	 * See Task #1575
+	 */
+	@Test
+	public void testAsyncCallbackOnlyBeforeDone()
+	{
+		
+		//Try 5 times as this is testing a race condition.
+		for(int j=0; j < 5; j++)
+		{
+			StringBuilder b = new StringBuilder();
+			b.append("java -cp ");
+			b.append(System.getProperty("java.class.path"));
+			b.append(" ");
+			b.append(TrueSleepyParamEchoExecutor.class.getCanonicalName());
+			execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
+			
+			tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig, 50);	
+			
+			assertTrue(tae.areRunsObservable());
+			configSpace.setPRNG(r);
+			
+			List<RunConfig> runConfigs = new ArrayList<RunConfig>(1);
+			for(int i=0; i < 1; i++)
+			{
+				ParamConfiguration config = configSpace.getRandomConfiguration();
+				config.put("runtime", "1");
+				if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
+				{
+					//Only want good configurations
+					i--;
+					continue;
+				} else
+				{
+					RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config);
+					runConfigs.add(rc);
+				}
+			}
+			
+			System.out.println("Performing " + runConfigs.size() + " runs");
+			
+			
+			final AtomicBoolean evaluateDone = new AtomicBoolean(false);
+			final AtomicBoolean failure = new AtomicBoolean(false);
+			CurrentRunStatusObserver obs = new CurrentRunStatusObserver()
+			{
+				
+				@Override
+				public void currentStatus(List<? extends KillableAlgorithmRun> runs) {
+					
+					if(evaluateDone.get())
+					{
+						failure.set(true);
+						System.out.println("Failed");
+					}
+					
+					//System.out.println("Callback: " + runs.get(0).getRuntime());
+				}
+				
+			};
+			
+			long startTime  = System.currentTimeMillis();
+			
+			
+			
+			
+			TAECallback asyncCallback = new TAECallback()
+			{
+
+				@Override
+				public void onSuccess(List<AlgorithmRun> runs) {
+					evaluateDone.set(true);
+				}
+
+				@Override
+				public void onFailure(RuntimeException t) {
+					t.printStackTrace();
+					
+					try {
+						Thread.sleep(10000);
+					} catch (InterruptedException e) {
+						Thread.currentThread().interrupt();
+					}
+				}
+			};
+			
+			WaitableTAECallback taeCallback = new WaitableTAECallback(asyncCallback);
+			
+			tae.evaluateRunsAsync(runConfigs,taeCallback, obs);
+			
+			taeCallback.waitForCompletion();
+						
+			tae.notifyShutdown();
+			assertFalse("Callback fired after evaluateRun was done ", failure.get());
+
+		}
+		
+		
+	}
+	
 	
 	
 	

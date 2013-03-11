@@ -180,7 +180,10 @@ public class SMACOptions extends AbstractOptions {
 	public boolean iterativeCappingBreakOnFirstCompletion = false;
 
 	@Parameter(names={"--maskCensoredDataAsKappaMax"}, description="Mask censored data as kappa Max")
-	public boolean maskCensoredDataAsKappaMax = false;  
+	public boolean maskCensoredDataAsKappaMax = false;
+
+	@Parameter(names={"--maxConsecutiveFailedChallengeIncumbent"}, description="if the parameter space is too small we may get to a point where we can make no new runs, detecting this condition is prohibitively expensive, and this heuristic controls the number of times we need to try a challenger and get no new runs before we give up")
+	public int challengeIncumbentAttempts = 1000;  
 
 	
 }

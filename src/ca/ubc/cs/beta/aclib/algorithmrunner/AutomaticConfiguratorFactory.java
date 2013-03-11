@@ -14,6 +14,10 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunSta
  * Factory that creates various Algorithm Runners for things that request it.
  * 
  * </b>NOTE:</b> This factory is probably unnecessary, originally it was meant to do more, but things got side tracked.
+ * This class should probably be refactored out and merged in with just the CLI TAE
+ * 
+ * 
+ * 
  * @see CommandLineTargetAlgorithmEvaluator
  * @author sjr
  *
@@ -45,9 +49,9 @@ public class AutomaticConfiguratorFactory {
 	 * @param runConfigs		run configurations to execute
 	 * @return	algorithmrunner which will run it
 	 */
-	public static AlgorithmRunner getSingleThreadedAlgorithmRunner(AlgorithmExecutionConfig execConfig, List<RunConfig> runConfigs, CurrentRunStatusObserver obs)
+	public static AlgorithmRunner getSingleThreadedAlgorithmRunner(AlgorithmExecutionConfig execConfig, List<RunConfig> runConfigs, CurrentRunStatusObserver obs, int observerFrequency)
 	{
-		return new SingleThreadedAlgorithmRunner(execConfig, runConfigs,obs);
+		return new SingleThreadedAlgorithmRunner(execConfig, runConfigs,obs, observerFrequency);
 	}
 	
 	/**
@@ -56,13 +60,13 @@ public class AutomaticConfiguratorFactory {
 	 * @param runConfigs		run configurations to execute
 	 * @return	algorithmrunner which will run it
 	 */	
-	public static AlgorithmRunner getConcurrentAlgorithmRunner(AlgorithmExecutionConfig execConfig, List<RunConfig> runConfigs, CurrentRunStatusObserver obs)
+	public static AlgorithmRunner getConcurrentAlgorithmRunner(AlgorithmExecutionConfig execConfig, List<RunConfig> runConfigs, CurrentRunStatusObserver obs, int observerFrequency)
 	{
 		if(runConfigs.size() == 1)
 		{
-			return getSingleThreadedAlgorithmRunner(execConfig, runConfigs,obs);
+			return getSingleThreadedAlgorithmRunner(execConfig, runConfigs,obs, observerFrequency);
 		}
-		return getConcurrentAlgorithmRunner(execConfig, runConfigs, maxThreads, obs);
+		return getConcurrentAlgorithmRunner(execConfig, runConfigs, maxThreads, obs, observerFrequency);
 	}
 	
 	/**
@@ -72,10 +76,10 @@ public class AutomaticConfiguratorFactory {
 	 * @param nThreads			number of concurrent executions to allow
 	 * @return	algorithmrunner which will run it
 	 */
-	public static AlgorithmRunner getConcurrentAlgorithmRunner(AlgorithmExecutionConfig execConfig, List<RunConfig> runConfigs, int nThreads, CurrentRunStatusObserver obs)
+	public static AlgorithmRunner getConcurrentAlgorithmRunner(AlgorithmExecutionConfig execConfig, List<RunConfig> runConfigs, int nThreads, CurrentRunStatusObserver obs, int observerFrequency)
 	{
 		log.info("Concurrent Algorithm Runner created allowing {} threads");
-		return new ConcurrentAlgorithmRunner(execConfig, runConfigs, nThreads, obs);
+		return new ConcurrentAlgorithmRunner(execConfig, runConfigs, nThreads, obs, observerFrequency);
 	}
 
 }

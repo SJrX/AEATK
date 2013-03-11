@@ -33,4 +33,11 @@ public class CommandLineTargetAlgorithmEvaluatorFactory implements
 		return new CommandLineTargetAlgorithmEvaluator(config, new CommandLineTargetAlgorithmEvaluatorOptions());
 	}
 
+	public static TargetAlgorithmEvaluator getCLITAE(AlgorithmExecutionConfig config, int observerFrequency)
+	{
+		CommandLineTargetAlgorithmEvaluatorOptions options = new CommandLineTargetAlgorithmEvaluatorOptions();
+		options.observerFrequency = observerFrequency;
+		return new CommandLineTargetAlgorithmEvaluator(config,options);
+	}
+	
 }

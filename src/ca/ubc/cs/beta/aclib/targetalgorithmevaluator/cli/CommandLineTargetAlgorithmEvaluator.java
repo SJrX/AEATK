@@ -27,7 +27,7 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractBlockingTargetA
 	private final Logger log = LoggerFactory.getLogger(getClass());
 
 	
-	
+	private final int observerFrequency;
 	/**
 	 * Constructs CommandLineTargetAlgorithmEvaluator
 	 * @param execConfig 			execution configuration of the target algorithm
@@ -36,8 +36,10 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractBlockingTargetA
 	CommandLineTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig, CommandLineTargetAlgorithmEvaluatorOptions options)
 	{
 		super(execConfig);
+		this.observerFrequency = options.observerFrequency;
 		log.debug("Initalized with the following Execution Configuration {} " , execConfig);
-		this.concurrentExecution = options.concurrentExecution; 
+		this.concurrentExecution = options.concurrentExecution;
+		if(observerFrequency < 50) throw new ParameterException("Observer Frequency can't be less than 50 ms");
 		log.debug("Concurrent Execution {}", options.concurrentExecution);
 		
 		File execDir = new File(execConfig.getAlgorithmExecutionDirectory());
@@ -90,12 +92,12 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractBlockingTargetA
 		if(concurrentExecution)
 		{
 			log.info("Using concurrent algorithm runner");
-			return AutomaticConfiguratorFactory.getConcurrentAlgorithmRunner(execConfig,runConfigs,obs);
+			return AutomaticConfiguratorFactory.getConcurrentAlgorithmRunner(execConfig,runConfigs,obs, observerFrequency);
 			
 		} else
 		{
 			log.info("Using single-threaded algorithm runner");
-			return AutomaticConfiguratorFactory.getSingleThreadedAlgorithmRunner(execConfig,runConfigs,obs);
+			return AutomaticConfiguratorFactory.getSingleThreadedAlgorithmRunner(execConfig,runConfigs,obs, observerFrequency);
 		}
 	}
 

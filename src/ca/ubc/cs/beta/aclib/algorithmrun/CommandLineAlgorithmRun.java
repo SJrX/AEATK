@@ -83,12 +83,14 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	private static final double WALLCLOCK_TIMING_SLACK = 0.001;
 	
 	private ExecutorService threadPoolExecutor = Executors.newCachedThreadPool(); 
+	
+	private final int observerFrequency;
 	/**
 	 * Default Constructor
 	 * @param execConfig		execution configuration of the object
 	 * @param runConfig			run configuration we are executing
 	 */
-	public CommandLineAlgorithmRun(AlgorithmExecutionConfig execConfig, RunConfig runConfig, CurrentRunStatusObserver obs, KillHandler handler) 
+	public CommandLineAlgorithmRun(AlgorithmExecutionConfig execConfig, RunConfig runConfig, CurrentRunStatusObserver obs, KillHandler handler, int observerFrequency) 
 	{
 		super(execConfig, runConfig);
 		//TODO Test
@@ -103,6 +105,12 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 		
 		this.runObserver = obs;
 		this.killHandler = handler;
+		this.observerFrequency = observerFrequency;
+		
+		if(observerFrequency < 25)
+		{
+			throw new IllegalArgumentException("Observer Frequency can't be less than 25 milliseconds");
+		}
 	}
 	
 	private static final int MAX_LINES_TO_SAVE = 1000;
@@ -179,6 +187,9 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 						
 						runObserver.currentStatus(Collections.singletonList((KillableAlgorithmRun) new RunningAlgorithmRun(execConfig, getRunConfig(), "RUNNING," + Math.max(0,(currentTime - WALLCLOCK_TIMING_SLACK)) + ",0,0," + getRunConfig().getProblemInstanceSeedPair().getSeed(), killHandler)));
 						try {
+							
+							
+							
 							//Sleep here so that maybe anything that wanted us dead will have gotten to the killHandler
 							Thread.sleep(25);
 							if(killHandler.isKilled())
@@ -189,7 +200,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 								proc.waitFor();
 								return;
 							}
-							Thread.sleep(225);
+							Thread.sleep(observerFrequency - 25);
 						} catch (InterruptedException e) {
 							Thread.currentThread().interrupt();
 							break;

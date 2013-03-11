@@ -45,6 +45,9 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 	
 	private static final Logger log = LoggerFactory.getLogger(AbstractAlgorithmRunner.class); 
 	
+	
+	
+	private final Semaphore shutdownComplete = new Semaphore(0);
 	/**
 	 * Standard Constructor
 	 * 
@@ -52,13 +55,13 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 	 * @param runConfigs	run configurations of the target algorithm
 	 * @param obs 
 	 */
-	public AbstractAlgorithmRunner(AlgorithmExecutionConfig execConfig,final List<RunConfig> runConfigs, final CurrentRunStatusObserver obs)
+	public AbstractAlgorithmRunner(AlgorithmExecutionConfig execConfig,final List<RunConfig> runConfigs, final CurrentRunStatusObserver obs, final int observerFrequency)
 	{
 		if(execConfig == null || runConfigs == null)
 		{
 			throw new IllegalArgumentException("Arguments cannot be null");
 		}
-		
+
 		this.execConfig = execConfig;
 		this.runConfigs = runConfigs;
 		List<AlgorithmRun> runs = new ArrayList<AlgorithmRun>(runConfigs.size());
@@ -85,7 +88,7 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 			};
 		
 			
-			final AlgorithmRun run = new CommandLineAlgorithmRun(execConfig, rc,individualRunObserver, killH); 
+			final AlgorithmRun run = new CommandLineAlgorithmRun(execConfig, rc,individualRunObserver, killH, observerFrequency); 
 			runs.add(run);
 			i++;
 		}
@@ -135,17 +138,25 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 						
 						if(!outstandingRuns)
 						{
+							shutdownComplete.release();
 							break;
 						}
 						//Thread.sleep(100);
 						changeProcess.release(runs.length);
-					} catch (InterruptedException e) {
+						
+						if(execService.isShutdown()) 
+						{
+							shutdownComplete.release();
+							break;
+						}
+					} catch (InterruptedException e) 
+					{
 						Thread.currentThread().interrupt();
 					}
 					
 				}
 				
-				
+			
 			}
 			
 		};
@@ -162,6 +173,12 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 	@Override
 	public void shutdownThreadPool() {
 		this.execService.shutdown();
+		try {
+			//Want to force that the observer is done
+			shutdownComplete.acquire();
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
 		
 	}
 

@@ -19,8 +19,8 @@ class SingleThreadedAlgorithmRunner extends AbstractAlgorithmRunner
 	 * @param obs 
 	 */
 	public SingleThreadedAlgorithmRunner(AlgorithmExecutionConfig execConfig,
-			List<RunConfig> runConfigs, CurrentRunStatusObserver obs) {
-		super(execConfig, runConfigs,obs);
+			List<RunConfig> runConfigs, CurrentRunStatusObserver obs, int observerFrequency) {
+		super(execConfig, runConfigs,obs, observerFrequency);
 		
 	}
 
