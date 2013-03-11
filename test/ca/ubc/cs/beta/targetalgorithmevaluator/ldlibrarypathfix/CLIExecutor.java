@@ -1,6 +1,7 @@
 package ca.ubc.cs.beta.targetalgorithmevaluator.ldlibrarypathfix;
 
 import java.io.File;
+
 import java.io.PrintStream;
 import java.util.Map.Entry;
 import ca.ubc.cs.beta.TestHelper;
@@ -10,10 +11,16 @@ import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.CommandLineTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.cli.CommandLineTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.cli.CommandLineTargetAlgorithmEvaluatorFactory;
 import ec.util.MersenneTwister;
-
+/**
+ * Please check if this class is used anywhere and if it isn't then nuke it
+ * @author Steve Ramage <seramage@cs.ubc.ca>
+ *
+ */
+@Deprecated
 public class CLIExecutor {
 
 	public static void main(String[] args)
@@ -37,7 +44,7 @@ public class CLIExecutor {
 		
 		AlgorithmExecutionConfig execConfig = new AlgorithmExecutionConfig(execString, System.getProperty("user.dir"), configSpace, false, false, 500);
 
-		TargetAlgorithmEvaluator tae = new CommandLineTargetAlgorithmEvaluator(execConfig, false);
+		TargetAlgorithmEvaluator tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
 		
 		RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("SomeInstance"), 3), 42, configSpace.getRandomConfiguration());
 		

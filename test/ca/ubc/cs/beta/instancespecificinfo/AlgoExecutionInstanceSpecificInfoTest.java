@@ -18,8 +18,9 @@ import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.seedgenerator.InstanceSeedGenerator;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.CommandLineTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.cli.CommandLineTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.cli.CommandLineTargetAlgorithmEvaluatorFactory;
 
 import ca.ubc.cs.beta.probleminstance.ProblemInstanceHelperTester;
 
@@ -42,7 +43,8 @@ public class AlgoExecutionInstanceSpecificInfoTest {
 		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(paramFile);
 		
 		AlgorithmExecutionConfig execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, true, 500);
-		TargetAlgorithmEvaluator tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false);
+		
+		TargetAlgorithmEvaluator tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
 		
 		InstanceListWithSeeds ilws = ProblemInstanceHelperTester.getInstanceListWithSeeds("classicFormatInstanceSeedSpecificValid.txt", false);
 		
@@ -94,7 +96,7 @@ public class AlgoExecutionInstanceSpecificInfoTest {
 		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(paramFile);
 		
 		AlgorithmExecutionConfig execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, true, 500);
-		TargetAlgorithmEvaluator tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false);
+		TargetAlgorithmEvaluator tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
 		
 		InstanceListWithSeeds ilws = ProblemInstanceHelperTester.getInstanceListWithSeeds("manju.txt", false);
 		

@@ -1,4 +1,4 @@
-package ca.ubc.cs.beta.aclib.targetalgorithmevaluator;
+package ca.ubc.cs.beta.aclib.targetalgorithmevaluator.cli;
 
 import java.io.File;
 import java.util.Collections;
@@ -13,6 +13,7 @@ import ca.ubc.cs.beta.aclib.algorithmrunner.AlgorithmRunner;
 import ca.ubc.cs.beta.aclib.algorithmrunner.AutomaticConfiguratorFactory;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.AbstractBlockingTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
 
 /**
@@ -25,26 +26,19 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractBlockingTargetA
 	
 	private final Logger log = LoggerFactory.getLogger(getClass());
 
-	/**
-	 * Default Constructor
-	 * @param execConfig	execution configuration of the target algorithm
-	 */
-	public CommandLineTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig)
-	{
-		this(execConfig, true);
-	}
+	
 	
 	/**
 	 * Constructs CommandLineTargetAlgorithmEvaluator
 	 * @param execConfig 			execution configuration of the target algorithm
-	 * @param concurrentExecution	<code>true</code> if we should execute algorithms concurrently, <code>false</code> otherwise
+	 * @param options	<code>true</code> if we should execute algorithms concurrently, <code>false</code> otherwise
 	 */
-	public CommandLineTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig, boolean concurrentExecution)
+	CommandLineTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig, CommandLineTargetAlgorithmEvaluatorOptions options)
 	{
 		super(execConfig);
 		log.debug("Initalized with the following Execution Configuration {} " , execConfig);
-		this.concurrentExecution = concurrentExecution; 
-		log.debug("Concurrent Execution {}", concurrentExecution);
+		this.concurrentExecution = options.concurrentExecution; 
+		log.debug("Concurrent Execution {}", options.concurrentExecution);
 		
 		File execDir = new File(execConfig.getAlgorithmExecutionDirectory());
 		if(!execDir.exists()) throw new ParameterException("The Algorithm Execution Directory does not exist (" + execConfig.getAlgorithmExecutionDirectory() + ")");

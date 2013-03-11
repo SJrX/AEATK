@@ -29,8 +29,9 @@ import ca.ubc.cs.beta.aclib.misc.random.SeedableRandomSingleton;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.CommandLineTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.cli.CommandLineTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.cli.CommandLineTargetAlgorithmEvaluatorFactory;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbortOnCrashTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbortOnFirstRunCrashTargetAlgorithmEvaluator;
@@ -90,7 +91,7 @@ public class DynamicCappingTestSet {
 		b.append(ParamEchoExecutor.class.getCanonicalName());
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 		
-		tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false);
+		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
 		SeedableRandomSingleton.reinit();
 		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
 		this.r = SeedableRandomSingleton.getRandom();
@@ -135,7 +136,7 @@ public class DynamicCappingTestSet {
 		b.append(TrueSleepyParamEchoExecutor.class.getCanonicalName());
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
 		
-		tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false);	
+		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
 		
 		assertTrue(tae.areRunsObservable());
 		configSpace.setPRNG(r);
@@ -241,7 +242,7 @@ public class DynamicCappingTestSet {
 		b.append(TrueSleepyParamEchoExecutor.class.getCanonicalName());
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
 		
-		tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false);	
+		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);	
 		
 		assertTrue(tae.areRunsObservable());
 		configSpace.setPRNG(r);
@@ -345,7 +346,7 @@ public class DynamicCappingTestSet {
 		b.append(TrueSleepyParamEchoExecutor.class.getCanonicalName());
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
 		
-		tae = new CommandLineTargetAlgorithmEvaluator( execConfig, true);	
+		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
 		
 		assertTrue(tae.areRunsObservable());
 		configSpace.setPRNG(r);

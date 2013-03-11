@@ -29,7 +29,7 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 	private static final Logger log = LoggerFactory.getLogger(RandomResponseTargetAlgorithmEvaluator.class);
 	
 	public RandomResponseTargetAlgorithmEvaluator(
-			AlgorithmExecutionConfig execConfig) {
+			AlgorithmExecutionConfig execConfig, RandomResponseTargetAlgorithmEvaluatorOptions options) {
 		super(execConfig);
 		double scale;
 		try {
@@ -40,7 +40,7 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 		}
 		
 		this.scale = scale;
-		sleep = execConfig.isDeterministicAlgorithm();
+		sleep = !options.quickEval;
 		maxValue = execConfig.getAlgorithmCutoffTime();
 		
 	}
@@ -62,7 +62,7 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 		for(RunConfig rc : runConfigs)
 		{ 
 			double time = rand.nextDouble()*maxValue;
-			/*
+			
 			if(sleep)
 			{
 				log.debug("Sleeping");
@@ -72,10 +72,7 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 				} catch (InterruptedException e) {
 					Thread.currentThread().interrupt();
 				}
-				*/
-				
-
-			
+			}			
 			
 			if(time >= rc.getCutoffTime())
 			{

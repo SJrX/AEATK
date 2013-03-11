@@ -8,9 +8,13 @@ import java.net.MalformedURLException;
 import java.net.URL;
 import java.net.URLClassLoader;
 import java.util.ArrayList;
+import java.util.HashSet;
 import java.util.LinkedList;
 import java.util.List;
+import java.util.Map;
 import java.util.Queue;
+import java.util.Set;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -18,6 +22,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 import ca.ubc.cs.beta.aclib.options.AlgorithmExecutionOptions;
 import ca.ubc.cs.beta.aclib.options.ScenarioOptions;
 import ca.ubc.cs.beta.aclib.options.TargetAlgorithmEvaluatorOptions;
@@ -34,267 +39,47 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.loader.TargetAlgorithmEvalu
 public class TargetAlgorithmEvaluatorBuilder {
 
 	private static Logger log = LoggerFactory.getLogger(TargetAlgorithmEvaluatorBuilder.class);
-
-	
-	/**
-	 * @param config
-	 * @return
-	 */
-	@Deprecated
-	public static List<String> getAvailableTargetAlgorithmEvaluators(AlgorithmExecutionOptions config)
-	{
-		ClassLoader cl = getClassLoader(config);
-		String[] searchPath = config.taeSearchPath.split(File.pathSeparator);
-		if(log.isTraceEnabled())
-		{
-			for(String s : searchPath)
-			{
-				log.trace("Plugin Search Path Includes {} ", s);
-			}
-		}
-		return TargetAlgorithmEvaluatorLoader.getAvailableTargetAlgorithmEvaluators(cl);
-		
-	}
-	
-	
-	public static List<String> getAvailableTargetAlgorithmEvaluators(TargetAlgorithmEvaluatorOptions config)
-	{
-		ClassLoader cl = getClassLoader(config);
-		String[] searchPath = config.taeSearchPath.split(File.pathSeparator);
-		if(log.isTraceEnabled())
-		{
-			for(String s : searchPath)
-			{
-				log.trace("Plugin Search Path Includes {} ", s);
-			}
-		}
-		return TargetAlgorithmEvaluatorLoader.getAvailableTargetAlgorithmEvaluators(cl);
-		
-	}
-	
-	/**
-	 * Retrieves a modified class loader to do dynamically search for jars
-	 * @return
-	 */
-	public static ClassLoader getClassLoader(AlgorithmExecutionOptions options)
-	{
-		String pathtoSearch = options.taeSearchPath;
-		String[] paths = pathtoSearch.split(File.pathSeparator);
-		
-		ArrayList<URL> urls = new ArrayList<URL>(paths.length);
-				
-		for(String path : paths)
-		{
-			
-			File f = new File(path);
-			
-			try {
-				urls.add(f.toURI().toURL());
-				
-			} catch (MalformedURLException e) {
-				log.info("Could not parse path {}, got {}", path, e );
-			}
-			
-			
-		}
-		
-		
-		URL[] urlsArr = urls.toArray(new URL[0]);
-		
-		
-		URLClassLoader ucl = new URLClassLoader(urlsArr);
-		
-		return ucl;
-		
-		
-		
-	}
-	
-	/**
-	 * Retrieves a modified class loader to do dynamically search for jars
-	 * @return
-	 */
-	public static ClassLoader getClassLoader(TargetAlgorithmEvaluatorOptions options)
-	{
-		String pathtoSearch = options.taeSearchPath;
-		String[] paths = pathtoSearch.split(File.pathSeparator);
-		
-		ArrayList<URL> urls = new ArrayList<URL>(paths.length);
-				
-		for(String path : paths)
-		{
-			
-			File f = new File(path);
-			
-			try {
-				urls.add(f.toURI().toURL());
-				
-			} catch (MalformedURLException e) {
-				log.info("Could not parse path {}, got {}", path, e );
-			}
-			
-			
-		}
-		
-		
-		URL[] urlsArr = urls.toArray(new URL[0]);
-		
-		
-		URLClassLoader ucl = new URLClassLoader(urlsArr);
-		
-		return ucl;
-		
-		
-		
-	}
-	
-	
-	
-	
-	@Deprecated
-	public static TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(ScenarioOptions scenarioOptions, AlgorithmExecutionConfig execConfig)
-	{
-		return getTargetAlgorithmEvaluator(scenarioOptions, execConfig, true);
-	}
-	
-	
-	
-	
 	
 	/**
 	 * Generates the TargetAlgorithmEvaluator with the given runtime behaivor
-	 * @param options
-	 * @param execConfig
-	 * @param noHashVerifiers
-	 * @return
-	 */
-	@Deprecated
-	public static TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(ScenarioOptions options, AlgorithmExecutionConfig execConfig, boolean hashVerifiersAllowed)
-	{
-		return getTargetAlgorithmEvaluator(options, execConfig, hashVerifiersAllowed, null);
-	}
-	
-	/**
-	 * Generates the TargetAlgorithmEvaluator with the given runtime behaivor
-	 * @param options          options control how to decorate the TAE.
-	 * @param execConfig       exec configuration passed to the TAE.
-	 * @param noHashVerifiers  whether to put hashVerifiers on the TAE.
-	 * @param algoEval         tae to wrap, if set to null, we load one from SMACOptions.
 	 * 
-	 * @see TargetAlgorithmEvaluatorLoader.getTargetAlgorithmEvaluator for how to get a base one to pass in.
+	 * @param options 		   Target Algorithm Evaluator Options
+	 * @param execConfig	   Execution configuration for the target algorithm
+	 * @param noHashVerifiers  Whether we should apply hash verifiers				
 	 * @return
 	 */
-	public static TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(ScenarioOptions options, AlgorithmExecutionConfig execConfig, boolean hashVerifiersAllowed, TargetAlgorithmEvaluator algoEval)
+	public static TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(TargetAlgorithmEvaluatorOptions options, AlgorithmExecutionConfig execConfig, boolean hashVerifiersAllowed, Map<String, AbstractOptions> taeOptionsMap)
 	{
-		
-		List<String> names = TargetAlgorithmEvaluatorBuilder.getAvailableTargetAlgorithmEvaluators(options.algoExecOptions);
-		
-		for(String name : names)
-		{
-			log.debug("Target Algorithm Evaluator Available {} ", name);
-		}
-		
-		ClassLoader cl = getClassLoader(options.algoExecOptions);
-		//TargetAlgorithmEvaluator cli = TargetAlgorithmEvaluatorLoader.getTargetAlgorithmEvaluator(execConfig, options.maxConcurrentAlgoExecs, "CLI",cl);
-		//TargetAlgorithmEvaluator surrogate = TargetAlgorithmEvaluatorLoader.getTargetAlgorithmEvaluator(execConfig, options.maxConcurrentAlgoExecs, options.scenarioConfig.algoExecOptions.targetAlgorithmEvaluator,cl);
-		
-		//TODO Remove loading here, users should always just pass one in I think.
-		if(algoEval == null)
-		{
-			 algoEval = TargetAlgorithmEvaluatorLoader.getTargetAlgorithmEvaluator(execConfig, options.algoExecOptions.maxConcurrentAlgoExecs, options.algoExecOptions.targetAlgorithmEvaluator,cl);
-		};
-		//===== Note the decorators are not in general commutative
-		//Specifically Run Hash codes should only see the same runs the rest of the applications see
-		//Additionally retrying of crashed runs should probably happen before Abort on Crash
-		
-		if(options.algoExecOptions.retryCount > 0)
-		{
-			algoEval = new RetryCrashedRunsTargetAlgorithmEvaluator(options.algoExecOptions.retryCount, algoEval);
-		}
-		
-		
-		if(options.algoExecOptions.abortOnCrash)
-		{
-			algoEval = new AbortOnCrashTargetAlgorithmEvaluator(algoEval);
-		}
-		
-		
-		if(options.algoExecOptions.abortOnFirstRunCrash)
-		{
-			algoEval = new AbortOnFirstRunCrashTargetAlgorithmEvaluator(algoEval);
-			
-			if(options.algoExecOptions.abortOnCrash)
-			{
-				log.warn("Configured to treat all crashes as aborts, it is redundant to also treat the first as an abort");
-			}
-		}
-		
-		
-		if(options.algoExecOptions.verifySAT)
-		{
-			log.debug("Verifying SAT Responses");
-			algoEval = new VerifySATTargetAlgorithmEvaluator(algoEval);
-			
-		}
-		//==== Run Hash Code Verification should be last
-		if(hashVerifiersAllowed)
-		{
-			
-			if(options.leakMemory)
-			{
-				LeakingMemoryTargetAlgorithmEvaluator.leakMemoryAmount(options.leakMemoryAmount);
-				log.warn("Target Algorithm Evaluators will leak memory. I hope you know what you are doing");
-				algoEval = new LeakingMemoryTargetAlgorithmEvaluator(algoEval);
-				
-			}
-			
-			
-			
-			
-			if(options.algoExecOptions.runHashCodeFile != null)
-			{
-				log.info("Algorithm Execution will verify run Hash Codes");
-				Queue<Integer> runHashCodes = parseRunHashCodes(options.algoExecOptions.runHashCodeFile);
-				algoEval = new RunHashCodeVerifyingAlgorithmEvalutor(algoEval, runHashCodes);
-				 
-			} else
-			{
-				log.info("Algorithm Execution will NOT verify run Hash Codes");
-				algoEval = new RunHashCodeVerifyingAlgorithmEvalutor(algoEval);
-			}
-
-		}
-		
-		
-		algoEval = new TimingCheckerTargetAlgorithmEvaluator(execConfig, algoEval);
-		
-		return algoEval;
+		return getTargetAlgorithmEvaluator(options, execConfig, hashVerifiersAllowed, taeOptionsMap, null);
 	}
-	
 	
 	/**
 	 * Generates the TargetAlgorithmEvaluator with the given runtime behaivor
-	 * @param options 
-	 * @param execConfig
-	 * @param noHashVerifiers
+	 * 
+	 * @param options 		   Target Algorithm Evaluator Options
+	 * @param execConfig	   Execution configuration for the target algorithm
+	 * @param noHashVerifiers  Whether we should apply hash verifiers
+	 * @param tae			   Existing Target Algorithm Evaluator to wrap (if null, will use the options to construct one)				
 	 * @return
 	 */
-	public static TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(TargetAlgorithmEvaluatorOptions options, AlgorithmExecutionConfig execConfig, boolean hashVerifiersAllowed)
+	public static TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(TargetAlgorithmEvaluatorOptions options, AlgorithmExecutionConfig execConfig, boolean hashVerifiersAllowed, Map<String, AbstractOptions> taeOptionsMap, TargetAlgorithmEvaluator tae)
 	{
 		
-		ClassLoader cl = getClassLoader(options);
-		//TargetAlgorithmEvaluator cli = TargetAlgorithmEvaluatorLoader.getTargetAlgorithmEvaluator(execConfig, options.maxConcurrentAlgoExecs, "CLI",cl);
-		//TargetAlgorithmEvaluator surrogate = TargetAlgorithmEvaluatorLoader.getTargetAlgorithmEvaluator(execConfig, options.maxConcurrentAlgoExecs, options.scenarioConfig.algoExecOptions.targetAlgorithmEvaluator,cl);
-		
-		List<String> names = TargetAlgorithmEvaluatorBuilder.getAvailableTargetAlgorithmEvaluators(options);
-		
-		for(String name : names)
+		if(taeOptionsMap == null)
 		{
-			log.debug("Target Algorithm Evaluator Available {} ", name);
+			throw new IllegalArgumentException("taeOptionsMap must be non-null and contain the option objects for all target algorithm evaluators");
 		}
 		
-		 
-		TargetAlgorithmEvaluator algoEval = TargetAlgorithmEvaluatorLoader.getTargetAlgorithmEvaluator(execConfig, options.maxConcurrentAlgoExecs, options.targetAlgorithmEvaluator,cl);
+		TargetAlgorithmEvaluator algoEval;
+		if(tae != null)
+		{
+			String taeKey = options.targetAlgorithmEvaluator;
+			AbstractOptions taeOptions = taeOptionsMap.get(taeKey);
+			algoEval = TargetAlgorithmEvaluatorLoader.getTargetAlgorithmEvaluator(execConfig, options.maxConcurrentAlgoExecs, taeKey,taeOptions);
+		}  else
+		{
+			algoEval = tae;
+		}
 		
 		//===== Note the decorators are not in general commutative
 		//Specifically Run Hash codes should only see the same runs the rest of the applications see

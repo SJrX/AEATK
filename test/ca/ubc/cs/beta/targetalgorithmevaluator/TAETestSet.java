@@ -29,8 +29,9 @@ import ca.ubc.cs.beta.aclib.misc.random.SeedableRandomSingleton;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.CommandLineTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.cli.CommandLineTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.cli.CommandLineTargetAlgorithmEvaluatorFactory;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbortOnCrashTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbortOnFirstRunCrashTargetAlgorithmEvaluator;
@@ -87,7 +88,7 @@ public class TAETestSet {
 		b.append(ParamEchoExecutor.class.getCanonicalName());
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 		
-		tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false);
+		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
 		SeedableRandomSingleton.reinit();
 		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
 		this.r = SeedableRandomSingleton.getRandom();
@@ -294,7 +295,7 @@ public class TAETestSet {
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 		
 		
-		tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false);
+		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
 		SeedableRandomSingleton.reinit();
 		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
 		this.r = SeedableRandomSingleton.getRandom();
@@ -730,7 +731,7 @@ public class TAETestSet {
 		
 		AlgorithmExecutionConfig execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500); 
 		
-		TargetAlgorithmEvaluator tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false);
+		TargetAlgorithmEvaluator tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
 		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
 		for(AlgorithmRun run : runs)
 		{
@@ -761,7 +762,7 @@ public class TAETestSet {
 		
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 			
-		tae = new AbortOnCrashTargetAlgorithmEvaluator(new CommandLineTargetAlgorithmEvaluator( execConfig, false));
+		tae = new AbortOnCrashTargetAlgorithmEvaluator(CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig));
 		SeedableRandomSingleton.reinit();
 		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
 		this.r = SeedableRandomSingleton.getRandom();
@@ -822,7 +823,7 @@ public class TAETestSet {
 		
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 			
-		tae = new AbortOnCrashTargetAlgorithmEvaluator(new CommandLineTargetAlgorithmEvaluator( execConfig, false));
+		tae = new AbortOnCrashTargetAlgorithmEvaluator(CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig));
 		SeedableRandomSingleton.reinit();
 		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
 		this.r = SeedableRandomSingleton.getRandom();
@@ -888,7 +889,7 @@ public class TAETestSet {
 		
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 			
-		tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false);
+		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
 		SeedableRandomSingleton.reinit();
 		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
 		this.r = SeedableRandomSingleton.getRandom();
@@ -965,7 +966,7 @@ public class TAETestSet {
 		
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 			
-		tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false);
+		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
 		SeedableRandomSingleton.reinit();
 		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
 		this.r = SeedableRandomSingleton.getRandom();
@@ -1042,7 +1043,7 @@ public class TAETestSet {
 		
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 			
-		tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false);
+		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
 		SeedableRandomSingleton.reinit();
 		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
 		this.r = SeedableRandomSingleton.getRandom();
@@ -1114,7 +1115,7 @@ public class TAETestSet {
 		b.append(MassiveOutputParamEchoExecutor.class.getCanonicalName());
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 		
-		tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false);
+		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
 		SeedableRandomSingleton.reinit();
 		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
 		this.r = SeedableRandomSingleton.getRandom();
@@ -1181,7 +1182,7 @@ public class TAETestSet {
 		b.append(RandomWhitespaceParamEchoExecutor.class.getCanonicalName());
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 		
-		tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false);
+		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
 		SeedableRandomSingleton.reinit();
 		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
 		this.r = SeedableRandomSingleton.getRandom();
