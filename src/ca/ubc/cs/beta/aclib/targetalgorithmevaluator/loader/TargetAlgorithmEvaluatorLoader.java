@@ -92,12 +92,14 @@ private static final String defaultSearchPath;
 				}
 			}
 		}
-		
+		/*
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "MySQLDBTAE" + File.separator) ;
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "MySQLDBTAE" + File.separator + "lib" + File.separator) ;
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "MySQLDBTAE" + File.separator + "version" + File.separator) ;
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "MySQLDBTAE" + File.separator + "bin" + File.separator) ;
+		*/
 		directoriesToSearch.add(new File(cwd) + File.separator + "plugins" + File.separator);
+		/*
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "surrogates" + File.separator);
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "RunDispatcher" + File.separator);
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "surrogates" + File.separator + "bin" + File.separator);
@@ -110,7 +112,7 @@ private static final String defaultSearchPath;
 		
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "RunDispatcher" + File.separator + "version" + File.separator) ;
 		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "rundispatcher" + File.separator);
-		
+		*/
 		directoriesToSearch.add(System.getProperty("java.class.path"));
 		for(String dirName : directoriesToSearch)
 		{

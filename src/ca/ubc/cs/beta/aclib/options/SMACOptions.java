@@ -183,7 +183,10 @@ public class SMACOptions extends AbstractOptions {
 	public boolean maskCensoredDataAsKappaMax = false;
 
 	@Parameter(names={"--maxConsecutiveFailedChallengeIncumbent"}, description="if the parameter space is too small we may get to a point where we can make no new runs, detecting this condition is prohibitively expensive, and this heuristic controls the number of times we need to try a challenger and get no new runs before we give up")
-	public int challengeIncumbentAttempts = 1000;  
+	public int challengeIncumbentAttempts = 1000;
+
+	@Parameter(names={"--alwaysRunInitialConfiguration"}, description="if true we will always run the default and switch back to it if it is better than the incumbent")
+	public boolean alwaysRunInitialConfiguration = false; 
 
 	
 }

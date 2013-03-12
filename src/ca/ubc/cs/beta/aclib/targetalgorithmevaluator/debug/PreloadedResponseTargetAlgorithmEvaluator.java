@@ -18,18 +18,12 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred.TAECallback;
 
 public class PreloadedResponseTargetAlgorithmEvaluator extends AbstractNonBlockingTargetAlgorithmEvaluator {
 	
-	Queue<AssociatedValue> myQueue = new LinkedList<AssociatedValue>();
-	
-	
+	Queue<AssociatedValue<RunResult, Double>> myQueue = new LinkedList<AssociatedValue<RunResult, Double>>();
 	
 	public PreloadedResponseTargetAlgorithmEvaluator(
-			AlgorithmExecutionConfig execConfig) {
+			AlgorithmExecutionConfig execConfig, Queue<AssociatedValue<RunResult, Double>> myQueue) {
 		super(execConfig);
-		myQueue.add(new AssociatedValue(2, RunResult.SAT));
-		myQueue.add(new AssociatedValue(2, RunResult.SAT));
-		myQueue.add(new AssociatedValue(1, RunResult.TIMEOUT));
-		myQueue.add(new AssociatedValue(1, RunResult.TIMEOUT));
-		
+		this.myQueue = 	myQueue;
 		
 	}
 
@@ -67,9 +61,9 @@ public class PreloadedResponseTargetAlgorithmEvaluator extends AbstractNonBlocki
 		for(RunConfig rc : runConfigs)
 		{
 	
-			AssociatedValue v = myQueue.poll();
+			AssociatedValue<RunResult, Double> v = myQueue.poll();
 			if(v == null) throw new IllegalStateException("Error out of existing runs");
-			runs.add(new ExistingAlgorithmRun(execConfig, rc, v.getValue() + "," + v.getAssociatedValue() + ",0,0," + rc.getProblemInstanceSeedPair().getSeed()));
+			runs.add(new ExistingAlgorithmRun(execConfig, rc, v.getAssociatedValue() + "," + v.getValue() + ",0,0," + rc.getProblemInstanceSeedPair().getSeed()));
 			
 			
 		}

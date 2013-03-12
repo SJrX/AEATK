@@ -71,7 +71,7 @@ public class TargetAlgorithmEvaluatorBuilder {
 		}
 		
 		TargetAlgorithmEvaluator algoEval;
-		if(tae != null)
+		if(tae == null)
 		{
 			String taeKey = options.targetAlgorithmEvaluator;
 			AbstractOptions taeOptions = taeOptionsMap.get(taeKey);
@@ -81,6 +81,10 @@ public class TargetAlgorithmEvaluatorBuilder {
 			algoEval = tae;
 		}
 		
+		if(algoEval == null)
+		{
+			throw new IllegalStateException("TAE should have been non-null");
+		}
 		//===== Note the decorators are not in general commutative
 		//Specifically Run Hash codes should only see the same runs the rest of the applications see
 		//Additionally retrying of crashed runs should probably happen before Abort on Crash

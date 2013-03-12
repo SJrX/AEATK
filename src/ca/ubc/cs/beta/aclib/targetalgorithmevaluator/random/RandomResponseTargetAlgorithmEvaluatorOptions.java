@@ -10,4 +10,8 @@ public class RandomResponseTargetAlgorithmEvaluatorOptions extends AbstractOptio
 
 	@Parameter(names="--random-quick-eval", description = "If set to true responses will return immediately instead of ")
 	public boolean quickEval = false;
+	
+	
+	@Parameter(names="--random-slack-delta", description="Amount of slack (in seconds) to change by for every run (useful to cause runs to get longer or shorter)")
+	public double randomSlack = 0.0;
 }

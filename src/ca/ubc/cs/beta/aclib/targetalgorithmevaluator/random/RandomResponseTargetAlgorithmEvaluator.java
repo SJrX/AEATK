@@ -25,10 +25,11 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 	
 	private final boolean sleep;
 	
+	private final double slack;
 	private double maxValue = 0;
 	private static final Logger log = LoggerFactory.getLogger(RandomResponseTargetAlgorithmEvaluator.class);
 	
-	public RandomResponseTargetAlgorithmEvaluator(
+	public RandomResponseTargetAlgorithmEvaluator (
 			AlgorithmExecutionConfig execConfig, RandomResponseTargetAlgorithmEvaluatorOptions options) {
 		super(execConfig);
 		double scale;
@@ -40,6 +41,7 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 		}
 		
 		this.scale = scale;
+		this.slack = options.randomSlack;
 		sleep = !options.quickEval;
 		maxValue = execConfig.getAlgorithmCutoffTime();
 		
@@ -59,9 +61,10 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 		Random rand = SeedableRandomSingleton.getRandom();
 		
 		List<AlgorithmRun> ar = new ArrayList<AlgorithmRun>(runConfigs.size());
+		this.runCount++;
 		for(RunConfig rc : runConfigs)
 		{ 
-			double time = rand.nextDouble()*maxValue;
+			double time = Math.max(0.1, rand.nextDouble()*(rc.getCutoffTime()- (this.slack * this.getRunCount())));
 			
 			if(sleep)
 			{
@@ -98,7 +101,7 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 
 	@Override
 	protected void subtypeShutdown() {
-		// TODO Auto-generated method stub
+		
 		
 	}
 

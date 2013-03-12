@@ -61,12 +61,6 @@ public class ScenarioOptions extends AbstractOptions{
 	@Parameter(names={"--outputDirectory","--outdir"}, required=false, description="Output Directory")
 	public String outputDirectory = System.getProperty("user.dir") + File.separator + "smac-output";
 
-	@Parameter(names="--leakMemory", hidden=true, description="leaks some amount of memory for every run")
-	public boolean leakMemory = false;
-	
-	@Parameter(names="--leakMemoryAmount", hidden=true, description="amount of memory in bytes to leak")
-	public int leakMemoryAmount = 1024;
-	
 	@ParametersDelegate
 	public ParamFileDelegate paramFileDelegate = new ParamFileDelegate();
 	
