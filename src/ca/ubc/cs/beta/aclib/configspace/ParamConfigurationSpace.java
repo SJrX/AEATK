@@ -163,6 +163,19 @@ public class ParamConfigurationSpace implements Serializable {
 	final boolean[]  searchSubspaceActive;
 	
 	
+	/**
+	 * Stores the names of parameters in order
+	 * Synchronized because of lazy loading, this should be done better later
+	 * 
+	 * The authorative order is in fact something that should be specified in the constructor but for now sorting seems to work
+	 * 
+	 * 
+	 */
+	private final List<String> authorativeParameterNameOrder;
+
+
+	
+	
 	
 	/**
 	 * Creates a Param Configuration Space from the given file and random
@@ -411,6 +424,13 @@ public class ParamConfigurationSpace implements Serializable {
 			forbiddenLines.clear();
 			
 		this.defaultConfigurationValueArray = _getDefaultConfiguration().toValueArray();
+		
+		
+		List<String> paramOrder = new ArrayList<String>(paramNames.size());
+		paramOrder.addAll(paramNames);
+		Collections.sort(paramOrder);
+		
+		this.authorativeParameterNameOrder = Collections.unmodifiableList(paramOrder);
 		
 		/*
 		 * This will basically test that 
@@ -984,27 +1004,12 @@ public class ParamConfigurationSpace implements Serializable {
 		return Collections.unmodifiableMap(contNormalizedRanges);
 	}
 	
-	/**
-	 * Stores the names of parameters in order
-	 * Synchronized because of lazy loading, this should be done better later
-	 * 
-	 * The authorative order is in fact something that should be specified in the constructor but for now sorting seems to work
-	 * 
-	 * 
-	 */
-	List<String> authorativeParameterNameOrder = null;
-
-
+	
 	
 	public synchronized List<String> getParameterNamesInAuthorativeOrder()
 	{
-		if(authorativeParameterNameOrder == null)
-		{
-			authorativeParameterNameOrder = new ArrayList<String>(paramNames.size());
-			authorativeParameterNameOrder.addAll(paramNames);
-			Collections.sort(authorativeParameterNameOrder);
-		}
-		return Collections.unmodifiableList(authorativeParameterNameOrder);
+		return authorativeParameterNameOrder;
+		//return Collections.unmodifiableList(authorativeParameterNameOrder);
 	}
 	
 	/**
