@@ -65,14 +65,14 @@ private static TargetAlgorithmEvaluator tae;
 	public void testTimeoutReportedAsKappaMax()
 	{
 		
-		configSpace.setPRNG(r);
+		
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(1);
 		
 		for(int i=0; i < 10; i++)
 		{
 			double runtime = Math.max(0,(double) Math.random() * kappaMax - 1.0);
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved","TIMEOUT");
 			config.put("runtime", String.valueOf(runtime));
 			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), kappaMax, config);
@@ -95,14 +95,14 @@ private static TargetAlgorithmEvaluator tae;
 	public void testCappedRunsReportedAsNonKappaMax()
 	{
 		
-		configSpace.setPRNG(r);
+		
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(1);
 		
 		for(int i=0; i < 10; i++)
 		{
 			double runtime = Math.max(0,(double) Math.random() * kappaMax - 1.0);
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved","TIMEOUT");
 			config.put("runtime", String.valueOf(runtime));
 			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), runtime, config, true);
@@ -127,14 +127,14 @@ private static TargetAlgorithmEvaluator tae;
 	public void testCrashReportedAsKappaMax()
 	{
 		
-		configSpace.setPRNG(r);
+		
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(1);
 		
 		for(int i=0; i < 10; i++)
 		{
 			double runtime = Math.max(0,(double) Math.random() * kappaMax - 1.0);
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved","CRASHED");
 			config.put("runtime", String.valueOf(runtime));
 			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), kappaMax, config);
@@ -158,14 +158,14 @@ private static TargetAlgorithmEvaluator tae;
 	public void testNonKappaMaxRuns()
 	{
 		
-		configSpace.setPRNG(r);
+		
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(1);
 		
 		for(int i=0; i < 10; i++)
 		{
 			double runtime = Math.max(0,(double) Math.random() * kappaMax - 1.0);
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved","SAT");
 			config.put("runtime", String.valueOf(runtime));
 			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), kappaMax, config);
@@ -191,7 +191,7 @@ private static TargetAlgorithmEvaluator tae;
 		/**
 		 * See Task 1567
 		 */
-		configSpace.setPRNG(r);
+		
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(1);
 		double capTimeRequest = 5;
@@ -199,7 +199,7 @@ private static TargetAlgorithmEvaluator tae;
 		for(int i=0; i < 10; i++)
 		{
 			double runtime = Math.max(0,(double) Math.random() * kappaMax - 1.0);
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved","TIMEOUT");
 			config.put("runtime", "0.1");
 			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))),capTimeRequest, config,true);

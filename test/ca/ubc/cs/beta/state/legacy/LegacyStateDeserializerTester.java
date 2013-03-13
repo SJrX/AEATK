@@ -537,7 +537,7 @@ public class LegacyStateDeserializerTester {
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(number+2);
 		for(int i=0; i < number; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("TIMEOUT") || config.get("solved").equals("CRASHED"))
 			{
 				//Only want good configurations

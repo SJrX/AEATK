@@ -74,12 +74,12 @@ private static TargetAlgorithmEvaluator tae;
 		
 		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
 		
-		configSpace.setPRNG(r);
+		
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED"))
 			{
 				//Only want good configurations
@@ -138,12 +138,11 @@ SeedableRandomSingleton.reinit();
 		
 		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
 		
-		configSpace.setPRNG(r);
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED"))
 			{
 				//Only want good configurations

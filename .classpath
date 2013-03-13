@@ -9,7 +9,6 @@
 	<classpathentry kind="lib" path="lib/commons-collections-3.2.1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-io-2.1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-math-2.2.jar"/>
-	<classpathentry kind="lib" path="lib/DomainInter.jar"/>
 	<classpathentry kind="lib" path="lib/Jama-1.0.2.jar"/>
 	<classpathentry kind="lib" path="lib/jmatharray.jar"/>
 	<classpathentry kind="lib" path="lib/logback-access-1.0.0.jar"/>
@@ -22,6 +21,7 @@
 	<classpathentry kind="lib" path="lib/spi-0.2.4.jar"/>
 	<classpathentry kind="lib" path="lib/StructureGraphic.jar"/>
 	<classpathentry kind="lib" path="lib/jcip-annotations.jar" sourcepath="lib/jcip-annotations-src.jar"/>
+	<classpathentry kind="lib" path="lib/DomainInter.jar"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/RandomForests"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="src" path=".apt_generated">

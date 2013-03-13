@@ -143,12 +143,12 @@ public class DynamicCappingTestSet {
 		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
 		
 		assertTrue(tae.areRunsObservable());
-		configSpace.setPRNG(r);
+		
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(1);
 		for(int i=0; i < 1; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("runtime", "100");
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
 			{
@@ -260,12 +260,12 @@ public class DynamicCappingTestSet {
 		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);	
 		
 		assertTrue(tae.areRunsObservable());
-		configSpace.setPRNG(r);
+		
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(10);
 		for(int i=0; i < 10; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("runtime", ""+(i+1));
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
 			{
@@ -364,12 +364,12 @@ public class DynamicCappingTestSet {
 		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
 		
 		assertTrue(tae.areRunsObservable());
-		configSpace.setPRNG(r);
+		
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(10);
 		for(int i=0; i < 10; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("runtime", ""+(i+1));
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
 			{
@@ -471,12 +471,12 @@ public class DynamicCappingTestSet {
 			tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig, 50);	
 			
 			assertTrue(tae.areRunsObservable());
-			configSpace.setPRNG(r);
+			
 			
 			List<RunConfig> runConfigs = new ArrayList<RunConfig>(1);
 			for(int i=0; i < 1; i++)
 			{
-				ParamConfiguration config = configSpace.getRandomConfiguration();
+				ParamConfiguration config = configSpace.getRandomConfiguration(r);
 				config.put("runtime", "1");
 				if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
 				{
@@ -556,12 +556,12 @@ public class DynamicCappingTestSet {
 			tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig, 50);	
 			
 			assertTrue(tae.areRunsObservable());
-			configSpace.setPRNG(r);
+			
 			
 			List<RunConfig> runConfigs = new ArrayList<RunConfig>(1);
 			for(int i=0; i < 1; i++)
 			{
-				ParamConfiguration config = configSpace.getRandomConfiguration();
+				ParamConfiguration config = configSpace.getRandomConfiguration(r);
 				config.put("runtime", "1");
 				if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
 				{

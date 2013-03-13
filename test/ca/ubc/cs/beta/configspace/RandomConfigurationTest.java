@@ -8,18 +8,32 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.configspace.ParamFileHelper;
+import ca.ubc.cs.beta.aclib.misc.random.SeedableRandomSingleton;
 
 
 public class RandomConfigurationTest {
 
+	
+	private static Random random;
+	
+	@BeforeClass
+	public static void setUpClass()
+	{
+		 SeedableRandomSingleton.reinit();
+		 random = SeedableRandomSingleton.getRandom();
+	}
+	
+	
 	
 	
 	public boolean allValues(Map<String, Integer> possibleValues, Map<String, Set<String>> seenValues)
@@ -71,7 +85,7 @@ public class RandomConfigurationTest {
 		
 		for(int i=0; i < TRIALS; i++)
 		{
-			count[Integer.valueOf(configSpace.getRandomConfiguration().get("a"))-1]++;
+			count[Integer.valueOf(configSpace.getRandomConfiguration(random).get("a"))-1]++;
 		}
 
 		//Each bucket is binomially distributed
@@ -123,7 +137,7 @@ public class RandomConfigurationTest {
 		
 		for(int i=0; i < TRIALS; i++)
 		{
-			int index = Integer.valueOf(configSpace.getRandomConfiguration().get("b"));
+			int index = Integer.valueOf(configSpace.getRandomConfiguration(random).get("b"));
 			count[index-1]++;
 		}
 
@@ -203,7 +217,7 @@ public class RandomConfigurationTest {
 		
 		while(!allValues(possibleValues, seenValues))
 		{
-			ParamConfiguration config = f.getRandomConfiguration();
+			ParamConfiguration config = f.getRandomConfiguration(random);
 			
 			for(String key : config.keySet())
 			{

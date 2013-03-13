@@ -20,6 +20,8 @@ import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 
+import net.jcip.annotations.Immutable;
+
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration.StringFormat;
 import ca.ubc.cs.beta.aclib.misc.java.io.FileReaderNoException.FileReaderNoException;
 import ca.ubc.cs.beta.aclib.misc.random.SeedableRandomSingleton;
@@ -41,7 +43,7 @@ enum LineType
  * <p>
  * The aim of this file is more readability than simplicity as such some of the data structures like paramNames are redundant.
  * <p>
- * This object is effectively immutable (sans random objects)
+ * This object is effectively immutable and this should not change under any circumstances (for thread safety reasons)
  * <p>
  * <b>Historical Note:</b> This class originally was very Collection heavy, however as the ParamConfiguration objects 
  * are all backed by arrays it really would make more sense for this it to be backed by more arrays.
@@ -49,6 +51,7 @@ enum LineType
  * 
  * @author seramage
  */
+@Immutable
 public class ParamConfigurationSpace implements Serializable {
 	
 	/**
@@ -136,10 +139,10 @@ public class ParamConfigurationSpace implements Serializable {
 
 	
 	
-	
-	
-	private Random random;
-	
+	/**
+	 * Flag variable that controls whether there exists a real parameter file
+	 * NOTE: This field should not be changed after being set.
+	 */
 	private boolean hasRealParameterFile = true;
 	
 	/**
@@ -263,7 +266,6 @@ public class ParamConfigurationSpace implements Serializable {
 		/*
 		 * Parse File and create configuration space
 		 */
-		this.random = random;
 		this.absoluteFileName = absoluteFileName;
 		
 		if((absoluteFileName == null) || (absoluteFileName.trim().length() == 0))
@@ -316,6 +318,12 @@ public class ParamConfigurationSpace implements Serializable {
 		 * This gets the data into a format convenient for Random Forests.
 		 * 
 		 */		
+		List<String> paramOrder = new ArrayList<String>(paramNames.size());
+		paramOrder.addAll(paramNames);
+		Collections.sort(paramOrder);
+		
+		this.authorativeParameterNameOrder = Collections.unmodifiableList(paramOrder);
+		
 		
 		  //TODO: Expand on these comments
 		  parameterDomainContinuous = new boolean[paramNames.size()];
@@ -426,11 +434,7 @@ public class ParamConfigurationSpace implements Serializable {
 		this.defaultConfigurationValueArray = _getDefaultConfiguration().toValueArray();
 		
 		
-		List<String> paramOrder = new ArrayList<String>(paramNames.size());
-		paramOrder.addAll(paramNames);
-		Collections.sort(paramOrder);
-		
-		this.authorativeParameterNameOrder = Collections.unmodifiableList(paramOrder);
+	
 		
 		/*
 		 * This will basically test that 
@@ -1000,16 +1004,17 @@ public class ParamConfigurationSpace implements Serializable {
 	
 	
 	public Map<String, NormalizedRange> getNormalizedRangeMap() {
-		// TODO Auto-generated method stub
 		return Collections.unmodifiableMap(contNormalizedRanges);
 	}
 	
 	
-	
-	public synchronized List<String> getParameterNamesInAuthorativeOrder()
+	/**
+	 * Returns a listing of parameter names in <b>authorative</b> order
+	 * @return list of strings
+	 */
+	public List<String> getParameterNamesInAuthorativeOrder()
 	{
 		return authorativeParameterNameOrder;
-		//return Collections.unmodifiableList(authorativeParameterNameOrder);
 	}
 	
 	/**
@@ -1040,12 +1045,15 @@ public class ParamConfigurationSpace implements Serializable {
 	}
 	
 	
-	
-	
-	public ParamConfiguration getRandomConfiguration()
+	/**
+	 * Generates a random configuration given the supplied random object 
+	 * @param random object we will use to generate the configuration 
+ 	 * @return a random member of the configuration space (each parameter (ignoring the subspace) is sampled uniformly at random, and rejected if it's forbidden).
+	 */
+	public ParamConfiguration getRandomConfiguration(Random random)
 	{
 		
-		return this.getRandomConfiguration(false);
+		return this.getRandomConfiguration(random, false);
 	}
 	
 	
@@ -1053,10 +1061,11 @@ public class ParamConfigurationSpace implements Serializable {
 	
 	/**
 	 * Returns a random instance for the configuration space
+	 * @param random 	a random object we will use to generate the configurations
 	 * @param allowForbiddenParameters  <code>true</code> if we can return parameters that are forbidden, <code>false</code> otherwise.
-	 * @return	paramconfiguration generated
+	 * @return	a random member of the configuration space (each parameter (ignoring the subspace) is sampled uniformly at random, and rejected if it's forbidden
 	 */
-	public ParamConfiguration getRandomConfiguration(boolean allowForbiddenParameters)
+	public ParamConfiguration getRandomConfiguration(Random random, boolean allowForbiddenParameters)
 	{
 		for(int j=0; j < 1000000; j++)
 		{
@@ -1068,7 +1077,10 @@ public class ParamConfigurationSpace implements Serializable {
 					valueArray[i] = searchSubspaceValues[i];
 				}	else if (parameterDomainContinuous[i])
 				{
-					valueArray[i] = random.nextDouble();
+					NormalizedRange nr = getNormalizedRangeMap().get(this.authorativeParameterNameOrder.get(i));
+					valueArray[i] = nr.normalizeValue(nr.unnormalizeValue(random.nextDouble()));
+					
+					//valueArray[i] = random.nextDouble();
 				} else
 				{
 					valueArray[i] = random.nextInt(categoricalSize[i]) + 1;
@@ -1128,11 +1140,16 @@ public class ParamConfigurationSpace implements Serializable {
 		return new ParamConfiguration(this, valueArray.clone(), categoricalSize, parameterDomainContinuous, paramKeyIndexMap);
 	}
 	
-
 	public ParamConfiguration getConfigurationFromString( String paramString, StringFormat f)
+	{
+		return getConfigurationFromString(paramString, f, null);
+	}
+
+	public ParamConfiguration getConfigurationFromString( String paramString, StringFormat f, Random rand)
 	{
 		try 
 		{
+			
 			ParamConfiguration config;
 			
 			String trySpecialParamString = paramString.trim().toUpperCase();
@@ -1145,7 +1162,8 @@ public class ParamConfigurationSpace implements Serializable {
 			
 			if((trySpecialParamString.equals("RANDOM") || trySpecialParamString.equals("<RANDOM>")))
 			{
-				return this.getRandomConfiguration();
+				if(rand == null) throw new IllegalArgumentException("Cannot generate random configurations unless a random object is passed with us");	
+				return this.getRandomConfiguration(rand);
 			}
 			
 			
@@ -1262,26 +1280,21 @@ public class ParamConfigurationSpace implements Serializable {
 						
 						specifiedButNotActive.addAll(namesSpecified);
 						specifiedButNotActive.removeAll(config.getActiveParameters());
-						
-						
+
 						throw new IllegalArgumentException("Param String specified some combination of inactive parameters and/or missed active parameters. \nRequired Parameters: " + config.getActiveParameters().size() + "\nSpecified Parameters: " + namesSpecified.size() + "\nRequired But Missing: " + missingButRequired.toString() + "\nSpecified But Not Required" + specifiedButNotActive.toString());
-						
-						
-						
-						
-						
-						
-						
+					}
+					
+				case NODB_OR_STATEFILE_SYNTAX:
+					try {
+						return getConfigurationFromString(paramString, StringFormat.STATEFILE_SYNTAX, rand);
+					} catch(RuntimeException e)
+					{
+						return getConfigurationFromString(paramString, StringFormat.NODB_SYNTAX, rand);
 					}
 					
 					
-					
-					
-					
-					
-					
 				default:
-					throw new IllegalArgumentException("Parsing not implemented for String Format");
+					throw new IllegalArgumentException("Parsing not implemented for String Format" + f);
 					
 				
 				
@@ -1312,24 +1325,7 @@ public class ParamConfigurationSpace implements Serializable {
 		return condParentVals.clone();
 	}
 	
-	
-	/**
-	 * 
-	 * The actual PRNG may change and so clients should always get the latest one from here, as opposed to saving an instance.
-	 * 
-	 * @return random object we are using
-	 */
-	public Random getPRNG()
-	{
-		return random;
-	}
-	
-	
-	public void setPRNG(Random r)
-	{
-		this.random = r;
-	}
-	
+
 	/**
 	 * Checks the array representation of a configuration to see if it is forbidden
 	 * @param valueArray
@@ -1409,7 +1405,8 @@ public class ParamConfigurationSpace implements Serializable {
 		}
 		else if(parameterDomainContinuous[index])
 		{
-			valueArray[index] = getNormalizedRangeMap().get(key).normalizeValue(Double.valueOf(newValue));
+			NormalizedRange nr = getNormalizedRangeMap().get(key);
+			valueArray[index] = nr.normalizeValue(nr.unnormalizeValue(nr.normalizeValue(Double.valueOf(newValue))));
 			
 		} else
 		{
