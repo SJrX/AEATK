@@ -177,19 +177,7 @@ public class ParamConfigurationSpace implements Serializable {
 	private final List<String> authorativeParameterNameOrder;
 
 
-	
-	
-	
-	/**
-	 * Creates a Param Configuration Space from the given file and random
-	 * @param filename string storing the filename to parse
-	 * @param random random object to use
-	 * 
-	 */
-	public ParamConfigurationSpace(String filename, Random random)
-	{
-		this(new File(filename), random);
-	}
+
 	
 	/**
 	 * Creates a Param Configuration Space from the given file, no random object
@@ -200,14 +188,6 @@ public class ParamConfigurationSpace implements Serializable {
 		this(new File(filename));
 	}
 	
-	/**
-	 * Creates a Param Configuration Space from the given file, no random object
-	 * @param file file to parse
-	 */
-	public ParamConfigurationSpace(File file)
-	{
-		this(file,SeedableRandomSingleton.getRandom());
-	}
 	
 	/**
 	 * 
@@ -216,7 +196,7 @@ public class ParamConfigurationSpace implements Serializable {
 	 */
 	public ParamConfigurationSpace(Reader reader, Map<String, String> searchSubspace)
 	{
-		this(reader,SeedableRandomSingleton.getRandom(), "ReaderOnly-"+System.currentTimeMillis() +"-" +(int) (Math.random() * 10000000.0), searchSubspace);
+		this(reader, "ReaderOnly-"+System.currentTimeMillis() +"-" +(int) (Math.random() * 10000000.0), searchSubspace);
 		hasRealParameterFile = false;
 	}
 	
@@ -227,7 +207,7 @@ public class ParamConfigurationSpace implements Serializable {
 	 */
 	public ParamConfigurationSpace(Reader reader)
 	{
- 		this(reader,SeedableRandomSingleton.getRandom(), "ReaderOnly-"+System.currentTimeMillis() +"-" +(int) (Math.random() * 10000000.0));
+ 		this(reader, "ReaderOnly-"+System.currentTimeMillis() +"-" +(int) (Math.random() * 10000000.0));
 		hasRealParameterFile = false;
 	}
 	
@@ -237,9 +217,9 @@ public class ParamConfigurationSpace implements Serializable {
 	 * @param file
 	 * @param random
 	 */
-	public ParamConfigurationSpace(File file, Random random)
+	public ParamConfigurationSpace(File file)
 	{
-		this(new FileReaderNoException(file), random, file.getAbsolutePath());
+		this(new FileReaderNoException(file), file.getAbsolutePath());
 	}
 	
 	/**
@@ -249,9 +229,9 @@ public class ParamConfigurationSpace implements Serializable {
 	 * @param absolute file name of the object (a unique string used for equality)
 	 */
 	@SuppressWarnings("unchecked")
-	public ParamConfigurationSpace(Reader file, Random random, String absoluteFileName)
+	public ParamConfigurationSpace(Reader file, String absoluteFileName)
 	{
-		this(file, random, absoluteFileName, Collections.EMPTY_MAP);
+		this(file, absoluteFileName, Collections.EMPTY_MAP);
 	}
 	
 	/**
@@ -260,7 +240,7 @@ public class ParamConfigurationSpace implements Serializable {
 	 * @param random random object to parse
 	 * @param absolute file name of the object (a unique string used for equality)
 	 */
-	public ParamConfigurationSpace(Reader file, Random random, String absoluteFileName, Map<String, String> searchSubspace)
+	public ParamConfigurationSpace(Reader file, String absoluteFileName, Map<String, String> searchSubspace)
 	{
 		
 		/*

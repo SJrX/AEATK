@@ -200,7 +200,7 @@ public class RandomConfigurationTest {
 	@Test
 	@Ignore("Fix input paramfile")
 	public void testAllValuesAppear() {
-		ParamConfigurationSpace f = ParamFileHelper.getParamFileParser(("/ubc/cs/home/s/seramage/arrowspace/sm/sample_inputs/spear-params.txt"), 1234);
+		ParamConfigurationSpace f = ParamFileHelper.getParamFileParser(("/ubc/cs/home/s/seramage/arrowspace/sm/sample_inputs/spear-params.txt"));
 		
 	
 		Map<String,Integer> possibleValues =  new HashMap<String, Integer>(); 

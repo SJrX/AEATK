@@ -227,7 +227,7 @@ public class LegacyStateDeserializerTester {
 		System.out.println("Seed was:" + seed);
 		Random r = new MersenneTwister(seed);
 		
-		configSpace = new ParamConfigurationSpace(paramFile,r);
+		configSpace = new ParamConfigurationSpace(paramFile);
 		
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 5000);
 		List<ProblemInstance> pis = new ArrayList<ProblemInstance>();
@@ -331,7 +331,7 @@ public class LegacyStateDeserializerTester {
 		System.out.println("Seed was:" + seed);
 		Random r = new MersenneTwister(seed);
 		
-		configSpace = new ParamConfigurationSpace(paramFile,r);
+		configSpace = new ParamConfigurationSpace(paramFile);
 		
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 5000);
 		List<ProblemInstance> pis = new ArrayList<ProblemInstance>();
@@ -418,7 +418,7 @@ public class LegacyStateDeserializerTester {
 		System.out.println("Seed was:" + seed);
 		Random r = new MersenneTwister(seed);
 		
-		configSpace = new ParamConfigurationSpace(paramFile,r);
+		configSpace = new ParamConfigurationSpace(paramFile);
 		
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 5000);
 		List<ProblemInstance> pis = new ArrayList<ProblemInstance>();
@@ -661,7 +661,7 @@ public class LegacyStateDeserializerTester {
 		System.out.println("Seed was:" + seed);
 		Random r = new MersenneTwister(seed);
 		
-		configSpace = new ParamConfigurationSpace(paramFile,r);
+		configSpace = new ParamConfigurationSpace(paramFile);
 		
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 5000);
 		List<ProblemInstance> pis = new ArrayList<ProblemInstance>();

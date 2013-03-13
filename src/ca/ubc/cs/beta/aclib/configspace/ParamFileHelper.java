@@ -21,9 +21,9 @@ public class ParamFileHelper {
 	 * @return ParamConfigurationSpace instance
 	 * 
 	 */
-	public static ParamConfigurationSpace getParamFileParser(String filename, long seedForRandomSampling)
+	public static ParamConfigurationSpace getParamFileParser(String filename)
 	{
-		return getParamFileParser(new File(filename),seedForRandomSampling);
+		return getParamFileParser(new File(filename));
 	}
 	
 
@@ -37,14 +37,14 @@ public class ParamFileHelper {
 	 * @param seedForRandomSampling		seed for prng
 	 * @return ParamConfigurationSpace instance
 	 */
-	public static ParamConfigurationSpace getParamFileParser(File file, long seedForRandomSampling)
+	public static ParamConfigurationSpace getParamFileParser(File file)
 	{
 		//TODO Fix Thread Safety of this code (I'm not sure if the double-check locking idiom works here)
 		ParamConfigurationSpace param = paramFiles.get(file.getAbsolutePath());
 		
 		if(param == null)
 		{ 
-				param = new ParamConfigurationSpace(file, new MersenneTwister(seedForRandomSampling));
+				param = new ParamConfigurationSpace(file);
 								
 				 ParamConfigurationSpace p = paramFiles.putIfAbsent(file.getAbsolutePath(),param);
 				 if(p == null)
