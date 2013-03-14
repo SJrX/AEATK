@@ -90,6 +90,13 @@ public class SMACOptions extends AbstractOptions {
 	@Parameter(names={"--restoreStateIteration","--restoreIteration"}, description="iteration of the state to restore")
 	public Integer restoreIteration = null;
 	
+	/**
+	 * Restore scenario is done before we parse the configuration and fixes input args
+	 * in the input string to jcommander 
+	 */
+	@Parameter(names="--restoreScenario", description="Restore the scenario & state in the state folder")
+	public File restoreScenario =null; 
+	
 	@Parameter(names={"--cleanOldStateOnSuccess"}, description="will clean up much of the useless state files if smac completes successfully")
 	public boolean cleanOldStatesOnSuccess = true;
 	

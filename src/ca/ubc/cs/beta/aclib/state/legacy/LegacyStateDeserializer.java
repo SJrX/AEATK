@@ -141,6 +141,30 @@ public class LegacyStateDeserializer implements StateDeserializer {
 				log.warn("Got empty instance list, except in the trivial case this will result in an exception");
 			}
 			
+			if (iteration == Integer.MAX_VALUE)
+			{
+				iteration = 0;
+				log.info("Auto detecting iteration for directory {}" , restoreFromPath);
+				
+				File restoreDirectory = new File(restoreFromPath);
+				File[] files = restoreDirectory.listFiles();
+				Arrays.sort(files);
+				for(File f : files)
+				{
+					int thisIteration = LegacyStateFactory.readIterationFromObjectFile(f);
+					if(thisIteration != -1)
+					{
+						
+						
+						//System.out.println(f.getAbsolutePath().substring(restoreDirectory.getAbsolutePath().length()+1) + " => Iteration " + thisIteration);
+						
+						iteration = Math.max(thisIteration, iteration);
+					}
+				}
+				
+				log.info("Iteration restoring to {} ", iteration);
+			}
+			
 			
 			Object[] args = { iteration, id, restoreFromPath };
 			log.info("Trying to restore iteration: {} id: {} from path: {}", args );
