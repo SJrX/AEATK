@@ -27,13 +27,9 @@ public class ParamEchoExecutor {
 			{
 				sb.append(args[i]).append(" ");
 			}
-			
-			
-			
+						
 			ParamConfigurationSpace configSpace = new ParamConfigurationSpace(TestHelper.getTestFile("paramFiles/paramEchoParamFile.txt"));
-			
-			
-			
+
 			
 			ParamConfiguration config = configSpace.getConfigurationFromString(sb.toString(), StringFormat.NODB_SYNTAX);
 			
@@ -46,8 +42,19 @@ public class ParamEchoExecutor {
 			/*long returnCutOffLength = instanceName.hashCode() + 37*instanceSpecificInfo.hashCode();*/
 
 			
+			Double runtimeSeconds = Double.valueOf(runtime);
+
+			if(args[1].trim().equals("SLEEP"))
+			{
+				
+				try {
+					Thread.sleep((long) (runtimeSeconds* 1000));
+				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
+				}
+			}
 			
-			
+		
 			//System.err.println("Process Running done");
 			System.out.println("Result for ParamILS: " + result + "," + runtime + "," + runlength + "," + quality + "," + resultSeed + "\n");
 			

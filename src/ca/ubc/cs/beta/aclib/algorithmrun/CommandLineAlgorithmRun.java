@@ -319,7 +319,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 		{
 			log.info( "Call: cd {} ;  {} ", execConfig.getAlgorithmExecutionDirectory(), execCmd);
 		}
-		
+		System.out.println(" > " + execCmd + " < ");
 		Process proc = Runtime.getRuntime().exec(execCmd,null, new File(execConfig.getAlgorithmExecutionDirectory()));
 
 		return proc;
@@ -336,6 +336,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 
 		StringBuilder execString = new StringBuilder();
 		execString.append(execConfig.getAlgorithmExecutable()).append(" ").append(runConfig.getProblemInstanceSeedPair().getInstance().getInstanceName()).append(" ").append(runConfig.getProblemInstanceSeedPair().getInstance().getInstanceSpecificInformation()).append(" ").append(runConfig.getCutoffTime()).append(" ").append(Integer.MAX_VALUE).append(" ").append(runConfig.getProblemInstanceSeedPair().getSeed()).append(" ").append(runConfig.getParamConfiguration().getFormattedParamString(StringFormat.NODB_SYNTAX));
+		
 		return execString.toString();
 	}
 

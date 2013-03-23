@@ -1047,6 +1047,7 @@ public class ParamConfigurationSpace implements Serializable {
 	 */
 	public ParamConfiguration getRandomConfiguration(Random random, boolean allowForbiddenParameters)
 	{
+		if(random == null) throw new IllegalArgumentException("Cannot supply null random object ");
 		for(int j=0; j < 1000000; j++)
 		{
 			double[] valueArray = new double[numberOfParameters];

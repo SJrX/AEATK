@@ -35,9 +35,8 @@ public interface AlgorithmRun extends Runnable, Serializable,  Callable<Object> 
 	 * Get the Run Result
 	 * 
 	 * <b>Implementation Notes:</b>
-	 *  The Run Result should be TIMEOUT, CRASHED or ABORT if and only if the runtime() is >= the associated cutoff time.
 	 * 
-	 *  The Run Result should be TIMEOUT if the cutoff time is zero, and we probably shouldn't bother doing anything 
+	 *  The Run Result should be TIMEOUT if the cutoff time is zero, and implementations may not do anything else but return this run. 
 	 *  
 	 *  The Run Result should NEVER be RUNNING, unless this is an appropriate subtype that supports Killing.
 	 *  

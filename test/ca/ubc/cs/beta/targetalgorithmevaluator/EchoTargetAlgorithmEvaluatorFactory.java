@@ -18,12 +18,12 @@ public class EchoTargetAlgorithmEvaluatorFactory implements TargetAlgorithmEvalu
 	@Override
 	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(
 			AlgorithmExecutionConfig execConfig, AbstractOptions options) {
-		return new EchoTargetAlgorithmEvaluator(execConfig);
+		return new EchoTargetAlgorithmEvaluator(execConfig, (EchoTargetAlgorithmEvaluatorOptions) options);
 	}
 
 	@Override
 	public AbstractOptions getOptionObject() {
-		return null;
+		return new EchoTargetAlgorithmEvaluatorOptions();
 	}
 
 }

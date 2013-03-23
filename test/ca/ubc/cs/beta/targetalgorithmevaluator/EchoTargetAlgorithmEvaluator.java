@@ -22,12 +22,17 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunSta
  */
 public class EchoTargetAlgorithmEvaluator  extends AbstractBlockingTargetAlgorithmEvaluator  implements TargetAlgorithmEvaluator{
 
-	public EchoTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig) {
-		super(execConfig);
-		// TODO Auto-generated constructor stub
+	private final boolean quickEval;
+	
+	public EchoTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig)
+	{
+		this(execConfig, new EchoTargetAlgorithmEvaluatorOptions());
 	}
-
-
+	
+	public EchoTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig, EchoTargetAlgorithmEvaluatorOptions options) {
+		super(execConfig);
+		this.quickEval = options.quickEval;		
+	}
     
 	@Deprecated
 	public volatile double wallClockTime = 0;
@@ -63,8 +68,18 @@ public class EchoTargetAlgorithmEvaluator  extends AbstractBlockingTargetAlgorit
 			sb.append(config.get("seed"));
 			
 			
-			
-			
+			if(!this.quickEval)
+			{
+				
+				double sleep = Double.valueOf(config.get("runtime"));
+				
+				try {
+					Thread.sleep( (long) (sleep*1000));
+				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
+				}
+				
+			}
 			
 			results.add(new ExistingAlgorithmRun(execConfig, rc, sb.toString(),wallClockTime));
 			
