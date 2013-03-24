@@ -172,7 +172,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 					
 					while(procIn.hasNext())
 					{	
-						log.warn(procIn.nextLine());
+						log.warn("[PROCESS]  {}", procIn.nextLine());
 					}
 					
 					procIn.close();
@@ -330,7 +330,6 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 		{
 			log.info( "Call: cd {} ;  {} ", execConfig.getAlgorithmExecutionDirectory(), execCmd);
 		}
-		System.out.println(" > " + execCmd + " < ");
 		Process proc = Runtime.getRuntime().exec(execCmd,null, new File(execConfig.getAlgorithmExecutionDirectory()));
 
 		return proc;
@@ -364,7 +363,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 		
 		if(options.logAllProcessOutput)
 		{
-			log.debug(line);
+			log.debug("[PROCESS]  {}" ,line);
 		}
 		
 
