@@ -30,6 +30,9 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	@Parameter(names="--retryTargetAlgorithmRunCount", description="number of times to retry an algorithm run before eporting crashed (NOTE: The original crashes DO NOT count towards any time limits, they are in effect lost). Additionally this only retries CRASHED runs, not ABORT runs, this is by design as ABORT is only for cases when we shouldn't bother further runs", validateWith=NonNegativeInteger.class)
 	public int retryCount = 0;
 
+	@Parameter(names={"--boundRuns"}, description="if true, permit only --cores number of runs to be evaluated concurrently")
+	public boolean boundRuns = true;
+	
 	@Parameter(names={"--cores","--numConcurrentAlgoExecs","--maxConcurrentAlgoExecs","--numberOfConcurrentAlgoExecs"}, description="maximum number of concurrent target algorithm executions", validateWith=PositiveInteger.class)
 	public int maxConcurrentAlgoExecs = 1;
 	
@@ -45,5 +48,7 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	
 	@Parameter(names="--verifySAT", description="Check SAT/UNSAT/UNKNOWN responses against Instance specific information (if null then performs check if every instance has specific information in the following domain {SAT, UNSAT, UNKNOWN, SATISFIABLE, UNSATISFIABLE}")
 	public Boolean verifySAT;
+
+
 
 }

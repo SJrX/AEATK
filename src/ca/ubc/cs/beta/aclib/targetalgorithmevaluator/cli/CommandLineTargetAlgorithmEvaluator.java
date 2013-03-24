@@ -94,12 +94,12 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractBlockingTargetA
 		
 		if(concurrentExecution)
 		{
-			log.info("Using concurrent algorithm runner");
+			log.debug("Using concurrent algorithm runner");
 			return AutomaticConfiguratorFactory.getConcurrentAlgorithmRunner(execConfig,runConfigs,obs, options);
 			
 		} else
 		{
-			log.info("Using single-threaded algorithm runner");
+			log.debug("Using single-threaded algorithm runner");
 			return AutomaticConfiguratorFactory.getSingleThreadedAlgorithmRunner(execConfig,runConfigs,obs, options);
 		}
 	}

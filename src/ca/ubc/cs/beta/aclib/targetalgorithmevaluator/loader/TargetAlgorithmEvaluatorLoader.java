@@ -92,27 +92,9 @@ private static final String defaultSearchPath;
 				}
 			}
 		}
-		/*
-		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "MySQLDBTAE" + File.separator) ;
-		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "MySQLDBTAE" + File.separator + "lib" + File.separator) ;
-		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "MySQLDBTAE" + File.separator + "version" + File.separator) ;
-		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "MySQLDBTAE" + File.separator + "bin" + File.separator) ;
-		*/
+		
 		directoriesToSearch.add(new File(cwd) + File.separator + "plugins" + File.separator);
-		/*
-		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "surrogates" + File.separator);
-		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "RunDispatcher" + File.separator);
-		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "surrogates" + File.separator + "bin" + File.separator);
-		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "surrogates" + File.separator + "version" + File.separator);
-		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "RunDispatcher" + File.separator + "bin" + File.separator) ;
-		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "surrogates" + File.separator + "lib" + File.separator);
-		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "RunDispatcher" + File.separator + "lib" + File.separator) ;
 		
-		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "RunDispatcher" + File.separator + "lib" + File.separator) ;
-		
-		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "RunDispatcher" + File.separator + "version" + File.separator) ;
-		directoriesToSearch.add(new File(cwd).getParent() + File.separator + "rundispatcher" + File.separator);
-		*/
 		directoriesToSearch.add(System.getProperty("java.class.path"));
 		for(String dirName : directoriesToSearch)
 		{
@@ -179,13 +161,12 @@ private static final String defaultSearchPath;
 	/**
 	 * Retrieves a Target Algorithm Evaluator configured with the correct options
 	 * @param execConfig					configuration object for target algorithm execution
-	 * @param maxConcurrentExecutions		the maximum number of concurrent executions permissible
 	 * @param name							the name of the Target Algorithm Evaluator to return
 	 * @param loader						the class loader to use 
 	 * @param options						The abstract options associated with this target algorithm evaluator
 	 * @return
 	 */
-	public static TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig, int maxConcurrentExecutions, String name, AbstractOptions options)
+	public static TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig, String name, AbstractOptions options)
 	{
 		ClassLoader loader = getClassLoader();
 		

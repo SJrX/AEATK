@@ -28,6 +28,7 @@ import ca.ubc.cs.beta.aclib.options.ScenarioOptions;
 import ca.ubc.cs.beta.aclib.options.TargetAlgorithmEvaluatorOptions;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbortOnCrashTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbortOnFirstRunCrashTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.BoundedTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.TimingCheckerTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.LeakingMemoryTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.RetryCrashedRunsTargetAlgorithmEvaluator;
@@ -75,7 +76,7 @@ public class TargetAlgorithmEvaluatorBuilder {
 		{
 			String taeKey = options.targetAlgorithmEvaluator;
 			AbstractOptions taeOptions = taeOptionsMap.get(taeKey);
-			algoEval = TargetAlgorithmEvaluatorLoader.getTargetAlgorithmEvaluator(execConfig, options.maxConcurrentAlgoExecs, taeKey,taeOptions);
+			algoEval = TargetAlgorithmEvaluatorLoader.getTargetAlgorithmEvaluator(execConfig, taeKey,taeOptions);
 		}  else
 		{
 			algoEval = tae;
@@ -94,6 +95,7 @@ public class TargetAlgorithmEvaluatorBuilder {
 		
 		if(options.abortOnCrash)
 		{
+			log.debug("Treating all crashes as aborts");
 			algoEval = new AbortOnCrashTargetAlgorithmEvaluator(algoEval);
 		}
 		
@@ -118,6 +120,18 @@ public class TargetAlgorithmEvaluatorBuilder {
 				
 			}
 		}
+		
+		
+		
+		if(options.boundRuns)
+		{
+			log.debug("Bounding the number of concurrent target algorithm evaluations to {} ", options.maxConcurrentAlgoExecs);
+			algoEval = new BoundedTargetAlgorithmEvaluator(algoEval, options.maxConcurrentAlgoExecs, execConfig);
+		}
+		
+		
+		
+		
 		//==== Run Hash Code Verification should be last
 		if(hashVerifiersAllowed)
 		{

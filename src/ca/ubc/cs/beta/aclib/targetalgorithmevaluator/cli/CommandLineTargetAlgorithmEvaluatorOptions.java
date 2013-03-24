@@ -13,8 +13,8 @@ public class CommandLineTargetAlgorithmEvaluatorOptions extends AbstractOptions 
 	@Parameter(names="--cli-observer-frequency", description="How often to notify observer of updates (in milli-seconds)", validateWith=FixedPositiveInteger.class)
 	public int observerFrequency = 100;
 
-	@Parameter(names="--cli-concurrent-execution", description="Whether to allow concurrent execution")
-	public boolean concurrentExecution;
+	@Parameter(names="--cli-concurrent-execution", description="Whether to allow concurrent execution (NOTE: If --cores > 1, you should set this to true)")
+	public boolean concurrentExecution = false;
 	
 	@Parameter(names="--logAllCallStrings", description="log every call string")
 	public boolean logAllCallStrings = false;
