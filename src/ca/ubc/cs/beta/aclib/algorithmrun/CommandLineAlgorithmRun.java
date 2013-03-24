@@ -16,6 +16,7 @@ import java.util.concurrent.Semaphore;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import org.mangosdk.spi.processor.Options;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
@@ -29,6 +30,7 @@ import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.misc.logback.MarkerFilter;
 import ca.ubc.cs.beta.aclib.misc.logging.LoggingMarker;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.cli.CommandLineTargetAlgorithmEvaluatorOptions;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
 
 /**
@@ -85,12 +87,22 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	private ExecutorService threadPoolExecutor = Executors.newCachedThreadPool(); 
 	
 	private final int observerFrequency;
+		
+	
+	/**
+	 * This field is transient because we can't save this object when we serialize.
+	 * 
+	 * If after restoring serialization you need something from this object, you should
+	 * save it as a separate field. (this seems unlikely) 
+	 * 
+	 */
+	private final transient CommandLineTargetAlgorithmEvaluatorOptions options;
 	/**
 	 * Default Constructor
 	 * @param execConfig		execution configuration of the object
 	 * @param runConfig			run configuration we are executing
 	 */
-	public CommandLineAlgorithmRun(AlgorithmExecutionConfig execConfig, RunConfig runConfig, CurrentRunStatusObserver obs, KillHandler handler, int observerFrequency) 
+	public CommandLineAlgorithmRun(AlgorithmExecutionConfig execConfig, RunConfig runConfig, CurrentRunStatusObserver obs, KillHandler handler, CommandLineTargetAlgorithmEvaluatorOptions options) 
 	{
 		super(execConfig, runConfig);
 		//TODO Test
@@ -105,12 +117,14 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 		
 		this.runObserver = obs;
 		this.killHandler = handler;
-		this.observerFrequency = observerFrequency;
+		this.observerFrequency = options.observerFrequency;
 		
 		if(observerFrequency < 25)
 		{
 			throw new IllegalArgumentException("Observer Frequency can't be less than 25 milliseconds");
 		}
+		
+		this.options = options;
 	}
 	
 	private static final int MAX_LINES_TO_SAVE = 1000;
@@ -139,9 +153,6 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 		
 		try {
 			this.startWallclockTimer();
-			
-			
-			
 			
 			proc = runProcess();
 			
@@ -315,7 +326,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	{
 		String execCmd = getTargetAlgorithmExecutionCommand(execConfig, runConfig);
 		
-		if(MarkerFilter.log(execCommandMarker.getName()))
+		if(options.logAllCallStrings)
 		{
 			log.info( "Call: cd {} ;  {} ", execConfig.getAlgorithmExecutionDirectory(), execCmd);
 		}
@@ -350,7 +361,8 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	{
 		Matcher matcher = pattern.matcher(line);
 		String rawResultLine = "[No Matching Output Found]";
-		if(MarkerFilter.log(fullProcessOutputMarker.getName()))
+		
+		if(options.logAllProcessOutput)
 		{
 			log.debug(line);
 		}

@@ -15,5 +15,11 @@ public class CommandLineTargetAlgorithmEvaluatorOptions extends AbstractOptions 
 
 	@Parameter(names="--cli-concurrent-execution", description="Whether to allow concurrent execution")
 	public boolean concurrentExecution;
+	
+	@Parameter(names="--logAllCallStrings", description="log every call string")
+	public boolean logAllCallStrings = false;
+	
+	@Parameter(names="--logAllProcessOutput", description="log all process output")
+	public boolean logAllProcessOutput = false;
 
 }
