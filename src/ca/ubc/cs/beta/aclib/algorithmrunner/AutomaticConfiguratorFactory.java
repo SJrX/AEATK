@@ -79,7 +79,7 @@ public class AutomaticConfiguratorFactory {
 	 */
 	public static AlgorithmRunner getConcurrentAlgorithmRunner(AlgorithmExecutionConfig execConfig, List<RunConfig> runConfigs, int nThreads, CurrentRunStatusObserver obs, CommandLineTargetAlgorithmEvaluatorOptions options)
 	{
-		log.debug("Concurrent Algorithm Runner created allowing {} threads");
+		log.debug("Concurrent Algorithm Runner created allowing {} threads", nThreads);
 		return new ConcurrentAlgorithmRunner(execConfig, runConfigs, nThreads, obs, options);
 	}
 
