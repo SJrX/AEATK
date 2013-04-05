@@ -29,6 +29,7 @@ import ca.ubc.cs.beta.aclib.options.TargetAlgorithmEvaluatorOptions;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbortOnCrashTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbortOnFirstRunCrashTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.BoundedTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.SATConsistencyTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.TimingCheckerTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.LeakingMemoryTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.RetryCrashedRunsTargetAlgorithmEvaluator;
@@ -71,18 +72,15 @@ public class TargetAlgorithmEvaluatorBuilder {
 			throw new IllegalArgumentException("taeOptionsMap must be non-null and contain the option objects for all target algorithm evaluators");
 		}
 		
-		TargetAlgorithmEvaluator algoEval;
+	
 		if(tae == null)
 		{
 			String taeKey = options.targetAlgorithmEvaluator;
 			AbstractOptions taeOptions = taeOptionsMap.get(taeKey);
-			algoEval = TargetAlgorithmEvaluatorLoader.getTargetAlgorithmEvaluator(execConfig, taeKey,taeOptions);
-		}  else
-		{
-			algoEval = tae;
-		}
+			tae = TargetAlgorithmEvaluatorLoader.getTargetAlgorithmEvaluator(execConfig, taeKey,taeOptions);
+		} 
 		
-		if(algoEval == null)
+		if(tae == null)
 		{
 			throw new IllegalStateException("TAE should have been non-null");
 		}
@@ -90,23 +88,23 @@ public class TargetAlgorithmEvaluatorBuilder {
 		//Specifically Run Hash codes should only see the same runs the rest of the applications see
 		//Additionally retrying of crashed runs should probably happen before Abort on Crash
 		
-		algoEval = new RetryCrashedRunsTargetAlgorithmEvaluator(options.retryCount, algoEval);
+		tae = new RetryCrashedRunsTargetAlgorithmEvaluator(options.retryCount, tae);
 		
 		
 		if(options.abortOnCrash)
 		{
-			log.debug("Treating all crashes as aborts");
-			algoEval = new AbortOnCrashTargetAlgorithmEvaluator(algoEval);
+			log.debug("[TAE] Treating all crashes as aborts");
+			tae = new AbortOnCrashTargetAlgorithmEvaluator(tae);
 		}
 		
 		
 		if(options.abortOnFirstRunCrash)
 		{
-			algoEval = new AbortOnFirstRunCrashTargetAlgorithmEvaluator(algoEval);
+			tae = new AbortOnFirstRunCrashTargetAlgorithmEvaluator(tae);
 			
 			if(options.abortOnCrash)
 			{
-				log.warn("Configured to treat all crashes as aborts, it is redundant to also treat the first as an abort");
+				log.warn("[TAE] Configured to treat all crashes as aborts, it is redundant to also treat the first as an abort");
 			}
 		}
 		
@@ -115,8 +113,8 @@ public class TargetAlgorithmEvaluatorBuilder {
 		{
 			if(options.verifySAT)
 			{
-				log.debug("Verifying SAT Responses");
-				algoEval = new VerifySATTargetAlgorithmEvaluator(algoEval);
+				log.debug("[TAE] Verifying SAT Responses");
+				tae = new VerifySATTargetAlgorithmEvaluator(tae);
 				
 			}
 		}
@@ -125,10 +123,15 @@ public class TargetAlgorithmEvaluatorBuilder {
 		
 		if(options.boundRuns)
 		{
-			log.debug("Bounding the number of concurrent target algorithm evaluations to {} ", options.maxConcurrentAlgoExecs);
-			algoEval = new BoundedTargetAlgorithmEvaluator(algoEval, options.maxConcurrentAlgoExecs, execConfig);
+			log.debug("[TAE] Bounding the number of concurrent target algorithm evaluations to {} ", options.maxConcurrentAlgoExecs);
+			tae = new BoundedTargetAlgorithmEvaluator(tae, options.maxConcurrentAlgoExecs, execConfig);
 		}
 		
+		if(options.checkSATConsistency)
+		{
+			log.debug("[TAE] Ensuring SAT Response consistency");
+			tae = new SATConsistencyTargetAlgorithmEvaluator(tae, options.checkSATConsistencyException);
+		}
 		
 		
 		
@@ -139,8 +142,8 @@ public class TargetAlgorithmEvaluatorBuilder {
 			if(options.leakMemory)
 			{
 				LeakingMemoryTargetAlgorithmEvaluator.leakMemoryAmount(options.leakMemoryAmount);
-				log.warn("Target Algorithm Evaluators will leak memory. I hope you know what you are doing");
-				algoEval = new LeakingMemoryTargetAlgorithmEvaluator(algoEval);
+				log.warn("[TAE] Target Algorithm Evaluators will leak memory. I hope you know what you are doing");
+				tae = new LeakingMemoryTargetAlgorithmEvaluator(tae);
 				
 			}
 			
@@ -149,22 +152,22 @@ public class TargetAlgorithmEvaluatorBuilder {
 			
 			if(options.runHashCodeFile != null)
 			{
-				log.info("Algorithm Execution will verify run Hash Codes");
+				log.info("[TAE] Algorithm Execution will verify run Hash Codes");
 				Queue<Integer> runHashCodes = parseRunHashCodes(options.runHashCodeFile);
-				algoEval = new RunHashCodeVerifyingAlgorithmEvalutor(algoEval, runHashCodes);
+				tae = new RunHashCodeVerifyingAlgorithmEvalutor(tae, runHashCodes);
 				 
 			} else
 			{
-				log.info("Algorithm Execution will NOT verify run Hash Codes");
-				algoEval = new RunHashCodeVerifyingAlgorithmEvalutor(algoEval);
+				log.info("[TAE] Algorithm Execution will NOT verify run Hash Codes");
+				tae = new RunHashCodeVerifyingAlgorithmEvalutor(tae);
 			}
 
 		}
 		
 		
-		algoEval = new TimingCheckerTargetAlgorithmEvaluator(execConfig, algoEval);
+		tae = new TimingCheckerTargetAlgorithmEvaluator(execConfig, tae);
 		
-		return algoEval;
+		return tae;
 	}
 	
 	

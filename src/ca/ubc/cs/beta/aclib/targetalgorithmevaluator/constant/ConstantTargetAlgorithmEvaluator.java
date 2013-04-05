@@ -62,13 +62,6 @@ public class ConstantTargetAlgorithmEvaluator extends AbstractNonBlockingTargetA
 	}
 
 	@Override
-	public void evaluateRunsAsync(List<RunConfig> runConfigs,
-			TAECallback handler, CurrentRunStatusObserver obs) {
-		throw new UnsupportedOperationException("Too lazy to implement properly");
-		
-	}
-
-	@Override
 	public boolean areRunsObservable() {
 		return false;
 	}

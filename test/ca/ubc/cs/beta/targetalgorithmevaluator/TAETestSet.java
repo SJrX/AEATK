@@ -7,8 +7,10 @@ import java.io.File;
 import java.io.PrintStream;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import org.apache.commons.io.output.NullOutputStream;
 import org.junit.Before;
@@ -26,18 +28,23 @@ import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.misc.logback.MarkerFilter;
 import ca.ubc.cs.beta.aclib.misc.logging.LoggingMarker;
 import ca.ubc.cs.beta.aclib.misc.random.SeedableRandomSingleton;
+import ca.ubc.cs.beta.aclib.options.AbstractOptions;
+import ca.ubc.cs.beta.aclib.options.TargetAlgorithmEvaluatorOptions;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorBuilder;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.cli.CommandLineTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.cli.CommandLineTargetAlgorithmEvaluatorFactory;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.debug.PreloadedResponseTargetAlgorithmEvaluatorOptions;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbortOnCrashTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbortOnFirstRunCrashTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.TimingCheckerTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.EqualTargetAlgorithmEvaluatorTester;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.VerifySATTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.loader.TargetAlgorithmEvaluatorLoader;
 import ca.ubc.cs.beta.targetalgorithmevaluator.massiveoutput.MassiveOutputParamEchoExecutor;
 
 
@@ -1367,6 +1374,103 @@ public class TAETestSet {
 
 		}
 	}
+	
+	
+	@Test
+	/**
+	 * Tests the SAT consistency checker
+	 */
+	public void testSATConsistencyChecker()
+	{
+	
+		Map<String, AbstractOptions> taeOptionsMap = TargetAlgorithmEvaluatorLoader.getAvailableTargetAlgorithmEvaluators();
+		
+		TargetAlgorithmEvaluatorOptions opts = new TargetAlgorithmEvaluatorOptions();
+		System.out.println(taeOptionsMap);
+		opts.targetAlgorithmEvaluator = "PRELOADED";
+		opts.checkSATConsistency = true;
+		opts.checkSATConsistencyException = false;
+		opts.boundRuns = false;
+		
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).preloadedResponses="[TIMEOUT=4],[CRASHED=2],[TIMEOUT=3],[CRASHED=1],[SAT=1],[SAT=2],[UNSAT=2],[UNSAT=3],[TIMEOUT=4],[CRASHED=2],[TIMEOUT=3],[CRASHED=1],[SAT=1],[SAT=2],[UNSAT=2],[UNSAT=3]";
+		TargetAlgorithmEvaluator tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts, execConfig, false, taeOptionsMap);
+		
+		ProblemInstance satPi = new ProblemInstance("SATInstance");
+		ProblemInstance unsatPi = new ProblemInstance("UNSATInstance");
+		
+		
+		ProblemInstanceSeedPair satPiOne = new ProblemInstanceSeedPair(satPi, 1);
+		ProblemInstanceSeedPair satPiTwo = new ProblemInstanceSeedPair(satPi, 2);
+		ProblemInstanceSeedPair satPiThree = new ProblemInstanceSeedPair(satPi, 3);
+		ProblemInstanceSeedPair satPiFour = new ProblemInstanceSeedPair(satPi, 4);
+		
+		ProblemInstanceSeedPair unSatPiOne = new ProblemInstanceSeedPair(unsatPi, 1);
+		ProblemInstanceSeedPair unSatPiTwo = new ProblemInstanceSeedPair(unsatPi, 2);
+		ProblemInstanceSeedPair unSatPiThree = new ProblemInstanceSeedPair(unsatPi, 3);
+		ProblemInstanceSeedPair unSatPiFour = new ProblemInstanceSeedPair(unsatPi, 4);
+		
+		RunConfig satPiOneRC = new RunConfig(satPiOne, 0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration());
+		RunConfig satPiTwoRC = new RunConfig(satPiTwo, 0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration());
+		RunConfig unSatPiOneRC = new RunConfig(unSatPiOne, 0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration());
+		RunConfig unSatPiTwoRC = new RunConfig(unSatPiTwo, 0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration());
+		
+		
+		RunConfig satPiThreeRC = new RunConfig(satPiThree, 0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration());
+		RunConfig satPiFourRC = new RunConfig(satPiFour, 0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration());
+		RunConfig unSatPiThreeRC = new RunConfig(unSatPiThree, 0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration());
+		RunConfig unSatPiFourRC = new RunConfig(unSatPiFour, 0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration());
+		
+		
+		
+		List<RunConfig> rcs = Arrays.asList(satPiOneRC, satPiTwoRC, unSatPiOneRC, unSatPiTwoRC, satPiThreeRC, satPiFourRC, unSatPiThreeRC, unSatPiFourRC);
+		
+		tae.evaluateRun(rcs);
+		
+		
+		rcs = Arrays.asList(satPiOneRC, satPiTwoRC, unSatPiOneRC, unSatPiTwoRC, satPiThreeRC,  unSatPiThreeRC, satPiFourRC, unSatPiFourRC);
+		
+		
+
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		PrintStream pw = new PrintStream(bout);
+		
+		PrintStream oldOut = System.out;
+		
+		System.setOut(pw);
+		
+		try {
+			tae.evaluateRun(rcs);
+		} finally
+		{
+		   System.setOut(oldOut);
+		   System.out.println(bout.toString());
+		   pw.close();
+		}
+		
+		//The actual string value isn't important, and if this test is failing because a log message changed you can simply update this string 
+		assertTrue("Expected error message to appear",bout.toString().contains("SAT/UNSAT discrepancy detected on problem instance: Instance:UNSATInstance"));
+		assertTrue("Expected error message to appear",bout.toString().contains("SAT/UNSAT discrepancy detected on problem instance: Instance:SATInstance"));
+		
+		
+		
+		tae.notifyShutdown();
+		
+		
+		opts.checkSATConsistencyException = true;
+		
+		tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts, execConfig, false, taeOptionsMap);
+		rcs = Arrays.asList(satPiOneRC, satPiTwoRC, unSatPiOneRC, unSatPiTwoRC, satPiThreeRC,  unSatPiThreeRC, satPiFourRC, unSatPiFourRC);
+		boolean exception = false;
+		try {
+			tae.evaluateRun(rcs);
+		} catch(TargetAlgorithmAbortException e)
+		{
+			exception = true;
+		}
+		assertTrue("Expected that a TargetAlgorithmAbortException would have occured", exception);
+		
+	}
+	
 	
 	
 }

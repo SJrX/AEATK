@@ -8,10 +8,11 @@ import java.util.concurrent.Executors;
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred.TAECallback;
 
 /**
- * Abstract type that simple blocks on asynchronous requests
+ * Abstract type that simply blocks on asynchronous requests
  * 
  * Useful if you don't expect that there will be any gain with concurrency
  * 
@@ -42,14 +43,13 @@ public abstract class AbstractNonBlockingTargetAlgorithmEvaluator extends
 	
 	
 	@Override
-	public void evaluateRunsAsync(RunConfig runConfig,
+	public final void evaluateRunsAsync(RunConfig runConfig,
 			TAECallback handler) {
 		this.evaluateRunsAsync(Collections.singletonList(runConfig), handler);
 	}
 
 	@Override
-	public  void evaluateRunsAsync(final List<RunConfig> runConfigs,
-			final TAECallback handler) {
+	public final void evaluateRunsAsync(final List<RunConfig> runConfigs, final TAECallback handler) {
 		
 		Runnable run = new Runnable()
 		{
@@ -73,5 +73,10 @@ public abstract class AbstractNonBlockingTargetAlgorithmEvaluator extends
 
 	}
 
+	@Override 
+	public final void evaluateRunsAsync(List<RunConfig> runConfigs, TAECallback handler, CurrentRunStatusObserver obs)
+	{
+		this.evaluateRunsAsync(runConfigs, handler);
+	}
 	
 }

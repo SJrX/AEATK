@@ -69,7 +69,6 @@ public abstract class AbstractForEachRunTargetAlgorithmEvaluatorDecorator extend
 		TAECallback myHandler = new TAECallback()
 		{
 			private final TAECallback handler = oHandler;
-			
 
 			@Override
 			public void onSuccess(List<AlgorithmRun> runs) {
@@ -80,7 +79,6 @@ public abstract class AbstractForEachRunTargetAlgorithmEvaluatorDecorator extend
 			@Override
 			public void onFailure(RuntimeException t) {
 					handler.onFailure(t);
-				
 			}
 		};
 		

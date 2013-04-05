@@ -28,13 +28,6 @@ public class PreloadedResponseTargetAlgorithmEvaluator extends AbstractNonBlocki
 	}
 
 	@Override
-	public void evaluateRunsAsync(List<RunConfig> runConfigs,
-			TAECallback handler, CurrentRunStatusObserver obs) {
-		throw new IllegalStateException("Not Implemented");
-		
-	}
-
-	@Override
 	public boolean isRunFinal() {
 		return true;
 	}

@@ -68,7 +68,7 @@ public interface TargetAlgorithmEvaluator {
 	 * to the eventual processor. In other words if the runs are dispatched to some external
 	 * processing system, you can safely shutdown after this method call completes and know that they have been
 	 * delivered. Additionally if the runs are already complete, the call back is guaranteed to fire to completion <i>before</i> 
-	 * this method is returned.	 * 
+	 * this method is returned.	 
 	 *  
 	 * @param runConfig  run configuration to evaluate
 	 * @param handler    handler to invoke on completion or failure

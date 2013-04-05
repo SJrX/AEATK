@@ -49,6 +49,11 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	@Parameter(names="--verifySAT", description="Check SAT/UNSAT/UNKNOWN responses against Instance specific information (if null then performs check if every instance has specific information in the following domain {SAT, UNSAT, UNKNOWN, SATISFIABLE, UNSATISFIABLE}")
 	public Boolean verifySAT;
 
+	@Parameter(names="--checkSATConsistency", description="Ensure that runs on the same problem instance always return the same SAT/UNSAT result")
+	public boolean checkSATConsistency = false;
 
-
+	@Parameter(names="--checkSATConsistencyException", description="Throw an exception if runs on the same problem instance disagree with respect to SAT/UNSAT")
+	public boolean checkSATConsistencyException = false;
+	
+	
 }
