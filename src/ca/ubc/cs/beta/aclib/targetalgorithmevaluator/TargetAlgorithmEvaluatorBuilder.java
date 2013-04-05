@@ -88,7 +88,12 @@ public class TargetAlgorithmEvaluatorBuilder {
 		//Specifically Run Hash codes should only see the same runs the rest of the applications see
 		//Additionally retrying of crashed runs should probably happen before Abort on Crash
 		
-		tae = new RetryCrashedRunsTargetAlgorithmEvaluator(options.retryCount, tae);
+		if(options.retryCount >0)
+		{
+			log.debug("[TAE] Automatically retrying CRASHED runs {} times " , options.retryCount);
+			tae = new RetryCrashedRunsTargetAlgorithmEvaluator(options.retryCount, tae);
+		}
+		
 		
 		
 		if(options.abortOnCrash)
@@ -119,22 +124,19 @@ public class TargetAlgorithmEvaluatorBuilder {
 			}
 		}
 		
-		
-		
-		if(options.boundRuns)
-		{
-			log.debug("[TAE] Bounding the number of concurrent target algorithm evaluations to {} ", options.maxConcurrentAlgoExecs);
-			tae = new BoundedTargetAlgorithmEvaluator(tae, options.maxConcurrentAlgoExecs, execConfig);
-		}
-		
 		if(options.checkSATConsistency)
 		{
 			log.debug("[TAE] Ensuring SAT Response consistency");
 			tae = new SATConsistencyTargetAlgorithmEvaluator(tae, options.checkSATConsistencyException);
 		}
 		
-		
-		
+		if(options.boundRuns)
+		{
+			log.debug("[TAE] Bounding the number of concurrent target algorithm evaluations to {} ", options.maxConcurrentAlgoExecs);
+			tae = new BoundedTargetAlgorithmEvaluator(tae, options.maxConcurrentAlgoExecs, execConfig);
+		}
+	
+
 		//==== Run Hash Code Verification should be last
 		if(hashVerifiersAllowed)
 		{
@@ -146,9 +148,6 @@ public class TargetAlgorithmEvaluatorBuilder {
 				tae = new LeakingMemoryTargetAlgorithmEvaluator(tae);
 				
 			}
-			
-			
-			
 			
 			if(options.runHashCodeFile != null)
 			{

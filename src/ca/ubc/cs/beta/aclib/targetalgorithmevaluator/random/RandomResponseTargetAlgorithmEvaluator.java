@@ -26,7 +26,7 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 	private final boolean sleep;
 	
 	private final double slack;
-	private double maxValue = 0;
+	private final double maxValue;
 	private static final Logger log = LoggerFactory.getLogger(RandomResponseTargetAlgorithmEvaluator.class);
 	
 	public RandomResponseTargetAlgorithmEvaluator (
@@ -61,7 +61,7 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 		Random rand = SeedableRandomSingleton.getRandom();
 		
 		List<AlgorithmRun> ar = new ArrayList<AlgorithmRun>(runConfigs.size());
-		this.runCount++;
+		
 		for(RunConfig rc : runConfigs)
 		{ 
 			double time = Math.max(0.1, rand.nextDouble()*(rc.getCutoffTime()- (this.slack * this.getRunCount())));
@@ -84,6 +84,7 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 			{
 				ar.add(new ExistingAlgorithmRun(execConfig, rc, "SAT, " + time + ",-1,0," + rc.getProblemInstanceSeedPair().getSeed()));
 			}
+			this.runCount.incrementAndGet();
 		}
 		
 		return ar;

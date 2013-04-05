@@ -1,22 +1,22 @@
-package ca.ubc.cs.beta.aclib.runconfig;
+/*package ca.ubc.cs.beta.aclib.runconfig;
 
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.exceptions.DeveloperMadeABooBooException;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
 
-/**
+*//**
  * Subtype of RunConfig that supports additional runs in certain circumstances.
  * <p>
  * <b>WARNING</b> This has a very specific purpose currently. You should be very careful
  * when using this class as in general the equality and hashCode().
  * 
  * @author Steve Ramage <seramage@cs.ubc.ca>
- */
+ *//*
 public class VersionedRunConfig extends RunConfig {
 
-	/**
+	*//**
 	 * 
-	 */
+	 *//*
 	private static final long serialVersionUID = -691370122766133238L;
 	
 	private final int version;
@@ -56,3 +56,4 @@ public class VersionedRunConfig extends RunConfig {
 	
 
 }
+*/

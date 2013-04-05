@@ -2,6 +2,9 @@ package ca.ubc.cs.beta.aclib.targetalgorithmevaluator;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import net.jcip.annotations.ThreadSafe;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.CommandLineAlgorithmRun;
@@ -15,16 +18,15 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunSta
  * This class implements the default noop operation
  * 
  * @author Steve Ramage 
- *
  */
+@ThreadSafe
 public abstract class AbstractTargetAlgorithmEvaluator implements TargetAlgorithmEvaluator {
 	 /*
 	 * Execution configuration of the target algorithm
 	 */
 	protected final AlgorithmExecutionConfig execConfig;
 	
-	protected int runCount = 0;
-
+	protected final AtomicInteger runCount = new AtomicInteger(0);
 
 	/**
 	 * Default Constructor
@@ -34,7 +36,6 @@ public abstract class AbstractTargetAlgorithmEvaluator implements TargetAlgorith
 	{
 		this.execConfig = execConfig;
 	}
-	
 	
 	@Override
 	public List<AlgorithmRun> evaluateRun(RunConfig run) 
@@ -52,7 +53,7 @@ public abstract class AbstractTargetAlgorithmEvaluator implements TargetAlgorith
 	@Override
 	public int getRunCount()
 	{
-		return runCount;
+		return runCount.get();
 	}
 	
 
@@ -65,12 +66,12 @@ public abstract class AbstractTargetAlgorithmEvaluator implements TargetAlgorith
 	@Override
 	public void seek(List<AlgorithmRun> runs) 
 	{
-		runCount = runs.size();	
+		runCount.set(runs.size());	
 	}
 
 	protected void addRuns(List<AlgorithmRun> runs)
 	{
-		runCount+= runs.size();
+		runCount.addAndGet(runs.size());
 	}
 
 	@Override

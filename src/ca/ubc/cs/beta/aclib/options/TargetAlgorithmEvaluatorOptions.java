@@ -27,7 +27,7 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	@Parameter(names="--abortOnFirstRunCrash", description="if the first run of the algorithm CRASHED treat it as an ABORT, otherwise allow crashes.")
 	public boolean abortOnFirstRunCrash = true;
 
-	@Parameter(names="--retryTargetAlgorithmRunCount", description="number of times to retry an algorithm run before eporting crashed (NOTE: The original crashes DO NOT count towards any time limits, they are in effect lost). Additionally this only retries CRASHED runs, not ABORT runs, this is by design as ABORT is only for cases when we shouldn't bother further runs", validateWith=NonNegativeInteger.class)
+	@Parameter(names={"--retryCrashedRunCount","--retryTargetAlgorithmRunCount"}, description="number of times to retry an algorithm run before reporting crashed (NOTE: The original crashes DO NOT count towards any time limits, they are in effect lost). Additionally this only retries CRASHED runs, not ABORT runs, this is by design as ABORT is only for cases when we shouldn't bother further runs", validateWith=NonNegativeInteger.class)
 	public int retryCount = 0;
 
 	@Parameter(names={"--boundRuns"}, description="if true, permit only --cores number of runs to be evaluated concurrently")
