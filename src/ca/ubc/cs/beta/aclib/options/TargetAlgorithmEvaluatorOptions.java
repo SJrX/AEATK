@@ -10,8 +10,10 @@ import java.util.TreeSet;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.NonNegativeInteger;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.ReadableFileConverter;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.prepostcommand.PrePostCommandOptions;
 
 import com.beust.jcommander.Parameter;
+import com.beust.jcommander.ParametersDelegate;
 import com.beust.jcommander.validators.PositiveInteger;
 
 @UsageTextField(title="Target Algorithm Evaluator Options", description="Options that describe and control the policy and mechanisms for algorithm execution")
@@ -54,6 +56,10 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 
 	@Parameter(names="--checkSATConsistencyException", description="Throw an exception if runs on the same problem instance disagree with respect to SAT/UNSAT")
 	public boolean checkSATConsistencyException = false;
+	
+	@ParametersDelegate
+	public PrePostCommandOptions prePostOptions = new PrePostCommandOptions();
+	
 	
 	
 }

@@ -35,6 +35,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.LeakingMemoryTar
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.RetryCrashedRunsTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.RunHashCodeVerifyingAlgorithmEvalutor;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.VerifySATTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.prepostcommand.PrePostCommandTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.loader.TargetAlgorithmEvaluatorLoader;
 
 
@@ -137,7 +138,8 @@ public class TargetAlgorithmEvaluatorBuilder {
 		}
 	
 
-		//==== Run Hash Code Verification should be last
+		//==== Run Hash Code Verification should generally be one of the last
+		// things we add since it is very sensitive to the actual runs being run. (i.e. a retried run or a change in the run may change a hashCode in a way the logs don't reveal
 		if(hashVerifiersAllowed)
 		{
 			
@@ -163,9 +165,11 @@ public class TargetAlgorithmEvaluatorBuilder {
 
 		}
 		
-		
+		//==== Doesn't change anything and so is safe after the RunHashCode
 		tae = new TimingCheckerTargetAlgorithmEvaluator(execConfig, tae);
 		
+		//==== Doesn't change anything and so is safe after the RunHashCode
+		tae = new PrePostCommandTargetAlgorithmEvaluator(tae, options.prePostOptions);
 		return tae;
 	}
 	

@@ -48,8 +48,6 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractBlockingTargetA
 		File execDir = new File(execConfig.getAlgorithmExecutionDirectory());
 		if(!execDir.exists()) throw new ParameterException("The Algorithm Execution Directory does not exist (" + execConfig.getAlgorithmExecutionDirectory() + ")");
 		if(!execDir.isDirectory()) throw new ParameterException("The Algorithm Execution Directory is NOT a directory (" + execConfig.getAlgorithmExecutionDirectory() + ")");
-		
-
 	}
 	
 	@Override

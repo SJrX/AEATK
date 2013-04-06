@@ -1,10 +1,13 @@
 package ca.ubc.cs.beta.aclib.targetalgorithmevaluator;
 
+import java.util.Collections;
 import java.util.List;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aclib.exceptions.TargetAlgorithmAbortException;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred.TAECallback;
 /**
  * Abstract Decorator class for TargetAlgorithmEvalutator
  * 
@@ -86,5 +89,23 @@ public abstract class AbstractTargetAlgorithmEvaluatorDecorator implements
 	{
 		return tae.areRunsObservable();
 	}
+	
+	@Override
+	public void evaluateRunsAsync(RunConfig runConfig, TAECallback handler) {
+		tae.evaluateRunsAsync(runConfig, handler);
+	}
+
+	@Override
+	public void evaluateRunsAsync(List<RunConfig> runConfigs, final TAECallback handler) {
+		tae.evaluateRunsAsync(runConfigs, handler);
+	}
+
+	@Override
+	public void evaluateRunsAsync(List<RunConfig> runConfigs,
+			final TAECallback handler, CurrentRunStatusObserver obs) {
+		tae.evaluateRunsAsync(runConfigs, handler, obs);
+	}
+
+	
 	
 }

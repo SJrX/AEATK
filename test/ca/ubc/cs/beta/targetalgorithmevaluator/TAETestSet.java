@@ -44,6 +44,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbortOnFirstRunC
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.TimingCheckerTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.EqualTargetAlgorithmEvaluatorTester;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.VerifySATTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.prepostcommand.PrePostCommandErrorException;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.loader.TargetAlgorithmEvaluatorLoader;
 import ca.ubc.cs.beta.targetalgorithmevaluator.massiveoutput.MassiveOutputParamEchoExecutor;
 
@@ -1471,6 +1472,138 @@ public class TAETestSet {
 		
 	}
 	
+	@Test
+	/**
+	 * Tests the Pre and Post commands work
+	 */
+	public void testPrePostCommandTAE()
+	{
+	
+		Map<String, AbstractOptions> taeOptionsMap = TargetAlgorithmEvaluatorLoader.getAvailableTargetAlgorithmEvaluators();
+		
+		TargetAlgorithmEvaluatorOptions opts = new TargetAlgorithmEvaluatorOptions();
+		System.out.println(taeOptionsMap);
+		opts.targetAlgorithmEvaluator = "PRELOADED";
+		opts.checkSATConsistency = true;
+		opts.checkSATConsistencyException = false;
+		opts.boundRuns = false;
+		
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(ReturnCodeTester.class.getCanonicalName()).append(" ");
+		
+		
+		opts.prePostOptions.preCommand = b.toString() + "0";
+		opts.prePostOptions.postCommand = b.toString() + "0";
+		
+		
+		/***
+		 * Normal Test
+		 */
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		PrintStream pw = new PrintStream(bout);		
+		PrintStream oldOut = System.out;
+		System.setOut(pw);
+		TargetAlgorithmEvaluator tae;
+		try {
+			 tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts, execConfig, false, taeOptionsMap);
+		} finally
+		{
+		   System.setOut(oldOut);
+		   System.out.println(bout.toString());
+		   pw.close();
+		}
+		
+		assertTrue(bout.toString().contains("Command completed"));
+
+		
+		bout = new ByteArrayOutputStream();
+		pw = new PrintStream(bout);		
+		oldOut = System.out;
+		System.setOut(pw);
+		
+		try {
+			tae.notifyShutdown();
+		} finally
+		{
+		   System.setOut(oldOut);
+		   System.out.println(bout.toString());
+		   pw.close();
+		}
+		
+		/**
+		 * Error Test (no exception)
+		 */
+		opts.prePostOptions.preCommand = b.toString() + "227";
+		opts.prePostOptions.postCommand = b.toString() + "228";
+		
+		bout = new ByteArrayOutputStream();
+		pw = new PrintStream(bout);		
+		oldOut = System.out;
+		System.setOut(pw);
+	
+		try {
+			 tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts, execConfig, false, taeOptionsMap);
+		} finally
+		{
+		   System.setOut(oldOut);
+		   System.out.println(bout.toString());
+		   pw.close();
+		}
+		
+		assertTrue(bout.toString().contains("Got a non-zero return code from process: 227"));
+
+		
+		bout = new ByteArrayOutputStream();
+		pw = new PrintStream(bout);		
+		oldOut = System.out;
+		System.setOut(pw);
+		
+		try {
+			tae.notifyShutdown();
+		} finally
+		{
+		   System.setOut(oldOut);
+		   System.out.println(bout.toString());
+		   pw.close();
+		}
+		
+		assertTrue(bout.toString().contains("Got a non-zero return code from process: 228"));
+		
+		/**
+		 * Error Test (exception on startup)
+		 */
+		
+		
+		opts.prePostOptions.preCommand = b.toString() + "2";
+		opts.prePostOptions.exceptionOnError = true;
+		bout = new ByteArrayOutputStream();
+		pw = new PrintStream(bout);		
+		oldOut = System.out;
+		System.setOut(pw);
+		boolean exceptionOccurred = true;
+		try {
+			try {
+				 tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts, execConfig, false, taeOptionsMap);
+			} finally
+			{
+			   System.setOut(oldOut);
+			   System.out.println(bout.toString());
+			   pw.close();
+			}
+		} catch(PrePostCommandErrorException e)
+		{
+			exceptionOccurred = true;
+		}
+		
+		assertTrue("Expect exception", exceptionOccurred);
+		
+		
+		
+		
+	}
 	
 	
 }
