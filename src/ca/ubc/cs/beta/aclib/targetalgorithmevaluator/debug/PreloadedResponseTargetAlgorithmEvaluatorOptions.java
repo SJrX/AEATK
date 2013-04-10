@@ -11,5 +11,11 @@ public class PreloadedResponseTargetAlgorithmEvaluatorOptions extends
 
 	@Parameter(names={"--preload-responseData"}, description="Preloaded Response Values in the format [{SAT,UNSAT,...}=x], where x is a runtime (e.g. [SAT=1],[UNSAT=1.1]... ")
 	public String preloadedResponses = "";
+	
+	@Parameter(names={"--preload-runLength"}, description="Runlength to return on all values")
+	public double runLength = -1;
+	
+	@Parameter(names={"--preload-quality"}, description="Quality to return on all values")
+	public double quality = 0;
 
 }

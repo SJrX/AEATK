@@ -253,7 +253,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 			case CRASHED:
 				
 					
-					log.info( "Failed Run Detected Call: cd {} ;  {} ", execConfig.getAlgorithmExecutionDirectory(), getTargetAlgorithmExecutionCommand(execConfig, runConfig));
+					log.info( "Failed Run Detected Call: cd {} ;  {} ",new File(execConfig.getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommand(execConfig, runConfig));
 				
 					log.info("Failed Run Detected output last {} lines", outputQueue.size());
 					for(String s : outputQueue)
@@ -328,7 +328,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 		
 		if(options.logAllCallStrings)
 		{
-			log.info( "Call: cd {} ;  {} ", execConfig.getAlgorithmExecutionDirectory(), execCmd);
+			log.info( "Call: cd {} ;  {} ", new File(execConfig.getAlgorithmExecutionDirectory()).getAbsolutePath(), execCmd);
 		}
 		Process proc = Runtime.getRuntime().exec(execCmd,null, new File(execConfig.getAlgorithmExecutionDirectory()));
 

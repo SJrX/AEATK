@@ -53,7 +53,7 @@ public class PreloadedResponseTargetAlgorithmEvaluatorFactory implements
 		
 		
 		
-		return new PreloadedResponseTargetAlgorithmEvaluator(execConfig, myQueue);
+		return new PreloadedResponseTargetAlgorithmEvaluator(execConfig, myQueue, opts);
 	}
 
 

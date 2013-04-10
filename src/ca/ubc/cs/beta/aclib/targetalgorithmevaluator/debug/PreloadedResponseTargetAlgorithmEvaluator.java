@@ -18,12 +18,17 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred.TAECallback;
 
 public class PreloadedResponseTargetAlgorithmEvaluator extends AbstractNonBlockingTargetAlgorithmEvaluator {
 	
+	
 	Queue<AssociatedValue<RunResult, Double>> myQueue = new LinkedList<AssociatedValue<RunResult, Double>>();
 	
+	private final PreloadedResponseTargetAlgorithmEvaluatorOptions opts;
+	
+	
 	public PreloadedResponseTargetAlgorithmEvaluator(
-			AlgorithmExecutionConfig execConfig, Queue<AssociatedValue<RunResult, Double>> myQueue) {
+			AlgorithmExecutionConfig execConfig, Queue<AssociatedValue<RunResult, Double>> myQueue, PreloadedResponseTargetAlgorithmEvaluatorOptions opts) {
 		super(execConfig);
 		this.myQueue = 	myQueue;
+		this.opts = opts;
 		
 	}
 
@@ -56,7 +61,7 @@ public class PreloadedResponseTargetAlgorithmEvaluator extends AbstractNonBlocki
 	
 			AssociatedValue<RunResult, Double> v = myQueue.poll();
 			if(v == null) throw new IllegalStateException("Error out of existing runs");
-			runs.add(new ExistingAlgorithmRun(execConfig, rc, v.getAssociatedValue() + "," + v.getValue() + ",0,0," + rc.getProblemInstanceSeedPair().getSeed()));
+			runs.add(new ExistingAlgorithmRun(execConfig, rc, v.getAssociatedValue() + "," + v.getValue() + "," +opts.runLength+ " ," + opts.quality+ "," + rc.getProblemInstanceSeedPair().getSeed()));
 			
 			
 		}

@@ -1,6 +1,7 @@
 package ca.ubc.cs.beta.aclib.algorithmrun;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableAlgorithmRun;
+import ca.ubc.cs.beta.aclib.exceptions.IllegalWrapperOutputException;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.misc.watch.StopWatch;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
@@ -62,6 +63,7 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 	 * Stores additional run data
 	 */
 	private String additionalRunData = "";
+	
 	/**
 	 * Sets the values for this Algorithm Run
 	 * @param acResult					The result of the Run
@@ -74,32 +76,7 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 	 */
 	protected synchronized void setResult(RunResult acResult, double runtime, double runLength, double quality, long resultSeed, String rawResultLine, String additionalRunData)
 	{
-		
-		this.acResult = acResult;
-		this.runtime = runtime;
-		this.runLength = runLength;
-		this.quality = quality;
-		this.resultSeed = resultSeed;
-		this.additionalRunData = additionalRunData;
-		
-		if(this.saveRawResultLine())
-		{
-			this.rawResultLine = rawResultLine;
-		}
-		this.runResultWellFormed = true;
-		
-		this.resultSet = true;
-		
-		
-		if(!(this instanceof KillableAlgorithmRun))
-		{
-			
-			if(this.acResult.equals(RunResult.RUNNING))
-			{
-				throw new IllegalStateException("Only " + KillableAlgorithmRun.class.getSimpleName() + " may be set as " + RunResult.RUNNING);
-			}
-		}
-		
+		this.setResult(acResult, runtime, runLength, quality, resultSeed, rawResultLine, true, additionalRunData);
 	}
 	
 	/**
@@ -142,16 +119,30 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 	 * @param runLength					runlength measured
 	 * @param quality					quality measured
 	 * @param resultSeed				resultSeed 
-	 * @param resultLine				well formatted result line 
 	 * @param rawResultLine				raw result line
 	 * @param runResultWellFormed		whether this run has well formed output
 	 * @param additionalRunData			additional run data from this run
 	 */
-	protected synchronized void setResult(RunResult acResult, double runtime, double runLength, double quality, long resultSeed, String resultLine, String rawResultLine, boolean runResultWellFormed, String additionalRunData)
+	protected synchronized void setResult(RunResult acResult, double runtime, double runLength, double quality, long resultSeed , String rawResultLine, boolean runResultWellFormed, String additionalRunData)
 	{
+		if(Double.isNaN(runtime) || runtime < 0)
+		{
+			throw new IllegalWrapperOutputException("Runtime is NaN or negative", rawResultLine);
+		}
+			
+		if ( Double.isNaN(runLength) || ((runLength < 0) && (runLength != -1)))
+		{
+			throw new IllegalWrapperOutputException("RunLength is NaN or negative (and not -1)", rawResultLine);
+		}
+		
+		if(Double.isNaN(quality))
+		{
+			throw new IllegalWrapperOutputException("Quality needs to be a number", rawResultLine);
+		}
+		
 		this.acResult = acResult;
-		this.runtime = runtime;
-		this.runLength = runLength;
+		this.runtime = Math.min(runtime, Double.MAX_VALUE);
+		this.runLength = Math.min(runLength, Double.MAX_VALUE);
 		this.quality = quality;
 		this.resultSeed = resultSeed;
 		
@@ -172,6 +163,8 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 				throw new IllegalStateException("Only " + KillableAlgorithmRun.class.getSimpleName() + " may be set as " + RunResult.RUNNING);
 			}
 		}
+		
+		
 	}
 	
 	

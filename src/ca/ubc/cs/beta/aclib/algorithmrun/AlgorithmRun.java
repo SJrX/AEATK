@@ -48,9 +48,9 @@ public interface AlgorithmRun extends Runnable, Serializable,  Callable<Object> 
 	public RunResult getRunResult();
 
 	/**
-	 * Get reported runtime of run
+	 * Get reported runtime of run 
 	 * 
-	 * @return double for the runtime
+	 * @return double for the runtime (>= 0) && < Infinity
 	 * @throws IllegalStateException if the run has not completed
 	 */
 	public double getRuntime();
@@ -58,7 +58,7 @@ public interface AlgorithmRun extends Runnable, Serializable,  Callable<Object> 
 	/**
 	 * Get the reported run length
 	 * 
-	 * @return double for the runlength
+	 * @return double for the runlength ( >= 0 && < Infinity) || -1 
 	 * @throws IllegalStateException if the run has not completed
 	 */
 	public double getRunLength();
@@ -66,7 +66,7 @@ public interface AlgorithmRun extends Runnable, Serializable,  Callable<Object> 
 	/**
 	 * Get the reported quality 
 	 * 
-	 * @return double for the quality
+	 * @return double for the quality ( > -Infinity && < +Infinity)
 	 * @throws IllegalStateException if the run has not completed
 	 */
 	public double getQuality();

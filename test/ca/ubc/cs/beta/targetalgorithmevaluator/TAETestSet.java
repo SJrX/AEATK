@@ -23,6 +23,7 @@ import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableAlgorithmRun;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
+import ca.ubc.cs.beta.aclib.exceptions.IllegalWrapperOutputException;
 import ca.ubc.cs.beta.aclib.exceptions.TargetAlgorithmAbortException;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.misc.logback.MarkerFilter;
@@ -1604,6 +1605,169 @@ public class TAETestSet {
 		
 		
 	}
+	
+	/**
+	 * Test invalid wrapper outputs
+	 */
+	@Test
+	public void testInvalidArguments()
+	{
+			
+		Map<String, AbstractOptions> taeOptionsMap = TargetAlgorithmEvaluatorLoader.getAvailableTargetAlgorithmEvaluators();
+		
+		TargetAlgorithmEvaluatorOptions opts = new TargetAlgorithmEvaluatorOptions();
+		System.out.println(taeOptionsMap);
+		opts.targetAlgorithmEvaluator = "PRELOADED";
+		opts.checkSATConsistency = true;
+		opts.checkSATConsistencyException = false;
+		opts.boundRuns = false;
+		
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).preloadedResponses="[SAT=-1],";
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).quality = 0.0;
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).runLength = 0.0;
+		
+		TargetAlgorithmEvaluator tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts, execConfig, false, taeOptionsMap);
+		
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		for(int i=0; i < 1; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
+				runConfigs.add(rc);
+			}
+		}
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		
+		
+		try {
+			List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+			fail("Expected exception to be thrown: " + runs);
+		} catch(IllegalWrapperOutputException e)
+		{
+			System.out.println(e.getMessage());
+		}
+		
+
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).preloadedResponses="[SAT=1],";
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).quality = Double.NaN;
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).runLength = 0.0;
+		
+		tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts, execConfig, false, taeOptionsMap);
+		
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		
+		
+		try {
+			List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+			fail("Expected exception to be thrown: " + runs);
+		} catch(IllegalArgumentException e)
+		{
+			System.out.println(e.getMessage());
+		}
+		
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).preloadedResponses="[SAT=1],";
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).quality = 0;
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).runLength = -2;
+		
+		tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts, execConfig, false, taeOptionsMap);
+		
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		
+		
+		try {
+			List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+			fail("Expected exception to be thrown: " + runs);
+		} catch(IllegalArgumentException e)
+		{
+			System.out.println(e.getMessage());
+		}
+		
+		
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).preloadedResponses="[SAT=1],";
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).quality = 0;
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).runLength = Double.NaN;
+		
+		tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts, execConfig, false, taeOptionsMap);
+		
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		
+		
+		try {
+			List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+			fail("Expected exception to be thrown: " + runs);
+		} catch(IllegalArgumentException e)
+		{
+			System.out.println(e.getMessage());
+		}
+			
+		
+		
+		
+		
+		
+
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).preloadedResponses="[SAT=1],";
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).quality = 0;
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).runLength = -1;
+		
+		tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts, execConfig, false, taeOptionsMap);
+		
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		
+		
+		try {
+			List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+			
+		} catch(IllegalArgumentException e)
+		{
+			fail("Unexpected Exception Thrown: " + e);
+		}
+		
+		
+
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).preloadedResponses="[SAT=" + Double.POSITIVE_INFINITY + "],";
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).quality = 0;
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).runLength = -1;
+		
+		tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts, execConfig, false, taeOptionsMap);
+		
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		
+		
+		try {
+			List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+			
+		} catch(IllegalArgumentException e)
+		{
+			fail("Unexpected exception");
+			
+		}
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	}
+	
+	
 	
 	
 }
