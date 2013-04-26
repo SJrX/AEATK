@@ -22,15 +22,21 @@ public class WaitableTAECallback implements TAECallback {
 	}
 	@Override
 	public void onSuccess(List<AlgorithmRun> runs) {
+		
 		handler.onSuccess(runs);
 		completeCount.countDown();
+		
 
 	}
 
 	@Override
 	public void onFailure(RuntimeException t) {
-		handler.onFailure(t);
-		completeCount.countDown();
+		try {
+			handler.onFailure(t);
+		} finally
+		{
+			completeCount.countDown();
+		}
 	}
 
 	/**

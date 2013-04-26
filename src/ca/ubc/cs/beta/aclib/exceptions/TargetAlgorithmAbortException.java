@@ -21,6 +21,11 @@ public class TargetAlgorithmAbortException extends RuntimeException {
 	public TargetAlgorithmAbortException(String message) {
 		super(message);
 	}
+	
+	public TargetAlgorithmAbortException(String message,Exception e)
+	{
+		super(message, e);
+	}
 
 	public AlgorithmRun getAlgorithmRun()
 	{

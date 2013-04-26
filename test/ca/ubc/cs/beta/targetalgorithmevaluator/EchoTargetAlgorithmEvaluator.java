@@ -50,7 +50,7 @@ public class EchoTargetAlgorithmEvaluator  extends AbstractBlockingTargetAlgorit
 		
 		 /*
 		 * solved { SAT, UNSAT, TIMEOUT, CRASHED, ABORT, INVALID } [SAT]
-				 * runtime [-1,1000] [0]
+				 * runtime [0,1000] [0]
 				 * runlength [0,1000000][0]
 				 * quality [0, 1000000] [0]
 				 * seed [ -1,4294967295][1]i
