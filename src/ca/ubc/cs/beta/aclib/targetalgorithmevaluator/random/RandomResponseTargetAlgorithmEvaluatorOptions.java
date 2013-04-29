@@ -8,7 +8,7 @@ import com.beust.jcommander.Parameter;
 @UsageTextField(title="Random Target Algorithm Evaluator Options")
 public class RandomResponseTargetAlgorithmEvaluatorOptions extends AbstractOptions {
 
-	@Parameter(names="--random-quick-eval", description = "If set to true responses will return immediately instead of ")
+	@Parameter(names="--random-quick-eval", description = "If set to true responses will return immediately instead of sleeping")
 	public boolean quickEval = false;
 	
 	

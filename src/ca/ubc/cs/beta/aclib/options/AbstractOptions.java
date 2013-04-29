@@ -41,6 +41,10 @@ public abstract class AbstractOptions {
 				line.append(f.getName());
 				line.append(" = ");
 				
+				if(f.getName().toLowerCase().contains("password"))
+				{
+					line.append("<<<PASSWORD CENSORED>>>");
+				}
 				Class<?> o = f.getType();
 				if(o.isPrimitive())
 				{

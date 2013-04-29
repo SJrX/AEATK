@@ -315,7 +315,8 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 		procIn.close();
 	}
 	
-	
+	//See:http://stackoverflow.com/questions/7804335/split-string-on-spaces-except-if-between-quotes-i-e-treat-hello-world-as
+	Pattern p = Pattern.compile("([^\"]\\S*|\".+?\")\\s*");
 
 	/**
 	 * Starts the target algorithm
@@ -330,7 +331,18 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 		{
 			log.info( "Call: cd {} ;  {} ", new File(execConfig.getAlgorithmExecutionDirectory()).getAbsolutePath(), execCmd);
 		}
-		Process proc = Runtime.getRuntime().exec(execCmd,null, new File(execConfig.getAlgorithmExecutionDirectory()));
+		
+		ArrayList<String> args = new ArrayList<String>();
+
+		//See:http://stackoverflow.com/questions/7804335/split-string-on-spaces-except-if-between-quotes-i-e-treat-hello-world-as
+		Matcher m = p.matcher(execCmd);
+		while(m.find())
+		{
+			args.add(m.group(1).replace("\"", ""));
+		}
+		
+		String[] execCmdArray = args.toArray(new String[0]);
+		Process proc = Runtime.getRuntime().exec(execCmdArray,null, new File(execConfig.getAlgorithmExecutionDirectory()));
 
 		return proc;
 	}
