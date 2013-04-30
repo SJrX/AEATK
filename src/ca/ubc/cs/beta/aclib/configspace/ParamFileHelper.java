@@ -22,8 +22,13 @@ public class ParamFileHelper {
 	 * 
 	 */
 	public static ParamConfigurationSpace getParamFileParser(String filename)
-	{
-		return getParamFileParser(new File(filename));
+	{	if(filename.equals(ParamConfigurationSpace.SINGLETON_ABSOLUTE_NAME))
+		{
+			return ParamConfigurationSpace.getSingletonConfigurationSpace();
+		} else
+		{
+			return getParamFileParser(new File(filename));
+		}
 	}
 	
 

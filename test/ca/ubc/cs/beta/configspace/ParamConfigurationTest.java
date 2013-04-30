@@ -1165,6 +1165,16 @@ public class ParamConfigurationTest {
 		new ParamConfigurationSpace(sr, Collections.singletonMap("foo", "ILLEGAL"));
 	}
 	
+	@Test
+	public void testSingletonSpaceEquality()
+	{
+		assertEquals("Expected that the two objects are the same", ParamConfigurationSpace.getSingletonConfigurationSpace(),ParamConfigurationSpace.getSingletonConfigurationSpace());
+		assertEquals("Expected that the two objects hash the same", ParamConfigurationSpace.getSingletonConfigurationSpace().hashCode(),ParamConfigurationSpace.getSingletonConfigurationSpace().hashCode());
+		
+		assertEquals("Expected that the two objects are the same", ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration());
+		assertEquals("Expected that the two objects hash the same", ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration().hashCode(),ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration().hashCode());
+		
+	}
 	@After
 	public void tearDown()
 	{

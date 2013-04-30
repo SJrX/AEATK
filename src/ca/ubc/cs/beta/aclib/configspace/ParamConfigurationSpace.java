@@ -1355,6 +1355,7 @@ public class ParamConfigurationSpace implements Serializable {
 		return hasRealParameterFile;
 	}
 	
+	public static final String SINGLETON_ABSOLUTE_NAME = "<--[SINGLETON SPACE]-->";
 	/**
 	 * Returns a configuration space with a single parameter and single value
 	 * 
@@ -1362,7 +1363,7 @@ public class ParamConfigurationSpace implements Serializable {
 	 */
 	public static ParamConfigurationSpace getSingletonConfigurationSpace()
 	{
-		return new ParamConfigurationSpace(new StringReader("singleton { singleton } [singleton]"));
+		return new ParamConfigurationSpace(new StringReader("singleton { singleton } [singleton]"),SINGLETON_ABSOLUTE_NAME);
 	}
 
 	void setValueInArray(double[] valueArray, String key, String newValue) {
