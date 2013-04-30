@@ -103,6 +103,5 @@ public class AlgorithmExecutionConfig implements Serializable {
 	}
 	
 	
-	
-
+	public final static String MAGIC_VALUE_ALGORITHM_EXECUTABLE_PREFIX = "Who am I, Alan Turing?...also from X-Men?";
 }

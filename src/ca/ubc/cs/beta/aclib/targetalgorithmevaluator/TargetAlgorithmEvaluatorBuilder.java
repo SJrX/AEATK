@@ -62,10 +62,26 @@ public class TargetAlgorithmEvaluatorBuilder {
 	 * @param options 		   Target Algorithm Evaluator Options
 	 * @param execConfig	   Execution configuration for the target algorithm
 	 * @param noHashVerifiers  Whether we should apply hash verifiers
-	 * @param tae			   Existing Target Algorithm Evaluator to wrap (if null, will use the options to construct one)				
+	 * @param tae			   Existing Target Algorithm Evaluator to wrap (if null, will use the options to construct one)	
 	 * @return
 	 */
 	public static TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(TargetAlgorithmEvaluatorOptions options, AlgorithmExecutionConfig execConfig, boolean hashVerifiersAllowed, Map<String, AbstractOptions> taeOptionsMap, TargetAlgorithmEvaluator tae)
+	{
+		return getTargetAlgorithmEvaluator(options,execConfig, hashVerifiersAllowed, false, taeOptionsMap, null);
+	}
+	
+	
+	/**
+	 * Generates the TargetAlgorithmEvaluator with the given runtime behaivor
+	 * 
+	 * @param options 		   Target Algorithm Evaluator Options
+	 * @param execConfig	   Execution configuration for the target algorithm
+	 * @param noHashVerifiers  Whether we should apply hash verifiers
+	 * @param ignoreBound	   Whether to ignore bound requests
+	 * @param tae			   Existing Target Algorithm Evaluator to wrap (if null, will use the options to construct one)				
+	 * @return
+	 */
+	public static TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(TargetAlgorithmEvaluatorOptions options, AlgorithmExecutionConfig execConfig, boolean hashVerifiersAllowed, boolean ignoreBound,  Map<String, AbstractOptions> taeOptionsMap, TargetAlgorithmEvaluator tae)
 	{
 		
 		if(taeOptionsMap == null)
@@ -131,10 +147,15 @@ public class TargetAlgorithmEvaluatorBuilder {
 			tae = new SATConsistencyTargetAlgorithmEvaluator(tae, options.checkSATConsistencyException);
 		}
 		
-		if(options.boundRuns)
+		if(!ignoreBound && options.boundRuns)
 		{
 			log.debug("[TAE] Bounding the number of concurrent target algorithm evaluations to {} ", options.maxConcurrentAlgoExecs);
 			tae = new BoundedTargetAlgorithmEvaluator(tae, options.maxConcurrentAlgoExecs, execConfig);
+		}
+		
+		if(ignoreBound)
+		{
+			log.debug("[TAE] Ignoring Bound");
 		}
 	
 
@@ -227,5 +248,7 @@ public class TargetAlgorithmEvaluatorBuilder {
 		return runHashCodeQueue;
 		
 	}
+
+	
 	
 }

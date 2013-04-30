@@ -28,4 +28,11 @@ public class AlgorithmExecutionConfigHelper {
 		
 	}
 	*/
+	
+	/**
+	 * Prefix used to signify a magic value for the AlgorithmExecutableString
+	 * 
+	 * This is primarily used in MySQLDBTAE for locating the wrapper
+	 */
+	
 }
