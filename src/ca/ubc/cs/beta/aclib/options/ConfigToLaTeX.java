@@ -18,6 +18,7 @@ import ca.ubc.cs.beta.aclib.misc.options.DomainDisplay;
 import ca.ubc.cs.beta.aclib.misc.options.UsageSection;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 
+import com.beust.jcommander.DynamicParameter;
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParametersDelegate;
@@ -273,6 +274,8 @@ public class ConfigToLaTeX {
 		return getParameters(allOptions.toArray());
 	}
 	
+	public static boolean hasSlept = false;
+	
 	public static List<UsageSection> getParameters(Object o) 
 	{
 			
@@ -287,6 +290,23 @@ public class ConfigToLaTeX {
 		{
 			
 			
+			
+			UsageTextField utf = getLatexField(obj);
+			if(utf == null)
+			{
+				System.err.println("Class " + obj.getClass()  + " does not have a UsageTextField annotation, this is very ugly for users to deal. Sleeping for 5 seconds");
+				
+				if(!hasSlept)
+				{
+					try {
+						Thread.sleep(5000);
+					} catch(InterruptedException e)
+					{
+						Thread.currentThread().interrupt();
+					}
+					hasSlept = true;
+				}
+			}
 			
 			String title = getTitleForObject(obj);
 			String sectionDescription = getDescriptionForObject(obj);
@@ -313,6 +333,18 @@ public class ConfigToLaTeX {
 					
 				}
 				
+				if(f.isAnnotationPresent(DynamicParameter.class))
+				{
+					DynamicParameter dynamicParam = getDynamicParameterAnnotation(f);
+					String name = getNameForDynamicField(f);
+					String description = getDescriptionForDynamicField(f,obj);
+					boolean required = getRequiredForDynamicField(f,obj);
+					String aliases = getDynamicAliases(f, obj);
+					String domain = getDomain(f,obj);
+					boolean hidden = dynamicParam.hidden();
+					
+					sec.addAttribute(name, description, "", required,domain, aliases , hidden);
+				}
 				
 				
 			}
@@ -347,6 +379,19 @@ public class ConfigToLaTeX {
 	private static String getDescriptionForField(Field f, Object o) {
 		return getParameterAnnotation(f).description();
 	}
+	
+	private static boolean getRequiredForDynamicField(Field f, Object o) {
+		return getDynamicParameterAnnotation(f).required();
+		
+	}
+
+
+
+	private static String getDescriptionForDynamicField(Field f, Object o) {
+		return getDynamicParameterAnnotation(f).description();
+	}
+
+	
 
 
 
@@ -375,6 +420,11 @@ public class ConfigToLaTeX {
 	}
 
 
+	private static String getNameForDynamicField(Field f) {
+
+		return getDynamicParameterAnnotation(f).names()[0];
+	}
+
 
 	private static String getNameForField(Field f) {
 
@@ -386,6 +436,12 @@ public class ConfigToLaTeX {
 
 		return Arrays.toString(getParameterAnnotation(f).names()).replaceAll("\\[", "").replaceAll("\\]","");
 	}
+	
+	private static String getDynamicAliases(Field f, Object o) {
+
+		return Arrays.toString(getDynamicParameterAnnotation(f).names()).replaceAll("\\[", "").replaceAll("\\]","");
+	}
+
 
 	private static String getDomain(Field f, Object o) throws InstantiationException, IllegalAccessException {
 
@@ -397,14 +453,17 @@ public class ConfigToLaTeX {
 			return latex.domain();
 		}
 		
-		if(DomainDisplay.class.isAssignableFrom(getParameterAnnotation(f).converter()))
+		if(getParameterAnnotation(f) != null)
 		{
-			return ((DomainDisplay) getParameterAnnotation(f).converter().newInstance()).getDomain();
-		}
-		
-		if(DomainDisplay.class.isAssignableFrom(getParameterAnnotation(f).validateWith()))
-		{
-			return ((DomainDisplay) getParameterAnnotation(f).validateWith().newInstance()).getDomain();
+			if(DomainDisplay.class.isAssignableFrom(getParameterAnnotation(f).converter()))
+			{
+				return ((DomainDisplay) getParameterAnnotation(f).converter().newInstance()).getDomain();
+			}
+			
+			if(DomainDisplay.class.isAssignableFrom(getParameterAnnotation(f).validateWith()))
+			{
+				return ((DomainDisplay) getParameterAnnotation(f).validateWith().newInstance()).getDomain();
+			}
 		}
 		
 		Object value = f.get(o);
@@ -445,6 +504,12 @@ public class ConfigToLaTeX {
 		return param;
 	}
 
+	private static DynamicParameter getDynamicParameterAnnotation(Field f)
+	{
+		DynamicParameter param  = (DynamicParameter)f.getAnnotation(DynamicParameter.class);
+		return param;
+	}
+
 	
 	private static String getTitleForObject(Object obj) {
 
@@ -482,6 +547,7 @@ public class ConfigToLaTeX {
 		} else if(obj.getClass().isAnnotationPresent(UsageTextField.class))
 		{
 			UsageTextField f = obj.getClass().getAnnotation(UsageTextField.class);
+			
 			
 			return f;
 		} else

@@ -2,6 +2,7 @@ package ca.ubc.cs.beta.aclib.options;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Set;
@@ -45,14 +46,12 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 	
 	@ParametersDelegate
 	public TargetAlgorithmEvaluatorOptions taeOpts = new TargetAlgorithmEvaluatorOptions();
-
-
+	
 	@ParametersDelegate
 	public ParamFileDelegate paramFileDelegate = new ParamFileDelegate();
 	
-	
 	public AlgorithmExecutionConfig getAlgorithmExecutionConfig()
 	{
-		return new AlgorithmExecutionConfig(algoExec, algoExecDir, null, deterministic, deterministic, cutoffLength);
+		return new AlgorithmExecutionConfig(algoExec, algoExecDir, paramFileDelegate.getParamConfigurationSpace(Collections.singletonList(algoExecDir)), false, deterministic, this.cutoffTime);
 	}
 }

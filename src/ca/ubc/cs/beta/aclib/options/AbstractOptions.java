@@ -7,6 +7,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map;
 
+import com.beust.jcommander.DynamicParameter;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParametersDelegate;
 
@@ -114,7 +115,7 @@ public abstract class AbstractOptions {
 
 	public List<String> configToString()
 	{
-		
+		//I don't see what the point of the string builder here is
 		StringBuilder sb = new StringBuilder();
 		ArrayList<String> list = new ArrayList<String>();
 		for(Field f : this.getClass().getFields())
@@ -223,11 +224,40 @@ public abstract class AbstractOptions {
 					sb.append(" ");
 					
 				} catch (Exception e) {
-
-
+					e.printStackTrace();
 				} 
 				
 			}
+			
+			DynamicParameter pmap = f.getAnnotation(DynamicParameter.class);
+			
+			if(pmap != null)
+			{
+
+				Object o;
+				try {
+					o = f.get(this);
+					if(o == null) continue;
+					
+					if( o instanceof Map)
+					{
+						sb.append(pmap.names()[0]).append(" ");
+						sb.append(o);
+						list.add(ant.names()[0]);
+						list.add(o.toString());
+					} else
+					{
+						System.err.println("No idea what o is " + o.getClass()  +" value:" + o + " name " + ant.names()[0]);
+					}
+				} catch (Exception e) {
+					e.printStackTrace();
+				}
+				
+				
+				
+			}
+			
+			
 		}
 		return list;
 	}

@@ -5,13 +5,25 @@ import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
+import java.util.Random;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
+import ca.ubc.cs.beta.aclib.configspace.ParamFileHelper;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.ReadableFileConverter;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 
 import com.beust.jcommander.Parameter;
+import com.beust.jcommander.ParameterException;
+
+import ec.util.MersenneTwister;
 
 /**
  * Delegate for ParamConfigurationSpace objects
@@ -100,6 +112,73 @@ public class ParamFileDelegate extends AbstractOptions{
 			
 		}
 		return map;
+		
+	}
+	
+	/**
+	 * Creates a ParamConfigurationSpace based on the setting of the options in this object.
+	 * @return ParamConfigurationSpace object
+	 */
+	public ParamConfigurationSpace getParamConfigurationSpace()
+	{
+		return getParamConfigurationSpace(Collections.EMPTY_LIST);
+	}
+	
+	/**
+	 * Creates a ParamConfigurationSpace object based on the setting of the options in this object, searching for the file in the directories given in the list.
+	 * 
+	 * @param searchDirectories  directories to search for path (you do not need to include the current one)
+	 * @return ParamConfigurationSpace object
+	 */
+	public ParamConfigurationSpace getParamConfigurationSpace(List<String> searchDirectories)
+	{
+		Logger log = LoggerFactory.getLogger(this.getClass());
+		List<String> searchPaths = new ArrayList<String>(searchDirectories);
+		
+		//==Th
+		searchPaths.add("");
+		
+		
+		ParamConfigurationSpace configSpace = null;
+		
+		
+		
+		for(String path : searchPaths)
+		{
+			try {
+				
+				if(path.trim().length() > 0)
+				{
+					path = path + File.separator;
+				} 
+				
+				path += this.paramFile;
+				
+		
+				configSpace = ParamFileHelper.getParamFileParser(path);
+				log.debug("Configuration space found in " + path);
+			} catch(IllegalStateException e)
+			{ 
+				if(e.getCause() instanceof FileNotFoundException)
+				{
+					//We don't care about this because we will just toss an exception if we don't find it
+				} else
+				{
+					log.warn("Error occured while trying to parse {} is {}", path ,  e.getMessage() );
+				}
+				
+
+			}
+		}
+			
+		
+		if(configSpace == null)
+		{
+			throw new ParameterException("Could not find a valid parameter file named " + this.paramFile  +  "  in any of the following locations: (" + searchPaths.toString()+ ") please check the file exists or for a previous error");
+		} else
+		{
+			return configSpace;
+		}
 		
 	}
 

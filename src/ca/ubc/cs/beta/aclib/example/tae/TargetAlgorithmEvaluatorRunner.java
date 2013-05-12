@@ -1,0 +1,245 @@
+package ca.ubc.cs.beta.aclib.example.tae;
+
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
+import java.util.Random;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
+import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
+import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration.StringFormat;
+import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
+import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aclib.misc.jcommander.JCommanderHelper;
+import ca.ubc.cs.beta.aclib.misc.options.UsageSection;
+import ca.ubc.cs.beta.aclib.misc.version.VersionTracker;
+import ca.ubc.cs.beta.aclib.options.AbstractOptions;
+import ca.ubc.cs.beta.aclib.options.ConfigToLaTeX;
+import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
+import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
+import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorBuilder;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.loader.TargetAlgorithmEvaluatorLoader;
+
+import com.beust.jcommander.JCommander;
+import com.beust.jcommander.ParameterException;
+
+import ec.util.MersenneTwister;
+
+/**
+ * A simple utility class that provides the ability to execute a single run against a <code>TargetAlgorithmEvaluator</code>.
+ *
+ * This class serves two purposes: 
+ * <p>
+ * From a usage perspective, people should be able to test their wrappers or target algorithms easily
+ * <p>
+ * From a documentation perspective, this class should serve as an example for using TargetAlgorithmEvaluators and other aspects ACLib.
+ * 
+ * 
+ * @author Steve Ramage <seramage@cs.ubc.ca>
+ */
+public class TargetAlgorithmEvaluatorRunner 
+{
+
+	//SLF4J Logger object (not-initialized on start up in case command line options want to change it)
+	private static Logger log;
+	
+	public static void main(String[] args)
+	{
+		 
+		//JCommander Options object that specifies the main arguments to this project
+		//It also includes a @ParametersDelegate for built in Option objects.
+		TargetAlgorithmEvaluatorRunnerOptions mainOptions = new TargetAlgorithmEvaluatorRunnerOptions();
+		
+		//Map object that for each available TargetAlgorithmEvaluator gives it's associated options object
+		Map<String,AbstractOptions> taeOptions = TargetAlgorithmEvaluatorLoader.getAvailableTargetAlgorithmEvaluators();
+
+		try {
+			
+			//Parses the options given in the args array and sets the values
+			try {
+			JCommander jcom = JCommanderHelper.getJCommander(mainOptions, taeOptions);
+			jcom.parse(args);
+			} finally
+			{
+				//Initialize the logger *AFTER* the JCommander objects have been parsed
+				//So that options that take effect
+				initializeLogger();
+			}
+			
+			//Displays version information
+			//See the TargetAlgorithmEvaluatorRunnerVersionInfo class for how to manage your own versions.
+			VersionTracker.logVersions();
+			
+			//Logs the available target algorithm evaluators
+			for(String name : taeOptions.keySet())
+			{
+				log.info("Target Algorithm Evaluator Available: {} ", name);
+			}
+			
+			
+			//AlgorithmExecutionConfig object represents all the information needed to invoke the target algorithm / wrapper.
+			//This includes information such as cutoff time, and the parameter space.
+			//Like most domain objects in ACLib, AlgorithmExecutionConfig is IMMUTABLE. 
+			AlgorithmExecutionConfig execConfig = mainOptions.algoExecOptions.getAlgorithmExecutionConfig();
+			
+			
+			//Logs the options (since mainOptions implements AbstractOptions a 'nice-ish' printout is created).
+			log.info("==== Configuration====\n {} ", mainOptions);
+			
+			
+			boolean hashVerifiers = false;
+			TargetAlgorithmEvaluator tae = null;
+			try {
+				//Retrieve the target algorithm evaluator with the necessary options
+				tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(mainOptions.algoExecOptions.taeOpts, execConfig, hashVerifiers, taeOptions);
+				
+				
+				//Create a new problem instance to run (IMMUTABLE)
+				//NOTE: We don't validate the instance name at all, it's entirely up to the target algorithm how to interpret these
+				//commonly we use filenames, but as far as ACLib is concerned this is of no consequence.
+				ProblemInstance pi = new ProblemInstance(mainOptions.instanceName);
+				
+			
+				//The following is a common convention used in ACLib
+				if(execConfig.isDeterministicAlgorithm())
+				{
+					if (mainOptions.seed != -1)
+					{
+						//A simple log message with SLF4J
+						log.warn("It is convention to use -1 as the seed for deterministic algorithms");
+					}
+				} else
+				{
+					if(mainOptions.seed == -1)
+					{
+						//A simple log message with SLF4J
+						log.warn("It is convention that -1 be used as seed only for deterministic algorithms");
+					}
+				}
+				
+				//A problem instance seed pair object (IMMUTABLE)
+				ProblemInstanceSeedPair pisp = new ProblemInstanceSeedPair(pi, mainOptions.seed);
+				
+				//A Configuration Space object it represents the space of allowable configurations (IMMUTABLE).
+				//"ParamFile" is a deprecated term for it that is still in use in the code base
+				ParamConfigurationSpace configSpace = execConfig.getParamFile();
+			
+				
+				
+				
+				//If we are asked to supply a random a configuration, we need to pass a Random object
+				Random configSpacePRNG = new MersenneTwister(mainOptions.configSeed);
+				
+				
+				//Converts the string based configuration in the options object, to a point in the above space
+				ParamConfiguration config = configSpace.getConfigurationFromString(mainOptions.config, StringFormat.NODB_OR_STATEFILE_SYNTAX, configSpacePRNG);
+				
+				//ParamConfiguration objects implement the Map<String, String> interface (but not all methods are implemented)
+				//Other methods have restricted semantics, for instance you must ensure that you are only placing keys with valid values in the map. 
+				//They are MUTABLE, but doing this after they have been "used" is likely to cause problems.
+				for(Entry<String, String> entry : mainOptions.configSettingsToOverride.entrySet())
+				{
+					config.put(entry.getKey(), entry.getValue());
+				}
+			
+				
+				//A RunConfig object stores the information needed to actually request (compare the objects here to the information passed to the wrapper as listed in the Manual)
+				//It is also IMMUTABLE
+				RunConfig runConfig = new RunConfig(pisp, execConfig.getAlgorithmCutoffTime(), config);
+				
+				processRunConfig(runConfig, tae);
+				
+				
+			} finally
+			{
+				//We need to tell the TAE we are shutting down
+				//Otherwise the program may not exit 
+				if(tae != null)
+				{
+					tae.notifyShutdown();
+				}
+			}
+		} catch(ParameterException e)
+		{	
+			//Converts the actual option objects into objects "UsageSection"s that are easy to manipulate
+			List<UsageSection> sections = ConfigToLaTeX.getParameters(mainOptions, taeOptions);
+			
+			boolean showHiddenParameters = false;
+			
+			//A much nicer usage screen than JCommander's 
+			ConfigToLaTeX.usage(sections, showHiddenParameters);
+			
+			log.error(e.getMessage());
+		}
+	}
+	
+
+	public static void initializeLogger()
+	{
+		log = LoggerFactory.getLogger(TargetAlgorithmEvaluatorRunner.class);
+		
+	}
+	
+	/**
+	 * Encapsulated method for evaluating a run
+	 * 
+	 * @param runConfig 	runConfig to evaluate
+	 * @param tae 			target algorithm evaluator to use
+	 */
+	public static void processRunConfig(RunConfig runConfig, TargetAlgorithmEvaluator tae)
+	{
+		//Invoke the runs 
+		List<AlgorithmRun> runResults = tae.evaluateRun(runConfig); 
+		
+		 
+		log.info("Run Completed");
+		
+		for(int i=0; i < runResults.size(); i++)
+		{
+			//AlgorithmRun objects can be viewed as an "answer" to the RunConfig "question"
+			//They are IMMUTABLE.
+			AlgorithmRun run = runResults.get(i);
+		
+			//This is the same RunConfig as above
+			//But in general you should always use the information in the AlgorithmRun
+			RunConfig resultRunConfig = run.getRunConfig();
+
+			//Again the same ProblemInstance as above
+			ProblemInstance resultPi = resultRunConfig.getProblemInstanceSeedPair().getInstance();
+			
+			//Object representing whether the run reported SAT, UNSAT, TIMEOUT, etc...
+			RunResult runResult = run.getRunResult();
+		
+			double runtime = run.getRuntime();
+			double runLength = run.getRunLength();
+			double quality = run.getQuality();
+			
+			//The algorithm must echo back the seed that we request to it (historically this has helped with debugging)
+			long resultSeed = run.getResultSeed();
+			long requestSeed = resultRunConfig.getProblemInstanceSeedPair().getSeed();
+			
+			//Additional run data is just a string that the algorithm returned and we will keep track of.
+			String additionalData = run.getAdditionalRunData();
+			
+			if(resultSeed != requestSeed)
+			{ 
+				//A more complicated SLF4J log message. The {} are replaced with the parameters in order
+				log.error("Algorithm Run Result does not have a matching seed, requested: {} , returned: {}", resultSeed, requestSeed );
+			}
+			
+			//The toString() method does not return the actual configuration, this method is the best way to print them
+			String configString = resultRunConfig.getParamConfiguration().getFormattedParamString(StringFormat.NODB_OR_STATEFILE_SYNTAX);
+			
+			//Log messages with more than 2 parameters must have them passed as an array.
+			Object[] logArguments = { i, resultRunConfig.getProblemInstanceSeedPair().getInstance(), configString, runResult, runtime, runLength, quality, resultSeed, additionalData};
+			log.info("Run {} on {} with config: {} had the result => {}, {}, {}, {}, {}, {}", logArguments);
+		}
+	}
+
+}
