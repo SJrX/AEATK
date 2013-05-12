@@ -85,7 +85,7 @@ public class fANOVATester {
 		com.parse(scenFileName);
 
 //		File expDir = new File(experimentDir + "/smac-output/SMACout_F/v2.04.00-development-380_AAAI_CPLEX12-CLS-1day-5000-discrete-adaptiveCappingtrue/state-run0");
-		configSpace = ParamFileHelper.getParamFileParser(experimentDir + "/" + scenOpts.paramFileDelegate.paramFile);
+		configSpace = ParamFileHelper.getParamFileParser(experimentDir + "/" + scenOpts.algoExecOptions.paramFileDelegate.paramFile);
 		
 		try {
 			ilws = ProblemInstanceHelper.getInstances(scenOpts.instanceFile,experimentDir, scenOpts.instanceFeatureFile, scenOpts.checkInstanceFilesExist, 0, scenOpts.algoExecOptions.deterministic);

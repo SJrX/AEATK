@@ -228,35 +228,36 @@ public class ConfigToLaTeX {
 		}
 		
 	}
-	public static void getAllObjects(Object o, Set<Object> objectsToScan) throws IllegalArgumentException, IllegalAccessException
+	public static void getAllObjects(Object o, Set<Object> objectsToScan) 
 	{
-		if(o.getClass().isArray())
-		{
-			for(int i=0; i < Array.getLength(o); i++)
+		try {
+			if(o.getClass().isArray())
 			{
-				getAllObjects(Array.get(o, i), objectsToScan);
-				
-			}
-		} else 
-		{	
-			objectsToScan.add(o);
-			for(Field f : o.getClass().getFields())
-			{
-			
-				if(f.isAnnotationPresent(ParametersDelegate.class))
+				for(int i=0; i < Array.getLength(o); i++)
 				{
-				
-					objectsToScan.add(f.get(o));
-					getAllObjects(f.get(o), objectsToScan);
-			
+					getAllObjects(Array.get(o, i), objectsToScan);
 					
 				}
+			} else 
+			{	
+				objectsToScan.add(o);
+				for(Field f : o.getClass().getFields())
+				{
+					if(f.isAnnotationPresent(ParametersDelegate.class))
+					{	
+						objectsToScan.add(f.get(o));
+						getAllObjects(f.get(o), objectsToScan);
+					}
+				}
 			}
+		} catch (IllegalAccessException e) {
+			throw new IllegalStateException("Unexpected Exception Occurred ", e);
 		}
+		
 	}
 	
 	
-	public static List<UsageSection> getParameters(Object o, Map<String, AbstractOptions> options) throws IllegalArgumentException, IllegalAccessException, InstantiationException
+	public static List<UsageSection> getParameters(Object o, Map<String, AbstractOptions> options) 
 	{
 	
 		ArrayList<Object> allOptions = new ArrayList<Object>();
@@ -272,9 +273,10 @@ public class ConfigToLaTeX {
 		return getParameters(allOptions.toArray());
 	}
 	
-	public static List<UsageSection> getParameters(Object o) throws IllegalArgumentException, IllegalAccessException, InstantiationException
+	public static List<UsageSection> getParameters(Object o) 
 	{
 			
+		try {
 		Set<Object> objectsToScan = new LinkedHashSet<Object>();
 	
 		getAllObjects(o, objectsToScan);
@@ -322,7 +324,11 @@ public class ConfigToLaTeX {
 		
 		return sections;
 		
-		
+		} catch (IllegalAccessException e) {
+			throw new IllegalStateException("Unexpected Exception Occurred ", e);
+		} catch (InstantiationException e) {
+			throw new IllegalStateException("Unexpected Exception Occurred ", e);
+		}
 		
 		
 		
@@ -339,14 +345,12 @@ public class ConfigToLaTeX {
 
 
 	private static String getDescriptionForField(Field f, Object o) {
-		// TODO Auto-generated method stub
 		return getParameterAnnotation(f).description();
 	}
 
 
 
 	private static String getDefaultValueForField(Field f, Object o) throws IllegalArgumentException, IllegalAccessException {
-		// TODO Auto-generated method stub
 		
 		UsageTextField latexAnnotation = getLatexField(f);
 		if((latexAnnotation == null) || latexAnnotation.defaultValues().equals("<NOT SET>"))

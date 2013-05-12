@@ -7,9 +7,12 @@ import java.util.List;
 import java.util.Set;
 import java.util.TreeSet;
 
+import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.misc.jcommander.converter.BinaryDigitBooleanConverter;
+import ca.ubc.cs.beta.aclib.misc.jcommander.converter.StringToDoubleConverterWithMax;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.NonNegativeInteger;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.ReadableFileConverter;
+import ca.ubc.cs.beta.aclib.misc.jcommander.validator.ZeroInfinityOpenInterval;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 
 import com.beust.jcommander.Parameter;
@@ -34,7 +37,22 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 	@Parameter(names="--deterministic", description="treat the target algorithm as deterministic", converter=BinaryDigitBooleanConverter.class)
 	public boolean deterministic;
 
+	@Parameter(names={"--cutoffTime","--cutoff_time"}, description="CPU time limit for an individual target algorithm run", required=true, validateWith=ZeroInfinityOpenInterval.class)
+	public double cutoffTime;
+	
+	@Parameter(names={"--cutoffLength","--cutoff_length"}, description="cap limit for an individual run [not implemented currently]", converter=StringToDoubleConverterWithMax.class, hidden=true)
+	public double cutoffLength = -1.0;
+	
 	@ParametersDelegate
 	public TargetAlgorithmEvaluatorOptions taeOpts = new TargetAlgorithmEvaluatorOptions();
+
+
+	@ParametersDelegate
+	public ParamFileDelegate paramFileDelegate = new ParamFileDelegate();
 	
+	
+	public AlgorithmExecutionConfig getAlgorithmExecutionConfig()
+	{
+		return new AlgorithmExecutionConfig(algoExec, algoExecDir, null, deterministic, deterministic, cutoffLength);
+	}
 }
