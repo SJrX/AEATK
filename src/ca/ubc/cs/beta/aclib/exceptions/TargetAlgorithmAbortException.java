@@ -4,8 +4,8 @@ import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 
 /**
  * Exception thrown if a target algorithm signals an abort
- * @author sjr
- *
+ * 
+ * @author Steve Ramage <seramage@cs.ubc.ca>
  */
 public class TargetAlgorithmAbortException extends RuntimeException {
 
@@ -25,6 +25,10 @@ public class TargetAlgorithmAbortException extends RuntimeException {
 	public TargetAlgorithmAbortException(String message,Exception e)
 	{
 		super(message, e);
+	}
+
+	public TargetAlgorithmAbortException(InterruptedException e) {
+		super("TargetAlgorithmEvaluator encountered an InterruptedException", e);
 	}
 
 	public AlgorithmRun getAlgorithmRun()

@@ -11,39 +11,46 @@ import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.ExistingAlgorithmRun;
+import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
-import ca.ubc.cs.beta.aclib.misc.random.SeedableRandomSingleton;
+
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.AbstractBlockingTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
+import ec.util.MersenneTwister;
 
+/***
+ * Random Target Algorithm Evaluator
+ * 
+ * Generates random responses to Run Configs
+ * 
+ * @author Steve Ramage <seramage@cs.ubc.ca>
+ *
+ */
 @ThreadSafe
 public class RandomResponseTargetAlgorithmEvaluator extends
 		AbstractBlockingTargetAlgorithmEvaluator {
 
 	private final double scale;
+	private final double trendCoefficient;
+	private final double minValue;
 	
-	private final boolean sleep;
+	private final Random rand;
 	
-	private final double slack;
-	private final double maxValue;
 	private static final Logger log = LoggerFactory.getLogger(RandomResponseTargetAlgorithmEvaluator.class);
-	
+			
 	public RandomResponseTargetAlgorithmEvaluator (
 			AlgorithmExecutionConfig execConfig, RandomResponseTargetAlgorithmEvaluatorOptions options) {
 		super(execConfig);
-		double scale;
-		try {
-			scale = Math.abs(Double.valueOf(execConfig.getAlgorithmExecutable())) * Math.random();
-		}catch(NumberFormatException e)
-		{
-			scale = 10.0;
-		}
 		
-		this.scale = scale;
-		this.slack = options.randomSlack;
-		sleep = !options.quickEval;
-		maxValue = execConfig.getAlgorithmCutoffTime();
+		
+		this.scale = options.maxResponse - options.minResponse;
+		this.minValue = options.minResponse;
+		
+		this.trendCoefficient = options.trendCoefficient;
+
+		log.info("Target Algorithm Evaluator initialized with seed: {} ", options.seed);
+		this.rand = new MersenneTwister(options.seed);
 		
 	}
 
@@ -58,31 +65,18 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 
 	@Override
 	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, CurrentRunStatusObserver obs) {
-		Random rand = SeedableRandomSingleton.getRandom();
-		
 		List<AlgorithmRun> ar = new ArrayList<AlgorithmRun>(runConfigs.size());
 		
 		for(RunConfig rc : runConfigs)
 		{ 
-			double time = Math.max(0.1, rand.nextDouble()*(rc.getCutoffTime()- (this.slack * this.getRunCount())));
-			
-			if(sleep)
-			{
-				log.debug("Sleeping");
-				
-				try {
-					Thread.sleep( (long) time*1000);
-				} catch (InterruptedException e) {
-					Thread.currentThread().interrupt();
-				}
-			}			
+			double time = Math.max(0.01, ((rand.nextDouble()*this.scale)  + this.minValue) + (this.trendCoefficient * this.getRunCount()));
 			
 			if(time >= rc.getCutoffTime())
 			{
-				ar.add(new ExistingAlgorithmRun(execConfig, rc, "TIMEOUT," + rc.getCutoffTime() + ",-1,0," + rc.getProblemInstanceSeedPair().getSeed()));
+				ar.add(new ExistingAlgorithmRun(execConfig, rc, RunResult.TIMEOUT,  rc.getCutoffTime() ,-1,0, rc.getProblemInstanceSeedPair().getSeed()));
 			} else
 			{
-				ar.add(new ExistingAlgorithmRun(execConfig, rc, "SAT, " + time + ",-1,0," + rc.getProblemInstanceSeedPair().getSeed()));
+				ar.add(new ExistingAlgorithmRun(execConfig, rc, RunResult.SAT,  time ,-1,0, rc.getProblemInstanceSeedPair().getSeed()));
 			}
 			this.runCount.incrementAndGet();
 		}
@@ -103,10 +97,7 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 	@Override
 	protected void subtypeShutdown() {
 		
-		
 	}
-
-
 
 	@Override
 	public boolean areRunsObservable() {

@@ -12,11 +12,11 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunSta
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred.TAECallback;
 
 /**
- * Abstract type that simple blocks on asynchronous requests
+ * Abstract TargetAlgorithmEvaluator that implements a basic form of asynchronous execution.
+ * <br>
+ * <b>Note:</b> Calls will just be made in a separate thread  
  * 
- * Useful if you you just want to implement something without dealing with the callbacks
- * 
- * @author sjr
+ * @author Steve Ramage <seramage@cs.ubc.ca>
  */
 public abstract class AbstractBlockingTargetAlgorithmEvaluator extends
 		AbstractTargetAlgorithmEvaluator {
@@ -51,11 +51,8 @@ public abstract class AbstractBlockingTargetAlgorithmEvaluator extends
 			public void run() {
 
 				try {
-					List<AlgorithmRun> runs;
-					synchronized(this)
-					{
-						runs = AbstractBlockingTargetAlgorithmEvaluator.this.evaluateRun(runConfigs, obs);
-					}
+					List<AlgorithmRun> runs = AbstractBlockingTargetAlgorithmEvaluator.this.evaluateRun(runConfigs, obs);
+					
 					handler.onSuccess(runs);
 				} catch(RuntimeException e)
 				{

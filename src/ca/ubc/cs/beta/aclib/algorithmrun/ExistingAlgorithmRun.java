@@ -20,11 +20,87 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 	private Logger log = LoggerFactory.getLogger(this.getClass());
 	
 	/**
+	 * 
+	 * @param execConfig		execution configuration of the object
+	 * @param runConfig			run configuration we are executing
+	 * @param runResult			The RunResult to report
+	 * @param runtime 			The Run Time
+	 * @param runlength			The Run Length
+	 * @param quality			The Run Quality
+	 * @param seed 				The Reported seed
+	 * @param additionalRunData	The Additional Run Data
+	 * @param wallclockTime		Wallclock time to report
+	 */
+	public ExistingAlgorithmRun(AlgorithmExecutionConfig execConfig, RunConfig runConfig, RunResult runResult, double runtime, double runLength, double quality, long resultSeed, String additionalRunData, double wallclockTime)
+	{
+		super(execConfig, runConfig);
+		this.setResult(runResult, runtime, runLength, quality, resultSeed, "<Existing Run>", additionalRunData);
+		this.setWallclockExecutionTime(wallclockTime);
+	}
+	
+	/**
+	 * 
+	 * @param execConfig		execution configuration of the object
+	 * @param runConfig			run configuration we are executing
+	 * @param runResult			The RunResult to report
+	 * @param runtime 			The Run Time
+	 * @param runlength			The Run Length
+	 * @param quality			The Run Quality
+	 * @param seed 				The Reported seed
+	 * @param additionalRunData	The Additional Run Data
+	 * @param wallclockTime		Wallclock time to report
+	 */
+	public ExistingAlgorithmRun(AlgorithmExecutionConfig execConfig, RunConfig runConfig, RunResult runResult, double runtime, double runLength, double quality, long resultSeed,  double wallclockTime)
+	{
+		super(execConfig, runConfig);
+		this.setResult(runResult, runtime, runLength, quality, resultSeed, "<Existing Run>", "");
+		this.setWallclockExecutionTime(wallclockTime);
+	}
+	
+	
+	
+
+	/**
+	 * 
+	 * @param execConfig		execution configuration of the object
+	 * @param runConfig			run configuration we are executing
+	 * @param runResult			The RunResult to report
+	 * @param runtime 			The Run Time
+	 * @param runlength			The Run Length
+	 * @param quality			The Run Quality
+	 * @param seed 				The Reported seed
+	 * @param additionalRunData	The Additional Run Data
+	 */
+	public ExistingAlgorithmRun(AlgorithmExecutionConfig execConfig, RunConfig runConfig, RunResult runResult, double runtime, double runlength, double quality, long seed, String additionalRunData)
+	{
+		this(execConfig, runConfig, runResult, runtime,runlength, quality, seed, additionalRunData, 0.0);
+	}
+	
+
+	/**
+	 * 
+	 * @param execConfig		execution configuration of the object
+	 * @param runConfig			run configuration we are executing
+	 * @param runResult			The RunResult to report
+	 * @param runtime 			The Run Time
+	 * @param runlength			The Run Length
+	 * @param quality			The Run Quality
+	 * @param seed 				The Reported seed
+	 */
+	public ExistingAlgorithmRun(AlgorithmExecutionConfig execConfig, RunConfig runConfig, RunResult runResult, double runtime, double runlength, double quality, long seed)
+	{
+		this(execConfig, runConfig, runResult, runtime,runlength, quality, seed, "", 0.0);
+	}
+	
+
+	
+	/**
 	 * Default Constructor (sets Wallclock time to zero)
 	 * @param execConfig		execution configuration of the object
 	 * @param runConfig			run configuration we are executing
 	 * @param result			result string to parse. The format of this is currently everything after the : in the result line of {@link CommandLineAlgorithmRun}. We support both the String for the RunResult, as well as the Status Code
 	 */
+	@Deprecated
 	public ExistingAlgorithmRun(AlgorithmExecutionConfig execConfig, RunConfig runConfig, String result)
 	{
 		this(execConfig, runConfig, result, 0.0);
@@ -36,6 +112,7 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 	 * @param runConfig			run configuration we are executing
 	 * @param result			result string to parse. The format of this is currently everything after the : in the result line of {@link CommandLineAlgorithmRun}. We support both the String for the RunResult, as well as the Status Code
 	 */
+	@Deprecated
 	public ExistingAlgorithmRun(AlgorithmExecutionConfig execConfig, RunConfig runConfig, String result, double wallClockTime) {
 		super(execConfig, runConfig);
 		//this.rawResultLine = resultLine;

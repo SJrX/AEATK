@@ -1,5 +1,6 @@
 package ca.ubc.cs.beta.aclib.example.tae;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
@@ -10,6 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
+import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableAlgorithmRun;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration.StringFormat;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
@@ -24,6 +26,7 @@ import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorBuilder;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.loader.TargetAlgorithmEvaluatorLoader;
 
 import com.beust.jcommander.JCommander;
@@ -194,8 +197,37 @@ public class TargetAlgorithmEvaluatorRunner
 	 */
 	public static void processRunConfig(RunConfig runConfig, TargetAlgorithmEvaluator tae)
 	{
-		//Invoke the runs 
-		List<AlgorithmRun> runResults = tae.evaluateRun(runConfig); 
+		
+		
+		CurrentRunStatusObserver runStatus = new CurrentRunStatusObserver()
+		{
+			private long lastUpdate = 0;
+			@Override
+			public void currentStatus(List<? extends KillableAlgorithmRun> runs) 
+			{
+				//As we print to standard out we want to make sure that a frequency that is too high doesn't spam the console
+				if(System.currentTimeMillis() - lastUpdate < 1000)
+				{
+					return;
+				}
+				
+				for(int i=0; i < runs.size(); i++)
+				{
+					AlgorithmRun run = runs.get(i);
+					//Log messages with more than 2 arguments, must use pass them as an array.
+					Object[] logArguments = { i, run.getRunConfig().getProblemInstanceSeedPair().getInstance(), run.getRunResult(), run.getRuntime()};
+					log.info("Run {} on {} has status =>  {}, {}", logArguments);
+					
+				}
+				lastUpdate = System.currentTimeMillis();
+				
+			}
+		
+		};
+		
+		
+		//Invoke the runs with the observer
+		List<AlgorithmRun> runResults = tae.evaluateRun(Collections.singletonList(runConfig), runStatus); 
 		
 		 
 		log.info("Run Completed");
@@ -242,4 +274,5 @@ public class TargetAlgorithmEvaluatorRunner
 		}
 	}
 
+			
 }

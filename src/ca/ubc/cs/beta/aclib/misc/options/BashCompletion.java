@@ -12,7 +12,6 @@ import java.util.TreeSet;
 import com.beust.jcommander.JCommander;
 
 import ca.ubc.cs.beta.aclib.options.ConfigToLaTeX;
-import ca.ubc.cs.beta.aclib.options.SMACOptions;
 
 /**
  * Generates bash autocompletion script for options

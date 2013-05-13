@@ -1,10 +1,7 @@
 
 package ca.ubc.cs.beta.aclib.example.tae;
 
-import org.mangosdk.spi.ProviderFor;
-
 import ca.ubc.cs.beta.aclib.misc.version.AbstractVersionInfo;
-import ca.ubc.cs.beta.aclib.misc.version.VersionInfo;
 
 //This annotation generates the required files necessary for 
 //SPI to work. See the Manual for more info on SPI.

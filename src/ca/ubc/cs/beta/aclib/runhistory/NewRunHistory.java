@@ -16,8 +16,6 @@ import java.util.Set;
 import java.util.Map.Entry;
 
 import net.jcip.annotations.NotThreadSafe;
-import net.jcip.annotations.ThreadSafe;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 

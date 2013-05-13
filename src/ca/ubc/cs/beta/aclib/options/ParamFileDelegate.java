@@ -10,8 +10,6 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -22,8 +20,6 @@ import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
-
-import ec.util.MersenneTwister;
 
 /**
  * Delegate for ParamConfigurationSpace objects

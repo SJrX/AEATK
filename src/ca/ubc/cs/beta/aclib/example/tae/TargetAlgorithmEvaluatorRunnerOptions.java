@@ -11,7 +11,6 @@ import ca.ubc.cs.beta.aclib.misc.jcommander.validator.LongGreaterThanNegativeTwo
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 import ca.ubc.cs.beta.aclib.options.AlgorithmExecutionOptions;
-import ca.ubc.cs.beta.aclib.options.TargetAlgorithmEvaluatorOptions;
 
 /**
  * A JCommander Options object that controls the command line options
@@ -53,7 +52,7 @@ public class TargetAlgorithmEvaluatorRunnerOptions extends AbstractOptions {
 	public int configSeed = 0;
 	
 	/**
-	 * This is a dynamic parameters
+	 * This is a dynamic parameter
 	 */
 	@DynamicParameter(names="-P", description="Name value pairs in the form: (-Pname=value) of the specific configuration to override. This is useful if you'd like to change a setting of the default , or try a random with a set value)")
 	public Map<String, String> configSettingsToOverride = new HashMap<String, String>();

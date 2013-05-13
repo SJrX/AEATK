@@ -23,7 +23,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred.TAECallback;
  * that honours the concurrency requirements of the evaluator (in other words, if concurrency is limited to N processors, then 
  * regardless of how many times evaluateRun is called concurrently only N actual runs of the target algorithm should be running at any given time)
  * 
- * @author Steve Ramage
+ * @author Steve Ramage <seramage@cs.ubc.ca>
  * 
  */
 public interface TargetAlgorithmEvaluator {
@@ -67,7 +67,7 @@ public interface TargetAlgorithmEvaluator {
 	 * <b>Note:</b>You are guaranteed that when this method returns your runs have been 'delivered'
 	 * to the eventual processor. In other words if the runs are dispatched to some external
 	 * processing system, you can safely shutdown after this method call completes and know that they have been
-	 * delivered. Additionally if the runs are already complete, the call back is guaranteed to fire to completion <i>before</i> 
+	 * delivered. Additionally if the runs are already complete (for persistent TAEs), the call back is guaranteed to fire to completion <i>before</i> 
 	 * this method is returned.	 
 	 *  
 	 * @param runConfig  run configuration to evaluate
@@ -81,7 +81,7 @@ public interface TargetAlgorithmEvaluator {
 	 * <b>Note:</b>You are guaranteed that when this method returns your runs have been 'delivered'
 	 * to the eventual processor. In other words if the runs are dispatched to some external
 	 * processing system, you can safely shutdown after this method call completes and know that they have been
-	 * delivered. Additionally if the runs are already complete, the call back is guaranteed to fire to completion <i>before</i> 
+	 * delivered. Additionally if the runs are already complete (for persistent TAEs), the call back is guaranteed to fire to completion <i>before</i> 
 	 * this method is returned.
 	 * 
 	 * @param runConfigs list of zero or more run configuration to evaluate
@@ -95,7 +95,7 @@ public interface TargetAlgorithmEvaluator {
 	 * <b>Note:</b>You are guaranteed that when this method returns your runs have been 'delivered'
 	 * to the eventual processor. In other words if the runs are dispatched to some external
 	 * processing system, you can safely shutdown after this method call completes and know that they have been
-	 * delivered. Additionally if the runs are already complete, the call back is guaranteed to fire to completion <i>before</i> 
+	 * delivered. Additionally if the runs are already complete (for persistent TAEs), the call back is guaranteed to fire to completion <i>before</i> 
 	 * this method is returned.
 	 * 
 	 * @param runConfigs list of zero or more run configuration to evaluate

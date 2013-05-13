@@ -1,10 +1,7 @@
 package ca.ubc.cs.beta.aclib.runhistory;
 
 import java.util.Collection;
-import java.util.List;
-
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.exceptions.DuplicateRunException;
 
 /**

@@ -1,12 +1,6 @@
 package ca.ubc.cs.beta.aclib.options;
 
 import java.io.File;
-import java.util.ArrayList;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.NonNegativeInteger;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.ReadableFileConverter;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;

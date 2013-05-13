@@ -24,7 +24,6 @@ import net.jcip.annotations.Immutable;
 
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration.StringFormat;
 import ca.ubc.cs.beta.aclib.misc.java.io.FileReaderNoException.FileReaderNoException;
-import ca.ubc.cs.beta.aclib.misc.random.SeedableRandomSingleton;
 
 enum LineType
 {

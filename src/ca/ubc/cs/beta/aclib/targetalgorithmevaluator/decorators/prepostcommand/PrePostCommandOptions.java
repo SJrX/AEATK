@@ -3,8 +3,6 @@ package ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.prepostcommand;
 import java.io.File;
 
 import com.beust.jcommander.Parameter;
-import com.beust.jcommander.converters.FileConverter;
-
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.ReadableDirectoryValidator;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;

@@ -39,6 +39,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred.TAECallback;
  * In the case of processing the callback, we update wait for all the outstanding runs to be completed, and then execute the client's callback. 
  * <p>
  * <b>Thread Safety:</b> All concurrent requests are serialized via the fair <code>enqueueLock</code> object. Callback and Observers use the runConfig object as a Mutex to prevent concurrent access.
+ * 
  * @author Steve Ramage <seramage@cs.ubc.ca>
  */
 @ThreadSafe

@@ -3,8 +3,6 @@ package ca.ubc.cs.beta.aclib.configspace;
 import java.io.File;
 import java.util.concurrent.ConcurrentHashMap;
 
-import ec.util.MersenneTwister;
-
 /**
  * Contains Factory Methods for getting ParamConfigurationSpaces
  * 

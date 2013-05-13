@@ -14,8 +14,6 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import ca.ubc.cs.beta.models.fastrf.utils.Hash;
-
 
 /**
  * This class represents an element in the associated {@link ParamConfigurationSpace} and provides a natural {@link Map} like interface for accessing it's members 

@@ -1,10 +1,8 @@
 package ca.ubc.cs.beta.aclib.targetalgorithmevaluator;
 
-import java.util.Collections;
 import java.util.List;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aclib.exceptions.TargetAlgorithmAbortException;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred.TAECallback;
@@ -15,7 +13,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred.TAECallback;
  * in fact redirect evaluateRun(RunConfig) to it's own local evaluateRun(List<RunConfig>) method.
  * You should not rely on evaluateRun() being called directly.
  *  
- * @author Steve Ramage 
+ * @author Steve Ramage <seramage@cs.ubc.ca>
  *
  */
 public abstract class AbstractTargetAlgorithmEvaluatorDecorator implements
@@ -46,6 +44,23 @@ public abstract class AbstractTargetAlgorithmEvaluatorDecorator implements
 		return tae.evaluateRun(runConfigs, obs);
 	}
 
+	@Override
+	public void evaluateRunsAsync(RunConfig runConfig, TAECallback handler) {
+		tae.evaluateRunsAsync(runConfig, handler);
+	}
+
+	@Override
+	public void evaluateRunsAsync(List<RunConfig> runConfigs, final TAECallback handler) {
+		tae.evaluateRunsAsync(runConfigs, handler);
+	}
+
+	@Override
+	public void evaluateRunsAsync(List<RunConfig> runConfigs,
+			final TAECallback handler, CurrentRunStatusObserver obs) {
+		tae.evaluateRunsAsync(runConfigs, handler, obs);
+	}
+
+	
 	@Override
 	public int getRunCount() {
 		return tae.getRunCount();
@@ -90,22 +105,7 @@ public abstract class AbstractTargetAlgorithmEvaluatorDecorator implements
 		return tae.areRunsObservable();
 	}
 	
-	@Override
-	public void evaluateRunsAsync(RunConfig runConfig, TAECallback handler) {
-		tae.evaluateRunsAsync(runConfig, handler);
-	}
-
-	@Override
-	public void evaluateRunsAsync(List<RunConfig> runConfigs, final TAECallback handler) {
-		tae.evaluateRunsAsync(runConfigs, handler);
-	}
-
-	@Override
-	public void evaluateRunsAsync(List<RunConfig> runConfigs,
-			final TAECallback handler, CurrentRunStatusObserver obs) {
-		tae.evaluateRunsAsync(runConfigs, handler, obs);
-	}
-
+	
 	
 	
 }

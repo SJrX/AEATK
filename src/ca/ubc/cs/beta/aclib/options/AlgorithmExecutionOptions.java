@@ -1,24 +1,14 @@
 package ca.ubc.cs.beta.aclib.options;
 
-import java.io.File;
-import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashSet;
-import java.util.List;
-import java.util.Set;
-import java.util.TreeSet;
-
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.misc.jcommander.converter.BinaryDigitBooleanConverter;
 import ca.ubc.cs.beta.aclib.misc.jcommander.converter.StringToDoubleConverterWithMax;
-import ca.ubc.cs.beta.aclib.misc.jcommander.validator.NonNegativeInteger;
-import ca.ubc.cs.beta.aclib.misc.jcommander.validator.ReadableFileConverter;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.ZeroInfinityOpenInterval;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParametersDelegate;
-import com.beust.jcommander.validators.PositiveInteger;
 
 
 /**
@@ -26,6 +16,7 @@ import com.beust.jcommander.validators.PositiveInteger;
  * @author sjr
  *
  */
+@SuppressWarnings("unused")
 @UsageTextField(title="Algorithm Execution Options", description="Options related to running the target algorithm")
 public class AlgorithmExecutionOptions extends AbstractOptions {
 	

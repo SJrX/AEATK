@@ -19,7 +19,6 @@ import ca.ubc.cs.beta.aclib.misc.options.UsageSection;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 
 import com.beust.jcommander.DynamicParameter;
-import com.beust.jcommander.JCommander;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParametersDelegate;
 
@@ -103,7 +102,7 @@ public class ConfigToLaTeX {
 				description = description.replaceAll(">","\\$>\\$");
 				description = description.replaceAll("\\*", "\\$\\\\times\\$");
 				description = description.replaceAll("--", "-~\\$\\\\!\\$-");
-				
+				description = description.replaceAll("&", "\\\\&");
 				pw.append(" ").append(description).append("\n\n");
 				
 				pw.append("\t\t\\begin{description}\n");
