@@ -136,7 +136,6 @@ private static final String defaultSearchPath;
 		}
 		
 		defaultSearchPath = sb.toString();
-		
 		if(errorOccured)
 		{
 			System.out.println("Warnings have occured sleeping for 30 seconds");
@@ -300,12 +299,15 @@ private static final String defaultSearchPath;
 		return Collections.unmodifiableMap(taeOptionsMap);
 	}
 	
+	
+	private static ClassLoader c = null;
 	/**
 	 * Retrieves a modified class loader to do dynamically search for jars
 	 * @return
 	 */
 	public static ClassLoader getClassLoader()
 	{
+		if( c != null) return c;
 		String pathtoSearch = defaultSearchPath;
 		String[] paths = pathtoSearch.split(File.pathSeparator);
 		
@@ -338,6 +340,7 @@ private static final String defaultSearchPath;
 		
 		URLClassLoader ucl = new URLClassLoader(urlsArr);
 		
+		c = ucl;
 		return ucl;
 		
 		

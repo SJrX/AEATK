@@ -1004,6 +1004,27 @@ public class ParamConfigurationSpace implements Serializable {
 		return absoluteFileName.hashCode();
 	}
 	
+	
+	/**
+	 * Determines whether two configuration spaces are 'compatible'
+	 * <br/>
+	 * <b>Note:</b> Compatible here at the very least means the valueArrays should be interchangable, in future it may be stronger.
+	 * 
+	 * @return <code>true</code> if the configuration spaces are compatible
+	 */
+	public boolean isCompatible(ParamConfigurationSpace oSpace)
+	{
+		if(!Arrays.equals(this.categoricalSize, oSpace.categoricalSize))
+		{
+			return false;
+		} else
+		{
+			return true;
+		}
+		
+	}
+	
+	
 	/**
 	 * Two Entities are equal if they reference the same file
 	 */
@@ -1416,6 +1437,8 @@ public class ParamConfigurationSpace implements Serializable {
 		}
 		
 	}
+	
+	
 	
 }
 

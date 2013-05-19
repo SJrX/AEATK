@@ -56,5 +56,8 @@ public class TargetAlgorithmEvaluatorRunnerOptions extends AbstractOptions {
 	 */
 	@DynamicParameter(names="-P", description="Name value pairs in the form: (-Pname=value) of the specific configuration to override. This is useful if you'd like to change a setting of the default , or try a random with a set value)")
 	public Map<String, String> configSettingsToOverride = new HashMap<String, String>();
+
+	@Parameter(names="--killTime", description="Kill the run dynamically after this much runtime")
+	public double killTime = Double.POSITIVE_INFINITY;
 	
 }

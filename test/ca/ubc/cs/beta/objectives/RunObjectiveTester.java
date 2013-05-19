@@ -2,25 +2,35 @@ package ca.ubc.cs.beta.objectives;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import static org.junit.Assert.*;
 
 import ca.ubc.cs.beta.TestHelper;
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableAlgorithmRun;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfigHelper;
 import ca.ubc.cs.beta.aclib.misc.random.SeedableRandomSingleton;
 import ca.ubc.cs.beta.aclib.objectives.RunObjective;
+import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.cli.CommandLineTargetAlgorithmEvaluatorFactory;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.loader.TargetAlgorithmEvaluatorLoader;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.random.RandomResponseTargetAlgorithmEvaluatorFactory;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.random.RandomResponseTargetAlgorithmEvaluatorOptions;
 import ca.ubc.cs.beta.targetalgorithmevaluator.ParamEchoExecutor;
 
 public class RunObjectiveTester {
@@ -217,6 +227,42 @@ private static TargetAlgorithmEvaluator tae;
 		}
 	}
 
+	@Test
+	public void testRunObjectiveWithDynamicCapping()
+	{
+		RandomResponseTargetAlgorithmEvaluatorFactory rfact = new RandomResponseTargetAlgorithmEvaluatorFactory();
+
+		
+		RandomResponseTargetAlgorithmEvaluatorOptions o = rfact.getOptionObject();
+		o.simulateDelay = true;
+		o.minResponse = 5;
+		o.maxResponse = 10;
+		
+		TargetAlgorithmEvaluator tae = rfact.getTargetAlgorithmEvaluator(execConfig, o);
+
+		RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("pi"), 1), 20, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration());
+		
+		
+		List<AlgorithmRun> runs = tae.evaluateRun(Collections.singletonList(rc), new CurrentRunStatusObserver()
+		{
+
+			@Override
+			public void currentStatus(List<? extends KillableAlgorithmRun> runs) {
+				for(KillableAlgorithmRun run : runs)
+				{
+					run.kill();
+				}
+			}
+			
+		});
+		
+		for(AlgorithmRun run : runs)
+		{
+			assertEquals("Expect Runtime objective to be the same for dynamically capped runs ", run.getRuntime(), RunObjective.RUNTIME.getObjective(run) , 0.01);
+		}
+		
+		
+	}
 	
 	
 	

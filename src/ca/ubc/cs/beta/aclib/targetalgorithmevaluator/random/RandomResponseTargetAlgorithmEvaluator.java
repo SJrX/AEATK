@@ -9,6 +9,8 @@ import net.jcip.annotations.ThreadSafe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.beust.jcommander.ParameterException;
+
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.ExistingAlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
@@ -44,6 +46,10 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 		super(execConfig);
 		
 		
+		if(options.maxResponse - options.minResponse < 0)
+		{
+			throw new ParameterException("Maximum response must be greater than the minimum response");
+		}
 		this.scale = options.maxResponse - options.minResponse;
 		this.minValue = options.minResponse;
 		

@@ -10,6 +10,8 @@ import java.util.TreeMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.loader.TargetAlgorithmEvaluatorLoader;
+
 /**
  * Utility class that allows various related projects to log their versions and have them reported
  * @author sjr
@@ -19,7 +21,7 @@ public class VersionTracker {
 
 	private static final Logger log = LoggerFactory.getLogger(VersionTracker.class);
 
-	private static ClassLoader cl = VersionTracker.class.getClassLoader();
+	private static ClassLoader cl = TargetAlgorithmEvaluatorLoader.getClassLoader();
 	
 
 	private static SortedMap<String, String> init()

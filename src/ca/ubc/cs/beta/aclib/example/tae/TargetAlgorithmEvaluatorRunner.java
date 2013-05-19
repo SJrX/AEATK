@@ -156,7 +156,7 @@ public class TargetAlgorithmEvaluatorRunner
 				//It is also IMMUTABLE
 				RunConfig runConfig = new RunConfig(pisp, execConfig.getAlgorithmCutoffTime(), config);
 				
-				processRunConfig(runConfig, tae);
+				processRunConfig(runConfig, tae, mainOptions.killTime);
 				
 				
 			} finally
@@ -195,7 +195,7 @@ public class TargetAlgorithmEvaluatorRunner
 	 * @param runConfig 	runConfig to evaluate
 	 * @param tae 			target algorithm evaluator to use
 	 */
-	public static void processRunConfig(RunConfig runConfig, TargetAlgorithmEvaluator tae)
+	public static void processRunConfig(RunConfig runConfig, TargetAlgorithmEvaluator tae, final double killTime)
 	{
 		
 		
@@ -213,11 +213,15 @@ public class TargetAlgorithmEvaluatorRunner
 				
 				for(int i=0; i < runs.size(); i++)
 				{
-					AlgorithmRun run = runs.get(i);
+					KillableAlgorithmRun run = runs.get(i);
 					//Log messages with more than 2 arguments, must use pass them as an array.
 					Object[] logArguments = { i, run.getRunConfig().getProblemInstanceSeedPair().getInstance(), run.getRunResult(), run.getRuntime()};
 					log.info("Run {} on {} has status =>  {}, {}", logArguments);
-					
+					if(run.getRuntime() > killTime)
+					{
+						log.info("Dynamically killing run");
+						run.kill();
+					}
 				}
 				lastUpdate = System.currentTimeMillis();
 				

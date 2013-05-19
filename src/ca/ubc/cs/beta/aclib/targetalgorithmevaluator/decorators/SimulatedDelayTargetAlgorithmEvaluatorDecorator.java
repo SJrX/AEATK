@@ -8,6 +8,10 @@ import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.ExistingAlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
@@ -42,6 +46,8 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 	private long observerFrequencyMs;
 
 	private final ExecutorService execService = Executors.newCachedThreadPool();;
+	
+	private static final Logger log = LoggerFactory.getLogger(SimulatedDelayTargetAlgorithmEvaluatorDecorator.class);
 	
 	public SimulatedDelayTargetAlgorithmEvaluatorDecorator(
 			TargetAlgorithmEvaluator tae, long observerFrequency) {
@@ -151,59 +157,23 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 		
 		for(AlgorithmRun run : measuredRuns)
 		{
+			
 			maxRuntime = Math.max(maxRuntime, Math.max(run.getRuntime(), run.getWallclockExecutionTime()));
 			khs.put(run.getRunConfig(), new StatusVariableKillHandler() );
 			runResults.put(run.getRunConfig(), new RunningAlgorithmRun(run.getExecutionConfig(), run.getRunConfig(), 0,0,0, run.getRunConfig().getProblemInstanceSeedPair().getSeed(), null));
+			
 		}
 		
 		
+		log.debug("Simulating {} elapsed seconds of running", maxRuntime);
+		
 		long waitTimeRemainingMs;
+		boolean allDone = true;
 		do {
 			long currentTimeInMs =  System.currentTimeMillis();
 			waitTimeRemainingMs =  startTimeInMs  +  (long) maxRuntime*1000 - currentTimeInMs;
 			
-			if(obs != null && waitTimeRemainingMs > observerFrequencyMs)
-			{
-				
-				List<KillableAlgorithmRun> kars = new ArrayList<KillableAlgorithmRun>(measuredRuns.size());
-				//Update observer
-				for(AlgorithmRun run : measuredRuns)
-				{
-				
-					RunConfig rc  = run.getRunConfig();
-					if(runResults.get(rc).isRunCompleted())
-					{
-						continue;
-					}
-					
-					double currentRuntime = (currentTimeInMs - startTimeInMs) / 1000.0;
-					if(currentRuntime>  run.getRuntime())
-					{
-						//We are done and can simply throw this run on the list
-						runResults.put(rc, run);
-					} else if(khs.get(rc).isKilled())
-					{
-						//We should kill this run
-						runResults.put(rc, new ExistingAlgorithmRun(run.getExecutionConfig(), rc, RunResult.TIMEOUT, currentRuntime, 0, 0, rc.getProblemInstanceSeedPair().getSeed(),currentTimeInMs - startTimeInMs));
-					} else
-					{
-						//Update the run
-						runResults.put(rc, new RunningAlgorithmRun(run.getExecutionConfig(), run.getRunConfig(), currentRuntime,0,0, run.getRunConfig().getProblemInstanceSeedPair().getSeed(), khs.get(rc)));
-					}
-					
-					AlgorithmRun currentRun = runResults.get(rc);
-					if( currentRun instanceof KillableAlgorithmRun)
-					{
-						kars.add((KillableAlgorithmRun) currentRun);
-					} else
-					{
-						kars.add(new KillableWrappedAlgorithmRun(currentRun));
-					}
-					
-					obs.currentStatus(kars);
-				}	
-			}
-			
+
 			long sleepTime = Math.min(observerFrequencyMs, waitTimeRemainingMs);
 			
 			if(sleepTime > 0)
@@ -218,10 +188,78 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 				}
 			
 			}
+			
+			
+			currentTimeInMs =  System.currentTimeMillis();
+			if(obs != null)
+			{
+				
+				List<KillableAlgorithmRun> kars = new ArrayList<KillableAlgorithmRun>(measuredRuns.size());
+				//Update observer
+				allDone = true;
+				for(AlgorithmRun run : measuredRuns)
+				{
+				
+					RunConfig rc  = run.getRunConfig();
+					if(runResults.get(rc).isRunCompleted())
+					{
+						continue;
+					}
+					
+					double currentRuntime = (currentTimeInMs - startTimeInMs) / 1000.0;
+					if(currentRuntime >  run.getRuntime())
+					{
+						//We are done and can simply throw this run on the list
+						runResults.put(rc, run);
+					} else if(khs.get(rc).isKilled())
+					{
+						//We should kill this run
+						runResults.put(rc, new ExistingAlgorithmRun(run.getExecutionConfig(), rc, RunResult.TIMEOUT, currentRuntime, 0, 0, rc.getProblemInstanceSeedPair().getSeed(),currentRuntime));
+					} else
+					{
+						//Update the run
+						runResults.put(rc, new RunningAlgorithmRun(run.getExecutionConfig(), run.getRunConfig(), currentRuntime,0,0, run.getRunConfig().getProblemInstanceSeedPair().getSeed(), khs.get(rc)));
+						allDone = false;
+					}
+					
+					AlgorithmRun currentRun = runResults.get(rc);
+					if( currentRun instanceof KillableAlgorithmRun)
+					{
+						kars.add((KillableAlgorithmRun) currentRun);
+					} else
+					{
+						kars.add(new KillableWrappedAlgorithmRun(currentRun));
+					}
+					
+					
+				}	
+				
+				obs.currentStatus(kars);
+				
+				
+				
+			}
+			
+			
+			
+			
 		}
-		while( waitTimeRemainingMs > 0);
+		while( !allDone );
 		
-		return measuredRuns;
+		if(obs == null)
+		{ //We don't need to process anything
+			return measuredRuns;
+		} else
+		{
+			List<AlgorithmRun> completedRuns = new ArrayList<AlgorithmRun>(measuredRuns.size());
+			for(AlgorithmRun run : measuredRuns)
+			{
+				completedRuns.add(runResults.get(run.getRunConfig()));
+			}
+			
+			return completedRuns;
+		}
+		
 	}
 
 	@Override

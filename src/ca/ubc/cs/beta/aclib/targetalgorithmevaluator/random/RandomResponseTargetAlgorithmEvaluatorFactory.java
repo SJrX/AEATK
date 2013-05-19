@@ -41,7 +41,7 @@ public class RandomResponseTargetAlgorithmEvaluatorFactory implements
 	}
 
 	@Override
-	public AbstractOptions getOptionObject() {
+	public RandomResponseTargetAlgorithmEvaluatorOptions getOptionObject() {
 		return new RandomResponseTargetAlgorithmEvaluatorOptions();
 	}
 	

@@ -50,7 +50,7 @@ public enum RunObjective {
 				}
 			
 			
-			return (r.getRuntime());
+			return r.getRuntime();
 		/*
 		case RUNLENGTH:
 			return r.getRunLength();
