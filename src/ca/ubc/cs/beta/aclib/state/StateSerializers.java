@@ -1,10 +1,13 @@
 package ca.ubc.cs.beta.aclib.state;
 
 /**
- * Enumeration that lists the various StateSerializers supported 
- * 
- * @author sjr
- *
+ * Enumeration that lists the various StateSerializers supported
+ * <br>
+ * <b>Note:</b> If you add more of these, you should also modify the <code>StateFactoryHelper</code> 
+ * class. 
+ *  
+ * @author Steve Ramage <seramage@cs.ubc.ca>
+ * @see StateFactoryHelper 
  */
 public enum StateSerializers {
 	/**
