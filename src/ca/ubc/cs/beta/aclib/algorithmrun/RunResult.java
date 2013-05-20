@@ -54,7 +54,18 @@ public enum RunResult {
 	 * In general this should be used with care, there is 
 	 * no guarantee that anything in this state is consistent. 
 	 */
-	RUNNING(Integer.MIN_VALUE);
+	RUNNING(Integer.MIN_VALUE),
+	
+	/**
+	 * Signifies that run ran out of time, but at our request
+	 * This should be handled identically to <code>TIMEOUT</code>
+	 * expect that the runObjective of this kind of run should be 
+	 * the runTime() and not the captime.
+	 * 
+	 * Wrappers SHOULD NEVER output this value 
+	 */
+	KILLED(-3);
+	
 	/**
 	 * Stores the numeric result code used in some serializations of run results
 	 * @see ca.ubc.cs.beta.aclib.state.legacy.LegacyStateFactory
