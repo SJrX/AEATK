@@ -185,7 +185,7 @@ public class LegacyStateSerializer implements StateSerializer {
 					runResults.append(runHistory.getRunObjective().getObjective(run)+","); //3
 					int isCensored = 0;
 					
-					if(run.getRunResult().equals(RunResult.TIMEOUT) && run.getRunConfig().hasCutoffLessThanMax())
+					if((run.getRunResult().equals(RunResult.TIMEOUT) && run.getRunConfig().hasCutoffLessThanMax()) || run.getRunResult().equals(RunResult.KILLED))
 					{
 						isCensored = 1;
 					}

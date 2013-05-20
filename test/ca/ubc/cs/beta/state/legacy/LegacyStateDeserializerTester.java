@@ -212,7 +212,7 @@ public class LegacyStateDeserializerTester {
 		
 		  
 				
-		File paramFile = TestHelper.getTestFile("paramFiles/paramEchoParamFile.txt");
+		File paramFile = TestHelper.getTestFile("paramFiles/paramEchoParamFileWithKilled.txt");
 		ParamConfigurationSpace configSpace;
 		
 		

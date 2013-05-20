@@ -489,23 +489,8 @@ public class LegacyStateDeserializer implements StateDeserializer {
 					
 						ProblemInstanceSeedPair pisp = new ProblemInstanceSeedPair(pi, seed); 
 						RunConfig runConfig = new RunConfig(pisp, cutOffTime, configMap.get(thetaIdx),isCensored);
-						
-						
-						
-						StringBuffer resultLine = new StringBuffer();
-						
-						resultLine.append(runResult.getResultCode()).append(", ");
-						resultLine.append(runtime).append(", ");
-						resultLine.append(runLength).append(", ");
-						resultLine.append(quality).append(", ");
-						resultLine.append(seed);
-						
-						if(additionalRunData.length() > 0)
-						{
-							resultLine.append(",").append(additionalRunData);
-						}
-						
-						AlgorithmRun run = new ExistingAlgorithmRun(execConfig, runConfig, resultLine.toString(), wallClockTime);
+												
+						AlgorithmRun run = new ExistingAlgorithmRun(execConfig, runConfig, runResult, runtime, runLength, quality, seed, additionalRunData, wallClockTime);
 						
 						log.trace("Appending new run to runHistory: ", run);
 						try {
@@ -522,15 +507,8 @@ public class LegacyStateDeserializer implements StateDeserializer {
 								
 								seed = newSeeds++;
 								
-								
 
-								resultLine.append(runResult.getResultCode()).append(", ");
-								resultLine.append(runtime).append(", ");
-								resultLine.append(runLength).append(", ");
-								resultLine.append(quality).append(", ");
-								resultLine.append(seed);
-								
-								run = new ExistingAlgorithmRun(execConfig, runConfig, resultLine.toString());
+								run = new ExistingAlgorithmRun(execConfig, runConfig, runResult, runtime, runLength, quality, seed, wallClockTime);
 								
 								log.trace("Appending new run to runHistory: ", run);
 								try {
@@ -555,6 +533,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 					} catch(RuntimeException e) 
 					{
 					
+						
 						throw new StateSerializationException("Error occured while parsing the following line of the runHistory file: " + i + " data "+ Arrays.toString(runHistoryLine), e);
 					}
 

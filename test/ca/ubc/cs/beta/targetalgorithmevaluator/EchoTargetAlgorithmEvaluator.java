@@ -48,7 +48,8 @@ public class EchoTargetAlgorithmEvaluator  extends AbstractBlockingTargetAlgorit
 		List<AlgorithmRun> results = new ArrayList<AlgorithmRun>();
 		
 		
-		 /*
+		 /* Configuration file generally looks something like this
+		  *
 		 * solved { SAT, UNSAT, TIMEOUT, CRASHED, ABORT, INVALID } [SAT]
 				 * runtime [0,1000] [0]
 				 * runlength [0,1000000][0]

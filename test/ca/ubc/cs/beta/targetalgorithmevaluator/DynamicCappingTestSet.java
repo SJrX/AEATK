@@ -201,7 +201,7 @@ public class DynamicCappingTestSet {
 			
 			ParamConfiguration config  = run.getRunConfig().getParamConfiguration();
 			
-			if(run.getRunResult().equals(RunResult.TIMEOUT))
+			if(run.getRunResult().isSuccessfulAndCensored())
 			{
 				continue;
 			}
@@ -310,7 +310,7 @@ public class DynamicCappingTestSet {
 			
 			ParamConfiguration config  = run.getRunConfig().getParamConfiguration();
 			
-			if(run.getRunResult().equals(RunResult.TIMEOUT))
+			if(run.getRunResult().isSuccessfulAndCensored())
 			{
 				continue;
 			}
@@ -413,8 +413,10 @@ public class DynamicCappingTestSet {
 			
 			ParamConfiguration config  = run.getRunConfig().getParamConfiguration();
 			
-			if(run.getRunResult().equals(RunResult.TIMEOUT))
+			if(run.getRunResult().isSuccessfulAndCensored())
 			{
+				
+				assertEquals(run.getRunResult(), RunResult.KILLED);
 				continue;
 			}
 			assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);

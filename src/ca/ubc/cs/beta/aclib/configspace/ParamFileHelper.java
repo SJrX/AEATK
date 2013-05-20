@@ -1,6 +1,7 @@
 package ca.ubc.cs.beta.aclib.configspace;
 
 import java.io.File;
+import java.io.StringReader;
 import java.util.concurrent.ConcurrentHashMap;
 
 /**
@@ -70,6 +71,10 @@ public class ParamFileHelper {
 	public static void clear() {
 		paramFiles.clear();
 		
+	}
+
+	public static ParamConfigurationSpace getParamFileFromString(String string) {
+		return new ParamConfigurationSpace(new StringReader(string));
 	}
 	
 	

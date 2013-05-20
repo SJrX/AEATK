@@ -259,6 +259,7 @@ private static TargetAlgorithmEvaluator tae;
 		for(AlgorithmRun run : runs)
 		{
 			assertEquals("Expect Runtime objective to be the same for dynamically capped runs ", run.getRuntime(), RunObjective.RUNTIME.getObjective(run) , 0.01);
+			
 		}
 		
 		

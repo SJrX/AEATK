@@ -143,7 +143,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 			log.debug("Run was killed", runConfig);
 			String rawResultLine = "Killed Manually";
 			
-			this.setResult(RunResult.TIMEOUT, 0, 0, 0, runConfig.getProblemInstanceSeedPair().getSeed(), rawResultLine,"");
+			this.setResult(RunResult.KILLED, 0, 0, 0, runConfig.getProblemInstanceSeedPair().getSeed(), rawResultLine,"");
 		}
 		
 		final Process proc;
@@ -234,7 +234,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 				if(wasKilled)
 				{
 					double currentTime = Math.max(0,(this.getCurrentWallClockTime()/1000.0 - WALLCLOCK_TIMING_SLACK));
-					this.setResult(RunResult.TIMEOUT, currentTime, 0,0, getRunConfig().getProblemInstanceSeedPair().getSeed(), "Killed Manually", "" );
+					this.setResult(RunResult.KILLED, currentTime, 0,0, getRunConfig().getProblemInstanceSeedPair().getSeed(), "Killed Manually", "" );
 					
 				} else {
 					this.setCrashResult("We did not successfully read anything from the wrapper");
@@ -401,12 +401,13 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 				
 				RunResult acResult =  RunResult.getAutomaticConfiguratorResultForKey(results[0]);
 				
-
-		
+				if(!acResult.permittedByWrappers())
+				{
+					throw new IllegalArgumentException(" The Run Result reported is NOT permitted to be output by a wrapper and is for internal SMAC use only.");
+				}
 				
-				
-			
-				int solved = acResult.getResultCode();
+					
+					
 				String runtime = results[1].trim();
 				String runLength = results[2].trim();
 				String bestSolution = results[3].trim();
@@ -448,7 +449,10 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 				ArrayList<String> validValues = new ArrayList<String>();
 				for(RunResult r : RunResult.values())
 				{
-					validValues.addAll(r.getAliases());
+					if(r.permittedByWrappers())
+					{
+						validValues.addAll(r.getAliases());
+					}
 				}
 				Collections.sort(validValues);
 				

@@ -130,9 +130,9 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 			throw new IllegalWrapperOutputException("Runtime is NaN or negative", rawResultLine);
 		}
 			
-		if ( Double.isNaN(runLength) || ((runLength < 0) && (runLength != -1)))
+		if ( Double.isNaN(runLength) || ((runLength < 0) && (runLength != -1.0)))
 		{
-			throw new IllegalWrapperOutputException("RunLength is NaN or negative (and not -1)", rawResultLine);
+			throw new IllegalWrapperOutputException("RunLength (" + runLength + ") is NaN or negative (and not -1)", rawResultLine);
 		}
 		
 		if(Double.isNaN(quality))
@@ -140,6 +140,10 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 			throw new IllegalWrapperOutputException("Quality needs to be a number", rawResultLine);
 		}
 		
+		if(acResult == null)
+		{
+			throw new IllegalStateException("Run Result cannot be null");
+		}
 		this.acResult = acResult;
 		this.runtime = Math.min(runtime, Double.MAX_VALUE);
 		this.runLength = Math.min(runLength, Double.MAX_VALUE);

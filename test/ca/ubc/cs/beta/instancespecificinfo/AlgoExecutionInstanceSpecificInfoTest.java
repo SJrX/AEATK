@@ -113,7 +113,7 @@ public class AlgoExecutionInstanceSpecificInfoTest {
 				AlgorithmRun run = tae.evaluateRun(rc).get(0);
 				
 				try {
-				assertEquals(pi.getInstanceName().hashCode() + 37*pi.getInstanceSpecificInformation().hashCode(), (long) run.getRunLength());
+				assertEquals(Math.abs((long) pi.getInstanceName().hashCode() + 37*pi.getInstanceSpecificInformation().hashCode()), (long) run.getRunLength());
 				} catch(AssertionError e)
 				{
 					System.out.println(run.getResultLine());

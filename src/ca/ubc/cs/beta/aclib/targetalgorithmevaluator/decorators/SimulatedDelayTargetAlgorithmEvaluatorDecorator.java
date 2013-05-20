@@ -214,7 +214,7 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 					} else if(khs.get(rc).isKilled())
 					{
 						//We should kill this run
-						runResults.put(rc, new ExistingAlgorithmRun(run.getExecutionConfig(), rc, RunResult.TIMEOUT, currentRuntime, 0, 0, rc.getProblemInstanceSeedPair().getSeed(),currentRuntime));
+						runResults.put(rc, new ExistingAlgorithmRun(run.getExecutionConfig(), rc, RunResult.KILLED, currentRuntime, 0, 0, rc.getProblemInstanceSeedPair().getSeed(),currentRuntime));
 					} else
 					{
 						//Update the run

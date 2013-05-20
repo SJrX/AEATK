@@ -58,6 +58,7 @@ public class SATConsistencyTargetAlgorithmEvaluator extends AbstractForEachRunTa
 			case TIMEOUT:
 			case CRASHED:
 			case ABORT:
+			case KILLED:
 				break;
 			default:
 				throw new IllegalStateException("Unexpected run result on algorithm run: " + run);

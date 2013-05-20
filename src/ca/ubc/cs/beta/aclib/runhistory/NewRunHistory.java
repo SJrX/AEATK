@@ -138,6 +138,10 @@ public class NewRunHistory implements RunHistory {
 
 		log.trace("Appending Run {}",run);
 		
+		if(run.getRunResult().equals(RunResult.RUNNING))
+		{
+			throw new IllegalArgumentException("Runs with Run Result RUNNING cannot be saved to a RunHistory object");
+		}
 		ParamConfiguration config = run.getRunConfig().getParamConfiguration();
 		ProblemInstanceSeedPair pisp = run.getRunConfig().getProblemInstanceSeedPair();
 		ProblemInstance pi = pisp.getInstance();
@@ -216,7 +220,9 @@ public class NewRunHistory implements RunHistory {
 	
 		
 		int instanceIdx = pi.getInstanceID();
-		runHistoryList.add(new RunData(iteration, thetaIdx, instanceIdx, run,runResult,run.getRunResult().equals(RunResult.TIMEOUT) && run.getRunConfig().hasCutoffLessThanMax()));
+		RunResult result = run.getRunResult();
+		boolean cappedRun = (result.equals(RunResult.TIMEOUT) && run.getRunConfig().hasCutoffLessThanMax() || result.equals(RunResult.KILLED));
+		runHistoryList.add(new RunData(iteration, thetaIdx, instanceIdx, run,runResult, cappedRun));
 		
 		
 		/*
@@ -238,7 +244,7 @@ public class NewRunHistory implements RunHistory {
 		/*
 		 * Add to the capped runs set
 		 */
-		if(run.getRunResult().equals(RunResult.TIMEOUT) && run.getRunConfig().hasCutoffLessThanMax())
+		if(cappedRun)
 		{
 			if(!cappedRuns.containsKey(config))
 			{
@@ -630,7 +636,7 @@ public class NewRunHistory implements RunHistory {
 		int i=0;
 		for(RunData runData : runHistoryList)
 		{
-			responseValues[i] = runData.getRun().getRunResult().equals(RunResult.TIMEOUT) && runData.getRun().getRunConfig().hasCutoffLessThanMax();
+			responseValues[i] = (((runData.getRun().getRunResult().equals(RunResult.TIMEOUT) && runData.getRun().getRunConfig().hasCutoffLessThanMax())) || runData.getRun().getRunResult().equals(RunResult.KILLED));
 			i++;
 		}
 		return responseValues;
