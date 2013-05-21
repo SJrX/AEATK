@@ -20,7 +20,7 @@ public class MySQLConfig extends AbstractOptions {
 	@Parameter(names="--mysqlPassword", description="Password of database server" )
 	public String password = "";
 	
-	@Parameter(names="--mysqlDatabaseName", description="Name of Database" )
+	@Parameter(names={"--mysqlDatabase", "--mysqlDatabaseName"}, description="Name of Database" )
 	public String databaseName = "mysql_db_tae";
 	
 	
