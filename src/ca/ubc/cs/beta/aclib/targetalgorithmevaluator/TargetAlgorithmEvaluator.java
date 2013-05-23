@@ -28,9 +28,6 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred.TAECallback;
  */
 public interface TargetAlgorithmEvaluator {
  
-	
-	
-
 	/**
 	 * Evaluate a run configuration
 	 * 
