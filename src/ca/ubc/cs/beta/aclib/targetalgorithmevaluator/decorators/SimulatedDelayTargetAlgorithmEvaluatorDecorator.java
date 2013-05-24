@@ -238,11 +238,7 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 				
 				
 				
-			}
-			
-			
-			
-			
+			}	
 		}
 		while( !allDone );
 		
