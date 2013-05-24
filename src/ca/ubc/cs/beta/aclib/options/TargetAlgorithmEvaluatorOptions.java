@@ -3,6 +3,7 @@ package ca.ubc.cs.beta.aclib.options;
 import java.io.File;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.NonNegativeInteger;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.ReadableFileConverter;
+import ca.ubc.cs.beta.aclib.misc.jcommander.validator.TAEValidator;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.prepostcommand.PrePostCommandOptions;
 
@@ -13,8 +14,9 @@ import com.beust.jcommander.validators.PositiveInteger;
 @UsageTextField(title="Target Algorithm Evaluator Options", description="Options that describe and control the policy and mechanisms for algorithm execution")
 public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 		
-	@UsageTextField(domain="")
-	@Parameter(names={"--targetAlgorithmEvaluator","--tae"}, description="Target Algorithm Evaluator to use when making target algorithm calls")
+	
+	//@UsageTextField(domain="")
+	@Parameter(names={"--targetAlgorithmEvaluator","--tae"}, description="Target Algorithm Evaluator to use when making target algorithm calls", validateWith=TAEValidator.class)
 	public String targetAlgorithmEvaluator = "CLI";
 	
 	@Parameter(names="--abortOnCrash", description="treat algorithm crashes as an ABORT (Useful if algorithm should never CRASH). NOTE:  This only aborts if all retries fail.")
