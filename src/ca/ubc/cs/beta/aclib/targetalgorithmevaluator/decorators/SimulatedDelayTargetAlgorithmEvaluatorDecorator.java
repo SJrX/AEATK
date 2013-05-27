@@ -1,13 +1,20 @@
 package ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators;
 
+import java.text.DateFormat;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Calendar;
 import java.util.Collections;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicLong;
+
+import net.jcip.annotations.ThreadSafe;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -20,6 +27,7 @@ import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillHandler;
 import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableAlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableWrappedAlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.kill.StatusVariableKillHandler;
+import ca.ubc.cs.beta.aclib.concurrent.threadfactory.SequentiallyNamedThreadFactory;
 import ca.ubc.cs.beta.aclib.exceptions.TargetAlgorithmAbortException;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.AbstractTargetAlgorithmEvaluatorDecorator;
@@ -38,14 +46,15 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred.TAECallback;
  * 
  * @author Steve Ramage <seramage@cs.ubc.ca>
  */
-
+@ThreadSafe
 public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 		AbstractTargetAlgorithmEvaluatorDecorator {
 
 	
-	private long observerFrequencyMs;
+	private final long observerFrequencyMs;
 
-	private final ExecutorService execService = Executors.newCachedThreadPool();;
+	//A cached thread pool is used here because another decorator will handle bounding the number of runs, if necessary.
+	private final ExecutorService execService = Executors.newCachedThreadPool(new SequentiallyNamedThreadFactory("Simulated Delay Target Algorithm Evaluator Callback Thread"));
 	
 	private static final Logger log = LoggerFactory.getLogger(SimulatedDelayTargetAlgorithmEvaluatorDecorator.class);
 	
@@ -165,7 +174,18 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 		}
 		
 		
-		log.debug("Simulating {} elapsed seconds of running", maxRuntime);
+		long time = System.currentTimeMillis()  + (long) (maxRuntime * 1000);
+		
+		Date d = new Date(time);
+
+		SimpleDateFormat df = new SimpleDateFormat("HH:mm:ss.SSS");
+		String releaseTime = df.format(d);
+		
+		if(maxRuntime * 1000 > 86400000)
+		{
+			releaseTime =  maxRuntime * 1000 / 86400000 + " days " + releaseTime;
+		}
+		log.debug("Simulating {} elapsed seconds of running. Wake-up estimated in/at: {} ", maxRuntime, releaseTime );
 		
 		long waitTimeRemainingMs;
 		boolean allDone = true;

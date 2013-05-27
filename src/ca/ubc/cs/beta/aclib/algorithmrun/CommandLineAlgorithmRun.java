@@ -23,6 +23,7 @@ import org.slf4j.MarkerFactory;
 import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillHandler;
 import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableAlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableWrappedAlgorithmRun;
+import ca.ubc.cs.beta.aclib.concurrent.threadfactory.SequentiallyNamedThreadFactory;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration.StringFormat;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.misc.logback.MarkerFilter;
@@ -82,7 +83,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	
 	private static final double WALLCLOCK_TIMING_SLACK = 0.001;
 	
-	private ExecutorService threadPoolExecutor = Executors.newCachedThreadPool(); 
+	private ExecutorService threadPoolExecutor = Executors.newCachedThreadPool(new SequentiallyNamedThreadFactory("Command Line Target Algorithm Evaluator Thread ")); 
 	
 	private final int observerFrequency;
 		
@@ -164,7 +165,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 				@Override
 				public void run() {
 					
-					Thread.currentThread().setName("cli-tae-std-err-" + getRunConfig().getProblemInstanceSeedPair().getInstance().getInstanceID() + "-" + getRunConfig().getProblemInstanceSeedPair().getSeed());
+					Thread.currentThread().setName("Command Line Target Algorithm Evaluator Thread (Standard Error Processor)" + getRunConfig().getProblemInstanceSeedPair().getInstance().getInstanceID() + "-" + getRunConfig().getProblemInstanceSeedPair().getSeed());
 					try { 
 					Scanner procIn = new Scanner(innerProcess.getErrorStream());
 					
@@ -188,7 +189,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 
 				@Override
 				public void run() {
-					Thread.currentThread().setName("cli-tae-obs-" + getRunConfig().getProblemInstanceSeedPair().getInstance().getInstanceID() + "-" + getRunConfig().getProblemInstanceSeedPair().getSeed());
+					Thread.currentThread().setName("Command Line Target Algorithm Evaluator Thread (Observer)" + getRunConfig().getProblemInstanceSeedPair().getInstance().getInstanceID() + "-" + getRunConfig().getProblemInstanceSeedPair().getSeed());
 					while(true)
 					{
 						
