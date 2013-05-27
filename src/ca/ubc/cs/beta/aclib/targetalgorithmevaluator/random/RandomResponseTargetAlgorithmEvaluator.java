@@ -1,6 +1,7 @@
 package ca.ubc.cs.beta.aclib.targetalgorithmevaluator.random;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
@@ -37,6 +38,10 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 	private final double trendCoefficient;
 	private final double minValue;
 	
+	
+	//Controls whether we will BREAK our TAE by shuffling the runs
+	private boolean shuffleRuns;
+	
 	private final Random rand;
 	
 	private static final Logger log = LoggerFactory.getLogger(RandomResponseTargetAlgorithmEvaluator.class);
@@ -57,7 +62,7 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 
 		log.info("Target Algorithm Evaluator initialized with seed: {} ", options.seed);
 		this.rand = new MersenneTwister(options.seed);
-		
+		this.shuffleRuns = options.shuffleResponses;
 	}
 
 
@@ -87,6 +92,10 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 			this.runCount.incrementAndGet();
 		}
 		
+		if(shuffleRuns)
+		{
+			Collections.shuffle(ar, rand);
+		}
 		return ar;
 	}
 

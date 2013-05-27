@@ -55,6 +55,9 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	
 	@ParametersDelegate
 	public PrePostCommandOptions prePostOptions = new PrePostCommandOptions();
+
+	@Parameter(names="--checkResultOrderConsistent", description="Check that the TAE is returning responses in the correct order")
+	public boolean checkResultOrderConsistent;
 	
 	
 	

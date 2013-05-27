@@ -32,4 +32,10 @@ public class RandomResponseTargetAlgorithmEvaluatorOptions extends AbstractOptio
 	@UsageTextField(defaultValues = "Current Time in Milliseconds")
 	@Parameter(names="--random-sample-seed", description="Seed to use when generate random responses")
 	public long seed = System.currentTimeMillis();
+
+	//Shuffle the Algorithm Runs List before it returns.
+	
+	//DO NOT EXPOSE THIS ARGUMENT TO THE COMMAND LINE AS IT EXISTS ONLY FOR TESTING THAT WHEN THIS HAPPENS
+	//IT CAN BE CAUGHT
+	public boolean shuffleResponses;
 }
