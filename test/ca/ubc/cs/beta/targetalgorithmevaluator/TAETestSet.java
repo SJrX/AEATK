@@ -12,6 +12,8 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.apache.commons.io.output.NullOutputStream;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -39,11 +41,16 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.cli.CommandLineTargetAlgori
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.debug.PreloadedResponseTargetAlgorithmEvaluatorOptions;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbortOnCrashTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbortOnFirstRunCrashTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.ResultOrderCorrectCheckerTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.TimingCheckerTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.EqualTargetAlgorithmEvaluatorTester;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.VerifySATTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.prepostcommand.PrePostCommandErrorException;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred.TAECallback;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred.WaitableTAECallback;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.loader.TargetAlgorithmEvaluatorLoader;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.random.RandomResponseTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.random.RandomResponseTargetAlgorithmEvaluatorOptions;
 import ca.ubc.cs.beta.targetalgorithmevaluator.massiveoutput.MassiveOutputParamEchoExecutor;
 
 
@@ -110,17 +117,13 @@ public class TAETestSet {
 	public void testMirror()
 	{
 		
-	
-		
+
 		StringBuilder b = new StringBuilder();
 		b.append("java -cp ");
 		b.append(System.getProperty("java.class.path"));
 		b.append(" ");
 		b.append(ParamEchoExecutor.class.getCanonicalName());
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
-		
-		
-		
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
@@ -1754,17 +1757,140 @@ public class TAETestSet {
 		}
 		
 		
+	}
+	
+	@Test
+	public void testOrderCheckingDecorator()
+	{
+		
+
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(ParamEchoExecutor.class.getCanonicalName());
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
+		
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
+				runConfigs.add(rc);
+			}
+		}
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
 		
 		
+		//Test the TAE when we shuffle responses
+		RandomResponseTargetAlgorithmEvaluatorOptions randOpts = new RandomResponseTargetAlgorithmEvaluatorOptions();
+		long seed = System.currentTimeMillis();
+		System.out.println("Order Checking Decorator used seed" + seed);
+		randOpts.seed =seed;
+		randOpts.shuffleResponses = true;
+		
+		TargetAlgorithmEvaluator tae = new RandomResponseTargetAlgorithmEvaluator(execConfig, randOpts);
+		
+		tae = new ResultOrderCorrectCheckerTargetAlgorithmEvaluatorDecorator(tae);
+		try {
+			try {
+				List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+				fail("Expected Exception to have occured");
+			} catch(IllegalStateException e)
+			{
+				System.out.println("GOOD: " + e.getMessage());
+			}
+	
+			
+			final AtomicBoolean taeCompletedSuccessfully = new AtomicBoolean();
+			TAECallback callback = new TAECallback()
+			{
+	
+				@Override
+				public void onSuccess(List<AlgorithmRun> runs) {
+					taeCompletedSuccessfully.set(true);
+				}
+	
+				@Override
+				public void onFailure(RuntimeException t) {
+					System.out.println("GOOD ASYNC: " + t.getMessage());	
+				}
+				
+			};
+			
+			WaitableTAECallback wait = new WaitableTAECallback(callback);
+				
+			tae.evaluateRunsAsync(runConfigs, wait);
+			
+			wait.waitForCompletion();
+			
+			assertFalse("TAE Should not have completed successfully", taeCompletedSuccessfully.get());
+		} finally
+		{
+			tae.notifyShutdown();
+		}
 		
 		
-		
-		
+		//Test the TAE when we don't shuffle
+		try {
+			randOpts = new RandomResponseTargetAlgorithmEvaluatorOptions();
+			
+			System.out.println("Order Checking Decorator used seed" + seed);
+			randOpts.seed =seed;
+			
+			tae = new RandomResponseTargetAlgorithmEvaluator(execConfig, randOpts);
+			
+			tae = new ResultOrderCorrectCheckerTargetAlgorithmEvaluatorDecorator(tae);
+			
+			try {
+				List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+				System.out.println("GOOD: Completed");
+			} catch(IllegalStateException e)
+			{
+				throw e;
+			}
+	
+			
+			final AtomicBoolean taeCompletedSuccessfully = new AtomicBoolean();
+			TAECallback callback = new TAECallback()
+			{
+	
+				@Override
+				public void onSuccess(List<AlgorithmRun> runs) {
+					taeCompletedSuccessfully.set(true);
+				}
+	
+				@Override
+				public void onFailure(RuntimeException t) {
+					taeCompletedSuccessfully.set(false);
+					t.printStackTrace();
+				}
+				
+			};
+			
+			WaitableTAECallback wait = new WaitableTAECallback(callback);
+				
+			tae.evaluateRunsAsync(runConfigs, wait);
+			
+			wait.waitForCompletion();
+			
+			assertTrue("TAE Should not have completed successfully", taeCompletedSuccessfully.get());
+			
+		} finally
+		{
+			tae.notifyShutdown();
+		}
 		
 		
 	}
-	
-	
 	
 	
 }

@@ -38,9 +38,8 @@ public class FairMultiPermitSemaphore {
 	 * Gets up to N Permits
 	 * <p>
 	 * Implementation Note: We only want one thread at a time aquiring permits, so they are all blocked
-	 * outside of this thread. Then we want to ensure that nothing touches our permits and semaphore data structure
-	 * so we mutexLock that. The loop is overkill at this point but it's a compare and swap on the values to make sure it didn't change.
-	 *  
+	 * outside of this method. Then we want to ensure that nothing touches our permits and semaphore data structure
+	 * so we mutexLock that. The loop is overkill at this point (as this method is synchronized) but it's a compare and swap on the values to make sure it didn't change.
 	 *  
 	 * @param N - number of permits to attempt to aquire.
 	 * @return 1 or more permits when available
