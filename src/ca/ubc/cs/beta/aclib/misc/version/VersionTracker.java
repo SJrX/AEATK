@@ -86,7 +86,12 @@ public class VersionTracker {
 	 */
 	public static void logVersions()
 	{
+		
 		SortedMap<String, String> versionMap = init();
+		if(versionMap.isEmpty())
+		{
+			log.warn("Unable to find ANY version information, if you made this JAR yourself chances are you did not setup SPI correctly. See the SMAC Manual Developer Reference for more information");
+		}
 		for(Entry<String, String> ent : versionMap.entrySet())
 		{
 			log.info("Version of {} is {} ", ent.getKey(), ent.getValue());

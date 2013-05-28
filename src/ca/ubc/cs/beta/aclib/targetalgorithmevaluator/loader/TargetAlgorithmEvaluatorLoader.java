@@ -168,7 +168,7 @@ private static final String defaultSearchPath;
 		
 		while(taeIt.hasNext())
 		{
-			
+		
 			try { 
 				TargetAlgorithmEvaluatorFactory tae= taeIt.next();
 				//log.debug("Found Target Algorithm Evaluator {}", tae.getName());
@@ -223,10 +223,12 @@ private static final String defaultSearchPath;
 		Map<String, AbstractOptions> taeOptionsMap = new TreeMap<String,AbstractOptions>();
 		
 		Iterator<TargetAlgorithmEvaluatorFactory> taeIt = ServiceLoader.load(TargetAlgorithmEvaluatorFactory.class, loader).iterator();
+
+		boolean noTAEsFound = true;
 		
 		while(taeIt.hasNext())
 		{
-			
+			noTAEsFound = false;
 			try { 
 			
 				/**
@@ -333,7 +335,11 @@ private static final String defaultSearchPath;
 				}
 			}
 		}
-			
+		
+		if(!noTAEsFound)
+		{
+			System.err.println("WARNING: I could not find ANY Target Algorithm Evaluators on the classpath.  if you made this JAR yourself chances are you did not setup SPI correctly. See the SMAC Manual Developer Reference for more information" );
+		}
 		//Options can be modified in the map, but the map keys and values itself can't be
 		return Collections.unmodifiableMap(taeOptionsMap);
 	}
