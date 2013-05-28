@@ -12,7 +12,6 @@ import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.AbstractBlockingTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred.TAECallback;
 
 public class AnalyticTargetAlgorithmEvaluator extends AbstractBlockingTargetAlgorithmEvaluator implements
 		TargetAlgorithmEvaluator {

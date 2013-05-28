@@ -1,6 +1,5 @@
 package ca.ubc.cs.beta.aclib.targetalgorithmevaluator.loader;
 
-import java.io.FilePermission;
 import java.security.Permission;
 import java.util.Collections;
 import java.util.HashSet;

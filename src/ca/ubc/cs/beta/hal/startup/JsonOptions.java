@@ -1,16 +1,13 @@
 package ca.ubc.cs.beta.hal.startup;
 
-import com.beust.jcommander.IParameterValidator;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.ParametersDelegate;
 
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.FixedPositiveInteger;
-import ca.ubc.cs.beta.aclib.misc.jcommander.validator.NonNegativeInteger;
 import ca.ubc.cs.beta.aclib.misc.options.MySQLConfig;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.analytic.AnalyticFunctions;
 
 @UsageTextField(title="JSON Options", description="This specifies options for generating the HAL JSON file")
 public class JsonOptions extends AbstractOptions {
