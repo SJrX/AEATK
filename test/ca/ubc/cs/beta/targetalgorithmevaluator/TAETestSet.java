@@ -1903,7 +1903,7 @@ public class TAETestSet {
 	 * This tests for that the CLI will return eventually
 	 * This is related to issue https://mantis.sjrx.net/view.php?id=1675
 	 * 
-	 * This test roughly tries to simulate a deadlock, if you look at the commit _______ the changes will show you where the deadlocks were
+	 * This test roughly tries to simulate a deadlock, if you look at the commit 0702803124e3513b8b5479b8ae5391d2df5ba38a the changes will show you where the deadlocks were
 	 * occurring.
 	 * 
 	 */
