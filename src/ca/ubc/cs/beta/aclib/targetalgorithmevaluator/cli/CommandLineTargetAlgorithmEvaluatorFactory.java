@@ -23,7 +23,7 @@ public class CommandLineTargetAlgorithmEvaluatorFactory implements
 	}
 
 	@Override
-	public AbstractOptions getOptionObject()
+	public CommandLineTargetAlgorithmEvaluatorOptions getOptionObject()
 	{
 		return new CommandLineTargetAlgorithmEvaluatorOptions();
 	}

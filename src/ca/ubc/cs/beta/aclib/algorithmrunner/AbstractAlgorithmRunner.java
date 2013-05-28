@@ -8,6 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -46,9 +47,13 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 	
 	private static final Logger log = LoggerFactory.getLogger(AbstractAlgorithmRunner.class); 
 	
+	//Set to true if we should terminate the observers
+	private final AtomicBoolean shutdownThreads = new AtomicBoolean(false);
 	
 	
 	private final Semaphore shutdownComplete = new Semaphore(0);
+	private final Semaphore changes = new Semaphore(0);
+	
 	/**
 	 * Standard Constructor
 	 * 
@@ -69,7 +74,7 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 		
 		final ConcurrentHashMap<RunConfig,KillableAlgorithmRun> runStatus = new ConcurrentHashMap<RunConfig,KillableAlgorithmRun>(runConfigs.size());
 		final ConcurrentHashMap<RunConfig, Integer> listIndex = new ConcurrentHashMap<RunConfig,Integer>(runConfigs.size());
-		final Semaphore changes = new Semaphore(0);
+		
 		final Semaphore changeProcess = new Semaphore(0);
 		int i=0; 
 		for(final RunConfig rc: runConfigs)
@@ -107,10 +112,20 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 				
 				while(true)
 				{
+					
 					try {
 						
 						changes.acquire();
+						
 						changes.drainPermits();
+						
+						if(shutdownThreads.get())
+						{
+							//System.err.println("Would have deadlocked");
+							shutdownComplete.release();
+							break;
+						}
+						
 						KillableAlgorithmRun[] runs = new KillableAlgorithmRun[runConfigs.size()];
 						//We will quit if all runs are done
 						boolean outstandingRuns = false;
@@ -176,6 +191,10 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 		this.execService.shutdown();
 		try {
 			//Want to force that the observer is done
+			shutdownThreads.set(true);
+			changes.release();
+			
+			//Wait for it to finish 
 			shutdownComplete.acquire();
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
