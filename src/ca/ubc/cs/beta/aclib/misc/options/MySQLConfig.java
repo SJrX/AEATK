@@ -20,8 +20,8 @@ public class MySQLConfig extends AbstractOptions {
 	@Parameter(names="--mysqlPassword", description="Password of database server" )
 	public String password = "";
 	
-	@Parameter(names="--mysqlDatabaseName", description="Name of Database" )
-	public String databaseName = "mysql_db_tae";
+	@Parameter(names={"--mysqlDatabase", "--mysqlDatabaseName"}, description="Name of Database" )
+	public String databaseName = null;
 	
 	
 	@Parameter(names="--mysqlUsername", description="Username of the Database")
@@ -30,7 +30,7 @@ public class MySQLConfig extends AbstractOptions {
 	@Parameter(names="--mysqlPort", description="Port of database server")
 	public int port=4040;
 	
-	@Parameter(names="--mysqlParameters", description="MySQL Configuration Options")
+	@Parameter(names="--mysqlParameterFile", description="MySQL Configuration Options")
 	@ParameterFile
 	public File mysqlParamFile = null;
 

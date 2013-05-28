@@ -7,9 +7,14 @@ import java.io.File;
 import java.io.PrintStream;
 import java.io.StringWriter;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
+
 import org.apache.commons.io.output.NullOutputStream;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -18,23 +23,39 @@ import org.junit.Test;
 import ca.ubc.cs.beta.TestHelper;
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
+import ca.ubc.cs.beta.aclib.algorithmrunner.AutomaticConfiguratorFactory;
+import ca.ubc.cs.beta.aclib.concurrent.threadfactory.SequentiallyNamedThreadFactory;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
+import ca.ubc.cs.beta.aclib.exceptions.IllegalWrapperOutputException;
 import ca.ubc.cs.beta.aclib.exceptions.TargetAlgorithmAbortException;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.misc.logback.MarkerFilter;
 import ca.ubc.cs.beta.aclib.misc.logging.LoggingMarker;
 import ca.ubc.cs.beta.aclib.misc.random.SeedableRandomSingleton;
+import ca.ubc.cs.beta.aclib.options.AbstractOptions;
+import ca.ubc.cs.beta.aclib.options.TargetAlgorithmEvaluatorOptions;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.CommandLineTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.VerifySATTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorBuilder;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.cli.CommandLineTargetAlgorithmEvaluatorFactory;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.cli.CommandLineTargetAlgorithmEvaluatorOptions;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.debug.PreloadedResponseTargetAlgorithmEvaluatorOptions;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbortOnCrashTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbortOnFirstRunCrashTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.BoundedTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.ResultOrderCorrectCheckerTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.TimingCheckerTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.EqualTargetAlgorithmEvaluatorTester;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.VerifySATTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.prepostcommand.PrePostCommandErrorException;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred.TAECallback;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred.WaitableTAECallback;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.loader.TargetAlgorithmEvaluatorLoader;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.random.RandomResponseTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.random.RandomResponseTargetAlgorithmEvaluatorOptions;
 import ca.ubc.cs.beta.targetalgorithmevaluator.massiveoutput.MassiveOutputParamEchoExecutor;
 
 
@@ -85,7 +106,7 @@ public class TAETestSet {
 		b.append(ParamEchoExecutor.class.getCanonicalName());
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 		
-		tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false);
+		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
 		SeedableRandomSingleton.reinit();
 		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
 		this.r = SeedableRandomSingleton.getRandom();
@@ -100,9 +121,7 @@ public class TAETestSet {
 	@Test
 	public void testMirror()
 	{
-		
-	
-		
+
 		StringBuilder b = new StringBuilder();
 		b.append("java -cp ");
 		b.append(System.getProperty("java.class.path"));
@@ -110,13 +129,10 @@ public class TAETestSet {
 		b.append(ParamEchoExecutor.class.getCanonicalName());
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 		
-		
-		configSpace.setPRNG(r);
-		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT"))
 			{
 				//Only want good configurations
@@ -169,12 +185,12 @@ public class TAETestSet {
 		((EchoTargetAlgorithmEvaluator) tae).wallClockTime = 50;
 		
 		
-		configSpace.setPRNG(r);
+		
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < 10; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("runtime", ""+(i));
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT"))
 			{
@@ -226,6 +242,7 @@ public class TAETestSet {
 	
 	
 	
+	
 	/**
 	 * This just tests to see if EchoTargetAlgorithmEvaluator matches the CLI Version
 	 */
@@ -235,12 +252,12 @@ public class TAETestSet {
 		
 	
 		
-		configSpace.setPRNG(r);
+		
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT"))
 			{
 				//Only want good configurations
@@ -291,18 +308,18 @@ public class TAETestSet {
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 		
 		
-		tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false);
+		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
 		SeedableRandomSingleton.reinit();
 		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
 		this.r = SeedableRandomSingleton.getRandom();
 		
 		
-		configSpace.setPRNG(r);
+		
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT"))
 			{
 				//Only want good configurations
@@ -351,13 +368,13 @@ public class TAETestSet {
 	
 		
 			
-			configSpace.setPRNG(r);
+			
 			
 			List<RunConfig> runConfigs = new ArrayList<RunConfig>(2);
 			for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 			{
 				runConfigs.clear();
-				ParamConfiguration config = configSpace.getRandomConfiguration();
+				ParamConfiguration config = configSpace.getRandomConfiguration(r);
 				if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT"))
 				{
 					//Only want good configurations
@@ -401,12 +418,12 @@ public class TAETestSet {
 	public void testABORT()
 	{
 		
-		configSpace.setPRNG(r);
+		
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved","ABORT");
 			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
 			runConfigs.add(rc);
@@ -435,11 +452,11 @@ public class TAETestSet {
 	public void testIllegalCaptimeException()
 	{
 		
-		configSpace.setPRNG(r);
+		
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(100);
 	
-		ParamConfiguration config = configSpace.getRandomConfiguration();
+		ParamConfiguration config = configSpace.getRandomConfiguration(r);
 		
 		RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), -1, config);
 		runConfigs.add(rc);
@@ -463,13 +480,13 @@ public class TAETestSet {
 		
 	
 		
-		configSpace.setPRNG(r);
+		
 		
 		double cutoffTime = 300;
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			
 			config.put("solved", "SAT");
 			
@@ -513,12 +530,12 @@ public class TAETestSet {
 	{
 		
 		
-		configSpace.setPRNG(r);
+		
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved","CRASHED");
 			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
 			runConfigs.add(rc);
@@ -580,12 +597,12 @@ public class TAETestSet {
 		
 	
 		
-		configSpace.setPRNG(r);
+		
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved","CRASHED");
 			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
 			runConfigs.add(rc);
@@ -651,12 +668,12 @@ public class TAETestSet {
 		
 		
 		
-		configSpace.setPRNG(r);
+		
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			if(i == 0 )
 			{
 				config.put("solved","SAT");
@@ -706,12 +723,12 @@ public class TAETestSet {
 		
 	
 		
-		configSpace.setPRNG(r);
+		
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
 		
 		
-		ParamConfiguration config = configSpace.getRandomConfiguration();
+		ParamConfiguration config = configSpace.getRandomConfiguration(r);
 		config.put("solved","SAT");
 		RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
 		runConfigs.add(rc);
@@ -727,7 +744,7 @@ public class TAETestSet {
 		
 		AlgorithmExecutionConfig execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500); 
 		
-		TargetAlgorithmEvaluator tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false);
+		TargetAlgorithmEvaluator tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
 		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
 		for(AlgorithmRun run : runs)
 		{
@@ -758,7 +775,7 @@ public class TAETestSet {
 		
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 			
-		tae = new AbortOnCrashTargetAlgorithmEvaluator(new CommandLineTargetAlgorithmEvaluator( execConfig, false));
+		tae = new AbortOnCrashTargetAlgorithmEvaluator(CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig));
 		SeedableRandomSingleton.reinit();
 		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
 		this.r = SeedableRandomSingleton.getRandom();
@@ -772,7 +789,7 @@ public class TAETestSet {
 		for(String alias : RunResult.SAT.getAliases())
 		{
 			
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved", alias);
 			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
 			runConfigs.add(rc);
@@ -819,7 +836,7 @@ public class TAETestSet {
 		
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 			
-		tae = new AbortOnCrashTargetAlgorithmEvaluator(new CommandLineTargetAlgorithmEvaluator( execConfig, false));
+		tae = new AbortOnCrashTargetAlgorithmEvaluator(CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig));
 		SeedableRandomSingleton.reinit();
 		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
 		this.r = SeedableRandomSingleton.getRandom();
@@ -833,7 +850,7 @@ public class TAETestSet {
 		for(String alias : RunResult.UNSAT.getAliases())
 		{
 			
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved", alias);
 			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
 			runConfigs.add(rc);
@@ -885,7 +902,7 @@ public class TAETestSet {
 		
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 			
-		tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false);
+		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
 		SeedableRandomSingleton.reinit();
 		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
 		this.r = SeedableRandomSingleton.getRandom();
@@ -899,7 +916,7 @@ public class TAETestSet {
 		for(String alias : RunResult.UNSAT.getAliases())
 		{
 			
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved", alias);
 			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
 			runConfigs.add(rc);
@@ -962,7 +979,7 @@ public class TAETestSet {
 		
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 			
-		tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false);
+		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
 		SeedableRandomSingleton.reinit();
 		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
 		this.r = SeedableRandomSingleton.getRandom();
@@ -976,7 +993,7 @@ public class TAETestSet {
 		for(String alias : RunResult.UNSAT.getAliases())
 		{
 			
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved", alias);
 			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
 			runConfigs.add(rc);
@@ -1039,7 +1056,7 @@ public class TAETestSet {
 		
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 			
-		tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false);
+		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
 		SeedableRandomSingleton.reinit();
 		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
 		this.r = SeedableRandomSingleton.getRandom();
@@ -1053,7 +1070,7 @@ public class TAETestSet {
 		for(String alias : RunResult.UNSAT.getAliases())
 		{
 			
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved", alias);
 			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
 			runConfigs.add(rc);
@@ -1111,18 +1128,18 @@ public class TAETestSet {
 		b.append(MassiveOutputParamEchoExecutor.class.getCanonicalName());
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 		
-		tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false);
+		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
 		SeedableRandomSingleton.reinit();
 		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
 		this.r = SeedableRandomSingleton.getRandom();
 		
 		
-		configSpace.setPRNG(r);
+		
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(1);
 		for(int i=0; i < 1; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT"))
 			{
 				//Only want good configurations
@@ -1178,18 +1195,18 @@ public class TAETestSet {
 		b.append(RandomWhitespaceParamEchoExecutor.class.getCanonicalName());
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 		
-		tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false);
+		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
 		SeedableRandomSingleton.reinit();
 		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
 		this.r = SeedableRandomSingleton.getRandom();
 		
 		
-		configSpace.setPRNG(r);
+		
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT"))
 			{
 				//Only want good configurations
@@ -1234,28 +1251,28 @@ public class TAETestSet {
 		
 	
 		
-		configSpace.setPRNG(r);
+		
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
 		
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved", "SAT");
 			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("SAT",1,new HashMap<String, Double>(),"SAT"), Long.valueOf(config.get("seed"))), 1001, config);
 			runConfigs.add(rc);
 		
-			config = configSpace.getRandomConfiguration();
+			config = configSpace.getRandomConfiguration(r);
 			config.put("solved", "SAT");
 			rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("UNSAT",2,new HashMap<String, Double>(),"UNSAT"), Long.valueOf(config.get("seed"))), 1001, config);
 			runConfigs.add(rc);
 			
-			config = configSpace.getRandomConfiguration();
+			config = configSpace.getRandomConfiguration(r);
 			config.put("solved", "UNSAT");
 			rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("UNSAT",2,new HashMap<String, Double>(),"UNSAT"), Long.valueOf(config.get("seed"))), 1001, config);
 			runConfigs.add(rc);
 			
 			
-			config = configSpace.getRandomConfiguration();
+			config = configSpace.getRandomConfiguration(r);
 			config.put("solved", "UNSAT");
 			rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("SAT",1,new HashMap<String, Double>(),"SAT"), Long.valueOf(config.get("seed"))), 1001, config);
 			runConfigs.add(rc);
@@ -1263,23 +1280,23 @@ public class TAETestSet {
 			
 			
 			
-			config = configSpace.getRandomConfiguration();
+			config = configSpace.getRandomConfiguration(r);
 			config.put("solved", "SAT");
 			rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("SATISFIABLE",3,new HashMap<String, Double>(),"SATISFIABLE"), Long.valueOf(config.get("seed"))), 1001, config);
 			runConfigs.add(rc);
 		
-			config = configSpace.getRandomConfiguration();
+			config = configSpace.getRandomConfiguration(r);
 			config.put("solved", "SAT");
 			rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("UNSATISFIABLE",4,new HashMap<String, Double>(),"UNSATISFIABLE"), Long.valueOf(config.get("seed"))), 1001, config);
 			runConfigs.add(rc);
 			
-			config = configSpace.getRandomConfiguration();
+			config = configSpace.getRandomConfiguration(r);
 			config.put("solved", "UNSAT");
 			rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("UNSATISFIABLE",4,new HashMap<String, Double>(),"UNSATISFIABLE"), Long.valueOf(config.get("seed"))), 1001, config);
 			runConfigs.add(rc);
 			
 			
-			config = configSpace.getRandomConfiguration();
+			config = configSpace.getRandomConfiguration(r);
 			config.put("solved", "UNSAT");
 			rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("SATISFIABLE",3,new HashMap<String, Double>(),"SATISFIABLE"), Long.valueOf(config.get("seed"))), 1001, config);
 			runConfigs.add(rc);
@@ -1291,12 +1308,12 @@ public class TAETestSet {
 			
 			
 			
-			config = configSpace.getRandomConfiguration();
+			config = configSpace.getRandomConfiguration(r);
 			config.put("solved", "TIMEOUT");
 			rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("SAT",1,new HashMap<String, Double>(),"SAT"), Long.valueOf(config.get("seed"))), 1001, config);
 			runConfigs.add(rc);
 		
-			config = configSpace.getRandomConfiguration();
+			config = configSpace.getRandomConfiguration(r);
 			config.put("solved", "SAT");
 			rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("UNKNOWN",2,new HashMap<String, Double>(),"UNKNOWN"), Long.valueOf(config.get("seed"))), 1001, config);
 			runConfigs.add(rc);
@@ -1365,58 +1382,615 @@ public class TAETestSet {
 	}
 	
 	
+	@Test
+	/**
+	 * Tests the SAT consistency checker
+	 */
+	public void testSATConsistencyChecker()
+	{
 	
-	//You can delete this if you see it
-//	
-//	/***
-//	 * This is related to Task 1442, 
-//	 * 
-//	 * Long story short, The target algorithms see a modified LD_LIBRARY_PATH with 
-//	 * java paths prepended, this can cause problems in certain circumstances.
-//	 * {@link http://bugs.sun.com/view_bug.do?bug_id=6670965}
-//	 */
-//	
-//	public void testLDLibraryPathNotModified()
-//	{
-//		/**
-//		 * This test does the following and is only useful in Sun Java 6
-//		 * Calls an executable, that executes another
-//		 * executable with a specific LD_LIBRARY_PATH set, 
-//		 * and this one Command Line Target Algorithm Executable
-//		 * That outputs the LD_LIBRARY_PATH as the additional algorithm run data.
-//		 * Then the executable outputs this value back to us. 
-//		 * 
-//		 */
-//		
-//		String execString = TestHelper.getJavaExecString() + CLIExecutor.class.getCanonicalName();
-//		String[] envp = { "LD_LIBRARY_PATH=foo" };
-//		Process proc;
-//		try {
-//			proc = Runtime.getRuntime().exec(execString, envp );
-//			Scanner procIn = new Scanner(proc.getInputStream());
-//			
-//			
-//			while(procIn.hasNext())
-//			{
-//				String line = procIn.nextLine();
-//				//I expect that the wrapper script we execute only outputs the LD_LIBRARY PATH
-//				System.out.println(line.trim());
-//				String expected = "LD_LIBRARY_PATH=foo";
-//				System.out.println(expected);
-//				assertEquals(expected, line.trim());
-//				return;
-//			}
-//			
-//			
-//			fail("Did not find matching line");
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//			fail("Execption Occurred");
-//		}
-//		
-//		
-//				
-//		
-//	}
+		Map<String, AbstractOptions> taeOptionsMap = TargetAlgorithmEvaluatorLoader.getAvailableTargetAlgorithmEvaluators();
+		
+		TargetAlgorithmEvaluatorOptions opts = new TargetAlgorithmEvaluatorOptions();
+		System.out.println(taeOptionsMap);
+		opts.targetAlgorithmEvaluator = "PRELOADED";
+		opts.checkSATConsistency = true;
+		opts.checkSATConsistencyException = false;
+		opts.boundRuns = false;
+		
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).preloadedResponses="[TIMEOUT=4],[CRASHED=2],[TIMEOUT=3],[CRASHED=1],[SAT=1],[SAT=2],[UNSAT=2],[UNSAT=3],[TIMEOUT=4],[CRASHED=2],[TIMEOUT=3],[CRASHED=1],[SAT=1],[SAT=2],[UNSAT=2],[UNSAT=3]";
+		TargetAlgorithmEvaluator tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts, execConfig, false, taeOptionsMap);
+		
+		ProblemInstance satPi = new ProblemInstance("SATInstance");
+		ProblemInstance unsatPi = new ProblemInstance("UNSATInstance");
+		
+		
+		ProblemInstanceSeedPair satPiOne = new ProblemInstanceSeedPair(satPi, 1);
+		ProblemInstanceSeedPair satPiTwo = new ProblemInstanceSeedPair(satPi, 2);
+		ProblemInstanceSeedPair satPiThree = new ProblemInstanceSeedPair(satPi, 3);
+		ProblemInstanceSeedPair satPiFour = new ProblemInstanceSeedPair(satPi, 4);
+		
+		ProblemInstanceSeedPair unSatPiOne = new ProblemInstanceSeedPair(unsatPi, 1);
+		ProblemInstanceSeedPair unSatPiTwo = new ProblemInstanceSeedPair(unsatPi, 2);
+		ProblemInstanceSeedPair unSatPiThree = new ProblemInstanceSeedPair(unsatPi, 3);
+		ProblemInstanceSeedPair unSatPiFour = new ProblemInstanceSeedPair(unsatPi, 4);
+		
+		RunConfig satPiOneRC = new RunConfig(satPiOne, 0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration());
+		RunConfig satPiTwoRC = new RunConfig(satPiTwo, 0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration());
+		RunConfig unSatPiOneRC = new RunConfig(unSatPiOne, 0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration());
+		RunConfig unSatPiTwoRC = new RunConfig(unSatPiTwo, 0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration());
+		
+		
+		RunConfig satPiThreeRC = new RunConfig(satPiThree, 0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration());
+		RunConfig satPiFourRC = new RunConfig(satPiFour, 0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration());
+		RunConfig unSatPiThreeRC = new RunConfig(unSatPiThree, 0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration());
+		RunConfig unSatPiFourRC = new RunConfig(unSatPiFour, 0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration());
+		
+		
+		
+		List<RunConfig> rcs = Arrays.asList(satPiOneRC, satPiTwoRC, unSatPiOneRC, unSatPiTwoRC, satPiThreeRC, satPiFourRC, unSatPiThreeRC, unSatPiFourRC);
+		
+		tae.evaluateRun(rcs);
+		
+		
+		rcs = Arrays.asList(satPiOneRC, satPiTwoRC, unSatPiOneRC, unSatPiTwoRC, satPiThreeRC,  unSatPiThreeRC, satPiFourRC, unSatPiFourRC);
+		
+		
+
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		PrintStream pw = new PrintStream(bout);
+		
+		PrintStream oldOut = System.out;
+		
+		System.setOut(pw);
+		
+		try {
+			tae.evaluateRun(rcs);
+		} finally
+		{
+		   System.setOut(oldOut);
+		   System.out.println(bout.toString());
+		   pw.close();
+		}
+		
+		//The actual string value isn't important, and if this test is failing because a log message changed you can simply update this string 
+		assertTrue("Expected error message to appear",bout.toString().contains("SAT/UNSAT discrepancy detected on problem instance: Instance:UNSATInstance"));
+		assertTrue("Expected error message to appear",bout.toString().contains("SAT/UNSAT discrepancy detected on problem instance: Instance:SATInstance"));
+		
+		
+		
+		tae.notifyShutdown();
+		
+		
+		opts.checkSATConsistencyException = true;
+		
+		tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts, execConfig, false, taeOptionsMap);
+		rcs = Arrays.asList(satPiOneRC, satPiTwoRC, unSatPiOneRC, unSatPiTwoRC, satPiThreeRC,  unSatPiThreeRC, satPiFourRC, unSatPiFourRC);
+		boolean exception = false;
+		try {
+			tae.evaluateRun(rcs);
+		} catch(TargetAlgorithmAbortException e)
+		{
+			exception = true;
+		}
+		assertTrue("Expected that a TargetAlgorithmAbortException would have occured", exception);
+		
+	}
+	
+	@Test
+	/**
+	 * Tests the Pre and Post commands work
+	 */
+	public void testPrePostCommandTAE()
+	{
+	
+		Map<String, AbstractOptions> taeOptionsMap = TargetAlgorithmEvaluatorLoader.getAvailableTargetAlgorithmEvaluators();
+		
+		TargetAlgorithmEvaluatorOptions opts = new TargetAlgorithmEvaluatorOptions();
+		System.out.println(taeOptionsMap);
+		opts.targetAlgorithmEvaluator = "PRELOADED";
+		opts.checkSATConsistency = true;
+		opts.checkSATConsistencyException = false;
+		opts.boundRuns = false;
+		
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(ReturnCodeTester.class.getCanonicalName()).append(" ");
+		
+		
+		opts.prePostOptions.preCommand = b.toString() + "0";
+		opts.prePostOptions.postCommand = b.toString() + "0";
+		
+		
+		/***
+		 * Normal Test
+		 */
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		PrintStream pw = new PrintStream(bout);		
+		PrintStream oldOut = System.out;
+		System.setOut(pw);
+		TargetAlgorithmEvaluator tae;
+		try {
+			 tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts, execConfig, false, taeOptionsMap);
+		} finally
+		{
+		   System.setOut(oldOut);
+		   System.out.println(bout.toString());
+		   pw.close();
+		}
+		
+		assertTrue(bout.toString().contains("Command completed"));
+
+		
+		bout = new ByteArrayOutputStream();
+		pw = new PrintStream(bout);		
+		oldOut = System.out;
+		System.setOut(pw);
+		
+		try {
+			tae.notifyShutdown();
+		} finally
+		{
+		   System.setOut(oldOut);
+		   System.out.println(bout.toString());
+		   pw.close();
+		}
+		
+		/**
+		 * Error Test (no exception)
+		 */
+		opts.prePostOptions.preCommand = b.toString() + "227";
+		opts.prePostOptions.postCommand = b.toString() + "228";
+		
+		bout = new ByteArrayOutputStream();
+		pw = new PrintStream(bout);		
+		oldOut = System.out;
+		System.setOut(pw);
+	
+		try {
+			 tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts, execConfig, false, taeOptionsMap);
+		} finally
+		{
+		   System.setOut(oldOut);
+		   System.out.println(bout.toString());
+		   pw.close();
+		}
+		
+		assertTrue(bout.toString().contains("Got a non-zero return code from process: 227"));
+
+		
+		bout = new ByteArrayOutputStream();
+		pw = new PrintStream(bout);		
+		oldOut = System.out;
+		System.setOut(pw);
+		
+		try {
+			tae.notifyShutdown();
+		} finally
+		{
+		   System.setOut(oldOut);
+		   System.out.println(bout.toString());
+		   pw.close();
+		}
+		
+		assertTrue(bout.toString().contains("Got a non-zero return code from process: 228"));
+		
+		/**
+		 * Error Test (exception on startup)
+		 */
+		
+		
+		opts.prePostOptions.preCommand = b.toString() + "2";
+		opts.prePostOptions.exceptionOnError = true;
+		bout = new ByteArrayOutputStream();
+		pw = new PrintStream(bout);		
+		oldOut = System.out;
+		System.setOut(pw);
+		boolean exceptionOccurred = true;
+		try {
+			try {
+				 tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts, execConfig, false, taeOptionsMap);
+			} finally
+			{
+			   System.setOut(oldOut);
+			   System.out.println(bout.toString());
+			   pw.close();
+			}
+		} catch(PrePostCommandErrorException e)
+		{
+			exceptionOccurred = true;
+		}
+		
+		assertTrue("Expect exception", exceptionOccurred);
+		
+		
+		
+		
+	}
+	
+	/**
+	 * Test invalid wrapper outputs
+	 */
+	@Test
+	public void testInvalidArguments()
+	{
+			
+		Map<String, AbstractOptions> taeOptionsMap = TargetAlgorithmEvaluatorLoader.getAvailableTargetAlgorithmEvaluators();
+		
+		TargetAlgorithmEvaluatorOptions opts = new TargetAlgorithmEvaluatorOptions();
+		System.out.println(taeOptionsMap);
+		opts.targetAlgorithmEvaluator = "PRELOADED";
+		opts.checkSATConsistency = true;
+		opts.checkSATConsistencyException = false;
+		opts.boundRuns = false;
+		
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).preloadedResponses="[SAT=-1],";
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).quality = 0.0;
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).runLength = 0.0;
+		
+		TargetAlgorithmEvaluator tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts, execConfig, false, taeOptionsMap);
+		
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		for(int i=0; i < 1; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
+				runConfigs.add(rc);
+			}
+		}
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		
+		
+		try {
+			List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+			fail("Expected exception to be thrown: " + runs);
+		} catch(IllegalWrapperOutputException e)
+		{
+			System.out.println(e.getMessage());
+		}
+		
+
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).preloadedResponses="[SAT=1],";
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).quality = Double.NaN;
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).runLength = 0.0;
+		
+		tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts, execConfig, false, taeOptionsMap);
+		
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		
+		
+		try {
+			List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+			fail("Expected exception to be thrown: " + runs);
+		} catch(IllegalArgumentException e)
+		{
+			System.out.println(e.getMessage());
+		}
+		
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).preloadedResponses="[SAT=1],";
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).quality = 0;
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).runLength = -2;
+		
+		tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts, execConfig, false, taeOptionsMap);
+		
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		
+		
+		try {
+			List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+			fail("Expected exception to be thrown: " + runs);
+		} catch(IllegalArgumentException e)
+		{
+			System.out.println(e.getMessage());
+		}
+		
+		
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).preloadedResponses="[SAT=1],";
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).quality = 0;
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).runLength = Double.NaN;
+		
+		tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts, execConfig, false, taeOptionsMap);
+		
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		
+		
+		try {
+			List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+			fail("Expected exception to be thrown: " + runs);
+		} catch(IllegalArgumentException e)
+		{
+			System.out.println(e.getMessage());
+		}
+			
+		
+		
+		
+		
+		
+
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).preloadedResponses="[SAT=1],";
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).quality = 0;
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).runLength = -1;
+		
+		tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts, execConfig, false, taeOptionsMap);
+		
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		
+		
+		try {
+			List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+			
+		} catch(IllegalArgumentException e)
+		{
+			fail("Unexpected Exception Thrown: " + e);
+		}
+		
+		
+
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).preloadedResponses="[SAT=" + Double.POSITIVE_INFINITY + "],";
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).quality = 0;
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).runLength = -1;
+		
+		tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts, execConfig, false, taeOptionsMap);
+		
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		
+		
+		try {
+			List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+			
+		} catch(IllegalArgumentException e)
+		{
+			fail("Unexpected exception");
+			
+		}
+		
+		
+	}
+	
+	@Test
+	public void testOrderCheckingDecorator()
+	{
+		
+
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(ParamEchoExecutor.class.getCanonicalName());
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
+		
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
+				runConfigs.add(rc);
+			}
+		}
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		
+		
+		//Test the TAE when we shuffle responses
+		RandomResponseTargetAlgorithmEvaluatorOptions randOpts = new RandomResponseTargetAlgorithmEvaluatorOptions();
+		long seed = System.currentTimeMillis();
+		System.out.println("Order Checking Decorator used seed" + seed);
+		randOpts.seed =seed;
+		randOpts.shuffleResponses = true;
+		
+		TargetAlgorithmEvaluator tae = new RandomResponseTargetAlgorithmEvaluator(execConfig, randOpts);
+		
+		tae = new ResultOrderCorrectCheckerTargetAlgorithmEvaluatorDecorator(tae);
+		try {
+			try {
+				List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+				fail("Expected Exception to have occured");
+			} catch(IllegalStateException e)
+			{
+				System.out.println("GOOD: " + e.getMessage());
+			}
+	
+			
+			final AtomicBoolean taeCompletedSuccessfully = new AtomicBoolean();
+			TAECallback callback = new TAECallback()
+			{
+	
+				@Override
+				public void onSuccess(List<AlgorithmRun> runs) {
+					taeCompletedSuccessfully.set(true);
+				}
+	
+				@Override
+				public void onFailure(RuntimeException t) {
+					System.out.println("GOOD ASYNC: " + t.getMessage());	
+				}
+				
+			};
+			
+			WaitableTAECallback wait = new WaitableTAECallback(callback);
+				
+			tae.evaluateRunsAsync(runConfigs, wait);
+			
+			wait.waitForCompletion();
+			
+			assertFalse("TAE Should not have completed successfully", taeCompletedSuccessfully.get());
+		} finally
+		{
+			tae.notifyShutdown();
+		}
+		
+		
+		//Test the TAE when we don't shuffle
+		try {
+			randOpts = new RandomResponseTargetAlgorithmEvaluatorOptions();
+			
+			System.out.println("Order Checking Decorator used seed" + seed);
+			randOpts.seed =seed;
+			
+			tae = new RandomResponseTargetAlgorithmEvaluator(execConfig, randOpts);
+			
+			tae = new ResultOrderCorrectCheckerTargetAlgorithmEvaluatorDecorator(tae);
+			
+			try {
+				List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+				System.out.println("GOOD: Completed");
+			} catch(IllegalStateException e)
+			{
+				throw e;
+			}
+	
+			
+			final AtomicBoolean taeCompletedSuccessfully = new AtomicBoolean();
+			TAECallback callback = new TAECallback()
+			{
+	
+				@Override
+				public void onSuccess(List<AlgorithmRun> runs) {
+					taeCompletedSuccessfully.set(true);
+				}
+	
+				@Override
+				public void onFailure(RuntimeException t) {
+					taeCompletedSuccessfully.set(false);
+					t.printStackTrace();
+				}
+				
+			};
+			
+			WaitableTAECallback wait = new WaitableTAECallback(callback);
+				
+			tae.evaluateRunsAsync(runConfigs, wait);
+			
+			wait.waitForCompletion();
+			
+			assertTrue("TAE Should not have completed successfully", taeCompletedSuccessfully.get());
+			
+		} finally
+		{
+			tae.notifyShutdown();
+		}
+		
+		
+	}
+	
+	@Test
+	/**
+	 * This tests for that the CLI will return eventually
+	 * This is related to issue https://mantis.sjrx.net/view.php?id=1675
+	 * 
+	 * This test roughly tries to simulate a deadlock, if you look at the commit 0702803124e3513b8b5479b8ae5391d2df5ba38a the changes will show you where the deadlocks were
+	 * occurring.
+	 * 
+	 */
+	public void testDeadLockinCommandLineTargetAlgorithmEvaluator()
+	{
+	
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(ParamEchoExecutor.class.getCanonicalName());
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
+		
+		final List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		for(int i=0; i < 100; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
+				runConfigs.add(rc);
+			}
+		}
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		
+		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
+		
+		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
+		
+		options.concurrentExecution = true;
+		
+		
+		tae = fact.getTargetAlgorithmEvaluator(execConfig, options);
+		
+		tae = new BoundedTargetAlgorithmEvaluator(tae,100, execConfig);
+		
+		AutomaticConfiguratorFactory.setMaximumNumberOfThreads(100);
+		final AtomicBoolean finishedRuns = new AtomicBoolean(false);
+		Runnable run = new Runnable()
+		{
+			public void run()
+			{
+				for(int i=0; i < 10; i++)
+				{
+					List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+				}
+			
+				finishedRuns.set(true);
+			}
+		};
+		
+		
+		Executors.newSingleThreadExecutor(new SequentiallyNamedThreadFactory("DeadLock JUnit Test")).submit(run);
+		
+		
+		
+		
+			//This 45 second sleep is probably incredibly sensitive.
+
+		for(int i=0; i < 45; i++)
+		{
+			try {
+				Thread.sleep(1000);
+				if(finishedRuns.get())
+				{
+					break;
+				}
+				
+				if(i == 40)
+				{
+					System.err.println("IF THIS TEST IS STILL OUTPUTTING THEN THE 45 SECOND SLEEP IS TOO LITTLE");
+				}
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				return;
+			}
+		}
+		assertTrue("Deadlock probably occured", finishedRuns.get());
+		
+		
+		
+		
+		
+	}
 	
 }

@@ -18,5 +18,7 @@ public interface AlgorithmRunner {
 	 * @return list of <code>AlgorithmRun</code>, in order they were specified
 	 */
 	public List<AlgorithmRun> run();
+	
+	public void shutdownThreadPool();
 
 }

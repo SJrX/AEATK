@@ -20,9 +20,10 @@ import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 
+import net.jcip.annotations.Immutable;
+
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration.StringFormat;
 import ca.ubc.cs.beta.aclib.misc.java.io.FileReaderNoException.FileReaderNoException;
-import ca.ubc.cs.beta.aclib.misc.random.SeedableRandomSingleton;
 
 enum LineType
 {
@@ -41,7 +42,7 @@ enum LineType
  * <p>
  * The aim of this file is more readability than simplicity as such some of the data structures like paramNames are redundant.
  * <p>
- * This object is effectively immutable (sans random objects)
+ * This object is effectively immutable and this should not change under any circumstances (for thread safety reasons)
  * <p>
  * <b>Historical Note:</b> This class originally was very Collection heavy, however as the ParamConfiguration objects 
  * are all backed by arrays it really would make more sense for this it to be backed by more arrays.
@@ -49,6 +50,7 @@ enum LineType
  * 
  * @author seramage
  */
+@Immutable
 public class ParamConfigurationSpace implements Serializable {
 	
 	/**
@@ -134,28 +136,47 @@ public class ParamConfigurationSpace implements Serializable {
 
 	private final int[][][] condParentVals;
 
-	private Random random;
 	
+	
+	/**
+	 * Flag variable that controls whether there exists a real parameter file
+	 * NOTE: This field should not be changed after being set.
+	 */
 	private boolean hasRealParameterFile = true;
 	
 	/**
 	 * Stores forbidden lines for later parsing
 	 */
 	private final List<String> forbiddenLines = new ArrayList<String>();
+
+	/**
+	 * Gets the default configuration
+	 */
+	private final double[] defaultConfigurationValueArray;
 	
+	/**
+	 * For each parameter stores the subspace value we are looking at.
+	 */
+	final double[] searchSubspaceValues;
 	
+	/**
+	 * Stores whether we should only be looking at the subspace for the parameter.
+	 */
+	final boolean[]  searchSubspaceActive;
 	
 	
 	/**
-	 * Creates a Param Configuration Space from the given file and random
-	 * @param filename string storing the filename to parse
-	 * @param random random object to use
+	 * Stores the names of parameters in order
+	 * Synchronized because of lazy loading, this should be done better later
+	 * 
+	 * The authorative order is in fact something that should be specified in the constructor but for now sorting seems to work
+	 * 
 	 * 
 	 */
-	public ParamConfigurationSpace(String filename, Random random)
-	{
-		this(new File(filename), random);
-	}
+	private final List<String> authorativeParameterNameOrder;
+
+
+
 	
 	/**
 	 * Creates a Param Configuration Space from the given file, no random object
@@ -166,13 +187,16 @@ public class ParamConfigurationSpace implements Serializable {
 		this(new File(filename));
 	}
 	
+	
 	/**
-	 * Creates a Param Configuration Space from the given file, no random object
-	 * @param file file to parse
+	 * 
+	 * @param reader
+	 * @param searchSubspace
 	 */
-	public ParamConfigurationSpace(File file)
+	public ParamConfigurationSpace(Reader reader, Map<String, String> searchSubspace)
 	{
-		this(file,SeedableRandomSingleton.getRandom());
+		this(reader, "ReaderOnly-"+System.currentTimeMillis() +"-" +(int) (Math.random() * 10000000.0), searchSubspace);
+		hasRealParameterFile = false;
 	}
 	
 	
@@ -182,20 +206,20 @@ public class ParamConfigurationSpace implements Serializable {
 	 */
 	public ParamConfigurationSpace(Reader reader)
 	{
-		this(reader,SeedableRandomSingleton.getRandom(), "ReaderOnly-"+System.currentTimeMillis() +"-" +(int) (Math.random() * 10000000.0));
+ 		this(reader, "ReaderOnly-"+System.currentTimeMillis() +"-" +(int) (Math.random() * 10000000.0));
 		hasRealParameterFile = false;
 	}
+	
 	
 	/**
 	 * Creates a Param Configuration Space from the given file
 	 * @param file
 	 * @param random
 	 */
-	public ParamConfigurationSpace(File file, Random random)
+	public ParamConfigurationSpace(File file)
 	{
-		this(new FileReaderNoException(file), random, file.getAbsolutePath());
+		this(new FileReaderNoException(file), file.getAbsolutePath());
 	}
-	
 	
 	/**
 	 * Creates a Param Configuration Space from the given reader
@@ -203,12 +227,24 @@ public class ParamConfigurationSpace implements Serializable {
 	 * @param random random object to parse
 	 * @param absolute file name of the object (a unique string used for equality)
 	 */
-	public ParamConfigurationSpace(Reader file, Random random, String absoluteFileName)
+	@SuppressWarnings("unchecked")
+	public ParamConfigurationSpace(Reader file, String absoluteFileName)
 	{
+		this(file, absoluteFileName, Collections.EMPTY_MAP);
+	}
+	
+	/**
+	 * Creates a Param Configuration Space from the given reader
+	 * @param reader that contains the text of the file
+	 * @param random random object to parse
+	 * @param absolute file name of the object (a unique string used for equality)
+	 */
+	public ParamConfigurationSpace(Reader file, String absoluteFileName, Map<String, String> searchSubspace)
+	{
+		
 		/*
 		 * Parse File and create configuration space
 		 */
-		this.random = random;
 		this.absoluteFileName = absoluteFileName;
 		
 		if((absoluteFileName == null) || (absoluteFileName.trim().length() == 0))
@@ -261,6 +297,12 @@ public class ParamConfigurationSpace implements Serializable {
 		 * This gets the data into a format convenient for Random Forests.
 		 * 
 		 */		
+		List<String> paramOrder = new ArrayList<String>(paramNames.size());
+		paramOrder.addAll(paramNames);
+		Collections.sort(paramOrder);
+		
+		this.authorativeParameterNameOrder = Collections.unmodifiableList(paramOrder);
+		
 		
 		  //TODO: Expand on these comments
 		  parameterDomainContinuous = new boolean[paramNames.size()];
@@ -289,16 +331,26 @@ public class ParamConfigurationSpace implements Serializable {
 		  condParentVals = new int[numberOfParameters][][];
 		  
 			Map<String, Map<String, List<String>>> depValueMap = getDependentValuesMap();
+			
+			for(String key : depValueMap.keySet())
+			{
+				if(!this.paramKeyIndexMap.keySet().contains(key))
+				{
+					throw new IllegalArgumentException("Illegal independent value ("+ key+") specified on conditional line.");
+				}
+			}
 			for(i=numberOfParameters; i < numberOfParameters;i++)
 			{
 				condParents[i] = new int[0];
 				condParentVals[i] = new int[0][];
 			}
 			
+			
 			for( i=0; i < numberOfParameters; i++)
 			{
 				
 				String key = getParameterNames().get(i);
+				
 				//System.out.println("key => " + key);
 
 				Map<String, List<String>> depValues = depValueMap.get(key); 
@@ -316,6 +368,10 @@ public class ParamConfigurationSpace implements Serializable {
 				for(Entry<String, List<String>> e : depValues.entrySet())
 				{
 					
+					if(paramKeyIndexMap.get(e.getKey())  == null)
+					{
+						throw new IllegalArgumentException("Illegal dependant parameter ("+ e.getKey()+ ") on conditional line in param file: "); 
+					}
 					
 					condParents[i][j] = paramKeyIndexMap.get(e.getKey()) ;
 					condParentVals[i][j] = new int[e.getValue().size()]; 
@@ -354,6 +410,11 @@ public class ParamConfigurationSpace implements Serializable {
 			}
 			forbiddenLines.clear();
 			
+		this.defaultConfigurationValueArray = _getDefaultConfiguration().toValueArray();
+		
+		
+	
+		
 		/*
 		 * This will basically test that 
 		 * the default configuration is actually valid
@@ -364,7 +425,25 @@ public class ParamConfigurationSpace implements Serializable {
 			throw new IllegalArgumentException("Default parameter setting cannot be a forbidden parameter setting");
 		}
 		
-	
+		this.searchSubspaceValues = new double[this.defaultConfigurationValueArray.length];
+		this.searchSubspaceActive = new boolean[this.defaultConfigurationValueArray.length];
+		
+		for(Entry<String, String> subspaceProfile : searchSubspace.entrySet())
+		{
+			String param = subspaceProfile.getKey();
+			String value = subspaceProfile.getValue();
+			
+			if(value.equals("<DEFAULT>"))
+			{
+				value = this.getDefaultConfiguration().get(param);
+			}
+			
+			int index = this.paramKeyIndexMap.get(param);
+			
+			
+			setValueInArray(this.searchSubspaceValues, param, value);
+			this.searchSubspaceActive[index] = true;
+		}
 	}
 	
 	/**
@@ -562,6 +641,9 @@ public class ParamConfigurationSpace implements Serializable {
 		this.defaultValues.put(name, defaultValue);
 		
 		
+		
+		
+		
 		//This gets the rest of the line after the defaultValue
 		String lineRemaining = line.substring(line.indexOf("]",secondBracket+1)+1);
 		
@@ -602,6 +684,16 @@ public class ParamConfigurationSpace implements Serializable {
 		}
 
 		
+		//Check for gibberish between ] [  
+		String subString = line.substring(line.indexOf("]") +1, line.indexOf("[", line.indexOf("]"))).trim();
+		
+		
+		if(subString.length() > 0)
+		{
+			throw new IllegalArgumentException("Invalid Characters detected between domain and default value on line : " + line);
+		}
+		
+		
 	}
 
 	/**
@@ -630,6 +722,10 @@ public class ParamConfigurationSpace implements Serializable {
 		//Map is all that is necessary
 		Map<String, Integer> valueMap = new LinkedHashMap<String, Integer>();
 		
+		int lastIndexOf = line.lastIndexOf("]");
+		
+		
+	
 		
 		int i=0;
 		for(String value : paramValues)
@@ -644,8 +740,22 @@ public class ParamConfigurationSpace implements Serializable {
 		
 		isContinuous.put(name,Boolean.FALSE);
 		
+		String remaining = line.substring(lastIndexOf+1).trim();
 		
+		if(remaining.contains("i")) {
+			throw new IllegalArgumentException("Cannot set categorical value as having integral only values on line " +  line );
+		}
+		
+		if(remaining.contains("l")) {
+			throw new IllegalArgumentException("Cannot set categorical value as being selected with a log distribution" + line );
+		}
+		
+		if(remaining.length() > 0)
+		{
+			throw new IllegalArgumentException("Extra flags set for categorical value (flags are not permitted on categorical values) on line : " + line);
+		}
 	}
+	
 	
 	/**
 	 * Conditional Lines consist of:
@@ -873,31 +983,17 @@ public class ParamConfigurationSpace implements Serializable {
 	
 	
 	public Map<String, NormalizedRange> getNormalizedRangeMap() {
-		// TODO Auto-generated method stub
 		return Collections.unmodifiableMap(contNormalizedRanges);
 	}
 	
-	/**
-	 * Stores the names of parameters in order
-	 * Synchronized because of lazy loading, this should be done better later
-	 * 
-	 * The authorative order is in fact something that should be specified in the constructor but for now sorting seems to work
-	 * 
-	 * 
-	 */
-	List<String> authorativeParameterNameOrder = null;
-
-
 	
-	public synchronized List<String> getParameterNamesInAuthorativeOrder()
+	/**
+	 * Returns a listing of parameter names in <b>authorative</b> order
+	 * @return list of strings
+	 */
+	public List<String> getParameterNamesInAuthorativeOrder()
 	{
-		if(authorativeParameterNameOrder == null)
-		{
-			authorativeParameterNameOrder = new ArrayList<String>(paramNames.size());
-			authorativeParameterNameOrder.addAll(paramNames);
-			Collections.sort(authorativeParameterNameOrder);
-		}
-		return Collections.unmodifiableList(authorativeParameterNameOrder);
+		return authorativeParameterNameOrder;
 	}
 	
 	/**
@@ -907,6 +1003,27 @@ public class ParamConfigurationSpace implements Serializable {
 	{
 		return absoluteFileName.hashCode();
 	}
+	
+	
+	/**
+	 * Determines whether two configuration spaces are 'compatible'
+	 * <br/>
+	 * <b>Note:</b> Compatible here at the very least means the valueArrays should be interchangable, in future it may be stronger.
+	 * 
+	 * @return <code>true</code> if the configuration spaces are compatible
+	 */
+	public boolean isCompatible(ParamConfigurationSpace oSpace)
+	{
+		if(!Arrays.equals(this.categoricalSize, oSpace.categoricalSize))
+		{
+			return false;
+		} else
+		{
+			return true;
+		}
+		
+	}
+	
 	
 	/**
 	 * Two Entities are equal if they reference the same file
@@ -928,34 +1045,45 @@ public class ParamConfigurationSpace implements Serializable {
 	}
 	
 	
-	
-	
-	public ParamConfiguration getRandomConfiguration()
+	/**
+	 * Generates a random configuration given the supplied random object 
+	 * @param random object we will use to generate the configuration 
+ 	 * @return a random member of the configuration space (each parameter (ignoring the subspace) is sampled uniformly at random, and rejected if it's forbidden).
+	 */
+	public ParamConfiguration getRandomConfiguration(Random random)
 	{
 		
-		return this.getRandomConfiguration(false);
+		return this.getRandomConfiguration(random, false);
 	}
+	
+	
+	
+	
 	/**
 	 * Returns a random instance for the configuration space
+	 * @param random 	a random object we will use to generate the configurations
 	 * @param allowForbiddenParameters  <code>true</code> if we can return parameters that are forbidden, <code>false</code> otherwise.
-	 * @return	paramconfiguration generated
+	 * @return	a random member of the configuration space (each parameter (ignoring the subspace) is sampled uniformly at random, and rejected if it's forbidden
 	 */
-	public ParamConfiguration getRandomConfiguration(boolean allowForbiddenParameters)
+	public ParamConfiguration getRandomConfiguration(Random random, boolean allowForbiddenParameters)
 	{
-		while(true)
+		if(random == null) throw new IllegalArgumentException("Cannot supply null random object ");
+		for(int j=0; j < 1000000; j++)
 		{
 			double[] valueArray = new double[numberOfParameters];
 			for(int i=0; i < numberOfParameters; i++)
 			{
-				if (parameterDomainContinuous[i])
+				if(searchSubspaceActive[i])
+				{		
+					valueArray[i] = searchSubspaceValues[i];
+				}	else if (parameterDomainContinuous[i])
 				{
-					//valueArray[i] = Math.round(random.nextDouble()*1000000000000L)/1000000000000.0;
-					valueArray[i] = random.nextDouble();
+					NormalizedRange nr = getNormalizedRangeMap().get(this.authorativeParameterNameOrder.get(i));
+					valueArray[i] = nr.normalizeValue(nr.unnormalizeValue(random.nextDouble()));
 					
-					//System.out.println("Generated: " + valueArray[i]);
+					//valueArray[i] = random.nextDouble();
 				} else
 				{
-					//array values = 0 have invalid values, so we take one less of the categorical size and then + 1
 					valueArray[i] = random.nextInt(categoricalSize[i]) + 1;
 					
 				}
@@ -967,6 +1095,8 @@ public class ParamConfigurationSpace implements Serializable {
 				return p;
 			} 
 		}
+		
+		throw new IllegalArgumentException("After 1,000,000 attempts at generating a random configurations we have failed to generate even one that isn't forbidden. It is likely that your forbidden parameter settings are too restrictive. Try excluding smaller regions of the space.");
 	}
 	
 	/**
@@ -974,6 +1104,11 @@ public class ParamConfigurationSpace implements Serializable {
 	 * @return	paramconfiguration representing the default
 	 */
 	public ParamConfiguration getDefaultConfiguration()
+	{
+		return getConfigurationFromValueArray(this.defaultConfigurationValueArray);
+	}
+	
+	private ParamConfiguration _getDefaultConfiguration()
 	{
 
 		ParamConfiguration p = getEmptyConfiguration();
@@ -1006,12 +1141,34 @@ public class ParamConfigurationSpace implements Serializable {
 		return new ParamConfiguration(this, valueArray.clone(), categoricalSize, parameterDomainContinuous, paramKeyIndexMap);
 	}
 	
-
 	public ParamConfiguration getConfigurationFromString( String paramString, StringFormat f)
+	{
+		return getConfigurationFromString(paramString, f, null);
+	}
+
+	public ParamConfiguration getConfigurationFromString( String paramString, StringFormat f, Random rand)
 	{
 		try 
 		{
+			
 			ParamConfiguration config;
+			
+			String trySpecialParamString = paramString.trim().toUpperCase();
+			//If the string is DEFAULT, <DEFAULT>,RANDOM,<RANDOM> we generate the default or a random as needed
+			
+			if((trySpecialParamString.equals("DEFAULT") || trySpecialParamString.equals("<DEFAULT>")))
+			{
+				return this.getDefaultConfiguration();
+			}
+			
+			if((trySpecialParamString.equals("RANDOM") || trySpecialParamString.equals("<RANDOM>")))
+			{
+				if(rand == null) throw new IllegalArgumentException("Cannot generate random configurations unless a random object is passed with us");	
+				return this.getRandomConfiguration(rand);
+			}
+			
+			
+			
 			switch(f)
 			{
 				case NODB_SYNTAX_WITH_INDEX:
@@ -1124,26 +1281,21 @@ public class ParamConfigurationSpace implements Serializable {
 						
 						specifiedButNotActive.addAll(namesSpecified);
 						specifiedButNotActive.removeAll(config.getActiveParameters());
-						
-						
+
 						throw new IllegalArgumentException("Param String specified some combination of inactive parameters and/or missed active parameters. \nRequired Parameters: " + config.getActiveParameters().size() + "\nSpecified Parameters: " + namesSpecified.size() + "\nRequired But Missing: " + missingButRequired.toString() + "\nSpecified But Not Required" + specifiedButNotActive.toString());
-						
-						
-						
-						
-						
-						
-						
+					}
+					
+				case NODB_OR_STATEFILE_SYNTAX:
+					try {
+						return getConfigurationFromString(paramString, StringFormat.STATEFILE_SYNTAX, rand);
+					} catch(RuntimeException e)
+					{
+						return getConfigurationFromString(paramString, StringFormat.NODB_SYNTAX, rand);
 					}
 					
 					
-					
-					
-					
-					
-					
 				default:
-					throw new IllegalArgumentException("Parsing not implemented for String Format");
+					throw new IllegalArgumentException("Parsing not implemented for String Format" + f);
 					
 				
 				
@@ -1174,24 +1326,7 @@ public class ParamConfigurationSpace implements Serializable {
 		return condParentVals.clone();
 	}
 	
-	
-	/**
-	 * 
-	 * The actual PRNG may change and so clients should always get the latest one from here, as opposed to saving an instance.
-	 * 
-	 * @return random object we are using
-	 */
-	public Random getPRNG()
-	{
-		return random;
-	}
-	
-	
-	public void setPRNG(Random r)
-	{
-		this.random = r;
-	}
-	
+
 	/**
 	 * Checks the array representation of a configuration to see if it is forbidden
 	 * @param valueArray
@@ -1239,5 +1374,71 @@ public class ParamConfigurationSpace implements Serializable {
 	{
 		return hasRealParameterFile;
 	}
+	
+	public static final String SINGLETON_ABSOLUTE_NAME = "<--[SINGLETON SPACE]-->";
+	/**
+	 * Returns a configuration space with a single parameter and single value
+	 * 
+	 * @return a valid configuration space that is effectively empty
+	 */
+	public static ParamConfigurationSpace getSingletonConfigurationSpace()
+	{
+		return new ParamConfigurationSpace(new StringReader("singleton { singleton } [singleton]"),SINGLETON_ABSOLUTE_NAME);
+	}
+
+	void setValueInArray(double[] valueArray, String key, String newValue) {
+		
+		/* We find the index into the valueArray from paramKeyIndexMap,
+		 * then we find the new value to set from it's position in the getValuesMap() for the key. 
+		 * NOTE: i = 1 since the valueArray numbers elements from 1
+		 */
+		
+		
+		Integer index = paramKeyIndexMap.get(key);
+		if(index == null)
+		{
+			throw new IllegalArgumentException("This key does not exist in the Parameter Space: " + key);
+
+		}
+		
+		if(newValue == null)
+		{
+			valueArray[index] = Double.NaN;
+		}
+		else if(parameterDomainContinuous[index])
+		{
+			NormalizedRange nr = getNormalizedRangeMap().get(key);
+			valueArray[index] = nr.normalizeValue(nr.unnormalizeValue(nr.normalizeValue(Double.valueOf(newValue))));
+			
+		} else
+		{
+			List<String> inOrderValues = getValuesMap().get(key);
+			int i=1;		
+			boolean valueFound = false;
+			
+			
+			for(String possibleValue : inOrderValues)
+			{
+				if (possibleValue.equals(newValue))
+				{
+					valueArray[index] = i;
+					valueFound = true;
+					break;
+				} 
+				i++;
+			}
+			
+			if(valueFound == false)
+			{
+				throw new IllegalArgumentException("Value is not legal for this parameter: " + key + " Value:" + newValue);
+			}
+			
+			
+		}
+		
+	}
+	
+	
+	
 }
 

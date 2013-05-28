@@ -89,6 +89,13 @@ public class SMACOptions extends AbstractOptions {
 	@Parameter(names={"--restoreStateIteration","--restoreIteration"}, description="iteration of the state to restore")
 	public Integer restoreIteration = null;
 	
+	/**
+	 * Restore scenario is done before we parse the configuration and fixes input args
+	 * in the input string to jcommander 
+	 */
+	@Parameter(names="--restoreScenario", description="Restore the scenario & state in the state folder")
+	public File restoreScenario =null; 
+	
 	@Parameter(names={"--cleanOldStateOnSuccess"}, description="will clean up much of the useless state files if smac completes successfully")
 	public boolean cleanOldStatesOnSuccess = true;
 	
@@ -158,13 +165,16 @@ public class SMACOptions extends AbstractOptions {
 	@Parameter(names="--showHiddenParameters", description="show hidden parameters that no one has use for, and probably just break SMAC (no-arguments)")
 	public boolean showHiddenParameters = false;
 	
-	@UsageTextField(defaultValues="", domain="")
+	@UsageTextField(defaultValues="", domain="" )
 	@Parameter(names={"--help","-?","/?","-h"}, description="show help")
 	public boolean showHelp = false;
 	
 	@UsageTextField(defaultValues="", domain="")
 	@Parameter(names={"-v","--version"}, description="print version and exit")
 	public boolean showVersion = false;
+
+	@Parameter(names={"--initialIncumbent"}, description="Initial Incumbent to use for configuration (you can use RANDOM, or DEFAULT as a special string to get a RANDOM or the DEFAULT configuration as needed). Other configurations are specified as: -(name) 'value' -(name) 'value' ...")
+	public String initialIncumbent = "DEFAULT";
 
 	@Parameter(names={"--initMode","--initializationMode"}, description="Initialization Mode")
 	public InitializationMode initializationMode = InitializationMode.CLASSIC;
@@ -176,7 +186,13 @@ public class SMACOptions extends AbstractOptions {
 	public boolean iterativeCappingBreakOnFirstCompletion = false;
 
 	@Parameter(names={"--maskCensoredDataAsKappaMax"}, description="Mask censored data as kappa Max")
-	public boolean maskCensoredDataAsKappaMax = false;  
+	public boolean maskCensoredDataAsKappaMax = false;
+
+	@Parameter(names={"--maxConsecutiveFailedChallengeIncumbent"}, description="if the parameter space is too small we may get to a point where we can make no new runs, detecting this condition is prohibitively expensive, and this heuristic controls the number of times we need to try a challenger and get no new runs before we give up")
+	public int challengeIncumbentAttempts = 1000;
+
+	@Parameter(names={"--alwaysRunInitialConfiguration"}, description="if true we will always run the default and switch back to it if it is better than the incumbent")
+	public boolean alwaysRunInitialConfiguration = false; 
 
 	
 }

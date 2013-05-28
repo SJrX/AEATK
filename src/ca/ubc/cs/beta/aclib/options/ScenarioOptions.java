@@ -7,7 +7,6 @@ import com.beust.jcommander.ParametersDelegate;
 
 import ca.ubc.cs.beta.aclib.misc.jcommander.converter.OverallObjectiveConverter;
 import ca.ubc.cs.beta.aclib.misc.jcommander.converter.RunObjectiveConverter;
-import ca.ubc.cs.beta.aclib.misc.jcommander.converter.StringToDoubleConverterWithMax;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.*;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aclib.objectives.OverallObjective;
@@ -30,11 +29,7 @@ public class ScenarioOptions extends AbstractOptions{
 	@Parameter(names={"--interInstanceObj","--inter_instance_obj"}, description="objective function used to aggregate over multiple instances (that have already been aggregated under the Intra-Instance Objective)", converter=OverallObjectiveConverter.class)
 	public OverallObjective interInstanceObj = OverallObjective.MEAN;
 	
-	@Parameter(names={"--cutoffTime","--cutoff_time"}, description="CPU time limit for an individual target algorithm run", required=true, validateWith=ZeroInfinityOpenInterval.class)
-	public double cutoffTime;
 	
-	@Parameter(names={"--cutoffLength","--cutoff_length"}, description="cap limit for an individual run [not implemented currently]", converter=StringToDoubleConverterWithMax.class, hidden=true)
-	public double cutoffLength = -1.0;
 	
 	@Parameter(names="--tunerTimeout", description="limits the total cpu time allowed between SMAC and the target algorithm runs during the automatic configuration phase", validateWith=NonNegativeInteger.class)
 	public int tunerTimeout = Integer.MAX_VALUE;
@@ -61,15 +56,6 @@ public class ScenarioOptions extends AbstractOptions{
 	@Parameter(names={"--outputDirectory","--outdir"}, required=false, description="Output Directory")
 	public String outputDirectory = System.getProperty("user.dir") + File.separator + "smac-output";
 
-	@Parameter(names="--leakMemory", hidden=true, description="leaks some amount of memory for every run")
-	public boolean leakMemory = false;
-	
-	@Parameter(names="--leakMemoryAmount", hidden=true, description="amount of memory in bytes to leak")
-	public int leakMemoryAmount = 1024;
-	
-	@ParametersDelegate
-	public ParamFileDelegate paramFileDelegate = new ParamFileDelegate();
-	
 	@ParametersDelegate
 	public AlgorithmExecutionOptions algoExecOptions = new AlgorithmExecutionOptions();
 

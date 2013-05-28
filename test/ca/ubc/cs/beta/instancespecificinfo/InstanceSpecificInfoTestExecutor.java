@@ -13,7 +13,7 @@ public class InstanceSpecificInfoTestExecutor {
 			String cutoffLength = args[3];*/
 			String seed = args[4];
 			
-			long returnCutOffLength = instanceName.hashCode() + 37*instanceSpecificInfo.hashCode();
+			long returnCutOffLength = Math.abs((long) instanceName.hashCode() + 37*instanceSpecificInfo.hashCode());
 			System.out.println("Result for ParamILS: SAT, 0.27, " + returnCutOffLength + "," + 0 + "," + seed + "\n");
 		} catch(RuntimeException e)
 		{

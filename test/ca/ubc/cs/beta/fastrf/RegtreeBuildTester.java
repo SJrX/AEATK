@@ -61,7 +61,7 @@ public class RegtreeBuildTester {
 		File paramFile = new File("/ubc/cs/home/s/seramage/experiments/algorithms/cplex/cplex12-params-milp-mixed-cont-disc.txt");
 		
 		
-		configSpace = ParamFileHelper.getParamFileParser(paramFile, 1);
+		configSpace = ParamFileHelper.getParamFileParser(paramFile);
 		
 		
 		

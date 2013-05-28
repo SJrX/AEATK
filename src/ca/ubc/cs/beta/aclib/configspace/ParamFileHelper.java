@@ -1,9 +1,8 @@
 package ca.ubc.cs.beta.aclib.configspace;
 
 import java.io.File;
+import java.io.StringReader;
 import java.util.concurrent.ConcurrentHashMap;
-
-import ec.util.MersenneTwister;
 
 /**
  * Contains Factory Methods for getting ParamConfigurationSpaces
@@ -21,9 +20,14 @@ public class ParamFileHelper {
 	 * @return ParamConfigurationSpace instance
 	 * 
 	 */
-	public static ParamConfigurationSpace getParamFileParser(String filename, long seedForRandomSampling)
-	{
-		return getParamFileParser(new File(filename),seedForRandomSampling);
+	public static ParamConfigurationSpace getParamFileParser(String filename)
+	{	if(filename.equals(ParamConfigurationSpace.SINGLETON_ABSOLUTE_NAME))
+		{
+			return ParamConfigurationSpace.getSingletonConfigurationSpace();
+		} else
+		{
+			return getParamFileParser(new File(filename));
+		}
 	}
 	
 
@@ -37,14 +41,14 @@ public class ParamFileHelper {
 	 * @param seedForRandomSampling		seed for prng
 	 * @return ParamConfigurationSpace instance
 	 */
-	public static ParamConfigurationSpace getParamFileParser(File file, long seedForRandomSampling)
+	public static ParamConfigurationSpace getParamFileParser(File file)
 	{
 		//TODO Fix Thread Safety of this code (I'm not sure if the double-check locking idiom works here)
 		ParamConfigurationSpace param = paramFiles.get(file.getAbsolutePath());
 		
 		if(param == null)
 		{ 
-				param = new ParamConfigurationSpace(file, new MersenneTwister(seedForRandomSampling));
+				param = new ParamConfigurationSpace(file);
 								
 				 ParamConfigurationSpace p = paramFiles.putIfAbsent(file.getAbsolutePath(),param);
 				 if(p == null)
@@ -67,6 +71,10 @@ public class ParamFileHelper {
 	public static void clear() {
 		paramFiles.clear();
 		
+	}
+
+	public static ParamConfigurationSpace getParamFileFromString(String string) {
+		return new ParamConfigurationSpace(new StringReader(string));
 	}
 	
 	

@@ -2,11 +2,15 @@ package ca.ubc.cs.beta.aclib.targetalgorithmevaluator;
 
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import net.jcip.annotations.ThreadSafe;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.CommandLineAlgorithmRun;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
 
 /**
  * Abstract Target Algorithm Evalutar
@@ -14,16 +18,15 @@ import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
  * This class implements the default noop operation
  * 
  * @author Steve Ramage 
- *
  */
+@ThreadSafe
 public abstract class AbstractTargetAlgorithmEvaluator implements TargetAlgorithmEvaluator {
 	 /*
 	 * Execution configuration of the target algorithm
 	 */
 	protected final AlgorithmExecutionConfig execConfig;
 	
-	protected int runCount = 0;
-
+	protected final AtomicInteger runCount = new AtomicInteger(0);
 
 	/**
 	 * Default Constructor
@@ -34,20 +37,23 @@ public abstract class AbstractTargetAlgorithmEvaluator implements TargetAlgorith
 		this.execConfig = execConfig;
 	}
 	
-	
 	@Override
 	public List<AlgorithmRun> evaluateRun(RunConfig run) 
 	{
-		return evaluateRun(Collections.singletonList(run));
+		return evaluateRun(Collections.singletonList(run), null);
 	}
 	
 	@Override
 	public abstract List<AlgorithmRun>  evaluateRun(List<RunConfig> runConfigs);
+
+
+	@Override
+	public abstract List<AlgorithmRun>  evaluateRun(List<RunConfig> runConfigs, CurrentRunStatusObserver obs);
 	
 	@Override
 	public int getRunCount()
 	{
-		return runCount;
+		return runCount.get();
 	}
 	
 
@@ -60,12 +66,12 @@ public abstract class AbstractTargetAlgorithmEvaluator implements TargetAlgorith
 	@Override
 	public void seek(List<AlgorithmRun> runs) 
 	{
-		runCount = runs.size();	
+		runCount.set(runs.size());	
 	}
 
 	protected void addRuns(List<AlgorithmRun> runs)
 	{
-		runCount+= runs.size();
+		runCount.addAndGet(runs.size());
 	}
 
 	@Override
@@ -77,9 +83,7 @@ public abstract class AbstractTargetAlgorithmEvaluator implements TargetAlgorith
 		sb.append("");
 		
 		return sb.toString();
-		
-		
-		
-		
 	}
+	
+
 }

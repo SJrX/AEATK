@@ -2,15 +2,18 @@ package ca.ubc.cs.beta.objectives;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 import java.util.Random;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+import static org.junit.Assert.*;
 
 import ca.ubc.cs.beta.TestHelper;
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableAlgorithmRun;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
@@ -19,8 +22,11 @@ import ca.ubc.cs.beta.aclib.objectives.RunObjective;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.CommandLineTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.cli.CommandLineTargetAlgorithmEvaluatorFactory;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.random.RandomResponseTargetAlgorithmEvaluatorFactory;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.random.RandomResponseTargetAlgorithmEvaluatorOptions;
 import ca.ubc.cs.beta.targetalgorithmevaluator.ParamEchoExecutor;
 
 public class RunObjectiveTester {
@@ -54,7 +60,7 @@ private static TargetAlgorithmEvaluator tae;
 	@Before
 	public void beforeTest()
 	{
-		tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false);
+		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
 		SeedableRandomSingleton.reinit();
 		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
 		this.r = SeedableRandomSingleton.getRandom();
@@ -64,14 +70,14 @@ private static TargetAlgorithmEvaluator tae;
 	public void testTimeoutReportedAsKappaMax()
 	{
 		
-		configSpace.setPRNG(r);
+		
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(1);
 		
 		for(int i=0; i < 10; i++)
 		{
 			double runtime = Math.max(0,(double) Math.random() * kappaMax - 1.0);
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved","TIMEOUT");
 			config.put("runtime", String.valueOf(runtime));
 			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), kappaMax, config);
@@ -94,14 +100,14 @@ private static TargetAlgorithmEvaluator tae;
 	public void testCappedRunsReportedAsNonKappaMax()
 	{
 		
-		configSpace.setPRNG(r);
+		
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(1);
 		
 		for(int i=0; i < 10; i++)
 		{
 			double runtime = Math.max(0,(double) Math.random() * kappaMax - 1.0);
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved","TIMEOUT");
 			config.put("runtime", String.valueOf(runtime));
 			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), runtime, config, true);
@@ -126,14 +132,14 @@ private static TargetAlgorithmEvaluator tae;
 	public void testCrashReportedAsKappaMax()
 	{
 		
-		configSpace.setPRNG(r);
+		
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(1);
 		
 		for(int i=0; i < 10; i++)
 		{
 			double runtime = Math.max(0,(double) Math.random() * kappaMax - 1.0);
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved","CRASHED");
 			config.put("runtime", String.valueOf(runtime));
 			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), kappaMax, config);
@@ -157,14 +163,14 @@ private static TargetAlgorithmEvaluator tae;
 	public void testNonKappaMaxRuns()
 	{
 		
-		configSpace.setPRNG(r);
+		
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(1);
 		
 		for(int i=0; i < 10; i++)
 		{
 			double runtime = Math.max(0,(double) Math.random() * kappaMax - 1.0);
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved","SAT");
 			config.put("runtime", String.valueOf(runtime));
 			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), kappaMax, config);
@@ -186,11 +192,11 @@ private static TargetAlgorithmEvaluator tae;
 	@Test
 	public void testCappedTimeoutReportedAsTimeoutValue()
 	{
+
 		/**
 		 * See Task 1567
 		 */
 		
-		configSpace.setPRNG(r);
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(1);
 		double capTimeRequest = 5;
@@ -198,7 +204,7 @@ private static TargetAlgorithmEvaluator tae;
 		for(int i=0; i < 10; i++)
 		{
 			double runtime = Math.max(0,(double) Math.random() * kappaMax - 1.0);
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved","TIMEOUT");
 			config.put("runtime", "0.1");
 			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))),capTimeRequest, config,true);
@@ -217,6 +223,43 @@ private static TargetAlgorithmEvaluator tae;
 		}
 	}
 
+	@Test
+	public void testRunObjectiveWithDynamicCapping()
+	{
+		RandomResponseTargetAlgorithmEvaluatorFactory rfact = new RandomResponseTargetAlgorithmEvaluatorFactory();
+
+		
+		RandomResponseTargetAlgorithmEvaluatorOptions o = rfact.getOptionObject();
+		o.simulateDelay = true;
+		o.minResponse = 5;
+		o.maxResponse = 10;
+		
+		TargetAlgorithmEvaluator tae = rfact.getTargetAlgorithmEvaluator(execConfig, o);
+
+		RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("pi"), 1), 20, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration());
+		
+		
+		List<AlgorithmRun> runs = tae.evaluateRun(Collections.singletonList(rc), new CurrentRunStatusObserver()
+		{
+
+			@Override
+			public void currentStatus(List<? extends KillableAlgorithmRun> runs) {
+				for(KillableAlgorithmRun run : runs)
+				{
+					run.kill();
+				}
+			}
+			
+		});
+		
+		for(AlgorithmRun run : runs)
+		{
+			assertEquals("Expect Runtime objective to be the same for dynamically capped runs ", run.getRuntime(), RunObjective.RUNTIME.getObjective(run) , 0.01);
+			
+		}
+		
+		
+	}
 	
 	
 	

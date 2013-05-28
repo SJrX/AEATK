@@ -10,6 +10,8 @@ import java.util.TreeMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.loader.TargetAlgorithmEvaluatorLoader;
+
 /**
  * Utility class that allows various related projects to log their versions and have them reported
  * @author sjr
@@ -19,7 +21,7 @@ public class VersionTracker {
 
 	private static final Logger log = LoggerFactory.getLogger(VersionTracker.class);
 
-	private static ClassLoader cl = VersionTracker.class.getClassLoader();
+	private static ClassLoader cl = TargetAlgorithmEvaluatorLoader.getClassLoader();
 	
 
 	private static SortedMap<String, String> init()
@@ -84,7 +86,12 @@ public class VersionTracker {
 	 */
 	public static void logVersions()
 	{
+		
 		SortedMap<String, String> versionMap = init();
+		if(versionMap.isEmpty())
+		{
+			log.warn("Unable to find ANY version information, if you made this JAR yourself chances are you did not setup SPI correctly. See the SMAC Manual Developer Reference for more information");
+		}
 		for(Entry<String, String> ent : versionMap.entrySet())
 		{
 			log.info("Version of {} is {} ", ent.getKey(), ent.getValue());

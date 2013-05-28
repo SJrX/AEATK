@@ -15,6 +15,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.Map.Entry;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,13 +28,15 @@ import ca.ubc.cs.beta.aclib.objectives.RunObjective;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aclib.seedgenerator.InstanceSeedGenerator;
+import ca.ubc.cs.beta.aclib.seedgenerator.SetInstanceSeedGenerator;
 import ca.ubc.cs.beta.models.fastrf.RoundingMode;
 
 /**
- * THIS CLASS IS NOT THREAD SAFE!!!
+ * 
  * @author seramage
  *
  */
+@NotThreadSafe
 public class NewRunHistory implements RunHistory {
 
 	
@@ -113,6 +116,7 @@ public class NewRunHistory implements RunHistory {
 	private Set<ProblemInstance> instancesRanSet = new HashSet<ProblemInstance>();
 	
 	
+	private final HashMap<ParamConfiguration, List<AlgorithmRun>> configToRunMap = new HashMap<ParamConfiguration, List<AlgorithmRun>>();
 	/**
 	 * Creates NewRunHistory object
 	 * @param instanceSeedGenerator		instanceSeedGenerator to use when getting new instances
@@ -134,6 +138,10 @@ public class NewRunHistory implements RunHistory {
 
 		log.trace("Appending Run {}",run);
 		
+		if(run.getRunResult().equals(RunResult.RUNNING))
+		{
+			throw new IllegalArgumentException("Runs with Run Result RUNNING cannot be saved to a RunHistory object");
+		}
 		ParamConfiguration config = run.getRunConfig().getParamConfiguration();
 		ProblemInstanceSeedPair pisp = run.getRunConfig().getProblemInstanceSeedPair();
 		ProblemInstance pi = pisp.getInstance();
@@ -195,6 +203,13 @@ public class NewRunHistory implements RunHistory {
 			}
 			
 		}
+		
+		if(this.configToRunMap.get(config) == null)
+		{
+			this.configToRunMap.put(config, new ArrayList<AlgorithmRun>());
+		}
+		
+		this.configToRunMap.get(config).add(run);
 		totalRuntimeSum += Math.max(0.1, run.getRuntime());
 		
 		/*
@@ -205,7 +220,9 @@ public class NewRunHistory implements RunHistory {
 	
 		
 		int instanceIdx = pi.getInstanceID();
-		runHistoryList.add(new RunData(iteration, thetaIdx, instanceIdx, run,runResult,run.getRunResult().equals(RunResult.TIMEOUT) && run.getRunConfig().hasCutoffLessThanMax()));
+		RunResult result = run.getRunResult();
+		boolean cappedRun = (result.equals(RunResult.TIMEOUT) && run.getRunConfig().hasCutoffLessThanMax() || result.equals(RunResult.KILLED));
+		runHistoryList.add(new RunData(iteration, thetaIdx, instanceIdx, run,runResult, cappedRun));
 		
 		
 		/*
@@ -227,7 +244,7 @@ public class NewRunHistory implements RunHistory {
 		/*
 		 * Add to the capped runs set
 		 */
-		if(run.getRunResult().equals(RunResult.TIMEOUT) && run.getRunConfig().hasCutoffLessThanMax())
+		if(cappedRun)
 		{
 			if(!cappedRuns.containsKey(config))
 			{
@@ -553,8 +570,25 @@ public class NewRunHistory implements RunHistory {
 		long seed;
 		if(potentialSeeds.size() == 0)
 		{
-			//We generate only positive seeds 
-			 seed = instanceSeedGenerator.getNextSeed(pi);
+			 
+			synchronized(instanceSeedGenerator)
+			{	
+				//We generate only positive seeds
+				if(instanceSeedGenerator instanceof SetInstanceSeedGenerator)
+				{
+					if(instanceSeedGenerator.hasNextSeed(pi))
+					{
+						seed = instanceSeedGenerator.getNextSeed(pi); 
+					} else
+					{
+						seed = -1;
+					}
+				} else
+				{
+					seed = instanceSeedGenerator.getNextSeed(pi); 
+				}
+				
+			}
 		} else
 		{
 			seed = potentialSeeds.get(rand.nextInt(potentialSeeds.size()));
@@ -602,7 +636,7 @@ public class NewRunHistory implements RunHistory {
 		int i=0;
 		for(RunData runData : runHistoryList)
 		{
-			responseValues[i] = runData.getRun().getRunResult().equals(RunResult.TIMEOUT) && runData.getRun().getRunConfig().hasCutoffLessThanMax();
+			responseValues[i] = (((runData.getRun().getRunResult().equals(RunResult.TIMEOUT) && runData.getRun().getRunConfig().hasCutoffLessThanMax())) || runData.getRun().getRunResult().equals(RunResult.KILLED));
 			i++;
 		}
 		return responseValues;
@@ -686,7 +720,15 @@ public class NewRunHistory implements RunHistory {
 
 	@Override
 	public int getThetaIdx(ParamConfiguration config) {
-		return paramConfigurationList.getOrCreateKey(config);
+		Integer thetaIdx = paramConfigurationList.getKey(config);
+		if(thetaIdx == null)
+		{
+			return -1;
+		} else
+		{
+			return thetaIdx;
+		}
+		//return paramConfigurationList.getOrCreateKey(config);
 	}
 
 	@Override
@@ -702,6 +744,20 @@ public class NewRunHistory implements RunHistory {
 		 
 		 return total;
 		
+	}
+
+	@Override
+	public List<AlgorithmRun> getAlgorithmRunData(ParamConfiguration config) {
+		
+		List<AlgorithmRun> runs = this.configToRunMap.get(config);
+		
+		if(runs != null)
+		{
+			return Collections.unmodifiableList(runs);
+		} else
+		{
+			return Collections.emptyList();
+		}
 	}
 
 }

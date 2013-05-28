@@ -19,12 +19,12 @@ public enum RunResult {
 	/**
 	 * Signifies that the algorithm ran out of time and had to be cutoff
 	 */
-	TIMEOUT(0),
+	TIMEOUT(0, true, true),
 	
 	/**
 	 * Signifies that the algorithm completed successfully (and optionally found the result was SATISFIABLE) 
 	 */
-	SAT(1, "SAT","SATISFIABLE"),
+	SAT(1, true, false, "SAT","SATISFIABLE"),
 	
 	/**
 	 * Signifies that the algorithm completed successfully, and that the target algorithm result was UNSATISFIABLE.
@@ -32,13 +32,13 @@ public enum RunResult {
 	 * <b>NOTE:</b> SAT & UNSAT are hold overs from SAT solvers, neither of these are error conditions. If you are not running a SAT solver
 	 * you should almost certainly report SAT when completed. 
 	 */
-	UNSAT(2, "UNSAT", "UNSATISFIABLE"),
+	UNSAT(2, true, false, "UNSAT", "UNSATISFIABLE"),
 	
 	
 	/**
 	 * Signifies that the algorithm did not complete and unexpectedly crashed or failed.
 	 */
-	CRASHED(-1),
+	CRASHED(-1, true, false),
 
 	
 	/**
@@ -46,7 +46,27 @@ public enum RunResult {
 	 * and that we should simply not continue with any attempts 
 	 *
 	 */
-	ABORT(-2);
+	ABORT(-2, true, false),
+	
+	
+	/**
+	 * Signifies that the algorithm is still currently running
+	 * In general this should be used with care, there is 
+	 * no guarantee that anything in this state is consistent. 
+	 * <br/>
+	 * <b>NOTE:</b> Wrappers are NOT permitted to output this run result
+	 */
+	RUNNING(Integer.MIN_VALUE, false, false),
+	
+	/**
+	 * Signifies that run ran out of time, but at our request
+	 * This should be handled identically to <code>TIMEOUT</code>
+	 * expect that the runObjective of this kind of run should be 
+	 * the runTime() and not the captime.
+	 * <br/>
+	 * <b>NOTE:</b>Wrappers are NOT permitted to output this run result
+	 */
+	KILLED(-3, false, true);
 	
 	/**
 	 * Stores the numeric result code used in some serializations of run results
@@ -56,21 +76,36 @@ public enum RunResult {
 	private final int resultCode;
 	
 	/**
+	 * Stores whether or not this response is permitted to be output by wrappers
+	 */
+	private final boolean permittedByWrappers;
+	
+	
+	/**
+	 * Stores whether or not this run completed successful AND should be treated as censored
+	 */
+	private final boolean successfulAndCensored;
+	/**
 	 * Maps known synonyms of a RunResult for lookup by String
 	 */
 	private final Set<String> resultKey = new HashSet<String>();
 	
 	
-	private RunResult(int resultCode)
+	private RunResult(int resultCode, boolean permittedByWrappers, boolean completeButCensored)
 	{
 		this.resultCode = resultCode;
 		this.resultKey.add(this.toString());
+		this.permittedByWrappers = permittedByWrappers;
+		this.successfulAndCensored = completeButCensored;
 	}
 	
-	private RunResult(int resultCode, String... keys)
+	private RunResult(int resultCode, boolean permittedByWrappers, boolean completeButCensored, String... keys)
 	{
 		this.resultCode = resultCode;
 		this.resultKey.addAll(Arrays.asList(keys));
+		this.permittedByWrappers = permittedByWrappers;
+		this.successfulAndCensored = completeButCensored;
+		
 	}
 	
 	/**
@@ -145,6 +180,24 @@ public enum RunResult {
 	public Set<String> getAliases() {
 		return Collections.unmodifiableSet(this.resultKey);
 	}
+
+	/**
+	 * Returns <code>true</code> if a wrapper is permitted to output this run result
+	 * @return
+	 */
+	public boolean permittedByWrappers() {
 	
+		return permittedByWrappers;
+	}
 	
+	/**
+	 * Returns <code>true</code> if this means we should treat the {@link ca.ubc.cs.beta.aclib.objectives.RunObjective} value as finished successfully yet unknown.
+	 * 
+	 * Specifically CRASHED, ABORT, and RUNNING do not count as complete, but TIMEDOUT and KILLED DO.
+	 * @return
+	 */
+	public boolean isSuccessfulAndCensored()
+	{
+		return successfulAndCensored;
+	}
 }

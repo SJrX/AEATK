@@ -3,6 +3,7 @@ package ca.ubc.cs.beta.targetalgorithmevaluator;
 import org.mangosdk.spi.ProviderFor;
 
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.factory.TargetAlgorithmEvaluatorFactory;
 
@@ -16,8 +17,13 @@ public class EchoTargetAlgorithmEvaluatorFactory implements TargetAlgorithmEvalu
 
 	@Override
 	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(
-			AlgorithmExecutionConfig execConfig, int maxConcurrentExecutions) {
-		return new EchoTargetAlgorithmEvaluator(execConfig);
+			AlgorithmExecutionConfig execConfig, AbstractOptions options) {
+		return new EchoTargetAlgorithmEvaluator(execConfig, (EchoTargetAlgorithmEvaluatorOptions) options);
+	}
+
+	@Override
+	public AbstractOptions getOptionObject() {
+		return new EchoTargetAlgorithmEvaluatorOptions();
 	}
 
 }

@@ -7,12 +7,18 @@ import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.CommandLineTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.cli.CommandLineTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.cli.CommandLineTargetAlgorithmEvaluatorOptions;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
 
 /**
  * Factory that creates various Algorithm Runners for things that request it.
  * 
  * </b>NOTE:</b> This factory is probably unnecessary, originally it was meant to do more, but things got side tracked.
+ * This class should probably be refactored out and merged in with just the CLI TAE
+ * 
+ * 
+ * 
  * @see CommandLineTargetAlgorithmEvaluator
  * @author sjr
  *
@@ -44,9 +50,9 @@ public class AutomaticConfiguratorFactory {
 	 * @param runConfigs		run configurations to execute
 	 * @return	algorithmrunner which will run it
 	 */
-	public static AlgorithmRunner getSingleThreadedAlgorithmRunner(AlgorithmExecutionConfig execConfig, List<RunConfig> runConfigs)
+	public static AlgorithmRunner getSingleThreadedAlgorithmRunner(AlgorithmExecutionConfig execConfig, List<RunConfig> runConfigs, CurrentRunStatusObserver obs, CommandLineTargetAlgorithmEvaluatorOptions options)
 	{
-		return new SingleThreadedAlgorithmRunner(execConfig, runConfigs);
+		return new SingleThreadedAlgorithmRunner(execConfig, runConfigs,obs, options);
 	}
 	
 	/**
@@ -55,13 +61,13 @@ public class AutomaticConfiguratorFactory {
 	 * @param runConfigs		run configurations to execute
 	 * @return	algorithmrunner which will run it
 	 */	
-	public static AlgorithmRunner getConcurrentAlgorithmRunner(AlgorithmExecutionConfig execConfig, List<RunConfig> runConfigs)
+	public static AlgorithmRunner getConcurrentAlgorithmRunner(AlgorithmExecutionConfig execConfig, List<RunConfig> runConfigs, CurrentRunStatusObserver obs, CommandLineTargetAlgorithmEvaluatorOptions options)
 	{
 		if(runConfigs.size() == 1)
 		{
-			return getSingleThreadedAlgorithmRunner(execConfig, runConfigs);
+			return getSingleThreadedAlgorithmRunner(execConfig, runConfigs,obs, options);
 		}
-		return getConcurrentAlgorithmRunner(execConfig, runConfigs, maxThreads);
+		return getConcurrentAlgorithmRunner(execConfig, runConfigs, maxThreads, obs, options);
 	}
 	
 	/**
@@ -71,9 +77,10 @@ public class AutomaticConfiguratorFactory {
 	 * @param nThreads			number of concurrent executions to allow
 	 * @return	algorithmrunner which will run it
 	 */
-	public static AlgorithmRunner getConcurrentAlgorithmRunner(AlgorithmExecutionConfig execConfig, List<RunConfig> runConfigs, int nThreads)
+	public static AlgorithmRunner getConcurrentAlgorithmRunner(AlgorithmExecutionConfig execConfig, List<RunConfig> runConfigs, int nThreads, CurrentRunStatusObserver obs, CommandLineTargetAlgorithmEvaluatorOptions options)
 	{
-		log.info("Concurrent Algorithm Runner created allowing {} threads");
-		return new ConcurrentAlgorithmRunner(execConfig, runConfigs, nThreads);
+		log.debug("Concurrent Algorithm Runner created allowing {} threads", nThreads);
+		return new ConcurrentAlgorithmRunner(execConfig, runConfigs, nThreads, obs, options);
 	}
+
 }

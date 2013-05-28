@@ -4,6 +4,8 @@ import java.util.List;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred.TAECallback;
 
 /**
  * Debugging class that verifies two evaluators output the same value.
@@ -39,8 +41,12 @@ public class DebugTargetAlgorithmEvaluator implements TargetAlgorithmEvaluator {
 
 	@Override
 	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs) {
-		List<AlgorithmRun> listA = tae1.evaluateRun(runConfigs);
-		List<AlgorithmRun> listB = tae2.evaluateRun(runConfigs);
+		return evaluateRun(runConfigs,null);
+	}
+	@Override
+	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, CurrentRunStatusObserver obs) {
+		List<AlgorithmRun> listA = tae1.evaluateRun(runConfigs, obs);
+		List<AlgorithmRun> listB = tae2.evaluateRun(runConfigs, obs);
 		
 		
 		assertEquals(listA.size(), listB.size());
@@ -115,6 +121,36 @@ public class DebugTargetAlgorithmEvaluator implements TargetAlgorithmEvaluator {
 	public void notifyShutdown() {
 		tae1.notifyShutdown();
 		tae2.notifyShutdown();	
+	}
+	@Override
+	public void evaluateRunsAsync(RunConfig runConfig,
+			TAECallback handler) {
+		throw new UnsupportedOperationException("Not Implemented at the moment");
+		
+	}
+	@Override
+	public void evaluateRunsAsync(List<RunConfig> runConfigs,
+			TAECallback handler) {
+				evaluateRunsAsync(runConfigs, handler, null);
+			}
+	@Override
+	public void evaluateRunsAsync(List<RunConfig> runConfigs,
+			TAECallback handler, CurrentRunStatusObserver obs) {
+		//If this is implemented simply drop the obs when passing to the wrapped TAEs
+		throw new UnsupportedOperationException("Not Implemented at the moment");
+		
+	}
+	@Override
+	public boolean isRunFinal() {
+		return false;
+	}
+	@Override
+	public boolean areRunsPersisted() {
+		return false;
+	}
+	@Override
+	public boolean areRunsObservable() {
+		return false;
 	}
 
 }

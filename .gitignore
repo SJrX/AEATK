@@ -3,4 +3,7 @@
 /dist
 /models
 .classpath
+.directory
 /doc
+/plugins
+/exspace.txt

@@ -20,11 +20,17 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 
+import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillHandler;
+import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableAlgorithmRun;
+import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableWrappedAlgorithmRun;
+import ca.ubc.cs.beta.aclib.concurrent.threadfactory.SequentiallyNamedThreadFactory;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration.StringFormat;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.misc.logback.MarkerFilter;
 import ca.ubc.cs.beta.aclib.misc.logging.LoggingMarker;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.cli.CommandLineTargetAlgorithmEvaluatorOptions;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
 
 /**
  * Executes a Target Algorithm Run via Command Line Execution
@@ -50,6 +56,17 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	
 	
 	private Queue<String> outputQueue = new ArrayDeque<String>(MAX_LINES_TO_SAVE * 2);
+
+	/**
+	 * Stores the observer for this run
+	 */
+	private CurrentRunStatusObserver runObserver;
+
+	/**
+	 * Stores the kill handler for this run
+	 */
+	private KillHandler killHandler;
+	
 	
 	/**
 	 * Marker for logging
@@ -64,43 +81,78 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 		log.warn("This version of SMAC hardcodes run length for calls to the target algorithm to {}.", Integer.MAX_VALUE);
 	}
 	
-	public static ExecutorService threadPoolExecutor = Executors.newCachedThreadPool(); 
+	private static final double WALLCLOCK_TIMING_SLACK = 0.001;
+	
+	private ExecutorService threadPoolExecutor = Executors.newCachedThreadPool(new SequentiallyNamedThreadFactory("Command Line Target Algorithm Evaluator Thread ")); 
+	
+	private final int observerFrequency;
+		
+	
+	/**
+	 * This field is transient because we can't save this object when we serialize.
+	 * 
+	 * If after restoring serialization you need something from this object, you should
+	 * save it as a separate field. (this seems unlikely) 
+	 * 
+	 */
+	private final transient CommandLineTargetAlgorithmEvaluatorOptions options;
 	/**
 	 * Default Constructor
 	 * @param execConfig		execution configuration of the object
 	 * @param runConfig			run configuration we are executing
 	 */
-	public CommandLineAlgorithmRun(AlgorithmExecutionConfig execConfig, RunConfig runConfig) 
+	public CommandLineAlgorithmRun(AlgorithmExecutionConfig execConfig, RunConfig runConfig, CurrentRunStatusObserver obs, KillHandler handler, CommandLineTargetAlgorithmEvaluatorOptions options) 
 	{
 		super(execConfig, runConfig);
 		//TODO Test
-		if(runConfig.getCutoffTime() <= 0)
+		if(runConfig.getCutoffTime() <= 0 || handler.isKilled())
 		{
 			
-			log.info("Cap time is negative for {} setting run as timedout", runConfig);
+			log.info("Cap time is negative for {} setting run as timeout", runConfig);
 			String rawResultLine = "[DIDN'T BOTHER TO RUN ALGORITHM AS THE CAPTIME IS NOT POSITIVE]";
 			
 			this.setResult(RunResult.TIMEOUT, 0, 0, 0, runConfig.getProblemInstanceSeedPair().getSeed(), rawResultLine,"");
 		}
+		
+		this.runObserver = obs;
+		this.killHandler = handler;
+		this.observerFrequency = options.observerFrequency;
+		
+		if(observerFrequency < 25)
+		{
+			throw new IllegalArgumentException("Observer Frequency can't be less than 25 milliseconds");
+		}
+		
+		this.options = options;
 	}
 	
 	private static final int MAX_LINES_TO_SAVE = 1000;
 
-
+	private volatile boolean wasKilled = false;
+	
 	@Override
 	public synchronized void run() {
 		
-		if(isRunCompleted())
+		if(this.isRunCompleted())
 		{
 			return;
 		}
 		
-		Process proc;
+		if(killHandler.isKilled())
+		{
+			
+			log.debug("Run was killed", runConfig);
+			String rawResultLine = "Killed Manually";
+			
+			this.setResult(RunResult.KILLED, 0, 0, 0, runConfig.getProblemInstanceSeedPair().getSeed(), rawResultLine,"");
+		}
 		
+		final Process proc;
 		
 		
 		try {
 			this.startWallclockTimer();
+			
 			proc = runProcess();
 			
 			final Process innerProcess = proc; 
@@ -113,12 +165,13 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 				@Override
 				public void run() {
 					
+					Thread.currentThread().setName("Command Line Target Algorithm Evaluator Thread (Standard Error Processor)" + getRunConfig().getProblemInstanceSeedPair().getInstance().getInstanceID() + "-" + getRunConfig().getProblemInstanceSeedPair().getSeed());
 					try { 
 					Scanner procIn = new Scanner(innerProcess.getErrorStream());
 					
 					while(procIn.hasNext())
 					{	
-						log.warn(procIn.nextLine());
+						log.warn("[PROCESS]  {}", procIn.nextLine());
 					}
 					
 					procIn.close();
@@ -131,17 +184,63 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 				
 			};
 			
+			Runnable observerThread = new Runnable()
+			{
+
+				@Override
+				public void run() {
+					Thread.currentThread().setName("Command Line Target Algorithm Evaluator Thread (Observer)" + getRunConfig().getProblemInstanceSeedPair().getInstance().getInstanceID() + "-" + getRunConfig().getProblemInstanceSeedPair().getSeed());
+					while(true)
+					{
+						
+						double currentTime = getCurrentWallClockTime() / 1000.0;
+						
+						runObserver.currentStatus(Collections.singletonList((KillableAlgorithmRun) new RunningAlgorithmRun(execConfig, getRunConfig(), "RUNNING," + Math.max(0,(currentTime - WALLCLOCK_TIMING_SLACK)) + ",0,0," + getRunConfig().getProblemInstanceSeedPair().getSeed(), killHandler)));
+						try {
+							
+							
+							
+							//Sleep here so that maybe anything that wanted us dead will have gotten to the killHandler
+							Thread.sleep(25);
+							if(killHandler.isKilled())
+							{
+								wasKilled = true;
+								log.debug("Trying to kill");
+								proc.destroy();
+								proc.waitFor();
+								return;
+							}
+							Thread.sleep(observerFrequency - 25);
+						} catch (InterruptedException e) {
+							Thread.currentThread().interrupt();
+							break;
+						}
+						
+					}
+					
+					
+				}
+				
+			};
+			
+			threadPoolExecutor.execute(observerThread);
 			threadPoolExecutor.execute(standardErrorReader);
 			Scanner procIn = new Scanner(proc.getInputStream());
 		
 			processRunLoop(procIn);
-		
 			
 			
 			if(!this.isRunCompleted())
 			{
-				this.setCrashResult("We did not successfully read anything from the wrapper");
-				log.error("We did not find anything in our target algorithm run output that matched our regex (i.e. We found nothing that looked like \"Result For ParamILS: x,x,x,x,x\", specifically the regex we were matching is: {} ", AUTOMATIC_CONFIGURATOR_RESULT_REGEX );
+				if(wasKilled)
+				{
+					double currentTime = Math.max(0,(this.getCurrentWallClockTime()/1000.0 - WALLCLOCK_TIMING_SLACK));
+					this.setResult(RunResult.KILLED, currentTime, 0,0, getRunConfig().getProblemInstanceSeedPair().getSeed(), "Killed Manually", "" );
+					
+				} else {
+					this.setCrashResult("We did not successfully read anything from the wrapper");
+					log.error("We did not find anything in our target algorithm run output that matched our regex (i.e. We found nothing that looked like \"Result For ParamILS: x,x,x,x,x\", specifically the regex we were matching is: {} ", AUTOMATIC_CONFIGURATOR_RESULT_REGEX );
+				}
 			}
 			
 			
@@ -153,7 +252,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 			case CRASHED:
 				
 					
-					log.info( "Failed Run Detected Call: cd {} ;  {} ", execConfig.getAlgorithmExecutionDirectory(), getTargetAlgorithmExecutionCommand(execConfig, runConfig));
+					log.info( "Failed Run Detected Call: cd {} ;  {} ",new File(execConfig.getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommand(execConfig, runConfig));
 				
 					log.info("Failed Run Detected output last {} lines", outputQueue.size());
 					for(String s : outputQueue)
@@ -170,17 +269,14 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 			outputQueue.clear();
 			
 			
-			
-			
-			
-			
-			
 			procIn.close();
 			
 			stdErrorDone.acquireUninterruptibly();
+			threadPoolExecutor.shutdownNow();
 			
 			proc.destroy();
 			this.stopWallclockTimer();
+			runObserver.currentStatus(Collections.singletonList(new KillableWrappedAlgorithmRun(this)));
 		} catch (IOException e1) {
 			String execCmd = getTargetAlgorithmExecutionCommand(execConfig,runConfig);
 			log.error("Failed to execute command: {}", execCmd);
@@ -218,7 +314,8 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 		procIn.close();
 	}
 	
-	
+	//See:http://stackoverflow.com/questions/7804335/split-string-on-spaces-except-if-between-quotes-i-e-treat-hello-world-as
+	Pattern p = Pattern.compile("([^\"]\\S*|\".+?\")\\s*");
 
 	/**
 	 * Starts the target algorithm
@@ -229,14 +326,23 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	{
 		String execCmd = getTargetAlgorithmExecutionCommand(execConfig, runConfig);
 		
-		if(MarkerFilter.log(execCommandMarker.getName()))
+		if(options.logAllCallStrings)
 		{
-			log.info( "Calling: " + execCmd);
+			log.info( "Call: cd {} ;  {} ", new File(execConfig.getAlgorithmExecutionDirectory()).getAbsolutePath(), execCmd);
 		}
 		
-		Process proc = Runtime.getRuntime().exec(execCmd,null, new File(execConfig.getAlgorithmExecutionDirectory()));
-	
+		ArrayList<String> args = new ArrayList<String>();
+
+		//See:http://stackoverflow.com/questions/7804335/split-string-on-spaces-except-if-between-quotes-i-e-treat-hello-world-as
+		Matcher m = p.matcher(execCmd);
+		while(m.find())
+		{
+			args.add(m.group(1).replace("\"", ""));
+		}
 		
+		String[] execCmdArray = args.toArray(new String[0]);
+		Process proc = Runtime.getRuntime().exec(execCmdArray,null, new File(execConfig.getAlgorithmExecutionDirectory()));
+
 		return proc;
 	}
 	
@@ -250,7 +356,12 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	{
 
 		StringBuilder execString = new StringBuilder();
-		execString.append(execConfig.getAlgorithmExecutable()).append(" ").append(runConfig.getProblemInstanceSeedPair().getInstance().getInstanceName()).append(" ").append(runConfig.getProblemInstanceSeedPair().getInstance().getInstanceSpecificInformation()).append(" ").append(runConfig.getCutoffTime()).append(" ").append(Integer.MAX_VALUE).append(" ").append(runConfig.getProblemInstanceSeedPair().getSeed()).append(" ").append(runConfig.getParamConfiguration().getFormattedParamString(StringFormat.NODB_SYNTAX));
+		
+		String cmd = execConfig.getAlgorithmExecutable();
+		cmd = cmd.replace(AlgorithmExecutionConfig.MAGIC_VALUE_ALGORITHM_EXECUTABLE_PREFIX,"");
+		
+		execString.append(cmd).append(" ").append(runConfig.getProblemInstanceSeedPair().getInstance().getInstanceName()).append(" ").append(runConfig.getProblemInstanceSeedPair().getInstance().getInstanceSpecificInformation()).append(" ").append(runConfig.getCutoffTime()).append(" ").append(Integer.MAX_VALUE).append(" ").append(runConfig.getProblemInstanceSeedPair().getSeed()).append(" ").append(runConfig.getParamConfiguration().getFormattedParamString(StringFormat.NODB_SYNTAX));
+		
 		return execString.toString();
 	}
 
@@ -264,9 +375,10 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	{
 		Matcher matcher = pattern.matcher(line);
 		String rawResultLine = "[No Matching Output Found]";
-		if(MarkerFilter.log(fullProcessOutputMarker.getName()))
+		
+		if(options.logAllProcessOutput)
 		{
-			log.debug(line);
+			log.debug("[PROCESS]  {}" ,line);
 		}
 		
 
@@ -290,12 +402,13 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 				
 				RunResult acResult =  RunResult.getAutomaticConfiguratorResultForKey(results[0]);
 				
-
-		
+				if(!acResult.permittedByWrappers())
+				{
+					throw new IllegalArgumentException(" The Run Result reported is NOT permitted to be output by a wrapper and is for internal SMAC use only.");
+				}
 				
-				
-			
-				int solved = acResult.getResultCode();
+					
+					
 				String runtime = results[1].trim();
 				String runLength = results[2].trim();
 				String bestSolution = results[3].trim();
@@ -337,7 +450,10 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 				ArrayList<String> validValues = new ArrayList<String>();
 				for(RunResult r : RunResult.values())
 				{
-					validValues.addAll(r.getAliases());
+					if(r.permittedByWrappers())
+					{
+						validValues.addAll(r.getAliases());
+					}
 				}
 				Collections.sort(validValues);
 				

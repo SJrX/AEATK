@@ -2,17 +2,23 @@ package ca.ubc.cs.beta.aclib.options;
 
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
+import java.util.SortedSet;
+import java.util.TreeSet;
+import java.util.Map.Entry;
 
 import ca.ubc.cs.beta.aclib.misc.options.DomainDisplay;
 import ca.ubc.cs.beta.aclib.misc.options.UsageSection;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 
+import com.beust.jcommander.DynamicParameter;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParametersDelegate;
 
@@ -29,8 +35,39 @@ public class ConfigToLaTeX {
 		//usage(sections);
 		
 		latex(sections);
+		//bash(sections);
 	}
 
+	public static void bash(List<UsageSection> sections)
+	{
+		StringWriter s = new StringWriter();
+		PrintWriter pw = new PrintWriter(s);
+		
+		
+		SortedSet<String> sorted = new TreeSet<String>();
+		
+		for(UsageSection sec : sections)
+		{
+			for(String attr : sec)
+			{
+				//pw.append(attr);
+				sorted.addAll(Arrays.asList(sec.getAttributeAliases(attr).replaceAll(","," ").split(" ")));
+			}
+		}
+		
+
+		for(String key : sorted)
+		{
+			if(key.trim().startsWith("--"))
+			{
+				pw.append(key);
+				pw.append(" ");
+			}
+			
+		}
+		System.out.println(s.toString());
+	}
+	
 	
 	public static void latex(List<UsageSection> sections)
 	{
@@ -65,7 +102,7 @@ public class ConfigToLaTeX {
 				description = description.replaceAll(">","\\$>\\$");
 				description = description.replaceAll("\\*", "\\$\\\\times\\$");
 				description = description.replaceAll("--", "-~\\$\\\\!\\$-");
-				
+				description = description.replaceAll("&", "\\\\&");
 				pw.append(" ").append(description).append("\n\n");
 				
 				pw.append("\t\t\\begin{description}\n");
@@ -191,38 +228,60 @@ public class ConfigToLaTeX {
 		}
 		
 	}
-	public static void getAllObjects(Object o, Set<Object> objectsToScan) throws IllegalArgumentException, IllegalAccessException
+	public static void getAllObjects(Object o, Set<Object> objectsToScan) 
 	{
-		
-		
-		
-		for(Field f : o.getClass().getFields())
-		{
-		
-			if(f.isAnnotationPresent(ParametersDelegate.class))
+		try {
+			if(o.getClass().isArray())
 			{
-			
-				objectsToScan.add(f.get(o));
-				getAllObjects(f.get(o), objectsToScan);
-		
-				
+				for(int i=0; i < Array.getLength(o); i++)
+				{
+					getAllObjects(Array.get(o, i), objectsToScan);
+					
+				}
+			} else 
+			{	
+				objectsToScan.add(o);
+				for(Field f : o.getClass().getFields())
+				{
+					if(f.isAnnotationPresent(ParametersDelegate.class))
+					{	
+						objectsToScan.add(f.get(o));
+						getAllObjects(f.get(o), objectsToScan);
+					}
+				}
 			}
+		} catch (IllegalAccessException e) {
+			throw new IllegalStateException("Unexpected Exception Occurred ", e);
 		}
 		
 	}
-	public static List<UsageSection> getParameters(Object o) throws IllegalArgumentException, IllegalAccessException, InstantiationException
-	{
-		
 	
+	
+	public static List<UsageSection> getParameters(Object o, Map<String, AbstractOptions> options) 
+	{
+	
+		ArrayList<Object> allOptions = new ArrayList<Object>();
 		
-		
+		allOptions.add(o);
+		for(Entry<String, AbstractOptions> ent : options.entrySet())
+		{
+			if(ent.getValue() != null)
+			{
+				allOptions.add(ent.getValue());
+			}
+		}
+		return getParameters(allOptions.toArray());
+	}
+	
+	public static boolean hasSlept = false;
+	
+	public static List<UsageSection> getParameters(Object o) 
+	{
+			
+		try {
 		Set<Object> objectsToScan = new LinkedHashSet<Object>();
-		
-		objectsToScan.add(o);
-		
+	
 		getAllObjects(o, objectsToScan);
-				
-		StringBuilder sb = new StringBuilder();
 		
 		List<UsageSection> sections = new ArrayList<UsageSection>();
 		
@@ -230,6 +289,23 @@ public class ConfigToLaTeX {
 		{
 			
 			
+			
+			UsageTextField utf = getLatexField(obj);
+			if(utf == null)
+			{
+				System.err.println("Class " + obj.getClass()  + " does not have a UsageTextField annotation, this is very ugly for users to deal. Sleeping for 5 seconds");
+				
+				if(!hasSlept)
+				{
+					try {
+						Thread.sleep(5000);
+					} catch(InterruptedException e)
+					{
+						Thread.currentThread().interrupt();
+					}
+					hasSlept = true;
+				}
+			}
 			
 			String title = getTitleForObject(obj);
 			String sectionDescription = getDescriptionForObject(obj);
@@ -256,6 +332,18 @@ public class ConfigToLaTeX {
 					
 				}
 				
+				if(f.isAnnotationPresent(DynamicParameter.class))
+				{
+					DynamicParameter dynamicParam = getDynamicParameterAnnotation(f);
+					String name = getNameForDynamicField(f);
+					String description = getDescriptionForDynamicField(f,obj);
+					boolean required = getRequiredForDynamicField(f,obj);
+					String aliases = getDynamicAliases(f, obj);
+					String domain = getDomain(f,obj);
+					boolean hidden = dynamicParam.hidden();
+					
+					sec.addAttribute(name, description, "", required,domain, aliases , hidden);
+				}
 				
 				
 			}
@@ -267,7 +355,11 @@ public class ConfigToLaTeX {
 		
 		return sections;
 		
-		
+		} catch (IllegalAccessException e) {
+			throw new IllegalStateException("Unexpected Exception Occurred ", e);
+		} catch (InstantiationException e) {
+			throw new IllegalStateException("Unexpected Exception Occurred ", e);
+		}
 		
 		
 		
@@ -284,14 +376,25 @@ public class ConfigToLaTeX {
 
 
 	private static String getDescriptionForField(Field f, Object o) {
-		// TODO Auto-generated method stub
 		return getParameterAnnotation(f).description();
+	}
+	
+	private static boolean getRequiredForDynamicField(Field f, Object o) {
+		return getDynamicParameterAnnotation(f).required();
+		
 	}
 
 
 
+	private static String getDescriptionForDynamicField(Field f, Object o) {
+		return getDynamicParameterAnnotation(f).description();
+	}
+
+	
+
+
+
 	private static String getDefaultValueForField(Field f, Object o) throws IllegalArgumentException, IllegalAccessException {
-		// TODO Auto-generated method stub
 		
 		UsageTextField latexAnnotation = getLatexField(f);
 		if((latexAnnotation == null) || latexAnnotation.defaultValues().equals("<NOT SET>"))
@@ -316,6 +419,11 @@ public class ConfigToLaTeX {
 	}
 
 
+	private static String getNameForDynamicField(Field f) {
+
+		return getDynamicParameterAnnotation(f).names()[0];
+	}
+
 
 	private static String getNameForField(Field f) {
 
@@ -327,6 +435,12 @@ public class ConfigToLaTeX {
 
 		return Arrays.toString(getParameterAnnotation(f).names()).replaceAll("\\[", "").replaceAll("\\]","");
 	}
+	
+	private static String getDynamicAliases(Field f, Object o) {
+
+		return Arrays.toString(getDynamicParameterAnnotation(f).names()).replaceAll("\\[", "").replaceAll("\\]","");
+	}
+
 
 	private static String getDomain(Field f, Object o) throws InstantiationException, IllegalAccessException {
 
@@ -338,14 +452,17 @@ public class ConfigToLaTeX {
 			return latex.domain();
 		}
 		
-		if(DomainDisplay.class.isAssignableFrom(getParameterAnnotation(f).converter()))
+		if(getParameterAnnotation(f) != null)
 		{
-			return ((DomainDisplay) getParameterAnnotation(f).converter().newInstance()).getDomain();
-		}
-		
-		if(DomainDisplay.class.isAssignableFrom(getParameterAnnotation(f).validateWith()))
-		{
-			return ((DomainDisplay) getParameterAnnotation(f).validateWith().newInstance()).getDomain();
+			if(DomainDisplay.class.isAssignableFrom(getParameterAnnotation(f).converter()))
+			{
+				return ((DomainDisplay) getParameterAnnotation(f).converter().newInstance()).getDomain();
+			}
+			
+			if(DomainDisplay.class.isAssignableFrom(getParameterAnnotation(f).validateWith()))
+			{
+				return ((DomainDisplay) getParameterAnnotation(f).validateWith().newInstance()).getDomain();
+			}
 		}
 		
 		Object value = f.get(o);
@@ -386,6 +503,12 @@ public class ConfigToLaTeX {
 		return param;
 	}
 
+	private static DynamicParameter getDynamicParameterAnnotation(Field f)
+	{
+		DynamicParameter param  = (DynamicParameter)f.getAnnotation(DynamicParameter.class);
+		return param;
+	}
+
 	
 	private static String getTitleForObject(Object obj) {
 
@@ -423,6 +546,7 @@ public class ConfigToLaTeX {
 		} else if(obj.getClass().isAnnotationPresent(UsageTextField.class))
 		{
 			UsageTextField f = obj.getClass().getAnnotation(UsageTextField.class);
+			
 			
 			return f;
 		} else

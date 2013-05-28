@@ -5,6 +5,9 @@ import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicInteger;
+
+import net.jcip.annotations.ThreadSafe;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -14,6 +17,8 @@ import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.AbstractTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred.TAECallback;
 
 /**
  * Retries crashed runs some number of times
@@ -23,10 +28,11 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
  * @author Steve Ramage 
  *
  */
+@ThreadSafe
 public class RetryCrashedRunsTargetAlgorithmEvaluator extends
 		AbstractTargetAlgorithmEvaluatorDecorator {
 
-	private int runCount = 0;
+	private AtomicInteger runCount = new AtomicInteger(0);
 	private final int retryCount; 
 	private final Logger log = LoggerFactory.getLogger(getClass());
 	
@@ -38,6 +44,10 @@ public class RetryCrashedRunsTargetAlgorithmEvaluator extends
 		}
 		this.retryCount = retryCount;
 		
+		if(tae.isRunFinal())
+		{
+			log.warn("Target Algorithm Evaluator {} issues final runs, retrying will be a waste of time", tae.getClass().getSimpleName());
+		}
 	}
 	
 	@Override
@@ -47,7 +57,12 @@ public class RetryCrashedRunsTargetAlgorithmEvaluator extends
 
 	@Override
 	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs) {
-		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+		return evaluateRun(runConfigs, null);
+	}
+
+	@Override
+	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, CurrentRunStatusObserver obs) {
+		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs, obs);
 		
 		runs = new ArrayList<AlgorithmRun>(runs);
 		
@@ -81,7 +96,7 @@ public class RetryCrashedRunsTargetAlgorithmEvaluator extends
 			crashRCs.addAll(crashedRuns.keySet());
 			
 			
-			List<AlgorithmRun> retriedRuns = tae.evaluateRun(crashRCs);
+			List<AlgorithmRun> retriedRuns = tae.evaluateRun(crashRCs, obs);
 			
 			
 			for(AlgorithmRun run : retriedRuns)
@@ -90,7 +105,7 @@ public class RetryCrashedRunsTargetAlgorithmEvaluator extends
 			}
 		}	
 		
-		runCount += runs.size();
+		runCount.addAndGet(runs.size());
 		return runs;
 		
 		
@@ -99,14 +114,35 @@ public class RetryCrashedRunsTargetAlgorithmEvaluator extends
 
 	@Override
 	public int getRunCount() {
-		return runCount;
+		//Override this because internal TAE's have probably seen more runs
+		return runCount.get();
 	}
 
 	@Override
 	public void seek(List<AlgorithmRun> runs)
 	{
 		tae.seek(runs);
-		runCount = runs.size();
+		runCount.addAndGet(runs.size());
+	}
+
+	@Override
+	public void evaluateRunsAsync(RunConfig runConfig, TAECallback handler) {
+		log.warn("Cannot retry runs that are asynchronous at the moment");
+		tae.evaluateRunsAsync(runConfig, handler);
+		
+	}
+
+	@Override
+	public void evaluateRunsAsync(List<RunConfig> runConfigs,
+			TAECallback handler) {
+				evaluateRunsAsync(runConfigs, handler,null);
+			}
+
+	@Override
+	public void evaluateRunsAsync(List<RunConfig> runConfigs,
+			TAECallback handler, CurrentRunStatusObserver obs) {
+		log.warn("Cannot retry runs that are asynchronous at the moment");
+		tae.evaluateRunsAsync(runConfigs, handler, obs);
 	}
 	
 

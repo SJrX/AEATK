@@ -2,6 +2,7 @@ package ca.ubc.cs.beta.aclib.misc.math.distribution;
 
 import java.util.Random;
 
+import net.sf.doodleproject.numerics4j.exception.ConvergenceException;
 import net.sf.doodleproject.numerics4j.special.Erf;
 
 import org.apache.commons.math3.distribution.AbstractRealDistribution;
@@ -102,9 +103,57 @@ public class TruncatedNormalDistribution extends AbstractRealDistribution {
 		throw new UnsupportedOperationException("Not Implemented Yet");
 	}
 
-	public double erfinv(double x)
+	private final double EPSILON = Math.pow(10, -14);
+	private double erfinv(double x)
 	{
-		return Erf.inverseErf(x);
+
+		try {
+			return Erf.inverseErf(x);
+		} catch(ConvergenceException e)
+		{
+			//If this crashes we will move back to right
+			System.err.println("Unloggable Convergence Exception occurred with:" + x + " you can safely disregard this message as we will try again (We are more just curious in knowing the values)");
+			x *= -1;
+			double value = x;
+			int attempts = 0;
+			double eps = EPSILON;
+			if(x == 0)
+			{
+				return 0;
+			}
+			if( x > 0)
+			{
+				while(value > 0)
+				{
+
+					value = x - eps;
+					eps *= 2;
+					try {
+						return Erf.inverseErf(value);
+					} catch(ConvergenceException e2)
+					{
+						System.err.println("Unloggable Convergence Exception occurred with:" + value + " you can safely disregard this message as we will try again");
+					}
+				}
+			} else
+			{
+				while(value < 0)
+				{
+
+					value = x + eps;
+					eps *= 2;
+					try {
+						return Erf.inverseErf(value);
+					} catch(ConvergenceException e2)
+					{
+						System.err.println("Unloggable Convergence Exception occurred with:" + value + " you can safely disregard this message as we will try again");
+					}
+				}
+
+			}
+			
+			return 0;
+		}
 	}
 	
 	@Override

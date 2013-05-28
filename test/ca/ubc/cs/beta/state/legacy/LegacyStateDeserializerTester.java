@@ -212,7 +212,7 @@ public class LegacyStateDeserializerTester {
 		
 		  
 				
-		File paramFile = TestHelper.getTestFile("paramFiles/paramEchoParamFile.txt");
+		File paramFile = TestHelper.getTestFile("paramFiles/paramEchoParamFileWithKilled.txt");
 		ParamConfigurationSpace configSpace;
 		
 		
@@ -227,7 +227,7 @@ public class LegacyStateDeserializerTester {
 		System.out.println("Seed was:" + seed);
 		Random r = new MersenneTwister(seed);
 		
-		configSpace = new ParamConfigurationSpace(paramFile,r);
+		configSpace = new ParamConfigurationSpace(paramFile);
 		
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 5000);
 		List<ProblemInstance> pis = new ArrayList<ProblemInstance>();
@@ -254,7 +254,7 @@ public class LegacyStateDeserializerTester {
 		
 		
 		System.out.println("Performing " + runConfigs.size() + " runs");
-		PrintStream ps = System.out;
+		//PrintStream ps = System.out;
 		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
 		
 		
@@ -331,7 +331,7 @@ public class LegacyStateDeserializerTester {
 		System.out.println("Seed was:" + seed);
 		Random r = new MersenneTwister(seed);
 		
-		configSpace = new ParamConfigurationSpace(paramFile,r);
+		configSpace = new ParamConfigurationSpace(paramFile);
 		
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 5000);
 		List<ProblemInstance> pis = new ArrayList<ProblemInstance>();
@@ -418,7 +418,7 @@ public class LegacyStateDeserializerTester {
 		System.out.println("Seed was:" + seed);
 		Random r = new MersenneTwister(seed);
 		
-		configSpace = new ParamConfigurationSpace(paramFile,r);
+		configSpace = new ParamConfigurationSpace(paramFile);
 		
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 5000);
 		List<ProblemInstance> pis = new ArrayList<ProblemInstance>();
@@ -463,7 +463,7 @@ public class LegacyStateDeserializerTester {
 			
 			System.out.println("Performing " + runConfigs.size() + " runs");
 		
-			List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+			List<AlgorithmRun> runs = tae.evaluateRun(runConfigs,null);
 			allRuns.addAll(runs);
 			for(AlgorithmRun run : runs)
 			{
@@ -537,7 +537,7 @@ public class LegacyStateDeserializerTester {
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(number+2);
 		for(int i=0; i < number; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("TIMEOUT") || config.get("solved").equals("CRASHED"))
 			{
 				//Only want good configurations
@@ -632,7 +632,7 @@ public class LegacyStateDeserializerTester {
 		
 	}
 	/**
-	 * This test is related to 
+	 * This test is related to Task 
 	 * 
 	 */
 	@SuppressWarnings("deprecation")
@@ -640,9 +640,9 @@ public class LegacyStateDeserializerTester {
 	public void stateSerializationMemHeavy() throws DuplicateRunException
 	{
 	
-		if(Runtime.getRuntime().maxMemory() / 1024.0 / 1024  > 64)
+		if(Runtime.getRuntime().maxMemory() / 1024.0 / 1024  > 80)
 		{
-			fail("Too much memory this test will fail");
+			fail("Too much memory this test will not make any sense");
 		}
 		  
 				
@@ -661,7 +661,7 @@ public class LegacyStateDeserializerTester {
 		System.out.println("Seed was:" + seed);
 		Random r = new MersenneTwister(seed);
 		
-		configSpace = new ParamConfigurationSpace(paramFile,r);
+		configSpace = new ParamConfigurationSpace(paramFile);
 		
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 5000);
 		List<ProblemInstance> pis = new ArrayList<ProblemInstance>();
@@ -691,7 +691,7 @@ public class LegacyStateDeserializerTester {
 		
 		
 		System.out.println("Performing " + runConfigs.size() + " runs");
-		PrintStream ps = System.out;
+		//PrintStream ps = System.out;
 		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
 		
 		

@@ -9,13 +9,16 @@ import java.io.StringReader;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 
 import org.junit.After;
 import org.junit.Before;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
@@ -27,15 +30,25 @@ import ca.ubc.cs.beta.aclib.misc.random.SeedableRandomSingleton;
 
 import com.beust.jcommander.internal.Lists;
 
+import ec.util.MersenneTwister;
+
 
 public class ParamConfigurationTest {
 
+	
+	@BeforeClass
+	public static void setUpClass()
+	{
+		rand = new MersenneTwister();
+		
+	}
 	@Before
 	public void setUp()
 	{
 		
 	}
 	
+	private static Random rand;
 	
 	public static ParamConfigurationSpace getConfigSpaceForFile(String f)
 	{
@@ -267,12 +280,8 @@ public class ParamConfigurationTest {
 		ParamConfigurationSpace p = getConfigSpaceForFile("paramFiles/daisy-chain-param.txt");
 		
 		
-		
 		ParamConfiguration config = p.getConfigurationFromString("-Pa=1 ", StringFormat.SURROGATE_EXECUTOR);
 	
-				
-
-		
 		//ParamConfigurationSpace p = new ParamConfigurationSpace(new File("./test_resources/daisy-chain-param.txt"));
 		List<String> paramNames = Lists.newLinkedList();
 		
@@ -563,7 +572,7 @@ public class ParamConfigurationTest {
 		
 		while(configs.size() < 100)
 		{
-			configs.add(configSpace.getRandomConfiguration());
+			configs.add(configSpace.getRandomConfiguration(rand));
 		}
 		
 		List<ParamConfiguration> configList = new ArrayList<ParamConfiguration>(100);
@@ -674,11 +683,501 @@ public class ParamConfigurationTest {
 		new ParamConfigurationSpace(sr);
 	}
 	
+	@Test(expected=IllegalArgumentException.class)
+	public void testIllegalArgumentOnLogCategorial()
+	{
+		
+		String file = "param {1,2,3} [1] il";
+		StringReader sr = new StringReader(file);
+		new ParamConfigurationSpace(sr);
+	}
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void testIllegalArgumentOnIntegralCategorial()
+	{
+		
+		String file = "param {1,2,3} [1] il";
+		StringReader sr = new StringReader(file);
+		new ParamConfigurationSpace(sr);
+	}
 	
 	
+	@Test(expected=IllegalArgumentException.class)
+	public void testIllegalIntegralFlagsSetInIncorrectOrder()
+	{
+		
+		String file = "-numPCA [1,10]i [1]";
+		StringReader sr = new StringReader(file);
+		new ParamConfigurationSpace(sr);
+	}
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void testIllegalLogFlagSetInIncorrectOrder()
+	{
+		
+		String file = "-numPCA [1,10]l [1]";
+		StringReader sr = new StringReader(file);
+		new ParamConfigurationSpace(sr);
+	}
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void testIllegalBothFlagSetInIncorrectOrder()
+	{
+		
+		String file = "-numPCA [1,10]li [1]";
+		StringReader sr = new StringReader(file);
+		new ParamConfigurationSpace(sr);
+	}
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void testIllegalDependentValue()
+	{
+		StringReader sr = new StringReader(
+				"foo { a, b, c, d } [a]\n" +
+				"bar { 1,2,3,4} [1]\n" +
+				"bar | foolar in { a,b }");
+		new ParamConfigurationSpace(sr);
+	}
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void testIllegalIndependentValue()
+	{
+		StringReader sr = new StringReader(
+				"foo { a, b, c, d } [a]\n" +
+				"bar { 1,2,3,4} [1]\n" +
+				"barar | foo in { a,b }");
+		new ParamConfigurationSpace(sr);
+	}
+	
+	
+	@Test
+	public void testIntegralValue()
+	{
+		File paramFile = TestHelper.getTestFile("paramFiles/smac-param.txt");
+		
+		
+		String file = "-numPCA [1,20] [7]i\n-numberSearch [1,10000000] [2000]i\n";
+		StringReader sr = new StringReader(file);
+		String exec = new ParamConfigurationSpace(sr).getDefaultConfiguration().getFormattedParamString(StringFormat.NODB_SYNTAX);
+		System.out.println(exec);
+		assertEquals( "Expected no decimal places (decimal point occured):",  exec.indexOf("."),-1);
+		
+		//System.out.println(new ParamConfigurationSpace(paramFile).getDefaultConfiguration().getFormattedParamString(StringFormat.NODB_SYNTAX));
+		//System.out.println(new ParamConfigurationSpace(sr).getDefaultConfiguration().getFormattedParamString(StringFormat.NODB_SYNTAX));
+		System.out.println("Test Hello");
+		
+		
+		
+	}
+	
+	@Test
+	public void testDefaultFromSpecialString()
+	{
+		StringReader sr = new StringReader("-foo [1,100] [82.22]l");
+		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(sr);
+		ParamConfiguration defaultConfiguration = configSpace.getDefaultConfiguration();
+		
+		
+		for(StringFormat f : StringFormat.values())
+		{
+			assertEquals(defaultConfiguration, configSpace.getConfigurationFromString("DEFAULT", f));
+			assertEquals(defaultConfiguration, configSpace.getConfigurationFromString("<DEFAULT>", f));
+		}
+	}
+	
+	@Test
+	public void testRandomFromSpecialString()
+	{
+		StringReader sr = new StringReader("-foo [1,100] [82.22]l");
+		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(sr);
+		ParamConfiguration defaultConfiguration = configSpace.getDefaultConfiguration();
+		
+		
+		for(StringFormat f : StringFormat.values())
+		{
+			assertFalse("Expected that two configurations that I generated would be different", configSpace.getConfigurationFromString("<RANDOM>", f,rand).equals(configSpace.getConfigurationFromString("<RANDOM>", f,rand)));
+			assertFalse("Expected that two configurations that I generated would be different", configSpace.getConfigurationFromString("RANDOM", f, rand).equals(configSpace.getConfigurationFromString("RANDOM", f, rand)));
+		}
+	}
+
+	
+	@Test
+	public void testStringEncodingPreserving()
+	{
+		//Complex Parameter Space
+		StringReader sr = new StringReader("test {a,b,c,d,e,f} [a]\n"
+				+ "bar [0,1000] [1]\n"
+				+ "bar2 [0,1000] [1]i\n"
+				+ "bar3 [1,1000] [1]li\n"
+				+ "bar4 [1,1000] [1]l\n" 
+				+ "test2 { a,b,c,d,e,f} [b]\n"
+				+ "test3 { a,b,c,d,e,f, Az,Bz, Cz, dZ,eZ} [c]\n"
+				+ "test2 | test in { a,b,c} \n"
+				+ "{test3 = f, test2 = f}\n");
+		
+		
+		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(sr);
+		
+		int failures = 0;
+		int attempts = 0;
+		for(int i=0; i < 10000; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration(rand);
+			for(StringFormat f : StringFormat.values())
+			{
+				
+				switch(f)
+				{
+					case STATEFILE_SYNTAX_NO_INACTIVE:
+					case ARRAY_STRING_MASK_INACTIVE_SYNTAX:
+					case FIXED_WIDTH_ARRAY_STRING_SYNTAX:
+					case FIXED_WIDTH_ARRAY_STRING_MASK_INACTIVE_SYNTAX:
+						
+						
+						continue;
+					default:
+						
+				}
+				
+				attempts++;
+				String stringVersion = config.getFormattedParamString(f);
+				ParamConfiguration config2 = configSpace.getConfigurationFromString(stringVersion, f);				
+				
+				
+				if(!config2.equals(config))
+				{
+					failures++;
+					
+					
+				}
+				try {
+					assertEquals("Expected two configurations after transform via " + f+ " to be equal but not "+ config.toString() + " vs. " + config2.toString(), config, config2);
+					assertEquals("Expected hash codes to be the same ", config.hashCode(), config2.hashCode());
+					
+				} catch(RuntimeException e)
+				{
+					System.out.println(config.getFormattedParamString());
+					System.out.println(config2.getFormattedParamString());
+				}
+					
+				
+			}
+			
+		}
+		
+		
+		System.out.println(failures + " out of " + (attempts));
+		System.out.println( failures / (double) (attempts));
+		
+		
+		
+		
+	}
+	@Test
+	public void testNoDefaultFromConfiguration()
+	{ //Tries to prevent a newly implemented StringFormat from creating a representation of DEFAULT
+	  
+		StringReader sr = new StringReader("DEFAULT {DEFAULT} [DEFAULT] ");
+		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(sr);
+		ParamConfiguration defaultConfiguration = configSpace.getDefaultConfiguration();
+		for(StringFormat f : StringFormat.values())
+		{
+			assertFalse("Was able to get a DEFAULT as a string representation for StringFormat " + f.toString(), defaultConfiguration.getFormattedParamString(f).trim().toUpperCase().equals("DEFAULT"));
+		}
+		
+		StringReader sr2 = new StringReader("<DEFAULT> {<DEFAULT>} [<DEFAULT>]");
+		ParamConfigurationSpace configSpace2 = new ParamConfigurationSpace(sr2);
+		ParamConfiguration defaultConfiguration2 = configSpace2.getDefaultConfiguration();
+		for(StringFormat f : StringFormat.values())
+		{
+			assertFalse("Was able to get a <DEFAULT> as a string representation for StringFormat " + f.toString(), defaultConfiguration2.getFormattedParamString(f).trim().toUpperCase().equals("<DEFAULT>"));
+		}
+		
+	}
+	
+	@Test
+	public void testNoRandomFromConfiguration()
+	{ //Tries to prevent a newly implemented StringFormat from creating a representation of a RANDOM configuration
+	  
+		StringReader sr = new StringReader("RANDOM {RANDOM} [RANDOM] ");
+		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(sr);
+		ParamConfiguration defaultConfiguration = configSpace.getDefaultConfiguration();
+		for(StringFormat f : StringFormat.values())
+		{
+			assertFalse("Was able to get a RANDOM as a string representation for StringFormat " + f.toString(), defaultConfiguration.getFormattedParamString(f).trim().toUpperCase().equals("RANDOM"));
+		}
+		
+		StringReader sr2 = new StringReader("<RANDOM> {<RANDOM>} [<RANDOM>]");
+		ParamConfigurationSpace configSpace2 = new ParamConfigurationSpace(sr2);
+		ParamConfiguration defaultConfiguration2 = configSpace2.getDefaultConfiguration();
+		for(StringFormat f : StringFormat.values())
+		{
+			assertFalse("Was able to get a <RANDOM> as a string representation for StringFormat " + f.toString(), defaultConfiguration2.getFormattedParamString(f).trim().toUpperCase().equals("<RANDOM>"));
+		}
+		
+	}
+	
+	
+	@Test
+	public void testSubspaceDeclaration()
+	{
+		StringReader sr = new StringReader("foo { a, b, c, d } [a]");
+		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(sr, Collections.singletonMap("foo", "a") );
+		assertEquals("No neighbours", 0, configSpace.getDefaultConfiguration().getNeighbourhood(rand).size());
+		assertEquals("Default correct", "a", configSpace.getDefaultConfiguration().get("foo"));
+		/**
+		 * Only one parameter possible so we should always get the same thing
+		 */
+		assertTrue(configSpace.getRandomConfiguration(rand).equals(configSpace.getRandomConfiguration(rand)));
+		assertTrue(configSpace.getRandomConfiguration(rand).equals(configSpace.getRandomConfiguration(rand)));
+		assertTrue(configSpace.getRandomConfiguration(rand).equals(configSpace.getRandomConfiguration(rand)));
+		assertTrue(configSpace.getDefaultConfiguration().equals(configSpace.getRandomConfiguration(rand)));
+		assertTrue(configSpace.getDefaultConfiguration().equals(configSpace.getRandomConfiguration(rand)));
+		assertTrue(configSpace.getDefaultConfiguration().equals(configSpace.getRandomConfiguration(rand)));
+		assertTrue(configSpace.getRandomConfiguration(rand).isInSearchSubspace());
+		assertTrue(configSpace.getRandomConfiguration(rand).isInSearchSubspace());
+		assertTrue(configSpace.getRandomConfiguration(rand).isInSearchSubspace());
+		assertTrue(configSpace.getRandomConfiguration(rand).isInSearchSubspace());
+
+	}
+	
+
+	@Test
+	public void testSubspaceDeclarationDefault()
+	{
+		StringReader sr = new StringReader("foo { a, b, c, d } [a]");
+		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(sr, Collections.singletonMap("foo", "<DEFAULT>") );
+		assertEquals("No neighbours", 0, configSpace.getDefaultConfiguration().getNeighbourhood(rand).size());
+		assertEquals("Default correct", "a", configSpace.getDefaultConfiguration().get("foo"));
+		
+		assertTrue("Configuration should be in Subspace", configSpace.getDefaultConfiguration().isInSearchSubspace());
+		/**
+		 * Only one parameter possible so we should always get the same thing
+		 */
+		assertTrue(configSpace.getRandomConfiguration(rand).equals(configSpace.getRandomConfiguration(rand)));
+		assertTrue(configSpace.getRandomConfiguration(rand).equals(configSpace.getRandomConfiguration(rand)));
+		assertTrue(configSpace.getRandomConfiguration(rand).equals(configSpace.getRandomConfiguration(rand)));
+		assertTrue(configSpace.getDefaultConfiguration().equals(configSpace.getRandomConfiguration(rand)));
+		assertTrue(configSpace.getDefaultConfiguration().equals(configSpace.getRandomConfiguration(rand)));
+		assertTrue(configSpace.getDefaultConfiguration().equals(configSpace.getRandomConfiguration(rand)));
+		assertTrue(configSpace.getRandomConfiguration(rand).isInSearchSubspace());
+		assertTrue(configSpace.getRandomConfiguration(rand).isInSearchSubspace());
+		assertTrue(configSpace.getRandomConfiguration(rand).isInSearchSubspace());
+		assertTrue(configSpace.getRandomConfiguration(rand).isInSearchSubspace());
+
+		
+	}
+
+	
+	@Test
+	public void testSubspaceDeclarationContinuous()
+	{
+		StringReader sr = new StringReader("foo [0,1] [0.1]\n" +
+				"bar { a, b, c } [a]");
+		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(sr, Collections.singletonMap("foo", "0.1") );
+		assertEquals("# neighbours", 2, configSpace.getDefaultConfiguration().getNeighbourhood(rand).size());
+		assertEquals("Default correct", "0.1", configSpace.getDefaultConfiguration().get("foo"));
+		assertTrue("Configuration should be in Subspace", configSpace.getDefaultConfiguration().isInSearchSubspace());
+		/**
+		 * Only one parameter possible so we should always get the same thing
+		 */
+		assertTrue(configSpace.getRandomConfiguration(rand).isInSearchSubspace());
+		assertTrue(configSpace.getRandomConfiguration(rand).isInSearchSubspace());
+		assertTrue(configSpace.getRandomConfiguration(rand).isInSearchSubspace());
+		assertTrue(configSpace.getRandomConfiguration(rand).isInSearchSubspace());
+		assertTrue(configSpace.getRandomConfiguration(rand).isInSearchSubspace());
+		assertTrue(configSpace.getRandomConfiguration(rand).isInSearchSubspace());
+		assertTrue(configSpace.getRandomConfiguration(rand).isInSearchSubspace());
+		
+	}
+	
+	@Test
+	public void testRandomInSubspace()
+	{
+		StringReader sr = new StringReader("foo [0,1] [0.1]\n" +
+				"bar [0,1] [0.1]\n" +
+				"tar { a,b,c,d,e } [e]\n "+
+				"gzi { a,b,c,d,e} [a]\n");
+		
+		
+		Map<String,String> subspace = new HashMap<String, String>();
+		
+		subspace.put("foo", "0.1");
+		subspace.put("gzi", "a");
+		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(sr, subspace );
+		assertEquals("# neighbours", 8, configSpace.getDefaultConfiguration().getNeighbourhood(rand).size());
+		assertEquals("Default correct", "0.1", configSpace.getDefaultConfiguration().get("foo"));
+		assertTrue("Configuration should be in Subspace", configSpace.getDefaultConfiguration().isInSearchSubspace());
+		
+		for(int i=0; i < 100; i++)
+		{
+			assertTrue(configSpace.getRandomConfiguration(rand).isInSearchSubspace());
+		}
+				
+	}
+	
+	@Test
+	public void testRandomInSubspaceWithConditionals()
+	{
+		StringReader sr = new StringReader("foo [0,1] [0.1]\n" +
+				"bar [0,1] [0.1]\n" +
+				"tar { a,b,c,d,e } [e]\n "+
+				"gzi { a,b,c,d,e} [a]\n" +
+				"bzi { a,b,c,d,e} [c]\n" + 
+				"bzi | gzi in {a,b}");
+		
+		
+		Map<String,String> subspace = new HashMap<String, String>();
+		
+
+		subspace.put("bzi", "a");
+		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(sr, subspace );
+		assertEquals("# neighbours", 16, configSpace.getDefaultConfiguration().getNeighbourhood(rand).size());
+		assertEquals("Default correct", "0.1", configSpace.getDefaultConfiguration().get("foo"));
+		assertFalse("Configuration shouldn't be in Subspace", configSpace.getDefaultConfiguration().isInSearchSubspace());
+		
+		for(int i=0; i < 100; i++)
+		{
+			assertTrue(configSpace.getRandomConfiguration(rand).isInSearchSubspace());
+		}
+				
+	}
+	
+	
+	@Test
+	public void testSubspaceDeclarationContinuousNonDefault()
+	{
+		StringReader sr = new StringReader("foo [0,1] [0.2]\n" +
+				"bar [0,1] [0.1]");
+		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(sr, Collections.singletonMap("foo", "0.1") );
+		assertEquals("# neighbours", 4, configSpace.getDefaultConfiguration().getNeighbourhood(rand).size());
+		assertEquals("Default correct", "0.2", configSpace.getDefaultConfiguration().get("foo"));
+		assertFalse("Configuration should be in Subspace", configSpace.getDefaultConfiguration().isInSearchSubspace());
+		
+	}
+	
+
+	
+	
+	
+	@Test
+	public void testSubspaceDeclarationNotDefault()
+	{
+		StringReader sr = new StringReader("foo { a, b, c, d } [a]");
+		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(sr, Collections.singletonMap("foo", "d") );
+		
+		assertEquals("No neighbours", 0, configSpace.getDefaultConfiguration().getNeighbourhood(rand).size());
+		assertEquals("Default correct", "a", configSpace.getDefaultConfiguration().get("foo"));
+		assertFalse("Configuration shouldn't be in Subspace", configSpace.getDefaultConfiguration().isInSearchSubspace());
+		
+		/**
+		 * Only one parameter possible so we should always get the same thing
+		 */
+		assertTrue(configSpace.getRandomConfiguration(rand).equals(configSpace.getRandomConfiguration(rand)));
+		assertTrue(configSpace.getRandomConfiguration(rand).equals(configSpace.getRandomConfiguration(rand)));
+		assertTrue(configSpace.getRandomConfiguration(rand).equals(configSpace.getRandomConfiguration(rand)));
+		
+		
+	}
+	
+	@Test(expected=IllegalArgumentException.class)
+	public void testSubspaceDeclarationSubspaceIsForbidden()
+	{
+		
+		StringReader sr = new StringReader("foo { a, b, c, d } [d]\n {foo = a}");
+		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(sr, Collections.singletonMap("foo", "a") );
+		
+		assertEquals("No neighbours", 0, configSpace.getDefaultConfiguration().getNeighbourhood(rand).size());
+		configSpace.getRandomConfiguration(rand);
+		
+	}
+	
+	@Test
+	/**
+	 * Tests to see that forbidden parameters are treated correctly when we subspace stuff
+	 */
+	public void testSubspaceDeclarationSubspaceAndForbidden()
+	{
+		StringReader sr = new StringReader(
+				"foo { a, b, c, d } [a]\n" +
+				"bar { 1,2,3,4} [1]\n" +
+				"{foo = a, bar= 2}");
+		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(sr, Collections.singletonMap("foo", "a"));
+		assertTrue("Configuration should be in Subspace", configSpace.getDefaultConfiguration().isInSearchSubspace());
+		assertEquals("Should have 2 neighbours", 2, configSpace.getDefaultConfiguration().getNeighbourhood(rand).size());
+	}
+	
+	
+	@Test
+	/**
+	 * Tests to see that forbidden parameters are treated correctly when we subspace stuff
+	 */
+	public void testSubspaceDeclarationSubspaceAndIrrelevantForbidden()
+	{
+		StringReader sr = new StringReader(
+				"foo { a, b, c, d } [a]\n" +
+				"bar { 1,2,3,4} [1]\n" +
+				"{foo = b, bar= 2}");
+		
+		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(sr, Collections.singletonMap("foo", "a"));
+		assertTrue("Configuration should be in Subspace", configSpace.getDefaultConfiguration().isInSearchSubspace());
+		assertEquals("Should have 3 neighbours", 3, configSpace.getDefaultConfiguration().getNeighbourhood(rand).size());
+	}
+	
+
+	@Test
+	/**
+	 * Tests to see that forbidden parameters are treated correctly when we subspace stuff
+	 */
+	public void testSubspaceDeclarationSubspaceAndConditionalInactive()
+	{
+		StringReader sr = new StringReader(
+				"foo { a, b, c, d } [d]\n" +
+				"bar { 1,2,3,4} [1]\n" +
+				"bar | foo in { c,b }");
+		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(sr, Collections.singletonMap("foo", "a"));
+		assertFalse("Configuration shouldn't be in Subspace", configSpace.getDefaultConfiguration().isInSearchSubspace());
+		
+		assertEquals("Should have 0 neighbours", 0, configSpace.getDefaultConfiguration().getNeighbourhood(rand).size());
+	}
+	
+	@Test
+	/**
+	 * Tests to see that forbidden parameters are treated correctly when we subspace stuff
+	 */
+	public void testSubspaceDeclarationSubspaceAndConditional()
+	{
+		StringReader sr = new StringReader(
+				"foo { a, b, c, d } [a]\n" +
+				"bar { 1,2,3,4} [1]\n" +
+				"bar | foo in { a,b }");
+		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(sr, Collections.singletonMap("foo", "a"));
+		assertEquals("Should have 3 neighbours", 3, configSpace.getDefaultConfiguration().getNeighbourhood(rand).size());
+	}
+
+	@Test(expected=IllegalArgumentException.class)
+	public void testSubspaceValidation()
+	{
+		StringReader sr = new StringReader(
+				"foo { a, b, c, d } [a]\n" +
+				"bar { 1,2,3,4} [1]\n" +
+				"bar | foo in { a,b }");
+		new ParamConfigurationSpace(sr, Collections.singletonMap("foo", "ILLEGAL"));
+	}
+	
+	@Test
+	public void testSingletonSpaceEquality()
+	{
+		assertEquals("Expected that the two objects are the same", ParamConfigurationSpace.getSingletonConfigurationSpace(),ParamConfigurationSpace.getSingletonConfigurationSpace());
+		assertEquals("Expected that the two objects hash the same", ParamConfigurationSpace.getSingletonConfigurationSpace().hashCode(),ParamConfigurationSpace.getSingletonConfigurationSpace().hashCode());
+		
+		assertEquals("Expected that the two objects are the same", ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration());
+		assertEquals("Expected that the two objects hash the same", ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration().hashCode(),ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration().hashCode());
+		
+	}
 	@After
 	public void tearDown()
 	{
-		System.out.println("Done");
+		//System.out.println("Done");
 	}
 }

@@ -1,0 +1,41 @@
+package ca.ubc.cs.beta.aclib.targetalgorithmevaluator.random;
+
+import ca.ubc.cs.beta.aclib.misc.jcommander.validator.FixedPositiveInteger;
+import ca.ubc.cs.beta.aclib.misc.jcommander.validator.NonNegativeInteger;
+import ca.ubc.cs.beta.aclib.misc.jcommander.validator.ZeroInfinityHalfOpenIntervalRight;
+import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
+import ca.ubc.cs.beta.aclib.options.AbstractOptions;
+
+import com.beust.jcommander.Parameter;
+
+@UsageTextField(title="Random Target Algorithm Evaluator Options", description="This Target Algorithm Evaluator randomly generates responses from a uniform distribution")
+public class RandomResponseTargetAlgorithmEvaluatorOptions extends AbstractOptions {
+
+	@Parameter(names="--random-simulate-delay", description = "If set to true the TAE will simulate the wallclock delay")
+	public boolean simulateDelay = false;
+	
+	@Parameter(names="--random-simulate-cores", description = "If set to greater than 0, the TAE will serialize requests so that no more than these number will execute concurrently. ", validateWith=NonNegativeInteger.class)
+	public int cores = 0;
+	
+	@Parameter(names="--random-max-response", description="The maximum runtime we will generate", validateWith=ZeroInfinityHalfOpenIntervalRight.class)
+	public double maxResponse = 10.0;
+
+	@Parameter(names="--random-min-response", description="The minimum runtime we will generate (values less than 0.01 will be rounded up to 0.01)", validateWith=ZeroInfinityHalfOpenIntervalRight.class)
+	public double minResponse = 0.0;
+	
+	@Parameter(names="--random-observer-frequency", description="How often to notify observer of updates (in milli-seconds)", validateWith=FixedPositiveInteger.class)
+	public int observerFrequency = 100;
+	
+	@Parameter(names="--random-trend-coefficient", description="The Nth sample will be drawn from Max(0,Uniform(min,max) + N*(trend-coefficient)) distribution. This allows you to have the response values increase or decrease over time.")
+	public double trendCoefficient = 0.0;
+
+	@UsageTextField(defaultValues = "Current Time in Milliseconds")
+	@Parameter(names="--random-sample-seed", description="Seed to use when generate random responses")
+	public long seed = System.currentTimeMillis();
+
+	//Shuffle the Algorithm Runs List before it returns.
+	
+	//DO NOT EXPOSE THIS ARGUMENT TO THE COMMAND LINE AS IT EXISTS ONLY FOR TESTING THAT WHEN THIS HAPPENS
+	//IT CAN BE CAUGHT
+	public boolean shuffleResponses;
+}

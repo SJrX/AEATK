@@ -141,6 +141,30 @@ public class LegacyStateDeserializer implements StateDeserializer {
 				log.warn("Got empty instance list, except in the trivial case this will result in an exception");
 			}
 			
+			if (iteration == Integer.MAX_VALUE)
+			{
+				iteration = 0;
+				log.info("Auto detecting iteration for directory {}" , restoreFromPath);
+				
+				File restoreDirectory = new File(restoreFromPath);
+				File[] files = restoreDirectory.listFiles();
+				Arrays.sort(files);
+				for(File f : files)
+				{
+					int thisIteration = LegacyStateFactory.readIterationFromObjectFile(f);
+					if(thisIteration != -1)
+					{
+						
+						
+						//System.out.println(f.getAbsolutePath().substring(restoreDirectory.getAbsolutePath().length()+1) + " => Iteration " + thisIteration);
+						
+						iteration = Math.max(thisIteration, iteration);
+					}
+				}
+				
+				log.info("Iteration restoring to {} ", iteration);
+			}
+			
 			
 			Object[] args = { iteration, id, restoreFromPath };
 			log.info("Trying to restore iteration: {} id: {} from path: {}", args );
@@ -465,23 +489,8 @@ public class LegacyStateDeserializer implements StateDeserializer {
 					
 						ProblemInstanceSeedPair pisp = new ProblemInstanceSeedPair(pi, seed); 
 						RunConfig runConfig = new RunConfig(pisp, cutOffTime, configMap.get(thetaIdx),isCensored);
-						
-						
-						
-						StringBuffer resultLine = new StringBuffer();
-						
-						resultLine.append(runResult.getResultCode()).append(", ");
-						resultLine.append(runtime).append(", ");
-						resultLine.append(runLength).append(", ");
-						resultLine.append(quality).append(", ");
-						resultLine.append(seed);
-						
-						if(additionalRunData.length() > 0)
-						{
-							resultLine.append(",").append(additionalRunData);
-						}
-						
-						AlgorithmRun run = new ExistingAlgorithmRun(execConfig, runConfig, resultLine.toString(), wallClockTime);
+												
+						AlgorithmRun run = new ExistingAlgorithmRun(execConfig, runConfig, runResult, runtime, runLength, quality, seed, additionalRunData, wallClockTime);
 						
 						log.trace("Appending new run to runHistory: ", run);
 						try {
@@ -498,15 +507,8 @@ public class LegacyStateDeserializer implements StateDeserializer {
 								
 								seed = newSeeds++;
 								
-								
 
-								resultLine.append(runResult.getResultCode()).append(", ");
-								resultLine.append(runtime).append(", ");
-								resultLine.append(runLength).append(", ");
-								resultLine.append(quality).append(", ");
-								resultLine.append(seed);
-								
-								run = new ExistingAlgorithmRun(execConfig, runConfig, resultLine.toString());
+								run = new ExistingAlgorithmRun(execConfig, runConfig, runResult, runtime, runLength, quality, seed, wallClockTime);
 								
 								log.trace("Appending new run to runHistory: ", run);
 								try {
@@ -531,6 +533,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 					} catch(RuntimeException e) 
 					{
 					
+						
 						throw new StateSerializationException("Error occured while parsing the following line of the runHistory file: " + i + " data "+ Arrays.toString(runHistoryLine), e);
 					}
 
