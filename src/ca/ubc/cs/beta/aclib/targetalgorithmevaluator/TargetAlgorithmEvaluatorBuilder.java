@@ -35,7 +35,7 @@ public class TargetAlgorithmEvaluatorBuilder {
 	private static Logger log = LoggerFactory.getLogger(TargetAlgorithmEvaluatorBuilder.class);
 	
 	/**
-	 * Generates the TargetAlgorithmEvaluator with the given runtime behaivor
+	 * Generates the TargetAlgorithmEvaluator with the given runtime behavior
 	 * 
 	 * @param options 		   Target Algorithm Evaluator Options
 	 * @param execConfig	   Execution configuration for the target algorithm
