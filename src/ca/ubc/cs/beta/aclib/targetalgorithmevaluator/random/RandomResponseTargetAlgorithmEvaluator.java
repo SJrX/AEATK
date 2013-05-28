@@ -58,11 +58,13 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 		this.scale = options.maxResponse - options.minResponse;
 		this.minValue = options.minResponse;
 		
+
 		this.trendCoefficient = options.trendCoefficient;
 
 		log.info("Target Algorithm Evaluator initialized with seed: {} ", options.seed);
 		this.rand = new MersenneTwister(options.seed);
 		this.shuffleRuns = options.shuffleResponses;
+
 	}
 
 

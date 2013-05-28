@@ -3,12 +3,14 @@ package ca.ubc.cs.beta.aclib.seedgenerator;
 import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Queue;
+import java.util.Set;
 
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
 
@@ -31,7 +33,7 @@ public class SetInstanceSeedGenerator implements InstanceSeedGenerator {
 	private final int initialSeedCount;
 	private final boolean allInstanceHaveSameNumberOfSeeds;
 
-	
+	private final Map<Integer, Set<Long>> blacklistedSeeds = new HashMap<Integer, Set<Long>>();
 	/**
 	 * Standard Constructor
 	 * 
@@ -110,7 +112,7 @@ public class SetInstanceSeedGenerator implements InstanceSeedGenerator {
 	public int getNextSeed(ProblemInstance pi) {
 		if(hasNextSeed(pi))
 		{
-			return getNextSeed(piKeyToIntMap.get(pi.getInstanceName()));
+			return (int) (long) seeds.get(piKeyToIntMap.get(pi.getInstanceName())).poll();
 		} else
 		{
 			throw new IllegalStateException("No more Seeds for Problem Instance: " + pi.getInstanceName());
@@ -118,20 +120,18 @@ public class SetInstanceSeedGenerator implements InstanceSeedGenerator {
 		
 	}
 
-	
-	@Override
-	public int getNextSeed(Integer id) {
-		if(id == null)
-		{
-			throw new IllegalArgumentException("Unrecognized Problem Instance " + id);
-		} else
-		{
-			return (int) (long) seeds.get(id).poll();
-		}
-	}
-
 	@Override
 	public boolean hasNextSeed(ProblemInstance pi) {
+	
+		if(this.blacklistedSeeds.get(pi.getInstanceID()) == null)
+		{
+			this.blacklistedSeeds.put(pi.getInstanceID(), new HashSet<Long>());
+		}
+		
+		
+		
+		Collection<Long> blackListedSeeds = this.blacklistedSeeds.get(pi.getInstanceID());
+		seeds.get(piKeyToIntMap.get(pi.getInstanceName())).removeAll(blackListedSeeds);
 		
 		
 		return !seeds.get(piKeyToIntMap.get(pi.getInstanceName())).isEmpty();
@@ -185,6 +185,19 @@ public class SetInstanceSeedGenerator implements InstanceSeedGenerator {
 	public boolean allInstancesHaveSameNumberOfSeeds() {
 
 		return allInstanceHaveSameNumberOfSeeds;
+	}
+
+
+
+
+
+	@Override
+	public void take(ProblemInstance instance, long seed) {
+		if(this.blacklistedSeeds.get(instance.getInstanceID()) == null)
+		{
+			this.blacklistedSeeds.put(instance.getInstanceID(), new HashSet<Long>());
+		}
+		this.blacklistedSeeds.get(instance.getInstanceID()).add(seed);
 	}
 
 }
