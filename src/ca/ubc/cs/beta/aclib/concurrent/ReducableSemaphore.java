@@ -26,7 +26,20 @@ public class ReducableSemaphore extends Semaphore
 		super(permits, fair);
 
 	}
+
+	/**
+	 * Reduces the permits available by one
+	 */
+	public void reducePermits()
+	{
+		super.reducePermits(1);
+	}
+
 	
+	/**
+	 * Reduces the permits available by the number specified
+	 * @param reduction  number of permits to take
+	 */
 	public void reducePermits(int reduction)
 	{
 		super.reducePermits(reduction);
