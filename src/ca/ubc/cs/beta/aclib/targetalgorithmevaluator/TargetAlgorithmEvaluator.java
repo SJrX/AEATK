@@ -38,7 +38,7 @@ public interface TargetAlgorithmEvaluator {
 	 * @return	list containing the <code>AlgorithmRun<code>
 	 * @throws TargetAlgorithmAbortException
 	 */
-	public List<AlgorithmRun> evaluateRun(RunConfig run);
+	public List<AlgorithmRun> evaluateRun(RunConfig runConfig);
 
 	/**
 	 * Evaluate a sequence of run configurations
@@ -55,7 +55,7 @@ public interface TargetAlgorithmEvaluator {
 	 * @return	list of the exact same size as input containing the <code>AlgorithmRun</code> objects in the same order as runConfigs
 	 * @throws TargetAlgorithmAbortException
 	 */
-	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, CurrentRunStatusObserver obs);
+	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, CurrentRunStatusObserver runStatusObserver);
 	
 	
 	/**
@@ -70,7 +70,7 @@ public interface TargetAlgorithmEvaluator {
 	 * @param runConfig  run configuration to evaluate
 	 * @param handler    handler to invoke on completion or failure
 	 */
-	public void evaluateRunsAsync(RunConfig runConfig, TAECallback handler );
+	public void evaluateRunsAsync(RunConfig runConfig, TAECallback taeCallback );
 	
 	/**
 	 * Evaluates the given configuration, and when complete the handler is invoked
@@ -84,7 +84,7 @@ public interface TargetAlgorithmEvaluator {
 	 * @param runConfigs list of zero or more run configuration to evaluate
 	 * @param handler    handler to invoke on completion or failure
 	 */
-	public void evaluateRunsAsync(List<RunConfig> runConfigs, TAECallback handler);
+	public void evaluateRunsAsync(List<RunConfig> runConfigs, TAECallback taeCallback);
 
 	/**
 	 * Evaluates the given configuration, and when complete the handler is invoked
@@ -99,7 +99,7 @@ public interface TargetAlgorithmEvaluator {
 	 * @param handler    handler to invoke on completion or failure
 	 * @param obs 		 observer that will be notified of the current run status
 	 */
-	public void evaluateRunsAsync(List<RunConfig> runConfigs, TAECallback handler, CurrentRunStatusObserver obs);
+	public void evaluateRunsAsync(List<RunConfig> runConfigs, TAECallback taeCallback, CurrentRunStatusObserver runStatusObserver);
 	
 	/**
 	 * Returns the number of target algorithm runs that we have executed
