@@ -28,7 +28,7 @@ import com.beust.jcommander.ParameterException;
 @UsageTextField(hiddenSection = true)
 public class ParamFileDelegate extends AbstractOptions{
 	
-	@Parameter(names={"-p", "--paramFile","--paramfile"}, description="File containing algorithm parameter space information (see Algorithm Parameter File in the Manual)", required=true)
+	@Parameter(names={"-p", "--paramFile","--paramfile"}, description="File containing algorithm parameter space information (see Algorithm Parameter File in the Manual)")
 	public String paramFile;
 
 	@Parameter(names="--searchSubspace", description="Only generate random and neighbouring configurations with these values. Specified in a \"name=value,name=value,...\" format (Overrides those set in file)", required=false)
@@ -128,6 +128,11 @@ public class ParamFileDelegate extends AbstractOptions{
 	 */
 	public ParamConfigurationSpace getParamConfigurationSpace(List<String> searchDirectories)
 	{
+		
+		if(this.paramFile == null)
+		{
+			throw new ParameterException("You must supply a valid parameter file");
+		}
 		Logger log = LoggerFactory.getLogger(this.getClass());
 		List<String> searchPaths = new ArrayList<String>(searchDirectories);
 		
