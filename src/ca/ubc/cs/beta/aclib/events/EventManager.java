@@ -6,9 +6,12 @@ import java.util.UUID;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
+
+import ca.ubc.cs.beta.aclib.exceptions.EventFlushDeadLockException;
 
 public class EventManager {
 
@@ -20,6 +23,7 @@ public class EventManager {
 	
 	private static ArrayBlockingQueue<Runnable> asyncRuns = new ArrayBlockingQueue<Runnable>(1024); 
 	
+	private static final Thread eventDispatchThread;
 	static{ 
 		Thread t = new Thread() { 
 			
@@ -41,6 +45,7 @@ public class EventManager {
 					} catch(RuntimeException e)
 					{
 						log.error("Unexpected Exception occured", e);
+						
 					} catch (InterruptedException e) {
 						Thread.currentThread().interrupt();
 					}
@@ -55,7 +60,7 @@ public class EventManager {
 		t.setName("Event Manager Dispatch Thread");
 		t.setDaemon(true);
 		t.start();
-		
+		eventDispatchThread = t;
 		
 		
 	}
@@ -95,8 +100,17 @@ public class EventManager {
 	
 	
 	
+	AtomicReference<EventFlushDeadLockException> deadLockException = new AtomicReference<EventFlushDeadLockException>();
+	
 	public synchronized void fireEvent(AutomaticConfiguratorEvent event)
 	{
+	
+		EventFlushDeadLockException exp = deadLockException.get();
+		if(exp != null)
+		{
+			throw new IllegalStateException("Deadlock has previously occurred, event manager is unavailable", deadLockException.get());
+		}
+		
 		
 		log.trace("Event requested for dispatch {}",event.getClass().getSimpleName());
 		handlerMap.putIfAbsent(event.getClass(), new ArrayList<EventHandler<?>>());
@@ -104,8 +118,6 @@ public class EventManager {
 		
 		for(EventHandler<?> handler : handlers)
 		{
-			
-
 			final AutomaticConfiguratorEvent event2 = event;
 			@SuppressWarnings("rawtypes")
 			final EventHandler handler2 = handler;
@@ -117,11 +129,22 @@ public class EventManager {
 				public void run()
 				{
 					try { 
-						log.trace("Dispatching event {} ", event2.getClass().getSimpleName());
+						log.debug("Dispatching event {} ", event2.getClass().getSimpleName());
 						handler2.handleEvent(event2);
-					} catch(Throwable t)
+					} catch(RuntimeException t)
 					{
-						log.error("Event Handler Threw Exception {}",t);
+						
+						Object[] args = { handler2, event2, t};
+						log.warn("Event Handler {} while processing event: {}, threw Exception {}",args);
+						
+						if(!(event2 instanceof EventHandlerRuntimeExceptionEvent))
+						{
+							EventManager.this.fireEvent(new EventHandlerRuntimeExceptionEvent(getUUID(), t, event2));
+							
+							return;
+						} 
+						
+						log.error("Event Handler threw exception while we were processing the {} event, not notifying anything else", event2.getClass());
 					}
 				}
 			};
@@ -138,7 +161,13 @@ public class EventManager {
 		
 	}
 
+	/**
+	 * Ensures that all previous events have completed
+	 */
 	public void flush() {
+		
+		  
+		checkForDeadLock();
 		
 		Semaphore wait = new Semaphore(0);
 		
@@ -148,8 +177,31 @@ public class EventManager {
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
 		}
+		System.exit(0);
 	}
 	
+	/**
+	 * This method checks to see if an event is calling flush() as a side effect
+	 */
+	private void checkForDeadLock()
+	{
+
+		if(Thread.currentThread().equals(eventDispatchThread))
+		{
+			EventFlushDeadLockException e = new EventFlushDeadLockException();
+			this.deadLockException.set(e);
+			
+			log.error("Deadlock detected ", e);
+			System.out.flush();
+			System.err.flush();
+			
+			e.printStackTrace();
+			System.out.flush();
+			System.err.flush();
+			
+			throw e;
+		}
+	}
 	class FlushEvent extends AutomaticConfiguratorEvent
 	{
 

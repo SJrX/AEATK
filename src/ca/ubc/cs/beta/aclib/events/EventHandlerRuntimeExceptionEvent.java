@@ -11,11 +11,13 @@ public class EventHandlerRuntimeExceptionEvent extends AutomaticConfiguratorEven
 
 	
 	private final RuntimeException e;
+	private final AutomaticConfiguratorEvent event;
 	
-	public EventHandlerRuntimeExceptionEvent(UUID uuid, RuntimeException e)
+	public EventHandlerRuntimeExceptionEvent(UUID uuid, RuntimeException e, AutomaticConfiguratorEvent event)
 	{
 		super(uuid);
 		this.e = e;
+		this.event = event;
 	}
 	
 	public RuntimeException getRuntimeException()
@@ -23,5 +25,10 @@ public class EventHandlerRuntimeExceptionEvent extends AutomaticConfiguratorEven
 		return e;
 	}
 	
+	
+	public AutomaticConfiguratorEvent getTriggeringEvent()
+	{
+		return event;
+	}
 
 }
