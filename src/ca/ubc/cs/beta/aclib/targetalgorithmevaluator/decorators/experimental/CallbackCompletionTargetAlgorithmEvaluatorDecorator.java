@@ -6,10 +6,10 @@ import java.util.List;
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.concurrent.ReducableSemaphore;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.AbstractTargetAlgorithmEvaluatorDecorator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred.TAECallback;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbstractTargetAlgorithmEvaluatorDecorator;
 
 /**
  * Experimental TAE that allows you to wait for all runs to be completed.
@@ -33,7 +33,7 @@ public class CallbackCompletionTargetAlgorithmEvaluatorDecorator extends
 
 
 	@Override
-	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, CurrentRunStatusObserver obs) {
+	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
 		try{
 			outstandingRunBlocks.reducePermits();
 			return tae.evaluateRun(runConfigs, obs);
@@ -47,11 +47,11 @@ public class CallbackCompletionTargetAlgorithmEvaluatorDecorator extends
 
 	@Override
 	public void evaluateRunsAsync(List<RunConfig> runConfigs,
-			final TAECallback handler, CurrentRunStatusObserver obs) {
+			final TargetAlgorithmEvaluatorCallback handler, TargetAlgorithmEvaluatorRunObserver obs) {
 		
 		
 		outstandingRunBlocks.reducePermits();
-		TAECallback callback = new TAECallback()
+		TargetAlgorithmEvaluatorCallback callback = new TargetAlgorithmEvaluatorCallback()
 		{
 
 			@Override

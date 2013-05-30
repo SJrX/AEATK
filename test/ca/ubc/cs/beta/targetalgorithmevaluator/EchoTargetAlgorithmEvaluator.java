@@ -8,9 +8,9 @@ import ca.ubc.cs.beta.aclib.algorithmrun.ExistingAlgorithmRun;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.AbstractBlockingTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.AbstractSyncTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
 
 /**
  * Faster way of echoing results back
@@ -20,7 +20,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunSta
  * @author Steve Ramage 
  *
  */
-public class EchoTargetAlgorithmEvaluator  extends AbstractBlockingTargetAlgorithmEvaluator  implements TargetAlgorithmEvaluator{
+public class EchoTargetAlgorithmEvaluator  extends AbstractSyncTargetAlgorithmEvaluator  implements TargetAlgorithmEvaluator{
 
 	private final boolean quickEval;
 	
@@ -38,7 +38,7 @@ public class EchoTargetAlgorithmEvaluator  extends AbstractBlockingTargetAlgorit
 	public volatile double wallClockTime = 0;
 	
 	@Override
-	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, CurrentRunStatusObserver obs) {
+	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
 		
 		List<AlgorithmRun> results = new ArrayList<AlgorithmRun>();
 		

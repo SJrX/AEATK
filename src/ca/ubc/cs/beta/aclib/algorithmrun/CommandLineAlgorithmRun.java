@@ -29,8 +29,8 @@ import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.misc.logback.MarkerFilter;
 import ca.ubc.cs.beta.aclib.misc.logging.LoggingMarker;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.cli.CommandLineTargetAlgorithmEvaluatorOptions;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluatorOptions;
 
 /**
  * Executes a Target Algorithm Run via Command Line Execution
@@ -60,7 +60,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	/**
 	 * Stores the observer for this run
 	 */
-	private CurrentRunStatusObserver runObserver;
+	private TargetAlgorithmEvaluatorRunObserver runObserver;
 
 	/**
 	 * Stores the kill handler for this run
@@ -101,7 +101,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	 * @param execConfig		execution configuration of the object
 	 * @param runConfig			run configuration we are executing
 	 */
-	public CommandLineAlgorithmRun(AlgorithmExecutionConfig execConfig, RunConfig runConfig, CurrentRunStatusObserver obs, KillHandler handler, CommandLineTargetAlgorithmEvaluatorOptions options) 
+	public CommandLineAlgorithmRun(AlgorithmExecutionConfig execConfig, RunConfig runConfig, TargetAlgorithmEvaluatorRunObserver obs, KillHandler handler, CommandLineTargetAlgorithmEvaluatorOptions options) 
 	{
 		super(execConfig, runConfig);
 		//TODO Test

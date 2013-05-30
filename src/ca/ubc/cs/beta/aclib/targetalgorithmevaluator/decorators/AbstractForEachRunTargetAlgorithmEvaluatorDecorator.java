@@ -5,10 +5,9 @@ import java.util.List;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.AbstractTargetAlgorithmEvaluatorDecorator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred.TAECallback;
 /**
  * Abstraact Decorator for TargetAlgorithmEvaluators 
  * 
@@ -26,24 +25,22 @@ public abstract class AbstractForEachRunTargetAlgorithmEvaluatorDecorator extend
 		super(tae);
 	}
 	
-	
-
 
 	@Override
-	public final List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, CurrentRunStatusObserver obs) {
+	public final List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
 		return processRuns(tae.evaluateRun(runConfigs, obs));
 	}
 
 	@Override
 	public final void evaluateRunsAsync(List<RunConfig> runConfigs,
-			final TAECallback oHandler, CurrentRunStatusObserver obs) {
+			final TargetAlgorithmEvaluatorCallback oHandler, TargetAlgorithmEvaluatorRunObserver obs) {
 		
 		//We need to make sure wrapped versions are called in the same order
 		//as there unwrapped versions.
 	
-		TAECallback myHandler = new TAECallback()
+		TargetAlgorithmEvaluatorCallback myHandler = new TargetAlgorithmEvaluatorCallback()
 		{
-			private final TAECallback handler = oHandler;
+			private final TargetAlgorithmEvaluatorCallback handler = oHandler;
 
 			@Override
 			public void onSuccess(List<AlgorithmRun> runs) {

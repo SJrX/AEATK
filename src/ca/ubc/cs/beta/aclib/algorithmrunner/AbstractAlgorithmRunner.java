@@ -22,8 +22,8 @@ import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableAlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.kill.StatusVariableKillHandler;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.cli.CommandLineTargetAlgorithmEvaluatorOptions;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluatorOptions;
 
 /**
  * Used to Actually Run the Target Algorithm
@@ -61,7 +61,7 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 	 * @param runConfigs	run configurations of the target algorithm
 	 * @param obs 
 	 */
-	public AbstractAlgorithmRunner(AlgorithmExecutionConfig execConfig,final List<RunConfig> runConfigs, final CurrentRunStatusObserver obs, final CommandLineTargetAlgorithmEvaluatorOptions options)
+	public AbstractAlgorithmRunner(AlgorithmExecutionConfig execConfig,final List<RunConfig> runConfigs, final TargetAlgorithmEvaluatorRunObserver obs, final CommandLineTargetAlgorithmEvaluatorOptions options)
 	{
 		if(execConfig == null || runConfigs == null)
 		{
@@ -84,7 +84,7 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 			
 			runStatus.put(rc, new RunningAlgorithmRun(execConfig, rc, "RUNNING,0.0,0,0," + rc.getProblemInstanceSeedPair().getSeed(), killH));
 			
-			CurrentRunStatusObserver individualRunObserver = new CurrentRunStatusObserver()
+			TargetAlgorithmEvaluatorRunObserver individualRunObserver = new TargetAlgorithmEvaluatorRunObserver()
 			{
 				@Override
 				public void currentStatus(List<? extends KillableAlgorithmRun> runs) {

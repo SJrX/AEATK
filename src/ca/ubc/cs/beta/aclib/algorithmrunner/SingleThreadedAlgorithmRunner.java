@@ -7,8 +7,8 @@ import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aclib.exceptions.TargetAlgorithmAbortException;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.cli.CommandLineTargetAlgorithmEvaluatorOptions;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluatorOptions;
 
 class SingleThreadedAlgorithmRunner extends AbstractAlgorithmRunner
 {
@@ -20,7 +20,7 @@ class SingleThreadedAlgorithmRunner extends AbstractAlgorithmRunner
 	 * @param obs 
 	 */
 	public SingleThreadedAlgorithmRunner(AlgorithmExecutionConfig execConfig,
-			List<RunConfig> runConfigs, CurrentRunStatusObserver obs, CommandLineTargetAlgorithmEvaluatorOptions options) {
+			List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs, CommandLineTargetAlgorithmEvaluatorOptions options) {
 		super(execConfig, runConfigs,obs, options);
 		
 	}

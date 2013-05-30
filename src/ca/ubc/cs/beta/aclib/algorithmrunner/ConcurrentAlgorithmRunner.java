@@ -13,8 +13,8 @@ import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aclib.exceptions.TargetAlgorithmAbortException;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.cli.CommandLineTargetAlgorithmEvaluatorOptions;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluatorOptions;
 
 /**
  * Processes Algorithm Run Requests concurrently 
@@ -37,7 +37,7 @@ class ConcurrentAlgorithmRunner extends AbstractAlgorithmRunner {
 	 * @param obs 
 	 */
 	public ConcurrentAlgorithmRunner(AlgorithmExecutionConfig execConfig,
-			List<RunConfig> runConfigs, int numberOfConcurrentExecutions, CurrentRunStatusObserver obs, CommandLineTargetAlgorithmEvaluatorOptions options) {
+			List<RunConfig> runConfigs, int numberOfConcurrentExecutions, TargetAlgorithmEvaluatorRunObserver obs, CommandLineTargetAlgorithmEvaluatorOptions options) {
 		super(execConfig, runConfigs, obs, options);
 		this.numberOfConcurrentExecutions = numberOfConcurrentExecutions;
 	}

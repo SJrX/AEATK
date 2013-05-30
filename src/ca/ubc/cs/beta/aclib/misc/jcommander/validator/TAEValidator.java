@@ -4,7 +4,7 @@ import com.beust.jcommander.IParameterValidator;
 import com.beust.jcommander.ParameterException;
 
 import ca.ubc.cs.beta.aclib.misc.options.DomainDisplay;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.loader.TargetAlgorithmEvaluatorLoader;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.init.TargetAlgorithmEvaluatorLoader;
 
 public class TAEValidator implements DomainDisplay, IParameterValidator {
 

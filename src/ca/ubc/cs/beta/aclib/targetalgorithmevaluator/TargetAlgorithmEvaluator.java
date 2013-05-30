@@ -4,8 +4,6 @@ import java.util.List;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred.TAECallback;
 
 /**
  * Executes Target Algorithm Runs (Converts between RunConfig objects to AlgorithmRun objects)
@@ -55,7 +53,7 @@ public interface TargetAlgorithmEvaluator {
 	 * @return	list of the exact same size as input containing the <code>AlgorithmRun</code> objects in the same order as runConfigs
 	 * @throws TargetAlgorithmAbortException
 	 */
-	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, CurrentRunStatusObserver runStatusObserver);
+	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver observer);
 	
 	
 	/**
@@ -70,7 +68,7 @@ public interface TargetAlgorithmEvaluator {
 	 * @param runConfig  run configuration to evaluate
 	 * @param handler    handler to invoke on completion or failure
 	 */
-	public void evaluateRunsAsync(RunConfig runConfig, TAECallback taeCallback );
+	public void evaluateRunsAsync(RunConfig runConfig, TargetAlgorithmEvaluatorCallback callback );
 	
 	/**
 	 * Evaluates the given configuration, and when complete the handler is invoked
@@ -84,7 +82,7 @@ public interface TargetAlgorithmEvaluator {
 	 * @param runConfigs list of zero or more run configuration to evaluate
 	 * @param handler    handler to invoke on completion or failure
 	 */
-	public void evaluateRunsAsync(List<RunConfig> runConfigs, TAECallback taeCallback);
+	public void evaluateRunsAsync(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorCallback callback);
 
 	/**
 	 * Evaluates the given configuration, and when complete the handler is invoked
@@ -99,7 +97,7 @@ public interface TargetAlgorithmEvaluator {
 	 * @param handler    handler to invoke on completion or failure
 	 * @param obs 		 observer that will be notified of the current run status
 	 */
-	public void evaluateRunsAsync(List<RunConfig> runConfigs, TAECallback taeCallback, CurrentRunStatusObserver runStatusObserver);
+	public void evaluateRunsAsync(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorCallback callback, TargetAlgorithmEvaluatorRunObserver observer);
 	
 	/**
 	 * Returns the number of target algorithm runs that we have executed

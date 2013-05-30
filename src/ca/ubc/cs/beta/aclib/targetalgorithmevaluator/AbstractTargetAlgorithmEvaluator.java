@@ -10,8 +10,6 @@ import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.CommandLineAlgorithmRun;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred.TAECallback;
 
 /**
  * Abstract Target Algorithm Evalutar
@@ -45,7 +43,7 @@ public abstract class AbstractTargetAlgorithmEvaluator implements TargetAlgorith
 	 * @return	list of the exact same size as input containing the <code>AlgorithmRun</code> objects in the same order as runConfigs
 	 * @throws TargetAlgorithmAbortException
 	 */
-	public abstract List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, CurrentRunStatusObserver runStatusObserver);
+	public abstract List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver runStatusObserver);
 	
 	/**
 	 * Evaluates the given configuration, and when complete the handler is invoked
@@ -60,7 +58,7 @@ public abstract class AbstractTargetAlgorithmEvaluator implements TargetAlgorith
 	 * @param handler    handler to invoke on completion or failure
 	 * @param obs 		 observer that will be notified of the current run status
 	 */
-	public abstract void evaluateRunsAsync(List<RunConfig> runConfigs, TAECallback taeCallback, CurrentRunStatusObserver runStatusObserver);
+	public abstract void evaluateRunsAsync(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorCallback taeCallback, TargetAlgorithmEvaluatorRunObserver runStatusObserver);
 	
 	
 	@Override
@@ -76,14 +74,14 @@ public abstract class AbstractTargetAlgorithmEvaluator implements TargetAlgorith
 	}
 	
 	@Override
-	public final void evaluateRunsAsync(RunConfig runConfig, TAECallback handler) {
+	public final void evaluateRunsAsync(RunConfig runConfig, TargetAlgorithmEvaluatorCallback handler) {
 		evaluateRunsAsync(Collections.singletonList(runConfig), handler);
 	}
 
 	
 	@Override
 	public final void evaluateRunsAsync(List<RunConfig> runConfigs,
-			TAECallback handler) {
+			TargetAlgorithmEvaluatorCallback handler) {
 				evaluateRunsAsync(runConfigs, handler, null);
 			}
 

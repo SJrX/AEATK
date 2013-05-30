@@ -24,11 +24,11 @@ import ca.ubc.cs.beta.aclib.misc.random.SeedableRandomSingleton;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.cli.CommandLineTargetAlgorithmEvaluatorFactory;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred.TAECallback;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred.WaitableTAECallback;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.WaitableTAECallback;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluatorFactory;
 
 
 public class DynamicCappingTestSet {
@@ -157,7 +157,7 @@ public class DynamicCappingTestSet {
 		//System.setOut(new PrintStream(bout));
 		final AtomicBoolean evaluateDone = new AtomicBoolean(false);
 		final AtomicBoolean failure = new AtomicBoolean(false);
-		CurrentRunStatusObserver obs = new CurrentRunStatusObserver()
+		TargetAlgorithmEvaluatorRunObserver obs = new TargetAlgorithmEvaluatorRunObserver()
 		{
 			
 			@Override
@@ -273,7 +273,7 @@ public class DynamicCappingTestSet {
 		//PrintStream out = System.out;
 		//System.setOut(new PrintStream(bout));
 		
-		CurrentRunStatusObserver obs = new CurrentRunStatusObserver()
+		TargetAlgorithmEvaluatorRunObserver obs = new TargetAlgorithmEvaluatorRunObserver()
 		{
 			
 			@Override
@@ -377,7 +377,7 @@ public class DynamicCappingTestSet {
 		//PrintStream out = System.out;
 		//System.setOut(new PrintStream(bout));
 		
-		CurrentRunStatusObserver obs = new CurrentRunStatusObserver()
+		TargetAlgorithmEvaluatorRunObserver obs = new TargetAlgorithmEvaluatorRunObserver()
 		{
 			
 			@Override
@@ -483,7 +483,7 @@ public class DynamicCappingTestSet {
 			
 			final AtomicBoolean evaluateDone = new AtomicBoolean(false);
 			final AtomicBoolean failure = new AtomicBoolean(false);
-			CurrentRunStatusObserver obs = new CurrentRunStatusObserver()
+			TargetAlgorithmEvaluatorRunObserver obs = new TargetAlgorithmEvaluatorRunObserver()
 			{
 				
 				@Override
@@ -568,7 +568,7 @@ public class DynamicCappingTestSet {
 			
 			final AtomicBoolean evaluateDone = new AtomicBoolean(false);
 			final AtomicBoolean failure = new AtomicBoolean(false);
-			CurrentRunStatusObserver obs = new CurrentRunStatusObserver()
+			TargetAlgorithmEvaluatorRunObserver obs = new TargetAlgorithmEvaluatorRunObserver()
 			{
 				
 				@Override
@@ -590,7 +590,7 @@ public class DynamicCappingTestSet {
 			
 			
 			
-			TAECallback asyncCallback = new TAECallback()
+			TargetAlgorithmEvaluatorCallback asyncCallback = new TargetAlgorithmEvaluatorCallback()
 			{
 
 				@Override
