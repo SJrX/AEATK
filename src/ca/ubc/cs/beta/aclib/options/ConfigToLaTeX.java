@@ -288,8 +288,6 @@ public class ConfigToLaTeX {
 		for(Object obj : objectsToScan)
 		{
 			
-			
-			
 			UsageTextField utf = getLatexField(obj);
 			if(utf == null)
 			{
@@ -313,8 +311,14 @@ public class ConfigToLaTeX {
 			
 			UsageSection sec = new UsageSection(title, sectionDescription,isHidden);
 			sections.add(sec);
-			for(Field f : obj.getClass().getFields())
+			
+			
+			for(Field f : obj.getClass().getDeclaredFields())
 			{
+				boolean notAccessible = f.isAccessible();
+				
+				if(notAccessible) f.setAccessible(true);
+				
 				if(f.isAnnotationPresent(Parameter.class))
 				{
 					
@@ -344,7 +348,7 @@ public class ConfigToLaTeX {
 					
 					sec.addAttribute(name, description, "", required,domain, aliases , hidden);
 				}
-				
+				if(notAccessible) f.setAccessible(false);
 				
 			}
 			//System.out.println(sec);
