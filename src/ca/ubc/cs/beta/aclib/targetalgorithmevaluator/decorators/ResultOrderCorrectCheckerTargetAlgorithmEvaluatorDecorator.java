@@ -28,15 +28,6 @@ public class ResultOrderCorrectCheckerTargetAlgorithmEvaluatorDecorator extends 
 		super(tae);
 	}
 	
-	@Override
-	public List<AlgorithmRun> evaluateRun(RunConfig run) {
-		return evaluateRun(Collections.singletonList(run));
-	}
-
-	@Override
-	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs) {
-		return evaluateRun(runConfigs, null);
-	}
 	
 	@Override
 	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, CurrentRunStatusObserver obs) {
@@ -47,15 +38,6 @@ public class ResultOrderCorrectCheckerTargetAlgorithmEvaluatorDecorator extends 
 		return runs;	
 	}
 
-	@Override
-	public void evaluateRunsAsync(RunConfig runConfig, TAECallback handler) {
-		evaluateRunsAsync(Collections.singletonList(runConfig), handler);
-	}
-
-	@Override
-	public void evaluateRunsAsync(List<RunConfig> runConfigs, final TAECallback handler) {
-		evaluateRunsAsync(runConfigs, handler, null);
-	}
 
 	@Override
 	public void evaluateRunsAsync(final List<RunConfig> runConfigs,

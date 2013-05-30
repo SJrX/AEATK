@@ -60,31 +60,12 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 		this.observerFrequencyMs = observerFrequency;
 	}
 
-	@Override
-	public List<AlgorithmRun> evaluateRun(RunConfig run) {
-		return this.evaluateRun(Collections.singletonList(run));
-	}
-
-	@Override
-	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs) {
-		return this.evaluateRun(runConfigs, null);
-	}
-
 
 	@Override
 	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, CurrentRunStatusObserver obs) {
 		return evaluateRunConfigs(runConfigs, obs, new CountDownLatch(0));
 	}
 
-	@Override
-	public void evaluateRunsAsync(RunConfig runConfig, TAECallback handler) {
-		this.evaluateRunsAsync(Collections.singletonList(runConfig), handler);
-	}
-
-	@Override
-	public void evaluateRunsAsync(List<RunConfig> runConfigs, final TAECallback handler) {
-		this.evaluateRunsAsync(runConfigs, handler, null);
-	}
 
 	@Override
 	public void evaluateRunsAsync(final List<RunConfig> runConfigs,

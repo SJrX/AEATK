@@ -38,11 +38,6 @@ public class EchoTargetAlgorithmEvaluator  extends AbstractBlockingTargetAlgorit
 	public volatile double wallClockTime = 0;
 	
 	@Override
-	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs) {
-		return evaluateRun(runConfigs, null);
-	}
-
-	@Override
 	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, CurrentRunStatusObserver obs) {
 		
 		List<AlgorithmRun> results = new ArrayList<AlgorithmRun>();
@@ -103,7 +98,6 @@ public class EchoTargetAlgorithmEvaluator  extends AbstractBlockingTargetAlgorit
 
 	@Override
 	protected void subtypeShutdown() {
-		
 		
 	}
 

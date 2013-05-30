@@ -31,16 +31,6 @@ public class AbortOnFirstRunCrashTargetAlgorithmEvaluator extends
 	}
 	
 	@Override
-	public List<AlgorithmRun> evaluateRun(RunConfig run) {
-		return validate(super.evaluateRun(run));
-	}
-
-	@Override
-	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs) {
-		return evaluateRun(runConfigs, null);
-	}
-
-	@Override
 	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, CurrentRunStatusObserver obs) {
 		return validate(super.evaluateRun(runConfigs, null));
 	}
@@ -70,17 +60,6 @@ public class AbortOnFirstRunCrashTargetAlgorithmEvaluator extends
 		return runs;
 		
 	}
-
-	@Override
-	public void evaluateRunsAsync(RunConfig runConfig, TAECallback handler) {
-		evaluateRunsAsync(Collections.singletonList(runConfig), handler, null);
-	}
-
-	@Override
-	public void evaluateRunsAsync(List<RunConfig> runConfigs,
-			final TAECallback handler) {
-				evaluateRunsAsync(runConfigs, handler, null);
-			}
 
 	@Override
 	public void evaluateRunsAsync(List<RunConfig> runConfigs,

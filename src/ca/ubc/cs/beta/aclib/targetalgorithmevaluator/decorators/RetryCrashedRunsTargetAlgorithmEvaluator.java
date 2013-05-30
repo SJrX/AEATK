@@ -50,15 +50,7 @@ public class RetryCrashedRunsTargetAlgorithmEvaluator extends
 		}
 	}
 	
-	@Override
-	public List<AlgorithmRun> evaluateRun(RunConfig run) {
-		return this.evaluateRun(Collections.singletonList(run));
-	}
-
-	@Override
-	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs) {
-		return evaluateRun(runConfigs, null);
-	}
+	
 
 	@Override
 	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, CurrentRunStatusObserver obs) {
@@ -125,18 +117,6 @@ public class RetryCrashedRunsTargetAlgorithmEvaluator extends
 		runCount.addAndGet(runs.size());
 	}
 
-	@Override
-	public void evaluateRunsAsync(RunConfig runConfig, TAECallback handler) {
-		log.warn("Cannot retry runs that are asynchronous at the moment");
-		tae.evaluateRunsAsync(runConfig, handler);
-		
-	}
-
-	@Override
-	public void evaluateRunsAsync(List<RunConfig> runConfigs,
-			TAECallback handler) {
-				evaluateRunsAsync(runConfigs, handler,null);
-			}
 
 	@Override
 	public void evaluateRunsAsync(List<RunConfig> runConfigs,

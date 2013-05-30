@@ -26,7 +26,7 @@ import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.AbstractTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred.AbstractDeferredTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred.AbstractAsyncTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.deferred.TAECallback;
 /**
  * Ensures that a Target Algorithm Evaluator gets no more than a certain number of runs issued simultaneously.
@@ -63,15 +63,7 @@ public class BoundedTargetAlgorithmEvaluator extends
 		this.execConfig = execConfig;
 	}
 
-	@Override
-	public void evaluateRunsAsync(RunConfig runConfig, TAECallback handler) {
-		this.evaluateRunsAsync(Collections.singletonList(runConfig), handler, null);
-	}
 
-	@Override
-	public void evaluateRunsAsync(final List<RunConfig> runConfigs, final TAECallback handler) {
-		evaluateRunsAsync(runConfigs, handler, null);
-	}
 
 	@Override
 	public void evaluateRunsAsync(final List<RunConfig> runConfigs, final TAECallback handler, final CurrentRunStatusObserver obs) {
@@ -256,18 +248,9 @@ public class BoundedTargetAlgorithmEvaluator extends
 
 	}
 	
-	@Override
-	public List<AlgorithmRun> evaluateRun(RunConfig run) {
-		return this.evaluateRun(Collections.singletonList(run));
-	}
-
-	@Override
-	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs) {
-		return evaluateRun(runConfigs, null);
-	}
 
 	@Override
 	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, CurrentRunStatusObserver obs) {
-		return AbstractDeferredTargetAlgorithmEvaluator.evaluateRunSyncToAsync(runConfigs, this, obs);
+		return AbstractAsyncTargetAlgorithmEvaluator.evaluateRunSyncToAsync(runConfigs, this, obs);
 	}
 }

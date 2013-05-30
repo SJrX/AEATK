@@ -27,37 +27,12 @@ public abstract class AbstractForEachRunTargetAlgorithmEvaluatorDecorator extend
 	}
 	
 	
-	@Override
-	public final List<AlgorithmRun> evaluateRun(RunConfig run) {
-		return processRuns(tae.evaluateRun(run));
-	}
-
-	@Override
-	public final List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs) {
-		return evaluateRun(runConfigs, null);
-	}
 
 
 	@Override
 	public final List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, CurrentRunStatusObserver obs) {
 		return processRuns(tae.evaluateRun(runConfigs, obs));
 	}
-
-
-	@Override
-	public final void evaluateRunsAsync(RunConfig runConfig,
-			final TAECallback handler) {
-		
-		evaluateRunsAsync(Collections.singletonList(runConfig), handler, null);
-	}
-
-
-	@Override
-	public final void evaluateRunsAsync(List<RunConfig> runConfigs,
-			final TAECallback oHandler) {
-				evaluateRunsAsync(runConfigs, oHandler, null);
-			}
-
 
 	@Override
 	public final void evaluateRunsAsync(List<RunConfig> runConfigs,

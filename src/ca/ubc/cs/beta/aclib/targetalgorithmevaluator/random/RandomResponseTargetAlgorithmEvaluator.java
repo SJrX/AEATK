@@ -67,15 +67,6 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 
 	}
 
-
-
-	@Override
-	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs) {
-		return evaluateRun(runConfigs,null);
-	}
-
-
-
 	@Override
 	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, CurrentRunStatusObserver obs) {
 		List<AlgorithmRun> ar = new ArrayList<AlgorithmRun>(runConfigs.size());

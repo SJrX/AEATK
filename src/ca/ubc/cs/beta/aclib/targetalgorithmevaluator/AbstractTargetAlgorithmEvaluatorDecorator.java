@@ -1,5 +1,6 @@
 package ca.ubc.cs.beta.aclib.targetalgorithmevaluator;
 
+import java.util.Collections;
 import java.util.List;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
@@ -29,12 +30,12 @@ public abstract class AbstractTargetAlgorithmEvaluatorDecorator implements
 	
 	
 	@Override
-	public List<AlgorithmRun> evaluateRun(RunConfig run) {
-		return tae.evaluateRun(run);
+	public final List<AlgorithmRun> evaluateRun(RunConfig run) {
+		return evaluateRun(Collections.singletonList(run));
 	}
 
 	@Override
-	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs) {
+	public final List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs) {
 		return evaluateRun(runConfigs, null);
 	}
 
@@ -45,13 +46,13 @@ public abstract class AbstractTargetAlgorithmEvaluatorDecorator implements
 	}
 
 	@Override
-	public void evaluateRunsAsync(RunConfig runConfig, TAECallback handler) {
-		tae.evaluateRunsAsync(runConfig, handler);
+	public final void evaluateRunsAsync(RunConfig runConfig, TAECallback handler) {
+		evaluateRunsAsync(Collections.singletonList(runConfig), handler);
 	}
 
 	@Override
-	public void evaluateRunsAsync(List<RunConfig> runConfigs, final TAECallback handler) {
-		tae.evaluateRunsAsync(runConfigs, handler);
+	public final void evaluateRunsAsync(List<RunConfig> runConfigs, final TAECallback handler) {
+		evaluateRunsAsync(runConfigs, handler, null);
 	}
 
 	@Override
@@ -106,6 +107,5 @@ public abstract class AbstractTargetAlgorithmEvaluatorDecorator implements
 	}
 	
 	
-	
-	
+
 }

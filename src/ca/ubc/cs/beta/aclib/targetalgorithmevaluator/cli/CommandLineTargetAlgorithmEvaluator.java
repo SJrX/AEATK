@@ -50,17 +50,6 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractBlockingTargetA
 		if(!execDir.isDirectory()) throw new ParameterException("The Algorithm Execution Directory is NOT a directory (" + execConfig.getAlgorithmExecutionDirectory() + ")");
 	}
 	
-	@Override
-	public List<AlgorithmRun> evaluateRun(RunConfig run) 
-	{
-		return evaluateRun(Collections.singletonList(run));
-	}
-	
-	@Override
-	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs)
-	{
-		return evaluateRun(runConfigs,null);
-	}
 
 	@Override
 	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, CurrentRunStatusObserver obs)

@@ -31,29 +31,6 @@ public class CallbackCompletionTargetAlgorithmEvaluatorDecorator extends
 		super(tae);
 	}
 
-	@Override
-	public List<AlgorithmRun> evaluateRun(RunConfig run) {
-		try{
-			outstandingRunBlocks.reducePermits();
-			return tae.evaluateRun(run);
-		} finally
-		{
-			outstandingRunBlocks.release();
-		}
-		
-	}
-
-	@Override
-	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs) {
-		try{
-			outstandingRunBlocks.reducePermits();
-			return tae.evaluateRun(runConfigs);
-		} finally
-		{
-			outstandingRunBlocks.release();
-		}
-	}
-
 
 	@Override
 	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, CurrentRunStatusObserver obs) {
@@ -67,15 +44,6 @@ public class CallbackCompletionTargetAlgorithmEvaluatorDecorator extends
 		
 	}
 
-	@Override
-	public void evaluateRunsAsync(RunConfig runConfig, TAECallback handler) {
-			this.evaluateRunsAsync(Collections.singletonList(runConfig), handler);
-	}
-
-	@Override
-	public void evaluateRunsAsync(List<RunConfig> runConfigs, final TAECallback handler) {
-		this.evaluateRunsAsync(runConfigs, handler, null);
-	}
 
 	@Override
 	public void evaluateRunsAsync(List<RunConfig> runConfigs,

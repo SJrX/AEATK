@@ -51,25 +51,22 @@ public class PreloadedResponseTargetAlgorithmEvaluator extends AbstractBlockingT
 		
 	}
 
+
 	@Override
-	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs) {
+	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs,
+			CurrentRunStatusObserver obs) {
 		List<AlgorithmRun> runs = new ArrayList<AlgorithmRun>();
 		for(RunConfig rc : runConfigs)
 		{
 	
 			AssociatedValue<RunResult, Double> v = myQueue.poll();
 			if(v == null) throw new IllegalStateException("Error out of existing runs");
-			runs.add(new ExistingAlgorithmRun(execConfig, rc, v.getAssociatedValue() + "," + v.getValue() + "," +opts.runLength+ " ," + opts.quality+ "," + rc.getProblemInstanceSeedPair().getSeed()));
+			runs.add(new ExistingAlgorithmRun(execConfig, rc, v.getAssociatedValue() , v.getValue() , opts.runLength ,opts.quality, rc.getProblemInstanceSeedPair().getSeed()));
 			
 			
 		}
 		return runs;
-	}
-
-	@Override
-	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs,
-			CurrentRunStatusObserver obs) {
-		return evaluateRun(runConfigs);
+		
 	}
 		
 	

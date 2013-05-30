@@ -40,21 +40,6 @@ public class LeakingMemoryTargetAlgorithmEvaluator extends AbstractTargetAlgorit
 	public LeakingMemoryTargetAlgorithmEvaluator(TargetAlgorithmEvaluator tae) {
 		super(tae);
 	}
-	
-	
-	
-	@Override
-	public List<AlgorithmRun> evaluateRun(RunConfig run) {
-		List<AlgorithmRun> runs = tae.evaluateRun(run);
-		
-		leak(1);
-		return runs;
-	}
-
-	@Override
-	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs) {
-		return evaluateRun(runConfigs,null);
-	}
 
 	@Override
 	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, CurrentRunStatusObserver obs) {
@@ -63,18 +48,6 @@ public class LeakingMemoryTargetAlgorithmEvaluator extends AbstractTargetAlgorit
 		return runs;
 	}
 
-	@Override
-	public void evaluateRunsAsync(RunConfig runConfig, TAECallback handler) {
-		tae.evaluateRunsAsync(runConfig, handler);
-		leak(1);
-		
-		
-	}
-
-	@Override
-	public void evaluateRunsAsync(List<RunConfig> runConfigs, TAECallback handler) {
-		evaluateRunsAsync(runConfigs, handler, null);
-	}
 
 	@Override
 	public void evaluateRunsAsync(List<RunConfig> runConfigs, TAECallback handler, CurrentRunStatusObserver obs) {

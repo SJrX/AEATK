@@ -13,23 +13,19 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.AbstractTargetAlgorithmEval
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.currentstatus.CurrentRunStatusObserver;
 
-public abstract class AbstractDeferredTargetAlgorithmEvaluator extends
-		AbstractTargetAlgorithmEvaluator implements DeferredTargetAlgorithmEvaluator{
+public abstract class AbstractAsyncTargetAlgorithmEvaluator extends
+		AbstractTargetAlgorithmEvaluator implements TargetAlgorithmEvaluator{
 
 
 
-	public AbstractDeferredTargetAlgorithmEvaluator(
+	public AbstractAsyncTargetAlgorithmEvaluator(
 			AlgorithmExecutionConfig execConfig) {
 		super(execConfig);
 	}
 
-	@Override
-	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs) {
-		return evaluateRun(runConfigs, null);
-	}
 
 	@Override
-	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, CurrentRunStatusObserver obs) {
+	public final List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, CurrentRunStatusObserver obs) {
 		return evaluateRunSyncToAsync(runConfigs,this,obs);
 	}
 

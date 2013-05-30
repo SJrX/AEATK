@@ -30,18 +30,6 @@ public abstract class AbstractBlockingTargetAlgorithmEvaluator extends
 	}
 
 	@Override
-	public void evaluateRunsAsync(RunConfig runConfig,
-			TAECallback handler) {
-		this.evaluateRunsAsync(Collections.singletonList(runConfig), handler, null);
-	}
-
-	@Override
-	public  void evaluateRunsAsync(final List<RunConfig> runConfigs,
-			final TAECallback handler) {
-				evaluateRunsAsync(runConfigs, handler, null);
-			}
-
-	@Override
 	public  void evaluateRunsAsync(final List<RunConfig> runConfigs,
 			final TAECallback handler, final CurrentRunStatusObserver obs) {
 		

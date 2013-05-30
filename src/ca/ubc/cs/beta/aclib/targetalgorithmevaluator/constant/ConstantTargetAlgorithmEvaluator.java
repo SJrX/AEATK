@@ -33,7 +33,19 @@ public class ConstantTargetAlgorithmEvaluator extends AbstractBlockingTargetAlgo
 	}
 
 	@Override
-	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs) {
+	protected void subtypeShutdown() {
+		// TODO Auto-generated method stub
+		
+	}
+
+	@Override
+	public boolean areRunsObservable() {
+		return false;
+	}
+
+	@Override
+	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs,
+			CurrentRunStatusObserver obs) {
 		List<AlgorithmRun> runs = new ArrayList<AlgorithmRun>();
 		
 		for(RunConfig rc : runConfigs)
@@ -49,24 +61,6 @@ public class ConstantTargetAlgorithmEvaluator extends AbstractBlockingTargetAlgo
 		}
 		
 		return runs;
-		
-	}
-
-	@Override
-	protected void subtypeShutdown() {
-		// TODO Auto-generated method stub
-		
-	}
-
-	@Override
-	public boolean areRunsObservable() {
-		return false;
-	}
-
-	@Override
-	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs,
-			CurrentRunStatusObserver obs) {
-		throw new UnsupportedOperationException("Too lazy to implement properly");
 	}
 
 }
