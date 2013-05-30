@@ -59,6 +59,7 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	@Parameter(names="--checkResultOrderConsistent", description="Check that the TAE is returning responses in the correct order")
 	public boolean checkResultOrderConsistent;
 	
-	
+	@Parameter(names="--skip-outstanding-eval-tae", description="If set to true code, the TAE will not be wrapped by a decorator to support waiting for outstanding runs")
+	public boolean skipOutstandingEvaluationsTAE = false; 
 	
 }

@@ -20,6 +20,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.debug.LeakingMemoryTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.debug.RunHashCodeVerifyingAlgorithmEvalutor;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.BoundedTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.RetryCrashedRunsTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.prepostcommand.PrePostCommandTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.safety.AbortOnCrashTargetAlgorithmEvaluator;
@@ -185,8 +186,21 @@ public class TargetAlgorithmEvaluatorBuilder {
 		//==== Doesn't change anything and so is safe after the RunHashCode
 		tae = new TimingCheckerTargetAlgorithmEvaluator(execConfig, tae);
 		
+		
 		//==== Doesn't change anything and so is safe after the RunHashCode
 		tae = new PrePostCommandTargetAlgorithmEvaluator(tae, options.prePostOptions);
+		
+
+		if(!options.skipOutstandingEvaluationsTAE)
+		{
+			//==== This class must be near the end as it is very sensitive to ordering of other TAEs, it does not change anything
+			tae = new OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator(tae);
+			log.debug("[TAE] Waiting / Monitoring outstanding target algorithm evaluations is supported");
+		} else
+		{
+			log.info("[TAE] Waiting / Monitoring outstanding target algorithm evaluations will not be supported");
+		}
+		
 		return tae;
 	}
 	
