@@ -10,6 +10,7 @@ import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.CommandLineAlgorithmRun;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator;
 
 /**
  * Abstract Target Algorithm Evalutar
@@ -121,5 +122,29 @@ public abstract class AbstractTargetAlgorithmEvaluator implements TargetAlgorith
 		return sb.toString();
 	}
 	
+	/**
+	 * Blocks waiting for all runs that have been invoked via evaluateRun or evaluateRunAsync to complete
+	 * @throws UnsupportedOperationException - if the TAE does not support this operation 
+	 */
+	@Override
+	public void waitForOutstandingEvaluations()
+	{
+		throw new UnsupportedOperationException(this.getClass().getCanonicalName() + " does NOT support waiting or observing the number of outstanding evaluations, you should probably wrap this TargetAlgorithmEvaluator with an instance of " + OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator.class );
+	}
+	
+	/**
+	 * Returns the total number of outstanding evaluations, that is the number of calls to evaluateRun or evaluateRunAsync to complete
+	 * <b>NOTE:</b> This is NOT the number of runConfigs to be evaluated but the number of requests
+	 * 
+	 * @return number of outstanding evaluations
+	 * @throws UnsupportedOperationException - if the TAE does not support this operation 
+	 */
+	@Override
+	public int getNumberOfOutstandingEvaluations()
+	{
+		throw new UnsupportedOperationException(this.getClass().getCanonicalName() + " does NOT support waiting or observing the number of outstanding evaluations, you should probably wrap this TargetAlgorithmEvaluator with an instance of " + OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator.class );
+	}
+	
+
 
 }

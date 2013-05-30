@@ -8,6 +8,7 @@ import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator;
 
 /**
  * Utility TargetAlgorithmEvaluator that wraps two, and checks that they always return the same value.
@@ -134,6 +135,28 @@ public class EqualTargetAlgorithmEvaluatorTester implements
 		return false;
 	}
 
+
+	/**
+	 * Blocks waiting for all runs that have been invoked via evaluateRun or evaluateRunAsync to complete
+	 * @throws UnsupportedOperationException - if the TAE does not support this operation 
+	 */
+	public void waitForOutstandingEvaluations()
+	{
+		throw new UnsupportedOperationException(this.getClass().getCanonicalName() + " does NOT support waiting or observing the number of outstanding evaluations, you should probably wrap this TargetAlgorithmEvaluator with an instance of " + OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator.class );
+	}
+	
+	/**
+	 * Returns the total number of outstanding evaluations, that is the number of calls to evaluateRun or evaluateRunAsync to complete
+	 * <b>NOTE:</b> This is NOT the number of runConfigs to be evaluated but the number of requests
+	 * 
+	 * @return number of outstanding evaluations
+	 * @throws UnsupportedOperationException - if the TAE does not support this operation 
+	 */
+	public int getNumberOfOutstandingEvaluations()
+	{
+		throw new UnsupportedOperationException(this.getClass().getCanonicalName() + " does NOT support waiting or observing the number of outstanding evaluations, you should probably wrap this TargetAlgorithmEvaluator with an instance of " + OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator.class );
+	}
+	
 }
 
 /***

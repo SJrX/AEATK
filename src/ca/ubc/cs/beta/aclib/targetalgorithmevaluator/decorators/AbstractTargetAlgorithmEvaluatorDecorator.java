@@ -8,6 +8,7 @@ import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator;
 /**
  * Abstract Decorator class for TargetAlgorithmEvalutator
  * 
@@ -61,6 +62,19 @@ public abstract class AbstractTargetAlgorithmEvaluatorDecorator implements	Targe
 		tae.evaluateRunsAsync(runConfigs, callback, observer);
 	}
 
+	
+	public void waitForOutstandingEvaluations()
+	{
+		tae.waitForOutstandingEvaluations();
+	}
+	
+	
+	public int getNumberOfOutstandingEvaluations()
+	{
+		return tae.getNumberOfOutstandingEvaluations();
+	}
+	
+	
 	
 	@Override
 	public int getRunCount() {

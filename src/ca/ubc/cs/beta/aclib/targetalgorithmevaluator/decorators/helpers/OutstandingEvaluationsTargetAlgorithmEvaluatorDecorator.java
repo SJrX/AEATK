@@ -1,7 +1,9 @@
-package ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.experimental;
+package ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers;
 
 import java.util.Collections;
 import java.util.List;
+
+import net.jcip.annotations.ThreadSafe;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.concurrent.ReducableSemaphore;
@@ -12,21 +14,21 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbstractTargetAlgorithmEvaluatorDecorator;
 
 /**
- * Experimental TAE that allows you to wait for all runs to be completed.
- * <b>USER NOTE:</b> This class may be removed in the future as there may be a better way,
- * or individual TAEs may use this. It's unclear at this time.
+ * Target Algorithm Evaluator that implements the monitoring outstanding evalutions
+ * <b>NOTE:</b> You need to be VERY careful with respect to the decorator order, things like the BoundedTargetAlgorithmEvaluator if applied on this will break
  * 
  * 
  * @author Steve Ramage <seramage@cs.ubc.ca>
  */
-public class CallbackCompletionTargetAlgorithmEvaluatorDecorator extends
+@ThreadSafe
+public class OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator extends
 		AbstractTargetAlgorithmEvaluatorDecorator {
 
 	
 	private final ReducableSemaphore outstandingRunBlocks = new ReducableSemaphore(1);
 	
 	
-	public CallbackCompletionTargetAlgorithmEvaluatorDecorator(
+	public OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator(
 			TargetAlgorithmEvaluator tae) {
 		super(tae);
 	}
@@ -81,7 +83,8 @@ public class CallbackCompletionTargetAlgorithmEvaluatorDecorator extends
 	 * Waits for there to be no outstanding runs
 	 * <b>NOTE:</b> This isn't the same as waiting for a shutdown, this waits until the number of runs in progress is zero, it can later go higher again.
 	 */
-	public void waitForAllOutstandingRunsCompletion()
+	@Override
+	public void waitForOutstandingEvaluations()
 	{
 		try {
 			try {
@@ -97,6 +100,11 @@ public class CallbackCompletionTargetAlgorithmEvaluatorDecorator extends
 		}
 	}
 	
+	@Override
+	public int getNumberOfOutstandingEvaluations()
+	{
+		return 1 - outstandingRunBlocks.availablePermits();
+	}
 	
 	
 }

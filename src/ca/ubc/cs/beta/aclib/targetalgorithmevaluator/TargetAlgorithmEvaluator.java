@@ -99,10 +99,28 @@ public interface TargetAlgorithmEvaluator {
 	 */
 	public void evaluateRunsAsync(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorCallback callback, TargetAlgorithmEvaluatorRunObserver observer);
 	
+
+	/**
+	 * Blocks waiting for all runs that have been invoked via evaluateRun or evaluateRunAsync to complete
+	 * <b>NOTE:</b> This is NOT the same as waiting for the TAE to shutdown or be ready to shutdown, just that this TAE has no outstanding runs
+	 * 
+	 * @throws UnsupportedOperationException - if the TAE does not support this operation 
+	 */
+	public void waitForOutstandingEvaluations();
+	
+	/**
+	 * Returns the total number of outstanding evaluations, that is the number of calls to evaluateRun or evaluateRunAsync to complete
+	 * <b>NOTE:</b> This is NOT the number of runConfigs to be evaluated but the number of requests, and just because this returns zero doesn't mean it can't increase in the future.
+	 * 
+	 * @return number of outstanding evaluations
+	 * @throws UnsupportedOperationException - if the TAE does not support this operation 
+	 */
+	public int getNumberOfOutstandingEvaluations();
+	
+	
 	/**
 	 * Returns the number of target algorithm runs that we have executed
 	 * @return	total number of runs evaluated
-	 * 
 	 */
 	public int getRunCount();
 	
