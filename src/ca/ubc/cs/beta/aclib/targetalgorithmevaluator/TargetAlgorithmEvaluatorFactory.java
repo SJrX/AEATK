@@ -1,5 +1,7 @@
 package ca.ubc.cs.beta.aclib.targetalgorithmevaluator;
 
+import java.util.Map;
+
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 
@@ -35,6 +37,15 @@ public interface TargetAlgorithmEvaluatorFactory {
 	 * @return	the target algorithm evaluator
 	 */
 	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig, AbstractOptions options);
+	
+	/**
+	 * Retrieves a Target Algorithm Evaluator
+	 * @param 	execConfig    The Execution Configuration for the Target Algorithm
+	 * @param   optionsMap	  Options for all available Target Algorithm Evaluators (the following entry is guaranteed to exist in the map: <getName(), getOptionObject()>)
+	 * @return	the target algorithm evaluator
+	 */
+	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig, Map<String,AbstractOptions> optionsMap);
+	
 	
 	/**
 	 * Retrieves an object for use with configuration. It should be compatible with JCommander annotations. 

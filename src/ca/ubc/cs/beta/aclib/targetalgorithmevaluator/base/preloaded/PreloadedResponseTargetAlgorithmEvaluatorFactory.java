@@ -9,12 +9,12 @@ import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.misc.associatedvalue.AssociatedValue;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.AbstractTargetAlgorithmEvaluatorFactory;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorFactory;
 
 @ProviderFor(TargetAlgorithmEvaluatorFactory.class)
-public class PreloadedResponseTargetAlgorithmEvaluatorFactory implements
-		TargetAlgorithmEvaluatorFactory {
+public class PreloadedResponseTargetAlgorithmEvaluatorFactory extends AbstractTargetAlgorithmEvaluatorFactory {
 
 	@Override
 	public String getName() {
