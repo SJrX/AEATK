@@ -732,7 +732,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 		
 		if(parameterDomainContinuous[valueArrayIndex])
 		{
-		  return ParamConfigurationSpace.NEIGHBOURS_FOR_CONTINUOUS;
+		  return configSpace.neighboursForContinuousParameters;
 		} else
 		{
 		  return categoricalSize[valueArrayIndex] - 1;

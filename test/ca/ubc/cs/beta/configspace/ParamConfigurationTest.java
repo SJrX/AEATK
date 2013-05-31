@@ -45,6 +45,7 @@ public class ParamConfigurationTest {
 	@Before
 	public void setUp()
 	{
+		long time = System.currentTimeMillis();
 		
 	}
 	
@@ -74,7 +75,6 @@ public class ParamConfigurationTest {
 	}	
 	
 	@Test
-	@Ignore("This test doesn't do anything???")
 	public void testIntegerContinuousParameters() {
 		URL url = this.getClass().getClassLoader().getResource("paramFiles/integerFormatParam.txt");
 		File f = new File(url.getPath());
@@ -82,7 +82,7 @@ public class ParamConfigurationTest {
 		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(f);
 		ParamConfiguration config = configSpace.getDefaultConfiguration();
 		System.out.println(config.getFormattedParamString());
-		
+		//File is parsed correctly
 		
 	}
 	
@@ -1173,6 +1173,43 @@ public class ParamConfigurationTest {
 		
 		assertEquals("Expected that the two objects are the same", ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration());
 		assertEquals("Expected that the two objects hash the same", ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration().hashCode(),ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration().hashCode());
+		
+	}
+	
+	@Test
+	public void testNeighbourCorrect()
+	{
+		for(int i=0; i < 25; i++)
+		{
+			StringReader sr = new StringReader("foo [0,10] [5]");
+			ParamConfigurationSpace configSpace = new ParamConfigurationSpace(sr, "<>", Collections.EMPTY_MAP, i);
+			
+			assertEquals(configSpace.getDefaultConfiguration().getNeighbourhood(rand).size(), i);
+			
+		}
+		
+		try {
+			StringReader sr = new StringReader("foo [0,10] [5]");
+			ParamConfigurationSpace configSpace = new ParamConfigurationSpace(sr, "<>", Collections.EMPTY_MAP, -1);
+			
+			assertEquals(configSpace.getDefaultConfiguration().getNeighbourhood(rand).size(), -1);
+			fail("Should have crashed with zero neighbours");
+		} catch(IllegalArgumentException e)
+		{
+			
+		}
+		
+		for(int i=0; i < 25; i++)
+		{
+			StringReader sr = new StringReader("foo [0,10] [5]\nbar [0,10] [5]");
+			ParamConfigurationSpace configSpace = new ParamConfigurationSpace(sr, "<>", Collections.EMPTY_MAP, i);
+			
+			assertEquals(configSpace.getDefaultConfiguration().getNeighbourhood(rand).size(), 2*i);
+			
+		}
+		
+		
+		
 		
 	}
 	@After

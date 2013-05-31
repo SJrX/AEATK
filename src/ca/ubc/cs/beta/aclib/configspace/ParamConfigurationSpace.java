@@ -117,12 +117,11 @@ public class ParamConfigurationSpace implements Serializable {
 	 */
 	public static final int INVALID_CATEGORICAL_SIZE = 0;
 	
+	static final int DEFAULT_NEIGHBOURS_FOR_CONTINUOUS_PARAMETERS = 4;
 	/**
 	 * Number of Neighbours a continuous value has
 	 */
-	static final int NEIGHBOURS_FOR_CONTINUOUS = 4;
-	
-
+	final int neighboursForContinuousParameters;
 	
 	/**
 	 * Number of parameters 
@@ -136,8 +135,7 @@ public class ParamConfigurationSpace implements Serializable {
 
 	private final int[][][] condParentVals;
 
-	
-	
+
 	/**
 	 * Flag variable that controls whether there exists a real parameter file
 	 * NOTE: This field should not be changed after being set.
@@ -176,8 +174,6 @@ public class ParamConfigurationSpace implements Serializable {
 	private final List<String> authorativeParameterNameOrder;
 
 
-
-	
 	/**
 	 * Creates a Param Configuration Space from the given file, no random object
 	 * @param filename string storing the filename to parse
@@ -195,7 +191,7 @@ public class ParamConfigurationSpace implements Serializable {
 	 */
 	public ParamConfigurationSpace(Reader reader, Map<String, String> searchSubspace)
 	{
-		this(reader, "ReaderOnly-"+System.currentTimeMillis() +"-" +(int) (Math.random() * 10000000.0), searchSubspace);
+		this(reader, "ReaderOnly-"+System.currentTimeMillis() +"-" +(int) (Math.random() * 10000000.0), searchSubspace, DEFAULT_NEIGHBOURS_FOR_CONTINUOUS_PARAMETERS);
 		hasRealParameterFile = false;
 	}
 	
@@ -222,15 +218,13 @@ public class ParamConfigurationSpace implements Serializable {
 	}
 	
 	/**
-	 * Creates a Param Configuration Space from the given reader
-	 * @param reader that contains the text of the file
-	 * @param random random object to parse
-	 * @param absolute file name of the object (a unique string used for equality)
+	 * Creates a Param Configuration Space from the given file
+	 * @param file
+	 * @param random
 	 */
-	@SuppressWarnings("unchecked")
-	public ParamConfigurationSpace(Reader file, String absoluteFileName)
+	public ParamConfigurationSpace(File file, int neighbours)
 	{
-		this(file, absoluteFileName, Collections.EMPTY_MAP);
+		this(new FileReaderNoException(file), file.getAbsolutePath(), Collections.EMPTY_MAP, neighbours);
 	}
 	
 	/**
@@ -239,9 +233,23 @@ public class ParamConfigurationSpace implements Serializable {
 	 * @param random random object to parse
 	 * @param absolute file name of the object (a unique string used for equality)
 	 */
-	public ParamConfigurationSpace(Reader file, String absoluteFileName, Map<String, String> searchSubspace)
+	@SuppressWarnings("unchecked")
+	public ParamConfigurationSpace(Reader file, String absoluteFileName)
+	{
+		this(file, absoluteFileName, Collections.EMPTY_MAP, DEFAULT_NEIGHBOURS_FOR_CONTINUOUS_PARAMETERS);
+	}
+	
+	/**
+	 * Creates a Param Configuration Space from the given reader
+	 * @param reader that contains the text of the file
+	 * @param random random object to parse
+	 * @param absolute file name of the object (a unique string used for equality)
+	 */
+	public ParamConfigurationSpace(Reader file, String absoluteFileName, Map<String, String> searchSubspace, final int neighboursForContinuousParameters)
 	{
 		
+		
+		this.neighboursForContinuousParameters = neighboursForContinuousParameters;
 		/*
 		 * Parse File and create configuration space
 		 */

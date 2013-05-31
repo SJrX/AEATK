@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
  * 
  * 
  */
-public class ParamFileHelper {
+public final class ParamFileHelper {
 
 	/**
 	 * Returns a ParamConfigurationSpace via the filename and seeded with seed
@@ -21,61 +21,52 @@ public class ParamFileHelper {
 	 * 
 	 */
 	public static ParamConfigurationSpace getParamFileParser(String filename)
+	{
+		return getParamFileParser(filename, ParamConfigurationSpace.DEFAULT_NEIGHBOURS_FOR_CONTINUOUS_PARAMETERS);
+	}
+	
+	public static ParamConfigurationSpace getParamFileParser(String filename, int neighbours)
 	{	if(filename.equals(ParamConfigurationSpace.SINGLETON_ABSOLUTE_NAME))
 		{
 			return ParamConfigurationSpace.getSingletonConfigurationSpace();
 		} else
 		{
-			return getParamFileParser(new File(filename));
+			return getParamFileParser(new File(filename), neighbours);
 		}
 	}
-	
 
-	private static ConcurrentHashMap<String, ParamConfigurationSpace> paramFiles = new ConcurrentHashMap<String, ParamConfigurationSpace>();
-	
 	/**
 	 * Returns a ParamConfigurationSpace via the filename and seeded with seed
 	 * 
-	 *  This method will return the same instance for subsequent file names, and can only been seeded once
 	 * @param file  					file with the param arguments
 	 * @param seedForRandomSampling		seed for prng
 	 * @return ParamConfigurationSpace instance
 	 */
 	public static ParamConfigurationSpace getParamFileParser(File file)
 	{
-		//TODO Fix Thread Safety of this code (I'm not sure if the double-check locking idiom works here)
-		ParamConfigurationSpace param = paramFiles.get(file.getAbsolutePath());
-		
-		if(param == null)
-		{ 
-				param = new ParamConfigurationSpace(file);
-								
-				 ParamConfigurationSpace p = paramFiles.putIfAbsent(file.getAbsolutePath(),param);
-				 if(p == null)
-				 {			
-					 return param; 
-				 } else
-				 {
-					 return p;
-				 }
-		} else
-		{
-			return param;
-		}
-		
+		return new ParamConfigurationSpace(file);
 	}
 
 	/**
-	 * Clears the cache so that param files can be re-seeded
+	 * Returns a ParamConfigurationSpace via the filename and seeded with seed
+	 * 
+	 * @param file  					file with the param arguments
+	 * @param seedForRandomSampling		seed for prng
+	 * @return ParamConfigurationSpace instance
 	 */
-	public static void clear() {
-		paramFiles.clear();
-		
+	public static ParamConfigurationSpace getParamFileParser(File file, int neighbours)
+	{
+		return new ParamConfigurationSpace(file, neighbours);
 	}
+	
 
 	public static ParamConfigurationSpace getParamFileFromString(String string) {
 		return new ParamConfigurationSpace(new StringReader(string));
 	}
 	
-	
+	//Non-initializable
+	private ParamFileHelper()
+	{
+		
+	}
 }

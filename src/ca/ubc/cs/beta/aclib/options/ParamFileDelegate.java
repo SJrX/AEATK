@@ -37,6 +37,9 @@ public class ParamFileDelegate extends AbstractOptions{
 	@Parameter(names="--searchSubspaceFile", description="Only generate random and neighbouring configurations with these values. Specified each parameter on each own line with individual value", required=false, converter=ReadableFileConverter.class)
 	public File searchSubspaceFile;
 	
+	@Parameter(names="--continuousNeighbours", description="Number of neighbours for continuous parameters")
+	public int continuousNeighbours = 4;
+	
 	public Map<String,String> getSubspaceMap()
 	{
 		Map<String, String> map = new HashMap<String, String>();
@@ -117,7 +120,7 @@ public class ParamFileDelegate extends AbstractOptions{
 	 */
 	public ParamConfigurationSpace getParamConfigurationSpace()
 	{
-		return getParamConfigurationSpace(Collections.EMPTY_LIST);
+		return getParamConfigurationSpace(Collections.<String> emptyList());
 	}
 	
 	/**
@@ -136,7 +139,7 @@ public class ParamFileDelegate extends AbstractOptions{
 		Logger log = LoggerFactory.getLogger(this.getClass());
 		List<String> searchPaths = new ArrayList<String>(searchDirectories);
 		
-		//==Th
+		//==This will check the current working directory
 		searchPaths.add("");
 		
 		
@@ -156,7 +159,7 @@ public class ParamFileDelegate extends AbstractOptions{
 				path += this.paramFile;
 				
 		
-				configSpace = ParamFileHelper.getParamFileParser(path);
+				configSpace = ParamFileHelper.getParamFileParser(path, this.continuousNeighbours);
 				log.debug("Configuration space found in " + path);
 			} catch(IllegalStateException e)
 			{ 
