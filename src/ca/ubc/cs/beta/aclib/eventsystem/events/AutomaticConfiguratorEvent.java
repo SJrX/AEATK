@@ -1,13 +1,13 @@
-package ca.ubc.cs.beta.aclib.events;
+package ca.ubc.cs.beta.aclib.eventsystem.events;
 
 import java.util.UUID;
 
 public abstract class AutomaticConfiguratorEvent {
 
 	private final UUID uuid;
-	public AutomaticConfiguratorEvent(UUID uuid)
+	public AutomaticConfiguratorEvent()
 	{
-		this.uuid = uuid;
+		this.uuid = getUUID();
 	}
 	
 	public UUID getUUID()

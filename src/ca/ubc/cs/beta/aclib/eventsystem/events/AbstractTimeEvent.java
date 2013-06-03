@@ -1,13 +1,15 @@
-package ca.ubc.cs.beta.aclib.events;
+package ca.ubc.cs.beta.aclib.eventsystem.events;
 
 import java.util.UUID;
+
+import ca.ubc.cs.beta.aclib.eventsystem.ConfigurationTimeLimits;
 
 public abstract class AbstractTimeEvent extends AutomaticConfiguratorEvent {
 
 	private final ConfigurationTimeLimits configurationTimeLimit;
 
-	public AbstractTimeEvent(UUID uuid, ConfigurationTimeLimits configurationTimeLimit) {
-		super(uuid);
+	public AbstractTimeEvent(ConfigurationTimeLimits configurationTimeLimit) {
+		
 		
 		this.configurationTimeLimit = configurationTimeLimit;
 	}

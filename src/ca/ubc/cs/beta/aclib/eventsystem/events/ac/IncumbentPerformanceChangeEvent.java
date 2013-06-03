@@ -1,8 +1,9 @@
-package ca.ubc.cs.beta.aclib.events;
+package ca.ubc.cs.beta.aclib.eventsystem.events.ac;
 
 import java.util.UUID;
 
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
+import ca.ubc.cs.beta.aclib.eventsystem.events.AutomaticConfiguratorEvent;
 
 public class IncumbentPerformanceChangeEvent extends AutomaticConfiguratorEvent {
 
@@ -12,8 +13,8 @@ public class IncumbentPerformanceChangeEvent extends AutomaticConfiguratorEvent 
 	private final double empiricalPerformance;
 	private final double cpuTime;
 
-	public IncumbentPerformanceChangeEvent(UUID uuid, double tunerTime, double empiricalPerformance, long wallTime, ParamConfiguration incumbent, double acTime ) {
-		super(uuid);
+	public IncumbentPerformanceChangeEvent(double tunerTime, double empiricalPerformance, long wallTime, ParamConfiguration incumbent, double acTime ) {
+		
 		this.cpuTime = tunerTime;
 		this.empiricalPerformance = empiricalPerformance;
 		this.wallTime = wallTime;

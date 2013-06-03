@@ -5,6 +5,7 @@ import org.junit.runners.Suite;
 
 import ca.ubc.cs.beta.configspace.ParamConfigurationTest;
 import ca.ubc.cs.beta.configspace.RandomConfigurationTest;
+import ca.ubc.cs.beta.eventsystem.EventManagerTester;
 import ca.ubc.cs.beta.objectives.RunObjectiveTester;
 import ca.ubc.cs.beta.probleminstance.BuggyFeatureFilesTester;
 import ca.ubc.cs.beta.probleminstance.ProblemInstanceHelperTester;
@@ -17,6 +18,7 @@ import ca.ubc.cs.beta.instancespecificinfo.*;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
+	EventManagerTester.class,
 	DynamicCappingTestSet.class,
 	ParamConfigurationTest.class,
 	RandomConfigurationTest.class,

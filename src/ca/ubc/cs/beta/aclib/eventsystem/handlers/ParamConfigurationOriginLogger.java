@@ -1,4 +1,4 @@
-package ca.ubc.cs.beta.aclib.eventHandlers;
+package ca.ubc.cs.beta.aclib.eventsystem.handlers;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -10,8 +10,8 @@ import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationOriginTracker;
-import ca.ubc.cs.beta.aclib.events.AutomaticConfigurationEnd;
-import ca.ubc.cs.beta.aclib.events.EventHandler;
+import ca.ubc.cs.beta.aclib.eventsystem.EventHandler;
+import ca.ubc.cs.beta.aclib.eventsystem.events.ac.AutomaticConfigurationEnd;
 import ca.ubc.cs.beta.aclib.runhistory.RunHistory;
 
 /**

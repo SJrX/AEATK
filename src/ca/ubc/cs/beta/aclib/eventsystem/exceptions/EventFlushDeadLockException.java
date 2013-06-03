@@ -1,4 +1,4 @@
-package ca.ubc.cs.beta.aclib.exceptions;
+package ca.ubc.cs.beta.aclib.eventsystem.exceptions;
 
 public class EventFlushDeadLockException extends IllegalStateException {
 

@@ -1,6 +1,8 @@
-package ca.ubc.cs.beta.aclib.events;
+package ca.ubc.cs.beta.aclib.eventsystem.events.basic;
 
 import java.util.UUID;
+
+import ca.ubc.cs.beta.aclib.eventsystem.events.AutomaticConfiguratorEvent;
 
 /**
  * 
@@ -13,9 +15,9 @@ public class EventHandlerRuntimeExceptionEvent extends AutomaticConfiguratorEven
 	private final RuntimeException e;
 	private final AutomaticConfiguratorEvent event;
 	
-	public EventHandlerRuntimeExceptionEvent(UUID uuid, RuntimeException e, AutomaticConfiguratorEvent event)
+	public EventHandlerRuntimeExceptionEvent(RuntimeException e, AutomaticConfiguratorEvent event)
 	{
-		super(uuid);
+		
 		this.e = e;
 		this.event = event;
 	}

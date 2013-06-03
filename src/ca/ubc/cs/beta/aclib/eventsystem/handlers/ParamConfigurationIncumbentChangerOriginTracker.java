@@ -1,9 +1,9 @@
-package ca.ubc.cs.beta.aclib.eventHandlers;
+package ca.ubc.cs.beta.aclib.eventsystem.handlers;
 
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationOriginTracker;
-import ca.ubc.cs.beta.aclib.events.EventHandler;
-import ca.ubc.cs.beta.aclib.events.IncumbentChangeEvent;
+import ca.ubc.cs.beta.aclib.eventsystem.EventHandler;
+import ca.ubc.cs.beta.aclib.eventsystem.events.ac.IncumbentChangeEvent;
 import ca.ubc.cs.beta.aclib.runhistory.ThreadSafeRunHistory;
 
 public class ParamConfigurationIncumbentChangerOriginTracker implements	EventHandler<IncumbentChangeEvent>

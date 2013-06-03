@@ -1,5 +1,6 @@
-package ca.ubc.cs.beta.aclib.events;
+package ca.ubc.cs.beta.aclib.eventsystem;
 
+@Deprecated
 public class ConfigurationTimeLimits {
 
 	private final double tunerTime;
