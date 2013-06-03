@@ -34,7 +34,6 @@ public class ConstantTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorith
 
 	@Override
 	protected void subtypeShutdown() {
-		// TODO Auto-generated method stub
 		
 	}
 
