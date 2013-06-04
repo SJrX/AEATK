@@ -203,8 +203,10 @@ public class EventManager {
 	{ 
 		private transient Logger log = LoggerFactory.getLogger(EventManager.class);
 		private BlockingQueue<Runnable> asyncRuns;
-		private boolean warningGeneratedForHighQueueLoad = false;
+		
 		private Semaphore threadDone = new Semaphore(0);
+		
+		private int highLoadQueueWarningDisplay = 128;
 		public EventManagementThread(BlockingQueue<Runnable> asyncRuns)
 		{
 			this.asyncRuns = asyncRuns;
@@ -227,10 +229,10 @@ public class EventManager {
 					}
 					asyncRuns.take().run();
 					
-					if(!warningGeneratedForHighQueueLoad && asyncRuns.size() > 100)
+					if(asyncRuns.size() > highLoadQueueWarningDisplay)
 					{
-						log.warn("Processing Events has over 100 elements currently waiting");
-						warningGeneratedForHighQueueLoad = true;
+						highLoadQueueWarningDisplay *= 2;
+						log.warn("Processing Events has {} elements currently waiting, next warning at {} ", asyncRuns.size(), highLoadQueueWarningDisplay);
 					}
 					
 				} catch(RuntimeException e)

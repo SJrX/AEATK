@@ -5,8 +5,10 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -133,6 +135,16 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 		//We don't pass the Observer to the decorated TAE because it might report too much too soon.
 		//We also make this list unmodifiable so that we don't accidentally tamper with it.
 		
+		Set<String> configIDs = new HashSet<String>();
+		
+		for(RunConfig rc : runConfigs)
+		{
+			configIDs.add(rc.getParamConfiguration().getFriendlyIDHex());
+		}
+		
+		
+		log.info("Scheduling runs synchronously for configs {}", configIDs);
+		
 		final List<AlgorithmRun> measuredRuns = Collections.unmodifiableList(tae.evaluateRun(runConfigs, null));
 		
 		double maxRuntime = Double.NEGATIVE_INFINITY;
@@ -162,7 +174,11 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 		{
 			releaseTime =  maxRuntime * 1000 / 86400000 + " days " + releaseTime;
 		}
-		log.debug("Simulating {} elapsed seconds of running. Wake-up estimated in/at: {} ", maxRuntime, releaseTime );
+		
+		
+		Object[] args = {  maxRuntime, configIDs, releaseTime}; 
+	
+		log.debug("Simulating {} elapsed seconds of running for configs ({}) . Wake-up estimated in/at: {} ", args);
 		
 		long waitTimeRemainingMs;
 		boolean allDone = true;
@@ -170,6 +186,10 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 			long currentTimeInMs =  System.currentTimeMillis();
 			waitTimeRemainingMs =  startTimeInMs  +  (long) maxRuntime*1000 - currentTimeInMs;
 			
+			if(waitTimeRemainingMs < -2000*2)
+			{
+				log.warn("Expected to be done by now, but for some reason I'm not ");
+			}
 
 			long sleepTime = Math.min(observerFrequencyMs, waitTimeRemainingMs);
 			
@@ -180,6 +200,7 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 					Thread.sleep(sleepTime);
 				} catch (InterruptedException e) {
 					Thread.currentThread().interrupt();
+					log.info(" Interrupted and throwing abort ");
 					//We are interrupted we are just going to return the measured runs
 					throw new TargetAlgorithmAbortException(e);
 				}
