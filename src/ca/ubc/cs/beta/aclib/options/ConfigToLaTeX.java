@@ -315,7 +315,7 @@ public class ConfigToLaTeX {
 			
 			for(Field f : obj.getClass().getDeclaredFields())
 			{
-				boolean notAccessible = f.isAccessible();
+				boolean notAccessible = !f.isAccessible();
 				
 				if(notAccessible) f.setAccessible(true);
 				
@@ -348,7 +348,7 @@ public class ConfigToLaTeX {
 					
 					sec.addAttribute(name, description, "", required,domain, aliases , hidden);
 				}
-				if(notAccessible) f.setAccessible(false);
+				if(!notAccessible) f.setAccessible(false);
 				
 			}
 			//System.out.println(sec);
