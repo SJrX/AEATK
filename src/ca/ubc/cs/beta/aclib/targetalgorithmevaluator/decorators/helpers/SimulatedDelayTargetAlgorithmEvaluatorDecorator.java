@@ -260,8 +260,10 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 		}
 		while( true );
 		
-		long currentTimeInMs =  System.currentTimeMillis();
-		updateRunsAndNotifyObserver(startTimeInMs, currentTimeInMs, maxRuntime, asyncReleaseLatch, observer, runsFromWrappedTAE, runConfigs, khs, runResults);
+		//Everything should be done at this time 
+		//We throw the time into the future a bit to clean up anything that is still running because of a small number of runs.
+		long simulatedCurrentTimeInMs =  System.currentTimeMillis() + 2* this.observerFrequencyMs;
+		updateRunsAndNotifyObserver(startTimeInMs, simulatedCurrentTimeInMs, maxRuntime, asyncReleaseLatch, observer, runsFromWrappedTAE, runConfigs, khs, runResults);
 			
 	}
 	
