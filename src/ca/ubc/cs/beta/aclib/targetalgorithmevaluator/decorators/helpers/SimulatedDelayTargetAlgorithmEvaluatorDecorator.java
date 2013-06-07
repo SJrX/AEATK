@@ -72,7 +72,7 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 	@Override
 	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
 		 
-		return evaluateRunConfigs(runConfigs, obs, new CountDownLatch(0));
+		return evaluateRunConfigs(runConfigs, obs);
 		
 	}
 
@@ -81,19 +81,13 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 	public void evaluateRunsAsync(final List<RunConfig> runConfigs,
 			final TargetAlgorithmEvaluatorCallback handler, final TargetAlgorithmEvaluatorRunObserver obs) {
 	
-		final CountDownLatch latch = new CountDownLatch(1);
+		
 		execService.execute(new Runnable()
 		{
-
 			@Override
 			public void run() {
 				try {
-					try { 
-					handler.onSuccess(evaluateRunConfigs(runConfigs, obs, latch));
-					} finally
-					{
-						latch.countDown();
-					}
+					handler.onSuccess(evaluateRunConfigs(runConfigs, obs));
 				} catch(RuntimeException e)
 				{
 					handler.onFailure(e);
@@ -102,15 +96,6 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 			}
 			
 		});
-		
-		try {
-			//The latch fires if we sleep in evaluateRunConfigs
-			//or if we complete the handler.
-			//This roughly simulates the required behaivor that if the runs are done/fast we should invoke the callback before hand.
-			latch.await();
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
-		}
 		
 	}
 	
@@ -144,7 +129,7 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 	 * @param asyncReleaseLatch	latch that we will decrement if we sleep (this is used for async evaluation)
 	 * @return
 	 */
-	private List<AlgorithmRun> evaluateRunConfigs(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs, CountDownLatch asyncReleaseLatch)
+	private List<AlgorithmRun> evaluateRunConfigs(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs)
 	{
 		try {
 			threadsWaiting.incrementAndGet();
@@ -181,7 +166,7 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 			Object[] args = {  timeToSleep, configIDs, getNicelyFormattedWakeUpTime(timeToSleep), threadsWaiting.get()}; 
 			log.debug("Simulating {} elapsed seconds of running for configs ({}) . Wake-up estimated in/at: {}  ( ~({}) threads currently waiting )", args);
 			
-			sleepAndNotifyObservers(startTimeInMs, timeToSleep, asyncReleaseLatch, obs, runsFromWrappedTAE, runConfigs, runConfigToKillHandlerMap, runConfigToAlgorithmRunMap);
+			sleepAndNotifyObservers(startTimeInMs, timeToSleep, obs, runsFromWrappedTAE, runConfigs, runConfigToKillHandlerMap, runConfigToAlgorithmRunMap);
 			
 			if(obs == null)
 			{ 
@@ -218,7 +203,7 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 		}
 	}
 
-	private void sleepAndNotifyObservers(long startTimeInMs, double maxRuntime, CountDownLatch asyncReleaseLatch, TargetAlgorithmEvaluatorRunObserver observer, List<AlgorithmRun> runsFromWrappedTAE, List<RunConfig> runConfigs, final LinkedHashMap<RunConfig, KillHandler> khs, final LinkedHashMap<RunConfig, AlgorithmRun> runResults)
+	private void sleepAndNotifyObservers(long startTimeInMs, double maxRuntime, TargetAlgorithmEvaluatorRunObserver observer, List<AlgorithmRun> runsFromWrappedTAE, List<RunConfig> runConfigs, final LinkedHashMap<RunConfig, KillHandler> khs, final LinkedHashMap<RunConfig, AlgorithmRun> runResults)
 	{
 		
 		long sleepTimeInMS = (long) maxRuntime * 1000;
@@ -228,7 +213,7 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 			long currentTimeInMs =  System.currentTimeMillis();
 			if(observer != null)
 			{
-				updateRunsAndNotifyObserver(startTimeInMs, currentTimeInMs, maxRuntime, asyncReleaseLatch, observer, runsFromWrappedTAE, runConfigs, khs, runResults);
+				updateRunsAndNotifyObserver(startTimeInMs, currentTimeInMs, maxRuntime, observer, runsFromWrappedTAE, runConfigs, khs, runResults);
 			}	
 			
 			//In case the observers took significant amounts of time, we get the time again
@@ -244,8 +229,6 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 				if(sleepTime > 0)
 				{
 					try {
-						//Release the call to async
-						asyncReleaseLatch.countDown();
 						
 						Thread.sleep(sleepTime);
 					} catch (InterruptedException e) {
@@ -263,11 +246,11 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 		//Everything should be done at this time 
 		//We throw the time into the future a bit to clean up anything that is still running because of a small number of runs.
 		long simulatedCurrentTimeInMs =  System.currentTimeMillis() + 2* this.observerFrequencyMs;
-		updateRunsAndNotifyObserver(startTimeInMs, simulatedCurrentTimeInMs, maxRuntime, asyncReleaseLatch, observer, runsFromWrappedTAE, runConfigs, khs, runResults);
+		updateRunsAndNotifyObserver(startTimeInMs, simulatedCurrentTimeInMs, maxRuntime, observer, runsFromWrappedTAE, runConfigs, khs, runResults);
 			
 	}
 	
-	private void updateRunsAndNotifyObserver(long startTimeInMs, long currentTimeInMs, double maxRuntime, CountDownLatch asyncReleaseLatch, TargetAlgorithmEvaluatorRunObserver observer, List<AlgorithmRun> runsFromWrappedTAE, List<RunConfig> runConfigs, final LinkedHashMap<RunConfig, KillHandler> killHandlers, final LinkedHashMap<RunConfig, AlgorithmRun> runConfigToAlgorithmRunMap)
+	private void updateRunsAndNotifyObserver(long startTimeInMs, long currentTimeInMs, double maxRuntime, TargetAlgorithmEvaluatorRunObserver observer, List<AlgorithmRun> runsFromWrappedTAE, List<RunConfig> runConfigs, final LinkedHashMap<RunConfig, KillHandler> killHandlers, final LinkedHashMap<RunConfig, AlgorithmRun> runConfigToAlgorithmRunMap)
 	{
 
 		List<KillableAlgorithmRun> kars = new ArrayList<KillableAlgorithmRun>(runsFromWrappedTAE.size());

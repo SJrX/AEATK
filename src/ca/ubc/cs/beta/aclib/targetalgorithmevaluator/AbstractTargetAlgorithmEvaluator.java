@@ -146,5 +146,10 @@ public abstract class AbstractTargetAlgorithmEvaluator implements TargetAlgorith
 	}
 	
 
+	@Override
+	public final String toString()
+	{
+		return this.getClass().getSimpleName();
+	}
 
 }

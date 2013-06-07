@@ -39,6 +39,7 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 	private final double minValue;
 	
 	
+	private boolean persistent;
 	//Controls whether we will BREAK our TAE by shuffling the runs
 	private boolean shuffleRuns;
 	
@@ -64,6 +65,7 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 		log.info("Target Algorithm Evaluator initialized with seed: {} ", options.seed);
 		this.rand = new MersenneTwister(options.seed);
 		this.shuffleRuns = options.shuffleResponses;
+		this.persistent = options.persistent;
 
 	}
 
@@ -99,7 +101,7 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 
 	@Override
 	public boolean areRunsPersisted() {
-		return false;
+		return persistent;
 	}
 
 	@Override

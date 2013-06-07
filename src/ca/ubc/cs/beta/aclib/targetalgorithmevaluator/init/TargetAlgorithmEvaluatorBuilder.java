@@ -201,6 +201,8 @@ public class TargetAlgorithmEvaluatorBuilder {
 			log.info("[TAE] Waiting / Monitoring outstanding target algorithm evaluations will not be supported");
 		}
 		
+		
+		log.debug("Final Target Algorithm Built is {}", tae);
 		return tae;
 	}
 	

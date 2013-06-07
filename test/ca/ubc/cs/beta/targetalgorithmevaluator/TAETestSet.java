@@ -12,6 +12,7 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -40,11 +41,13 @@ import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorFactory;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.WaitableTAECallback;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluatorFactory;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluatorOptions;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.preloaded.PreloadedResponseTargetAlgorithmEvaluatorOptions;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.random.RandomResponseTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.random.RandomResponseTargetAlgorithmEvaluatorFactory;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.random.RandomResponseTargetAlgorithmEvaluatorOptions;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.debug.EqualTargetAlgorithmEvaluatorTester;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.BoundedTargetAlgorithmEvaluator;
@@ -1985,12 +1988,103 @@ public class TAETestSet {
 				return;
 			}
 		}
-		assertTrue("Deadlock probably occured", finishedRuns.get());
+		assertTrue("Deadlock probably occured", finishedRuns.get());	
+	}
+	
+	@Test
+	public void testBlockingTAEResubmitRunsHandler()
+	{
+		RandomResponseTargetAlgorithmEvaluatorFactory fact = new RandomResponseTargetAlgorithmEvaluatorFactory();
+		
+		RandomResponseTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
+		options.persistent = true;
+		TargetAlgorithmEvaluator tae = fact.getTargetAlgorithmEvaluator(execConfig, options);
+		
+		
+		tae = new BoundedTargetAlgorithmEvaluator(tae, 1, execConfig);
+		
+		final List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		for(int i=0; i < 1; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
+				runConfigs.add(rc);
+			}
+		}
+		
+		
+		final TargetAlgorithmEvaluator tae2 = tae;
+		
+		final List<RunConfig> runConfigs2 = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		for(int i=0; i < 1; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
+				runConfigs2.add(rc);
+			}
+		}
 		
 		
 		
 		
 		
+		final CountDownLatch latch = new CountDownLatch(1); 
+		
+		tae.evaluateRunsAsync(runConfigs, new TargetAlgorithmEvaluatorCallback()
+		{
+
+			@Override
+			public void onSuccess(List<AlgorithmRun> runs) {
+
+				System.out.println(runs);
+				
+				
+				System.out.println(tae2.evaluateRun(runConfigs2));
+				
+				System.out.println("UM WHAT");
+				latch.countDown();
+				
+			}
+
+			@Override
+			public void onFailure(RuntimeException e) {
+				e.printStackTrace();
+				
+			}
+			
+		});
+		
+		
+		try {
+			System.out.println("Deadlock if this is the last thing you see");
+			latch.await();
+		} catch (InterruptedException e1) {
+			Thread.currentThread().interrupt();
+			return;
+		}
+		
+	}
+	
+	@Test
+	public void testBoundedTAESubmissionSpeed()
+	{
+		//Check that a submission of run 10 runs on a bound of <5 take 5,1,1,1,1, 5,1,1,1,1 takes 6 seconds and not 10.
+		
+		fail("Not Implemented");
 	}
 	
 }

@@ -38,4 +38,7 @@ public class RandomResponseTargetAlgorithmEvaluatorOptions extends AbstractOptio
 	//DO NOT EXPOSE THIS ARGUMENT TO THE COMMAND LINE AS IT EXISTS ONLY FOR TESTING THAT WHEN THIS HAPPENS
 	//IT CAN BE CAUGHT
 	public boolean shuffleResponses;
+
+	@Parameter(names="--random-report-persistent", description="Determines whether the TAE reports whether it is persistent", hidden=true)
+	public boolean persistent = false;
 }

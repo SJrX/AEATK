@@ -120,6 +120,12 @@ public abstract class AbstractTargetAlgorithmEvaluatorDecorator implements	Targe
 		return tae.areRunsObservable();
 	}
 	
+	@Override
+	public final String toString()
+	{
+		return this.getClass().getSimpleName() + "( 0x" + Integer.toHexString(System.identityHashCode(this)) + " ) ==> [ " + tae.toString() + " ]";
+	}
+	
 	
 
 }
