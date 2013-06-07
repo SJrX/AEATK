@@ -10,7 +10,7 @@ import java.util.TreeMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ca.ubc.cs.beta.aclib.spi.SPIClassLoaderHelper;
+import ca.ubc.cs.beta.aclib.misc.spi.SPIClassLoaderHelper;
 
 /**
  * Utility class that allows various related projects to log their versions and have them reported
