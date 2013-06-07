@@ -2,6 +2,11 @@ package ca.ubc.cs.beta.aclib.exceptions;
 
 public class FrankOwesSteveABeerException extends DeveloperMadeABooBooException {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 3478231398088023043L;
+
 	public FrankOwesSteveABeerException(Exception e) {
 		super(e);
 	}

@@ -41,7 +41,6 @@ import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorFactory;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.WaitableTAECallback;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluatorFactory;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluatorOptions;
@@ -61,7 +60,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.init.TargetAlgorithmEvaluat
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.init.TargetAlgorithmEvaluatorLoader;
 import ca.ubc.cs.beta.targetalgorithmevaluator.massiveoutput.MassiveOutputParamEchoExecutor;
 
-
+@SuppressWarnings("unused")
 public class TAETestSet {
 
 	

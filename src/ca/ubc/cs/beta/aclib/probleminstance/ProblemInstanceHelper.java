@@ -614,6 +614,7 @@ topOfLoop:
 			instances = v.instanceSeedMap;
 			instanceSpecificInfo = v.instanceSpecificInfoMap;
 			declaredInstanceOrderForSeeds = v.declaredInstanceOrderForSeeds;
+			reader.close();
 		} catch(IllegalArgumentException e)
 		{
 			try { 
@@ -639,7 +640,7 @@ topOfLoop:
 			instances = v.instanceSeedMap;
 			instanceSpecificInfo = v.instanceSpecificInfoMap;
 			declaredInstanceOrderForSeeds = v.declaredInstanceOrderForSeeds;
-					
+			reader.close();
 			} catch(IllegalArgumentException e2)
 			{
 				throw new ParameterException("Could not parse instanceFile " + instanceListFile.getAbsolutePath());

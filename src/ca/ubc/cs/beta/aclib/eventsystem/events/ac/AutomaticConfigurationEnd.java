@@ -1,7 +1,5 @@
 package ca.ubc.cs.beta.aclib.eventsystem.events.ac;
 
-import java.util.UUID;
-
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.eventsystem.ConfigurationTimeLimits;
 import ca.ubc.cs.beta.aclib.eventsystem.events.AbstractTimeEvent;

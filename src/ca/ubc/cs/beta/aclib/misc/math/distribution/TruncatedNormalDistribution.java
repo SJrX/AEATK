@@ -115,7 +115,6 @@ public class TruncatedNormalDistribution extends AbstractRealDistribution {
 			System.err.println("Unloggable Convergence Exception occurred with:" + x + " you can safely disregard this message as we will try again (We are more just curious in knowing the values)");
 			x *= -1;
 			double value = x;
-			int attempts = 0;
 			double eps = EPSILON;
 			if(x == 0)
 			{

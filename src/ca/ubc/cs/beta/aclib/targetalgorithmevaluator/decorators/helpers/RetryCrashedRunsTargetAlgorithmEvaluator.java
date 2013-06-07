@@ -1,7 +1,6 @@
 package ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;

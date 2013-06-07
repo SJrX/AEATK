@@ -19,7 +19,6 @@ import java.util.Set;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
-import org.junit.Ignore;
 import org.junit.Test;
 
 import ca.ubc.cs.beta.TestHelper;
@@ -32,7 +31,7 @@ import com.beust.jcommander.internal.Lists;
 
 import ec.util.MersenneTwister;
 
-
+@SuppressWarnings({"unused", "deprecation","unchecked"})
 public class ParamConfigurationTest {
 
 	
@@ -89,6 +88,7 @@ public class ParamConfigurationTest {
 	/**
 	 * See Bug #1274
 	 */
+	
 	@Test(expected=IllegalArgumentException.class)
 	public void testInvalidArgumentParameter() {
 		URL url = this.getClass().getClassLoader().getResource("paramFiles/invalidDefaultParam.txt");

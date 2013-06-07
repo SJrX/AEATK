@@ -1,6 +1,5 @@
 package ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators;
 
-import java.util.Collections;
 import java.util.List;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;

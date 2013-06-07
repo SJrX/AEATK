@@ -8,7 +8,6 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Before;
-import org.junit.BeforeClass;
 import org.junit.Test;
 
 import ca.ubc.cs.beta.aclib.eventsystem.EventManager;

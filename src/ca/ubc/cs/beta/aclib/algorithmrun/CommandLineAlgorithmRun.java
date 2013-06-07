@@ -68,10 +68,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	private KillHandler killHandler;
 	
 	
-	/**
-	 * Marker for logging
-	 */
-	private static transient Marker execCommandMarker = MarkerFactory.getMarker(LoggingMarker.COMMAND_LINE_CALL.name());
+
 	/**
 	 * Marker for logging
 	 */

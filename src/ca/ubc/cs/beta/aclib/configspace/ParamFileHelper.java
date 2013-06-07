@@ -2,7 +2,6 @@ package ca.ubc.cs.beta.aclib.configspace;
 
 import java.io.File;
 import java.io.StringReader;
-import java.util.concurrent.ConcurrentHashMap;
 
 /**
  * Contains Factory Methods for getting ParamConfigurationSpaces

@@ -1,7 +1,5 @@
 package ca.ubc.cs.beta.aclib.eventsystem.events.basic;
 
-import java.util.UUID;
-
 import ca.ubc.cs.beta.aclib.eventsystem.events.AutomaticConfiguratorEvent;
 
 /**

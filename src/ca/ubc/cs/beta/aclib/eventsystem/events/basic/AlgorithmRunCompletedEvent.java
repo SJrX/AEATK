@@ -1,7 +1,5 @@
 package ca.ubc.cs.beta.aclib.eventsystem.events.basic;
 
-import java.util.UUID;
-
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.eventsystem.ConfigurationTimeLimits;
 import ca.ubc.cs.beta.aclib.eventsystem.events.AbstractTimeEvent;

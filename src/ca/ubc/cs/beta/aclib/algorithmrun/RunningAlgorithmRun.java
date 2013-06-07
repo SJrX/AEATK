@@ -7,6 +7,10 @@ import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 
 public class RunningAlgorithmRun extends ExistingAlgorithmRun implements KillableAlgorithmRun {
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -5427091882882378946L;
 	private final KillHandler handler;
 
 

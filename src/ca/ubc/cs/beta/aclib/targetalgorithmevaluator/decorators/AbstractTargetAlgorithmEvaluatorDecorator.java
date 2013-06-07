@@ -8,7 +8,6 @@ import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator;
 /**
  * Abstract Decorator class for TargetAlgorithmEvalutator
  * 

@@ -30,7 +30,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.WaitableTAECallback;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluatorFactory;
 
-
+@SuppressWarnings("unused")
 public class DynamicCappingTestSet {
 
 	

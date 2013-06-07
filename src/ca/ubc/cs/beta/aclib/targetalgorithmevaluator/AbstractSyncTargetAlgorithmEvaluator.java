@@ -1,6 +1,5 @@
 package ca.ubc.cs.beta.aclib.targetalgorithmevaluator;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;

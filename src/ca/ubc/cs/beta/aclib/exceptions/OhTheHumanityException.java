@@ -12,6 +12,11 @@ package ca.ubc.cs.beta.aclib.exceptions;
 public class OhTheHumanityException extends DeveloperMadeABooBooException {
 
 
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = -5902224652374475503L;
+
 	public OhTheHumanityException(DeveloperMadeABooBooException e)
 	{
 		super(e);

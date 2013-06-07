@@ -1,6 +1,5 @@
 package ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers;
 
-import java.util.Collections;
 import java.util.List;
 
 import net.jcip.annotations.ThreadSafe;

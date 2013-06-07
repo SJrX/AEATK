@@ -27,7 +27,6 @@ import ca.ubc.cs.beta.aclib.concurrent.FairMultiPermitSemaphore;
 import ca.ubc.cs.beta.aclib.concurrent.threadfactory.SequentiallyNamedThreadFactory;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.AbstractAsyncTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;

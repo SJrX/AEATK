@@ -1,6 +1,5 @@
 package ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.safety;
 
-import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 

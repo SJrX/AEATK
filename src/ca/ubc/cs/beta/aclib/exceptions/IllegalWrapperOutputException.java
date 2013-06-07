@@ -3,6 +3,11 @@ package ca.ubc.cs.beta.aclib.exceptions;
 public class IllegalWrapperOutputException extends IllegalArgumentException {
 
 	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 8887570449032849445L;
+
+	/**
 	 * Default constructor
 	 * @param error 		 error with the result line
 	 * @param resultLine	 result line text
