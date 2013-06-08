@@ -14,7 +14,9 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.output.NullOutputStream;
 import org.junit.Before;
@@ -48,6 +50,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.preloaded.PreloadedRes
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.random.RandomResponseTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.random.RandomResponseTargetAlgorithmEvaluatorFactory;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.random.RandomResponseTargetAlgorithmEvaluatorOptions;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbstractTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.debug.EqualTargetAlgorithmEvaluatorTester;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.BoundedTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.prepostcommand.PrePostCommandErrorException;
@@ -58,6 +61,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.safety.TimingChe
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.safety.VerifySATTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.init.TargetAlgorithmEvaluatorBuilder;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.init.TargetAlgorithmEvaluatorLoader;
+import ca.ubc.cs.beta.targetalgorithmevaluator.impl.SolQualSetTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.targetalgorithmevaluator.massiveoutput.MassiveOutputParamEchoExecutor;
 
 @SuppressWarnings("unused")
@@ -2078,6 +2082,8 @@ public class TAETestSet {
 		
 	}
 	
+	
+	
 	@Test
 	@Ignore
 	public void testBoundedTAESubmissionSpeed()
@@ -2087,4 +2093,95 @@ public class TAETestSet {
 
 	}
 	
+	@Test
+	public void testDecoratorsApplyTheSameWay()
+	{
+		RandomResponseTargetAlgorithmEvaluatorFactory fact = new RandomResponseTargetAlgorithmEvaluatorFactory();
+		
+		RandomResponseTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
+		options.persistent = true;
+		options.cores = 10000;
+		TargetAlgorithmEvaluator tae = fact.getTargetAlgorithmEvaluator(execConfig, options);
+		
+		
+		tae = new BoundedTargetAlgorithmEvaluator(tae, 1, execConfig);
+		
+		final List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		for(int i=0; i < 1; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
+				runConfigs.add(rc);
+			}
+		}
+		
+		TargetAlgorithmEvaluator tae10 = new SolQualSetTargetAlgorithmEvaluatorDecorator( new SolQualSetTargetAlgorithmEvaluatorDecorator(tae, 5), 10);
+		TargetAlgorithmEvaluator tae5 = new SolQualSetTargetAlgorithmEvaluatorDecorator( new SolQualSetTargetAlgorithmEvaluatorDecorator(tae, 10), 5);
+		
+		
+		
+		
+		List<AlgorithmRun> runs = tae10.evaluateRun(runConfigs);
+		for(AlgorithmRun run : runs)
+		{
+			assertEquals("Expected quality to be 10", 10, run.getQuality(), 0.01);
+		}
+		
+		
+		runs = tae5.evaluateRun(runConfigs);
+		for(AlgorithmRun run : runs)
+		{
+			assertEquals("Expected quality to be 5", 5, run.getQuality(), 0.01);
+		}
+		
+		final Semaphore s = new Semaphore(0);
+		final AtomicInteger solQual = new AtomicInteger(0);
+		tae10.evaluateRunsAsync(runConfigs, new TargetAlgorithmEvaluatorCallback() {
+			
+			@Override
+			public void onSuccess(List<AlgorithmRun> runs) {
+				solQual.set((int) runs.get(0).getQuality());
+				s.release();
+				
+			}
+			
+			@Override
+			public void onFailure(RuntimeException e) {
+				e.printStackTrace();
+				
+			}
+		});
+
+		s.acquireUninterruptibly();
+		assertEquals("Expect SolQual to be 10", 10,  solQual.get());
+		
+		tae5.evaluateRunsAsync(runConfigs, new TargetAlgorithmEvaluatorCallback() {
+			
+			@Override
+			public void onSuccess(List<AlgorithmRun> runs) {
+				solQual.set((int) runs.get(0).getQuality());
+				s.release();
+				
+			}
+			
+			@Override
+			public void onFailure(RuntimeException e) {
+				e.printStackTrace();
+				
+			}
+		});
+
+		s.acquireUninterruptibly();
+		assertEquals("Expect SolQual to be 5", 5,  solQual.get());
+		
+		
+		
+	}
 }
