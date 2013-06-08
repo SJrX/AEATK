@@ -26,7 +26,8 @@ public class VersionTracker {
 
 	private static SortedMap<String, String> init()
 	{
-			
+			//System.err.println(VersionTracker.class.getClassLoader().getResource( VersionTracker.class.getCanonicalName().replaceAll("\\.","/") + ".class").getFile());
+			boolean errorPrinted = false;
 			Iterator<VersionInfo> versionInfo = ServiceLoader.load(VersionInfo.class, cl).iterator();
 			SortedMap<String, String> versionMap = new TreeMap<String, String>();
 			
@@ -40,6 +41,15 @@ public class VersionTracker {
 				} catch(Exception e)
 				{
 					log.warn("Error occured while loading version Information", e);
+					
+					if(!errorPrinted)
+					{
+						errorPrinted = true;
+						System.err.println(SPIClassLoaderHelper.getDefaultSearchPath());
+						System.err.println(VersionTracker.class.getClassLoader().getResource( VersionTracker.class.getCanonicalName().replaceAll("\\.","/") + ".java"));
+					}
+					
+					
 				}
 			}
 				

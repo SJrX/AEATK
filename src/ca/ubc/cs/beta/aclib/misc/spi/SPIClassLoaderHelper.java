@@ -172,7 +172,7 @@ private static final String defaultSearchPath;
 		URL[] urlsArr = urls.toArray(new URL[0]);
 		
 		
-		URLClassLoader ucl = new URLClassLoader(urlsArr);
+		URLClassLoader ucl = new URLClassLoader(urlsArr, SPIClassLoaderHelper.class.getClassLoader());
 		
 		c = ucl;
 		return ucl;
@@ -180,5 +180,11 @@ private static final String defaultSearchPath;
 		
 		
 	}
+	
+	public static String getDefaultSearchPath()
+	{
+		return defaultSearchPath;
+	}
+	
 	
 }
