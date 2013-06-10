@@ -36,6 +36,8 @@ import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.misc.logback.MarkerFilter;
 import ca.ubc.cs.beta.aclib.misc.logging.LoggingMarker;
 import ca.ubc.cs.beta.aclib.misc.random.SeedableRandomSingleton;
+import ca.ubc.cs.beta.aclib.misc.watch.AutoStartStopWatch;
+import ca.ubc.cs.beta.aclib.misc.watch.StopWatch;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 import ca.ubc.cs.beta.aclib.options.TargetAlgorithmEvaluatorOptions;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
@@ -2085,12 +2087,69 @@ public class TAETestSet {
 	
 	
 	@Test
-	@Ignore
+	/**
+	 * Schedules a set of runs in the form of 3,1,3,1 on a bound of 2x, if the Bounding is done properly this should be doable in under 5 seconds,
+	 * if not then it might take about 8 seconds.
+	 */
 	public void testBoundedTAESubmissionSpeed()
 	{
 		//Check that a submission of run 10 runs on a bound of <5 take 5,1,1,1,1, 5,1,1,1,1 takes 6 seconds and not 10.
-		
 
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(TrueSleepyParamEchoExecutor.class.getCanonicalName());
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
+		AutomaticConfiguratorFactory.setMaximumNumberOfThreads(2);
+		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
+		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
+		
+		options.logAllCallStrings = true;
+		options.logAllProcessOutput = true;
+		options.concurrentExecution = true;
+		options.observerFrequency = 2000;
+		
+		
+		tae = fact.getTargetAlgorithmEvaluator(execConfig, options);	
+		TargetAlgorithmEvaluator cliTAE = tae;
+		tae = new BoundedTargetAlgorithmEvaluator(tae,2,execConfig);
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(4);
+		for(int i=0; i < 4; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			if( i % 2 == 0)
+			{
+				config.put("runtime", "3");
+			} else
+			{
+				config.put("runtime","1");
+			}
+
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config);
+				runConfigs.add(rc);
+			}
+		}
+		
+		
+		
+		StopWatch watch = new AutoStartStopWatch();
+		cliTAE.evaluateRun(runConfigs);
+		System.out.println(watch.stop());
+		assertTrue("Expected time for CLI Direct to be less than 5 seconds", watch.time() < 5000 );
+		
+		StopWatch watch2 = new AutoStartStopWatch();
+		tae.evaluateRun(runConfigs);
+		System.out.println(watch2.stop());
+		assertTrue("Expected time for Bounded to be less than 5 seconds", watch2.time() < 5000 );
+		
 	}
 	
 	@Test

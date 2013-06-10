@@ -47,6 +47,8 @@ public class FairMultiPermitSemaphore {
 	 */
 	public synchronized int getUpToNPermits(int N) throws InterruptedException
 	{
+		if(N < 0) throw new IllegalArgumentException("Must get a non-negative amount of permits");
+		if(N == 0) return 0;
 		//System.out.println("A1:" + permits.get() + "," + semaphore.availablePermits() + "," + N);
 		semaphore.acquire();
 		
@@ -88,7 +90,14 @@ public class FairMultiPermitSemaphore {
 	 */
 	public void releasePermits(int N)
 	{
-
+		if(N < 0)
+		{
+			throw new IllegalArgumentException("You cannot release a negative number of permits");
+		}
+		if( N == 0)
+		{
+			return;
+		}
 		this.mutexLock.lock();
 		try {
 			//System.out.println("R-:" +permits.get() + "," + semaphore.availablePermits() + "," + N);
@@ -98,5 +107,10 @@ public class FairMultiPermitSemaphore {
 		} finally {
 			this.mutexLock.unlock();
 		}
+	}
+	
+	public int availablePermits()
+	{
+		return this.semaphore.availablePermits();
 	}
 }
