@@ -5,9 +5,9 @@ import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.ParametersDelegate;
 
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.FixedPositiveInteger;
-import ca.ubc.cs.beta.aclib.misc.options.MySQLConfig;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
+import ca.ubc.cs.beta.aclib.options.MySQLOptions;
 
 @UsageTextField(title="JSON Options", description="This specifies options for generating the HAL JSON file")
 public class JsonOptions extends AbstractOptions {
@@ -30,7 +30,7 @@ public class JsonOptions extends AbstractOptions {
 	public boolean reload = false;
 	
 	@ParametersDelegate
-	public MySQLConfig mysqlConf = new MySQLConfig();
+	public MySQLOptions mysqlConf = new MySQLOptions();
 	
 	public String getJDBCString()
 	{

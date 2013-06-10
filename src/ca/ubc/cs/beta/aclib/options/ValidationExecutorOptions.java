@@ -2,10 +2,12 @@ package ca.ubc.cs.beta.aclib.options;
 
 import java.io.File;
 
+import ca.ubc.cs.beta.aclib.misc.file.HomeFileUtils;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.FixedPositiveInteger;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 
 import com.beust.jcommander.Parameter;
+import com.beust.jcommander.ParameterFile;
 import com.beust.jcommander.ParametersDelegate;
 
 /**
@@ -19,7 +21,10 @@ public class ValidationExecutorOptions extends AbstractOptions {
 	@ParametersDelegate
 	public ScenarioOptions scenarioConfig = new ScenarioOptions();
 	
-	
+	@UsageTextField(defaultValues="~/.aclib/smac-validate.opt")
+	@Parameter(names="--validationDefaultsFile", description="file that contains default settings for SMAC-Validate")
+	@ParameterFile(ignoreFileNotExists = true) 
+	public File smacValidateDefaults = HomeFileUtils.getHomeFile(".aclib" + File.separator  + "smac-validate.opt");
 	
 	@Parameter(names={"-e","--experimentDir"}, description="Root Directory for Experiments Folder")
 	public String experimentDir = System.getProperty("user.dir") + File.separator + "";

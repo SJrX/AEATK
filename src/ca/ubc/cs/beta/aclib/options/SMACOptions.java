@@ -6,6 +6,7 @@ import java.util.Date;
 
 import ca.ubc.cs.beta.aclib.expectedimprovement.ExpectedImprovementFunctions;
 import ca.ubc.cs.beta.aclib.initialization.InitializationMode;
+import ca.ubc.cs.beta.aclib.misc.file.HomeFileUtils;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.*;
 import ca.ubc.cs.beta.aclib.misc.logging.LogLevel;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
@@ -194,5 +195,10 @@ public class SMACOptions extends AbstractOptions {
 	@Parameter(names={"--alwaysRunInitialConfiguration"}, description="if true we will always run the default and switch back to it if it is better than the incumbent")
 	public boolean alwaysRunInitialConfiguration = false; 
 
+	@UsageTextField(defaultValues="~/.aclib/smac.opt")
+	@Parameter(names="--smacDefaultsFile", description="file that contains default settings for SMAC")
+	@ParameterFile(ignoreFileNotExists = true) 
+	public File smacDefaults = HomeFileUtils.getHomeFile(".aclib" + File.separator  + "smac.opt");
+	
 	
 }
