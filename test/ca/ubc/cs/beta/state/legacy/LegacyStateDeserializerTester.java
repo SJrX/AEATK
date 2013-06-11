@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -20,9 +21,11 @@ import org.junit.Test;
 
 import ca.ubc.cs.beta.TestHelper;
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aclib.algorithmrun.ExistingAlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
+import ca.ubc.cs.beta.aclib.configspace.ParamFileHelper;
 import ca.ubc.cs.beta.aclib.exceptions.*;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.objectives.OverallObjective;
@@ -96,6 +99,68 @@ public class LegacyStateDeserializerTester {
 		
 		
 		sf.getStateDeserializer("unknown_instance", 4, configSpace, OverallObjective.MEAN10,OverallObjective.MEAN, RunObjective.RUNTIME, emptyInstanceList, execConfig);
+	}
+	
+	public static File createTempDirectory()
+		    throws IOException
+		{
+		    final File temp;
+
+		    temp = File.createTempFile("temp", Long.toString(System.nanoTime()));
+
+		    if(!(temp.delete()))
+		    {
+		        throw new IOException("Could not delete temp file: " + temp.getAbsolutePath());
+		    }
+
+		    if(!(temp.mkdir()))
+		    {
+		        throw new IOException("Could not create temp directory: " + temp.getAbsolutePath());
+		    }
+
+		    return (temp);
+		}
+	
+	@Test
+	public void saveRestoreFidelityTest() throws IOException, DuplicateRunException
+	{
+		Random rand = new Random();
+		
+		ParamConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("a [1,1000] [1]i \n b { on, off } [off] \n a | b in { on } ");
+		AlgorithmExecutionConfig execConfig = new AlgorithmExecutionConfig("foo", "foo", configSpace, false, false, 0);
+		
+		File tempDir = createTempDirectory();
+		
+		
+		
+		StateFactory sf = new LegacyStateFactory(tempDir.getAbsolutePath(), tempDir.getAbsolutePath());
+		
+		
+		StateSerializer ss = sf.getStateSerializer("it", 1);
+		
+		ParamConfiguration config = configSpace.getRandomConfiguration(rand);
+		
+		ProblemInstance pi = new ProblemInstance("test");
+		RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(pi,1), 0, config);
+		AlgorithmRun run = new ExistingAlgorithmRun(execConfig, rc,RunResult.SAT, 0,0,0,1);
+		//(InstanceSeedGenerator instanceSeedGenerator, OverallObjective intraInstanceObjective,  OverallObjective interInstanceObjective, RunObjective runObj)
+		
+		RunHistory rh = new NewRunHistory(null, OverallObjective.MEAN, OverallObjective.MEAN ,RunObjective.RUNTIME);
+		
+		
+		rh.append(run);
+		ss.setRunHistory(rh);
+		ss.save();
+		
+		StateDeserializer sd = sf.getStateDeserializer("it",1, configSpace,OverallObjective.MEAN, OverallObjective.MEAN, RunObjective.RUNTIME, Collections.singletonList(pi), execConfig);
+		System.out.println(Arrays.toString(config.toValueArray()));
+		ParamConfiguration restoredConfig = sd.getRunHistory().getAlgorithmRuns().get(0).getRunConfig().getParamConfiguration();
+		System.out.println(Arrays.toString(restoredConfig.toValueArray()));
+		assertTrue("Testing for equality ",config.equals(restoredConfig));
+		assertTrue("Testing for Array equality", Arrays.equals(config.toValueArray(), restoredConfig.toValueArray()));
+		
+		
+		
 	}
 	
 	@Test
