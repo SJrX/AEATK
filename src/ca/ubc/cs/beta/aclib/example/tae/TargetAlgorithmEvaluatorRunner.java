@@ -65,8 +65,9 @@ public class TargetAlgorithmEvaluatorRunner
 		try {
 			
 			//Parses the options given in the args array and sets the values
+			JCommander jcom;
 			try {
-			JCommander jcom = JCommanderHelper.getJCommander(mainOptions, taeOptions);
+			jcom = JCommanderHelper.getJCommander(mainOptions, taeOptions);
 			jcom.parse(args);
 			} finally
 			{
@@ -83,6 +84,11 @@ public class TargetAlgorithmEvaluatorRunner
 			for(String name : taeOptions.keySet())
 			{
 				log.info("Target Algorithm Evaluator Available: {} ", name);
+			}
+			
+			for(String name : jcom.getParameterFilesToRead())
+			{
+				log.info("Parsing (default) options from file: {} ", name);
 			}
 			
 			
