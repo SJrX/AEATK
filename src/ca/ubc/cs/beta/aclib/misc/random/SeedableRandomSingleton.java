@@ -134,7 +134,7 @@ public class SeedableRandomSingleton  {
 	
 	/**
 	 * @deprecated You should not be using this call in general
-	 * @return
+	 * @return A random object that you can use
 	 */
 	public static Random getRandom()
 	{

@@ -25,9 +25,9 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 	 * @param runConfig			run configuration we are executing
 	 * @param runResult			The RunResult to report
 	 * @param runtime 			The Run Time
-	 * @param runlength			The Run Length
+	 * @param runLength			The Run Length
 	 * @param quality			The Run Quality
-	 * @param seed 				The Reported seed
+	 * @param resultSeed 		The Reported seed
 	 * @param additionalRunData	The Additional Run Data
 	 * @param wallclockTime		Wallclock time to report
 	 */
@@ -44,10 +44,9 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 	 * @param runConfig			run configuration we are executing
 	 * @param runResult			The RunResult to report
 	 * @param runtime 			The Run Time
-	 * @param runlength			The Run Length
+	 * @param runLength			The Run Length
 	 * @param quality			The Run Quality
-	 * @param seed 				The Reported seed
-	 * @param additionalRunData	The Additional Run Data
+	 * @param resultSeed 		The Reported seed
 	 * @param wallclockTime		Wallclock time to report
 	 */
 	public ExistingAlgorithmRun(AlgorithmExecutionConfig execConfig, RunConfig runConfig, RunResult runResult, double runtime, double runLength, double quality, long resultSeed,  double wallclockTime)

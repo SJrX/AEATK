@@ -1,6 +1,6 @@
 package ca.ubc.cs.beta.aclib.misc.jcommander.converter;
 
-import ca.ubc.cs.beta.aclib.misc.DurationToSeconds;
+import ca.ubc.cs.beta.aclib.misc.inputparsers.DurationToSeconds;
 
 import com.beust.jcommander.IStringConverter;
 import com.beust.jcommander.ParameterException;

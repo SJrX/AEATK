@@ -3,6 +3,11 @@ package ca.ubc.cs.beta.aclib.algorithmrun.kill;
 import net.jcip.annotations.ThreadSafe;
 
 @ThreadSafe
+/**
+ * {@link KillHandler} that simply stores the kill() in a flag that will later be checked
+ * @author Steve Ramage <seramage@cs.ubc.ca>
+ *
+ */
 public class StatusVariableKillHandler implements KillHandler {
 
 	private volatile boolean isKilled = false;

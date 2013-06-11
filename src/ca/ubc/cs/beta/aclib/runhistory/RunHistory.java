@@ -162,8 +162,8 @@ public interface RunHistory {
 	
 	/**
 	 * Returns an Nx2 matrix where each row corresponds to a
-	 * tuple of a param_configuration instance (in {@link getUniqueParamConfigurations()})
-	 * and an instance (in {@link getUniqueInstancesRan()}). These represent the run configurations.
+	 * tuple of a param_configuration instance (in {@link ca.ubc.cs.beta.aclib.runhistory.RunHistory#getUniqueParamConfigurations()})
+	 * and an instance (in {@link ca.ubc.cs.beta.aclib.runhistory.RunHistory#getUniqueInstancesRan()}). These represent the run configurations.
 	 * @return array of entries of the form [thetaIdx, instanceIdx]
 	 */
 	public int[][] getParameterConfigurationInstancesRanByIndex();
@@ -210,9 +210,9 @@ public interface RunHistory {
 	public List<RunData> getAlgorithmRunData();
 
 	/**
-	 * Returns the list of run data for challenger 
+	 * Returns an unmodifiable list of run data for challenger 
 	 * @param config
-	 * @return
+	 * @return 	list of algorithms for the configuration
 	 */
 	public List<AlgorithmRun> getAlgorithmRunData(ParamConfiguration config);
 	
@@ -256,10 +256,9 @@ public interface RunHistory {
 	 * (i.e. the number of runs for a configuration, but counting capped runs all as one)
 	 * 
 	 * @param config
-	 * @return
+	 * @return number of pisps that a config has run on
 	 */
-	int getNumberOfUniqueProblemInstanceSeedPairsForConfiguration(
-			ParamConfiguration config);
+	public int getNumberOfUniqueProblemInstanceSeedPairsForConfiguration( ParamConfiguration config);
 
 
 	

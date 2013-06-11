@@ -5,6 +5,11 @@ import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableAlgorithmRun;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 
+/**
+ * AlgorithmRun that reports that it's current status is RUNNING.
+ * 
+ * @author Steve Ramage <seramage@cs.ubc.ca>
+ */
 public class RunningAlgorithmRun extends ExistingAlgorithmRun implements KillableAlgorithmRun {
 
 	/**

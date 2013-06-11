@@ -8,7 +8,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorRun
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 /**
- * Abstraact Decorator for TargetAlgorithmEvaluators 
+ * Abstract Decorator for {@link ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator} that provides a template method that subtypes can use to replace or notified about each run 
  * 
  * 
  *  
@@ -59,13 +59,12 @@ public abstract class AbstractForEachRunTargetAlgorithmEvaluatorDecorator extend
 
 	
 	/**
-	 * Process the run in question
+	 * Template method that is invoked with each run that complete
 	 * 
-	 * @param input run from previous result
-	 * @return run to replace it with
+	 * @param run process the run
+	 * @return run that will replace it in the values returned to the client
 	 */
 	abstract protected AlgorithmRun processRun(AlgorithmRun run);
-	
 	
 	protected final List<AlgorithmRun> processRuns(List<AlgorithmRun> runs)
 	{

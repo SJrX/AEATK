@@ -29,15 +29,27 @@ import ca.ubc.cs.beta.aclib.eventsystem.exceptions.EventManagerShutdownException
 public class EventManager {
 
 	
-	
+	/**
+	 * Stores a map of the handlers for each class
+	 */
 	private final ConcurrentHashMap<Class<? extends AutomaticConfiguratorEvent>, List<EventHandler<?>>> handlerMap = new ConcurrentHashMap<Class<? extends AutomaticConfiguratorEvent>, List<EventHandler<?>>>();
+	
 	
 	private transient Logger log = LoggerFactory.getLogger(EventManager.class);
 	
+	/**
+	 * Queue that has Runnables for processing each handler notification
+	 */
 	private ArrayBlockingQueue<Runnable> asyncRuns = new ArrayBlockingQueue<Runnable>(1024); 
 	
+	/**
+	 * Stores the thread that is processing the asyncRun runnables
+	 */
 	private final EventManagementThread eventDispatchThread;
 	
+	/**
+	 * Flag variable that changes to true, if we shutdown
+	 */
 	private final boolean shutdown = false;
 	
 	public EventManager()
@@ -62,8 +74,8 @@ public class EventManager {
 	
 	/**
 	 * Registers a handler 
-	 * @param event - The class of event to register
-	 * @param handler - handler to invoke
+	 * @param eventClass The class of event to register
+	 * @param handler 	 handler to invoke
 	 */
 	public synchronized void registerHandler(Class< ? extends AutomaticConfiguratorEvent> eventClass, EventHandler<?> handler)
 	{
@@ -74,7 +86,7 @@ public class EventManager {
 		handlers.add(handler);
 	}
 	
-	AtomicReference<EventFlushDeadLockException> deadLockException = new AtomicReference<EventFlushDeadLockException>();
+	private AtomicReference<EventFlushDeadLockException> deadLockException = new AtomicReference<EventFlushDeadLockException>();
 	
 	/**
 	 * Fires an event

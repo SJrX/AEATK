@@ -38,10 +38,11 @@ public class TargetAlgorithmEvaluatorBuilder {
 	/**
 	 * Generates the TargetAlgorithmEvaluator with the given runtime behavior
 	 * 
-	 * @param options 		   Target Algorithm Evaluator Options
-	 * @param execConfig	   Execution configuration for the target algorithm
-	 * @param noHashVerifiers  Whether we should apply hash verifiers				
-	 * @return
+	 * @param options 		   		Target Algorithm Evaluator Options
+	 * @param execConfig	   		Execution configuration for the target algorithm
+	 * @param hashVerifiersAllowed  Whether we should apply hash verifiers
+	 * @param taeOptionsMap			A map that contains mappings between the names of TAEs and their configured options object	
+	 * @return a configured <code>TargetAlgorithmEvaluator</code>
 	 */
 	public static TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(TargetAlgorithmEvaluatorOptions options, AlgorithmExecutionConfig execConfig, boolean hashVerifiersAllowed, Map<String, AbstractOptions> taeOptionsMap)
 	{
@@ -51,12 +52,14 @@ public class TargetAlgorithmEvaluatorBuilder {
 	/**
 	 * Generates the TargetAlgorithmEvaluator with the given runtime behaivor
 	 * 
-	 * @param options 		   Target Algorithm Evaluator Options
-	 * @param execConfig	   Execution configuration for the target algorithm
-	 * @param noHashVerifiers  Whether we should apply hash verifiers
-	 * @param tae			   Existing Target Algorithm Evaluator to wrap (if null, will use the options to construct one)	
-	 * @return
+	 * @param options 			   	Target Algorithm Evaluator Options
+	 * @param execConfig	   		Execution configuration for the target algorithm
+	 * @param hashVerifiersAllowed  Whether we should apply hash verifiers
+	 * @param taeOptionsMap	   		A map that contains mappings between the names of TAEs and their configured options object
+	 * @param tae			   		The TAE to use wrap (if not <code>null</code> will use this one instead of SPI)				
+	 * @return a configured <code>TargetAlgorithmEvaluator</code>
 	 */
+	@Deprecated
 	public static TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(TargetAlgorithmEvaluatorOptions options, AlgorithmExecutionConfig execConfig, boolean hashVerifiersAllowed, Map<String, AbstractOptions> taeOptionsMap, TargetAlgorithmEvaluator tae)
 	{
 		return getTargetAlgorithmEvaluator(options,execConfig, hashVerifiersAllowed, false, taeOptionsMap, null);
@@ -68,10 +71,11 @@ public class TargetAlgorithmEvaluatorBuilder {
 	 * 
 	 * @param options 		   Target Algorithm Evaluator Options
 	 * @param execConfig	   Execution configuration for the target algorithm
-	 * @param noHashVerifiers  Whether we should apply hash verifiers
+	 * @param hashVerifiersAllowed  Whether we should apply hash verifiers
 	 * @param ignoreBound	   Whether to ignore bound requests
-	 * @param tae			   Existing Target Algorithm Evaluator to wrap (if null, will use the options to construct one)				
-	 * @return
+	 * @param taeOptionsMap	   		A map that contains mappings between the names of TAEs and their configured options object
+	 * @param tae			   		The TAE to use wrap (if not <code>null</code> will use this one instead of SPI)				
+	 * @return a configured <code>TargetAlgorithmEvaluator</code>
 	 */
 	public static TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(TargetAlgorithmEvaluatorOptions options, AlgorithmExecutionConfig execConfig, boolean hashVerifiersAllowed, boolean ignoreBound,  Map<String, AbstractOptions> taeOptionsMap, TargetAlgorithmEvaluator tae)
 	{
@@ -85,8 +89,7 @@ public class TargetAlgorithmEvaluatorBuilder {
 		if(tae == null)
 		{
 			String taeKey = options.targetAlgorithmEvaluator;
-			AbstractOptions taeOptions = taeOptionsMap.get(taeKey);
-			tae = TargetAlgorithmEvaluatorLoader.getTargetAlgorithmEvaluator(execConfig, taeKey,taeOptions);
+			tae = TargetAlgorithmEvaluatorLoader.getTargetAlgorithmEvaluator(execConfig, taeKey,taeOptionsMap);
 		} 
 		
 		if(tae == null)

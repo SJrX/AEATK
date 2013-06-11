@@ -12,11 +12,8 @@ public final class ParamFileHelper {
 
 	/**
 	 * Returns a ParamConfigurationSpace via the filename and seeded with seed
-	 * 
-	 *  This method will return the same instance for subsequent file names, and can only been seeded once
-	 * @param filename					string for the filename
-	 * @param seedForRandomSampling		seed for prng
-	 * @return ParamConfigurationSpace instance
+	 * @param 	filename					string for the filename
+	 * @return 	ParamConfigurationSpace  the configuration space
 	 * 
 	 */
 	public static ParamConfigurationSpace getParamFileParser(String filename)
@@ -24,6 +21,14 @@ public final class ParamFileHelper {
 		return getParamFileParser(filename, ParamConfigurationSpace.DEFAULT_NEIGHBOURS_FOR_CONTINUOUS_PARAMETERS);
 	}
 	
+	/**
+	 * Returns a ParamConfigurationSpace via the filename and seeded with seed
+	 * 
+	 * @param 	filename				 string for the filename
+	 * @param 	neighbours				 the number of neighbours numerical parameters should have
+	 * @return	ParamConfigurationSpace  the configuration space
+	 * 
+	 */
 	public static ParamConfigurationSpace getParamFileParser(String filename, int neighbours)
 	{	if(filename.equals(ParamConfigurationSpace.SINGLETON_ABSOLUTE_NAME))
 		{
@@ -38,7 +43,6 @@ public final class ParamFileHelper {
 	 * Returns a ParamConfigurationSpace via the filename and seeded with seed
 	 * 
 	 * @param file  					file with the param arguments
-	 * @param seedForRandomSampling		seed for prng
 	 * @return ParamConfigurationSpace instance
 	 */
 	public static ParamConfigurationSpace getParamFileParser(File file)
@@ -50,7 +54,7 @@ public final class ParamFileHelper {
 	 * Returns a ParamConfigurationSpace via the filename and seeded with seed
 	 * 
 	 * @param file  					file with the param arguments
-	 * @param seedForRandomSampling		seed for prng
+	 * @param neighbours				the number of neighbours numerical parameters should have
 	 * @return ParamConfigurationSpace instance
 	 */
 	public static ParamConfigurationSpace getParamFileParser(File file, int neighbours)

@@ -7,6 +7,11 @@ import java.util.Map;
 import java.util.ServiceConfigurationError;
 import java.util.ServiceLoader;
 import java.util.TreeMap;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.misc.spi.SPIClassLoaderHelper;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
@@ -17,7 +22,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorFac
 /**
  * Loads Target Algorithm Evaluators
  * <p>
- * <b>Implementation Note:</b> This class cannot use logging as it will be accessed before options are parsed
+ * <b>Implementation Note:</b> This class cannot use logging (except in the getTAE method) as it will be accessed before options are parsed.
  * @author Steve Ramage <seramage@cs.ubc.ca>
  *
  */
@@ -27,12 +32,12 @@ public class TargetAlgorithmEvaluatorLoader {
 	 * Retrieves a Target Algorithm Evaluator configured with the correct options
 	 * @param execConfig					configuration object for target algorithm execution
 	 * @param name							the name of the Target Algorithm Evaluator to return
-	 * @param loader						the class loader to use 
-	 * @param options						The abstract options associated with this target algorithm evaluator
-	 * @return
+	 * @param taeOptions						The abstract options associated with this target algorithm evaluator
+	 * @return a configured <code>Target Algorithm Evaluator</code>
 	 */
-	public static TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig, String name, AbstractOptions options)
+	public static TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig, String name, Map<String, AbstractOptions> taeOptions)
 	{
+		Logger log = LoggerFactory.getLogger(TargetAlgorithmEvaluatorLoader.class);
 		ClassLoader loader = SPIClassLoaderHelper.getClassLoader();
 		
 		Iterator<TargetAlgorithmEvaluatorFactory> taeIt = ServiceLoader.load(TargetAlgorithmEvaluatorFactory.class, loader).iterator();
@@ -46,7 +51,7 @@ public class TargetAlgorithmEvaluatorLoader {
 				
 				if(tae.getName().contains(" "))
 				{
-					System.err.println("Target Algorithm Evaluator has white space in it's name, this is a violation of the contract of "+ TargetAlgorithmEvaluatorFactory.class.getName());
+					log.warn("Target Algorithm Evaluator has white space in it's name, this is a violation of the contract of {}. Sleeping for 5 seconds", TargetAlgorithmEvaluatorFactory.class.getName());
 					try {
 						Thread.sleep(5000);
 					} catch (InterruptedException e) {
@@ -54,14 +59,14 @@ public class TargetAlgorithmEvaluatorLoader {
 					}
 				}
 				if(tae.getName().trim().equals(name.trim()))
-				{
-					return tae.getTargetAlgorithmEvaluator(execConfig, options);
+				{					
+					return tae.getTargetAlgorithmEvaluator(execConfig, taeOptions);
 				}
 			
 			} catch(ServiceConfigurationError e)
 			{
 				
-				System.err.println("Error occured while retrieving Target Algorithm Evaluator");
+				log.error("Error occured while retrieving Target Algorithm Evaluator", e);
 				e.printStackTrace();
 				try {
 					Thread.sleep(5000);

@@ -32,7 +32,7 @@ public interface TargetAlgorithmEvaluator {
 	 * <b>Implementation Note:</b> Any implementation of this method MUST be the same as calling 
 	 * evaluateRun(List<RunConfig>) with that same run in the list.
 	 * 
-	 * @param run RunConfiguration to evaluate
+	 * @param runConfig RunConfig to evaluate
 	 * @return	list containing the <code>AlgorithmRun<code>
 	 * @throws TargetAlgorithmAbortException
 	 */
@@ -48,8 +48,8 @@ public interface TargetAlgorithmEvaluator {
 
 	/**
 	 * Evaluate a sequence of run configurations
-	 * @param runConfigs a list containing zero or more run configurations to evaluate
-	 * @param obs 		 observer that will be notified of the current run status
+	 * @param runConfigs	a list containing zero or more run configurations to evaluate
+	 * @param observer 	 	observer that will be notified of the current run status
 	 * @return	list of the exact same size as input containing the <code>AlgorithmRun</code> objects in the same order as runConfigs
 	 * @throws TargetAlgorithmAbortException
 	 */
@@ -66,7 +66,7 @@ public interface TargetAlgorithmEvaluator {
 	 * normally (that is you can do a normal shutdown, and the onSuccess method should fire)
 	 *  
 	 * @param runConfig  run configuration to evaluate
-	 * @param handler    handler to invoke on completion or failure
+	 * @param callback    handler to invoke on completion or failure
 	 */
 	public void evaluateRunsAsync(RunConfig runConfig, TargetAlgorithmEvaluatorCallback callback );
 	
@@ -80,7 +80,7 @@ public interface TargetAlgorithmEvaluator {
 	 * normally (that is you can do a normal shutdown, and the onSuccess method should fire)
 	 * 
 	 * @param runConfigs list of zero or more run configuration to evaluate
-	 * @param handler    handler to invoke on completion or failure
+	 * @param callback   handler to invoke on completion or failure
 	 */
 	public void evaluateRunsAsync(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorCallback callback);
 
@@ -94,8 +94,8 @@ public interface TargetAlgorithmEvaluator {
 	 * normally (that is you can do a normal shutdown, and the onSuccess method should fire)
 	 * 
 	 * @param runConfigs list of zero or more run configuration to evaluate
-	 * @param handler    handler to invoke on completion or failure
-	 * @param obs 		 observer that will be notified of the current run status
+	 * @param callback   handler to invoke on completion or failure
+	 * @param observer	 observer that will be notified of the current run status
 	 */
 	public void evaluateRunsAsync(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorCallback callback, TargetAlgorithmEvaluatorRunObserver observer);
 	

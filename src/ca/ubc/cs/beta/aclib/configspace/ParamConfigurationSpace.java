@@ -121,7 +121,7 @@ public class ParamConfigurationSpace implements Serializable {
 	/**
 	 * Number of Neighbours a continuous value has
 	 */
-	final int neighboursForContinuousParameters;
+	final int neighboursForNumericalParameters;
 	
 	/**
 	 * Number of parameters 
@@ -209,8 +209,7 @@ public class ParamConfigurationSpace implements Serializable {
 	
 	/**
 	 * Creates a Param Configuration Space from the given file
-	 * @param file
-	 * @param random
+	 * @param file	 File containing the configuration space
 	 */
 	public ParamConfigurationSpace(File file)
 	{
@@ -219,19 +218,18 @@ public class ParamConfigurationSpace implements Serializable {
 	
 	/**
 	 * Creates a Param Configuration Space from the given file
-	 * @param file
-	 * @param random
+	 * @param file			File containing the configuration space
+	 * @param neighbours 	The number of neighbours to generate for numerical parameters
 	 */
 	public ParamConfigurationSpace(File file, int neighbours)
 	{
-		this(new FileReaderNoException(file), file.getAbsolutePath(), Collections.EMPTY_MAP, neighbours);
+		this(new FileReaderNoException(file), file.getAbsolutePath(), Collections.<String, String> emptyMap(), neighbours);
 	}
 	
 	/**
 	 * Creates a Param Configuration Space from the given reader
-	 * @param reader that contains the text of the file
-	 * @param random random object to parse
-	 * @param absolute file name of the object (a unique string used for equality)
+	 * @param file 			    A reader object that will allow us to read the configuration space
+	 * @param absoluteFileName  A file name of the object (a unique string used for equality)
 	 */
 	@SuppressWarnings("unchecked")
 	public ParamConfigurationSpace(Reader file, String absoluteFileName)
@@ -241,15 +239,16 @@ public class ParamConfigurationSpace implements Serializable {
 	
 	/**
 	 * Creates a Param Configuration Space from the given reader
-	 * @param reader that contains the text of the file
-	 * @param random random object to parse
-	 * @param absolute file name of the object (a unique string used for equality)
+	 * @param file 			    				A reader object that will allow us to read the configuration space
+	 * @param absoluteFileName  				A file name of the object (a unique string used for equality)
+	 * @param searchSubspace					A map that controls which parameters should be used to generate a subspace
+	 * @param neighboursForNumericalParameters The number of neighbours that should be generated for numerical parameters
 	 */
-	public ParamConfigurationSpace(Reader file, String absoluteFileName, Map<String, String> searchSubspace, final int neighboursForContinuousParameters)
+	public ParamConfigurationSpace(Reader file, String absoluteFileName, Map<String, String> searchSubspace, final int neighboursForNumericalParameters)
 	{
 		
 		
-		this.neighboursForContinuousParameters = neighboursForContinuousParameters;
+		this.neighboursForNumericalParameters = neighboursForNumericalParameters;
 		/*
 		 * Parse File and create configuration space
 		 */
@@ -1134,11 +1133,11 @@ public class ParamConfigurationSpace implements Serializable {
 	 * Generates a configuration with the corresponding valueArray.
 	 * <p>
 	 * <b>NOTE</b> No validation is done on the aray inputs, using this method is strongly discouraged
-	 * this is primarily for MATLAB synchronization. For this kind of input you should perhaps consider
-	 * {@link ca.ubc.cs.beta.aclib.configspace.ParamConfiguration.StringFormat.ARRAY_STRING_SYNTAX}
+	 * this is primarily for MATLAB synchronization. For this kind of input you should perhaps consider:
+	 * {@link ca.ubc.cs.beta.aclib.configspace.ParamConfiguration.StringFormat#ARRAY_STRING_SYNTAX}
 	 * 
-	 * @param valueArray paramValueArray
-	 * @return param configuration
+	 * @param valueArray value array representation of configuration
+	 * @return ParamConfiguration object that represents the valueArray
 	 */
 	public ParamConfiguration getConfigurationFromValueArray(double[] valueArray)
 	{
@@ -1375,8 +1374,7 @@ public class ParamConfigurationSpace implements Serializable {
 	}
 	
 	/**
-	 * Returns <code>true</code> if the file is real, or if we constructed this from a Reader
-	 * @return
+	 * @return <code>true</code> if the source of this ParamConfigurationSpace is a real file on disk. 
 	 */
 	public boolean hasRealParameterFile()
 	{

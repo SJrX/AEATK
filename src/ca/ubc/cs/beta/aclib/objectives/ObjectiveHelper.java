@@ -26,7 +26,7 @@ public class ObjectiveHelper {
 	
 	/**
 	 * Too lazy to pass this object around properly, you can delete this method and refactor what breaks
-	 * @return
+	 * @return the run objective associated with this object
 	 */
 	public RunObjective getRunObjective()
 	{
@@ -34,12 +34,12 @@ public class ObjectiveHelper {
 	}
 	/**
 	 * Computes the objective for a given set of runs 
-	 * @param runs				- a set of runs that all have the same configuration
-	 * @param capSlack 
-	 * @param runObj			- Run Objective
-	 * @param intraObjective	- Intra Instance Objective
-	 * @param interObjective	- Inter Instance Objective
-	 * @return
+	 * <p>
+	 * <b>Implementation Note: </b> I'm not sure what the slack is suppose to do with this method, it has something to do with dSMAC and knowing if we have exceeded the objective.
+	 * 
+	 * @param runs			A set of runs that all have the same configuration
+	 * @param capSlack 		The amount of slack that is permitted to runs
+	 * @return the computed objective
 	 */
 	public double computeObjective(List<? extends AlgorithmRun> runs, final double capSlack)
 	{
@@ -93,53 +93,5 @@ public class ObjectiveHelper {
 	public double computeObjective(List<? extends AlgorithmRun> runs) {
 		return computeObjective(runs,0);
 	}
-	
-	
-/*
-	public double getEmpiricalCost(ParamConfiguration config, Set<ProblemInstance> instanceSet, double cutoffTime, Map<ProblemInstance, Map<Long,Double>> hallucinatedValues, double minimumResponseValue)
-	{
-		if (!configToPerformanceMap.containsKey(config) && hallucinatedValues.isEmpty()){
-			return Double.MAX_VALUE;
-		}
-		ArrayList<Double> instanceCosts = new ArrayList<Double>();
-		
-		Map<ProblemInstance, LinkedHashMap<Long, Double>> instanceSeedToPerformanceMap = configToPerformanceMap.get(config);
 
-		if(instanceSeedToPerformanceMap == null) 
-		{
-			instanceSeedToPerformanceMap = new HashMap<ProblemInstance, LinkedHashMap<Long, Double>>();
-			
-		}
-		/*
-		 * Compute the Instances to use in the cost calculation
-		 * It's everything we ran out of everything we requested.
-		 *
-		Set<ProblemInstance> instancesToUse = new HashSet<ProblemInstance>();
-		instancesToUse.addAll(instanceSet);
-		
-		Set<ProblemInstance> instancesToKeep = new HashSet<ProblemInstance>(instanceSeedToPerformanceMap.keySet());
-		instancesToKeep.addAll(hallucinatedValues.keySet());
-		instancesToUse.retainAll(instancesToKeep);
-		
-		
-		for(ProblemInstance pi : instancesToUse)
-		{
-			
-			Map<Long, Double> seedToPerformanceMap = new HashMap<Long, Double>();
-			if(instanceSeedToPerformanceMap.get(pi) != null) seedToPerformanceMap.putAll(instanceSeedToPerformanceMap.get(pi));
-			if(hallucinatedValues.get(pi) != null) seedToPerformanceMap.putAll(hallucinatedValues.get(pi));
-			
-			/*
-			 * Aggregate the cost over the instances
-			 *
-			ArrayList<Double> localCosts = new ArrayList<Double>();
-			for(Map.Entry<Long, Double> ent : seedToPerformanceMap.entrySet())
-			{
-					localCosts.add( Math.max(minimumResponseValue, ent.getValue()) );	
-			}
-			instanceCosts.add( perInstanceObjectiveFunction.aggregate(localCosts,cutoffTime)); 
-		}
-		return aggregateInstanceObjectiveFunction.aggregate(instanceCosts,cutoffTime);
-	}
-	*/
 }

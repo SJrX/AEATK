@@ -63,8 +63,8 @@ public interface InstanceSeedGenerator extends Serializable {
 	/**
 	 * Takes the following problem instance seed pair and prevents it from ever being returned
 	 * 
-	 * @param instance - problem instance
-	 * @param seed	- seed
+	 * @param pi  		the problem instance
+	 * @param seed		seed
 	 */
 	public void take(ProblemInstance pi, long seed);
 	

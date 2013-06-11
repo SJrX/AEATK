@@ -182,8 +182,8 @@ public enum RunResult {
 	}
 
 	/**
-	 * Returns <code>true</code> if a wrapper is permitted to output this run result
-	 * @return
+	 * Returns <code>true</code> if a wrapper is permitted to output this RunResult.
+	 * @return <code>true</code> if a wrapper can output this response, <code>false</code> otherwise.
 	 */
 	public boolean permittedByWrappers() {
 	
@@ -194,7 +194,7 @@ public enum RunResult {
 	 * Returns <code>true</code> if this means we should treat the {@link ca.ubc.cs.beta.aclib.objectives.RunObjective} value as finished successfully yet unknown.
 	 * 
 	 * Specifically CRASHED, ABORT, and RUNNING do not count as complete, but TIMEDOUT and KILLED DO.
-	 * @return
+	 * @return <code>true</code> if this run was successful and censored (that is it is only a lower bound), <code>false</code> otherwise.
 	 */
 	public boolean isSuccessfulAndCensored()
 	{

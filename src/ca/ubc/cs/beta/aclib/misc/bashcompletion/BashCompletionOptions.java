@@ -1,4 +1,4 @@
-package ca.ubc.cs.beta.aclib.misc.options;
+package ca.ubc.cs.beta.aclib.misc.bashcompletion;
 
 import com.beust.jcommander.Parameter;
 

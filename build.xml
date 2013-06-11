@@ -54,6 +54,24 @@ dirty: ${git.dirty}</echo>
 		<mkdir dir="build/testclasses/"/>
 		<mkdir dir="dist"/>
 		<mkdir dir="models"/>
+		<path id="compile.classpath">
+						<fileset dir="lib" id="lib">
+							<include name="*.jar"/>
+							<exclude name="*sources.jar"/>
+						</fileset>
+						<fileset dir="${software.dir}/fastrf-${git.branch}/" id="fastrf">
+							<include name="*"/>
+						</fileset>
+					</path>	
+		<!--<path id="compile.classpath">
+								<fileset dir="lib" id="lib">
+									<include name="*.jar"/>
+									<exclude name="*sources.jar"/>
+								</fileset>
+								<fileset dir="${software.dir}/fastrf-${git.branch}/" id="fastrf">
+									<include name="*"/>
+								</fileset>
+		</path>-->	
 	</target>
 	
 	<target name="clean" description="Cleans up build environment">
@@ -63,15 +81,7 @@ dirty: ${git.dirty}</echo>
 	</target>
 	
 	<target name="compile" depends="init" description="Compiles the source">
-		<path id="compile.classpath">
-				<fileset dir="lib" id="lib">
-					<include name="*.jar"/>
-					<exclude name="*sources.jar"/>
-				</fileset>
-				<fileset dir="${software.dir}/fastrf-${git.branch}/" id="fastrf">
-					<include name="*"/>
-				</fileset>
-			</path>	
+		
 		
 		<javac srcdir="src" destdir="build/classes" debug="true" includeantruntime="false" >
 		<classpath refid="compile.classpath"/>
@@ -99,7 +109,7 @@ dirty: ${git.dirty}</echo>
 			</javac>
 	 </target>
 	
-	<target name="javadoc" depends="setjavaprop,doc" description="Make Javadoc"/>
+	<target name="javadoc" depends="setjavaprop,doc, init" description="Make Javadoc"/>
 	
 	<target name="setjavaprop">
 		<property name="build.javadoc" value="true"/>
@@ -111,7 +121,25 @@ dirty: ${git.dirty}</echo>
 			
 			
 	<target name="javadoc-internal"  if="build.javadoc">
-		<javadoc sourcepath="src/" author="true" destdir="doc/" classpathref="compile.classpath" />
+		
+		<path id="doc.classpath">
+			
+			<fileset dir="doclib" id="doclib">
+				<include name="*.jar"/>
+				<exclude name="*sources.jar"/>
+			</fileset>
+			<fileset dir="${software.dir}/fastrf/" id="fastrf">
+	                <include name="fastrf.jar"/>
+				<include name="fastrf-src.jar"/>
+	       </fileset>
+			<path refid="compile.classpath"/>
+		</path>	
+		
+		
+		
+		
+		<javadoc sourcepath="src/" author="true" destdir="doc/" classpathref="doc.classpath" excludepackagenames="ca.ubc.cs.beta.hal.startup,ca.ubc.cs.beta.hal" />
+			
 	</target>
 	<target name="nodoc" unless="build.javadoc">
 		<echo>build.javadoc property not set so skipping building of javadoc</echo>

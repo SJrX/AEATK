@@ -1,4 +1,4 @@
-package ca.ubc.cs.beta.aclib.misc;
+package ca.ubc.cs.beta.aclib.misc.inputparsers;
 
 import java.util.LinkedList;
 import java.util.regex.Matcher;
@@ -20,22 +20,21 @@ public class DurationToSeconds {
 	 * Returns the number of seconds encoded in the user supplied string
 	 * 
 	 * This supports two formats currently:
-	 * DDdHHhMMmSSs
-	 * DD:HH:MM:SS
+	 * DDdHHhMMmSSs (example 3d14h15m9s)
+	 * DD:HH:MM:SS  (example 3:14:15:9)
 	 * 
-	 * 
-	 * @param inputString
-	 * @return
+	 * @param inputString the string to convert
+	 * @return number of seconds repre
 	 */
-	public static int numberOfSecondsFromString(String s)
+	public static int numberOfSecondsFromString(String inputString)
 	{
 		
 		
-		if(s.trim().length() == 0)
+		if(inputString.trim().length() == 0)
 		{
 			throw new IllegalArgumentException("Got an empty input string");
 		}
-		Matcher matchOne = firstFormat.matcher(s);
+		Matcher matchOne = firstFormat.matcher(inputString);
 		
 		while(matchOne.find())
 		{
@@ -72,7 +71,7 @@ public class DurationToSeconds {
 		}
 		
 		
-		Matcher matchTwo = secondFormat.matcher(s);
+		Matcher matchTwo = secondFormat.matcher(inputString);
 		while(matchTwo.find())
 		{
 		
@@ -136,18 +135,7 @@ public class DurationToSeconds {
 		}
 
 		
-		throw new IllegalArgumentException("Expected string seperated with d,h,m,s (once only), or up to 4 colons, got : " + s);
+		throw new IllegalArgumentException("Expected string seperated with d,h,m,s (once only), or up to 4 colons, got : " + inputString);
 	}
-
-	/*
-	public static void main(String[] args)
-	{
-		System.out.println(numberOfSecondsFromString("2:00:00:01"));
-		System.out.println(numberOfSecondsFromString("2d00m01s"));
-		System.out.println(numberOfSecondsFromString("1:01:01:01"));
-		System.out.println(numberOfSecondsFromString("1d1h01m01s"));
-		//System.out.println(numberOfSecondsFromString("1:00:00:-00"));
-		System.out.println(numberOfSecondsFromString(""));
-	}*/
 	
 }

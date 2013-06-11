@@ -5,6 +5,11 @@ import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 
+/**
+ * Wrapper class that wraps existing {@link ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun} instances, providing a noop kill().
+ * @author Steve Ramage <seramage@cs.ubc.ca>
+ *
+ */
 public class KillableWrappedAlgorithmRun implements KillableAlgorithmRun {
 
 	/**

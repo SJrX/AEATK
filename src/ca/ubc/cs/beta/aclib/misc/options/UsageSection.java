@@ -14,8 +14,8 @@ import java.util.TreeMap;
  *
  */
 public class UsageSection implements Iterable<String> {
-	private final String name;
-	private final String description;
+	private final String sectionName;
+	private final String sectionDescription;
 	private final Map<String, String> attributesToDescriptionMap = new TreeMap<String, String>();
 	private final Set<String> requiredAttributes = new HashSet<String>();
 	private final Map<String, String> defaultValues = new HashMap<String, String>();
@@ -30,22 +30,22 @@ public class UsageSection implements Iterable<String> {
 	 * @param sectionDescription 	The Description of this section
 	 * @param hidden				<code>true</code> if we shouldn't display the sectionName or description when displaying options.
 	 */
-	public UsageSection(String name, String description, boolean hidden)
+	public UsageSection(String sectionName, String sectionDescription, boolean hidden)
 	{
-		this.name = name;
-		this.description = description;
+		this.sectionName = sectionName;
+		this.sectionDescription = sectionDescription;
 		this.hidden = hidden;
 	}
 	
 	
 	public String getSectionName()
 	{
-		return name;
+		return sectionName;
 	}
 	
 	public String getSectionDescription()
 	{
-		return description;
+		return sectionDescription;
 	}
 	
 	/**
@@ -101,8 +101,8 @@ public class UsageSection implements Iterable<String> {
 	public String toString()
 	{
 		StringBuilder sb = new StringBuilder();
-		sb.append("Name:").append(name).append("\n");
-		sb.append("Description:").append(description).append("\n");
+		sb.append("Name:").append(sectionName).append("\n");
+		sb.append("Description:").append(sectionDescription).append("\n");
 		
 		for(String s : this)
 		{

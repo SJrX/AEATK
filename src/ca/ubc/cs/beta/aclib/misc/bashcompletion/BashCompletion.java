@@ -1,4 +1,4 @@
-package ca.ubc.cs.beta.aclib.misc.options;
+package ca.ubc.cs.beta.aclib.misc.bashcompletion;
 
 import java.io.File;
 import java.io.FileWriter;
@@ -11,6 +11,7 @@ import java.util.TreeSet;
 
 import com.beust.jcommander.JCommander;
 
+import ca.ubc.cs.beta.aclib.misc.options.UsageSection;
 import ca.ubc.cs.beta.aclib.options.ConfigToLaTeX;
 
 /**

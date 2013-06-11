@@ -1,12 +1,15 @@
 package ca.ubc.cs.beta.aclib.example.tae;
 
+import java.io.File;
 import java.util.HashMap;
 import java.util.Map;
 
 import com.beust.jcommander.DynamicParameter;
 import com.beust.jcommander.Parameter;
+import com.beust.jcommander.ParameterFile;
 import com.beust.jcommander.ParametersDelegate;
 
+import ca.ubc.cs.beta.aclib.misc.file.HomeFileUtils;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.LongGreaterThanNegativeTwoValidator;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
@@ -16,13 +19,25 @@ import ca.ubc.cs.beta.aclib.options.AlgorithmExecutionOptions;
  * A JCommander Options object that controls the command line options
  * available for this utility. 
  * 
- * For more information see: {@link http://jcommander.org/}
+ * For more information see: <a href="http://jcommander.org/">JCommander</a>.
  * 
  * @author Steve Ramage <seramage@cs.ubc.ca>
  *
  */
 @UsageTextField(title="Target Algorithm Evaluator Running Options", description=" Utility that allows for making a single run against a target algorithm evaluator ")
 public class TargetAlgorithmEvaluatorRunnerOptions extends AbstractOptions {
+	
+	/**
+	 * A defaults file that allows users to store various preferences on disk
+	 * For instance they could change this utility to default to a RANDOM configuration instead of the DEFAULT configuration by putting 
+	 * config = RANDOM 
+	 * in the file.
+	 */
+	@UsageTextField(defaultValues="~/.aclib/taerunner.opt")
+	@Parameter(names="--taeRunnerDefaultsFile", description="file that contains default settings for TAE Runner")
+	@ParameterFile(ignoreFileNotExists = true) 
+	public File smacDefaults = HomeFileUtils.getHomeFile(".aclib" + File.separator  + "taerunner.opt");
+	
 	
 	/**
 	 * Controls options required for creating an AlgorithmExecutionConfig object

@@ -664,7 +664,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	
 	/**
 	 * Returns a list of configurations in the neighbourhood of this one (Forbidden Configurations are excluded)
-	 * @param  random object for sampling neighbours of numerical parameters
+	 * @param  rand An object that will be used to generate neighbours for numerical parameters.
 	 * @return list of configurations in the neighbourhood
 	 */
 	public List<ParamConfiguration> getNeighbourhood(Random rand)
@@ -732,7 +732,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 		
 		if(parameterDomainContinuous[valueArrayIndex])
 		{
-		  return configSpace.neighboursForContinuousParameters;
+		  return configSpace.neighboursForNumericalParameters;
 		} else
 		{
 		  return categoricalSize[valueArrayIndex] - 1;
