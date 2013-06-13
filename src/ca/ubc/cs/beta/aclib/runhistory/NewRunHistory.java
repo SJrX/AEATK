@@ -197,8 +197,21 @@ public class NewRunHistory implements RunHistory {
 			{
 			
 			
-				Object[] args = { run, config, pi,dOldValue};
-				log.error("RunHistory already contains a run with identical config, instance and seed\nRun:{}\nConfig:{}\nInstance:{}\nPrevious Performance:{}", args);
+			
+				
+				AlgorithmRun matchingRun = null;
+				for(AlgorithmRun algoRun : this.getAlgorithmRunData(config))
+				{
+					if(algoRun.getRunConfig().getProblemInstanceSeedPair().equals(run.getRunConfig().getProblemInstanceSeedPair()))
+					{
+						matchingRun = algoRun;
+					}
+				}
+				
+				Object[] args = {matchingRun, run, config, pi,dOldValue};
+				
+				
+				log.error("RunHistory already contains a run with identical config, instance and seed \n Original Run:{}\nRun:{}\nConfig:{}\nInstance:{}\nPrevious Performance:{}", args);
 				throw new DuplicateRunException("Duplicate Run Detected", run);
 			}
 			

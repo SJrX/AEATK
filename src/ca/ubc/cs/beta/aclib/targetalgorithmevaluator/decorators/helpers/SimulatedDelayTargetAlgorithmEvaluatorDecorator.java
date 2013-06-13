@@ -287,7 +287,10 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 			
 		}	
 		
-		observer.currentStatus(kars);
+		if(observer != null)
+		{
+			observer.currentStatus(kars);
+		}
 	}
 	
 	

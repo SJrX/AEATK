@@ -1193,21 +1193,11 @@ public class ParamConfigurationSpace implements Serializable {
 						
 						if(param.equals("")) continue;
 						String[] paramSplit = param.trim().split(" ");
-						try {
-							if(!paramSplit[1].trim().equals("NaN"))
-							{
-								config.put(paramSplit[0].trim(),paramSplit[1].replaceAll("'","").trim());
-							}
-						} catch(ArrayIndexOutOfBoundsException e)
+						if(!paramSplit[1].trim().equals("NaN"))
 						{
-							
-							System.out.println(paramString);
-							System.out.println(tmpParamString);
-							System.out.println(f);
-							System.out.println(Arrays.toString(paramSplit));
-							throw e;
-							
+							config.put(paramSplit[0].trim(),paramSplit[1].replaceAll("'","").trim());
 						}
+					
 						
 					}
 					
@@ -1309,9 +1299,9 @@ public class ParamConfigurationSpace implements Serializable {
 			}
 			
 			return config;
-		} catch(IllegalArgumentException e )
+		} catch(RuntimeException e )
 		{
-			throw new IllegalArgumentException(e.getMessage() + "\n String: " + paramString + " Format: " + f);
+			throw new ParamConfigurationStringFormatException("Error processing Parameter Configuration String \""+ paramString+ "\" in format: "+ f + " please check the arguments (and nested exception) and try again", e);
 		}
 		
 		
