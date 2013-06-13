@@ -60,6 +60,12 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	public boolean checkResultOrderConsistent;
 	
 	@Parameter(names="--skip-outstanding-eval-tae", description="If set to true code, the TAE will not be wrapped by a decorator to support waiting for outstanding runs")
-	public boolean skipOutstandingEvaluationsTAE = false; 
+	public boolean skipOutstandingEvaluationsTAE = false;
+
+	@Parameter(names="--log-requests-responses", description="If set to true all evaluation requests will be logged as they are submitted and completed")
+	public boolean logRequestResponses = false; 
+	
+	@Parameter(names={"--log-requests-responses-rc-only","--log-requests-responses-rc"}, description="If set to true we will only log the run configuration when a run completes ")
+	public boolean logRequestResponsesRCOnly = false; 
 	
 }

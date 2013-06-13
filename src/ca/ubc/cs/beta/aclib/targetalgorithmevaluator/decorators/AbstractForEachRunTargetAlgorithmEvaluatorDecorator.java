@@ -1,5 +1,6 @@
 package ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators;
 
+import java.util.ArrayList;
 import java.util.List;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
@@ -27,7 +28,7 @@ public abstract class AbstractForEachRunTargetAlgorithmEvaluatorDecorator extend
 
 	@Override
 	public final List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
-		return processRuns(tae.evaluateRun(runConfigs, obs));
+		return processRuns(tae.evaluateRun(processRunConfigs(runConfigs), obs));
 	}
 
 	@Override
@@ -53,7 +54,7 @@ public abstract class AbstractForEachRunTargetAlgorithmEvaluatorDecorator extend
 			}
 		};
 		
-		tae.evaluateRunsAsync(runConfigs, myHandler, obs);
+		tae.evaluateRunsAsync(processRunConfigs(runConfigs), myHandler, obs);
 
 	}
 
@@ -64,7 +65,21 @@ public abstract class AbstractForEachRunTargetAlgorithmEvaluatorDecorator extend
 	 * @param run process the run
 	 * @return run that will replace it in the values returned to the client
 	 */
-	abstract protected AlgorithmRun processRun(AlgorithmRun run);
+	protected AlgorithmRun processRun(AlgorithmRun run)
+	{
+		return run;
+	}
+	
+	/**
+	 * Template method that is invoked with each runConfig that we request
+	 * @param rc the runconfig  being requested
+	 * @return runConfig object to replace the run
+	 */
+	protected RunConfig processRun(RunConfig rc)
+	{
+		return rc;
+	}
+	
 	
 	protected final List<AlgorithmRun> processRuns(List<AlgorithmRun> runs)
 	{
@@ -74,6 +89,16 @@ public abstract class AbstractForEachRunTargetAlgorithmEvaluatorDecorator extend
 		}
 		
 		return runs;
+	}
+	
+	protected final List<RunConfig> processRunConfigs(List<RunConfig> runConfigs)
+	{	
+		runConfigs = new ArrayList<RunConfig>(runConfigs);
+		for(int i=0; i < runConfigs.size(); i++)
+		{
+			runConfigs.set(i, processRun(runConfigs.get(i)));
+		}
+		return runConfigs;
 	}
 	
 }
