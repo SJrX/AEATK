@@ -54,7 +54,7 @@ public class ProblemInstanceSeedPair implements Comparable<ProblemInstanceSeedPa
 	
 	public String toString()
 	{
-		return "<" + ai.getInstanceName() + "(" + ai.getInstanceID() + ")," + seed + ">";
+		return "<Instance:" + ai.getInstanceID() + ", Seed:" + seed + ">";
 		//return ai.toString() + "\nSeed:" + seed;
 	}
 
