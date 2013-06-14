@@ -111,6 +111,7 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 		
 		this.prePCAInstanceFeatures = ArrayMathOps.copy(instanceFeatures);
 		
+		/*
 		if(RoundingMode.ROUND_NUMBERS_FOR_MATLAB_SYNC)
 		{
 			if(!printFeatures)
@@ -129,6 +130,7 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 			System.out.println("Log Model: " + logModel);
 		
 		}
+		*/
 		instanceFeatures = ArrayMathOps.copy(instanceFeatures);
 		writeOutput = false;
 		if(writeOutput)
@@ -199,6 +201,7 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 		
 		
 		log.info("Discarding {} constant inputs of {} in total.", constFeatures.length, prePCAInstanceFeatures[0].length);
+	/*
 		if(RoundingMode.ROUND_NUMBERS_FOR_MATLAB_SYNC)
 		{
 			System.out.print("Constant Columns: ");
@@ -210,6 +213,7 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 			System.out.println("\n");
 			System.out.println("Discarding "+ constFeatures.length + "  constant inputs of " + prePCAInstanceFeatures[0].length +" total ");
 		}
+		*/
 		double[][] instanceFeaturesT = pca.transpose(instanceFeatures);
 		
 		
@@ -267,10 +271,12 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 		//double[][] pcaVecT = pca.transpose(pcaVec);
 		pcaFeatures = pca.matrixMultiply(instanceFeatures, pcaVec);
 		
+		/*
 		if(RoundingMode.ROUND_NUMBERS_FOR_MATLAB_SYNC)
 		{
 			System.out.println("PCA Features Hash: " + ArrayMathOps.matlabHashCode(pcaFeatures));
 		}
+		*/
 		
 	}
 

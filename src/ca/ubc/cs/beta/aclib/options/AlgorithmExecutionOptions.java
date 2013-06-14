@@ -16,7 +16,7 @@ import com.beust.jcommander.ParametersDelegate;
  * @author sjr
  *
  */
-@SuppressWarnings("unused")
+
 @UsageTextField(title="Algorithm Execution Options", description="Options related to running the target algorithm")
 public class AlgorithmExecutionOptions extends AbstractOptions {
 	

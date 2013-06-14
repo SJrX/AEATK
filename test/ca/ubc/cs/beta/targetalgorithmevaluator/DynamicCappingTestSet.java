@@ -20,7 +20,8 @@ import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableAlgorithmRun;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
-import ca.ubc.cs.beta.aclib.misc.random.SeedableRandomSingleton;
+import ca.ubc.cs.beta.aclib.misc.debug.DebugUtil;
+import ca.ubc.cs.beta.aclib.misc.random.SeedableRandomPool;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
@@ -41,6 +42,10 @@ public class DynamicCappingTestSet {
 	private static ParamConfigurationSpace configSpace;
 	
 	private static final int TARGET_RUNS_IN_LOOPS = 10;
+	
+	SeedableRandomPool pool = new SeedableRandomPool(System.currentTimeMillis());
+	
+	
 	@BeforeClass
 	public static void beforeClass()
 	{
@@ -82,9 +87,8 @@ public class DynamicCappingTestSet {
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 		
 		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
-		SeedableRandomSingleton.reinit();
-		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
-		this.r = SeedableRandomSingleton.getRandom();
+		
+		this.r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		
 		
 		

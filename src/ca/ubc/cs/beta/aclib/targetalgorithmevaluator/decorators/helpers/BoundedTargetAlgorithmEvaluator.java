@@ -271,7 +271,7 @@ public class BoundedTargetAlgorithmEvaluator extends
 				log.error("Um what");
 				throw new IllegalStateException("Runs seem to have disappeared, I was expecting to observer " + numRunConfigToRun + " but only saw " + runs.size());
 			}
-			System.out.println(this + " and " + runs.size() + " versus " + numRunConfigToRun);
+			//System.out.println(this + " and " + runs.size() + " versus " + numRunConfigToRun);
 			
 			synchronized(runConfigs)
 			{
@@ -291,10 +291,18 @@ public class BoundedTargetAlgorithmEvaluator extends
 				}
 				
 				int previousCompletedCount = completedCount.get();
+				//log.debug("Setting completed runs to " + completedRuns + " on object " + System.identityHashCode(completedCount));
+
+				
 				if(previousCompletedCount > completedRuns)
 				{
-					throw new IllegalStateException("Somehow I determined that there were " + completedRuns + " but previously we detected: " + previousCompletedCount );
+					//log.debug("Setting completed runs to " + completedRuns + " on object " + System.identityHashCode(completedCount));
+					IllegalStateException e =  new IllegalStateException("Somehow I determined that there were " + completedRuns + " but previously we detected: " + previousCompletedCount );
+					
+					throw e;
+					
 				} 
+				
 				
 				completedCount.set(completedRuns);
 				

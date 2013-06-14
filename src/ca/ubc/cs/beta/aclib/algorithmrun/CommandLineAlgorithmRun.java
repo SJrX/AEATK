@@ -12,6 +12,7 @@ import java.util.Scanner;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.TimeUnit;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -162,7 +163,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 				@Override
 				public void run() {
 					
-					Thread.currentThread().setName("Command Line Target Algorithm Evaluator Thread (Standard Error Processor)" + getRunConfig().getProblemInstanceSeedPair().getInstance().getInstanceID() + "-" + getRunConfig().getProblemInstanceSeedPair().getSeed());
+					Thread.currentThread().setName("Command Line Target Algorithm Evaluator Thread (Standard Error Processor)" + getRunConfig() );
 					try { 
 					Scanner procIn = new Scanner(innerProcess.getErrorStream());
 					
@@ -186,13 +187,13 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 
 				@Override
 				public void run() {
-					Thread.currentThread().setName("Command Line Target Algorithm Evaluator Thread (Observer)" + getRunConfig().getProblemInstanceSeedPair().getInstance().getInstanceID() + "-" + getRunConfig().getProblemInstanceSeedPair().getSeed());
+					Thread.currentThread().setName("Command Line Target Algorithm Evaluator Thread (Observer)" + getRunConfig());
 					while(true)
 					{
 						
 						double currentTime = getCurrentWallClockTime() / 1000.0;
 						
-						runObserver.currentStatus(Collections.singletonList((KillableAlgorithmRun) new RunningAlgorithmRun(execConfig, getRunConfig(), "RUNNING," + Math.max(0,(currentTime - WALLCLOCK_TIMING_SLACK)) + ",0,0," + getRunConfig().getProblemInstanceSeedPair().getSeed(), killHandler)));
+						runObserver.currentStatus(Collections.singletonList((KillableAlgorithmRun) new RunningAlgorithmRun(execConfig, getRunConfig(),  Math.max(0,(currentTime - WALLCLOCK_TIMING_SLACK)),  0,0, getRunConfig().getProblemInstanceSeedPair().getSeed(), killHandler)));
 						try {
 							
 							
@@ -267,12 +268,19 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 			
 			
 			procIn.close();
+			proc.destroy();
+			this.stopWallclockTimer();
 			
 			stdErrorDone.acquireUninterruptibly();
 			threadPoolExecutor.shutdownNow();
 			
-			proc.destroy();
-			this.stopWallclockTimer();
+			try {
+				threadPoolExecutor.awaitTermination(24, TimeUnit.HOURS);
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+			}
+			
+			
 			runObserver.currentStatus(Collections.singletonList(new KillableWrappedAlgorithmRun(this)));
 		} catch (IOException e1) {
 			String execCmd = getTargetAlgorithmExecutionCommand(execConfig,runConfig);

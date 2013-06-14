@@ -25,7 +25,9 @@ import ca.ubc.cs.beta.TestHelper;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration.StringFormat;
-import ca.ubc.cs.beta.aclib.misc.random.SeedableRandomSingleton;
+import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationStringFormatException;
+import ca.ubc.cs.beta.aclib.misc.debug.DebugUtil;
+import ca.ubc.cs.beta.aclib.misc.random.SeedableRandomPool;
 
 import com.beust.jcommander.internal.Lists;
 
@@ -151,9 +153,10 @@ public class ParamConfigurationTest {
 	/**
 	 * Tests what happens when we specify a value for a parameter that is not in it's domain
 	 */
-	@Test(expected=IllegalArgumentException.class)
+	@Test(expected=ParamConfigurationStringFormatException.class)
 	public void testParamNotInvalidValue()
 	{
+		
 		
 		ParamConfigurationSpace p = getConfigSpaceForFile("paramFiles/daisy-chain-param.txt");
 		
@@ -176,7 +179,7 @@ public class ParamConfigurationTest {
 	/**
 	 * Tests what happens if we specify a parameter that does not appear in the file
 	 */
-	@Test(expected=IllegalArgumentException.class)
+	@Test(expected=ParamConfigurationStringFormatException.class)
 	public void testParamNotInParameterFile()
 	{
 		ParamConfigurationSpace p = getConfigSpaceForFile("paramFiles/daisy-chain-param.txt");
@@ -577,7 +580,7 @@ public class ParamConfigurationTest {
 		
 		List<ParamConfiguration> configList = new ArrayList<ParamConfiguration>(100);
 		configList.addAll(configs);
-		Random rand = SeedableRandomSingleton.getRandom();
+		Random rand = new SeedableRandomPool(System.currentTimeMillis()).getRandom(DebugUtil.getCurrentMethodName()); 
 		
 		
 		

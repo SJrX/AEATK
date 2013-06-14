@@ -8,7 +8,7 @@ import net.sf.doodleproject.numerics4j.special.Erf;
 import org.apache.commons.math3.distribution.AbstractRealDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
 
-import ca.ubc.cs.beta.aclib.misc.random.SeedableRandomSingleton;
+import ca.ubc.cs.beta.aclib.misc.random.RandomUtil;
 
 /**
  * Truncated Normal Distribution as defined in:
@@ -19,7 +19,7 @@ import ca.ubc.cs.beta.aclib.misc.random.SeedableRandomSingleton;
  * 
  * Not all methods are implemented
  * 
- * @author seramage
+ * @author Steve Ramage <seramage@cs.ubc.ca>
  */
 public class TruncatedNormalDistribution extends AbstractRealDistribution {
 
@@ -197,7 +197,7 @@ public class TruncatedNormalDistribution extends AbstractRealDistribution {
 			result[i] = inverseCDF(current);
 			current += increment;
 		}
-		result = SeedableRandomSingleton.getPermutationOfArray(result);
+		result = RandomUtil.getPermutationOfArray(result, random);
 		return result;
 
 /*		   yHal[j][k] = Math.min(tNorm.sample(),maxValue);

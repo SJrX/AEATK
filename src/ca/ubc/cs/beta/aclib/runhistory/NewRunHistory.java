@@ -269,10 +269,7 @@ public class NewRunHistory implements RunHistory {
 		
 		Object[] args = {iteration, paramConfigurationList.getKey(config), pi.getInstanceID(), pisp.getSeed(), format.format(run.getRunConfig().getCutoffTime())};
 		
-		if(RoundingMode.ROUND_NUMBERS_FOR_MATLAB_SYNC)
-		{
-			log.debug("Iteration {}: running config {} on instance {} with seed {} and captime {}", args);
-		}
+		
 		
 		//
 	

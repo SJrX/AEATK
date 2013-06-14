@@ -88,6 +88,10 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 			{
 				@Override
 				public void currentStatus(List<? extends KillableAlgorithmRun> runs) {
+					if(runStatus.get(runs.get(0).getRunConfig()).isRunCompleted() && !runs.get(0).isRunCompleted())
+					{
+						throw new IllegalStateException("RACE CONDITION");
+					}
 					runStatus.put(runs.get(0).getRunConfig(), runs.get(0));
 					changes.release();
 				}
@@ -129,12 +133,16 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 						KillableAlgorithmRun[] runs = new KillableAlgorithmRun[runConfigs.size()];
 						//We will quit if all runs are done
 						boolean outstandingRuns = false;
+						int completed = 0;
 						for(Entry<RunConfig,KillableAlgorithmRun> entries : runStatus.entrySet())
 						{
 							KillableAlgorithmRun run = entries.getValue();
 							if(run.getRunResult().equals(RunResult.RUNNING))
 							{
 								outstandingRuns = true;
+							} else
+							{
+								completed++;
 							}
 							runs[listIndex.get(entries.getKey())]=run;
 						}

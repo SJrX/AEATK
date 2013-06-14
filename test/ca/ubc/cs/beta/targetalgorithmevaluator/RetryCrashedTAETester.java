@@ -16,7 +16,8 @@ import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
-import ca.ubc.cs.beta.aclib.misc.random.SeedableRandomSingleton;
+import ca.ubc.cs.beta.aclib.misc.debug.DebugUtil;
+import ca.ubc.cs.beta.aclib.misc.random.SeedableRandomPool;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
@@ -34,6 +35,9 @@ private static TargetAlgorithmEvaluator tae;
 	private static ParamConfigurationSpace configSpace;
 	
 	private static final int TARGET_RUNS_IN_LOOPS = 50;
+	
+	private static final SeedableRandomPool pool = new SeedableRandomPool(System.currentTimeMillis());
+	
 	
 
 	@BeforeClass
@@ -67,11 +71,7 @@ private static TargetAlgorithmEvaluator tae;
 	@Test
 	public void testFailingEchoExecutor()
 	{
-		SeedableRandomSingleton.reinit();
-		
-		Random r = SeedableRandomSingleton.getRandom();
-		
-		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
+		Random r =  pool.getRandom(DebugUtil.getCurrentMethodName());
 		
 		
 		
@@ -131,11 +131,7 @@ private static TargetAlgorithmEvaluator tae;
 	public void testRetryCrashedRunsTargetAlgorithmEvaluator()
 	{
 		
-SeedableRandomSingleton.reinit();
-		
-		Random r = SeedableRandomSingleton.getRandom();
-		
-		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
+		Random r =  pool.getRandom(DebugUtil.getCurrentMethodName());
 		
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);

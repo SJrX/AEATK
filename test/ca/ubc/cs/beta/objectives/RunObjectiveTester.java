@@ -17,7 +17,8 @@ import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableAlgorithmRun;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
-import ca.ubc.cs.beta.aclib.misc.random.SeedableRandomSingleton;
+import ca.ubc.cs.beta.aclib.misc.debug.DebugUtil;
+import ca.ubc.cs.beta.aclib.misc.random.SeedableRandomPool;
 import ca.ubc.cs.beta.aclib.objectives.RunObjective;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
@@ -38,6 +39,8 @@ private static TargetAlgorithmEvaluator tae;
 	private static ParamConfigurationSpace configSpace;
 	
 	private static double kappaMax = 500;
+	
+	private static final SeedableRandomPool pool = new SeedableRandomPool(System.currentTimeMillis());
 	@BeforeClass
 	public static void beforeClass()
 	{
@@ -55,15 +58,13 @@ private static TargetAlgorithmEvaluator tae;
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, kappaMax);
 		
 	}
-	Random r;
+	
 	
 	@Before
 	public void beforeTest()
 	{
 		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
-		SeedableRandomSingleton.reinit();
-		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
-		this.r = SeedableRandomSingleton.getRandom();
+	
 	}
 	
 	@Test
@@ -72,6 +73,7 @@ private static TargetAlgorithmEvaluator tae;
 		
 		
 		
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(1);
 		
 		for(int i=0; i < 10; i++)
@@ -99,7 +101,7 @@ private static TargetAlgorithmEvaluator tae;
 	@Test
 	public void testCappedRunsReportedAsNonKappaMax()
 	{
-		
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(1);
@@ -131,7 +133,7 @@ private static TargetAlgorithmEvaluator tae;
 	@Test
 	public void testCrashReportedAsKappaMax()
 	{
-		
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(1);
@@ -164,7 +166,7 @@ private static TargetAlgorithmEvaluator tae;
 	{
 		
 		
-		
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(1);
 		
 		for(int i=0; i < 10; i++)
@@ -197,6 +199,7 @@ private static TargetAlgorithmEvaluator tae;
 		 * See Task 1567
 		 */
 		
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(1);
 		double capTimeRequest = 5;

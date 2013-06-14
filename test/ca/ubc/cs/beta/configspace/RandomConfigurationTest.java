@@ -18,19 +18,21 @@ import org.junit.Test;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.configspace.ParamFileHelper;
-import ca.ubc.cs.beta.aclib.misc.random.SeedableRandomSingleton;
+import ca.ubc.cs.beta.aclib.misc.debug.DebugUtil;
+import ca.ubc.cs.beta.aclib.misc.random.SeedableRandomPool;
 
 
 public class RandomConfigurationTest {
 
 	
-	private static Random random;
+	
+	
+	private static final SeedableRandomPool pool = new SeedableRandomPool(System.currentTimeMillis());
 	
 	@BeforeClass
 	public static void setUpClass()
 	{
-		 SeedableRandomSingleton.reinit();
-		 random = SeedableRandomSingleton.getRandom();
+	
 	}
 	
 	
@@ -71,6 +73,7 @@ public class RandomConfigurationTest {
 	public void testUniformInteger()
 	{
 		
+		Random random = pool.getRandom(DebugUtil.getCurrentMethodName());
 		String paramFile = "a [ 1 , " + BUCKETS +  "] [1] i";
 		
 		
@@ -126,6 +129,7 @@ public class RandomConfigurationTest {
 	public void testLogInteger()
 	{
 		
+		Random random = pool.getRandom(DebugUtil.getCurrentMethodName());
 		String paramFile = "b [ 1 , " + BUCKETS +  "] [1] il";
 		StringReader sr = new StringReader(paramFile);
 		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(sr);
@@ -201,6 +205,7 @@ public class RandomConfigurationTest {
 	@Ignore("Fix input paramfile")
 	public void testAllValuesAppear() {
 		ParamConfigurationSpace f = ParamFileHelper.getParamFileParser(("/ubc/cs/home/s/seramage/arrowspace/sm/sample_inputs/spear-params.txt"));
+		Random random = pool.getRandom(DebugUtil.getCurrentMethodName());
 		
 	
 		Map<String,Integer> possibleValues =  new HashMap<String, Integer>(); 

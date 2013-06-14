@@ -19,6 +19,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.output.NullOutputStream;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -33,9 +34,10 @@ import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.exceptions.IllegalWrapperOutputException;
 import ca.ubc.cs.beta.aclib.exceptions.TargetAlgorithmAbortException;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aclib.misc.debug.DebugUtil;
 import ca.ubc.cs.beta.aclib.misc.logback.MarkerFilter;
 import ca.ubc.cs.beta.aclib.misc.logging.LoggingMarker;
-import ca.ubc.cs.beta.aclib.misc.random.SeedableRandomSingleton;
+import ca.ubc.cs.beta.aclib.misc.random.SeedableRandomPool;
 import ca.ubc.cs.beta.aclib.misc.watch.AutoStartStopWatch;
 import ca.ubc.cs.beta.aclib.misc.watch.StopWatch;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
@@ -83,10 +85,12 @@ public class TAETestSet {
 		File paramFile = TestHelper.getTestFile("paramFiles/paramEchoParamFile.txt");
 		configSpace = new ParamConfigurationSpace(paramFile);
 	}
-	Random r;
 	
 	PrintStream old;
 	ByteArrayOutputStream bout;
+	
+	private static final SeedableRandomPool pool = new SeedableRandomPool(System.currentTimeMillis());
+	
 	public void startOutputCapture()
 	{
 	
@@ -115,14 +119,17 @@ public class TAETestSet {
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 		
 		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
-		SeedableRandomSingleton.reinit();
-		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
-		this.r = SeedableRandomSingleton.getRandom();
 		
-		
+
 		
 	}
 	
+	@AfterClass
+	public static void afterClass()
+	{
+		System.out.println(pool.getInitialSeed());
+		System.out.println(pool.getAllSeeds());
+	}
 	/**
 	 * This just tests to see if ParamEchoExecutor does what it should
 	 */
@@ -130,6 +137,7 @@ public class TAETestSet {
 	public void testMirror()
 	{
 
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		StringBuilder b = new StringBuilder();
 		b.append("java -cp ");
 		b.append(System.getProperty("java.class.path"));
@@ -179,7 +187,7 @@ public class TAETestSet {
 	public void testTimingWarningGeneratorTAE()
 	{
 		
-	
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		
 		StringBuilder b = new StringBuilder();
 		b.append("java -cp ");
@@ -261,7 +269,7 @@ public class TAETestSet {
 	
 		
 		
-		
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
@@ -317,9 +325,8 @@ public class TAETestSet {
 		
 		
 		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
-		SeedableRandomSingleton.reinit();
-		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
-		this.r = SeedableRandomSingleton.getRandom();
+		
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		
 		
 		
@@ -373,7 +380,7 @@ public class TAETestSet {
 	@Test
 	public void testRunCountIncrement()
 	{
-	
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		
 			
 			
@@ -426,7 +433,7 @@ public class TAETestSet {
 	public void testABORT()
 	{
 		
-		
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
@@ -461,7 +468,7 @@ public class TAETestSet {
 	{
 		
 		
-		
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(100);
 	
 		ParamConfiguration config = configSpace.getRandomConfiguration(r);
@@ -486,7 +493,7 @@ public class TAETestSet {
 	{
 		
 		
-	
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		
 		
 		
@@ -539,7 +546,7 @@ public class TAETestSet {
 		
 		
 		
-		
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
@@ -603,7 +610,7 @@ public class TAETestSet {
 	public void testAbortOnFirstRunCrashTAEfirstIsACrash()
 	{
 		
-	
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		
 		
 		
@@ -675,7 +682,7 @@ public class TAETestSet {
 	{
 		
 		
-		
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
@@ -732,7 +739,7 @@ public class TAETestSet {
 	
 		
 		
-		
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
 		
 		
@@ -769,6 +776,7 @@ public class TAETestSet {
 		
 		ParamConfigurationSpace configSpace;
 		
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		
 		File paramFile = TestHelper.getTestFile("paramFiles/paramAliasEchoParamFile.txt");
 			configSpace = new ParamConfigurationSpace(paramFile);
@@ -784,9 +792,6 @@ public class TAETestSet {
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 			
 		tae = new AbortOnCrashTargetAlgorithmEvaluator(CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig));
-		SeedableRandomSingleton.reinit();
-		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
-		this.r = SeedableRandomSingleton.getRandom();
 		
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
@@ -831,6 +836,7 @@ public class TAETestSet {
 		ParamConfigurationSpace configSpace;
 		
 		
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		File paramFile = TestHelper.getTestFile("paramFiles/paramAliasEchoParamFile.txt");
 			configSpace = new ParamConfigurationSpace(paramFile);
 			
@@ -845,11 +851,7 @@ public class TAETestSet {
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 			
 		tae = new AbortOnCrashTargetAlgorithmEvaluator(CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig));
-		SeedableRandomSingleton.reinit();
-		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
-		this.r = SeedableRandomSingleton.getRandom();
-		
-		
+			
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
 				
 		
@@ -899,7 +901,10 @@ public class TAETestSet {
 		
 		File paramFile = TestHelper.getTestFile("paramFiles/paramAliasEchoParamFile.txt");
 			configSpace = new ParamConfigurationSpace(paramFile);
+		
 			
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		
 		StringBuilder b = new StringBuilder();
 		b.append("java -cp ");
 		b.append(System.getProperty("java.class.path"));
@@ -911,9 +916,6 @@ public class TAETestSet {
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 			
 		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
-		SeedableRandomSingleton.reinit();
-		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
-		this.r = SeedableRandomSingleton.getRandom();
 		
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
@@ -984,13 +986,12 @@ public class TAETestSet {
 		b.append(RegexMatchingButInvalidNumberOutputExecutor.class.getCanonicalName());
 		
 		
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 			
 		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
-		SeedableRandomSingleton.reinit();
-		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
-		this.r = SeedableRandomSingleton.getRandom();
+		
 		
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
@@ -1061,13 +1062,10 @@ public class TAETestSet {
 		b.append(RegexMatchingButMissingOutputExecutor.class.getCanonicalName());
 		
 		
-		
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 			
 		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
-		SeedableRandomSingleton.reinit();
-		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
-		this.r = SeedableRandomSingleton.getRandom();
 		
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
@@ -1137,10 +1135,7 @@ public class TAETestSet {
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 		
 		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
-		SeedableRandomSingleton.reinit();
-		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
-		this.r = SeedableRandomSingleton.getRandom();
-		
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		
 		
 		
@@ -1204,11 +1199,7 @@ public class TAETestSet {
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 		
 		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
-		SeedableRandomSingleton.reinit();
-		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
-		this.r = SeedableRandomSingleton.getRandom();
-		
-		
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
@@ -1257,7 +1248,7 @@ public class TAETestSet {
 	public void testVerifySATTargetAlgorithmEvaluator()
 	{
 		
-	
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		
 		
 		
@@ -1624,7 +1615,7 @@ public class TAETestSet {
 	@Test
 	public void testInvalidArguments()
 	{
-			
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		Map<String, AbstractOptions> taeOptionsMap = TargetAlgorithmEvaluatorLoader.getAvailableTargetAlgorithmEvaluators();
 		
 		TargetAlgorithmEvaluatorOptions opts = new TargetAlgorithmEvaluatorOptions();
@@ -1775,7 +1766,7 @@ public class TAETestSet {
 	public void testOrderCheckingDecorator()
 	{
 		
-
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		StringBuilder b = new StringBuilder();
 		b.append("java -cp ");
 		b.append(System.getProperty("java.class.path"));
@@ -1916,6 +1907,7 @@ public class TAETestSet {
 	public void testDeadLockinCommandLineTargetAlgorithmEvaluator()
 	{
 	
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		StringBuilder b = new StringBuilder();
 		b.append("java -cp ");
 		b.append(System.getProperty("java.class.path"));
@@ -1997,8 +1989,12 @@ public class TAETestSet {
 	}
 	
 	@Test
+	/**
+	 * This tests if a deadlock occurs when we try and resubmit runs in a onSuccess Method
+	 */
 	public void testBlockingTAEResubmitRunsHandler()
 	{
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		RandomResponseTargetAlgorithmEvaluatorFactory fact = new RandomResponseTargetAlgorithmEvaluatorFactory();
 		
 		RandomResponseTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
@@ -2060,7 +2056,7 @@ public class TAETestSet {
 				
 				System.out.println(tae2.evaluateRun(runConfigs2));
 				
-				System.out.println("UM WHAT");
+				
 				latch.countDown();
 				
 			}
@@ -2079,6 +2075,7 @@ public class TAETestSet {
 			latch.await();
 		} catch (InterruptedException e1) {
 			Thread.currentThread().interrupt();
+			fail();
 			return;
 		}
 		
@@ -2094,7 +2091,7 @@ public class TAETestSet {
 	public void testBoundedTAESubmissionSpeed()
 	{
 		//Check that a submission of run 10 runs on a bound of <5 take 5,1,1,1,1, 5,1,1,1,1 takes 6 seconds and not 10.
-
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		StringBuilder b = new StringBuilder();
 		b.append("java -cp ");
 		b.append(System.getProperty("java.class.path"));
@@ -2155,6 +2152,7 @@ public class TAETestSet {
 	@Test
 	public void testDecoratorsApplyTheSameWay()
 	{
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		RandomResponseTargetAlgorithmEvaluatorFactory fact = new RandomResponseTargetAlgorithmEvaluatorFactory();
 		
 		RandomResponseTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
