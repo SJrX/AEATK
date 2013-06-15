@@ -1,9 +1,9 @@
 package ca.ubc.cs.beta.aclib.runhistory;
 
 import java.util.Collection;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
@@ -17,7 +17,6 @@ import ca.ubc.cs.beta.aclib.objectives.OverallObjective;
 import ca.ubc.cs.beta.aclib.objectives.RunObjective;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
-import ca.ubc.cs.beta.aclib.seedgenerator.InstanceSeedGenerator;
 
 public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 
@@ -195,31 +194,6 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 		}
 	}
 
-	@Override
-	public ProblemInstance getRandomInstanceWithFewestRunsFor(
-			ParamConfiguration config, List<ProblemInstance> instanceList,
-			Random rand) {
-		myLock.readLock().lock();
-		try {
-			return runHistory.getRandomInstanceWithFewestRunsFor(config, instanceList, rand);
-		} finally
-		{
-			myLock.readLock().unlock();
-		}
-	}
-
-	@Override
-	public ProblemInstanceSeedPair getRandomInstanceSeedWithFewestRunsFor(
-			ParamConfiguration config, List<ProblemInstance> instanceList,
-			Random rand) {
-		myLock.readLock().lock();
-		try {
-			return runHistory.getRandomInstanceSeedWithFewestRunsFor(config, instanceList, rand);
-		} finally
-		{
-			myLock.readLock().unlock();
-		}
-	}
 
 	@Override
 	public int getTotalNumRunsOfConfig(ParamConfiguration config) {
@@ -345,19 +319,7 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 	
 	}
 
-	@Override
-	public InstanceSeedGenerator getInstanceSeedGenerator() {
-		
-		myLock.readLock().lock();
-		try {
-			return runHistory.getInstanceSeedGenerator();
-		} finally
-		{
-			myLock.readLock().unlock();
-	
-		}
-	
-	}
+
 
 	@Override
 	public Set<ProblemInstanceSeedPair> getCappedAlgorithmInstanceSeedPairs(
@@ -461,6 +423,29 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 		{
 			myLock.readLock().unlock();
 	
+		}
+	}
+
+	@Override
+	public Map<ProblemInstance, LinkedHashMap<Long, Double>> getPerformanceForConfig(
+			ParamConfiguration configuration) {
+		myLock.readLock().lock();
+		try {
+			return runHistory.getPerformanceForConfig(configuration);
+		} finally
+		{
+			myLock.readLock().unlock();
+		}
+	}
+
+	@Override
+	public List<Long> getSeedsUsedByInstance(ProblemInstance pi) {
+		myLock.readLock().lock();
+		try {
+			return runHistory.getSeedsUsedByInstance(pi);
+		} finally
+		{
+			myLock.readLock().unlock();
 		}
 	}
 

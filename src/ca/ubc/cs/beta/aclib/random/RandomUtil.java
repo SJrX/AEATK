@@ -1,4 +1,4 @@
-package ca.ubc.cs.beta.aclib.misc.random;
+package ca.ubc.cs.beta.aclib.random;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -33,6 +33,7 @@ public class RandomUtil {
 	
 	
 	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
 	public static void permuteList(List list, int[] permutations)
 	{
 		if(permutations.length != list.size())

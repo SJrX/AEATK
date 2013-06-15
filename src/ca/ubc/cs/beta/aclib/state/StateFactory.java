@@ -6,9 +6,8 @@ import java.util.List;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.exceptions.StateSerializationException;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
-import ca.ubc.cs.beta.aclib.objectives.OverallObjective;
-import ca.ubc.cs.beta.aclib.objectives.RunObjective;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
+import ca.ubc.cs.beta.aclib.runhistory.RunHistory;
 
 
 
@@ -29,15 +28,12 @@ public interface StateFactory {
 	 * @param id						An identifier for this state
 	 * @param restoreIteration			Iteration to restore
 	 * @param configSpace				Configuration Space to Restore Into
-	 * @param intraInstanceObjective	Objective Function to combine instance seed pairs
-	 * @param interInstanceObjective	Objective Function to combine instances 
-	 * @param runObj 					Individual Run Objective
 	 * @param instances					List of Instances we are configuring over
 	 * @param execConfig 				Execution Config of the target algorithm
 	 * @return object capable of restoring state
 	 * @throws StateSerializationException when an error occurs restoring the state
 	 */
-	public StateDeserializer getStateDeserializer(String id, int restoreIteration, 	ParamConfigurationSpace configSpace, OverallObjective intraInstanceObjective, OverallObjective interInstanceObjective, RunObjective runObj, List<ProblemInstance> instances, AlgorithmExecutionConfig execConfig) throws StateSerializationException;
+	public StateDeserializer getStateDeserializer(String id, int restoreIteration, 	ParamConfigurationSpace configSpace, List<ProblemInstance> instances, AlgorithmExecutionConfig execConfig, RunHistory rh) throws StateSerializationException;
 	
 	
 	/**

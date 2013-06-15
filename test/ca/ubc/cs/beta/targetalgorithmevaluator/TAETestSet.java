@@ -37,13 +37,13 @@ import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.misc.debug.DebugUtil;
 import ca.ubc.cs.beta.aclib.misc.logback.MarkerFilter;
 import ca.ubc.cs.beta.aclib.misc.logging.LoggingMarker;
-import ca.ubc.cs.beta.aclib.misc.random.SeedableRandomPool;
 import ca.ubc.cs.beta.aclib.misc.watch.AutoStartStopWatch;
 import ca.ubc.cs.beta.aclib.misc.watch.StopWatch;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 import ca.ubc.cs.beta.aclib.options.TargetAlgorithmEvaluatorOptions;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
+import ca.ubc.cs.beta.aclib.random.SeedableRandomPool;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
@@ -127,8 +127,7 @@ public class TAETestSet {
 	@AfterClass
 	public static void afterClass()
 	{
-		System.out.println(pool.getInitialSeed());
-		System.out.println(pool.getAllSeeds());
+		pool.logUsage();
 	}
 	/**
 	 * This just tests to see if ParamEchoExecutor does what it should
@@ -221,7 +220,7 @@ public class TAETestSet {
 		}
 		
 		System.out.println("Performing " + runConfigs.size() + " runs");
-		TargetAlgorithmEvaluator tae = new TimingCheckerTargetAlgorithmEvaluator(execConfig, this.tae);
+		TargetAlgorithmEvaluator tae = new TimingCheckerTargetAlgorithmEvaluator(execConfig, TAETestSet.tae);
 		
 		StringWriter sw = new StringWriter();
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();

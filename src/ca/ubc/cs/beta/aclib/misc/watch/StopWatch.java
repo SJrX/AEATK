@@ -4,11 +4,14 @@ import java.io.Serializable;
 
 /**
  * Allows measuring wallclock time between calls to {@link StopWatch#start()} and {@link StopWatch#stop()}
- * @author sjr
- *
+ * @author Steve Ramage <seramage@cs.ubc.ca>
  */
 public class StopWatch implements Serializable {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 9116898201991111651L;
 	private long startTime = -1;
 	private long endTime = Long.MAX_VALUE;
 	

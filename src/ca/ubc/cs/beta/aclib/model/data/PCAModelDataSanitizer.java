@@ -6,8 +6,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.util.Arrays;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,7 +13,6 @@ import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.misc.math.ArrayMathOps;
 import ca.ubc.cs.beta.aclib.misc.math.MessyMathHelperClass;
 import ca.ubc.cs.beta.aclib.misc.math.MessyMathHelperClass.Operation;
-import ca.ubc.cs.beta.models.fastrf.RoundingMode;
 
 /**
  * This class roughly does all the processing for sanitizing data

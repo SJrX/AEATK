@@ -3,7 +3,6 @@ package ca.ubc.cs.beta.aclib.options;
 import java.io.File;
 import java.text.SimpleDateFormat;
 import java.util.Date;
-
 import ca.ubc.cs.beta.aclib.expectedimprovement.ExpectedImprovementFunctions;
 import ca.ubc.cs.beta.aclib.initialization.InitializationMode;
 import ca.ubc.cs.beta.aclib.misc.file.HomeFileUtils;
@@ -37,11 +36,18 @@ public class SMACOptions extends AbstractOptions {
 	@ParametersDelegate
 	public ValidationOptions validationOptions = new ValidationOptions();
 
+	@ParametersDelegate
+	public SeedOptions seedOptions = new SeedOptions();
+	/*
 	@Parameter(names="--seedOffset", description="offset of numRun to use from seed (this plus --numRun should be less than LONG_MAX)")
 	public long seedOffset = 0 ;
 	
 	@Parameter(names={"--numRun","--seed"}, required=true, description="number of this run (and seed)", validateWith=NonNegativeInteger.class)
 	public long numRun = 0;
+	
+	@DynamicParameter(names="-S", description="Sets specific seeds in the random pool object")
+	public Map<String, String> initialSeedMap;
+	*/
 	
 	@UsageTextField(defaultValues="<current working directory>")
 	@Parameter(names={"--experimentDir","-e"}, description="root directory for experiments Folder")

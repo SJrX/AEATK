@@ -6,13 +6,13 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serializable;
 import java.util.Arrays;
-import java.util.EnumMap;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -31,16 +31,10 @@ import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration.StringFormat;
 import ca.ubc.cs.beta.aclib.exceptions.DuplicateRunException;
 import ca.ubc.cs.beta.aclib.exceptions.StateSerializationException;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
-import ca.ubc.cs.beta.aclib.objectives.OverallObjective;
-import ca.ubc.cs.beta.aclib.objectives.RunObjective;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
-import ca.ubc.cs.beta.aclib.runhistory.NewRunHistory;
 import ca.ubc.cs.beta.aclib.runhistory.RunHistory;
-import ca.ubc.cs.beta.aclib.seedgenerator.InstanceSeedGenerator;
-import ca.ubc.cs.beta.aclib.seedgenerator.RandomInstanceSeedGenerator;
-import ca.ubc.cs.beta.aclib.state.RandomPoolType;
 import ca.ubc.cs.beta.aclib.state.StateDeserializer;
 
 /**
@@ -63,15 +57,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 	 * RunHistory object that we restored
 	 */
 	private final RunHistory runHistory;
-	/**
-	 * Instance Seed Generator that we restored
-	 */
-	private final InstanceSeedGenerator instanceSeedGenerator;
 	
-	/**
-	 * Map of Random Objects that we restored
-	 */
-	private final EnumMap<RandomPoolType, Random> randomMap;
 	
 	/**
 	 * Iteration that we restored
@@ -104,7 +90,8 @@ public class LegacyStateDeserializer implements StateDeserializer {
 	
 	public final double cutoffTime;
 	
-	private ParamConfiguration potentialIncumbent; 
+	private ParamConfiguration potentialIncumbent;
+	private final  Map<String, Serializable> objectStateMap; 
 	
 	@SuppressWarnings("unchecked")
 	/**
@@ -117,20 +104,20 @@ public class LegacyStateDeserializer implements StateDeserializer {
 	 * @param id							The id to restore (generally this is "it" but maybe "CRASH")
 	 * @param iteration						The iteration to restore
 	 * @param configSpace					The configuration space the state files are from
-	 * @param intraInstanceObjective		The intraInstanceObjective of the run
-	 * @param interInstanceObjective		The interInstanceObjective of the run
-	 * @param runObj						The run Objective of the run
 	 * @param instances						The instances used in the run
 	 * @param execConfig					The execution configuration used in the run
+	 * @param emptyRunHistory				A RunHistory object that has no runs in it
 	 * @throws StateSerializationException  If we cannot restore the state
 	 */
-	LegacyStateDeserializer(String restoreFromPath, String id, int iteration, ParamConfigurationSpace configSpace, OverallObjective intraInstanceObjective,OverallObjective interInstanceObjective, RunObjective runObj, List<ProblemInstance> instances, AlgorithmExecutionConfig execConfig) 
+	LegacyStateDeserializer(String restoreFromPath, String id, int iteration, ParamConfigurationSpace configSpace, List<ProblemInstance> instances, AlgorithmExecutionConfig execConfig, RunHistory emptyRunHistory) 
 	{
 			if (configSpace == null) throw new IllegalArgumentException("Config Space cannot be null");
-			if(interInstanceObjective == null) throw new IllegalArgumentException("Inter Instance Objective cannot be null");
-			if(intraInstanceObjective == null) throw new IllegalArgumentException("Intra Instance Objective cannot be null");
-			
-			if(runObj == null) throw new IllegalArgumentException("Run Objective cannot be null");
+			if(emptyRunHistory == null) throw new IllegalArgumentException("Run History cannot be null");
+			if(emptyRunHistory.getAlgorithmRunData().size() > 0)
+			{
+				log.warn("RunHistory object already contains runs this may cause problems restoring runs");
+			}
+			this.runHistory = emptyRunHistory;
 			if(instances == null) throw new IllegalArgumentException("Instances cannot be null");
 			
 			if(execConfig == null) throw new IllegalArgumentException("execConfig cannot be null");
@@ -202,19 +189,23 @@ public class LegacyStateDeserializer implements StateDeserializer {
 				ObjectInputStream oReader =  null;
 				try {
 					oReader =  new ObjectInputStream(new FileInputStream(f.javaObjDumpFile));
-						
-					int storedIteration = oReader.readInt();
+
+					Map<String, Serializable> objectMap = (Map<String, Serializable>) oReader.readObject();
+					
+
+					
+					int storedIteration =(Integer) objectMap.get(LegacyStateFactory.ITERATION_KEY);
 					if(storedIteration != iteration) 
 					{
 						
 						throw new IllegalStateException("File Found claimed to be for iteration " + iteration + " but contained iteration " + storedIteration + " in file: " + f.javaObjDumpFile.getAbsolutePath());
 					}
+					
 					this.iteration = storedIteration;
 					
-					randomMap = ((EnumMap<RandomPoolType, Random>) oReader.readObject());
+
 					
-					instanceSeedGenerator = (InstanceSeedGenerator) oReader.readObject();
-					String paramString = (String) oReader.readObject();
+					String paramString = (String) objectMap.get(LegacyStateFactory.INCUMBENT_TEXT_KEY);
 					
 					if(paramString != null)
 					{
@@ -225,7 +216,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 						incumbent = null;
 					}
 					 
-					
+					this.objectStateMap = (Map<String, Serializable>) objectMap.get(LegacyStateFactory.OBJECT_MAP_KEY);
 				} finally
 				{
 					if(oReader != null) oReader.close(); 
@@ -237,12 +228,10 @@ public class LegacyStateDeserializer implements StateDeserializer {
 				
 				
 				
-				randomMap = null;
-				//The RunHistory object will need an instanceseed generator. We will not allow this to be returned to the client however
-				instanceSeedGenerator = new RandomInstanceSeedGenerator(0, 0);
+				
 				this.iteration = iteration;
 				
-				
+				this.objectStateMap = Collections.EMPTY_MAP;
 				
 			
 				this.incumbent = null;
@@ -332,7 +321,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 			 * Create Run History Object
 			 */
 			
-			runHistory = new NewRunHistory(instanceSeedGenerator, intraInstanceObjective, interInstanceObjective, runObj);
+			//runHistory = new NewRunHistory(instanceSeedGenerator, intraInstanceObjective, interInstanceObjective, runObj);
 			
 			
 			CSVReader runlist = null;
@@ -609,18 +598,6 @@ public class LegacyStateDeserializer implements StateDeserializer {
 		return runHistory;
 	}
 
-	@Override
-	public Random getPRNG(RandomPoolType t) {
-		if(incompleteSavedState) throw new StateSerializationException("This is an incomplete state with no java objects found");
-		return randomMap.get(t);
-	}
-
-	@Override
-	public InstanceSeedGenerator getInstanceSeedGenerator() {
-		if(incompleteSavedState) throw new StateSerializationException("This is an incomplete state with no java objects found");
-		return instanceSeedGenerator;
-	}
-	
 	/**
 	 * Determines which files we should use to read the data out of the state directory
 	 * 
@@ -843,6 +820,12 @@ public class LegacyStateDeserializer implements StateDeserializer {
 		{
 			return incumbent;
 		}
+	}
+
+
+	@Override
+	public Map<String, Serializable> getObjectStateMap() {
+		return objectStateMap;
 	}
 	
 	

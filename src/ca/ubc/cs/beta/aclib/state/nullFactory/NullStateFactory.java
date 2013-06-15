@@ -6,9 +6,8 @@ import java.util.List;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.exceptions.StateSerializationException;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
-import ca.ubc.cs.beta.aclib.objectives.OverallObjective;
-import ca.ubc.cs.beta.aclib.objectives.RunObjective;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
+import ca.ubc.cs.beta.aclib.runhistory.RunHistory;
 import ca.ubc.cs.beta.aclib.state.StateDeserializer;
 import ca.ubc.cs.beta.aclib.state.StateFactory;
 import ca.ubc.cs.beta.aclib.state.StateSerializer;
@@ -25,8 +24,7 @@ public class NullStateFactory implements StateFactory {
 	@Override
 	public StateDeserializer getStateDeserializer(String id,
 			int restoreIteration, ParamConfigurationSpace configSpace,
-			OverallObjective overallObj,OverallObjective o2,  RunObjective runObj,
-			List<ProblemInstance> instances, AlgorithmExecutionConfig execConfig)
+			List<ProblemInstance> instances, AlgorithmExecutionConfig execConfig, RunHistory rh)
 			throws StateSerializationException {
 		throw new UnsupportedOperationException("Can not deseialize a null state");
 	}

@@ -61,7 +61,7 @@ public enum OverallObjective {
 			case MEAN1000:
 				values[i] = (values[i] >= cutoffTime) ? values[i] * 1000 : values[i];
 				break;
-				
+			default:
 			}
 			
 			

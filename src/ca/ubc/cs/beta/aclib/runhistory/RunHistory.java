@@ -1,8 +1,8 @@
 package ca.ubc.cs.beta.aclib.runhistory;
 
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
@@ -12,7 +12,6 @@ import ca.ubc.cs.beta.aclib.objectives.OverallObjective;
 import ca.ubc.cs.beta.aclib.objectives.RunObjective;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
-import ca.ubc.cs.beta.aclib.seedgenerator.InstanceSeedGenerator;
 
 /**
  * Stores a complete listing of runs
@@ -103,31 +102,7 @@ public interface RunHistory {
 			double minimumResponseValue);
 
 	
-	
 
-	/**
-	 * Returns a random instance with the fewest runs for the configuration
-	 * @param config  		ParamConfiguration to run
-	 * @param instanceList  List of problem instances.
-	 * @param rand			Random object used to break ties
-	 * @return random instance with the fewest runs for a configuration
-	 */
-	public ProblemInstance getRandomInstanceWithFewestRunsFor(ParamConfiguration config, List<ProblemInstance> instanceList, Random rand);
-
-	/**
-	 * Decides candidate Instance Seed Pairs to be run
-	 * 
-	 * NOTE: When ProblemInstanceSeedPairs are run from here we don't actually know they have been run until we get
-	 * an append call. This needs to be fixed later (i.e. we may execute duplicate requests)
-	 * 
-	 * @param config 		 ParamConfiguration to run 
-	 * @param instanceList 	 List of problem instances
-	 * @param rand			 Random object used to break ties
-	 * @return Random ProblemInstanceSeedPair object
-	 */
-	public ProblemInstanceSeedPair getRandomInstanceSeedWithFewestRunsFor(ParamConfiguration config, List<ProblemInstance> instanceList, Random rand);
-	
-	
 	/**
 	 * Returns the total number of runs for a configuration
 	 * @param config ParamConfiguration
@@ -216,12 +191,6 @@ public interface RunHistory {
 	 */
 	public List<AlgorithmRun> getAlgorithmRunData(ParamConfiguration config);
 	
-	/**
-	 * Returns the Instance Seed Generator
-	 * 
-	 * @return instance seed generator
-	 */
-	public InstanceSeedGenerator getInstanceSeedGenerator();
 
 	/**
 	 * Returns a set of Instance Seed Pairs that were capped for a given configuration
@@ -260,6 +229,19 @@ public interface RunHistory {
 	 */
 	public int getNumberOfUniqueProblemInstanceSeedPairsForConfiguration( ParamConfiguration config);
 
+	/**
+	 * Returns an unmodifiable map that stores the seeds and performance for a configuration
+	 * @param configuration
+	 * @return map
+	 */
+	public Map<ProblemInstance, LinkedHashMap<Long, Double>> getPerformanceForConfig(ParamConfiguration configuration);
+
+	/**
+	 * Returns a list of seeds used by instance 
+	 * @param pi problem instance
+	 * @return list
+	 */
+	public List<Long> getSeedsUsedByInstance(ProblemInstance pi);
 
 	
 	

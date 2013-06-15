@@ -1,14 +1,12 @@
 package ca.ubc.cs.beta.aclib.state.nullFactory;
 
-import java.util.Random;
-
+import java.io.Serializable;
+import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.runhistory.RunHistory;
-import ca.ubc.cs.beta.aclib.seedgenerator.InstanceSeedGenerator;
-import ca.ubc.cs.beta.aclib.state.RandomPoolType;
 import ca.ubc.cs.beta.aclib.state.StateSerializer;
 
 public class NullStateSerializer implements StateSerializer{
@@ -22,18 +20,6 @@ public class NullStateSerializer implements StateSerializer{
 	}
 
 	@Override
-	public void setPRNG(RandomPoolType t, Random r) {
-
-		
-	}
-
-	@Override
-	public void setInstanceSeedGenerator(InstanceSeedGenerator gen) {
-
-		
-	}
-
-	@Override
 	public void save() {
 		log.trace("Null State Serializer Selected, no data saved");
 		
@@ -41,6 +27,13 @@ public class NullStateSerializer implements StateSerializer{
 
 	@Override
 	public void setIncumbent(ParamConfiguration config) {
+		
+	}
+
+
+
+	@Override
+	public void setObjectStateMap(Map<String, Serializable> objectState) {
 		
 	}
 

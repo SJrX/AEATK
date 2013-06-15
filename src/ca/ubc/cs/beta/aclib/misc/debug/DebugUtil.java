@@ -1,7 +1,5 @@
 package ca.ubc.cs.beta.aclib.misc.debug;
 
-import java.lang.reflect.Method;
-
 public final class DebugUtil {
 	public static String getCurrentMethodName()
 	{
@@ -12,11 +10,6 @@ public final class DebugUtil {
 		{
 			return "Unknown Method";
 		}
-	}
-	
-	public static void main(String[] args)
-	{
-		System.out.println(getCurrentMethodName());
 	}
 	
 	private DebugUtil()

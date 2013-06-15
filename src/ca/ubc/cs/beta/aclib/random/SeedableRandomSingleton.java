@@ -1,3 +1,4 @@
+package ca.ubc.cs.beta.aclib.random;
 //package ca.ubc.cs.beta.aclib.misc.random;
 //
 //import java.util.ArrayList;

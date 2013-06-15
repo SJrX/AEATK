@@ -37,6 +37,7 @@ import ca.ubc.cs.beta.aclib.options.ScenarioOptions;
 import ca.ubc.cs.beta.aclib.probleminstance.InstanceListWithSeeds;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceHelper;
+import ca.ubc.cs.beta.aclib.runhistory.NewRunHistory;
 import ca.ubc.cs.beta.aclib.runhistory.RunHistory;
 import ca.ubc.cs.beta.aclib.state.StateDeserializer;
 import ca.ubc.cs.beta.aclib.state.StateFactory;
@@ -107,7 +108,7 @@ public class fANOVATester {
 		OverallObjective intraObjective = OverallObjective.MEAN;
 		//Old iteration was 1106
 //		StateDeserializer sd = sf.getStateDeserializer("it", 1106, configSpace, intraObjective, OverallObjective.MEAN, RunObjective.RUNTIME, ilws.getInstances(), dummyExecConfig);
-		StateDeserializer sd = sf.getStateDeserializer("it", 16, configSpace, intraObjective, OverallObjective.MEAN, RunObjective.RUNTIME, ilws.getInstances(), dummyExecConfig);
+		StateDeserializer sd = sf.getStateDeserializer("it", 16, configSpace, ilws.getInstances(), dummyExecConfig, new NewRunHistory( intraObjective, OverallObjective.MEAN, RunObjective.RUNTIME));
 		
 		assertNotNull(sd.getRunHistory());
 		List<ProblemInstance> instances = ilws.getInstances();

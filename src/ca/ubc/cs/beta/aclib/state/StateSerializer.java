@@ -1,10 +1,9 @@
 package ca.ubc.cs.beta.aclib.state;
 
-import java.util.Random;
-
+import java.io.Serializable;
+import java.util.Map;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.runhistory.RunHistory;
-import ca.ubc.cs.beta.aclib.seedgenerator.InstanceSeedGenerator;
 
 /**
  * Interface for saving aspects of the state
@@ -23,17 +22,10 @@ public interface StateSerializer {
 	public void setRunHistory(RunHistory runHistory);
 	
 	/**
-	 * Sets the Random Object to be associated with this State
-	 * @param randType 	the type of the random object
-	 * @param random 	the random object to save
+	 * Sets the object map to be associated with this state
+	 * @param objectState
 	 */
-	public void setPRNG(RandomPoolType randType, Random random);
-	
-	/**
-	 * Sets the Instance Seed Generator to be associated with this State
-	 * @param gen instance seed genarotr to save
-	 */
-	public void setInstanceSeedGenerator(InstanceSeedGenerator gen);
+	public void setObjectStateMap(Map<String, Serializable> objectState);
 	
 	/**
 	 * Saves the state to the persistence device

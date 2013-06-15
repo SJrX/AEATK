@@ -4,6 +4,7 @@ import java.io.File;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map;
 
@@ -31,7 +32,7 @@ public abstract class AbstractOptions {
 		{
 			StringBuilder line = new StringBuilder();
 		
-			if(f.getAnnotation(Parameter.class) != null || f.getAnnotation(ParametersDelegate.class) != null)
+			if(f.getAnnotation(Parameter.class) != null || f.getAnnotation(ParametersDelegate.class) != null || f.getAnnotation(DynamicParameter.class) != null)
 			{
 				boolean isAbstractOption = false;
 				for(int i=0; i < initialTabs; i++)
@@ -217,7 +218,14 @@ public abstract class AbstractOptions {
 						sb.append(((Enum<?>) o).name());
 						list.add(ant.names()[0]);
 						list.add(((Enum<?>) o).name());
-					} else 
+					} else if(o instanceof Collection)
+					{
+						sb.append(ant.names()[0]).append(" ");
+						sb.append("\""+o+"\"");
+						list.add(ant.names()[0]);
+						list.add(o.toString());
+					}
+					else 
 					{
 						System.err.println("No idea what o is " + o.getClass()  +" value:" + o + " name " + ant.names()[0]);
 					}
@@ -230,7 +238,8 @@ public abstract class AbstractOptions {
 			}
 			
 			DynamicParameter pmap = f.getAnnotation(DynamicParameter.class);
-			
+
+			System.out.println(f.getName());
 			if(pmap != null)
 			{
 

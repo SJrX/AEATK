@@ -27,7 +27,7 @@ import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration.StringFormat;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationStringFormatException;
 import ca.ubc.cs.beta.aclib.misc.debug.DebugUtil;
-import ca.ubc.cs.beta.aclib.misc.random.SeedableRandomPool;
+import ca.ubc.cs.beta.aclib.random.SeedableRandomPool;
 
 import com.beust.jcommander.internal.Lists;
 

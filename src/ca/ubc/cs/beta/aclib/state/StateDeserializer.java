@@ -1,10 +1,9 @@
 package ca.ubc.cs.beta.aclib.state;
 
-import java.util.Random;
-
+import java.io.Serializable;
+import java.util.Map;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.runhistory.RunHistory;
-import ca.ubc.cs.beta.aclib.seedgenerator.InstanceSeedGenerator;
 
 /**
  * Contains accessor methods to restore the state to the requested iteration.
@@ -24,19 +23,7 @@ public interface StateDeserializer {
 	 */
 	public RunHistory getRunHistory();
 	
-	/**
-	 * Retrieves a random object of the corresponding type
-	 * @param t 	type of the random object to return 
-	 * @return	random object for the type
-	 */
-	public Random getPRNG(RandomPoolType t);
 	
-	/**
-	 * Returns the instance seed generator saved in the state
-	 * @return instanceseedgenerator
-	 */
-	public InstanceSeedGenerator getInstanceSeedGenerator();
-
 	/**
 	 * Returns the iteration represented by the state
 	 * @return iteration
@@ -48,4 +35,11 @@ public interface StateDeserializer {
 	 * @return incumbent configuration
 	 */
 	public ParamConfiguration getIncumbent();
+	
+	/**
+	 * Returns a map of the incumbent 
+	 * @return a mapping of objects that can be used to store state
+	 */
+	public Map<String, Serializable> getObjectStateMap();
+	
 }

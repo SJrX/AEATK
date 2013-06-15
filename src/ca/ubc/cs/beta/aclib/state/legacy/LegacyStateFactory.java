@@ -7,8 +7,10 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.io.ObjectInputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListMap;
 
@@ -18,9 +20,8 @@ import org.slf4j.LoggerFactory;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.exceptions.StateSerializationException;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
-import ca.ubc.cs.beta.aclib.objectives.OverallObjective;
-import ca.ubc.cs.beta.aclib.objectives.RunObjective;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
+import ca.ubc.cs.beta.aclib.runhistory.RunHistory;
 import ca.ubc.cs.beta.aclib.state.StateDeserializer;
 import ca.ubc.cs.beta.aclib.state.StateFactory;
 import ca.ubc.cs.beta.aclib.state.StateSerializer;
@@ -98,13 +99,13 @@ public class LegacyStateFactory implements StateFactory{
 		
 	}
 	@Override
-	public StateDeserializer getStateDeserializer(String id, int iteration, ParamConfigurationSpace configSpace, OverallObjective intraInstanceObjective, OverallObjective interInstanceObjective, RunObjective runObj, List<ProblemInstance> instances, AlgorithmExecutionConfig execConfig) throws StateSerializationException
+	public StateDeserializer getStateDeserializer(String id, int iteration, ParamConfigurationSpace configSpace, List<ProblemInstance> instances, AlgorithmExecutionConfig execConfig, RunHistory rh) throws StateSerializationException
 	{
 		if(restoreFromPath == null) 
 		{
 			throw new IllegalArgumentException("This Serializer does not support restoring state");
 		}
-		return new LegacyStateDeserializer(restoreFromPath, id, iteration, configSpace, intraInstanceObjective, interInstanceObjective, runObj, instances, execConfig);
+		return new LegacyStateDeserializer(restoreFromPath, id, iteration, configSpace, instances, execConfig, rh);
 	}
 
 	@Override
@@ -286,7 +287,7 @@ public class LegacyStateFactory implements StateFactory{
 	 */
 	static String getJavaObjectDumpFilename(String path, String id, int iteration)
 	{
-	 	return path + File.separator + "java_obj_dump-"+id + iteration +".obj";
+	 	return path + File.separator + "java_obj_dump-v2-"+id + iteration +".obj";
 	}
 	
 	/**
@@ -298,7 +299,7 @@ public class LegacyStateFactory implements StateFactory{
 	 */
 	static String getJavaQuickObjectDumpFilename(String path, String id,
 			int iteration) {
-		return path + File.separator + "java_obj_dump-"+id + "quick.obj";
+		return path + File.separator + "java_obj_dump-v2-"+id + "quick.obj";
 	}
 	
 	/**
@@ -310,7 +311,7 @@ public class LegacyStateFactory implements StateFactory{
 	 */
 	public static String getJavaQuickBackObjectDumpFilename(String path, String id,
 			int iteration) {
-		return path + File.separator + "java_obj_dump-"+id + "quick-bak.obj";
+		return path + File.separator + "java_obj_dump-v2-"+id + "quick-bak.obj";
 	}
 	
 	/**
@@ -324,15 +325,20 @@ public class LegacyStateFactory implements StateFactory{
 			try {
 				
 				oReader =  new ObjectInputStream(new FileInputStream(javaObjDumpFile));
-					
-				return oReader.readInt();
+				Object o = oReader.readObject();
+				Map<String, Serializable> map = (Map<String, Serializable>) o;
+				System.out.println("FOO");
+				return Integer.valueOf(map.get(ITERATION_KEY).toString());
+				//if(true) throw new IllegalStateException();
+				
 		
 			} finally
 			{
 				if(oReader != null) oReader.close();
 			}
-		} catch(IOException e)
+		} catch(Exception e)
 		{
+			
 			return -1;
 		}	
 	}
@@ -388,4 +394,11 @@ public class LegacyStateFactory implements StateFactory{
 			 Set<String> iterationFiles = this.savedFilesPerIteration.get(iteration);
 			iterationFiles.addAll(savedFiles);
 	}
+	
+
+	static final String OBJECT_MAP_KEY = "OBJECT_MAP_KEY";
+	static final String ITERATION_KEY = "ITERATION_KEY";
+	static final String INCUMBENT_TEXT_KEY = "INCUMBENT_TEXT_KEY";
+	
+	
 }

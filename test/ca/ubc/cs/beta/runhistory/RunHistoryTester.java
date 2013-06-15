@@ -32,6 +32,7 @@ import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.runhistory.NewRunHistory;
 import ca.ubc.cs.beta.aclib.runhistory.RunHistory;
+import ca.ubc.cs.beta.aclib.runhistory.RunHistoryHelper;
 import ca.ubc.cs.beta.aclib.seedgenerator.InstanceSeedGenerator;
 import ca.ubc.cs.beta.configspace.ParamConfigurationTest;
 import ca.ubc.cs.beta.probleminstance.ProblemInstanceHelperTester;
@@ -74,10 +75,10 @@ public class RunHistoryTester {
 		InstanceListWithSeeds ilws = ProblemInstanceHelperTester.getInstanceListWithSeeds("classicFormatValid.txt", false);
 		
 		InstanceSeedGenerator insc = ilws.getSeedGen();
-		RunHistory r = new NewRunHistory(insc, OverallObjective.MEAN, OverallObjective.MEAN, RunObjective.RUNTIME);
+		RunHistory r = new NewRunHistory( OverallObjective.MEAN, OverallObjective.MEAN, RunObjective.RUNTIME);
 		
 		ParamConfiguration defaultConfig = configSpace.getDefaultConfiguration();
-		ProblemInstanceSeedPair pisp = r.getRandomInstanceSeedWithFewestRunsFor(defaultConfig, ilws.getInstances(), rand);
+		ProblemInstanceSeedPair pisp = RunHistoryHelper.getRandomInstanceSeedWithFewestRunsFor(r, insc, defaultConfig, ilws.getInstances(), rand);
 		
 		RunConfig runConfig = new RunConfig(pisp, 1, defaultConfig,true);
 		
@@ -86,6 +87,7 @@ public class RunHistoryTester {
 		
 		
 		AlgorithmRun run = new ExistingAlgorithmRun(execConfig, runConfig, "0, 1 , 0 , 0, " + pisp.getSeed());
+		
 		
 		
 		try {
@@ -114,11 +116,11 @@ public class RunHistoryTester {
 	@Test
 	public void testAppend()
 	{
-		Random rand = new MersenneTwister();
+	
 		InstanceListWithSeeds ilws = ProblemInstanceHelperTester.getInstanceListWithSeeds("classicFormatValid.txt", false);
 		
 		InstanceSeedGenerator insc = ilws.getSeedGen();
-		RunHistory runHistory = new NewRunHistory(insc, OverallObjective.MEAN, OverallObjective.MEAN, RunObjective.RUNTIME);
+		RunHistory runHistory = new NewRunHistory( OverallObjective.MEAN, OverallObjective.MEAN, RunObjective.RUNTIME);
 	
 	
 		ParamConfigurationSpace space = ParamFileHelper.getParamFileFromString("a [0,9] [0]\nb [0,9] [0]\n");
@@ -174,7 +176,7 @@ public class RunHistoryTester {
 		InstanceListWithSeeds ilws = ProblemInstanceHelperTester.getInstanceListWithSeeds("classicFormatValid.txt", false);
 		
 		InstanceSeedGenerator insc = ilws.getSeedGen();
-		RunHistory runHistory = new NewRunHistory(insc, OverallObjective.MEAN, OverallObjective.MEAN, RunObjective.RUNTIME);
+		RunHistory runHistory = new NewRunHistory( OverallObjective.MEAN, OverallObjective.MEAN, RunObjective.RUNTIME);
 		ParamConfigurationSpace space = ParamFileHelper.getParamFileFromString("a [0,9] [0]\nb [0,9] [0]\n");
 				
 				
@@ -206,6 +208,7 @@ public class RunHistoryTester {
 	 * Returns a set of interesting runs
 	 * @return
 	 */
+	@Ignore
 	private List<AlgorithmRun> getInterestingRuns()
 	{
 		List<AlgorithmRun> runs = new ArrayList<AlgorithmRun>();
@@ -233,7 +236,7 @@ public class RunHistoryTester {
 		InstanceListWithSeeds ilws = ProblemInstanceHelperTester.getInstanceListWithSeeds("classicFormatInstanceSeedValid.txt", false);
 		
 		InstanceSeedGenerator insc = ilws.getSeedGen();
-		RunHistory r = new NewRunHistory(insc, OverallObjective.MEAN, OverallObjective.MEAN, RunObjective.RUNTIME);
+		RunHistory r = new NewRunHistory(OverallObjective.MEAN, OverallObjective.MEAN, RunObjective.RUNTIME);
 		
 		ParamConfiguration defaultConfig = configSpace.getDefaultConfiguration();
 		
@@ -241,7 +244,7 @@ public class RunHistoryTester {
 			for(int i=0; i < 55; i++)
 			{
 				
-				ProblemInstanceSeedPair pisp = r.getRandomInstanceSeedWithFewestRunsFor(defaultConfig, ilws.getInstances(), rand);
+				ProblemInstanceSeedPair pisp = RunHistoryHelper.getRandomInstanceSeedWithFewestRunsFor(r,insc,defaultConfig, ilws.getInstances(), rand);
 				
 				RunConfig runConfig = new RunConfig(pisp, 1, defaultConfig,true);
 				AlgorithmRun run = new ExistingAlgorithmRun(execConfig, runConfig, "0, 1 , 0 , 0, " + pisp.getSeed());
@@ -272,7 +275,7 @@ public class RunHistoryTester {
 		InstanceListWithSeeds ilws = ProblemInstanceHelperTester.getInstanceListWithSeeds("classicFormatValid.txt", false, true);
 		
 		InstanceSeedGenerator insc = ilws.getSeedGen();
-		RunHistory r = new NewRunHistory(insc, OverallObjective.MEAN, OverallObjective.MEAN, RunObjective.RUNTIME);
+		RunHistory r = new NewRunHistory(OverallObjective.MEAN, OverallObjective.MEAN, RunObjective.RUNTIME);
 		
 		ParamConfiguration defaultConfig = configSpace.getDefaultConfiguration();	
 		
@@ -280,7 +283,7 @@ public class RunHistoryTester {
 			for(int i=0; i < 55; i++)
 			{
 				
-				ProblemInstanceSeedPair pisp = r.getRandomInstanceSeedWithFewestRunsFor(defaultConfig, ilws.getInstances(), rand);
+				ProblemInstanceSeedPair pisp = RunHistoryHelper.getRandomInstanceSeedWithFewestRunsFor(r, insc,defaultConfig, ilws.getInstances(), rand);
 				
 				RunConfig runConfig = new RunConfig(pisp, 1, defaultConfig,true);
 				AlgorithmRun run = new ExistingAlgorithmRun(execConfig, runConfig, "0, 1 , 0 , 0, " + pisp.getSeed());

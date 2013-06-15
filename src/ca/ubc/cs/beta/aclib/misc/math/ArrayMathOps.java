@@ -7,7 +7,7 @@ import java.util.Random;
 
 import org.apache.commons.math.stat.StatUtils;
 
-import ca.ubc.cs.beta.aclib.misc.random.RandomUtil;
+import ca.ubc.cs.beta.aclib.random.RandomUtil;
 import ca.ubc.cs.beta.models.fastrf.utils.Hash;
 
 /**

@@ -1,5 +1,6 @@
-package ca.ubc.cs.beta.aclib.misc.random;
+package ca.ubc.cs.beta.aclib.random;
 
+import java.io.Serializable;
 import java.util.Random;
 
 
@@ -10,7 +11,7 @@ import java.util.Random;
  * @author Steve Ramage <seramage@cs.ubc.ca>
  *
  */
-public interface RandomFactory<T extends Random> {
+public interface RandomFactory<T extends Random> extends Serializable {
 
 	/**
 	 * Construct a Random object with the given seed 

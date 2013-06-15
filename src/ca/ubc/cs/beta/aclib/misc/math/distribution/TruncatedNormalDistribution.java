@@ -8,7 +8,7 @@ import net.sf.doodleproject.numerics4j.special.Erf;
 import org.apache.commons.math3.distribution.AbstractRealDistribution;
 import org.apache.commons.math3.distribution.NormalDistribution;
 
-import ca.ubc.cs.beta.aclib.misc.random.RandomUtil;
+import ca.ubc.cs.beta.aclib.random.RandomUtil;
 
 /**
  * Truncated Normal Distribution as defined in:
