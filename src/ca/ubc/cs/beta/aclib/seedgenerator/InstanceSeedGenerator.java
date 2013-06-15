@@ -52,7 +52,7 @@ public interface InstanceSeedGenerator extends Serializable {
 	/**
 	 * Returns whether or not all instances were initialized with the same number of seeds
 	 * 
-	 * This method exists primarily because RunHistory objects rely on an invariant that
+	 * @deprecated This method exists primarily because RunHistory objects rely on an invariant that
 	 * all instances have the same number of seeds, when this is fixed, this will go. In general
 	 * for test sets and the like this is not an error condition. 
 	 * 
