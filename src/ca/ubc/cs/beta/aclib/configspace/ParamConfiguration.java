@@ -664,12 +664,13 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	
 	/**
 	 * Returns a list of configurations in the neighbourhood of this one (Forbidden Configurations are excluded)
-	 * @param  rand An object that will be used to generate neighbours for numerical parameters.
+	 * @param  rand 					An object that will be used to generate neighbours for numerical parameters.
+	 * @param  numNumericalNeighbours 	The number of neighbours numerical parameters should have
 	 * @return list of configurations in the neighbourhood
 	 */
-	public List<ParamConfiguration> getNeighbourhood(Random rand)
+	public List<ParamConfiguration> getNeighbourhood(Random rand, int numNumericalNeighbours)
 	{
-		List<ParamConfiguration> neighbours = new ArrayList<ParamConfiguration>(numberOfNeighboursExcludingForbidden());
+		List<ParamConfiguration> neighbours = new ArrayList<ParamConfiguration>(numberOfNeighboursExcludingForbidden(numNumericalNeighbours));
 		Set<String> activeParams = getActiveParameters();
 		/*
 		 * i is the number of parameters
@@ -679,7 +680,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 		{
 			double[] newValueArray = valueArray.clone();
 			
-			for(int j=1; j <= numberOfNeighboursForParam(i,activeParams.contains(configSpace.getParameterNamesInAuthorativeOrder().get(i))); j++)
+			for(int j=1; j <= numberOfNeighboursForParam(i,activeParams.contains(configSpace.getParameterNamesInAuthorativeOrder().get(i)),numNumericalNeighbours); j++)
 			{
 				newValueArray[i] = getNeighbourForParam(i,j,rand);
 				
@@ -690,9 +691,9 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 		}
 		
 		
-		if(neighbours.size() > numberOfNeighboursExcludingForbidden())
+		if(neighbours.size() > numberOfNeighboursExcludingForbidden(numNumericalNeighbours))
 		{
-			throw new IllegalStateException("Expected " + numberOfNeighboursExcludingForbidden() + " neighbours (should be greater than or equal to) but got " + neighbours.size());
+			throw new IllegalStateException("Expected " + numberOfNeighboursExcludingForbidden(numNumericalNeighbours) + " neighbours (should be greater than or equal to) but got " + neighbours.size());
 		}
 		return neighbours;
 		
@@ -703,7 +704,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	 * Returns the number of neighbours for this configuration
 	 * @return number of neighbours that this configuration has
 	 */
-	private int numberOfNeighboursExcludingForbidden()
+	private int numberOfNeighboursExcludingForbidden(int numNumericalNeighbours)
 	{
 		int neighbours = 0;
 		
@@ -712,7 +713,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 		for(int i=0; i < configSpace.getParameterNamesInAuthorativeOrder().size(); i++)
 		{
 			
-			neighbours += numberOfNeighboursForParam(i, activeParams.contains(configSpace.getParameterNamesInAuthorativeOrder().get(i)));
+			neighbours += numberOfNeighboursForParam(i, activeParams.contains(configSpace.getParameterNamesInAuthorativeOrder().get(i)), numNumericalNeighbours);
 		}
 		return neighbours;
 		
@@ -724,7 +725,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	 * @param isParameterActive boolean for if this parameter is active
 	 * @return 0 if inactive, number of neighbours if active
 	 */
-	private int numberOfNeighboursForParam(int valueArrayIndex, boolean isParameterActive)
+	private int numberOfNeighboursForParam(int valueArrayIndex, boolean isParameterActive, int neighboursForNumericalParameters)
 	{
 		if(isParameterActive == false) return 0;
 		
@@ -732,7 +733,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 		
 		if(parameterDomainContinuous[valueArrayIndex])
 		{
-		  return configSpace.neighboursForNumericalParameters;
+		  return neighboursForNumericalParameters;
 		} else
 		{
 		  return categoricalSize[valueArrayIndex] - 1;

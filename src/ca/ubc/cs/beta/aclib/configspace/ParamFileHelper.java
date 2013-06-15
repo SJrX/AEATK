@@ -12,30 +12,18 @@ public final class ParamFileHelper {
 
 	/**
 	 * Returns a ParamConfigurationSpace via the filename and seeded with seed
-	 * @param 	filename					string for the filename
-	 * @return 	ParamConfigurationSpace  the configuration space
-	 * 
-	 */
-	public static ParamConfigurationSpace getParamFileParser(String filename)
-	{
-		return getParamFileParser(filename, ParamConfigurationSpace.DEFAULT_NEIGHBOURS_FOR_CONTINUOUS_PARAMETERS);
-	}
-	
-	/**
-	 * Returns a ParamConfigurationSpace via the filename and seeded with seed
 	 * 
 	 * @param 	filename				 string for the filename
-	 * @param 	neighbours				 the number of neighbours numerical parameters should have
 	 * @return	ParamConfigurationSpace  the configuration space
 	 * 
 	 */
-	public static ParamConfigurationSpace getParamFileParser(String filename, int neighbours)
+	public static ParamConfigurationSpace getParamFileParser(String filename)
 	{	if(filename.equals(ParamConfigurationSpace.SINGLETON_ABSOLUTE_NAME))
 		{
 			return ParamConfigurationSpace.getSingletonConfigurationSpace();
 		} else
 		{
-			return getParamFileParser(new File(filename), neighbours);
+			return getParamFileParser(new File(filename));
 		}
 	}
 
@@ -49,19 +37,6 @@ public final class ParamFileHelper {
 	{
 		return new ParamConfigurationSpace(file);
 	}
-
-	/**
-	 * Returns a ParamConfigurationSpace via the filename and seeded with seed
-	 * 
-	 * @param file  					file with the param arguments
-	 * @param neighbours				the number of neighbours numerical parameters should have
-	 * @return ParamConfigurationSpace instance
-	 */
-	public static ParamConfigurationSpace getParamFileParser(File file, int neighbours)
-	{
-		return new ParamConfigurationSpace(file, neighbours);
-	}
-	
 
 	public static ParamConfigurationSpace getParamFileFromString(String string) {
 		return new ParamConfigurationSpace(new StringReader(string));

@@ -117,12 +117,6 @@ public class ParamConfigurationSpace implements Serializable {
 	 */
 	public static final int INVALID_CATEGORICAL_SIZE = 0;
 	
-	static final int DEFAULT_NEIGHBOURS_FOR_CONTINUOUS_PARAMETERS = 4;
-	/**
-	 * Number of Neighbours a continuous value has
-	 */
-	final int neighboursForNumericalParameters;
-	
 	/**
 	 * Number of parameters 
 	 */
@@ -191,7 +185,7 @@ public class ParamConfigurationSpace implements Serializable {
 	 */
 	public ParamConfigurationSpace(Reader reader, Map<String, String> searchSubspace)
 	{
-		this(reader, "ReaderOnly-"+System.currentTimeMillis() +"-" +(int) (Math.random() * 10000000.0), searchSubspace, DEFAULT_NEIGHBOURS_FOR_CONTINUOUS_PARAMETERS);
+		this(reader, "ReaderOnly-"+System.currentTimeMillis() +"-" +(int) (Math.random() * 10000000.0), searchSubspace);
 		hasRealParameterFile = false;
 	}
 	
@@ -216,15 +210,7 @@ public class ParamConfigurationSpace implements Serializable {
 		this(new FileReaderNoException(file), file.getAbsolutePath());
 	}
 	
-	/**
-	 * Creates a Param Configuration Space from the given file
-	 * @param file			File containing the configuration space
-	 * @param neighbours 	The number of neighbours to generate for numerical parameters
-	 */
-	public ParamConfigurationSpace(File file, int neighbours)
-	{
-		this(new FileReaderNoException(file), file.getAbsolutePath(), Collections.<String, String> emptyMap(), neighbours);
-	}
+	
 	
 	/**
 	 * Creates a Param Configuration Space from the given reader
@@ -234,7 +220,7 @@ public class ParamConfigurationSpace implements Serializable {
 	@SuppressWarnings("unchecked")
 	public ParamConfigurationSpace(Reader file, String absoluteFileName)
 	{
-		this(file, absoluteFileName, Collections.EMPTY_MAP, DEFAULT_NEIGHBOURS_FOR_CONTINUOUS_PARAMETERS);
+		this(file, absoluteFileName, Collections.EMPTY_MAP);
 	}
 	
 	/**
@@ -244,11 +230,9 @@ public class ParamConfigurationSpace implements Serializable {
 	 * @param searchSubspace					A map that controls which parameters should be used to generate a subspace
 	 * @param neighboursForNumericalParameters The number of neighbours that should be generated for numerical parameters
 	 */
-	public ParamConfigurationSpace(Reader file, String absoluteFileName, Map<String, String> searchSubspace, final int neighboursForNumericalParameters)
+	public ParamConfigurationSpace(Reader file, String absoluteFileName, Map<String, String> searchSubspace)
 	{
 		
-		
-		this.neighboursForNumericalParameters = neighboursForNumericalParameters;
 		/*
 		 * Parse File and create configuration space
 		 */
