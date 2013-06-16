@@ -55,4 +55,11 @@ public class ValidationOptions extends AbstractOptions{
 
 	@Parameter(names={"--validateByWallClockTime"}, description="Use wallclock times")
 	public boolean useWallClockTime;
+
+	@Parameter(names={"--validateOnlyIfWallTimeReached"}, description="If the walltime in the trajectory file hasn't hit this entry we won't bother validating", validateWith=ZeroInfinityHalfOpenIntervalRight.class)
+	public double validateOnlyIfWallTimeReached = 0.0;
+	
+	@Parameter(names={"--validateOnlyIfTunerTimeReached"}, description="If the walltime in the trajectory file hasn't hit this entry we won't bother validating", validateWith=ZeroInfinityHalfOpenIntervalRight.class)
+	public double validateOnlyIfTunerTimeReached = 0.0;
+	
 }
