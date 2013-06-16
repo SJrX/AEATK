@@ -28,7 +28,11 @@ public final class ACLibReturnValues {
 	
 	public static final int OH_THE_HUMANITY_EXCEPTION = 66;
 	
+	public static final int DEADLOCK_DETECTED = 101;
+	
 	public static final int OTHER_EXCEPTION = 255;
+
+	
 	
 	
 	

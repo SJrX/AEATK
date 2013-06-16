@@ -242,7 +242,7 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 		
 		//Everything should be done at this time 
 		//We throw the time into the future a bit to clean up anything that is still running because of a small number of runs.
-		long simulatedCurrentTimeInMs =  System.currentTimeMillis() + 2* this.observerFrequencyMs;
+		long simulatedCurrentTimeInMs =  Long.MAX_VALUE;
 		updateRunsAndNotifyObserver(startTimeInMs, simulatedCurrentTimeInMs, maxRuntime, observer, runsFromWrappedTAE, runConfigs, khs, runResults);
 			
 	}
