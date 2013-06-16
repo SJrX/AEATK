@@ -2,7 +2,13 @@ package ca.ubc.cs.beta.aclib.options;
 
 import java.io.File;
 import java.text.SimpleDateFormat;
+import java.util.Collection;
 import java.util.Date;
+import java.util.HashSet;
+import java.util.Map;
+import java.util.Set;
+import java.util.TreeMap;
+
 import ca.ubc.cs.beta.aclib.expectedimprovement.ExpectedImprovementFunctions;
 import ca.ubc.cs.beta.aclib.initialization.InitializationMode;
 import ca.ubc.cs.beta.aclib.misc.file.HomeFileUtils;
@@ -65,10 +71,15 @@ public class SMACOptions extends AbstractOptions {
 	@Parameter(names="--modelHashCodeFile", description="file containing a list of model hashes one per line with the following text per line: \"Preprocessed Forest Built With Hash Code: (n)\" or \"Random Forest Built with Hash Code: (n)\" where (n) is the hashcode", converter=ReadableFileConverter.class, hidden = true)
 	public File modelHashCodeFile;
 	
-	@UsageTextField(defaultValues="RunGroup-<current date and time>")
-	@Parameter(names="--runGroupName", description="name of subfolder of outputdir to save all the output files of this run to")
-	public String runGroupName = "RunGroup-" + (new SimpleDateFormat("yyyy-MM-dd--HH-mm-ss-SSS")).format(new Date());
+	@ParametersDelegate
+	public RunGroupOptions runGroupOptions = new RunGroupOptions();
 	
+	public String getRunGroupName(Collection<AbstractOptions> opts)
+	{	
+		opts = new HashSet<AbstractOptions>(opts);
+		opts.add(this);
+		return runGroupOptions.getRunGroupName(opts);	
+	}
 	@Parameter(names="--numPCA", description="number of principal components features to use when building the model", validateWith=FixedPositiveInteger.class)
 	public int numPCA = 7;
 

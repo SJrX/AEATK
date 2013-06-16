@@ -133,16 +133,13 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 						KillableAlgorithmRun[] runs = new KillableAlgorithmRun[runConfigs.size()];
 						//We will quit if all runs are done
 						boolean outstandingRuns = false;
-						int completed = 0;
+						
 						for(Entry<RunConfig,KillableAlgorithmRun> entries : runStatus.entrySet())
 						{
 							KillableAlgorithmRun run = entries.getValue();
 							if(run.getRunResult().equals(RunResult.RUNNING))
 							{
 								outstandingRuns = true;
-							} else
-							{
-								completed++;
 							}
 							runs[listIndex.get(entries.getKey())]=run;
 						}

@@ -6,6 +6,9 @@ import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -228,14 +231,18 @@ public class ConfigToLaTeX {
 		}
 		
 	}
-	public static void getAllObjects(Object o, Set<Object> objectsToScan) 
+	public static void getAllObjects(Object o, Set<Object> objectsToScan, Map<Object, Set<Object>> parentToChildMap) 
 	{
+		if(parentToChildMap.get(o) == null)
+		{
+			parentToChildMap.put(o, new HashSet<Object>());
+		}
 		try {
 			if(o.getClass().isArray())
 			{
 				for(int i=0; i < Array.getLength(o); i++)
 				{
-					getAllObjects(Array.get(o, i), objectsToScan);
+					getAllObjects(Array.get(o, i), objectsToScan, parentToChildMap);
 					
 				}
 			} else 
@@ -246,7 +253,8 @@ public class ConfigToLaTeX {
 					if(f.isAnnotationPresent(ParametersDelegate.class))
 					{	
 						objectsToScan.add(f.get(o));
-						getAllObjects(f.get(o), objectsToScan);
+						parentToChildMap.get(o).add(f.get(o));
+						getAllObjects(f.get(o), objectsToScan, parentToChildMap);
 					}
 				}
 			}
@@ -280,8 +288,10 @@ public class ConfigToLaTeX {
 			
 		try {
 		Set<Object> objectsToScan = new LinkedHashSet<Object>();
+		Map<Object, Set<Object>> parentToChildMap = new HashMap<Object,Set<Object>>();
+		
 	
-		getAllObjects(o, objectsToScan);
+		getAllObjects(o, objectsToScan, parentToChildMap);
 		
 		List<UsageSection> sections = new ArrayList<UsageSection>();
 		
@@ -309,7 +319,7 @@ public class ConfigToLaTeX {
 			String sectionDescription = getDescriptionForObject(obj);
 			boolean isHidden = isHiddenSection(obj);
 			
-			UsageSection sec = new UsageSection(title, sectionDescription,isHidden);
+			UsageSection sec = new UsageSection(title, sectionDescription,isHidden, obj);
 			sections.add(sec);
 			
 			
@@ -355,9 +365,45 @@ public class ConfigToLaTeX {
 			
 		}
 		
+		//Merge hidden sections with there parent
+		
+		//This is buggy as multiple levels of the hierarchy won't get merged in but oh well
+		List<UsageSection> returningSec = new ArrayList<UsageSection>();
 		
 		
-		return sections;
+		for(UsageSection sec : sections)
+		{
+			Object parent = sec.getObject();
+			
+			for(UsageSection sec2 : sections)
+			{
+				Object child = sec2.getObject();
+				//Not related
+				//System.out.println(parent.getClass() + " and " + child.getClass());
+				if(!parentToChildMap.get(parent).contains(child)) continue;
+				
+				if(sec2.isSectionHidden())
+				{
+					//System.out.println(sec2 + " is hidden adding to " + sec);
+					for(String secName : sec2)
+					{
+						sec.addAttribute(secName, sec2.getAttributeDescription(secName), sec2.getAttributeDefaultValues(secName), sec2.isAttributeRequired(secName),sec2.getAttributeDomain(secName), sec2.getAttributeAliases(secName), sec2.isAttributeHidden(secName));
+					}
+				}
+				
+				
+				
+			}
+			
+			if(!sec.isSectionHidden())
+			{
+				returningSec.add(sec);
+			}
+			
+		}
+		
+
+		return returningSec;
 		
 		} catch (IllegalAccessException e) {
 			throw new IllegalStateException("Unexpected Exception Occurred ", e);

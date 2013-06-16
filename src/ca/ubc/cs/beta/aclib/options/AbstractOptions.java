@@ -7,6 +7,10 @@ import java.util.Arrays;
 import java.util.Collection;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
+
+import ca.ubc.cs.beta.aclib.misc.options.DashedToCamelCaseStringConverter;
 
 import com.beust.jcommander.DynamicParameter;
 import com.beust.jcommander.Parameter;
@@ -269,5 +273,87 @@ public abstract class AbstractOptions {
 			
 		}
 		return list;
+	}
+	
+	
+
+	public void populateOptionsMap(Map<String, String> opts)
+	{
+		for(Field f : this.getClass().getFields())
+		{
+			
+			if(!f.isAnnotationPresent(Parameter.class)) continue;
+			
+			
+			
+			Parameter ant = f.getAnnotation(Parameter.class);
+			
+			if(ant != null)
+			{
+				try {
+					Object o = f.get(this);
+					if(o == null) continue;
+					
+					if ((o instanceof Boolean) || (o instanceof File) || (o instanceof Integer) || (o instanceof Long) ||  (o instanceof String) || (o instanceof Double) || (o instanceof Enum))
+					{
+						for(String name : ant.names())
+						{
+							
+							
+							if(!name.startsWith("--"))
+							{
+								continue;
+							}
+							
+							name = name.substring(2);
+							if(!name.contains("-"))
+							{	
+								opts.put(name, o.toString());
+							}
+							String camelized = DashedToCamelCaseStringConverter.getCamelCase(name);
+							if(!opts.containsKey(camelized))
+							{
+								opts.put(camelized, o.toString());
+							}
+						}
+					
+					}
+					else 
+					{
+						System.err.println("No idea what o is " + o.getClass()  +" value:" + o + " name " + ant.names()[0]);
+					}
+					
+					
+				} catch (Exception e) {
+					e.printStackTrace();
+				} 
+				
+			}
+			
+		
+		
+		
+		}
+		
+		for(Field f : this.getClass().getFields())
+		{
+			if(!f.isAnnotationPresent(ParametersDelegate.class)) continue;
+			{
+				try {
+					Object o = f.get(this);
+					
+					if(o instanceof AbstractOptions)
+					{
+						AbstractOptions abs = (AbstractOptions) o;
+						abs.populateOptionsMap(opts);
+					}
+				} catch(Exception e)
+				{
+					e.printStackTrace();
+				}
+			}
+			
+		}
+		
 	}
 }

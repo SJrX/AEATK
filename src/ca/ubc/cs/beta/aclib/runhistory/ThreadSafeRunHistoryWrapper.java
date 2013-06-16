@@ -24,7 +24,7 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 	
 	private final ReentrantReadWriteLock myLock = new ReentrantReadWriteLock(true);
 	
-	private final static Logger log = LoggerFactory.getLogger(ThreadSafeRunHistoryWrapper.class);
+	//private final static Logger log = LoggerFactory.getLogger(ThreadSafeRunHistoryWrapper.class);
 	
 	public ThreadSafeRunHistoryWrapper(RunHistory runHistory)
 	{

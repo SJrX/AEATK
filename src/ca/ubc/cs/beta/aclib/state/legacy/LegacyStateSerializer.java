@@ -47,7 +47,6 @@ public class LegacyStateSerializer implements StateSerializer {
 	private ParamConfiguration incumbent;
 	
 	private final String id ;
-	private InstanceSeedGenerator instanceSeedGenerator;
 	private final int iteration;
 	private final String path;
 	

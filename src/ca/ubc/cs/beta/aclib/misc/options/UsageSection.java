@@ -22,6 +22,7 @@ public class UsageSection implements Iterable<String> {
 	private final Map<String, String> domainMap = new HashMap<String, String>();
 	private final Map<String, String> aliasMap = new HashMap<String, String>();
 	private final Map<String, Boolean> hiddenMap = new HashMap<String, Boolean>();
+	private final Object object;
 	private final boolean hidden;
 	
 	/**
@@ -29,14 +30,20 @@ public class UsageSection implements Iterable<String> {
 	 * @param sectionName 			The name of this section
 	 * @param sectionDescription 	The Description of this section
 	 * @param hidden				<code>true</code> if we shouldn't display the sectionName or description when displaying options.
+	 * @param object				Object this section is associated with
 	 */
-	public UsageSection(String sectionName, String sectionDescription, boolean hidden)
+	public UsageSection(String sectionName, String sectionDescription, boolean hidden, Object object)
 	{
 		this.sectionName = sectionName;
 		this.sectionDescription = sectionDescription;
 		this.hidden = hidden;
+		this.object = object;
 	}
 	
+	public Object getObject()
+	{
+		return object;
+	}
 	
 	public String getSectionName()
 	{

@@ -326,6 +326,7 @@ public class LegacyStateFactory implements StateFactory{
 				
 				oReader =  new ObjectInputStream(new FileInputStream(javaObjDumpFile));
 				Object o = oReader.readObject();
+				@SuppressWarnings("unchecked")
 				Map<String, Serializable> map = (Map<String, Serializable>) o;
 				System.out.println("FOO");
 				return Integer.valueOf(map.get(ITERATION_KEY).toString());
