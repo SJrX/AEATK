@@ -944,6 +944,12 @@ public class ParamConfigurationTest {
 
 	}
 	
+	@Test
+	public void testSubspaceAndParentSpaceEquality()
+	{
+		//A Subspace and a parent space should NOT be equal
+		fail("Test Not Implemented");
+	}
 
 	@Test
 	public void testSubspaceDeclarationDefault()

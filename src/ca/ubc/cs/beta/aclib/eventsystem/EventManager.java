@@ -129,16 +129,18 @@ public class EventManager {
 					{
 						
 						Object[] args = { handler2, event2, t};
-						log.warn("Event Handler {} while processing event: {}, threw Exception {}",args);
+						log.error("Event Handler {} while processing event: {}, threw Exception {}",args);
 						
 						if(!(event2 instanceof EventHandlerRuntimeExceptionEvent))
 						{
 							EventManager.this.fireEvent(new EventHandlerRuntimeExceptionEvent(t, event2));
 							
 							return;
-						} 
+						} else
+						{
+							log.error("Event Handler threw exception while we were processing the {} event, not notifying anything else", event2.getClass());
+						}
 						
-						log.error("Event Handler threw exception while we were processing the {} event, not notifying anything else", event2.getClass());
 					}
 				}
 			};
@@ -160,6 +162,7 @@ public class EventManager {
 	 */
 	public void flush() {
 		
+		if(shutdown) return;
 		  
 		checkForDeadLock();
 		

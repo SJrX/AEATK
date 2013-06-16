@@ -14,7 +14,6 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.Simulate
 public class RandomResponseTargetAlgorithmEvaluatorFactory extends AbstractTargetAlgorithmEvaluatorFactory  
 {
 
-	
 	@Override
 	public String getName() {
 		return "RANDOM";
@@ -29,7 +28,7 @@ public class RandomResponseTargetAlgorithmEvaluatorFactory extends AbstractTarge
 		
 		if(randomOptions.simulateDelay)
 		{
-			tae = new SimulatedDelayTargetAlgorithmEvaluatorDecorator(tae, randomOptions.observerFrequency);
+			tae = new SimulatedDelayTargetAlgorithmEvaluatorDecorator(tae, randomOptions.observerFrequency, randomOptions.scaleDelay);
 		}
 		
 		if(randomOptions.cores > 0)

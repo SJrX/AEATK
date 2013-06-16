@@ -6,8 +6,10 @@ import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
 import java.io.StringWriter;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
@@ -27,6 +29,7 @@ import org.junit.Test;
 import ca.ubc.cs.beta.TestHelper;
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
+import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableAlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrunner.AutomaticConfiguratorFactory;
 import ca.ubc.cs.beta.aclib.concurrent.threadfactory.SequentiallyNamedThreadFactory;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
@@ -47,6 +50,7 @@ import ca.ubc.cs.beta.aclib.random.SeedableRandomPool;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.WaitableTAECallback;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluatorFactory;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluatorOptions;
@@ -57,6 +61,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.random.RandomResponseT
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbstractTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.debug.EqualTargetAlgorithmEvaluatorTester;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.BoundedTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.SimulatedDelayTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.prepostcommand.PrePostCommandErrorException;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.safety.AbortOnCrashTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.safety.AbortOnFirstRunCrashTargetAlgorithmEvaluator;
@@ -2146,6 +2151,105 @@ public class TAETestSet {
 		System.out.println(watch2.stop());
 		assertTrue("Expected time for Bounded to be less than 5 seconds", watch2.time() < 5000 );
 		
+	}
+	
+	
+	
+	@Test
+	public void testSimulateDelayScaling()
+	{
+		//Check that a submission of run 10 runs on a bound of <5 take 5,1,1,1,1, 5,1,1,1,1 takes 6 seconds and not 10.
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(ParamEchoExecutor.class.getCanonicalName());
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
+		AutomaticConfiguratorFactory.setMaximumNumberOfThreads(2);
+		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
+		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
+		
+		options.logAllCallStrings = true;
+		options.logAllProcessOutput = true;
+		options.concurrentExecution = true;
+		options.observerFrequency = 2000;
+		
+		
+		tae = fact.getTargetAlgorithmEvaluator(execConfig, options);	
+		TargetAlgorithmEvaluator cliTAE = tae;
+		
+		TargetAlgorithmEvaluator taeFourth = new SimulatedDelayTargetAlgorithmEvaluatorDecorator(cliTAE, 20, 0.25);
+		TargetAlgorithmEvaluator taeHalf = new SimulatedDelayTargetAlgorithmEvaluatorDecorator(cliTAE, 20, 0.5);
+		TargetAlgorithmEvaluator taeUnity = new SimulatedDelayTargetAlgorithmEvaluatorDecorator(cliTAE, 20, 1);
+		TargetAlgorithmEvaluator taeDouble = new SimulatedDelayTargetAlgorithmEvaluatorDecorator(cliTAE, 20, 2);
+		TargetAlgorithmEvaluator taeFour = new SimulatedDelayTargetAlgorithmEvaluatorDecorator(cliTAE, 20, 4);
+		
+		
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(4);
+		double runtime = 2;
+		for(int i=0; i < 1; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			
+			config.put("runtime",String.valueOf(runtime));
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config);
+				runConfigs.add(rc);
+			}
+		}
+		
+		
+		
+		testExpectedObserverCount(taeFourth, 0.25, runConfigs, runtime, 20);
+		testExpectedObserverCount(taeHalf, 0.5, runConfigs, runtime, 20);
+		testExpectedObserverCount(taeUnity, 1.0, runConfigs, runtime, 20);
+		testExpectedObserverCount(taeDouble, 2, runConfigs, runtime, 20);
+		testExpectedObserverCount(taeFour, 4, runConfigs, runtime, 20);
+		
+		/*
+		StopWatch watch2 = new AutoStartStopWatch();
+		tae.evaluateRun(runConfigs);
+		System.out.println(watch2.stop());
+		assertTrue("Expected time for Bounded to be less than 5 seconds", watch2.time() < 5000 );
+		*/
+	}
+	
+	
+	
+	public void testExpectedObserverCount(TargetAlgorithmEvaluator tae, double scale, List<RunConfig> runConfigs, double runtime, double observerFrequency)
+	{
+
+		final AtomicInteger count = new AtomicInteger(0);
+		TargetAlgorithmEvaluatorRunObserver obs = new TargetAlgorithmEvaluatorRunObserver()
+		{
+
+			@Override
+			public void currentStatus(List<? extends KillableAlgorithmRun> runs) {
+				count.incrementAndGet();
+				
+			}
+			
+		};
+		
+		
+		StopWatch watch = new AutoStartStopWatch();
+		tae.evaluateRun(runConfigs, obs);
+		watch.stop();
+		
+		
+		double timeInSeconds = watch.time() / 1000.0;
+		System.out.println("Runs completed in " + timeInSeconds + " observerCounts: " + count.get() + " expect:" + (( runtime / scale) - 1) / observerFrequency * 1000);
+		assertTrue("Expected that the number of observer notifications " + count.get() + " > " + (( runtime / scale) - 1) / observerFrequency * 1000  , count.get() > (( runtime / scale) - 1) / observerFrequency * 1000);
+		
+		assertTrue("Expected that time taken " + timeInSeconds + " > " + ((runtime / scale) - 1) , timeInSeconds >  (runtime / scale) - 1 );
+		assertTrue("Expected that time taken " + timeInSeconds + " < " + ((runtime / scale) + 1) , timeInSeconds <  (runtime / scale) + 1 );
 	}
 	
 	@Test

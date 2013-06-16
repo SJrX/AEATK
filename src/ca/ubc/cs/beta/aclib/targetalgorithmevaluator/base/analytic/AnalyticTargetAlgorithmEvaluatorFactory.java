@@ -29,7 +29,7 @@ public class AnalyticTargetAlgorithmEvaluatorFactory extends AbstractTargetAlgor
 		
 		if(analyticOptions.simulateDelay)
 		{
-			tae = new SimulatedDelayTargetAlgorithmEvaluatorDecorator(tae, analyticOptions.observerFrequency);
+			tae = new SimulatedDelayTargetAlgorithmEvaluatorDecorator(tae, analyticOptions.observerFrequency, analyticOptions.scaleDelay);
 		}
 		
 		if(analyticOptions.cores > 0)

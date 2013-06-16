@@ -116,6 +116,15 @@ public class SeedableRandomPool implements Serializable {
 		this.specifiedInitialSeeds = new HashSet<String>(initialSeeds.keySet());
 	}
 	
+	/**
+	 * Returns a random object for a given name
+	 * @param   enumeration   An enumeration for the object
+	 * @return	Random object appropriately seeded if the seed was set explicitly or if not the seed used is defined to be the hashCode() of the string XOR initial seed.
+	 */
+	public synchronized Random getRandom(Enum<?> enumeration)
+	{
+		return getRandom(enumeration.name());
+	}
 	
 	/**
 	 * Returns a random object for a given name

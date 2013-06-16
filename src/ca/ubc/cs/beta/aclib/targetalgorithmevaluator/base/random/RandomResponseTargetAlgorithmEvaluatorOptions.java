@@ -3,6 +3,7 @@ package ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.random;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.FixedPositiveInteger;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.NonNegativeInteger;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.ZeroInfinityHalfOpenIntervalRight;
+import ca.ubc.cs.beta.aclib.misc.jcommander.validator.ZeroInfinityOpenInterval;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 
@@ -33,12 +34,17 @@ public class RandomResponseTargetAlgorithmEvaluatorOptions extends AbstractOptio
 	@Parameter(names="--random-sample-seed", description="Seed to use when generate random responses")
 	public long seed = System.currentTimeMillis();
 
+	@Parameter(names="--random-report-persistent", description="Determines whether the TAE reports whether it is persistent", hidden=true)
+	public boolean persistent = false;
+
+	@Parameter(names="--random-scale-simulate-delay", description="Divide the simulated delay by this value", validateWith=ZeroInfinityOpenInterval.class)
+	public double scaleDelay = 1.0;
+	
 	//Shuffle the Algorithm Runs List before it returns.
 	
 	//DO NOT EXPOSE THIS ARGUMENT TO THE COMMAND LINE AS IT EXISTS ONLY FOR TESTING THAT WHEN THIS HAPPENS
 	//IT CAN BE CAUGHT
 	public boolean shuffleResponses;
 
-	@Parameter(names="--random-report-persistent", description="Determines whether the TAE reports whether it is persistent", hidden=true)
-	public boolean persistent = false;
+	
 }

@@ -57,11 +57,14 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 	private static final Logger log = LoggerFactory.getLogger(SimulatedDelayTargetAlgorithmEvaluatorDecorator.class);
 	
 	private final AtomicInteger threadsWaiting = new AtomicInteger(0);
+
+	private double timeScalingFactor;
 	
 	public SimulatedDelayTargetAlgorithmEvaluatorDecorator(
-			TargetAlgorithmEvaluator tae, long observerFrequencyMs) {
+			TargetAlgorithmEvaluator tae, long observerFrequencyMs, double scalingFactor) {
 		super(tae);
 		this.observerFrequencyMs = observerFrequencyMs;
+		this.timeScalingFactor = scalingFactor;
 		if(observerFrequencyMs <= 0) throw new IllegalArgumentException("Observer Frequency cannot be zero");
 	}
 
@@ -131,7 +134,8 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 		try {
 			threadsWaiting.incrementAndGet();
 			
-			long startTimeInMs = System.currentTimeMillis();
+			TimeSimulator timeSim = new TimeSimulator(timeScalingFactor);
+			long startTimeInMS = System.currentTimeMillis();
 			//We don't pass the Observer to the decorated TAE because it might report too much too soon.
 			//We also make this list unmodifiable so that we don't accidentally tamper with it.
 			
@@ -160,10 +164,13 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 				
 			}
 			
-			Object[] args = {  timeToSleep, configIDs, getNicelyFormattedWakeUpTime(timeToSleep), threadsWaiting.get()}; 
-			log.debug("Simulating {} elapsed seconds of running for configs ({}) . Wake-up estimated in/at: {}  ( ~({}) threads currently waiting )", args);
+			double oRigTimeToSleep = timeToSleep;
+			timeToSleep = timeToSleep / this.timeScalingFactor;
 			
-			sleepAndNotifyObservers(startTimeInMs, timeToSleep, obs, runsFromWrappedTAE, runConfigs, runConfigToKillHandlerMap, runConfigToAlgorithmRunMap);
+			Object[] args = {  oRigTimeToSleep, timeScalingFactor, timeToSleep,  configIDs, getNicelyFormattedWakeUpTime(timeToSleep), threadsWaiting.get()}; 
+			log.debug("Simulating {} elapsed with time scaling factor {} for a total of {} seconds of running for configs ({}) . Wake-up estimated in/at: {}  ( ~({}) threads currently waiting )", args);
+			
+			sleepAndNotifyObservers(timeSim, startTimeInMS,  oRigTimeToSleep, obs, runsFromWrappedTAE, runConfigs, runConfigToKillHandlerMap, runConfigToAlgorithmRunMap);
 			
 			if(obs == null)
 			{ 
@@ -200,21 +207,21 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 		}
 	}
 
-	private void sleepAndNotifyObservers(long startTimeInMs, double maxRuntime, TargetAlgorithmEvaluatorRunObserver observer, List<AlgorithmRun> runsFromWrappedTAE, List<RunConfig> runConfigs, final LinkedHashMap<RunConfig, KillHandler> khs, final LinkedHashMap<RunConfig, AlgorithmRun> runResults)
+	private void sleepAndNotifyObservers(TimeSimulator timeSimulator, long startTimeInMs, double maxRuntime, TargetAlgorithmEvaluatorRunObserver observer, List<AlgorithmRun> runsFromWrappedTAE, List<RunConfig> runConfigs, final LinkedHashMap<RunConfig, KillHandler> khs, final LinkedHashMap<RunConfig, AlgorithmRun> runResults)
 	{
 		
 		long sleepTimeInMS = (long) maxRuntime * 1000;
 		do {
 			long waitTimeRemainingMs;
 			
-			long currentTimeInMs =  System.currentTimeMillis();
+			long currentTimeInMs =  timeSimulator.time();
 			if(observer != null)
 			{
 				updateRunsAndNotifyObserver(startTimeInMs, currentTimeInMs, maxRuntime, observer, runsFromWrappedTAE, runConfigs, khs, runResults);
 			}	
 			
 			//In case the observers took significant amounts of time, we get the time again
-			currentTimeInMs =  System.currentTimeMillis();
+			currentTimeInMs = timeSimulator.time();
 			waitTimeRemainingMs =  startTimeInMs - currentTimeInMs +  sleepTimeInMS; 
 		
 			if(waitTimeRemainingMs <= 0)
@@ -311,5 +318,23 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 		return releaseTime;
 	}
 	
+	
+	
+	private static class TimeSimulator
+	{
+		private long initialTime;
+
+		private double scale;
+		public TimeSimulator(double scale)
+		{
+			this.initialTime = System.currentTimeMillis();
+			this.scale = scale;
+		}
+		
+		public long time()
+		{
+			return (long) (initialTime + ((System.currentTimeMillis()) - initialTime) * scale);
+		}
+	}
 	
 }

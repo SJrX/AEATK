@@ -4,6 +4,7 @@ import com.beust.jcommander.Parameter;
 
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.FixedPositiveInteger;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.NonNegativeInteger;
+import ca.ubc.cs.beta.aclib.misc.jcommander.validator.ZeroInfinityOpenInterval;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 
@@ -21,5 +22,8 @@ public class AnalyticTargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	
 	@Parameter(names="--analytic-function", description="Which analytic function to use")
 	public AnalyticFunctions func = AnalyticFunctions.CAMELBACK;
+
+	@Parameter(names="--analytic-scale-simulate-delay", description="Divide the simulated delay by this value", validateWith=ZeroInfinityOpenInterval.class)
+	public double scaleDelay =1.0;
 	
 }
