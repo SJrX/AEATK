@@ -95,4 +95,18 @@ public class KillableWrappedAlgorithmRun implements KillableAlgorithmRun {
 		return run.isRunCompleted();
 	}
 
+	@Override
+	public final int hashCode()
+	{
+		return run.hashCode();
+	}
+	
+	/**
+	 * Two AlgorithmRuns are considered equal if they have same runConfig and execConfig
+	 */
+	@Override
+	public final boolean equals(Object o)
+	{
+		return run.equals(o);
+	}
 }

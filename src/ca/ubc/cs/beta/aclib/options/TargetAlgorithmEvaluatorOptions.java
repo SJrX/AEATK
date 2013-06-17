@@ -66,6 +66,11 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	public boolean logRequestResponses = false; 
 	
 	@Parameter(names={"--log-requests-responses-rc-only","--log-requests-responses-rc"}, description="If set to true we will only log the run configuration when a run completes ")
-	public boolean logRequestResponsesRCOnly = false; 
+	public boolean logRequestResponsesRCOnly = false;
+
+	@Parameter(names="--track-scheduled-runs", description="If true outputs a file in the output directory that outlines how many runs were being evaluated at any given time")
+	public boolean trackRunsScheduled; 
 	
+	@Parameter(names="--check-for-unclean-shutdown", description="If true, we will try and detect an unclean shutdown of the Target Algorithm Evaluator")
+	public boolean uncleanShutdownCheck = true;
 }

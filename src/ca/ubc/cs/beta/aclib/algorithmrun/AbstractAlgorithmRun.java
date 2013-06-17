@@ -298,7 +298,7 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 	}
 	
 	@Override
-	public int hashCode()
+	public final int hashCode()
 	{
 		//I believe that just instanceConfig and not execConfig hashCodes should be good enough
 		//Since it's rare for two different execConfigs to have identical instanceConfigs
@@ -309,12 +309,13 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 	 * Two AlgorithmRuns are considered equal if they have same runConfig and execConfig
 	 */
 	@Override
-	public boolean equals(Object o)
+	public final boolean equals(Object o)
 	{
-		if(o instanceof AbstractAlgorithmRun)
+		if(o == null) return false;
+		if(o instanceof AlgorithmRun)
 		{
-			AbstractAlgorithmRun aro = (AbstractAlgorithmRun) o;
-			return aro.execConfig.equals(execConfig) && aro.runConfig.equals(runConfig);
+			AlgorithmRun aro = (AlgorithmRun) o;
+			return aro.getExecutionConfig().equals(execConfig) && aro.getRunConfig().equals(runConfig);
 		} 
 		return false;
 	}

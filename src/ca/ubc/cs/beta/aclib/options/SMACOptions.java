@@ -1,14 +1,8 @@
 package ca.ubc.cs.beta.aclib.options;
 
 import java.io.File;
-import java.text.SimpleDateFormat;
 import java.util.Collection;
-import java.util.Date;
 import java.util.HashSet;
-import java.util.Map;
-import java.util.Set;
-import java.util.TreeMap;
-
 import ca.ubc.cs.beta.aclib.expectedimprovement.ExpectedImprovementFunctions;
 import ca.ubc.cs.beta.aclib.initialization.InitializationMode;
 import ca.ubc.cs.beta.aclib.misc.file.HomeFileUtils;

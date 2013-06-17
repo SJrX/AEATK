@@ -20,8 +20,10 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.debug.LeakingMemoryTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.debug.LogEveryTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.debug.RunHashCodeVerifyingAlgorithmEvalutor;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.debug.UncleanShutdownDetectingTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.BoundedTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.RetryCrashedRunsTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.prepostcommand.PrePostCommandTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.safety.AbortOnCrashTargetAlgorithmEvaluator;
@@ -66,7 +68,6 @@ public class TargetAlgorithmEvaluatorBuilder {
 		return getTargetAlgorithmEvaluator(options,execConfig, hashVerifiersAllowed, false, taeOptionsMap, null);
 	}
 	
-	
 	/**
 	 * Generates the TargetAlgorithmEvaluator with the given runtime behaivor
 	 * 
@@ -79,6 +80,21 @@ public class TargetAlgorithmEvaluatorBuilder {
 	 * @return a configured <code>TargetAlgorithmEvaluator</code>
 	 */
 	public static TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(TargetAlgorithmEvaluatorOptions options, AlgorithmExecutionConfig execConfig, boolean hashVerifiersAllowed, boolean ignoreBound,  Map<String, AbstractOptions> taeOptionsMap, TargetAlgorithmEvaluator tae)
+	{
+		return getTargetAlgorithmEvaluator(options, execConfig, hashVerifiersAllowed, ignoreBound, taeOptionsMap, tae, new File("."), 0);
+	}
+	/**
+	 * Generates the TargetAlgorithmEvaluator with the given runtime behaivor
+	 * 
+	 * @param options 		   Target Algorithm Evaluator Options
+	 * @param execConfig	   Execution configuration for the target algorithm
+	 * @param hashVerifiersAllowed  Whether we should apply hash verifiers
+	 * @param ignoreBound	   Whether to ignore bound requests
+	 * @param taeOptionsMap	   		A map that contains mappings between the names of TAEs and their configured options object
+	 * @param tae			   		The TAE to use wrap (if not <code>null</code> will use this one instead of SPI)				
+	 * @return a configured <code>TargetAlgorithmEvaluator</code>
+	 */
+	public static TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(TargetAlgorithmEvaluatorOptions options, AlgorithmExecutionConfig execConfig, boolean hashVerifiersAllowed, boolean ignoreBound,  Map<String, AbstractOptions> taeOptionsMap, TargetAlgorithmEvaluator tae, File outputDir, int numRun)
 	{
 		
 		if(taeOptionsMap == null)
@@ -100,6 +116,15 @@ public class TargetAlgorithmEvaluatorBuilder {
 		//===== Note the decorators are not in general commutative
 		//Specifically Run Hash codes should only see the same runs the rest of the applications see
 		//Additionally retrying of crashed runs should probably happen before Abort on Crash
+		
+		if(options.uncleanShutdownCheck)
+		{
+			log.debug("[TAE] Checking for unclean shutdown");
+			tae = new UncleanShutdownDetectingTargetAlgorithmEvaluator(tae);
+		} else
+		{
+			log.debug("[TAE] Not Checking for unclean shutdown");
+		}
 		
 		if(options.retryCount >0)
 		{
@@ -143,13 +168,30 @@ public class TargetAlgorithmEvaluatorBuilder {
 			tae = new SATConsistencyTargetAlgorithmEvaluator(tae, options.checkSATConsistencyException);
 		}
 		
+		
+		if(options.trackRunsScheduled)
+		{
+			String resultFile = outputDir.getAbsolutePath() + File.separator + "dispatched-runs-over-time-" + numRun + ".csv";
+			log.info("[TAE] Tracking all outstanding runs to file {} ", resultFile);
+			tae = new OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator(tae, resultFile, "Dispatched");
+			
+		}
+		
+		
 		if(!ignoreBound && options.boundRuns)
 		{
 			log.debug("[TAE] Bounding the number of concurrent target algorithm evaluations to {} ", options.maxConcurrentAlgoExecs);
 			tae = new BoundedTargetAlgorithmEvaluator(tae, options.maxConcurrentAlgoExecs, execConfig);
-		}
-		
-		if(ignoreBound)
+			
+			if(options.trackRunsScheduled)
+			{
+				String resultFile = outputDir.getAbsolutePath() + File.separator + "queued-runs-over-time-" + numRun + ".csv";
+				log.info("[TAE] Tracking all queued runs to file {} ", resultFile);
+				tae = new OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator(tae, resultFile, "Queued");
+			}
+			
+			
+		}else if(ignoreBound)
 		{
 			log.debug("[TAE] Ignoring Bound");
 		}

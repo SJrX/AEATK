@@ -22,7 +22,6 @@ import ca.ubc.cs.beta.aclib.exceptions.StateSerializationException;
 import ca.ubc.cs.beta.aclib.misc.watch.AutoStartStopWatch;
 import ca.ubc.cs.beta.aclib.runhistory.RunData;
 import ca.ubc.cs.beta.aclib.runhistory.RunHistory;
-import ca.ubc.cs.beta.aclib.seedgenerator.InstanceSeedGenerator;
 import static ca.ubc.cs.beta.aclib.state.legacy.LegacyStateFactory.*;
 import ca.ubc.cs.beta.aclib.state.StateSerializer;
 
