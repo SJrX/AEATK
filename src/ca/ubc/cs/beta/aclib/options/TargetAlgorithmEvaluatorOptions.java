@@ -73,7 +73,7 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	public boolean trackRunsScheduled; 
 
 	@Parameter(names="--track-scheduled-runs-resolution", description="We will bucket changes into this size", validateWith=ZeroInfinityOpenInterval.class)
-	public double trackRunsScheduledResolution = 0.01; 
+	public double trackRunsScheduledResolution = 10; 
 	
 	@Parameter(names="--check-for-unclean-shutdown", description="If true, we will try and detect an unclean shutdown of the Target Algorithm Evaluator")
 	public boolean uncleanShutdownCheck = true;

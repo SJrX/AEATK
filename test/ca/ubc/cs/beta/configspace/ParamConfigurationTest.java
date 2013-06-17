@@ -1222,6 +1222,31 @@ public class ParamConfigurationTest {
 		
 		
 	}
+	
+	@Test
+	/**
+	 * Related to bug 1718
+	 */
+	public void testEmptyParamValue()
+	{
+		StringReader sr = new StringReader("foo {\"\",\"test\"} [\"\"]\n");
+		
+		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(sr, "<>", Collections.EMPTY_MAP);
+		ParamConfiguration defaultConfig = configSpace.getDefaultConfiguration();
+		
+		ParamConfiguration otherConfig = configSpace.getDefaultConfiguration().getNeighbourhood(new MersenneTwister(), 1).get(0);
+		
+		System.out.println(defaultConfig.getFormattedParamString());
+		System.out.println(otherConfig.getFormattedParamString());
+		
+		
+		defaultConfig.put("foo", otherConfig.get("foo"));
+		defaultConfig = configSpace.getDefaultConfiguration();
+		otherConfig.put("foo", defaultConfig.get("foo"));
+		System.out.println(otherConfig.getFormattedParamString());	
+	}
+	
+	
 	@After
 	public void tearDown()
 	{
