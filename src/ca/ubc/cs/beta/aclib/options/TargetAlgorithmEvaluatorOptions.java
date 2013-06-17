@@ -4,6 +4,7 @@ import java.io.File;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.NonNegativeInteger;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.ReadableFileConverter;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.TAEValidator;
+import ca.ubc.cs.beta.aclib.misc.jcommander.validator.ZeroInfinityOpenInterval;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.prepostcommand.PrePostCommandOptions;
 
@@ -70,6 +71,9 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 
 	@Parameter(names="--track-scheduled-runs", description="If true outputs a file in the output directory that outlines how many runs were being evaluated at any given time")
 	public boolean trackRunsScheduled; 
+
+	@Parameter(names="--track-scheduled-runs-resolution", description="We will bucket changes into this size", validateWith=ZeroInfinityOpenInterval.class)
+	public double trackRunsScheduledResolution = 0.01; 
 	
 	@Parameter(names="--check-for-unclean-shutdown", description="If true, we will try and detect an unclean shutdown of the Target Algorithm Evaluator")
 	public boolean uncleanShutdownCheck = true;

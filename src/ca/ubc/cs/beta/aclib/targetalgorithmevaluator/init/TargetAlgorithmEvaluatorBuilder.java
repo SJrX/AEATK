@@ -173,7 +173,7 @@ public class TargetAlgorithmEvaluatorBuilder {
 		{
 			String resultFile = outputDir.getAbsolutePath() + File.separator + "dispatched-runs-over-time-" + numRun + ".csv";
 			log.info("[TAE] Tracking all outstanding runs to file {} ", resultFile);
-			tae = new OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator(tae, resultFile, "Dispatched");
+			tae = new OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator(tae, resultFile, options.trackRunsScheduledResolution, "Dispatched");
 			
 		}
 		
@@ -187,7 +187,7 @@ public class TargetAlgorithmEvaluatorBuilder {
 			{
 				String resultFile = outputDir.getAbsolutePath() + File.separator + "queued-runs-over-time-" + numRun + ".csv";
 				log.info("[TAE] Tracking all queued runs to file {} ", resultFile);
-				tae = new OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator(tae, resultFile, "Queued");
+				tae = new OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator(tae, resultFile, options.trackRunsScheduledResolution, "Queued");
 			}
 			
 			

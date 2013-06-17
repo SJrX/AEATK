@@ -24,9 +24,9 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbstractTargetAl
 
 @ThreadSafe
 /***
- * Tracks the start and completion time of each run.
+ * Tracks the start and completion time of each run and logs it to a file
+ * 
  * @author Steve Ramage <seramage@cs.ubc.ca>
- *
  */
 public class OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator extends AbstractTargetAlgorithmEvaluatorDecorator {
 
@@ -35,10 +35,12 @@ public class OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator extends Abst
 	
 	private String nameOfRuns;
 	private final Logger log = LoggerFactory.getLogger(getClass());
-	public OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator(TargetAlgorithmEvaluator tae, String resultFile, String nameOfRuns) {
+	private final double resolutionInMS;
+	public OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator(TargetAlgorithmEvaluator tae, String resultFile, double resolutionInSeconds, String nameOfRuns) {
 		super(tae);
 		this.resultFile = resultFile;
 		this.nameOfRuns = nameOfRuns;
+		this.resolutionInMS = resolutionInSeconds * 1000;
 	}
 
 	@Override
@@ -56,6 +58,11 @@ public class OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator extends Abst
 	 * @param run process the run
 	 * @return run that will replace it in the values returned to the client
 	 */
+	
+	private final long bucketTime(long time)
+	{
+		 return (long) ((long) ( (long) (time / resolutionInMS)) * resolutionInMS);  
+	}
 	protected <K extends AlgorithmRun> K processRun(K run)
 	{
 		
@@ -65,7 +72,7 @@ public class OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator extends Abst
 			{
 				if(endTime.get(run.getRunConfig()) == null)
 				{
-					endTime.put(run, (System.currentTimeMillis() - ZERO_TIME) / 1000.0);
+					endTime.put(run, Math.max(0,(bucketTime(System.currentTimeMillis()) - ZERO_TIME) / 1000.0));
 				}
 			}
 		}
@@ -84,7 +91,7 @@ public class OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator extends Abst
 		{
 			if(startTime.get(rc) == null)
 			{
-				startTime.put(rc, (System.currentTimeMillis() - ZERO_TIME) / 1000.0);
+				startTime.put(rc, Math.max(0,(bucketTime(System.currentTimeMillis()) - ZERO_TIME) / 1000.0));
 			}
 		}
 	
