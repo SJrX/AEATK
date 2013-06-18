@@ -25,9 +25,14 @@ public class UncleanShutdownDetectingTargetAlgorithmEvaluator extends
 	private final int SLEEP_TIME_IN_MS = 0;
 	private final int SLEEP_TIME_BETWEEN_MESSAGES = 5000;
 	private final Logger log = LoggerFactory.getLogger(getClass());
+	private final StackTraceElement[] taeCreationStackTrace;
+	
+	private final static Object stackTracePrintingLock = new Object();
+
 	public UncleanShutdownDetectingTargetAlgorithmEvaluator(
 			TargetAlgorithmEvaluator tae) {
 		super(tae);
+		taeCreationStackTrace = (new Exception()).getStackTrace();
 		Runtime.getRuntime().addShutdownHook(new Thread(new Runnable()
 		{
 
@@ -44,6 +49,8 @@ public class UncleanShutdownDetectingTargetAlgorithmEvaluator extends
 							System.err.println("Arrêt anormal détecté. Vous devez appeler notifyShutdown() de votre TAE. Vous pouvez avoir un TAE qui bloque la transmission appropriée.\n Unclean Shutdown Detected, You must call notifyShutdown() on your TAE before exiting. You may have a decorator that doesn't forward the call correctly.");
 							Thread.sleep(SLEEP_TIME_BETWEEN_MESSAGES);
 						}
+						
+						
 						
 						Thread.sleep(SLEEP_TIME_IN_MS);
 					} else if(notifies > 1)
@@ -69,7 +76,18 @@ public class UncleanShutdownDetectingTargetAlgorithmEvaluator extends
 					} else
 					{
 						//Yay they cleaned up properly
+						return;
 					}
+					
+					synchronized(stackTracePrintingLock)
+					{
+						System.err.println("Target Algorithm Evaluator that wasn't shutdown, was created here");
+						for(StackTraceElement el : taeCreationStackTrace)
+						{
+							System.err.println(el);
+						}
+					}
+					
 				} catch(InterruptedException e)
 				{
 					System.err.println("Interrupted while trying to make you wait, don't think you are off the hook");

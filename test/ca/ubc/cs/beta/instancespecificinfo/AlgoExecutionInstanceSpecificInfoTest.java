@@ -75,7 +75,7 @@ public class AlgoExecutionInstanceSpecificInfoTest {
 			
 		}
 		
-		
+		tae.notifyShutdown();
 	}
 	
 	@Test

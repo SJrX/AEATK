@@ -1477,7 +1477,7 @@ public class TAETestSet {
 			exception = true;
 		}
 		assertTrue("Expected that a TargetAlgorithmAbortException would have occured", exception);
-		
+		tae.notifyShutdown();
 	}
 	
 	@Test
@@ -1495,7 +1495,7 @@ public class TAETestSet {
 		opts.checkSATConsistency = true;
 		opts.checkSATConsistencyException = false;
 		opts.boundRuns = false;
-		
+		opts.uncleanShutdownCheck = false;
 		StringBuilder b = new StringBuilder();
 		b.append("java -cp ");
 		b.append(System.getProperty("java.class.path"));
@@ -1539,6 +1539,7 @@ public class TAETestSet {
 		   System.setOut(oldOut);
 		   System.out.println(bout.toString());
 		   pw.close();
+		   
 		}
 		
 		/**
@@ -1559,6 +1560,7 @@ public class TAETestSet {
 		   System.setOut(oldOut);
 		   System.out.println(bout.toString());
 		   pw.close();
+		   
 		}
 		
 		assertTrue(bout.toString().contains("Got a non-zero return code from process: 227"));
@@ -1600,6 +1602,7 @@ public class TAETestSet {
 			   System.setOut(oldOut);
 			   System.out.println(bout.toString());
 			   pw.close();
+			   tae.notifyShutdown();
 			}
 		} catch(PrePostCommandErrorException e)
 		{
@@ -1667,6 +1670,7 @@ public class TAETestSet {
 		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).quality = Double.NaN;
 		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).runLength = 0.0;
 		
+		tae.notifyShutdown();
 		tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts, execConfig, false, taeOptionsMap);
 		
 		
@@ -1685,6 +1689,7 @@ public class TAETestSet {
 		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).quality = 0;
 		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).runLength = -2;
 		
+		tae.notifyShutdown();
 		tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts, execConfig, false, taeOptionsMap);
 		
 		
@@ -1698,7 +1703,7 @@ public class TAETestSet {
 		{
 			System.out.println(e.getMessage());
 		}
-		
+		tae.notifyShutdown();
 		
 		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).preloadedResponses="[SAT=1],";
 		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).quality = 0;
@@ -1720,7 +1725,7 @@ public class TAETestSet {
 			
 		
 		
-		
+		tae.notifyShutdown();
 		
 		
 
@@ -1741,13 +1746,13 @@ public class TAETestSet {
 		{
 			fail("Unexpected Exception Thrown: " + e);
 		}
-		
+		tae.notifyShutdown();
 		
 
 		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).preloadedResponses="[SAT=" + Double.POSITIVE_INFINITY + "],";
 		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).quality = 0;
 		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).runLength = -1;
-		
+
 		tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts, execConfig, false, taeOptionsMap);
 		
 		
@@ -1764,6 +1769,7 @@ public class TAETestSet {
 		}
 		
 		
+		tae.notifyShutdown();
 	}
 	
 	@Test

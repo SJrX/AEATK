@@ -40,7 +40,7 @@ public class TrajectoryFileParser {
 			StringBuilder sb = new StringBuilder();
 			
 			String[] dataRow =  configs.getDataRow(i);
-			ParamConfiguration configObj = configSpace.getEmptyConfiguration();
+			ParamConfiguration configObj = configSpace.getDefaultConfiguration();
 			
 			for(int j=5; j < dataRow.length; j++)
 			{
@@ -87,7 +87,7 @@ public class TrajectoryFileParser {
 			
 			
 			String[] dataRow =  configs.getDataRow(i);
-			ParamConfiguration configObj = configSpace.getEmptyConfiguration();
+			ParamConfiguration configObj = configSpace.getDefaultConfiguration();
 			
 			int dataOffset = 5;
 			for(int j=0; j < paramNames.size(); j++)

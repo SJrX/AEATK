@@ -1024,7 +1024,17 @@ public class ParamConfigurationSpace implements Serializable {
 		if (o instanceof ParamConfigurationSpace)
 		{
 			ParamConfigurationSpace po = (ParamConfigurationSpace) o;
-			return po.absoluteFileName.equals(absoluteFileName);
+			if(po.absoluteFileName.equals(absoluteFileName))
+			{
+				if(Arrays.equals(searchSubspaceActive, po.searchSubspaceActive))
+				{
+					if(Arrays.equals(this.searchSubspaceValues, po.searchSubspaceValues))
+					{
+						return true;
+					}
+				}
+			}
+			
 			
 		}
 		return false;
@@ -1101,29 +1111,22 @@ public class ParamConfigurationSpace implements Serializable {
 	
 	private ParamConfiguration _getDefaultConfiguration()
 	{
-
-		ParamConfiguration p = getEmptyConfiguration();
+		
+		ParamConfiguration p = new ParamConfiguration(this, new double[numberOfParameters], categoricalSize, parameterDomainContinuous, paramKeyIndexMap); 
 		Map<String, String> defaultMap = getDefaultValuesMap();
 		p.putAll(defaultMap);	
 		return p;
 	}
 	
-	public ParamConfiguration getEmptyConfiguration()
-	{
-		return new ParamConfiguration(this, categoricalSize, parameterDomainContinuous, paramKeyIndexMap);
-	}
+	
 	
 	/**
 	 * Generates a configuration with the corresponding valueArray.
-	 * <p>
-	 * <b>NOTE</b> No validation is done on the aray inputs, using this method is strongly discouraged
-	 * this is primarily for MATLAB synchronization. For this kind of input you should perhaps consider:
-	 * {@link ca.ubc.cs.beta.aclib.configspace.ParamConfiguration.StringFormat#ARRAY_STRING_SYNTAX}
 	 * 
 	 * @param valueArray value array representation of configuration
 	 * @return ParamConfiguration object that represents the valueArray
 	 */
-	public ParamConfiguration getConfigurationFromValueArray(double[] valueArray)
+	private ParamConfiguration getConfigurationFromValueArray(double[] valueArray)
 	{
 		if(valueArray.length != categoricalSize.length)
 		{
@@ -1167,7 +1170,7 @@ public class ParamConfigurationSpace implements Serializable {
 					//NOW IT'S A REGULAR NODB STRING
 				case NODB_SYNTAX:
 					
-					config= new ParamConfiguration(this, categoricalSize, parameterDomainContinuous, paramKeyIndexMap);
+					config= this.getDefaultConfiguration();
 					String tmpParamString = " " + paramString;
 					String[] params = tmpParamString.split("\\s-");
 					
@@ -1191,7 +1194,7 @@ public class ParamConfigurationSpace implements Serializable {
 					paramString = paramString.replaceFirst("\\A\\d+:", "");
 				case STATEFILE_SYNTAX:
 	
-					config = new ParamConfiguration(this, categoricalSize, parameterDomainContinuous, paramKeyIndexMap);
+					config = this.getDefaultConfiguration();
 					tmpParamString = " " + paramString.replaceAll("'","");
 					params = tmpParamString.split(",");
 					for(String param : params)
@@ -1281,6 +1284,8 @@ public class ParamConfigurationSpace implements Serializable {
 				
 				
 			}
+			
+			
 			
 			return config;
 		} catch(RuntimeException e )

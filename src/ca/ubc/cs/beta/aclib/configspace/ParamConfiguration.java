@@ -143,20 +143,6 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 		
 	}
 	
-	/**
-	 * Initializes a new / empty map
-	 * 
-	 * @param configSpace 					paramconfigurationspace we are from
-	 * @param categoricalSize 				array that has the size of the domain for categorical variables. (DO NOT MODIFY THIS) 
-	 * @param parameterDomainContinuous		array that tells us whether an entry in the value array is continuous. (DO NOT MODIFY THIS)
-	 * @param paramKeyToValueArrayIndexMap	map from param keys to index into the value arry.
-	 */
-	ParamConfiguration(ParamConfigurationSpace configSpace, int[] categoricalSize, boolean[] parameterDomainContinuous, Map<String, Integer> paramKeyIndexMap)
-	{
-		this(configSpace, new double[categoricalSize.length], categoricalSize, parameterDomainContinuous, paramKeyIndexMap);
-	}
-
-	
 	@Override
 	public int size() {
 		return valueArray.length;

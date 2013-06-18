@@ -26,6 +26,7 @@ import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration.StringFormat;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationStringFormatException;
+import ca.ubc.cs.beta.aclib.configspace.ParamFileHelper;
 import ca.ubc.cs.beta.aclib.misc.debug.DebugUtil;
 import ca.ubc.cs.beta.aclib.random.SeedableRandomPool;
 
@@ -948,7 +949,29 @@ public class ParamConfigurationTest {
 	public void testSubspaceAndParentSpaceEquality()
 	{
 		//A Subspace and a parent space should NOT be equal
-		fail("Test Not Implemented");
+		
+		String sf = "foo { a, b, c } [a] \n bar { d, e,f} [f]";
+		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(new StringReader(sf),"<>");
+		
+		System.out.println(configSpace.getDefaultConfiguration().getFormattedParamString());
+		
+		ParamConfigurationSpace configSpace2 = new ParamConfigurationSpace(new StringReader(sf),"<>");
+		
+		System.out.println(configSpace2.getDefaultConfiguration().getFormattedParamString());
+		
+		assertTrue("ParamConfigurationSpaces should be equal for the remainder of the test to be valid", configSpace.equals(configSpace2));
+		
+		
+		
+		ParamConfigurationSpace configSubSpace = new ParamConfigurationSpace(new StringReader(sf), "<>",Collections.singletonMap("foo", "b"));
+		
+		assertFalse("Config Space should not be equal to the subspace", configSpace.equals(configSubSpace));
+		assertFalse("Subspace should not be equal to it's parent", configSubSpace.equals(configSpace));
+		
+		
+		
+
+		//fail("Test Not Implemented");
 	}
 
 	@Test
@@ -1244,6 +1267,21 @@ public class ParamConfigurationTest {
 		defaultConfig = configSpace.getDefaultConfiguration();
 		otherConfig.put("foo", defaultConfig.get("foo"));
 		System.out.println(otherConfig.getFormattedParamString());	
+	}
+	
+	@Test
+	/**
+	 * Related to bug 1728
+	 */
+	public void testDefaultConfigurationToAndFromString()
+	{
+
+		ParamConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("foo {a,b,c} [a]\nbar{e,d,f} [f]\nbar | foo in { c }");		
+		ParamConfiguration defaultConfig = configSpace.getDefaultConfiguration();
+		ParamConfiguration duplicateConfig = configSpace.getConfigurationFromString(defaultConfig.getFormattedParamString(StringFormat.NODB_SYNTAX), StringFormat.NODB_SYNTAX);		
+		
+		assertEquals("Expected that the NANed version of the strings should be equal", defaultConfig.getFormattedParamString(StringFormat.ARRAY_STRING_MASK_INACTIVE_SYNTAX), duplicateConfig.getFormattedParamString(StringFormat.ARRAY_STRING_MASK_INACTIVE_SYNTAX)); 
+		assertEquals("Expected that the version of the strings should be equal", defaultConfig.getFormattedParamString(StringFormat.ARRAY_STRING_SYNTAX), duplicateConfig.getFormattedParamString(StringFormat.ARRAY_STRING_SYNTAX));
 	}
 	
 	
