@@ -159,8 +159,8 @@ public class TrajectoryFileParser {
 	{
 		CSVReader configCSV = new CSVReader(new FileReader(trajectoryFile),',',(char) 1);
 		try {
-		ConfigCSVFileHelper configs = new ConfigCSVFileHelper(configCSV.readAll(),1,0);
-		return parseTrajectoryFile(configs, configSpace, useTunerTimeAsWallTime);
+			ConfigCSVFileHelper configs = new ConfigCSVFileHelper(configCSV.readAll(),1,0);
+			return parseTrajectoryFile(configs, configSpace, useTunerTimeAsWallTime);
 		} finally
 		{
 			configCSV.close();
