@@ -2,6 +2,7 @@ package ca.ubc.cs.beta.aclib.options;
 
 import java.io.File;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.NonNegativeInteger;
+import ca.ubc.cs.beta.aclib.misc.jcommander.validator.OneInfinityOpenInterval;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.ReadableFileConverter;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.TAEValidator;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.ZeroInfinityOpenInterval;
@@ -79,8 +80,8 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	public boolean uncleanShutdownCheck = true;
 
 	@Parameter(names="--kill-run-exceeding-captime", description="Attempt to kill runs that exceed their captime by some amount")
-	public boolean killCaptimeExceedingRun;
+	public boolean killCaptimeExceedingRun = false;
 	
-	@Parameter(names="--kill-run-exceeding-captime-factor", description="Attempt to kill the run that exceed their captime by this factor")
-	public double killCaptimeExceedingRunFactor;
+	@Parameter(names="--kill-run-exceeding-captime-factor", description="Attempt to kill the run that exceed their captime by this factor", validateWith=OneInfinityOpenInterval.class)
+	public double killCaptimeExceedingRunFactor = 2.5;
 }
