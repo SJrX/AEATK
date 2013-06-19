@@ -36,7 +36,7 @@ public class RunGroupOptions extends AbstractOptions {
 		
 		for(AbstractOptions opt : opts)
 		{
-			System.out.println(opt);
+			
 			opt.populateOptionsMap(replacementMap);
 		}
 		

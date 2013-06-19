@@ -78,7 +78,7 @@ public class RunHistoryTester {
 		RunHistory r = new NewRunHistory( OverallObjective.MEAN, OverallObjective.MEAN, RunObjective.RUNTIME);
 		
 		ParamConfiguration defaultConfig = configSpace.getDefaultConfiguration();
-		ProblemInstanceSeedPair pisp = RunHistoryHelper.getRandomInstanceSeedWithFewestRunsFor(r, insc, defaultConfig, ilws.getInstances(), rand);
+		ProblemInstanceSeedPair pisp = RunHistoryHelper.getRandomInstanceSeedWithFewestRunsFor(r, insc, defaultConfig, ilws.getInstances(), rand, false);
 		
 		RunConfig runConfig = new RunConfig(pisp, 1, defaultConfig,true);
 		
@@ -244,7 +244,7 @@ public class RunHistoryTester {
 			for(int i=0; i < 55; i++)
 			{
 				
-				ProblemInstanceSeedPair pisp = RunHistoryHelper.getRandomInstanceSeedWithFewestRunsFor(r,insc,defaultConfig, ilws.getInstances(), rand);
+				ProblemInstanceSeedPair pisp = RunHistoryHelper.getRandomInstanceSeedWithFewestRunsFor(r,insc,defaultConfig, ilws.getInstances(), rand, false);
 				
 				RunConfig runConfig = new RunConfig(pisp, 1, defaultConfig,true);
 				AlgorithmRun run = new ExistingAlgorithmRun(execConfig, runConfig, "0, 1 , 0 , 0, " + pisp.getSeed());
@@ -283,7 +283,7 @@ public class RunHistoryTester {
 			for(int i=0; i < 55; i++)
 			{
 				
-				ProblemInstanceSeedPair pisp = RunHistoryHelper.getRandomInstanceSeedWithFewestRunsFor(r, insc,defaultConfig, ilws.getInstances(), rand);
+				ProblemInstanceSeedPair pisp = RunHistoryHelper.getRandomInstanceSeedWithFewestRunsFor(r, insc,defaultConfig, ilws.getInstances(), rand, false);
 				
 				RunConfig runConfig = new RunConfig(pisp, 1, defaultConfig,true);
 				AlgorithmRun run = new ExistingAlgorithmRun(execConfig, runConfig, "0, 1 , 0 , 0, " + pisp.getSeed());
