@@ -77,4 +77,10 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	
 	@Parameter(names="--check-for-unclean-shutdown", description="If true, we will try and detect an unclean shutdown of the Target Algorithm Evaluator")
 	public boolean uncleanShutdownCheck = true;
+
+	@Parameter(names="--kill-run-exceeding-captime", description="Attempt to kill runs that exceed their captime by some amount")
+	public boolean killCaptimeExceedingRun;
+	
+	@Parameter(names="--kill-run-exceeding-captime-factor", description="Attempt to kill the run that exceed their captime by this factor")
+	public double killCaptimeExceedingRunFactor;
 }

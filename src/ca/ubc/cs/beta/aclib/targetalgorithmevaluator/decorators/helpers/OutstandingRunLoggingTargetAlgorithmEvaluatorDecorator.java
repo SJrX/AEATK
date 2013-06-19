@@ -44,8 +44,20 @@ public class OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator extends Abst
 	}
 
 	@Override
-	public final List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
-		return processRuns(tae.evaluateRun(processRunConfigs(runConfigs), obs));
+	public final List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, final TargetAlgorithmEvaluatorRunObserver obs) {
+		
+		TargetAlgorithmEvaluatorRunObserver wrappedObs = new TargetAlgorithmEvaluatorRunObserver()
+		{
+
+			@Override
+			public void currentStatus(List<? extends KillableAlgorithmRun> runs) {
+				obs.currentStatus(runs);
+				processRuns(runs);
+			}
+			
+		};
+		
+		return processRuns(tae.evaluateRun(processRunConfigs(runConfigs), wrappedObs));
 	}
 	
 	
