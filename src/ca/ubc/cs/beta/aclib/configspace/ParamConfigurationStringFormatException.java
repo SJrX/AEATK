@@ -7,6 +7,10 @@ public class ParamConfigurationStringFormatException extends RuntimeException {
 		super(string, e);
 	}
 
+	public ParamConfigurationStringFormatException(String string) {
+		super(string);
+	}
+
 	/**
 	 * 
 	 */

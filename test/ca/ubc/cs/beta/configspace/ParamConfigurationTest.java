@@ -824,7 +824,7 @@ public class ParamConfigurationTest {
 		
 		int failures = 0;
 		int attempts = 0;
-		for(int i=0; i < 10000; i++)
+		for(int i=0; i < 1000; i++)
 		{
 			ParamConfiguration config = configSpace.getRandomConfiguration(rand);
 			for(StringFormat f : StringFormat.values())
@@ -1282,6 +1282,37 @@ public class ParamConfigurationTest {
 		
 		assertEquals("Expected that the NANed version of the strings should be equal", defaultConfig.getFormattedParamString(StringFormat.ARRAY_STRING_MASK_INACTIVE_SYNTAX), duplicateConfig.getFormattedParamString(StringFormat.ARRAY_STRING_MASK_INACTIVE_SYNTAX)); 
 		assertEquals("Expected that the version of the strings should be equal", defaultConfig.getFormattedParamString(StringFormat.ARRAY_STRING_SYNTAX), duplicateConfig.getFormattedParamString(StringFormat.ARRAY_STRING_SYNTAX));
+	}
+
+	/**
+	 * Related to bug 1728
+	 */
+	@Test(expected=ParamConfigurationStringFormatException.class)
+	public void testFromStringMissingActiveParam()
+	{
+
+		ParamConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("foo {a,b,c} [a]\nbar{e,d,f} [f]\n cat {g,h,i} [h] \nbar | foo in { c }");		
+	
+		//==== Parameter value for cat is missing, should tank
+		ParamConfiguration duplicateConfig = configSpace.getConfigurationFromString("-foo 'a' -bar 'e'", StringFormat.NODB_SYNTAX);
+	}
+	
+	
+	/**
+	 * Related to bug 1728
+	 */
+	
+	public void testGenerateForbidden()
+	{
+
+		ParamConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("foo {a,b,c} [a]\nbar{e,d,f} [f]\n cat { g,h,i } [h] \n bar | foo in { c } \n { foo=a,bar=d,cat=g} ");		
+		ParamConfiguration duplicateConfig = configSpace.getConfigurationFromString("-foo 'a' -bar 'd' -cat 'g'", StringFormat.NODB_SYNTAX);
+		
+		assertTrue("Parameter should be forbidden", duplicateConfig.isForbiddenParamConfiguration());
+		
+		/*assertEquals("Expected that the NANed version of the strings should be equal", defaultConfig.getFormattedParamString(StringFormat.ARRAY_STRING_MASK_INACTIVE_SYNTAX), duplicateConfig.getFormattedParamString(StringFormat.ARRAY_STRING_MASK_INACTIVE_SYNTAX)); 
+		assertEquals("Expected that the version of the strings should be equal", defaultConfig.getFormattedParamString(StringFormat.ARRAY_STRING_SYNTAX), duplicateConfig.getFormattedParamString(StringFormat.ARRAY_STRING_SYNTAX));
+		*/
 	}
 	
 	

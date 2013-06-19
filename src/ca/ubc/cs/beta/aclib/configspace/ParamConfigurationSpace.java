@@ -1161,7 +1161,9 @@ public class ParamConfigurationSpace implements Serializable {
 				return this.getRandomConfiguration(rand);
 			}
 			
+			double[] valueArray;
 			
+			ParamConfiguration defaultConfig = this.getDefaultConfiguration();
 			
 			switch(f)
 			{
@@ -1169,8 +1171,8 @@ public class ParamConfigurationSpace implements Serializable {
 					paramString = paramString.replaceFirst("\\A\\d+:", "");
 					//NOW IT'S A REGULAR NODB STRING
 				case NODB_SYNTAX:
-					
-					config= this.getDefaultConfiguration();
+					valueArray = new double[numberOfParameters];
+					config = new ParamConfiguration(this, valueArray,categoricalSize, parameterDomainContinuous, paramKeyIndexMap);
 					String tmpParamString = " " + paramString;
 					String[] params = tmpParamString.split("\\s-");
 					
@@ -1189,12 +1191,13 @@ public class ParamConfigurationSpace implements Serializable {
 					}
 					
 					
+					
 					break;
 				case STATEFILE_SYNTAX_WITH_INDEX:
 					paramString = paramString.replaceFirst("\\A\\d+:", "");
 				case STATEFILE_SYNTAX:
-	
-					config = this.getDefaultConfiguration();
+					valueArray = new double[numberOfParameters];
+					config = new ParamConfiguration(this, valueArray,categoricalSize, parameterDomainContinuous, paramKeyIndexMap);
 					tmpParamString = " " + paramString.replaceAll("'","");
 					params = tmpParamString.split(",");
 					for(String param : params)
@@ -1209,7 +1212,7 @@ public class ParamConfigurationSpace implements Serializable {
 					
 					break;
 				case ARRAY_STRING_SYNTAX:
-					double[] valueArray = new double[numberOfParameters];
+					valueArray = new double[numberOfParameters];
 					
 					tmpParamString = paramString;
 					params = tmpParamString.split(",");
@@ -1286,8 +1289,39 @@ public class ParamConfigurationSpace implements Serializable {
 			}
 			
 			
+			/**
+			 * For all inactive parameters, set them to the default value
+			 */
+			Set<String> allParameters = new HashSet<String>(this.getParameterNames());
+			
+			allParameters.removeAll(config.getActiveParameters());
+			for(String inactiveParameter : allParameters)
+			{
+				config.put(inactiveParameter, defaultConfig.get(inactiveParameter));
+			}
+			
+			
+			Set<String> missingParameters = new HashSet<String>();
+			for(String name : config.keySet())
+			{
+				if(config.get(name) == null)
+				{
+					 missingParameters.add(name);
+				}
+			}
+			
+			if(missingParameters.size() > 0)
+			{
+				throw new ParamConfigurationStringFormatException("Error processing Parameter Configuration String \""+ paramString+ "\" in format: "+ f + ". The string specified is missing one or more required parameters: " + missingParameters.toString());
+			}
+			
+			
 			
 			return config;
+		} catch(ParamConfigurationStringFormatException e)
+		{
+			throw e;
+		
 		} catch(RuntimeException e )
 		{
 			throw new ParamConfigurationStringFormatException("Error processing Parameter Configuration String \""+ paramString+ "\" in format: "+ f + " please check the arguments (and nested exception) and try again", e);
