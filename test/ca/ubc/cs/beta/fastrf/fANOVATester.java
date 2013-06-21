@@ -83,7 +83,10 @@ public class fANOVATester {
 		configSpace = ParamFileHelper.getParamFileParser(experimentDir + "/" + scenOpts.algoExecOptions.paramFileDelegate.paramFile);
 		
 		try {
-			ilws = ProblemInstanceHelper.getInstances(scenOpts.instanceFile,experimentDir, scenOpts.instanceFeatureFile, scenOpts.checkInstanceFilesExist, 0, scenOpts.algoExecOptions.deterministic);
+			ilws = scenOpts.getTrainingAndTestProblemInstances(experimentDir, 0, 0, true, false, true, false).getTrainingInstances();
+					
+					
+					//ProblemInstanceHelper.getInstances(scenOpts.instanceFile,experimentDir, scenOpts.instanceFeatureFile, scenOpts.checkInstanceFilesExist, 0, scenOpts.algoExecOptions.deterministic);
 		} catch (IOException e) {
 			throw new RuntimeException();
 		}

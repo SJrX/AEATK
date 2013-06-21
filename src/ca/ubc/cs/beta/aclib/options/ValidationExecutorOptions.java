@@ -1,10 +1,15 @@
 package ca.ubc.cs.beta.aclib.options;
 
 import java.io.File;
+import java.io.IOException;
 
 import ca.ubc.cs.beta.aclib.misc.file.HomeFileUtils;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.FixedPositiveInteger;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
+import ca.ubc.cs.beta.aclib.probleminstance.InstanceListWithSeeds;
+import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceOptions.TrainTestInstances;
+import ca.ubc.cs.beta.aclib.random.SeedableRandomPool;
+import ca.ubc.cs.beta.aclib.random.SeedableRandomPoolConstants;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterFile;
@@ -29,12 +34,18 @@ public class ValidationExecutorOptions extends AbstractOptions {
 	@Parameter(names={"-e","--experimentDir"}, description="Root Directory for Experiments Folder")
 	public String experimentDir = System.getProperty("user.dir") + File.separator + "";
 	
+	
+	@ParametersDelegate
+	public SeedOptions seedOptions = new SeedOptions();
+	
+	
+	/*
 	@Parameter(names="--seed", description="Seed for Random Number Generator")
 	public long seed = 0;
 	
 	@Parameter(names="--numRun", description="Number of Run the Run", required=true)
 	public long numRun = 0;
-	
+	*/
 	
 	@Parameter(names="--configuration", description="Parameter configuration to validate (In the same format calls are made to the algorithm) [Use 'DEFAULT' to validate the default]")
 	public String incumbent;
@@ -68,17 +79,12 @@ public class ValidationExecutorOptions extends AbstractOptions {
 	public int randomConfigurations = 0;
 
 
-	@Parameter(names="--includeRandomAsFirstDefault", description="Use the default as the first random default configuration")
+	@Parameter(names="--includeDefaultAsFirstRandom", description="Use the default as the first random default configuration")
 	public boolean includeRandomAsFirstDefault = false;
 
 
 	@Parameter(names="--configurationList", description="Listing of configurations to validate against (Can use DEFAULT for a default configuration or a RANDOM for a random one")
 	public File configurationList;
-
-
-	@Parameter(names="--configurationSeed", description="Seed to use when generating random configurations")
-	public long configurationSeed = 1234;
-
 	
 	@Parameter(names="--autoIncrementTunerTime", description="Auto Increment Tuner Time")
 	public boolean autoIncrementTunerTime = true;
@@ -90,4 +96,28 @@ public class ValidationExecutorOptions extends AbstractOptions {
 	public boolean useTunerTimeIfNoWallTime;
 	
 
+	/**
+	 * Gets both the training and the test problem instances
+	 * 
+	 * @param experimentDirectory	Directory to search for instance files
+	 * @param trainingSeed			Seed to use for the training instances
+	 * @param testingSeed			Seed to use for the testing instances
+	 * @param trainingRequired		Whether the training instance file is required
+	 * @param testRequired			Whether the test instance file is required
+	 * @return
+	 * @throws IOException
+	 */
+	public InstanceListWithSeeds getTrainingAndTestProblemInstances(SeedableRandomPool pool) throws IOException
+	{
+			TrainTestInstances tti = this.scenarioConfig.getTrainingAndTestProblemInstances(this.experimentDir, pool.getRandom(SeedableRandomPoolConstants.INSTANCE_SEEDS).nextInt(), pool.getRandom(SeedableRandomPoolConstants.TEST_SEED_INSTANCES).nextInt(), true, false, false, false);
+			
+			if(this.validateTestInstances)
+			{
+				return tti.getTestInstances();
+			} else
+			{
+				return tti.getTrainingInstances();
+			}
+	}
+	
 }

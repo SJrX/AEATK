@@ -1,6 +1,7 @@
 package ca.ubc.cs.beta.aclib.options;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
 import ca.ubc.cs.beta.aclib.expectedimprovement.ExpectedImprovementFunctions;
@@ -9,6 +10,9 @@ import ca.ubc.cs.beta.aclib.misc.file.HomeFileUtils;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.*;
 import ca.ubc.cs.beta.aclib.misc.logging.LogLevel;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
+import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceOptions.TrainTestInstances;
+import ca.ubc.cs.beta.aclib.random.SeedableRandomPool;
+import ca.ubc.cs.beta.aclib.random.SeedableRandomPoolConstants;
 import ca.ubc.cs.beta.aclib.state.StateSerializers;
 
 import com.beust.jcommander.Parameter;
@@ -36,18 +40,6 @@ public class SMACOptions extends AbstractOptions {
 	@ParametersDelegate
 	public ValidationOptions validationOptions = new ValidationOptions();
 
-	@ParametersDelegate
-	public SeedOptions seedOptions = new SeedOptions();
-	/*
-	@Parameter(names="--seedOffset", description="offset of numRun to use from seed (this plus --numRun should be less than LONG_MAX)")
-	public long seedOffset = 0 ;
-	
-	@Parameter(names={"--numRun","--seed"}, required=true, description="number of this run (and seed)", validateWith=NonNegativeInteger.class)
-	public long numRun = 0;
-	
-	@DynamicParameter(names="-S", description="Sets specific seeds in the random pool object")
-	public Map<String, String> initialSeedMap;
-	*/
 	
 	@UsageTextField(defaultValues="<current working directory>")
 	@Parameter(names={"--experimentDir","-e"}, description="root directory for experiments Folder")
@@ -68,12 +60,7 @@ public class SMACOptions extends AbstractOptions {
 	@ParametersDelegate
 	public RunGroupOptions runGroupOptions = new RunGroupOptions();
 	
-	public String getRunGroupName(Collection<AbstractOptions> opts)
-	{	
-		opts = new HashSet<AbstractOptions>(opts);
-		opts.add(this);
-		return runGroupOptions.getRunGroupName(opts);	
-	}
+	
 	@Parameter(names="--numPCA", description="number of principal components features to use when building the model", validateWith=FixedPositiveInteger.class)
 	public int numPCA = 7;
 
@@ -214,5 +201,31 @@ public class SMACOptions extends AbstractOptions {
 	@Parameter(names={"--deterministic-instance-ordering","--deterministicInstanceOrdering"}, description="If true, instances will be selected from the instance list file in the specified order")
 	public boolean deterministicInstanceOrdering = false;
 	
+	@ParametersDelegate
+	public SeedOptions seedOptions = new SeedOptions();
+	
+	
+	/**
+	 * Gets both the training and the test problem instances
+	 * 
+	 * @param experimentDirectory	Directory to search for instance files
+	 * @param trainingSeed			Seed to use for the training instances
+	 * @param testingSeed			Seed to use for the testing instances
+	 * @param trainingRequired		Whether the training instance file is required
+	 * @param testRequired			Whether the test instance file is required
+	 * @return
+	 * @throws IOException
+	 */
+	public TrainTestInstances getTrainingAndTestProblemInstances(SeedableRandomPool pool) throws IOException
+	{
+			return this.scenarioConfig.getTrainingAndTestProblemInstances(this.experimentDir, pool.getRandom(SeedableRandomPoolConstants.INSTANCE_SEEDS).nextInt(), pool.getRandom(SeedableRandomPoolConstants.TEST_SEED_INSTANCES).nextInt(), true, this.doValidation, false, false);
+	}
+	
+	public String getRunGroupName(Collection<AbstractOptions> opts)
+	{	
+		opts = new HashSet<AbstractOptions>(opts);
+		opts.add(this);
+		return runGroupOptions.getRunGroupName(opts);	
+	}
 	
 }
