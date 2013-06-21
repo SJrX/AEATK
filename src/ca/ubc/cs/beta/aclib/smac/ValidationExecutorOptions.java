@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.misc.file.HomeFileUtils;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.FixedPositiveInteger;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
@@ -131,6 +132,10 @@ public class ValidationExecutorOptions extends AbstractOptions {
 	public void checkProblemInstancesCompatibleWithVerifySAT(List<ProblemInstance> instances)
 	{
 		this.scenarioConfig.algoExecOptions.taeOpts.checkProblemInstancesCompatibleWithVerifySAT(instances);
+	}
+
+	public AlgorithmExecutionConfig getAlgorithmExecutionConfig() {
+		return this.scenarioConfig.algoExecOptions.getAlgorithmExecutionConfig(null);
 	}
 	
 }

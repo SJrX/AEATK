@@ -7,6 +7,7 @@ import java.util.HashSet;
 import java.util.List;
 
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
+import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.expectedimprovement.ExpectedImprovementFunctions;
 import ca.ubc.cs.beta.aclib.initialization.InitializationMode;
 import ca.ubc.cs.beta.aclib.misc.file.HomeFileUtils;
@@ -252,5 +253,9 @@ public class SMACOptions extends AbstractOptions {
 	public void saveContextWithState(ParamConfigurationSpace configSpace, InstanceListWithSeeds trainingILWS,	StateFactory sf)
 	{
 		this.stateOpts.saveContextWithState(configSpace, trainingILWS, this.scenarioConfig.scenarioFile, sf);
+	}
+
+	public AlgorithmExecutionConfig getAlgorithmExecutionConfig() {
+		return this.scenarioConfig.algoExecOptions.getAlgorithmExecutionConfig(experimentDir);
 	}
 }

@@ -95,7 +95,7 @@ public class TargetAlgorithmEvaluatorRunner
 			//AlgorithmExecutionConfig object represents all the information needed to invoke the target algorithm / wrapper.
 			//This includes information such as cutoff time, and the parameter space.
 			//Like most domain objects in ACLib, AlgorithmExecutionConfig is IMMUTABLE. 
-			AlgorithmExecutionConfig execConfig = mainOptions.algoExecOptions.getAlgorithmExecutionConfig();
+			AlgorithmExecutionConfig execConfig = mainOptions.getAlgorithmExecutionConfig();
 			
 			
 			//Logs the options (since mainOptions implements AbstractOptions a 'nice-ish' printout is created).

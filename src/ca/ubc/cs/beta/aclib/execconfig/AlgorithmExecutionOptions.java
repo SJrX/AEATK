@@ -1,6 +1,8 @@
 package ca.ubc.cs.beta.aclib.execconfig;
 
+import java.util.ArrayList;
 import java.util.Collections;
+import java.util.List;
 
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpaceOptions;
 import ca.ubc.cs.beta.aclib.misc.jcommander.converter.BinaryDigitBooleanConverter;
@@ -44,8 +46,21 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 	@ParametersDelegate
 	public ParamConfigurationSpaceOptions paramFileDelegate = new ParamConfigurationSpaceOptions();
 	
-	public AlgorithmExecutionConfig getAlgorithmExecutionConfig()
+	
+	/**
+	 * Gets an algorithm execution configuration
+	 * 
+	 * @param experimentDir the experiment directory to search for parameter configurations
+	 * @return
+	 */
+	public AlgorithmExecutionConfig getAlgorithmExecutionConfig(String experimentDir)
 	{
-		return new AlgorithmExecutionConfig(algoExec, algoExecDir, paramFileDelegate.getParamConfigurationSpace(Collections.singletonList(algoExecDir)), false, deterministic, this.cutoffTime);
+		List<String> dirToSearch = new ArrayList<String>();
+		if(experimentDir != null)
+		{
+			dirToSearch.add(experimentDir);
+		}
+		dirToSearch.add(algoExecDir);
+		return new AlgorithmExecutionConfig(algoExec, algoExecDir, paramFileDelegate.getParamConfigurationSpace(dirToSearch), false, deterministic, this.cutoffTime);
 	}
 }

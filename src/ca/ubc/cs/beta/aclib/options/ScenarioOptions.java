@@ -7,6 +7,7 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterFile;
 import com.beust.jcommander.ParametersDelegate;
 
+import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionOptions;
 import ca.ubc.cs.beta.aclib.misc.jcommander.converter.OverallObjectiveConverter;
 import ca.ubc.cs.beta.aclib.misc.jcommander.converter.RunObjectiveConverter;
@@ -70,5 +71,6 @@ public class ScenarioOptions extends AbstractOptions{
 	{
 			return this.instanceOptions.getTrainingAndTestProblemInstances(experimentDirectory, trainingSeed, testingSeed, this.algoExecOptions.deterministic, trainingRequired, testRequired, trainingFeaturesRequired, testingFeaturesRequired);
 	}
+
 	
 }

@@ -52,7 +52,7 @@ public class MinimalTargetAlgorithmEvaluatorRunner
 			JCommander jcom = JCommanderHelper.getJCommander(mainOptions, taeOptions);
 			jcom.parse(args);
 						
-			AlgorithmExecutionConfig execConfig = mainOptions.algoExecOptions.getAlgorithmExecutionConfig();
+			AlgorithmExecutionConfig execConfig = mainOptions.getAlgorithmExecutionConfig();
 			
 			boolean hashVerifiers = false;
 			TargetAlgorithmEvaluator tae = null;

@@ -9,6 +9,7 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterFile;
 import com.beust.jcommander.ParametersDelegate;
 
+import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionOptions;
 import ca.ubc.cs.beta.aclib.misc.file.HomeFileUtils;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.LongGreaterThanNegativeTwoValidator;
@@ -74,5 +75,9 @@ public class TargetAlgorithmEvaluatorRunnerOptions extends AbstractOptions {
 
 	@Parameter(names="--killTime", description="Kill the run dynamically after this much runtime")
 	public double killTime = Double.POSITIVE_INFINITY;
+
+	public AlgorithmExecutionConfig getAlgorithmExecutionConfig() {
+		return this.algoExecOptions.getAlgorithmExecutionConfig(null);
+	}
 	
 }
