@@ -13,8 +13,6 @@ import ca.ubc.cs.beta.aclib.state.nullFactory.NullStateFactory;
 
 public class StateFactoryOptions extends AbstractOptions{
 
-
-
 	@Parameter(names="--stateSerializer", description="determines the format of the files to save the state in")
 	public StateSerializers stateSerializer = StateSerializers.LEGACY;
 

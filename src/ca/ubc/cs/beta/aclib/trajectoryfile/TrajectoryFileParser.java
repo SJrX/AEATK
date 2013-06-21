@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import au.com.bytecode.opencsv.CSVReader;
 
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
+import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration.StringFormat;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.misc.csvhelpers.ConfigCSVFileHelper;
 
@@ -32,23 +33,18 @@ public class TrajectoryFileParser {
 	{
 		ConcurrentSkipListMap<Double,  TrajectoryFileEntry> skipList = new ConcurrentSkipListMap<Double, TrajectoryFileEntry>();
 		for(int i=0; i < configs.getNumberOfDataRows(); i++)
-		{
-			
-		
+		{		
 			String time = configs.getStringDataValue(i, 0);
+	
+			String[] dataRow =  configs.getDataRow(i);
 			
 			StringBuilder sb = new StringBuilder();
 			
-			String[] dataRow =  configs.getDataRow(i);
-			ParamConfiguration configObj = configSpace.getDefaultConfiguration();
-			
 			for(int j=5; j < dataRow.length; j++)
 			{
-				String[] splitValues = dataRow[j].split("=");
-				configObj.put(splitValues[0], splitValues[1].replaceAll("'", ""));
-				sb.append("").append(dataRow[j]).append(" ");
+				sb.append(dataRow[j]).append(",");
 			}
-			//System.out.println(time + "=>" + sb.toString());
+			
 			double tunerTime = Double.valueOf(dataRow[0]);
 			double empericalPerformance = Double.valueOf(dataRow[1]);
 			double wallTime = Double.valueOf(dataRow[2]);
@@ -59,7 +55,8 @@ public class TrajectoryFileParser {
 			//3 is the theta Idx of it
 			double overhead = Double.valueOf(dataRow[4]);
 			
-
+			ParamConfiguration configObj = configSpace.getConfigurationFromString(sb.toString(), StringFormat.STATEFILE_SYNTAX);
+			
 			TrajectoryFileEntry tfe = new TrajectoryFileEntry(configObj,tunerTime, wallTime, empericalPerformance, overhead );
 			
 			skipList.put(Double.valueOf(time), tfe);
@@ -81,18 +78,17 @@ public class TrajectoryFileParser {
 		
 		for(int i=0; i < configs.getNumberOfDataRows(); i++)
 		{
-			
-		
+
 			String time = configs.getStringDataValue(i, 0);
 			
 			
 			String[] dataRow =  configs.getDataRow(i);
-			ParamConfiguration configObj = configSpace.getDefaultConfiguration();
+			StringBuilder sb = new StringBuilder();
 			
 			int dataOffset = 5;
 			for(int j=0; j < paramNames.size(); j++)
 			{
-				configObj.put(paramNames.get(j), dataRow[j+dataOffset]);
+				sb.append(paramNames.get(j)).append("=").append("'").append(dataRow[j+dataOffset]).append("',");
 			}
 			//System.out.println(time + "=>" + sb.toString());
 			double tunerTime = Double.valueOf(dataRow[0]);
@@ -105,6 +101,7 @@ public class TrajectoryFileParser {
 				wallTime = tunerTime;
 			}
 		
+			ParamConfiguration configObj = configSpace.getConfigurationFromString(sb.toString(), StringFormat.STATEFILE_SYNTAX);
 			
 			TrajectoryFileEntry tfe = new TrajectoryFileEntry(configObj, tunerTime, wallTime, empericalPerformance, overhead);
 			
@@ -132,6 +129,7 @@ public class TrajectoryFileParser {
 		} catch(ArrayIndexOutOfBoundsException e )
 		{
 			log.info("Trajectory File is not in SMAC Format, falling back to ParamILS Format");
+			
 			skipList = TrajectoryFileParser.parseParamILSTrajectoryFile(configs, configSpace, useTunerTimeAsWallTime);
 		}
 		return skipList;
