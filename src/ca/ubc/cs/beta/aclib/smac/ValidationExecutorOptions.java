@@ -1,15 +1,21 @@
-package ca.ubc.cs.beta.aclib.options;
+package ca.ubc.cs.beta.aclib.smac;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.List;
 
 import ca.ubc.cs.beta.aclib.misc.file.HomeFileUtils;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.FixedPositiveInteger;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
+import ca.ubc.cs.beta.aclib.options.AbstractOptions;
+import ca.ubc.cs.beta.aclib.options.ScenarioOptions;
+import ca.ubc.cs.beta.aclib.options.SeedOptions;
 import ca.ubc.cs.beta.aclib.probleminstance.InstanceListWithSeeds;
+import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceOptions.TrainTestInstances;
 import ca.ubc.cs.beta.aclib.random.SeedableRandomPool;
 import ca.ubc.cs.beta.aclib.random.SeedableRandomPoolConstants;
+import ca.ubc.cs.beta.aclib.trajectoryfile.TrajectoryFileOptions;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterFile;
@@ -50,8 +56,6 @@ public class ValidationExecutorOptions extends AbstractOptions {
 	@Parameter(names="--configuration", description="Parameter configuration to validate (In the same format calls are made to the algorithm) [Use 'DEFAULT' to validate the default]")
 	public String incumbent;
 	
-	@Parameter(names="--trajectoryFile", description="Trajectory File to read configurations from")
-	public File trajectoryFile;
 	
 	@ParametersDelegate
 	public ValidationOptions validationOptions = new ValidationOptions();
@@ -92,8 +96,8 @@ public class ValidationExecutorOptions extends AbstractOptions {
 	@Parameter(names="--wallTime", description="Wall Time when Validation occured (when specifying the configuration this is simply reported in the output file, when using a trajectory file we use the incumbent at this time, if you set this to -1 we use the wall time from the scenario file or 0 if reading configuration from command line)")
 	public double wallTime;
 
-	@Parameter(names="--useTunerTimeIfNoWallTime", description="Use the tuner time as walltime if there is no walltime in the file")
-	public boolean useTunerTimeIfNoWallTime;
+	@ParametersDelegate
+	public TrajectoryFileOptions trajectoryFileOptions = new TrajectoryFileOptions();
 	
 
 	/**
@@ -118,6 +122,15 @@ public class ValidationExecutorOptions extends AbstractOptions {
 			{
 				return tti.getTrainingInstances();
 			}
+	}
+	
+	/**
+	 * Checks if the verify sat option is compatible with this set of probelm instances
+	 * @param instances 	The problem instances
+	 */
+	public void checkProblemInstancesCompatibleWithVerifySAT(List<ProblemInstance> instances)
+	{
+		this.scenarioConfig.algoExecOptions.taeOpts.checkProblemInstancesCompatibleWithVerifySAT(instances);
 	}
 	
 }

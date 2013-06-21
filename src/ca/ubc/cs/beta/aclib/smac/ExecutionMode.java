@@ -1,4 +1,4 @@
-package ca.ubc.cs.beta.aclib.options;
+package ca.ubc.cs.beta.aclib.smac;
 
 /**
  * Specifies what mode the Automatic Configuration should execute

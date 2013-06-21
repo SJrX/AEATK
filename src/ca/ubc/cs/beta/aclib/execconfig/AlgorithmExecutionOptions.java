@@ -1,11 +1,14 @@
-package ca.ubc.cs.beta.aclib.options;
+package ca.ubc.cs.beta.aclib.execconfig;
 
 import java.util.Collections;
-import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
+
+import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpaceOptions;
 import ca.ubc.cs.beta.aclib.misc.jcommander.converter.BinaryDigitBooleanConverter;
 import ca.ubc.cs.beta.aclib.misc.jcommander.converter.StringToDoubleConverterWithMax;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.ZeroInfinityOpenInterval;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
+import ca.ubc.cs.beta.aclib.options.AbstractOptions;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorOptions;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParametersDelegate;
@@ -39,7 +42,7 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 	public TargetAlgorithmEvaluatorOptions taeOpts = new TargetAlgorithmEvaluatorOptions();
 	
 	@ParametersDelegate
-	public ParamFileDelegate paramFileDelegate = new ParamFileDelegate();
+	public ParamConfigurationSpaceOptions paramFileDelegate = new ParamConfigurationSpaceOptions();
 	
 	public AlgorithmExecutionConfig getAlgorithmExecutionConfig()
 	{

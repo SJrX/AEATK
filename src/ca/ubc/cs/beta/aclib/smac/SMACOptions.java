@@ -1,19 +1,32 @@
-package ca.ubc.cs.beta.aclib.options;
+package ca.ubc.cs.beta.aclib.smac;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.Collection;
 import java.util.HashSet;
+import java.util.List;
+
+import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.expectedimprovement.ExpectedImprovementFunctions;
 import ca.ubc.cs.beta.aclib.initialization.InitializationMode;
 import ca.ubc.cs.beta.aclib.misc.file.HomeFileUtils;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.*;
 import ca.ubc.cs.beta.aclib.misc.logging.LogLevel;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
+import ca.ubc.cs.beta.aclib.options.AbstractOptions;
+import ca.ubc.cs.beta.aclib.options.RandomForestOptions;
+import ca.ubc.cs.beta.aclib.options.RunGroupOptions;
+import ca.ubc.cs.beta.aclib.options.ScenarioOptions;
+import ca.ubc.cs.beta.aclib.options.SeedOptions;
+import ca.ubc.cs.beta.aclib.probleminstance.InstanceListWithSeeds;
+import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceOptions.TrainTestInstances;
 import ca.ubc.cs.beta.aclib.random.SeedableRandomPool;
 import ca.ubc.cs.beta.aclib.random.SeedableRandomPoolConstants;
+import ca.ubc.cs.beta.aclib.state.StateFactory;
+import ca.ubc.cs.beta.aclib.state.StateFactoryOptions;
 import ca.ubc.cs.beta.aclib.state.StateSerializers;
+import ca.ubc.cs.beta.aclib.state.legacy.LegacyStateFactory;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterFile;
@@ -72,34 +85,6 @@ public class SMACOptions extends AbstractOptions {
 	
 	@Parameter(names={"--numEIRandomConfigs","--numberOfRandomConfigsInEI","--numRandomConfigsInEI","--numberOfEIRandomConfigs"} , description="number of random configurations to evaluate during EI search", validateWith=NonNegativeInteger.class)
 	public int numberOfRandomConfigsInEI = 10000;
-	
-
-	@Parameter(names="--stateSerializer", description="determines the format of the files to save the state in")
-	public StateSerializers stateSerializer = StateSerializers.LEGACY;
-
-	@Parameter(names="--stateDeserializer", description="determines the format of the files that store the saved state to restore")
-	public StateSerializers statedeSerializer = StateSerializers.LEGACY;
-	
-	@UsageTextField(defaultValues="N/A (No state is being restored)")
-	@Parameter(names="--restoreStateFrom", description="location of state to restore")
-	public String restoreStateFrom = null;
-
-	@UsageTextField(defaultValues="N/A (No state is being restored)")
-	@Parameter(names={"--restoreStateIteration","--restoreIteration"}, description="iteration of the state to restore")
-	public Integer restoreIteration = null;
-	
-	/**
-	 * Restore scenario is done before we parse the configuration and fixes input args
-	 * in the input string to jcommander 
-	 */
-	@Parameter(names="--restoreScenario", description="Restore the scenario & state in the state folder")
-	public File restoreScenario =null; 
-	
-	@Parameter(names={"--cleanOldStateOnSuccess"}, description="will clean up much of the useless state files if smac completes successfully")
-	public boolean cleanOldStatesOnSuccess = true;
-	
-	@Parameter(names={"--saveContext","--saveContextWithState" }, description="saves some context with the state folder so that the data is mostly self-describing (Scenario, Instance File, Feature File, Param File are saved)")
-	public boolean saveContextWithState = true;
 	
 	@Parameter(names="--executionMode", description="execution mode of the automatic configurator")
 	public ExecutionMode execMode = ExecutionMode.SMAC;
@@ -204,6 +189,9 @@ public class SMACOptions extends AbstractOptions {
 	@ParametersDelegate
 	public SeedOptions seedOptions = new SeedOptions();
 	
+	@ParametersDelegate
+	public StateFactoryOptions stateOpts = new StateFactoryOptions();
+	
 	
 	/**
 	 * Gets both the training and the test problem instances
@@ -228,4 +216,41 @@ public class SMACOptions extends AbstractOptions {
 		return runGroupOptions.getRunGroupName(opts);	
 	}
 	
+	/**
+	 * Checks if the verify sat option is compatible with this set of probelm instances
+	 * @param instances 	The problem instances
+	 */
+	public void checkProblemInstancesCompatibleWithVerifySAT(List<ProblemInstance> instances)
+	{
+		this.scenarioConfig.algoExecOptions.taeOpts.checkProblemInstancesCompatibleWithVerifySAT(instances);
+	}
+
+	/**
+	 * Returns a state factory
+	 * @param outputDir	output directory
+	 * @return
+	 */
+	public StateFactory getRestoreStateFactory(String outputDir) {
+		return stateOpts.getRestoreStateFactory(outputDir, this.seedOptions.numRun);
+	}
+
+	public StateFactory getSaveStateFactory(String outputDir) {
+		return stateOpts.getSaveStateFactory(outputDir, this.seedOptions.numRun);
+	}
+	
+	public String getOutputDirectory(String runGroupName)
+	{
+		File outputDir = new File(this.scenarioConfig.outputDirectory + File.separator + runGroupName);
+		if(!outputDir.isAbsolute())
+		{
+			outputDir = new File(experimentDir + File.separator + outputDir + File.separator + runGroupName);
+		}
+		
+		return outputDir.getAbsolutePath();
+	}
+
+	public void saveContextWithState(ParamConfigurationSpace configSpace, InstanceListWithSeeds trainingILWS,	StateFactory sf)
+	{
+		this.stateOpts.saveContextWithState(configSpace, trainingILWS, this.scenarioConfig.scenarioFile, sf);
+	}
 }

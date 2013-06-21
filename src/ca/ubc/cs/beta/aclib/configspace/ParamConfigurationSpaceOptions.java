@@ -1,4 +1,4 @@
-package ca.ubc.cs.beta.aclib.options;
+package ca.ubc.cs.beta.aclib.configspace;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -13,10 +13,9 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
-import ca.ubc.cs.beta.aclib.configspace.ParamFileHelper;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.ReadableFileConverter;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
+import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
@@ -26,7 +25,7 @@ import com.beust.jcommander.ParameterException;
  * 
  */
 @UsageTextField(hiddenSection = true)
-public class ParamFileDelegate extends AbstractOptions{
+public class ParamConfigurationSpaceOptions extends AbstractOptions{
 	
 	@Parameter(names={"-p", "--paramFile","--paramfile"}, description="File containing algorithm parameter space information (see Algorithm Parameter File in the Manual)")
 	public String paramFile;

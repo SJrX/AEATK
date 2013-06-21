@@ -1,12 +1,20 @@
-package ca.ubc.cs.beta.aclib.options;
+package ca.ubc.cs.beta.aclib.targetalgorithmevaluator;
 
 import java.io.File;
+import java.util.List;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.NonNegativeInteger;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.OneInfinityOpenInterval;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.ReadableFileConverter;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.TAEValidator;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.ZeroInfinityOpenInterval;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
+import ca.ubc.cs.beta.aclib.options.AbstractOptions;
+import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
+import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceHelper;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.prepostcommand.PrePostCommandOptions;
 
 import com.beust.jcommander.Parameter;
@@ -84,4 +92,37 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	
 	@Parameter(names="--kill-run-exceeding-captime-factor", description="Attempt to kill the run that exceed their captime by this factor", validateWith=OneInfinityOpenInterval.class)
 	public double killCaptimeExceedingRunFactor = 2.5;
+
+
+	/**
+	 * Checks if the problem instances are compatible with the verify sat option
+	 * @param instances 
+	 */
+	public void checkProblemInstancesCompatibleWithVerifySAT(List<ProblemInstance> instances) {
+
+		Logger log = LoggerFactory.getLogger(getClass());
+		if(verifySAT == null)
+		{
+			boolean verifySATCompatible = ProblemInstanceHelper.isVerifySATCompatible(instances);
+			if(verifySATCompatible)
+			{
+				log.debug("Instance Specific Information is compatible with Verifying SAT, enabling option");
+				verifySAT = true;
+			} else
+			{
+				log.debug("Instance Specific Information is NOT compatible with Verifying SAT, disabling option");
+				verifySAT = false;
+			}
+			
+		} else if(verifySAT == true)
+		{
+			boolean verifySATCompatible = ProblemInstanceHelper.isVerifySATCompatible(instances);
+			if(!verifySATCompatible)
+			{
+				log.warn("Verify SAT set to true, but some instances have instance specific information that isn't in {SAT, SATISFIABLE, UNKNOWN, UNSAT, UNSATISFIABLE}");
+			}
+				
+		}
+		
+	}
 }

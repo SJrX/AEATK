@@ -1,8 +1,9 @@
-package ca.ubc.cs.beta.aclib.options;
+package ca.ubc.cs.beta.aclib.smac;
 
 import com.beust.jcommander.Parameter;
 
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
+import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 import ca.ubc.cs.beta.aclib.options.enums.InitializationOptions;
 
 @UsageTextField(title="Initalization Phase Options", description="Options related to how we warm up the automatic configurator [WARNING]: This probably has no effect in anything other than dSMAC at this moment")

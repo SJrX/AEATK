@@ -19,6 +19,7 @@ import java.util.Map.Entry;
 import ca.ubc.cs.beta.aclib.misc.options.DomainDisplay;
 import ca.ubc.cs.beta.aclib.misc.options.UsageSection;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
+import ca.ubc.cs.beta.aclib.smac.SMACOptions;
 
 import com.beust.jcommander.DynamicParameter;
 import com.beust.jcommander.Parameter;
