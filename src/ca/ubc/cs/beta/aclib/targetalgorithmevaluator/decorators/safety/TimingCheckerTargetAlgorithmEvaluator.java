@@ -57,8 +57,8 @@ public class TimingCheckerTargetAlgorithmEvaluator extends	AbstractForEachRunTar
 	{
 		synchronized(this)
 		{
-			log.info("Total Runtime Overhead: {} seconds", totalRuntimeOverhead );
-			log.info("Total wallclock Overhead: {} seconds", totalWallClockOverhead );
+			log.info("Total Runtime Overhead (Sum of the amount of reported runtime that exceeded the cutoff time): {} seconds", totalRuntimeOverhead );
+			log.info("Total Wallclock Overhead (Sum of the amount of wallclock time that exceeded the cutoff time): {} seconds", totalWallClockOverhead );
 		}
 		tae.notifyShutdown();
 	}
@@ -73,7 +73,9 @@ public class TimingCheckerTargetAlgorithmEvaluator extends	AbstractForEachRunTar
 		if(runtimeOverhead > runtimeDeltaToRequireLogging)
 		{
 			runtimeDeltaToRequireLogging = runtimeOverhead + 1;
-			log.warn("Algorithm has exceeded allowed runtime by {} seconds, next warning at: {} ", runtimeOverhead, runtimeDeltaToRequireLogging);
+			
+			Object[] args = {run.getRuntime(), run.getRunConfig().getCutoffTime(), runtimeOverhead, runtimeDeltaToRequireLogging};
+			log.warn("Algorithm Run Result reported a runtime of {} (secs) that exceeded it's cutoff time of {} (secs) by {} (secs). Next warning at {} (secs)  ", args);
 		}
 		
 		double wallClockOverhead = run.getWallclockExecutionTime() - run.getRunConfig().getCutoffTime();
@@ -83,7 +85,8 @@ public class TimingCheckerTargetAlgorithmEvaluator extends	AbstractForEachRunTar
 		if(wallClockOverhead > wallClockDeltaToRequireLogging)
 		{
 			wallClockDeltaToRequireLogging = wallClockOverhead + 1;
-			log.warn("Algorithm has exceeded allowed wallclock time by {} seconds, next warning at: {} ", wallClockOverhead, wallClockDeltaToRequireLogging);
+			Object[] args = {run.getWallclockExecutionTime(), run.getRunConfig().getCutoffTime(), wallClockOverhead, wallClockDeltaToRequireLogging};
+			log.warn("Algorithm Run Result reported wallclock time of {} (secs) that exceeded it's cutoff time of {} (secs) by {} (secs). Next warning at {} (secs)  ", args);
 		}
 		
 		return run;

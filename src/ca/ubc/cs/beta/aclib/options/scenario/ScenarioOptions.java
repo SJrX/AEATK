@@ -1,4 +1,4 @@
-package ca.ubc.cs.beta.aclib.options;
+package ca.ubc.cs.beta.aclib.options.scenario;
 
 import java.io.File;
 import java.io.IOException;
@@ -7,7 +7,6 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterFile;
 import com.beust.jcommander.ParametersDelegate;
 
-import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionOptions;
 import ca.ubc.cs.beta.aclib.misc.jcommander.converter.OverallObjectiveConverter;
 import ca.ubc.cs.beta.aclib.misc.jcommander.converter.RunObjectiveConverter;
@@ -15,7 +14,7 @@ import ca.ubc.cs.beta.aclib.misc.jcommander.validator.*;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aclib.objectives.OverallObjective;
 import ca.ubc.cs.beta.aclib.objectives.RunObjective;
-import ca.ubc.cs.beta.aclib.probleminstance.InstanceListWithSeeds;
+import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceOptions;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceOptions.TrainTestInstances;
 
@@ -36,8 +35,9 @@ public class ScenarioOptions extends AbstractOptions{
 	@Parameter(names={"--interInstanceObj","--inter_instance_obj"}, description="objective function used to aggregate over multiple instances (that have already been aggregated under the Intra-Instance Objective)", converter=OverallObjectiveConverter.class)
 	public OverallObjective interInstanceObj = OverallObjective.MEAN;
 	
-	@Parameter(names="--tunerTimeout", description="limits the total cpu time allowed between SMAC and the target algorithm runs during the automatic configuration phase", validateWith=NonNegativeInteger.class)
-	public int tunerTimeout = Integer.MAX_VALUE;
+	@ParametersDelegate
+	public LimitOptions limitOptions = new LimitOptions();
+	
 	
 	@ParametersDelegate
 	public ProblemInstanceOptions instanceOptions = new ProblemInstanceOptions();

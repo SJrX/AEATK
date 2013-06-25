@@ -162,8 +162,7 @@ public class OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator extends Abst
 		{
 
 			@Override
-			public void currentStatus(List<? extends KillableAlgorithmRun> runs) {
-				
+			public void currentStatus(List<? extends KillableAlgorithmRun> runs) {				
 				processRuns(runs);
 				if(obs != null)
 				{

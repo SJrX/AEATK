@@ -1,7 +1,6 @@
 package ca.ubc.cs.beta.aclib.execconfig;
 
 import java.util.ArrayList;
-import java.util.Collections;
 import java.util.List;
 
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpaceOptions;

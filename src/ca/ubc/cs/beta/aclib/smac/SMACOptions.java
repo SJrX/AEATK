@@ -17,8 +17,8 @@ import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 import ca.ubc.cs.beta.aclib.options.RandomForestOptions;
 import ca.ubc.cs.beta.aclib.options.RunGroupOptions;
-import ca.ubc.cs.beta.aclib.options.ScenarioOptions;
 import ca.ubc.cs.beta.aclib.options.SeedOptions;
+import ca.ubc.cs.beta.aclib.options.scenario.ScenarioOptions;
 import ca.ubc.cs.beta.aclib.probleminstance.InstanceListWithSeeds;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceOptions.TrainTestInstances;
@@ -26,9 +26,6 @@ import ca.ubc.cs.beta.aclib.random.SeedableRandomPool;
 import ca.ubc.cs.beta.aclib.random.SeedableRandomPoolConstants;
 import ca.ubc.cs.beta.aclib.state.StateFactory;
 import ca.ubc.cs.beta.aclib.state.StateFactoryOptions;
-import ca.ubc.cs.beta.aclib.state.StateSerializers;
-import ca.ubc.cs.beta.aclib.state.legacy.LegacyStateFactory;
-
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterFile;
 import com.beust.jcommander.ParametersDelegate;
@@ -59,15 +56,7 @@ public class SMACOptions extends AbstractOptions {
 	@Parameter(names={"--experimentDir","-e"}, description="root directory for experiments Folder")
 	public String experimentDir = System.getProperty("user.dir") + File.separator + "";
 
-	@Parameter(names={"--numIterations","--numberOfIterations"}, description = "limits the number of iterations allowed during automatic configuration phase", validateWith=FixedPositiveInteger.class)
-	public int numIteratations = Integer.MAX_VALUE;
 	
-	@Parameter(names={"--runtimeLimit", "--wallClockLimit"}, description = "limits the total wall-clock time allowed during the automatic configuration phase", validateWith=FixedPositiveInteger.class)
-	public int runtimeLimit = Integer.MAX_VALUE;
-	
-	@Parameter(names={"--totalNumRunsLimit","--numRunsLimit","--numberOfRunsLimit"} , description = "limits the total number of target algorithm runs allowed during the automatic configuration phase", validateWith=FixedPositiveLong.class)
-	public long totalNumRunsLimit = Long.MAX_VALUE;
-
 	@Parameter(names="--modelHashCodeFile", description="file containing a list of model hashes one per line with the following text per line: \"Preprocessed Forest Built With Hash Code: (n)\" or \"Random Forest Built with Hash Code: (n)\" where (n) is the hashcode", converter=ReadableFileConverter.class, hidden = true)
 	public File modelHashCodeFile;
 	
@@ -127,8 +116,7 @@ public class SMACOptions extends AbstractOptions {
 	@Parameter(names="--logLevel",description="Log Level for SMAC")
 	public LogLevel logLevel = LogLevel.DEBUG;	
 		
-	@Parameter(names="--countSMACTimeAsTunerTime", description="include the CPU Time of SMAC as part of the tunerTimeout")
-	public boolean countSMACTimeAsTunerTime = true;
+
 	
 	@Parameter(names="--maskInactiveConditionalParametersAsDefaultValue", description="build the model treating inactive conditional values as the default value")
 	public boolean maskInactiveConditionalParametersAsDefaultValue = true;

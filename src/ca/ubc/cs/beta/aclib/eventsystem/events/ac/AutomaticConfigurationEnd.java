@@ -1,7 +1,6 @@
 package ca.ubc.cs.beta.aclib.eventsystem.events.ac;
 
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
-import ca.ubc.cs.beta.aclib.eventsystem.ConfigurationTimeLimits;
 import ca.ubc.cs.beta.aclib.eventsystem.events.AbstractTimeEvent;
 
 public class AutomaticConfigurationEnd extends AbstractTimeEvent {
@@ -11,8 +10,8 @@ public class AutomaticConfigurationEnd extends AbstractTimeEvent {
 	private final long wallTime;
 	private final double cpuTime;
 
-	public AutomaticConfigurationEnd(ParamConfiguration incumbent, ConfigurationTimeLimits limits, double empiricalPerformance, long wallClockTime, double tunerTime) {
-		super(limits);
+	public AutomaticConfigurationEnd(ParamConfiguration incumbent, double empiricalPerformance, long wallClockTime, double tunerTime) {
+		
 		this.incumbent = incumbent;
 		this.empiricalPerformance = empiricalPerformance;
 		this.wallTime = wallClockTime;

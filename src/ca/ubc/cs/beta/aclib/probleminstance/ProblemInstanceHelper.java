@@ -26,7 +26,6 @@ import org.slf4j.LoggerFactory;
 import au.com.bytecode.opencsv.CSVReader;
 import ca.ubc.cs.beta.aclib.exceptions.FeatureNotFoundException;
 import ca.ubc.cs.beta.aclib.misc.csvhelpers.ConfigCSVFileHelper;
-import ca.ubc.cs.beta.aclib.options.ScenarioOptions;
 import ca.ubc.cs.beta.aclib.seedgenerator.InstanceSeedGenerator;
 import ca.ubc.cs.beta.aclib.seedgenerator.RandomInstanceSeedGenerator;
 import ca.ubc.cs.beta.aclib.seedgenerator.SetInstanceSeedGenerator;

@@ -4,6 +4,9 @@ import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.concurrent.threadfactory.SequentiallyNamedThreadFactory;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
@@ -20,7 +23,7 @@ public abstract class AbstractSyncTargetAlgorithmEvaluator extends
 		AbstractTargetAlgorithmEvaluator {
 
 	ExecutorService execService = Executors.newCachedThreadPool(new SequentiallyNamedThreadFactory("Abstract Blocking TAE Async Processing Thread"));
-	
+	private final Logger log = LoggerFactory.getLogger(getClass());
 	public AbstractSyncTargetAlgorithmEvaluator(
 			AlgorithmExecutionConfig execConfig) {
 		super(execConfig);
@@ -35,7 +38,7 @@ public abstract class AbstractSyncTargetAlgorithmEvaluator extends
 
 			@Override
 			public void run() {
-
+				
 				try {
 					List<AlgorithmRun> runs = AbstractSyncTargetAlgorithmEvaluator.this.evaluateRun(runConfigs, obs);
 					
@@ -43,7 +46,10 @@ public abstract class AbstractSyncTargetAlgorithmEvaluator extends
 				} catch(RuntimeException e)
 				{
 					handler.onFailure(e);
-				}				
+				} catch(Throwable t)
+				{
+					log.error("Uncaught throwable occured ", t);
+				}
 			}
 			
 		};

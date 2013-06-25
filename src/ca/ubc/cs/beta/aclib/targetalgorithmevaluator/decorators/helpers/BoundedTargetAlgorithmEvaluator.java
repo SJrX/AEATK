@@ -359,7 +359,12 @@ public class BoundedTargetAlgorithmEvaluator extends
 									//Success already fired 
 									return;
 								}
+								try {
 								callerRunObserver.currentStatus(allRunsForCaller);
+								} catch(Throwable t)
+								{
+									log.error("Error occured while notifying observer ", t);
+								}
 							}
 						}
 						
@@ -481,16 +486,20 @@ public class BoundedTargetAlgorithmEvaluator extends
 					{
 						@Override
 						public void run() {
-							synchronized(runConfigs)
-							{
-								try {
-									calleeCallback.onSuccess(allRuns);
-								} catch(RuntimeException e)
+							try {
+								synchronized(runConfigs)
 								{
-									calleeCallback.onFailure(e);
+									try {
+										calleeCallback.onSuccess(allRuns);
+									} catch(RuntimeException e)
+									{
+										calleeCallback.onFailure(e);
+									}
 								}
+							} catch(Throwable t)
+							{
+								log.error("Unknown exception occured ", t);
 							}
-							
 						}
 						
 					});
@@ -518,14 +527,20 @@ public class BoundedTargetAlgorithmEvaluator extends
 		
 				execService.execute(new Runnable()
 				{
-					@Override
-					public void run() {
-						synchronized(runConfigs)
-						{
-							calleeCallback.onFailure(t);
+					
+						@Override
+						public void run() {
+							try {
+								synchronized(runConfigs)
+								{
+									calleeCallback.onFailure(t);
+								}
+							} catch(Throwable t)
+							{
+								log.error("Unknown exception occured ", t);
+							}
 						}
-						
-					}
+					
 					
 				});
 			}

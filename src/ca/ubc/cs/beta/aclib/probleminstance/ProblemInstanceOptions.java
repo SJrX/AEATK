@@ -13,7 +13,6 @@ import com.beust.jcommander.ParameterException;
 import ca.ubc.cs.beta.aclib.exceptions.FeatureNotFoundException;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
-import ca.ubc.cs.beta.aclib.random.SeedableRandomPoolConstants;
 
 @UsageTextField(hiddenSection = true)
 public class ProblemInstanceOptions extends AbstractOptions{
