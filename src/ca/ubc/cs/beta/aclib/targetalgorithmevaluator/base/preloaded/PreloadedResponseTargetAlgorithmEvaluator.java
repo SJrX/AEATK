@@ -61,7 +61,7 @@ public class PreloadedResponseTargetAlgorithmEvaluator extends AbstractSyncTarge
 	
 			AssociatedValue<RunResult, Double> v = myQueue.poll();
 			if(v == null) throw new IllegalStateException("Error out of existing runs");
-			runs.add(new ExistingAlgorithmRun(execConfig, rc, v.getAssociatedValue() , v.getValue() , opts.runLength ,opts.quality, rc.getProblemInstanceSeedPair().getSeed()));
+			runs.add(new ExistingAlgorithmRun(execConfig, rc, v.getAssociatedValue() , v.getValue() , opts.runLength ,opts.quality, rc.getProblemInstanceSeedPair().getSeed(), opts.additionalRunData));
 			
 			
 		}

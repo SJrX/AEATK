@@ -17,5 +17,10 @@ public class PreloadedResponseTargetAlgorithmEvaluatorOptions extends
 	
 	@Parameter(names={"--preload-quality"}, description="Quality to return on all values")
 	public double quality = 0;
+	
+	@Parameter(names="--preload-additional-run-data", description="Additional Run Data to return")
+	public String additionalRunData = "";
+
+	
 
 }

@@ -15,6 +15,10 @@ public class RandomResponseTargetAlgorithmEvaluatorOptions extends AbstractOptio
 	@Parameter(names="--random-simulate-delay", description = "If set to true the TAE will simulate the wallclock delay")
 	public boolean simulateDelay = false;
 	
+	@Parameter(names="--random-additional-run-data", description="Additional Run Data to return")
+	public String additionalRunData = "";
+
+	
 	@Parameter(names="--random-simulate-cores", description = "If set to greater than 0, the TAE will serialize requests so that no more than these number will execute concurrently. ", validateWith=NonNegativeInteger.class)
 	public int cores = 0;
 	
@@ -26,6 +30,10 @@ public class RandomResponseTargetAlgorithmEvaluatorOptions extends AbstractOptio
 	
 	@Parameter(names="--random-observer-frequency", description="How often to notify observer of updates (in milli-seconds)", validateWith=FixedPositiveInteger.class)
 	public int observerFrequency = 100;
+	
+	
+	
+	
 	
 	@Parameter(names="--random-trend-coefficient", description="The Nth sample will be drawn from Max(0,Uniform(min,max) + N*(trend-coefficient)) distribution. This allows you to have the response values increase or decrease over time.")
 	public double trendCoefficient = 0.0;

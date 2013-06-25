@@ -25,5 +25,6 @@ public class AnalyticTargetAlgorithmEvaluatorOptions extends AbstractOptions {
 
 	@Parameter(names="--analytic-scale-simulate-delay", description="Divide the simulated delay by this value", validateWith=ZeroInfinityOpenInterval.class)
 	public double scaleDelay =1.0;
+
 	
 }

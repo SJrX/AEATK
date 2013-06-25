@@ -10,19 +10,19 @@ import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 public class ConstantTargetAlgorithmEvaluatorOptions extends AbstractOptions{
 
 	
-	@Parameter(names="--runResult", description="Run Result To return")
+	@Parameter(names="--constant-run-result", description="Run Result To return")
 	public RunResult runResult = RunResult.SAT;
 	
-	@Parameter(names="--runTime", description="Runtime to return")
+	@Parameter(names="--constant-runtime", description="Runtime to return")
 	public double runtime = 1.00;
 	
-	@Parameter(names="--runQuality", description="Quality to return")
+	@Parameter(names="--constant-run-quality", description="Quality to return")
 	public double quality = 0;
 	
-	@Parameter(names="--runLength", description="Runlength to return")
+	@Parameter(names="--constant-run-length", description="Runlength to return")
 	public double runlength = 0;
 	
-	@Parameter(names="--additionalRunData", description="Additional Run Data to return")
+	@Parameter(names="--constant-additional-run-data", description="Additional Run Data to return")
 	public String additionalRunData = "";
 	
 
