@@ -38,7 +38,17 @@ public interface TerminationCondition {
 	 */
 	public void notifyRun(AlgorithmRun run);
 	
+	/**
+	 * Get the current tuner time
+	 * @return
+	 */
 	public double getTunerTime();
+	
+	/**
+	 * Retrieves the termination reason
+	 * @return
+	 */
+	public String getTerminationReason();
 	
 }
 

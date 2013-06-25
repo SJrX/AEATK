@@ -14,7 +14,7 @@ import ca.ubc.cs.beta.aclib.termination.CompositeTerminationCondition;
 import ca.ubc.cs.beta.aclib.termination.TerminationCondition;
 import ca.ubc.cs.beta.aclib.termination.standard.AlgorithmRunLimitCondition;
 import ca.ubc.cs.beta.aclib.termination.standard.CPULimitCondition;
-import ca.ubc.cs.beta.aclib.termination.standard.ModelBuiltTerminationCondition;
+import ca.ubc.cs.beta.aclib.termination.standard.ModelIterationTerminationCondition;
 import ca.ubc.cs.beta.aclib.termination.standard.WallClockLimitCondition;
 
 @UsageTextField(hiddenSection=true)
@@ -29,7 +29,7 @@ public class LimitOptions extends AbstractOptions {
 	@Parameter(names={"--runtimeLimit", "--wallClockLimit"}, description = "limits the total wall-clock time allowed during the automatic configuration phase", validateWith=FixedPositiveInteger.class)
 	public int runtimeLimit = Integer.MAX_VALUE;
 	
-	@Parameter(names={"--totalNumRunsLimit","--numRunsLimit","--numberOfRunsLimit"} , description = "limits the total number of target algorithm runs allowed during the automatic configuration phase", validateWith=FixedPositiveLong.class)
+	@Parameter(names={"--totalNumRunsLimit","--numRunsLimit","--numberOfRunsLimit"} , description = "limits the total number of target algorithm runs allowed during the automatic configuration phase ", validateWith=FixedPositiveLong.class)
 	public long totalNumRunsLimit = Long.MAX_VALUE;
 
 	@Parameter(names="--countSMACTimeAsTunerTime", description="include the CPU Time of SMAC as part of the tunerTimeout")
@@ -42,7 +42,7 @@ public class LimitOptions extends AbstractOptions {
 		termConds.add(new CPULimitCondition(tunerTimeout, countSMACTimeAsTunerTime));
 		termConds.add(new WallClockLimitCondition(System.currentTimeMillis(),runtimeLimit));
 		termConds.add(new AlgorithmRunLimitCondition(totalNumRunsLimit));
-		termConds.add(new ModelBuiltTerminationCondition(this.numIteratations));
+		termConds.add(new ModelIterationTerminationCondition(this.numIteratations));
 		
 		return new CompositeTerminationCondition(termConds);
 	}

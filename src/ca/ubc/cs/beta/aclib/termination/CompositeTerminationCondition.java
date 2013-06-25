@@ -72,4 +72,13 @@ public class CompositeTerminationCondition implements TerminationCondition {
 		}
 		return tunerTime;
 	}
+	@Override
+	public String getTerminationReason() {
+		StringBuilder sb = new StringBuilder();
+		for(TerminationCondition c : conditions)
+		{
+			sb.append(c.getTerminationReason());
+		}
+		return sb.toString();
+	}
 }

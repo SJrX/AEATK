@@ -28,13 +28,13 @@ public class AlgorithmRunLimitCondition extends AbstractTerminationCondition imp
 
 	@Override
 	public boolean haveToStop() {
-		return (algorithmRuns >= algorithmRunLimit);
+		return (algorithmRuns > algorithmRunLimit);
 			
 	}
 
 	@Override
 	public Collection<ValueMaxStatus> currentStatus() {
-		return Collections.singleton(new ValueMaxStatus(ConditionType.TUNERTIME, algorithmRuns, algorithmRunLimit, NAME));
+		return Collections.singleton(new ValueMaxStatus(ConditionType.TUNERTIME, algorithmRuns, algorithmRunLimit, NAME, "Algorithm Runs", ""));
 	}
 
 	@Override
@@ -51,6 +51,18 @@ public class AlgorithmRunLimitCondition extends AbstractTerminationCondition imp
 	@Override
 	public void registerWithEventManager(EventManager evtManager) {
 		evtManager.registerHandler(AlgorithmRunCompletedEvent.class, this);
+	}
+
+
+	@Override
+	public String getTerminationReason() {
+		if(haveToStop())
+		{
+			return "Algorithm Run Limit (" +  algorithmRuns +  " runs) has been reached";
+		} else
+		{
+			return "";
+		}
 	}
 	
 }

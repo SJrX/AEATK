@@ -64,5 +64,17 @@ public class CPULimitCondition extends AbstractTerminationCondition
 		return currentStatus().toString();
 	}
 
+	@Override
+	public String getTerminationReason() {
+		if(haveToStop())
+		{
+			return "Tuner Time Limit (" +  tunerTimeLimit +  " s) has been reached";
+		} else
+		{
+			return "";
+		}
+		
+	}
+
 	
 }

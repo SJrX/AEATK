@@ -35,4 +35,14 @@ public class WallClockLimitCondition extends AbstractTerminationCondition implem
 	{
 		return currentStatus().toString();
 	}
+	@Override
+	public String getTerminationReason() {
+		if(haveToStop())
+		{
+			return "Wall-clock Limit (" +  (System.currentTimeMillis()-applicationStartTime)/1000.0 +  " s) has been reached";
+		} else
+		{
+			return "";
+		}
+	}
 }

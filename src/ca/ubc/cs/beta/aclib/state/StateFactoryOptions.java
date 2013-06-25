@@ -11,6 +11,7 @@ import ca.ubc.cs.beta.aclib.probleminstance.InstanceListWithSeeds;
 import ca.ubc.cs.beta.aclib.state.legacy.LegacyStateFactory;
 import ca.ubc.cs.beta.aclib.state.nullFactory.NullStateFactory;
 
+@UsageTextField(hiddenSection = true)
 public class StateFactoryOptions extends AbstractOptions{
 
 	@Parameter(names="--stateSerializer", description="determines the format of the files to save the state in")
