@@ -16,4 +16,5 @@ public @interface UsageTextField {
 
 	boolean hiddenSection() default false;
 	
+	String[] claimRequired() default {};
 }

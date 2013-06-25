@@ -293,6 +293,9 @@ public class ConfigToLaTeX {
 	
 		getAllObjects(o, objectsToScan, parentToChildMap);
 		
+		
+		Set<String> claimRequired = getAllClaimedRequired(objectsToScan);
+		
 		List<UsageSection> sections = new ArrayList<UsageSection>();
 		
 		for(Object obj : objectsToScan)
@@ -338,7 +341,21 @@ public class ConfigToLaTeX {
 					String defaultValue = getDefaultValueForField(f,obj);
 					String description = getDescriptionForField(f,obj);
 					boolean required = getRequiredForField(f,obj);
+					
+					
 					String aliases = getAliases(f, obj);
+					
+					String[] possibleAliases = aliases.split(",\\s+");
+					for(String possibleAlias : possibleAliases)
+					{
+						if(claimRequired.contains(possibleAlias.trim()))
+						{
+							required = true;
+						}
+					}
+					
+					
+					
 					String domain = getDomain(f,obj);
 					boolean hidden = param.hidden();
 					
@@ -353,6 +370,17 @@ public class ConfigToLaTeX {
 					String description = getDescriptionForDynamicField(f,obj);
 					boolean required = getRequiredForDynamicField(f,obj);
 					String aliases = getDynamicAliases(f, obj);
+					
+					String[] possibleAliases = aliases.split("\\s+");
+					for(String possibleAlias : possibleAliases)
+					{
+						if(claimRequired.contains(possibleAlias.trim()))
+						{
+							required = true;
+						}
+					}
+					
+					
 					String domain = getDomain(f,obj);
 					boolean hidden = dynamicParam.hidden();
 					
@@ -418,6 +446,19 @@ public class ConfigToLaTeX {
 
 
 	
+	private static Set<String> getAllClaimedRequired(Set<Object> objectsToScan) {
+		HashSet<String> claimRequired = new HashSet<String>();
+		for(Object o : objectsToScan)
+		{
+			if(o.getClass().isAnnotationPresent(UsageTextField.class))
+			{
+				UsageTextField t = (UsageTextField) o.getClass().getAnnotation(UsageTextField.class);
+				claimRequired.addAll(Arrays.asList(t.claimRequired()));
+			}
+		}
+		return claimRequired;
+	}
+
 	private static boolean getRequiredForField(Field f, Object o) {
 		return getParameterAnnotation(f).required();
 		

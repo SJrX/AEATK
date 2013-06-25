@@ -39,7 +39,7 @@ import com.beust.jcommander.ParametersDelegate;
  *
  *
  */
-@UsageTextField(title="SMAC Options", description="General Options for Running SMAC")
+@UsageTextField(title="SMAC Options", description="General Options for Running SMAC", claimRequired={"--instanceFile"})
 public class SMACOptions extends AbstractOptions {
 	
 	@ParametersDelegate

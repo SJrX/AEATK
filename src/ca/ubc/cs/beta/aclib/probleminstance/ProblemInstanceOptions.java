@@ -17,14 +17,14 @@ import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 @UsageTextField(hiddenSection = true)
 public class ProblemInstanceOptions extends AbstractOptions{
 
-	@Parameter(names={"--instanceFile","-i","--instance_file","--instance_seed_file"}, description="file containing a list of instances to use during the automatic configuration phase (see Instance File Format section of the manual)", required=true)
+	@Parameter(names={"--instanceFile","-i","--instance_file","--instance_seed_file"}, description="file containing a list of instances to use during the automatic configuration phase (see Instance File Format section of the manual)", required=false)
 	public String instanceFile;
 
 	@UsageTextField(defaultValues="")
 	@Parameter(names={"--instanceFeatureFile", "--feature_file"}, description="file that contains the all the instances features")
 	public String instanceFeatureFile;
 	
-	@Parameter(names={"--testInstanceFile","--test_instance_file","--test_instance_seed_file"}, description="file containing a list of instances to use during the validation phase (see Instance File Format section of the manual)", required=true)
+	@Parameter(names={"--testInstanceFile","--test_instance_file","--test_instance_seed_file"}, description="file containing a list of instances to use during the validation phase (see Instance File Format section of the manual)", required=false)
 	public String testInstanceFile;
 
 	@Parameter(names="--checkInstanceFilesExist", description="check if instances files exist on disk")
