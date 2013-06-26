@@ -17,7 +17,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorRun
 public class PreloadedResponseTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorithmEvaluator {
 	
 	
-	Queue<AssociatedValue<RunResult, Double>> myQueue = new LinkedList<AssociatedValue<RunResult, Double>>();
+	private final Queue<AssociatedValue<RunResult, Double>> myQueue;
 	
 	private final PreloadedResponseTargetAlgorithmEvaluatorOptions opts;
 	
@@ -53,7 +53,7 @@ public class PreloadedResponseTargetAlgorithmEvaluator extends AbstractSyncTarge
 
 
 	@Override
-	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs,
+	public synchronized List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs,
 			TargetAlgorithmEvaluatorRunObserver obs) {
 		List<AlgorithmRun> runs = new ArrayList<AlgorithmRun>();
 		for(RunConfig rc : runConfigs)

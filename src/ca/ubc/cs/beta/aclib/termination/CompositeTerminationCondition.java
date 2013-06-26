@@ -77,10 +77,17 @@ public class CompositeTerminationCondition implements TerminationCondition {
 	@Override
 	public String getTerminationReason() {
 		StringBuilder sb = new StringBuilder();
+		
 		for(TerminationCondition c : conditions)
 		{
-			sb.append(c.getTerminationReason());
+			if(c.haveToStop())
+			{
+				sb.append(c.getTerminationReason()).append(" & ");
+			}
 		}
+
+		sb.setCharAt(sb.length()-2,' ');
+		
 		return sb.toString();
 	}
 	

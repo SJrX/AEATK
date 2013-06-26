@@ -123,7 +123,7 @@ public class EventManager {
 				public void run()
 				{
 					try { 
-						log.debug("Dispatching event {} ", event2.getClass().getSimpleName());
+						log.debug("Dispatching event {} to handler: {}", event2.getClass().getSimpleName(), handler2.getClass().getSimpleName());
 						handler2.handleEvent(event2);
 					} catch(RuntimeException t)
 					{

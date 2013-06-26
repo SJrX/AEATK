@@ -34,6 +34,10 @@ public class TerminationCriteriaOptions extends AbstractOptions {
 	@Parameter(names="--countSMACTimeAsTunerTime", description="include the CPU Time of SMAC as part of the tunerTimeout")
 	public boolean countSMACTimeAsTunerTime = true;
 	
+	@Parameter(names={"--maxConsecutiveFailedChallengeIncumbent"}, description="if the parameter space is too small we may get to a point where we can make no new runs, detecting this condition is prohibitively expensive, and this heuristic controls the number of times we need to try a challenger and get no new runs before we give up")
+	public int challengeIncumbentAttempts = 1000;
+
+	
 	public CompositeTerminationCondition getTerminationConditions()
 	{
 		List<TerminationCondition> termConds = new ArrayList<TerminationCondition>();
@@ -42,7 +46,7 @@ public class TerminationCriteriaOptions extends AbstractOptions {
 		termConds.add(new WallClockLimitCondition(System.currentTimeMillis(),runtimeLimit));
 		termConds.add(new AlgorithmRunLimitCondition(totalNumRunsLimit));
 		termConds.add(new ModelIterationTerminationCondition(this.numIterations));
-		termConds.add(new NoRunsForManyIterationTerminationCondition(1000));
+		termConds.add(new NoRunsForManyIterationTerminationCondition(challengeIncumbentAttempts));
 		return new CompositeTerminationCondition(termConds);
 	}
 	
