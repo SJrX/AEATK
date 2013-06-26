@@ -1118,6 +1118,48 @@ public class ParamConfigurationSpace implements Serializable {
 		return p;
 	}
 	
+	/**
+	 * Returns an upper bound on the size of the configuration space. 
+	 * There are no guarantees how tight this upper bound might be, and in general it may get looser over time.
+	 * You are only guaranteed that the number of actual configurations is LOWER than this upper bound.
+	 * <b>NOTE:</b> Search Subspaces do NOT lower the size of the upper bound because you can leave the subspace 
+	 * 
+	 * @return an upper bound on the size of the search space
+	 */
+	public double getUpperBoundOnSize()
+	{
+		//Default cannot be forbidden so there is at least 1 configuration
+		//We don't need to worry about the edge case
+		double configSpaceSize = 1;
+		
+		for(int i=0; i < this.numberOfParameters; i++)
+		{
+			
+		
+			int catSize = this.categoricalSize[i];
+
+			if(catSize != this.INVALID_CATEGORICAL_SIZE)
+			{
+				configSpaceSize *= catSize;
+			} else
+			{
+				
+				NormalizedRange nr = this.contNormalizedRanges.get(this.authorativeParameterNameOrder.get(i));
+				
+				if(nr.isIntegerOnly())
+				{
+					configSpaceSize *= (nr.unnormalizeValue(1) - nr.unnormalizeValue(0) + 1);
+				} else
+				{
+					return Double.POSITIVE_INFINITY;
+				}
+				
+				
+			}
+		}
+		
+		return configSpaceSize;
+	}
 	
 	
 	/**

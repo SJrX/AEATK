@@ -1247,6 +1247,89 @@ public class ParamConfigurationTest {
 	}
 	
 	@Test
+	public void testParameterSpaceUpperBounds()
+	{
+		
+		System.out.println("Expect 1 : "+ParamConfigurationSpace.getSingletonConfigurationSpace().getUpperBoundOnSize());
+		assertTrue("Singleton space should have >= 1 configuration ", ParamConfigurationSpace.getSingletonConfigurationSpace().getUpperBoundOnSize() >= 1);
+		
+		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(new StringReader("foo { a,b,c} [a]\n"),"<>",Collections.EMPTY_MAP);
+		System.out.println("Expect 3 : "+ configSpace.getUpperBoundOnSize());
+		assertTrue("Size should be >= 3", configSpace.getUpperBoundOnSize() >= 3);
+		
+		configSpace = new ParamConfigurationSpace(new StringReader("foo { a,b,c} [a]\n bar { d,e,f} [f]"),"<>",Collections.EMPTY_MAP);
+		System.out.println("Expect 9 : " +configSpace.getUpperBoundOnSize());
+		assertTrue("Size should be >= 9", configSpace.getUpperBoundOnSize() >= 9);
+		
+		configSpace = new ParamConfigurationSpace(new StringReader("foo { a,b,c} [a]\n bar { d,e,f} [f]\n bar | foo in {a}"),"<>",Collections.EMPTY_MAP);
+		System.out.println("Expect 9 : " + configSpace.getUpperBoundOnSize());
+		assertTrue("Size should be >= 9", configSpace.getUpperBoundOnSize() >= 9);
+		
+		configSpace = new ParamConfigurationSpace(new StringReader("foo { a,b,c} [a]\n bar { d,e,f} [f]\n"),"<>",Collections.singletonMap("foo", "a"));
+		System.out.println("Expect 9 : " + configSpace.getUpperBoundOnSize());
+		
+		assertTrue("Size should be >= 9", configSpace.getUpperBoundOnSize() >= 9);
+		
+		configSpace = new ParamConfigurationSpace(new StringReader("foo { a,b,c} [a]\n bar { d,e,f} [f]\n"),"<>",Collections.singletonMap("foo", "b"));
+		System.out.println("Expect 9 : " + configSpace.getUpperBoundOnSize());
+		assertTrue("Size should be >= 9", configSpace.getUpperBoundOnSize() >= 9);
+		
+		List<ParamConfiguration> neighbours = configSpace.getDefaultConfiguration().getNeighbourhood(this.rand,4);
+		neighbours.add(configSpace.getDefaultConfiguration());
+		
+		HashSet<ParamConfiguration> newSet = new HashSet<ParamConfiguration>(neighbours);
+		
+		
+		for(ParamConfiguration config : newSet)
+		{
+			System.out.println(config.getFormattedParamString());
+		}
+		
+		
+		configSpace = new ParamConfigurationSpace(new StringReader("foo { a,b,c} [a]\n bar { d,e,f} [f]\n {foo = a, bar = d}"),"<>",Collections.EMPTY_MAP);
+		System.out.println("Expect 9 :" + configSpace.getUpperBoundOnSize());
+		assertTrue("Size should be >= 9", configSpace.getUpperBoundOnSize() >= 9);
+		
+		configSpace = new ParamConfigurationSpace(new StringReader("foo [0,1][1]\n bar { d,e,f} [f]\n"),"<>",Collections.EMPTY_MAP);
+		System.out.println("Expect Infinity: " + configSpace.getUpperBoundOnSize());
+		assertTrue("Size should be >= Infinity", configSpace.getUpperBoundOnSize() >= Double.POSITIVE_INFINITY);
+		
+		
+		configSpace = new ParamConfigurationSpace(new StringReader("foo [0,1][1]i\n bar { d,e,f} [f]\n"),"<>",Collections.EMPTY_MAP);
+		System.out.println("Expect 6: " + configSpace.getUpperBoundOnSize());
+		assertTrue("Size should be >= 6", configSpace.getUpperBoundOnSize() >= 6);
+		
+		configSpace = new ParamConfigurationSpace(new StringReader("foo [0,9][1]i\n bar { d,e,f} [f]\n"),"<>",Collections.EMPTY_MAP);
+		System.out.println("Expect 30: " + configSpace.getUpperBoundOnSize());
+		assertTrue("Size should be >= 30", configSpace.getUpperBoundOnSize() >= 30);
+		
+		configSpace = new ParamConfigurationSpace(new StringReader("foo [0,9][1]i\n bar [0,9] [1]i\n"),"<>",Collections.EMPTY_MAP);
+		System.out.println("Expect 100: " + configSpace.getUpperBoundOnSize());
+		assertTrue("Size should be >= 100", configSpace.getUpperBoundOnSize() >= 100);
+		
+		
+		configSpace = new ParamConfigurationSpace(new StringReader("foo [0,9][1]i\n bar [0,9] [1]\n"),"<>",Collections.EMPTY_MAP);
+		System.out.println("Expect Infinity: " + configSpace.getUpperBoundOnSize());
+		assertTrue("Size should be >= Infinity", configSpace.getUpperBoundOnSize() >= Double.POSITIVE_INFINITY);
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+	}
+	
+	
+	
+	
+	@Test
 	/**
 	 * Related to bug 1718
 	 */
@@ -1314,6 +1397,7 @@ public class ParamConfigurationTest {
 		assertEquals("Expected that the version of the strings should be equal", defaultConfig.getFormattedParamString(StringFormat.ARRAY_STRING_SYNTAX), duplicateConfig.getFormattedParamString(StringFormat.ARRAY_STRING_SYNTAX));
 		*/
 	}
+	
 	
 	
 	@After

@@ -7,6 +7,7 @@ import net.jcip.annotations.ThreadSafe;
 
 import ca.ubc.cs.beta.aclib.eventsystem.EventHandler;
 import ca.ubc.cs.beta.aclib.eventsystem.EventManager;
+import ca.ubc.cs.beta.aclib.eventsystem.events.AutomaticConfiguratorEvent;
 import ca.ubc.cs.beta.aclib.eventsystem.events.basic.AlgorithmRunCompletedEvent;
 import ca.ubc.cs.beta.aclib.eventsystem.events.model.ModelBuildEndEvent;
 import ca.ubc.cs.beta.aclib.termination.ConditionType;
@@ -15,32 +16,40 @@ import ca.ubc.cs.beta.aclib.termination.ValueMaxStatus;
 import static ca.ubc.cs.beta.aclib.misc.cputime.CPUTime.*;
 
 @ThreadSafe
-public class ModelIterationTerminationCondition extends AbstractTerminationCondition implements EventHandler<ModelBuildEndEvent> {
+public class NoRunsForManyIterationTerminationCondition extends AbstractTerminationCondition implements EventHandler<AutomaticConfiguratorEvent> {
 
 	private final String NAME = "NUMBER OF RUNS";
-	private final  long modelBuildLimit;
-	private volatile long modelBuildIteration = 0;
+	private final  long iterationWithOutRuns;
+	private volatile long successfullyBuiltModelsSinceLastRun = 0;
 
-	public ModelIterationTerminationCondition(long modelBuildLimit)
+	public NoRunsForManyIterationTerminationCondition(long iterationsWithoutRun)
 	{
-		this.modelBuildLimit = modelBuildLimit;
+		this.iterationWithOutRuns = iterationsWithoutRun;
 	}
 		
 
 	@Override
 	public boolean haveToStop() {
-		return (modelBuildIteration >= modelBuildLimit);
+		return (successfullyBuiltModelsSinceLastRun >= iterationWithOutRuns);
 			
 	}
 
 	@Override
 	public Collection<ValueMaxStatus> currentStatus() {
-		return Collections.singleton(new ValueMaxStatus(ConditionType.OTHER, modelBuildIteration, modelBuildLimit, NAME, "Model/Iteration", ""));
+		return Collections.emptySet();
 	}
 
 	@Override
-	public synchronized void handleEvent(ModelBuildEndEvent event) {
-		modelBuildIteration++;
+	public synchronized void handleEvent(AutomaticConfiguratorEvent event) {
+		
+		if(event instanceof ModelBuildEndEvent)
+		{
+			successfullyBuiltModelsSinceLastRun++;
+		} else if(event instanceof AlgorithmRunCompletedEvent)
+		{
+			successfullyBuiltModelsSinceLastRun = 0;
+		}
+		
 	}
 	
 	@Override
@@ -52,6 +61,7 @@ public class ModelIterationTerminationCondition extends AbstractTerminationCondi
 	@Override
 	public void registerWithEventManager(EventManager evtManager) {
 		evtManager.registerHandler(ModelBuildEndEvent.class, this);
+		evtManager.registerHandler(AlgorithmRunCompletedEvent.class, this);
 	}
 
 
@@ -59,7 +69,7 @@ public class ModelIterationTerminationCondition extends AbstractTerminationCondi
 	public String getTerminationReason() {
 		if(haveToStop())
 		{
-			return "Model Building / Iteration Limit (" +  modelBuildIteration +  ") has been reached";
+			return "Too many iterations / models have been built without a successful run (" +  successfullyBuiltModelsSinceLastRun +  ") has been reached";
 		} else
 		{
 			return "";

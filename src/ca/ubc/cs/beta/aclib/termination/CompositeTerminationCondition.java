@@ -2,6 +2,7 @@ package ca.ubc.cs.beta.aclib.termination;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.LinkedHashSet;
 import java.util.List;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
@@ -10,7 +11,7 @@ import ca.ubc.cs.beta.aclib.eventsystem.EventManager;
 public class CompositeTerminationCondition implements TerminationCondition {
 
 	
-	private final Collection<? extends TerminationCondition> conditions;
+	private final LinkedHashSet<TerminationCondition> conditions;
 	
 	public CompositeTerminationCondition(Collection<? extends TerminationCondition> conditions)
 	{
@@ -19,7 +20,8 @@ public class CompositeTerminationCondition implements TerminationCondition {
 			throw new IllegalArgumentException("Must have atleast one condition");
 		}
 		
-		this.conditions = conditions;
+		this.conditions = new LinkedHashSet<TerminationCondition>(conditions);
+		
 	}
 	@Override
 	public boolean haveToStop() {
@@ -80,5 +82,14 @@ public class CompositeTerminationCondition implements TerminationCondition {
 			sb.append(c.getTerminationReason());
 		}
 		return sb.toString();
+	}
+	
+	/**
+	 * Adds a condition to the composite
+	 * @param cond
+	 */
+	public synchronized void addCondition(TerminationCondition cond)
+	{
+		this.conditions.add(cond);
 	}
 }

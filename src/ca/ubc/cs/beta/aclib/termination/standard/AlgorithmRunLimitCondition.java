@@ -17,8 +17,8 @@ import static ca.ubc.cs.beta.aclib.misc.cputime.CPUTime.*;
 public class AlgorithmRunLimitCondition extends AbstractTerminationCondition implements EventHandler<AlgorithmRunCompletedEvent> {
 
 	private final String NAME = "NUMBER OF RUNS";
-	private final  long algorithmRunLimit;
-	private long algorithmRuns = 0;
+	private final long algorithmRunLimit;
+	private volatile long algorithmRuns = 0;
 
 	public AlgorithmRunLimitCondition(long algorithmRunLimit)
 	{
@@ -28,14 +28,10 @@ public class AlgorithmRunLimitCondition extends AbstractTerminationCondition imp
 
 	@Override
 	public boolean haveToStop() {
-		return (algorithmRuns > algorithmRunLimit);
+		return (algorithmRuns >= algorithmRunLimit);
 			
 	}
 
-	@Override
-	public Collection<ValueMaxStatus> currentStatus() {
-		return Collections.singleton(new ValueMaxStatus(ConditionType.TUNERTIME, algorithmRuns, algorithmRunLimit, NAME, "Algorithm Runs", ""));
-	}
 
 	@Override
 	public synchronized void handleEvent(AlgorithmRunCompletedEvent event) {
@@ -54,6 +50,12 @@ public class AlgorithmRunLimitCondition extends AbstractTerminationCondition imp
 	}
 
 
+	@Override
+	public Collection<ValueMaxStatus> currentStatus() {
+		return Collections.singleton(new ValueMaxStatus(ConditionType.NUMBER_OF_RUNS, algorithmRuns, algorithmRunLimit, NAME, "Algorithm Runs", ""));
+	}
+
+	
 	@Override
 	public String getTerminationReason() {
 		if(haveToStop())

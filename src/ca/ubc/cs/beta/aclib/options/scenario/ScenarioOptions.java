@@ -17,6 +17,7 @@ import ca.ubc.cs.beta.aclib.objectives.RunObjective;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceOptions;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceOptions.TrainTestInstances;
+import ca.ubc.cs.beta.aclib.termination.TerminationCriteriaOptions;
 
 /**
  * Object which contains all information about a scenario
@@ -36,7 +37,7 @@ public class ScenarioOptions extends AbstractOptions{
 	public OverallObjective interInstanceObj = OverallObjective.MEAN;
 	
 	@ParametersDelegate
-	public LimitOptions limitOptions = new LimitOptions();
+	public TerminationCriteriaOptions limitOptions = new TerminationCriteriaOptions();
 	
 	
 	@ParametersDelegate

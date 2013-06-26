@@ -20,11 +20,11 @@ public class CPULimitCondition extends AbstractTerminationCondition
 
 	
 	private final double tunerTimeLimit;
-	private double currentTime;
+	private volatile double currentTime;
 	
 
 	private final String NAME = "CPUTIME";
-	private boolean countACTime;
+	private final boolean countACTime;
 
 	public CPULimitCondition(double tunerTimeLimit, boolean countACTime)
 	{
