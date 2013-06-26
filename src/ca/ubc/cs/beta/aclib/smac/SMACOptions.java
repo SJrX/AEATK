@@ -230,7 +230,7 @@ public class SMACOptions extends AbstractOptions {
 		File outputDir = new File(this.scenarioConfig.outputDirectory + File.separator + runGroupName);
 		if(!outputDir.isAbsolute())
 		{
-			outputDir = new File(experimentDir + File.separator + outputDir + File.separator + runGroupName);
+			outputDir = new File(experimentDir + File.separator + this.scenarioConfig.outputDirectory + File.separator + runGroupName);
 		}
 		
 		return outputDir.getAbsolutePath();
