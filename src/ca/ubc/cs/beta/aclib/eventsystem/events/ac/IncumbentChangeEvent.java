@@ -7,20 +7,20 @@ public class IncumbentChangeEvent extends AbstractTimeEvent{
 
 
 	
-	private final double empericalPerformance;
+	private final double empiricalPerformance;
 	private final ParamConfiguration incumbent;
 	private final int runCount;
 
-	public IncumbentChangeEvent( double empericalPerformance , ParamConfiguration incumbent, int runCount) {
-		this.empericalPerformance = empericalPerformance;
+	public IncumbentChangeEvent( double empiricalPerformance , ParamConfiguration incumbent, int runCount) {
+		this.empiricalPerformance = empiricalPerformance;
 		this.incumbent = incumbent;
 		this.runCount = runCount;
 		
 	}
 
 
-	public double getEmpericalPerformance() {
-		return empericalPerformance;
+	public double getEmpiricalPerformance() {
+		return empiricalPerformance;
 	}
 
 	public ParamConfiguration getIncumbent() {

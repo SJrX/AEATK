@@ -47,53 +47,58 @@ public abstract class AbstractOptions {
 				if(f.getName().toLowerCase().contains("password"))
 				{
 					line.append("<<<PASSWORD CENSORED>>>");
-				}
-				Class<?> o = f.getType();
-				if(o.isPrimitive())
-				{
-					line.append(f.get(this).toString());
+					
+				
 				} else
 				{
-					Object obj = f.get(this);
-					if(obj == null)
+					Class<?> o = f.getType();
+					if(o.isPrimitive())
 					{
-						line.append("null");
-					} else if(obj instanceof File)
+						line.append(f.get(this).toString());
+					} else
 					{
-						line.append(((File) obj).getAbsolutePath());
-					} else if (obj instanceof String)
-					{
-						line.append(obj);
-					} else if (obj instanceof Long)
-					{
-						line.append(obj.toString());
-					} else if(obj instanceof Integer)
-					{
-						line.append(obj.toString());
-					} else if (obj instanceof Enum)
-					{
-						line.append(((Enum<?>) obj).name());
-					} else if (obj instanceof AbstractOptions)
-					{
-						isAbstractOption = true;
-						line.append(((AbstractOptions) obj).toString(initialTabs+2));
-					}  else if( obj instanceof List)
-					{
-						line.append(Arrays.toString(((List<?>) obj).toArray()));
-					} else if(obj instanceof Map)
-					{
-						line.append(obj.toString());
-					} else if(obj instanceof Boolean)
-					{
-						line.append(obj.toString());
+						Object obj = f.get(this);
+						if(obj == null)
+						{
+							line.append("null");
+						} else if(obj instanceof File)
+						{
+							line.append(((File) obj).getAbsolutePath());
+						} else if (obj instanceof String)
+						{
+							line.append(obj);
+						} else if (obj instanceof Long)
+						{
+							line.append(obj.toString());
+						} else if(obj instanceof Integer)
+						{
+							line.append(obj.toString());
+						} else if (obj instanceof Enum)
+						{
+							line.append(((Enum<?>) obj).name());
+						} else if (obj instanceof AbstractOptions)
+						{
+							isAbstractOption = true;
+							line.append(((AbstractOptions) obj).toString(initialTabs+2));
+						}  else if( obj instanceof List)
+						{
+							line.append(Arrays.toString(((List<?>) obj).toArray()));
+						} else if(obj instanceof Map)
+						{
+							line.append(obj.toString());
+						} else if(obj instanceof Boolean)
+						{
+							line.append(obj.toString());
+						}
+						else {
+							/*
+							 * We take a cautious approach here, we want every object to have a MEANINGFUL toString() method
+							 * so we only add types for things we know provide this
+							 */
+							throw new IllegalArgumentException("Failed to convert type configuration option to a string " + f.getName() + "=" +  obj + " type: " + o) ;
+						}
 					}
-					else {
-						/*
-						 * We take a cautious approach here, we want every object to have a MEANINGFUL toString() method
-						 * so we only add types for things we know provide this
-						 */
-						throw new IllegalArgumentException("Failed to convert type configuration option to a string " + f.getName() + "=" +  obj + " type: " + o) ;
-					}
+					
 				}
 				if(!isAbstractOption == true)
 				{

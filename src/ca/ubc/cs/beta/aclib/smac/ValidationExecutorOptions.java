@@ -67,8 +67,8 @@ public class ValidationExecutorOptions extends AbstractOptions {
 	@Parameter(names="--useScenarioOutDir", description="Use the scenarios output directory")
 	public boolean useScenarioOutDir = false;
 
-	@Parameter(names="--empericalPerformance", description="Estimated performance of configuration on training set (-1 means use the trajectory file value or 0 if not trajectory file)")
-	public double empericalPerformance = -1; 
+	@Parameter(names={"--empirical-performance","--empiricalPerformance"}, description="Estimated performance of configuration on training set (-1 means use the trajectory file value or 0 if not trajectory file)")
+	public double empiricalPerformance = -1; 
 	
 	@Parameter(names="--tunerOverheadTime", description="Amount of Tuner Overhead time to report in the output (-1 means use trajectory file overhead or 0 if no trajectory file)")
 	public double tunerOverheadTime = -1;

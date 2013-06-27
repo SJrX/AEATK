@@ -30,7 +30,7 @@ public class ParamConfigurationIncumbentChangerOriginTracker implements	EventHan
 	{
 		
 		
-		this.configTracker.addConfiguration(event.getIncumbent(), "Incumbent", "Performance="+event.getEmpericalPerformance(), "Runs=" + event.getRunCount());
+		this.configTracker.addConfiguration(event.getIncumbent(), "Incumbent", "Performance="+event.getEmpiricalPerformance(), "Runs=" + event.getRunCount());
 	
 		if(lastIncumbent != null)
 		{

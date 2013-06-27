@@ -46,7 +46,7 @@ public class TrajectoryFileParser {
 			}
 			
 			double tunerTime = Double.valueOf(dataRow[0]);
-			double empericalPerformance = Double.valueOf(dataRow[1]);
+			double empiricalPerformance = Double.valueOf(dataRow[1]);
 			double wallTime = Double.valueOf(dataRow[2]);
 			if(wallTime == -1)
 			{
@@ -57,7 +57,7 @@ public class TrajectoryFileParser {
 			
 			ParamConfiguration configObj = configSpace.getConfigurationFromString(sb.toString(), StringFormat.STATEFILE_SYNTAX);
 			
-			TrajectoryFileEntry tfe = new TrajectoryFileEntry(configObj,tunerTime, wallTime, empericalPerformance, overhead );
+			TrajectoryFileEntry tfe = new TrajectoryFileEntry(configObj,tunerTime, wallTime, empiricalPerformance, overhead );
 			
 			skipList.put(Double.valueOf(time), tfe);
 			
@@ -92,7 +92,7 @@ public class TrajectoryFileParser {
 			}
 			//System.out.println(time + "=>" + sb.toString());
 			double tunerTime = Double.valueOf(dataRow[0]);
-			Double empericalPerformance = Double.valueOf(dataRow[1]);
+			Double empiricalPerformance = Double.valueOf(dataRow[1]);
 			Double wallTime = Double.valueOf(dataRow[2]);
 			Double overhead = Double.valueOf(dataRow[4]);
 			
@@ -103,7 +103,7 @@ public class TrajectoryFileParser {
 		
 			ParamConfiguration configObj = configSpace.getConfigurationFromString(sb.toString(), StringFormat.STATEFILE_SYNTAX);
 			
-			TrajectoryFileEntry tfe = new TrajectoryFileEntry(configObj, tunerTime, wallTime, empericalPerformance, overhead);
+			TrajectoryFileEntry tfe = new TrajectoryFileEntry(configObj, tunerTime, wallTime, empiricalPerformance, overhead);
 			
 			skipList.put(Double.valueOf(time), tfe);
 			
