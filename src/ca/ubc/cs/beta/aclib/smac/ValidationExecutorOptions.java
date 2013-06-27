@@ -5,6 +5,7 @@ import java.io.IOException;
 import java.util.List;
 
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aclib.help.HelpOptions;
 import ca.ubc.cs.beta.aclib.misc.file.HomeFileUtils;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.FixedPositiveInteger;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
@@ -46,6 +47,8 @@ public class ValidationExecutorOptions extends AbstractOptions {
 	public SeedOptions seedOptions = new SeedOptions();
 	
 	
+	@ParametersDelegate
+	public HelpOptions helpOptions = new HelpOptions();
 	/*
 	@Parameter(names="--seed", description="Seed for Random Number Generator")
 	public long seed = 0;

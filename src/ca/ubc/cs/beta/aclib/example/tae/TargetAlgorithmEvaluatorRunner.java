@@ -67,7 +67,9 @@ public class TargetAlgorithmEvaluatorRunner
 			//Parses the options given in the args array and sets the values
 			JCommander jcom;
 			try {
-			jcom = JCommanderHelper.getJCommander(mainOptions, taeOptions);
+			//This will check for help and version arguments 
+			jcom = JCommanderHelper.getJCommanderAndCheckForHelp(args, mainOptions, taeOptions);
+			
 			jcom.parse(args);
 			} finally
 			{
@@ -176,13 +178,7 @@ public class TargetAlgorithmEvaluatorRunner
 			}
 		} catch(ParameterException e)
 		{	
-			//Converts the actual option objects into objects "UsageSection"s that are easy to manipulate
-			List<UsageSection> sections = ConfigToLaTeX.getParameters(mainOptions, taeOptions);
 			
-			boolean showHiddenParameters = false;
-			
-			//A much nicer usage screen than JCommander's 
-			ConfigToLaTeX.usage(sections, showHiddenParameters);
 			
 			log.error(e.getMessage());
 		}

@@ -11,6 +11,7 @@ import com.beust.jcommander.ParametersDelegate;
 
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionOptions;
+import ca.ubc.cs.beta.aclib.help.HelpOptions;
 import ca.ubc.cs.beta.aclib.misc.file.HomeFileUtils;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.LongGreaterThanNegativeTwoValidator;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
@@ -79,5 +80,8 @@ public class TargetAlgorithmEvaluatorRunnerOptions extends AbstractOptions {
 	public AlgorithmExecutionConfig getAlgorithmExecutionConfig() {
 		return this.algoExecOptions.getAlgorithmExecutionConfig(null);
 	}
+	
+	@ParametersDelegate
+	HelpOptions help = new HelpOptions();
 	
 }

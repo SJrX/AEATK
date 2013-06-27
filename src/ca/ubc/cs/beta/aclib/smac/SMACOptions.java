@@ -9,6 +9,7 @@ import java.util.List;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.expectedimprovement.ExpectedImprovementFunctions;
+import ca.ubc.cs.beta.aclib.help.HelpOptions;
 import ca.ubc.cs.beta.aclib.initialization.InitializationMode;
 import ca.ubc.cs.beta.aclib.misc.file.HomeFileUtils;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.*;
@@ -131,21 +132,9 @@ public class SMACOptions extends AbstractOptions {
 	@Parameter(names={"--optionFile2","--secondaryOptionsFile"}, description="read options from file")
 	public File optionFile2;
 	
-	/**
-	 * Note most of these actually will never be read as we will silently scan for them in the input arguments to avoid logging
-	 */
-	@UsageTextField(defaultValues="", domain="")
-	@Parameter(names="--showHiddenParameters", description="show hidden parameters that no one has use for, and probably just break SMAC (no-arguments)")
-	public boolean showHiddenParameters = false;
+	@ParametersDelegate
+	public HelpOptions help = new HelpOptions();
 	
-	@UsageTextField(defaultValues="", domain="" )
-	@Parameter(names={"--help","-?","/?","-h"}, description="show help")
-	public boolean showHelp = false;
-	
-	@UsageTextField(defaultValues="", domain="")
-	@Parameter(names={"-v","--version"}, description="print version and exit")
-	public boolean showVersion = false;
-
 	@Parameter(names={"--initialIncumbent"}, description="Initial Incumbent to use for configuration (you can use RANDOM, or DEFAULT as a special string to get a RANDOM or the DEFAULT configuration as needed). Other configurations are specified as: -name 'value' -name 'value' ... For instance: --quick-sort 'on' ")
 	public String initialIncumbent = "DEFAULT";
 
