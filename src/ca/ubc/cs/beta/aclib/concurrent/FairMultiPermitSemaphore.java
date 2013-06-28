@@ -113,4 +113,8 @@ public class FairMultiPermitSemaphore {
 	{
 		return this.semaphore.availablePermits();
 	}
+
+	public void drainPermits() {
+		 this.semaphore.drainPermits();		
+	}
 }
