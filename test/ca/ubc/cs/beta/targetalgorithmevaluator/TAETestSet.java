@@ -236,14 +236,17 @@ public class TAETestSet {
 		System.setOut(new PrintStream(bout));
 		
 		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
-		assertTrue(bout.toString().contains("Algorithm has exceeded allowed wallclock time by 49.99 seconds"));
-		assertTrue(bout.toString().contains("Algorithm has exceeded allowed runtime by 1.99 seconds"));
-		assertTrue(bout.toString().contains("Algorithm has exceeded allowed runtime by 3.99 seconds"));
-		assertTrue(bout.toString().contains("Algorithm has exceeded allowed runtime by 5.99 seconds"));
-		assertTrue(bout.toString().contains("Algorithm has exceeded allowed runtime by 7.99 seconds"));
 		
 		System.setOut(out);
 		System.out.println(bout.toString());
+		
+		
+		assertTrue(bout.toString().contains("Algorithm Run Result reported wallclock time of 50.0 (secs) that exceeded it's cutoff time of "));
+		assertTrue(bout.toString().contains("exceeded it's cutoff time of 0.01 (secs) by 1.99 (secs)"));
+		assertTrue(bout.toString().contains("exceeded it's cutoff time of 0.01 (secs) by 3.99 (secs)"));
+		assertTrue(bout.toString().contains("exceeded it's cutoff time of 0.01 (secs) by 5.99 (secs)"));
+		assertTrue(bout.toString().contains("exceeded it's cutoff time of 0.01 (secs) by 7.99 (secs)"));
+		
 		
 		for(AlgorithmRun run : runs)
 		{
@@ -1950,13 +1953,15 @@ public class TAETestSet {
 		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
 		
 		options.concurrentExecution = true;
-		
+		options.cores = 100;
 		
 		tae = fact.getTargetAlgorithmEvaluator(execConfig, options);
 		
 		tae = new BoundedTargetAlgorithmEvaluator(tae,100, execConfig);
 		
-		AutomaticConfiguratorFactory.setMaximumNumberOfThreads(100);
+		
+		
+		
 		final AtomicBoolean finishedRuns = new AtomicBoolean(false);
 		Runnable run = new Runnable()
 		{
@@ -2110,7 +2115,7 @@ public class TAETestSet {
 		b.append(" ");
 		b.append(TrueSleepyParamEchoExecutor.class.getCanonicalName());
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
-		AutomaticConfiguratorFactory.setMaximumNumberOfThreads(2);
+		
 		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
 		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
 		
@@ -2118,7 +2123,7 @@ public class TAETestSet {
 		options.logAllProcessOutput = true;
 		options.concurrentExecution = true;
 		options.observerFrequency = 2000;
-		
+		options.cores = 2;
 		
 		tae = fact.getTargetAlgorithmEvaluator(execConfig, options);	
 		TargetAlgorithmEvaluator cliTAE = tae;
@@ -2174,7 +2179,7 @@ public class TAETestSet {
 		b.append(" ");
 		b.append(ParamEchoExecutor.class.getCanonicalName());
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
-		AutomaticConfiguratorFactory.setMaximumNumberOfThreads(2);
+		
 		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
 		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
 		
@@ -2182,7 +2187,7 @@ public class TAETestSet {
 		options.logAllProcessOutput = true;
 		options.concurrentExecution = true;
 		options.observerFrequency = 2000;
-		
+		options.cores = 2;
 		
 		tae = fact.getTargetAlgorithmEvaluator(execConfig, options);	
 		TargetAlgorithmEvaluator cliTAE = tae;
@@ -2240,10 +2245,12 @@ public class TAETestSet {
 		b.append(" ");
 		b.append(FiveSecondSleepingParamEchoExecutor.class.getCanonicalName());
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
-		AutomaticConfiguratorFactory.setMaximumNumberOfThreads(2);
+		
+		
 		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
 		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
 		
+		options.cores = 2;
 		options.logAllCallStrings = true;
 		options.logAllProcessOutput = true;
 		options.concurrentExecution = true;

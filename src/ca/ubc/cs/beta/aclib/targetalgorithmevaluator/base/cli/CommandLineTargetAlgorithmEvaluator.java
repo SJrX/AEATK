@@ -79,7 +79,7 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractSyncTargetAlgor
 	{
 		
 		
-		if(concurrentExecution)
+		if(concurrentExecution && options.cores > 1)
 		{
 			log.debug("Using concurrent algorithm runner");
 			return AutomaticConfiguratorFactory.getConcurrentAlgorithmRunner(execConfig,runConfigs,obs, options);

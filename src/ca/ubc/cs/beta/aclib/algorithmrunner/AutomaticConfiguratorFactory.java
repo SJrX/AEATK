@@ -27,21 +27,7 @@ public class AutomaticConfiguratorFactory {
 
 	
 	private static int maxThreads = Runtime.getRuntime().availableProcessors();
-	
-	/**
-	 * Sets the maximum number of threads (defaults to the number of available processors)
-	 * <p>
-	 * <b>Note:</b> This method was only added to aid in Unit testing and speeding up some dummy
-	 * algorithm runs. This mechanism in general does not work and should be avoided, if other TargetAlgorithmEvaluators
-	 * need more control over this, that interface should be refactored.
-	 *
-	 * @param threads that can be executed directly
-	 * @deprecated
-	 */
-	public static void setMaximumNumberOfThreads(int threads)
-	{
-		maxThreads = threads;
-	}
+
 	
 	private static Logger log = LoggerFactory.getLogger(AutomaticConfiguratorFactory.class);
 	/**
@@ -67,7 +53,13 @@ public class AutomaticConfiguratorFactory {
 		{
 			return getSingleThreadedAlgorithmRunner(execConfig, runConfigs,obs, options);
 		}
-		return getConcurrentAlgorithmRunner(execConfig, runConfigs, maxThreads, obs, options);
+		
+		if(options.cores > maxThreads)
+		{
+			log.warn("Number of cores requested is seemingly greater than the number of available cores. This may affect runtime measurements");
+		}
+		
+		return getConcurrentAlgorithmRunner(execConfig, runConfigs, options.cores, obs, options);
 	}
 	
 	/**
