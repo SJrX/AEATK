@@ -90,7 +90,9 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 				public void currentStatus(List<? extends KillableAlgorithmRun> runs) {
 					if(runStatus.get(runs.get(0).getRunConfig()).isRunCompleted() && !runs.get(0).isRunCompleted())
 					{
-						throw new IllegalStateException("RACE CONDITION");
+						StringBuilder sb = new StringBuilder("Current Run Status being notified: " + runs.get(0).getRunConfig());
+						sb.append("\n Current status in table").append(runStatus.get(runs.get(0).getRunConfig()).getRunConfig());
+						throw new IllegalStateException("RACE CONDITION: " + sb.toString());
 					}
 					runStatus.put(runs.get(0).getRunConfig(), runs.get(0));
 					changes.release();
