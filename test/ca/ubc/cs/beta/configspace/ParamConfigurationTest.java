@@ -1380,6 +1380,30 @@ public class ParamConfigurationTest {
 		ParamConfiguration duplicateConfig = configSpace.getConfigurationFromString("-foo 'a' -bar 'e'", StringFormat.NODB_SYNTAX);
 	}
 	
+	/**
+	 * Related to bug 1728
+	 */
+	@Test
+	public void testFromStringMissingInactive()
+	{
+
+		ParamConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("foo {a,b,c} [a]\nbar{e,d,f} [f]\n \nbar | foo in { a }");		
+	
+		//==== Parameter value for cat is missing, should tank
+		ParamConfiguration duplicateConfig = configSpace.getConfigurationFromString("-foo 'b' ", StringFormat.NODB_SYNTAX);
+		
+		assertEquals("Expected Default value to be set", duplicateConfig.get("bar"), "f");
+	
+		duplicateConfig = configSpace.getConfigurationFromString("-foo 'b' -bar 'd'", StringFormat.NODB_SYNTAX);
+		
+		assertEquals("Expected Default value to be set", duplicateConfig.get("bar"), "d");
+	
+		System.out.println(duplicateConfig.get("bar"));
+		
+		
+	}
+	
+	
 	
 	/**
 	 * Related to bug 1728

@@ -1339,7 +1339,10 @@ public class ParamConfigurationSpace implements Serializable {
 			allParameters.removeAll(config.getActiveParameters());
 			for(String inactiveParameter : allParameters)
 			{
-				config.put(inactiveParameter, defaultConfig.get(inactiveParameter));
+				if(config.get(inactiveParameter) == null)
+				{
+					config.put(inactiveParameter, defaultConfig.get(inactiveParameter));
+				}
 			}
 			
 			

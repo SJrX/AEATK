@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -28,10 +29,12 @@ import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.configspace.ParamFileHelper;
 import ca.ubc.cs.beta.aclib.exceptions.*;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aclib.misc.debug.DebugUtil;
 import ca.ubc.cs.beta.aclib.objectives.OverallObjective;
 import ca.ubc.cs.beta.aclib.objectives.RunObjective;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
+import ca.ubc.cs.beta.aclib.random.SeedableRandomPool;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.runhistory.NewRunHistory;
 import ca.ubc.cs.beta.aclib.runhistory.RunData;
@@ -59,6 +62,7 @@ public class LegacyStateDeserializerTester {
 	
 	private static AlgorithmExecutionConfig execConfig = new AlgorithmExecutionConfig("foo", "bar", configSpace, false, false, 300);
 	
+	private static SeedableRandomPool pool = new SeedableRandomPool(System.currentTimeMillis());
 	
 	@BeforeClass
 	public static void init()
@@ -70,6 +74,13 @@ public class LegacyStateDeserializerTester {
 			instances.add(new ProblemInstance("Instance " + i,i));
 		}
 	
+	}
+	
+	
+	@AfterClass
+	public static void afterClass()
+	{
+		pool.logUsage();
 	}
 	
 	PrintStream old;
@@ -124,41 +135,47 @@ public class LegacyStateDeserializerTester {
 	@Test
 	public void saveRestoreFidelityTest() throws IOException, DuplicateRunException
 	{
-		Random rand = new Random();
-		
-		ParamConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("a [1,1000] [1]i \n b { on, off } [off] \n a | b in { on } ");
-		AlgorithmExecutionConfig execConfig = new AlgorithmExecutionConfig("foo", "foo", configSpace, false, false, 0);
-		
-		File tempDir = createTempDirectory();
 		
 		
+		Random rand = pool.getRandom(DebugUtil.getCurrentMethodName());
+		for(int i=0; i < 10; i++)
+		{
+			
 		
-		StateFactory sf = new LegacyStateFactory(tempDir.getAbsolutePath(), tempDir.getAbsolutePath());
-		
-		
-		StateSerializer ss = sf.getStateSerializer("it", 1);
-		
-		ParamConfiguration config = configSpace.getRandomConfiguration(rand);
-		
-		ProblemInstance pi = new ProblemInstance("test");
-		RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(pi,1), 0, config);
-		AlgorithmRun run = new ExistingAlgorithmRun(execConfig, rc,RunResult.SAT, 0,0,0,1);
-		//(InstanceSeedGenerator instanceSeedGenerator, OverallObjective intraInstanceObjective,  OverallObjective interInstanceObjective, RunObjective runObj)
-		
-		RunHistory rh = new NewRunHistory( OverallObjective.MEAN, OverallObjective.MEAN ,RunObjective.RUNTIME);
-		
-		
-		rh.append(run);
-		ss.setRunHistory(rh);
-		ss.save();
-		
-		StateDeserializer sd = sf.getStateDeserializer("it",1, configSpace, Collections.singletonList(pi), execConfig,new NewRunHistory( OverallObjective.MEAN10,OverallObjective.MEAN, RunObjective.RUNTIME));
-		System.out.println(Arrays.toString(config.toValueArray()));
-		ParamConfiguration restoredConfig = sd.getRunHistory().getAlgorithmRuns().get(0).getRunConfig().getParamConfiguration();
-		System.out.println(Arrays.toString(restoredConfig.toValueArray()));
-		assertTrue("Testing for equality ",config.equals(restoredConfig));
-		assertTrue("Testing for Array equality", Arrays.equals(config.toValueArray(), restoredConfig.toValueArray()));
-		
+			ParamConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("a [1,1000] [1]i \n b { on, off } [off] \n a | b in { on } ");
+			AlgorithmExecutionConfig execConfig = new AlgorithmExecutionConfig("foo", "foo", configSpace, false, false, 0);
+			
+			File tempDir = createTempDirectory();
+			
+			
+			
+			StateFactory sf = new LegacyStateFactory(tempDir.getAbsolutePath(), tempDir.getAbsolutePath());
+			
+			
+			StateSerializer ss = sf.getStateSerializer("it", 1);
+			
+			ParamConfiguration config = configSpace.getRandomConfiguration(rand);
+			
+			ProblemInstance pi = new ProblemInstance("test");
+			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(pi,1), 0, config);
+			AlgorithmRun run = new ExistingAlgorithmRun(execConfig, rc,RunResult.SAT, 0,0,0,1);
+			//(InstanceSeedGenerator instanceSeedGenerator, OverallObjective intraInstanceObjective,  OverallObjective interInstanceObjective, RunObjective runObj)
+			
+			RunHistory rh = new NewRunHistory( OverallObjective.MEAN, OverallObjective.MEAN ,RunObjective.RUNTIME);
+			
+			
+			rh.append(run);
+			ss.setRunHistory(rh);
+			ss.save();
+			System.out.println(Arrays.toString(config.toValueArray()));
+			
+			StateDeserializer sd = sf.getStateDeserializer("it",1, configSpace, Collections.singletonList(pi), execConfig,new NewRunHistory( OverallObjective.MEAN10,OverallObjective.MEAN, RunObjective.RUNTIME));
+			System.out.println(Arrays.toString(config.toValueArray()));
+			ParamConfiguration restoredConfig = sd.getRunHistory().getAlgorithmRuns().get(0).getRunConfig().getParamConfiguration();
+			System.out.println(Arrays.toString(restoredConfig.toValueArray()));
+			assertTrue("Testing for equality ",config.equals(restoredConfig));
+			assertTrue("Testing for Array equality", Arrays.equals(config.toValueArray(), restoredConfig.toValueArray()));
+		}
 		
 		
 	}
