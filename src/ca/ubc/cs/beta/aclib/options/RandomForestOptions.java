@@ -23,8 +23,9 @@ public class RandomForestOptions extends AbstractOptions{
 	@Parameter(names = {"--storeDataInLeaves"}, description = "store full data in leaves of trees")
 	public boolean storeDataInLeaves = false;
 	
+	@UsageTextField(defaultValues="true if optimizing runtime, false if optimizing quality")
 	@Parameter(names = {"--logModel"}, description = "store response values in log-normal form")
-	public boolean logModel = true;
+	public Boolean logModel = null;
 
 	@Parameter(names = {"--numTrees","--nTrees", "--numberOfTrees"}, description = "number of trees to create in random forest", validateWith=FixedPositiveInteger.class)
 	public int numTrees = 10;
