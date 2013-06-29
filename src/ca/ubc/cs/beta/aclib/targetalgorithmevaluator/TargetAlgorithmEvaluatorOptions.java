@@ -93,7 +93,13 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	@Parameter(names="--kill-run-exceeding-captime-factor", description="Attempt to kill the run that exceed their captime by this factor", validateWith=OneInfinityOpenInterval.class)
 	public double killCaptimeExceedingRunFactor = 2.5;
 
+	@Parameter(names="--check-for-unique-runconfigs", description="Checks that all submitted Run Configs in a batch are unique")
+	public boolean checkRunConfigsUnique = true;
 
+	@Parameter(names="--check-for-unique-runconfigs-exception", description="If true, we will throw an exception if duplicate run configurations are detected")
+	public boolean checkRunConfigsUniqueException = true;
+
+	
 	/**
 	 * Checks if the problem instances are compatible with the verify sat option
 	 * @param instances 
@@ -125,4 +131,6 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 		}
 		
 	}
+	
+	
 }

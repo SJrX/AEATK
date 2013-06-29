@@ -17,6 +17,7 @@ import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorOptions;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.debug.CheckForDuplicateRunConfigDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.debug.LeakingMemoryTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.debug.LogEveryTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.debug.RunHashCodeVerifyingAlgorithmEvalutor;
@@ -261,6 +262,15 @@ public class TargetAlgorithmEvaluatorBuilder {
 		}
 		
 		
+		if(options.checkRunConfigsUnique)
+		{
+			log.info("[TAE] Checking that every request in a batch is unique");
+			tae = new CheckForDuplicateRunConfigDecorator(tae, options.checkRunConfigsUniqueException);
+		} else
+		{
+			log.warn("[TAE] Not Checking that every request to the TAE is unique, this may cause weird errors");
+		}
+		 
 		log.debug("Final Target Algorithm Built is {}", tae);
 		return tae;
 	}

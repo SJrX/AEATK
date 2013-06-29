@@ -40,7 +40,7 @@ public interface TargetAlgorithmEvaluator {
 
 	/**
 	 * Evaluate a sequence of run configurations
-	 * @param runConfigs a list containing zero or more run configurations to evaluate
+	 * @param runConfigs a list containing zero or more unique run configurations to evaluate
 	 * @return	list of the exact same size as input containing the <code>AlgorithmRun</code> objects in the same order as runConfigs
 	 * @throws TargetAlgorithmAbortException
 	 */
@@ -48,7 +48,7 @@ public interface TargetAlgorithmEvaluator {
 
 	/**
 	 * Evaluate a sequence of run configurations
-	 * @param runConfigs	a list containing zero or more run configurations to evaluate
+	 * @param runConfigs	a list containing zero or more unique run configurations to evaluate
 	 * @param observer 	 	observer that will be notified of the current run status
 	 * @return	list of the exact same size as input containing the <code>AlgorithmRun</code> objects in the same order as runConfigs
 	 * @throws TargetAlgorithmAbortException
@@ -79,7 +79,7 @@ public interface TargetAlgorithmEvaluator {
 	 * delivered. Additionally if the runs are already complete (for persistent TAEs), the call back is guaranteed to fire to completion <i>before</i> the program exits
 	 * normally (that is you can do a normal shutdown, and the onSuccess method should fire)
 	 * 
-	 * @param runConfigs list of zero or more run configuration to evaluate
+	 * @param runConfigs list of zero or more unique run configuration to evaluate
 	 * @param callback   handler to invoke on completion or failure
 	 */
 	public void evaluateRunsAsync(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorCallback callback);
@@ -93,7 +93,7 @@ public interface TargetAlgorithmEvaluator {
 	 * delivered. Additionally if the runs are already complete (for persistent TAEs), the call back is guaranteed to fire to completion <i>before</i> the program exits
 	 * normally (that is you can do a normal shutdown, and the onSuccess method should fire)
 	 * 
-	 * @param runConfigs list of zero or more run configuration to evaluate
+	 * @param runConfigs list of zero or more unique run configuration to evaluate
 	 * @param callback   handler to invoke on completion or failure
 	 * @param observer	 observer that will be notified of the current run status
 	 */
