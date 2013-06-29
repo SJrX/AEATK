@@ -78,14 +78,16 @@ public class CheckForDuplicateRunConfigDecorator extends
 			{
 				log.error("\tRun Config: {} ", rc);
 			}
+			
+			if(throwException)
+			{
+				throw new IllegalStateException("Duplicate Run Configurations cannot be part of the same call of evaluateRun()/evaluateRunAsync()");
+			}
+		
 		}
 		
-		if(throwException)
-		{
-			throw new IllegalStateException("Duplicate Run Configurations cannot be part of the same call of evaluateRun()/evaluateRunAsync()");
-		}
+		
 	}
-	
 	public Set<RunConfig> findDuplicates(List<RunConfig> listContainingDuplicates)
 	{ 
 	  final Set<RunConfig> setToReturn = new HashSet(); 
