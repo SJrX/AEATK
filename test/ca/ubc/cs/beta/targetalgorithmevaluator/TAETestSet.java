@@ -897,7 +897,7 @@ public class TAETestSet {
 	}
 	
 	
-	@Test(expected=IllegalStateException.class)
+	@Test
 	public void testExceptionWithDuplicateRunConfigs()
 	{
 		AlgorithmExecutionConfig execConfig;
@@ -934,34 +934,34 @@ public class TAETestSet {
 			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
 			runConfigs.add(rc);
 		}
-		
-		runConfigs.add(runConfigs.get(0));
-		
-		
-		
-		System.out.println("Performing " + runConfigs.size() + " runs");
+
 		List<AlgorithmRun> runs;
+		System.out.println("Performing " + runConfigs.size() + " runs");
 		try {
 			runs = tae.evaluateRun(runConfigs);
 		} catch(IllegalStateException e)
 		{
+			//Unexpected
 			e.printStackTrace();
-			throw e;
-		}
-		
-		
-		for(AlgorithmRun run : runs)
-		{
-			ParamConfiguration config  = run.getRunConfig().getParamConfiguration();
-			assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
-			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
-			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
-			assertDEquals(config.get("seed"), run.getResultSeed(), 0.1);
-			assertEquals(RunResult.getAutomaticConfiguratorResultForKey(config.get("solved")), RunResult.UNSAT);
 			
-			assertEquals("",run.getAdditionalRunData()); //No Additional Run Data Expected
-
+			throw e;
+			
 		}
+
+		runConfigs.add(runConfigs.get(0));
+		
+		
+		try {
+			runs = tae.evaluateRun(runConfigs);
+			fail("Expected Exception");
+		} catch(IllegalStateException e)
+		{
+			System.out.println("Got exception which was expected: YAY:");
+			e.printStackTrace();
+			
+		}
+		
+	
 		
 	}
 	
