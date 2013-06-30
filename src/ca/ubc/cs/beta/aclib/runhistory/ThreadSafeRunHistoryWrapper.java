@@ -1,10 +1,13 @@
 package ca.ubc.cs.beta.aclib.runhistory;
 
 import java.util.Collection;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
@@ -19,7 +22,7 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 
 	private final RunHistory runHistory;
 	
-	private final ReentrantReadWriteLock myLock = new ReentrantReadWriteLock(true);
+	ReadWriteLockThreadTracker rwltt = new ReadWriteLockThreadTracker();
 	
 	//private final static Logger log = LoggerFactory.getLogger(ThreadSafeRunHistoryWrapper.class);
 	
@@ -32,15 +35,9 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 	public void append(Collection<AlgorithmRun> runs)
 			throws DuplicateRunException {
 
-		try 
-		{
-			myLock.readLock().unlock();
-			throw new IllegalStateException(" I should not be releasable");
-		} catch(IllegalMonitorStateException ex)
-		{
-			//System.out.println("I'm okay");
-		}
-		myLock.writeLock().lock();
+	
+		lockWrite();
+		
 		try {
 			for(AlgorithmRun run : runs)
 			{
@@ -50,7 +47,7 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 			
 		} finally
 		{
-			myLock.writeLock().unlock();
+			unlockWrite();
 		}
 		
 	}
@@ -60,22 +57,13 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 	public void append(AlgorithmRun run) throws DuplicateRunException {
 		
 		
-		try 
-		{
-			myLock.readLock().unlock();
-			throw new IllegalStateException(" I should not be releasable");
-		} catch(IllegalMonitorStateException ex)
-		{
-			//System.out.println("I'm okay");
-		}
-		
-			myLock.writeLock().lock();
+		lockWrite();
 		try {
 			//log.debug("Appending single run {} " + run.getRunConfig());
 			runHistory.append(run);
 		} finally
 		{
-			myLock.writeLock().unlock();
+			unlockWrite();
 		}
 		
 		
@@ -83,59 +71,59 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 
 	@Override
 	public RunObjective getRunObjective() {
-		myLock.readLock().lock();
+		lockRead();
 		
 		try {
 			return runHistory.getRunObjective();
 		} finally
 		{
-			myLock.readLock().unlock();
+			unlockRead();
 		}
 	}
 
 	@Override
 	public OverallObjective getOverallObjective() {
-		myLock.readLock().lock();
+		lockRead();
 		try {
 			return runHistory.getOverallObjective();
 		} finally
 		{
-			myLock.readLock().unlock();
+			unlockRead();
 		}
 	}
 
 	@Override
 	public void incrementIteration() {
-		myLock.writeLock().lock();
+		lockWrite();
 		
 		try {
 			 runHistory.incrementIteration();
 		} finally
 		{
-			myLock.writeLock().unlock();
+			unlockWrite();
 		}
 	}
 
 	@Override
 	public int getIteration() {
 
-		myLock.readLock().lock();
+		lockRead();
 		try {
 			return runHistory.getIteration();
 		} finally
 		{
-			myLock.readLock().unlock();
+			unlockRead();
 		}
 	}
 
 	@Override
 	public Set<ProblemInstance> getInstancesRan(ParamConfiguration config) {
-		myLock.readLock().lock();
+		lockRead();
 		try {
 			return runHistory.getInstancesRan(config);
 		} finally
 		{
-			myLock.readLock().unlock();
+			unlockRead();
 		}
 	}
 
@@ -143,24 +131,24 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 	public Set<ProblemInstanceSeedPair> getAlgorithmInstanceSeedPairsRan(
 			ParamConfiguration config) {
 		
-		myLock.readLock().lock();
+		lockRead();
 		try {
 			return runHistory.getAlgorithmInstanceSeedPairsRan(config);
 		} finally
 		{
-			myLock.readLock().unlock();
+			unlockRead();
 		}
 	}
 
 	@Override
 	public double getEmpiricalCost(ParamConfiguration config,
 			Set<ProblemInstance> instanceSet, double cutoffTime) {
-		myLock.readLock().lock();
+		lockRead();
 		try {
 			return runHistory.getEmpiricalCost(config, instanceSet, cutoffTime);
 		} finally
 		{
-			myLock.readLock().unlock();
+			unlockRead();
 		}
 	}
 
@@ -168,12 +156,12 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 	public double getEmpiricalCost(ParamConfiguration config,
 			Set<ProblemInstance> instanceSet, double cutoffTime,
 			Map<ProblemInstance, Map<Long, Double>> hallucinatedValues) {
-		myLock.readLock().lock();
+		lockRead();
 		try {
 			return runHistory.getEmpiricalCost(config, instanceSet, cutoffTime, hallucinatedValues);
 		} finally
 		{
-			myLock.readLock().unlock();
+			unlockRead();
 		}
 	}
 
@@ -182,134 +170,134 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 			Set<ProblemInstance> instanceSet, double cutoffTime,
 			Map<ProblemInstance, Map<Long, Double>> hallucinatedValues,
 			double minimumResponseValue) {
-		myLock.readLock().lock();
+		lockRead();
 		try {
 			return runHistory.getEmpiricalCost(config, instanceSet, cutoffTime, hallucinatedValues, minimumResponseValue);
 		} finally
 		{
-			myLock.readLock().unlock();
+			unlockRead();
 		}
 	}
 
 
 	@Override
 	public int getTotalNumRunsOfConfig(ParamConfiguration config) {
-		myLock.readLock().lock();
+		lockRead();
 		try {
 			return runHistory.getTotalNumRunsOfConfig(config);
 		} finally
 		{
-			myLock.readLock().unlock();
+			unlockRead();
 		}
 	}
 
 	@Override
 	public double getTotalRunCost() {
-		myLock.readLock().lock();
+		lockRead();
 		try {
 			return runHistory.getTotalRunCost();
 		} finally
 		{
-			myLock.readLock().unlock();
+			unlockRead();
 		}
 	}
 
 	@Override
 	public double[] getRunResponseValues() {
-		myLock.readLock().lock();
+		lockRead();
 		try {
 			return runHistory.getRunResponseValues();
 		} finally
 		{
-			myLock.readLock().unlock();
+			unlockRead();
 		}
 	}
 
 	@Override
 	public Set<ProblemInstance> getUniqueInstancesRan() {
-		myLock.readLock().lock();
+		lockRead();
 		try {
 			return runHistory.getUniqueInstancesRan();
 		} finally
 		{
-			myLock.readLock().unlock();
+			unlockRead();
 		}
 	}
 
 	@Override
 	public Set<ParamConfiguration> getUniqueParamConfigurations() {
-		myLock.readLock().lock();
+		lockRead();
 		try {
 			return runHistory.getUniqueParamConfigurations();
 		} finally
 		{
-			myLock.readLock().unlock();
+			unlockRead();
 		}
 	}
 
 	@Override
 	public int[][] getParameterConfigurationInstancesRanByIndex() {
-		myLock.readLock().lock();
+		lockRead();
 		try {
 			return runHistory.getParameterConfigurationInstancesRanByIndex();
 		} finally
 		{
-			myLock.readLock().unlock();
+			unlockRead();
 		}
 	}
 
 	@Override
 	public boolean[] getCensoredFlagForRuns() {
-		myLock.readLock().lock();
+		lockRead();
 		try {
 			return runHistory.getCensoredFlagForRuns();
 		} finally
 		{
-			myLock.readLock().unlock();
+			unlockRead();
 		}
 	}
 
 	@Override
 	public List<ParamConfiguration> getAllParameterConfigurationsRan() {
-		myLock.readLock().lock();
+		lockRead();
 		try {
 			return runHistory.getAllParameterConfigurationsRan();
 		} finally
 		{
-			myLock.readLock().unlock();
+			unlockRead();
 		}
 	}
 
 	@Override
 	public double[][] getAllConfigurationsRanInValueArrayForm() {
-		myLock.readLock().lock();
+		lockRead();
 		try {
 			return runHistory.getAllConfigurationsRanInValueArrayForm();
 		} finally
 		{
-			myLock.readLock().unlock();
+			unlockRead();
 		}
 	}
 
 	@Override
 	public List<AlgorithmRun> getAlgorithmRuns() {
-		myLock.readLock().lock();
+		lockRead();
 		try {
 			return runHistory.getAlgorithmRuns();
 		} finally
 		{
-			myLock.readLock().unlock();
+			unlockRead();
 		}
 	}
 
 	@Override
 	public List<RunData> getAlgorithmRunData() {
-		myLock.readLock().lock();
+		lockRead();
 		try {
 			return runHistory.getAlgorithmRunData();
 		} finally
 		{
-			myLock.readLock().unlock();
+			unlockRead();
 	
 		}
 		
@@ -321,12 +309,12 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 	@Override
 	public Set<ProblemInstanceSeedPair> getCappedAlgorithmInstanceSeedPairs(
 			ParamConfiguration config) {
-		myLock.readLock().lock();
+		lockRead();
 		try {
 			return runHistory.getCappedAlgorithmInstanceSeedPairs(config);
 		} finally
 		{
-			myLock.readLock().unlock();
+			unlockRead();
 	
 		}
 	}
@@ -334,12 +322,12 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 	@Override
 	public double getEmpiricalPISPCost(ParamConfiguration config,
 			Set<ProblemInstanceSeedPair> instanceSet, double cutoffTime) {
-		myLock.readLock().lock();
+		lockRead();
 		try {
 			return runHistory.getEmpiricalPISPCost(config, instanceSet, cutoffTime);
 		} finally
 		{
-			myLock.readLock().unlock();
+			unlockRead();
 	
 		}
 		
@@ -349,24 +337,24 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 	public double getEmpiricalPISPCost(ParamConfiguration config,
 			Set<ProblemInstanceSeedPair> instanceSet, double cutoffTime,
 			Map<ProblemInstance, Map<Long, Double>> hallucinatedValues) {
-		myLock.readLock().lock();
+		lockRead();
 		try {
 			return runHistory.getEmpiricalPISPCost(config, instanceSet, cutoffTime, hallucinatedValues);
 		} finally
 		{
-			myLock.readLock().unlock();
+			unlockRead();
 	
 		}
 	}
 
 	@Override
 	public int getThetaIdx(ParamConfiguration configuration) {
-		myLock.readLock().lock();
+		lockRead();
 		try {
 			return runHistory.getThetaIdx(configuration);
 		} finally
 		{
-			myLock.readLock().unlock();
+			unlockRead();
 	
 		}
 	}
@@ -375,12 +363,12 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 	public double getEmpiricalCost(ParamConfiguration config,
 			Set<ProblemInstance> instanceSet, double cutoffTime,
 			double minimumResponseValue) {
-		myLock.readLock().lock();
+		lockRead();
 		try {
 			return runHistory.getEmpiricalCost(config, instanceSet, cutoffTime);
 		} finally
 		{
-			myLock.readLock().unlock();
+			unlockRead();
 	
 		}
 	}
@@ -388,12 +376,12 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 	@Override
 	public int getNumberOfUniqueProblemInstanceSeedPairsForConfiguration(
 			ParamConfiguration config) {
-		myLock.readLock().lock();
+		lockRead();
 		try {
 			return runHistory.getNumberOfUniqueProblemInstanceSeedPairsForConfiguration(config);
 		} finally
 		{
-			myLock.readLock().unlock();
+			unlockRead();
 	
 		}
 	}
@@ -401,24 +389,24 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 
 	@Override
 	public void readLock() {
-		myLock.readLock().lock();
+		lockRead();
 	}
 
 
 	@Override
 	public void releaseReadLock() {
-		myLock.readLock().unlock();
+		unlockRead();
 		
 	}
 
 	@Override
 	public List<AlgorithmRun> getAlgorithmRunData(ParamConfiguration config) {
-		myLock.readLock().lock();
+		lockRead();
 		try {
 			return runHistory.getAlgorithmRunData(config);
 		} finally
 		{
-			myLock.readLock().unlock();
+			unlockRead();
 	
 		}
 	}
@@ -426,24 +414,47 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 	@Override
 	public Map<ProblemInstance, LinkedHashMap<Long, Double>> getPerformanceForConfig(
 			ParamConfiguration configuration) {
-		myLock.readLock().lock();
+		lockRead();
 		try {
 			return runHistory.getPerformanceForConfig(configuration);
 		} finally
 		{
-			myLock.readLock().unlock();
+			unlockRead();
 		}
 	}
 
 	@Override
 	public List<Long> getSeedsUsedByInstance(ProblemInstance pi) {
-		myLock.readLock().lock();
+		lockRead();
 		try {
 			return runHistory.getSeedsUsedByInstance(pi);
 		} finally
 		{
-			myLock.readLock().unlock();
+			unlockRead();
 		}
+	}
+	
+	
+	public void lockRead()
+	{
+		this.rwltt.lockRead();
+	
+	}
+	
+	private void unlockRead()
+	{
+		this.rwltt.unlockRead();
+	}
+	
+	private void lockWrite()
+	{
+		this.rwltt.lockWrite();
+	}
+	
+	private void unlockWrite()
+	{
+		this.rwltt.unlockWrite();
+		
 	}
 
 

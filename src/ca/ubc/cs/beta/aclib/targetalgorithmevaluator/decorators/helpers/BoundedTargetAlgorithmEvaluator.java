@@ -12,6 +12,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicLong;
 import java.util.concurrent.locks.ReentrantLock;
 
 import net.jcip.annotations.ThreadSafe;
@@ -132,7 +133,7 @@ public class BoundedTargetAlgorithmEvaluator extends
 			
 			final AtomicBoolean failureOccured = new AtomicBoolean(false);
 			
-			
+			final AtomicLong lastUpdate = new AtomicLong(0);
 			
 			
 			while((numberOfDispatchedRuns < runConfigs.size()) && !failureOccured.get())
@@ -163,7 +164,7 @@ public class BoundedTargetAlgorithmEvaluator extends
 				final AtomicInteger releaseCount = new AtomicInteger(0);
 				
 				TargetAlgorithmEvaluatorCallback callBack = new SubListTargetAlgorithmEvaluatorCallback(availableRuns, numRunConfigToRun, runConfigs, handler, failureOccured, totalRunsNeeded, completedRuns, orderOfRuns, completionCallbackFired, execService, completedCount, releaseCount);
-				TargetAlgorithmEvaluatorRunObserver updateMapObserver = new BoundedTargetAlgorithmEvaluatorMapUpdateObserver(availableRuns, numRunConfigToRun, runConfigs, obs, outstandingRuns, orderOfRuns, killHandlers, completionCallbackFired,execService, completedCount, releaseCount);
+				TargetAlgorithmEvaluatorRunObserver updateMapObserver = new BoundedTargetAlgorithmEvaluatorMapUpdateObserver(availableRuns, numRunConfigToRun, runConfigs, obs, outstandingRuns, orderOfRuns, killHandlers, completionCallbackFired,execService, completedCount, releaseCount, lastUpdate);
 				
 				tae.evaluateRunsAsync(subList, callBack, updateMapObserver);
 			
@@ -237,9 +238,10 @@ public class BoundedTargetAlgorithmEvaluator extends
 		private final AtomicInteger completedCount;
 		private final AtomicInteger releaseCount;
 		private final int numRunConfigToRun;
+		private AtomicLong lastUpdate;
 		
 		
-		BoundedTargetAlgorithmEvaluatorMapUpdateObserver(FairMultiPermitSemaphore availableRuns, int numRunConfigToRun,  List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver callerRunObserver, Map<RunConfig, KillableAlgorithmRun> outstandingRuns, Map<RunConfig, Integer> orderOfRuns, Map<RunConfig, KillHandler> killHandlers, AtomicBoolean onSuccessFired, ExecutorService cachedThreadPool, AtomicInteger completedCount, AtomicInteger releaseCount )
+		BoundedTargetAlgorithmEvaluatorMapUpdateObserver(FairMultiPermitSemaphore availableRuns, int numRunConfigToRun,  List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver callerRunObserver, Map<RunConfig, KillableAlgorithmRun> outstandingRuns, Map<RunConfig, Integer> orderOfRuns, Map<RunConfig, KillHandler> killHandlers, AtomicBoolean onSuccessFired, ExecutorService cachedThreadPool, AtomicInteger completedCount, AtomicInteger releaseCount, AtomicLong lastUpdate )
 		{
 			this.numRunConfigToRun = numRunConfigToRun;
 			
@@ -253,6 +255,7 @@ public class BoundedTargetAlgorithmEvaluator extends
 			this.cachedThreadPool = cachedThreadPool;
 			this.completedCount = completedCount;
 			this.releaseCount = releaseCount;
+			this.lastUpdate = lastUpdate;
 			
 			
 		}
@@ -345,7 +348,7 @@ public class BoundedTargetAlgorithmEvaluator extends
 				}
 				
 				//=== Invoke callback in another thread 
-				
+				final long currentTime = System.currentTimeMillis();
 				if(callerRunObserver != null)
 				{
 					cachedThreadPool.execute(new Runnable()
@@ -354,16 +357,32 @@ public class BoundedTargetAlgorithmEvaluator extends
 						public void run() {
 							synchronized(runConfigs)
 							{
+								
+								long lastUpdateValue = lastUpdate.get();
+								
+								if(lastUpdateValue >= currentTime)
+								{
+									//A previous observer has fired
+									return;
+									
+								} else
+								{
+									if(!(lastUpdate.compareAndSet(lastUpdateValue, currentTime)))
+									{
+										throw new IllegalStateException("Inappropriate Synchronization detected on lastUpdate. All updates should have been guarded by a lock on runConfigs but somehow the value has changed");
+									}
+								}
+								
 								if(completedCallbackFired.get())
 								{
 									//Success already fired 
 									return;
 								}
 								try {
-								callerRunObserver.currentStatus(allRunsForCaller);
+									callerRunObserver.currentStatus(allRunsForCaller);
 								} catch(Throwable t)
 								{
-									log.error("Error occured while notifying observer ", t);
+									log.error("UNCAUGHT EXCEPTION: Error occured while notifying observer ", t);
 								}
 							}
 						}

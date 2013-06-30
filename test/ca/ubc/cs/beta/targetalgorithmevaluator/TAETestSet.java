@@ -5,7 +5,9 @@ import static org.junit.Assert.*;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.Thread.UncaughtExceptionHandler;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -2235,6 +2237,124 @@ public class TAETestSet {
 		assertTrue("Expected time for Bounded to be less than 5 seconds", watch2.time() < 5000 );
 		
 	}
+	
+
+	@Test
+	/**
+	 * Wraps a bunch of TAEs together and checks to see if an Illegal State Exception happens
+	 */
+	public void testBoundedTAEOrderOfCallsObserverPreserved()
+	{
+	
+		//Check that a submission of run 10 runs on a bound of <5 take 5,1,1,1,1, 5,1,1,1,1 takes 6 seconds and not 10.
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(TrueSleepyParamEchoExecutor.class.getCanonicalName());
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
+		
+		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
+		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
+		
+		options.logAllCallStrings = true;
+		options.logAllProcessOutput = true;
+		options.concurrentExecution = true;
+		options.observerFrequency = 50;
+		options.cores = 100;
+		
+		tae = fact.getTargetAlgorithmEvaluator(execConfig, options);	
+		TargetAlgorithmEvaluator cliTAE = tae;
+		tae = new BoundedTargetAlgorithmEvaluator(tae,50,execConfig);
+		tae = new BoundedTargetAlgorithmEvaluator(tae,50,execConfig);
+		tae = new BoundedTargetAlgorithmEvaluator(tae,50,execConfig);
+		tae = new BoundedTargetAlgorithmEvaluator(tae,50,execConfig);
+		
+		
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(4);
+		for(int i=0; i < 100; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			
+			config.put("runtime", String.valueOf(1 + (i%10)));
+			
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config);
+				runConfigs.add(rc);
+			}
+		}
+		
+		
+		
+		StopWatch watch = new AutoStartStopWatch();
+		System.out.println(watch.stop());
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		PrintStream pout = new PrintStream(bout);
+		
+		
+		
+		
+		System.out.println("Turning off STDOUT");
+		final PrintStream origOut = System.out;
+		System.setOut(pout);
+		
+		tae.evaluateRun(runConfigs, new TargetAlgorithmEvaluatorRunObserver()
+		{
+
+			final long startTime = System.currentTimeMillis();
+			int numCompleted = 0;
+			@Override
+			public void currentStatus(List<? extends KillableAlgorithmRun> runs) {
+				//if(Math.random() > 0.95)
+				//System.out.println("Called");
+				int complete = 0;
+				for(AlgorithmRun run : runs)
+				{
+					if(run.isRunCompleted())
+					{
+						complete++;
+					}
+				}
+				if(numCompleted < complete)
+				{
+					numCompleted = complete;
+					origOut.println("Status: " + numCompleted + " out of " + runs.size());
+				}
+				
+				
+			}
+				
+			
+		}
+		);
+		
+		System.setOut(origOut);
+		System.out.println("Outputting Everything...");
+		String output = bout.toString();
+		System.out.println(output);
+		
+		StopWatch watch2 = new AutoStartStopWatch();
+
+		System.out.println(watch2.stop());
+		if(output.contains("ERROR"))
+		{
+			fail("Output contained some error this is unexpeceted");
+		}
+		//assertTrue("Expected time for CLI Direct to be less than 5 seconds", watch.time() < 5000 );
+		
+		
+		//assertTrue("Expected time for Bounded to be less than 5 seconds", watch2.time() < 5000 );
+		
+	}
+	
+	
 	
 	
 	
