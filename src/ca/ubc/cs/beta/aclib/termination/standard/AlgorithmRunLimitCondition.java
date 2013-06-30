@@ -2,6 +2,7 @@ package ca.ubc.cs.beta.aclib.termination.standard;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicLong;
 
 import net.jcip.annotations.ThreadSafe;
 
@@ -18,7 +19,7 @@ public class AlgorithmRunLimitCondition extends AbstractTerminationCondition imp
 
 	private final String NAME = "NUMBER OF RUNS";
 	private final long algorithmRunLimit;
-	private volatile long algorithmRuns = 0;
+	private final AtomicLong algorithmRuns = new AtomicLong(0);
 
 	public AlgorithmRunLimitCondition(long algorithmRunLimit)
 	{
@@ -28,14 +29,14 @@ public class AlgorithmRunLimitCondition extends AbstractTerminationCondition imp
 
 	@Override
 	public boolean haveToStop() {
-		return (algorithmRuns >= algorithmRunLimit);
+		return (algorithmRuns.get() >= algorithmRunLimit);
 			
 	}
 
 
 	@Override
-	public synchronized void handleEvent(AlgorithmRunCompletedEvent event) {
-		algorithmRuns++;
+	public void handleEvent(AlgorithmRunCompletedEvent event) {
+		algorithmRuns.incrementAndGet();
 	}
 	
 	@Override
@@ -52,7 +53,7 @@ public class AlgorithmRunLimitCondition extends AbstractTerminationCondition imp
 
 	@Override
 	public Collection<ValueMaxStatus> currentStatus() {
-		return Collections.singleton(new ValueMaxStatus(ConditionType.NUMBER_OF_RUNS, algorithmRuns, algorithmRunLimit, NAME, "Algorithm Runs", ""));
+		return Collections.singleton(new ValueMaxStatus(ConditionType.NUMBER_OF_RUNS, algorithmRuns.get(), algorithmRunLimit, NAME, "Algorithm Runs", ""));
 	}
 
 	

@@ -2,6 +2,7 @@ package ca.ubc.cs.beta.aclib.termination.standard;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicLong;
 
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.eventsystem.EventHandler;
@@ -13,7 +14,7 @@ import ca.ubc.cs.beta.aclib.termination.ValueMaxStatus;
 public class ConfigurationSpaceExhaustedCondition extends AbstractTerminationCondition implements EventHandler<AlgorithmRunCompletedEvent> {
 
 	private final double runLimit;
-	private volatile long algorithmRuns = 0;
+	private final AtomicLong algorithmRuns = new AtomicLong(0);
 	private final String NAME = "CONFIG_SPACE";
 	private final int runsPerConfiguration;
 	private final double configSpaceSize;
@@ -28,7 +29,7 @@ public class ConfigurationSpaceExhaustedCondition extends AbstractTerminationCon
 	
 	@Override
 	public boolean haveToStop() {
-		if(this.runLimit  <= algorithmRuns)
+		if(this.runLimit  <= algorithmRuns.get())
 		{
 			return true;
 		} else
@@ -39,8 +40,8 @@ public class ConfigurationSpaceExhaustedCondition extends AbstractTerminationCon
 
 
 	@Override
-	public synchronized void handleEvent(AlgorithmRunCompletedEvent event) {
-		algorithmRuns++;
+	public void handleEvent(AlgorithmRunCompletedEvent event) {
+		algorithmRuns.incrementAndGet();
 	}
 	
 	@Override
@@ -57,7 +58,8 @@ public class ConfigurationSpaceExhaustedCondition extends AbstractTerminationCon
 
 	@Override
 	public Collection<ValueMaxStatus> currentStatus() {
-		return Collections.singleton(new ValueMaxStatus(ConditionType.NUMBER_OF_RUNS, algorithmRuns, runLimit, NAME, "Configuration Space Searched " + (  (this.algorithmRuns * 100 / (double) this.runLimit))+ " % \n" ));
+		long currentStatus = algorithmRuns.get();
+		return Collections.singleton(new ValueMaxStatus(ConditionType.NUMBER_OF_RUNS, currentStatus, runLimit, NAME, "Configuration Space Searched " + (  (currentStatus * 100 / (double) this.runLimit))+ " % \n" ));
 	}
 
 	

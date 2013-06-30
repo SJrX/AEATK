@@ -2,6 +2,7 @@ package ca.ubc.cs.beta.aclib.termination.standard;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicLong;
 
 import net.jcip.annotations.ThreadSafe;
 
@@ -19,7 +20,7 @@ public class ModelIterationTerminationCondition extends AbstractTerminationCondi
 
 	private final String NAME = "NUMBER OF RUNS";
 	private final  long modelBuildLimit;
-	private volatile long modelBuildIteration = 0;
+	private final AtomicLong modelBuildIteration = new AtomicLong(0);
 
 	public ModelIterationTerminationCondition(long modelBuildLimit)
 	{
@@ -29,18 +30,18 @@ public class ModelIterationTerminationCondition extends AbstractTerminationCondi
 
 	@Override
 	public boolean haveToStop() {
-		return (modelBuildIteration >= modelBuildLimit);
+		return (modelBuildIteration.get() >= modelBuildLimit);
 			
 	}
 
 	@Override
 	public Collection<ValueMaxStatus> currentStatus() {
-		return Collections.singleton(new ValueMaxStatus(ConditionType.OTHER, modelBuildIteration, modelBuildLimit, NAME, "Model/Iteration", ""));
+		return Collections.singleton(new ValueMaxStatus(ConditionType.OTHER, modelBuildIteration.get(), modelBuildLimit, NAME, "Model/Iteration", ""));
 	}
 
 	@Override
-	public synchronized void handleEvent(ModelBuildEndEvent event) {
-		modelBuildIteration++;
+	public void handleEvent(ModelBuildEndEvent event) {
+		modelBuildIteration.get();
 	}
 	
 	@Override

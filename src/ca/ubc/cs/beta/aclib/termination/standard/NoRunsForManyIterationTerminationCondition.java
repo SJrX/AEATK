@@ -2,6 +2,7 @@ package ca.ubc.cs.beta.aclib.termination.standard;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicLong;
 
 import net.jcip.annotations.ThreadSafe;
 
@@ -20,7 +21,7 @@ public class NoRunsForManyIterationTerminationCondition extends AbstractTerminat
 
 	private final String NAME = "NUMBER OF RUNS";
 	private final  long iterationWithOutRuns;
-	private volatile long successfullyBuiltModelsSinceLastRun = 0;
+	private final AtomicLong successfullyBuiltModelsSinceLastRun = new AtomicLong(0);
 
 	public NoRunsForManyIterationTerminationCondition(long iterationsWithoutRun)
 	{
@@ -30,7 +31,7 @@ public class NoRunsForManyIterationTerminationCondition extends AbstractTerminat
 
 	@Override
 	public boolean haveToStop() {
-		return (successfullyBuiltModelsSinceLastRun >= iterationWithOutRuns);
+		return (successfullyBuiltModelsSinceLastRun.get() >= iterationWithOutRuns);
 			
 	}
 
@@ -40,14 +41,14 @@ public class NoRunsForManyIterationTerminationCondition extends AbstractTerminat
 	}
 
 	@Override
-	public synchronized void handleEvent(AutomaticConfiguratorEvent event) {
+	public void handleEvent(AutomaticConfiguratorEvent event) {
 		
 		if(event instanceof ModelBuildEndEvent)
 		{
-			successfullyBuiltModelsSinceLastRun++;
+			successfullyBuiltModelsSinceLastRun.incrementAndGet();
 		} else if(event instanceof AlgorithmRunCompletedEvent)
 		{
-			successfullyBuiltModelsSinceLastRun = 0;
+			 successfullyBuiltModelsSinceLastRun.set(0);
 		}
 		
 	}
