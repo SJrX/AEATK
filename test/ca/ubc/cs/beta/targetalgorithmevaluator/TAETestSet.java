@@ -2266,11 +2266,13 @@ public class TAETestSet {
 		
 		tae = fact.getTargetAlgorithmEvaluator(execConfig, options);	
 		TargetAlgorithmEvaluator cliTAE = tae;
-		tae = new BoundedTargetAlgorithmEvaluator(tae,50,execConfig);
-		tae = new BoundedTargetAlgorithmEvaluator(tae,50,execConfig);
-		tae = new BoundedTargetAlgorithmEvaluator(tae,50,execConfig);
-		tae = new BoundedTargetAlgorithmEvaluator(tae,50,execConfig);
 		
+
+		tae = new BoundedTargetAlgorithmEvaluator(tae,100,execConfig);
+		tae = new BoundedTargetAlgorithmEvaluator(tae,100,execConfig);
+		tae = new BoundedTargetAlgorithmEvaluator(tae,100,execConfig);
+		tae = new BoundedTargetAlgorithmEvaluator(tae,100,execConfig);
+
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(4);
 		for(int i=0; i < 100; i++)
@@ -2310,10 +2312,12 @@ public class TAETestSet {
 
 			final long startTime = System.currentTimeMillis();
 			int numCompleted = 0;
+			int calls = 0;
 			@Override
 			public void currentStatus(List<? extends KillableAlgorithmRun> runs) {
 				//if(Math.random() > 0.95)
 				//System.out.println("Called");
+				calls++;
 				int complete = 0;
 				for(AlgorithmRun run : runs)
 				{
@@ -2325,7 +2329,8 @@ public class TAETestSet {
 				if(numCompleted < complete)
 				{
 					numCompleted = complete;
-					origOut.println("Status: " + numCompleted + " out of " + runs.size());
+					origOut.println("Status: " + numCompleted + " out of " + runs.size() + " calls: " + calls);
+					
 				}
 				
 				
@@ -2340,12 +2345,11 @@ public class TAETestSet {
 		String output = bout.toString();
 		System.out.println(output);
 		
-		StopWatch watch2 = new AutoStartStopWatch();
 
-		System.out.println(watch2.stop());
+		System.out.println(watch.stop());
 		if(output.contains("ERROR"))
 		{
-			fail("Output contained some error this is unexpeceted");
+			fail("Output contained some error this is unexpected");
 		}
 		//assertTrue("Expected time for CLI Direct to be less than 5 seconds", watch.time() < 5000 );
 		

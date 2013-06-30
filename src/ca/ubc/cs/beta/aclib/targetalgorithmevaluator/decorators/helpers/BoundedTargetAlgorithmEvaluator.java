@@ -358,11 +358,14 @@ public class BoundedTargetAlgorithmEvaluator extends
 							synchronized(runConfigs)
 							{
 								
+								
 								long lastUpdateValue = lastUpdate.get();
 								
 								if(lastUpdateValue >= currentTime)
 								{
-									//A previous observer has fired
+									//A previous observer has fired that was taken 
+									//at a point in the future, so this information is stale
+									
 									return;
 									
 								} else
