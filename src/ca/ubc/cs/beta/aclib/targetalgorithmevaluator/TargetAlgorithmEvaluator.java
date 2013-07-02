@@ -15,11 +15,17 @@ import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
  * <p>
  * Additionally client implementations should probably not validate the output of AlgorithmRuns but rely on other wrappers to do this for them.
  * <p>
- * They may throw TargetAlgorithmAbortExceptions, but again other wrappers ought to take care of it
  * <p>
  * <b>NOTE:</b>Implementations MUST be thread safe, and ideally concurrent calls to evaluateRun() should all be serialized in such a way 
  * that honours the concurrency requirements of the evaluator (in other words, if concurrency is limited to N processors, then 
  * regardless of how many times evaluateRun is called concurrently only N actual runs of the target algorithm should be running at any given time)
+ * <p>
+ * <b>Related Exceptions:</b> 
+ * 
+
+ * @see ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorFactory
+ * @see ca.ubc.cs.beta.aclib.targetalgorithmevaluator.exceptions.TargetAlgorithmEvaluatorShutdownException
+ * @see ca.ubc.cs.beta.aclib.targetalgorithmevaluator.exceptions.TargetAlgorithmAbortException
  * 
  * @author Steve Ramage <seramage@cs.ubc.ca>
  * 
@@ -28,43 +34,55 @@ public interface TargetAlgorithmEvaluator {
  
 	/**
 	 * Evaluate a run configuration
-	 * 
-	 * <b>Implementation Note:</b> Any implementation of this method MUST be the same as calling 
-	 * evaluateRun(List<RunConfig>) with that same run in the list.
+	 * <br/>
+	 * <b>Implementation Note:</b> Any implementation of this method MUST be the same as calling {@link TargetAlgorithmEvaluator#evaluateRun(List, TargetAlgorithmEvaluatorRunObserver)} with that same run in the list.
 	 * 
 	 * @param runConfig RunConfig to evaluate
 	 * @return	list containing the <code>AlgorithmRun<code>
-	 * @throws TargetAlgorithmAbortException
+	 * @throws ca.ubc.cs.beta.aclib.targetalgorithmevaluator.exceptions.TargetAlgorithmAbortException
+	 * @throws ca.ubc.cs.beta.aclib.targetalgorithmevaluator.exceptions.TargetAlgorithmEvaluatorShutdownException
 	 */
 	public List<AlgorithmRun> evaluateRun(RunConfig runConfig);
 
 	/**
-	 * Evaluate a sequence of run configurations
+	 * Evaluate a list of run configurations
+	 * <br/>
+	 * <b>Implementation Note:</b> Any implementation of this method MUST be the same as calling {@link TargetAlgorithmEvaluator#evaluateRun(List, TargetAlgorithmEvaluatorRunObserver)} with that same run in the list.
+	 * 
 	 * @param runConfigs a list containing zero or more unique run configurations to evaluate
 	 * @return	list of the exact same size as input containing the <code>AlgorithmRun</code> objects in the same order as runConfigs
-	 * @throws TargetAlgorithmAbortException
+	 * @throws ca.ubc.cs.beta.aclib.targetalgorithmevaluator.exceptions.TargetAlgorithmAbortException
+	 * @throws ca.ubc.cs.beta.aclib.targetalgorithmevaluator.exceptions.TargetAlgorithmEvaluatorShutdownException
 	 */
 	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs);
 
 	/**
-	 * Evaluate a sequence of run configurations
+	 * Evaluate a list of run configurations
+	 * 
 	 * @param runConfigs	a list containing zero or more unique run configurations to evaluate
 	 * @param observer 	 	observer that will be notified of the current run status
 	 * @return	list of the exact same size as input containing the <code>AlgorithmRun</code> objects in the same order as runConfigs
-	 * @throws TargetAlgorithmAbortException
+	 * @throws ca.ubc.cs.beta.aclib.targetalgorithmevaluator.exceptions.TargetAlgorithmAbortException
+	 * @throws ca.ubc.cs.beta.aclib.targetalgorithmevaluator.exceptions.TargetAlgorithmEvaluatorShutdownException
 	 */
 	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver observer);
 	
 	
 	/**
 	 * Evaluates the given configuration, and when complete the handler is invoked.
+	 * 
 	 * <p>
 	 * <b>Note:</b>You are guaranteed that when this method returns your runs have been 'delivered'
 	 * to the eventual processor. In other words if the runs are dispatched to some external
 	 * processing system, you can safely shutdown after this method call completes and know that they have been
 	 * delivered. Additionally if the runs are already complete (for persistent TAEs), the call back is guaranteed to fire to completion <i>before</i> the program exits
 	 * normally (that is you can do a normal shutdown, and the onSuccess method should fire)
-	 *  
+	 * <p>
+	 * <b>Usage Note:</b> The callback should expect to see the following exceptions {@link ca.ubc.cs.beta.aclib.targetalgorithmevaluator.exceptions.TargetAlgorithmAbortException} and {@link ca.ubc.cs.beta.aclib.targetalgorithmevaluator.exceptions.TargetAlgorithmEvaluatorShutdownException}
+	 * <p>
+	 * <b>Implementation Note:</b> Any implementation of this method MUST be the same as calling {@link TargetAlgorithmEvaluator#evaluateRunsAsync(List, TargetAlgorithmEvaluatorCallback, TargetAlgorithmEvaluatorRunObserver)} with that same run in the list.
+	 * 
+	 * 
 	 * @param runConfig  run configuration to evaluate
 	 * @param callback    handler to invoke on completion or failure
 	 */
@@ -78,6 +96,10 @@ public interface TargetAlgorithmEvaluator {
 	 * processing system, you can safely shutdown after this method call completes and know that they have been
 	 * delivered. Additionally if the runs are already complete (for persistent TAEs), the call back is guaranteed to fire to completion <i>before</i> the program exits
 	 * normally (that is you can do a normal shutdown, and the onSuccess method should fire)
+	 * <p>
+	 * <b>Usage Note:</b> The callback should expect to see the following exceptions {@link ca.ubc.cs.beta.aclib.targetalgorithmevaluator.exceptions.TargetAlgorithmAbortException} and {@link ca.ubc.cs.beta.aclib.targetalgorithmevaluator.exceptions.TargetAlgorithmEvaluatorShutdownException}
+	 * <p>
+	 * <b>Implementation Note:</b> Any implementation of this method MUST be the same as calling {@link TargetAlgorithmEvaluator#evaluateRunsAsync(List, TargetAlgorithmEvaluatorCallback, TargetAlgorithmEvaluatorRunObserver)} with that same run in the list.
 	 * 
 	 * @param runConfigs list of zero or more unique run configuration to evaluate
 	 * @param callback   handler to invoke on completion or failure
@@ -92,6 +114,8 @@ public interface TargetAlgorithmEvaluator {
 	 * processing system, you can safely shutdown after this method call completes and know that they have been
 	 * delivered. Additionally if the runs are already complete (for persistent TAEs), the call back is guaranteed to fire to completion <i>before</i> the program exits
 	 * normally (that is you can do a normal shutdown, and the onSuccess method should fire)
+	 * <p>
+	 * <b>Usage Note:</b> The callback should expect to see the following exceptions {@link ca.ubc.cs.beta.aclib.targetalgorithmevaluator.exceptions.TargetAlgorithmAbortException} {@link ca.ubc.cs.beta.aclib.targetalgorithmevaluator.exceptions.TargetAlgorithmEvaluatorShutdownException}
 	 * 
 	 * @param runConfigs list of zero or more unique run configuration to evaluate
 	 * @param callback   handler to invoke on completion or failure

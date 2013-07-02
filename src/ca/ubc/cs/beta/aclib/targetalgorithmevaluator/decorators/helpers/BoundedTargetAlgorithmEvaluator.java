@@ -34,6 +34,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorCal
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorHelper;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbstractTargetAlgorithmEvaluatorDecorator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.exceptions.TargetAlgorithmEvaluatorShutdownException;
 /**
  * Ensures that a Target Algorithm Evaluator gets no more than a certain number of runs issued simultaneously.
  * <p>
@@ -94,9 +95,17 @@ public class BoundedTargetAlgorithmEvaluator extends
 			return;
 		}
 		
+		if(Thread.interrupted())
+		{
+			Thread.currentThread().interrupt();
+			handler.onFailure(new TargetAlgorithmEvaluatorShutdownException(new InterruptedException()));
+			return;
+			
+		}
+		
 		if(this.enqueueLock.isHeldByCurrentThread())
 		{
-			//This is a paranoid check to ensure 
+			//This is a paranoid check to ensure that the same thread can't recursively call this method somehow as it breaks the logic
 			throw new IllegalStateException("Current Thread already holds the lock");
 		}
 		try {	
@@ -143,20 +152,24 @@ public class BoundedTargetAlgorithmEvaluator extends
 					throw new IllegalStateException("Somehow I now have more permits than I should be limited to");
 				}
 				
-				log.debug("Asking for permission for {} things", runConfigs.size() - numberOfDispatchedRuns);
+				log.debug("Asking for permission for {} things config id of first: ({})", runConfigs.size() - numberOfDispatchedRuns, runConfigs.get(0).getParamConfiguration().getFriendlyIDHex());
 				int oNumRunConfigToRun;
 				try {
 					oNumRunConfigToRun = availableRuns.getUpToNPermits(runConfigs.size()-numberOfDispatchedRuns);
 				} catch (InterruptedException e) {
-					//=== We can just return from this method  
+					//=== We can just return from this method 
+					log.debug("Thread was interrupted while waiting, aborting execution for runs with config id of first: ({})", runConfigs.get(0).getParamConfiguration().getFriendlyIDHex());
+					completionCallbackFired.set(true);
+					failureOccured.set(true);
+					handler.onFailure(new TargetAlgorithmEvaluatorShutdownException(e));
 					Thread.currentThread().interrupt();
 					return;
 				}
 				final int numRunConfigToRun = oNumRunConfigToRun;
 	
 				
-				Object[] logMsg = {runConfigs.size()-numberOfDispatchedRuns, numRunConfigToRun,numberOfDispatchedRuns};
-				log.debug("Asked for permission to run {} things, got permission to run {} things, total completed for this batch {} " , logMsg );
+				Object[] logMsg = {runConfigs.size()-numberOfDispatchedRuns, numRunConfigToRun,numberOfDispatchedRuns, runConfigs.get(0).getParamConfiguration().getFriendlyIDHex()};
+				log.debug("Asked for permission to run {} things, got permission to run {} things, total completed for this batch {}  config id of first: ({})" , logMsg );
 				
 				List<RunConfig> subList = runConfigs.subList(numberOfDispatchedRuns, numberOfDispatchedRuns+numRunConfigToRun);
 				

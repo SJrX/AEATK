@@ -9,8 +9,9 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorRun
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 /**
- * Abstract Decorator class for TargetAlgorithmEvalutator
+ * Abstract Decorator class for {@link ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator}
  * 
+ * <br/>
  * <b>Implementation Note:</b>  Almost every decorator that is doing something interesting, will
  * in fact redirect evaluateRun(RunConfig) to it's own local evaluateRun(List<RunConfig>) method.
  * You should not rely on evaluateRun() being called directly.
@@ -55,6 +56,7 @@ public abstract class AbstractTargetAlgorithmEvaluatorDecorator implements	Targe
 		evaluateRunsAsync(runConfigs, callback, null);
 	}
 
+	
 	@Override
 	public void evaluateRunsAsync(List<RunConfig> runConfigs,
 			final TargetAlgorithmEvaluatorCallback callback, TargetAlgorithmEvaluatorRunObserver observer) {

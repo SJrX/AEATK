@@ -1,6 +1,10 @@
 package ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers;
 
 import java.util.List;
+import java.util.concurrent.atomic.AtomicBoolean;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import net.jcip.annotations.ThreadSafe;
 
@@ -26,6 +30,7 @@ public class OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator extends
 	
 	private final ReducableSemaphore outstandingRunBlocks = new ReducableSemaphore(1);
 	
+	private final Logger log = LoggerFactory.getLogger(this.getClass());
 	
 	public OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator(
 			TargetAlgorithmEvaluator tae) {
@@ -36,30 +41,65 @@ public class OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator extends
 	@Override
 	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
 		try{
-			outstandingRunBlocks.reducePermits();
+			logReduce(runConfigs);
 			return tae.evaluateRun(runConfigs, obs);
 		} finally
 		{
-			outstandingRunBlocks.release();
+			logRelease(runConfigs);
 		}
 		
 	}
 
+	private void logReduce(List<RunConfig> runConfigs)
+	{
+		outstandingRunBlocks.reducePermits();
+		if(log.isTraceEnabled())
+		{
+			RunConfig rc = null;
+			if(runConfigs.size() > 0)
+			{
+				rc = runConfigs.get(0);
+			}
+			log.trace("Reducing Permits by 1 now for {}, Dirty Read: {}", rc,  outstandingRunBlocks.availablePermits());	
+		}
+	}
+	
+	private void logRelease(List<RunConfig> runConfigs)
+	{
+		outstandingRunBlocks.release();
+		if(log.isTraceEnabled())
+		{
+			RunConfig rc = null;
+			if(runConfigs.size() > 0)
+			{
+				rc = runConfigs.get(0);
+			}
+			log.trace("Releasing Permits by 1 now for {}, Dirty Read: {}", rc,  outstandingRunBlocks.availablePermits());	
+		}
+	}
 
 	@Override
-	public void evaluateRunsAsync(List<RunConfig> runConfigs,
+	public void evaluateRunsAsync(final List<RunConfig> runConfigs,
 			final TargetAlgorithmEvaluatorCallback handler, TargetAlgorithmEvaluatorRunObserver obs) {
 		
 		
-		outstandingRunBlocks.reducePermits();
+		logReduce(runConfigs);
 		TargetAlgorithmEvaluatorCallback callback = new TargetAlgorithmEvaluatorCallback()
 		{
 
+			AtomicBoolean bool = new AtomicBoolean(false);
 			@Override
 			public void onSuccess(List<AlgorithmRun> runs) {
 				
 				handler.onSuccess(runs);
-				outstandingRunBlocks.release();
+				synchronized (this) {
+					if(!bool.get())
+						{
+							bool.set(true);
+							logRelease(runConfigs);
+						}
+					}
+				
 			}
 
 			@Override
@@ -68,7 +108,13 @@ public class OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator extends
 					handler.onFailure(t);
 				} finally
 				{
-					outstandingRunBlocks.release();
+					synchronized (this) {
+						if(!bool.get())
+							{
+								bool.set(true);
+								logRelease(runConfigs);
+							}
+						}
 				}
 				
 			}
@@ -83,24 +129,23 @@ public class OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator extends
 	 * <b>NOTE:</b> This isn't the same as waiting for a shutdown, this waits until the number of runs in progress is zero, it can later go higher again.
 	 */
 	@Override
-	public void waitForOutstandingEvaluations()
+	public synchronized void waitForOutstandingEvaluations()
 	{
+		
 		try {
-			try {
-				outstandingRunBlocks.acquire();
-			} catch(InterruptedException e)
-			{
-				Thread.currentThread().interrupt();
-				return;
-			}
-		} finally
+			outstandingRunBlocks.acquire();
+		} catch(InterruptedException e)
 		{
-			outstandingRunBlocks.release();
+			Thread.currentThread().interrupt();
+			return;
 		}
+	
+		outstandingRunBlocks.release();
+		
 	}
 	
 	@Override
-	public int getNumberOfOutstandingEvaluations()
+	public synchronized int getNumberOfOutstandingEvaluations()
 	{
 		return 1 - outstandingRunBlocks.availablePermits();
 	}

@@ -37,7 +37,6 @@ import ca.ubc.cs.beta.aclib.concurrent.threadfactory.SequentiallyNamedThreadFact
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.exceptions.IllegalWrapperOutputException;
-import ca.ubc.cs.beta.aclib.exceptions.TargetAlgorithmAbortException;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.misc.debug.DebugUtil;
 import ca.ubc.cs.beta.aclib.misc.logback.MarkerFilter;
@@ -65,6 +64,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.debug.CheckForDu
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.debug.EqualTargetAlgorithmEvaluatorTester;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.BoundedTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.KillCaptimeExceedingRunsRunsTargetAlgorithmEvaluatorDecorator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.SimulatedDelayTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.prepostcommand.PrePostCommandErrorException;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.safety.AbortOnCrashTargetAlgorithmEvaluator;
@@ -72,6 +72,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.safety.AbortOnFi
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.safety.ResultOrderCorrectCheckerTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.safety.TimingCheckerTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.safety.VerifySATTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.exceptions.TargetAlgorithmAbortException;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.init.TargetAlgorithmEvaluatorBuilder;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.init.TargetAlgorithmEvaluatorLoader;
 import ca.ubc.cs.beta.targetalgorithmevaluator.impl.SolQualSetTargetAlgorithmEvaluatorDecorator;
@@ -2357,6 +2358,104 @@ public class TAETestSet {
 		//assertTrue("Expected time for Bounded to be less than 5 seconds", watch2.time() < 5000 );
 		
 	}
+	
+	
+	@Test
+	/**
+	 * Wraps a bunch of TAEs together and checks to see if an Illegal State Exception happens
+	 */
+	public void testBoundedTAEShutdownExceptionHandled() throws InterruptedException 
+	{
+	
+		//Check that a submission of run 10 runs on a bound of <5 take 5,1,1,1,1, 5,1,1,1,1 takes 6 seconds and not 10.
+		final Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(TrueSleepyParamEchoExecutor.class.getCanonicalName());
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
+		
+		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
+		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
+		
+		options.logAllCallStrings = true;
+		options.logAllProcessOutput = true;
+		options.concurrentExecution = true;
+		options.observerFrequency = 50;
+		options.cores = 1;
+		
+		tae = fact.getTargetAlgorithmEvaluator(execConfig, options);	
+		TargetAlgorithmEvaluator cliTAE = tae;
+		
+
+		tae = new BoundedTargetAlgorithmEvaluator(tae,1,execConfig);
+		
+		tae = new OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator(tae);
+		
+		Runnable run = new Runnable()
+		{
+			public void run()
+			{
+				List<RunConfig> runConfigs = new ArrayList<RunConfig>(4);
+				for(int i=0; i < 4; i++)
+				{
+					ParamConfiguration config = configSpace.getRandomConfiguration(r);
+					
+					config.put("runtime", String.valueOf(1 + (i%10)));
+					
+					if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
+					{
+						//Only want good configurations
+						i--;
+						continue;
+					} else
+					{
+						RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config);
+						runConfigs.add(rc);
+					}
+				}
+				
+				try {
+				
+				tae.evaluateRun(runConfigs);
+				} catch(RuntimeException e)
+				{
+					System.out.println("Got Exception:");
+					e.printStackTrace();
+					System.out.println("This is okay:");
+					tae.evaluateRun(runConfigs);
+					
+					if(Thread.interrupted())
+					{
+						System.out.println("Interrupted");
+					} else
+					{
+						System.out.println("Not Interrupted");
+					}
+					//System.out.println("TEST");
+				}
+				
+				
+				
+			}
+		};
+		
+		
+		
+
+		Thread t = new Thread(run);
+		t.start();
+		
+		Thread.sleep(2048);
+		
+		t.interrupt();
+		Thread.sleep(1024);
+		assertEquals("Number of outstanding requests should be zero",0, tae.getNumberOfOutstandingEvaluations());
+		StopWatch watch = new AutoStartStopWatch();
+		
+	}
+	
 	
 	
 	

@@ -8,7 +8,7 @@ import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
 /**
  * Immutable class that contains all the information necessary for a target algorithm run.
  *
- * @author seramage
+ * @author Steve Ramage <seramage@cs.ubc.ca>
  */
 public class RunConfig implements Serializable{
 	
@@ -108,7 +108,6 @@ public class RunConfig implements Serializable{
 	 */
 	public ParamConfiguration getParamConfiguration()
 	{
-		
 		return new ParamConfiguration(params);
 	}
 	

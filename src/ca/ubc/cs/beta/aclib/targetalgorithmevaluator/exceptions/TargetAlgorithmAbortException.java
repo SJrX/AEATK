@@ -1,4 +1,4 @@
-package ca.ubc.cs.beta.aclib.exceptions;
+package ca.ubc.cs.beta.aclib.targetalgorithmevaluator.exceptions;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 

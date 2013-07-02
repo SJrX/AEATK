@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -40,7 +41,7 @@ public class EventManager {
 	/**
 	 * Queue that has Runnables for processing each handler notification
 	 */
-	private ArrayBlockingQueue<Runnable> asyncRuns = new ArrayBlockingQueue<Runnable>(1024); 
+	private LinkedBlockingQueue<Runnable> asyncRuns = new LinkedBlockingQueue<Runnable>(); 
 	
 	/**
 	 * Stores the thread that is processing the asyncRun runnables
@@ -123,12 +124,14 @@ public class EventManager {
 				public void run()
 				{
 					try { 
-						log.debug("Dispatching event {} to handler: {}", event2.getClass().getSimpleName(), handler2.getClass().getSimpleName());
+						log.debug("Dispatching event {} to handler: {}", event2.getClass().getSimpleName() + " (0x" + Integer.toHexString(System.identityHashCode(event2)) +")", handler2.getClass().getSimpleName());
 						handler2.handleEvent(event2);
 					} catch(RuntimeException t)
 					{
 						
-						Object[] args = { handler2, event2, t};
+						
+						Object[] args = { handler2, event2, t, };
+						log.error("Error occured during dispatching of event", t);
 						log.error("Event Handler {} while processing event: {}, threw Exception {}",args);
 						
 						if(!(event2 instanceof EventHandlerRuntimeExceptionEvent))

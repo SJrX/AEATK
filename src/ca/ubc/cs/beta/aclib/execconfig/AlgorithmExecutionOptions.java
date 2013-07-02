@@ -49,8 +49,17 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 	/**
 	 * Gets an algorithm execution configuration
 	 * 
+	 * @return configured object based on the options
+	 */
+	public AlgorithmExecutionConfig getAlgorithmExecutionConfig()
+	{
+		return getAlgorithmExecutionConfig(null);
+	}
+	/**
+	 * Gets an algorithm execution configuration
+	 * 
 	 * @param experimentDir the experiment directory to search for parameter configurations
-	 * @return
+	 * @return configured object based on the options
 	 */
 	public AlgorithmExecutionConfig getAlgorithmExecutionConfig(String experimentDir)
 	{
