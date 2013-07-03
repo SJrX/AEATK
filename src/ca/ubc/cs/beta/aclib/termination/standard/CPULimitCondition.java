@@ -3,6 +3,8 @@ package ca.ubc.cs.beta.aclib.termination.standard;
 import java.util.Collection;
 import java.util.Collections;
 
+import com.google.common.util.concurrent.AtomicDouble;
+
 import net.jcip.annotations.ThreadSafe;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
@@ -18,25 +20,23 @@ import static ca.ubc.cs.beta.aclib.misc.cputime.CPUTime.*;
 public class CPULimitCondition extends AbstractTerminationCondition 
 {
 
-	
 	private final double tunerTimeLimit;
-	private volatile double currentTime;
+	private AtomicDouble currentTime;
 	
-
 	private final String NAME = "CPUTIME";
 	private final boolean countACTime;
 
 	public CPULimitCondition(double tunerTimeLimit, boolean countACTime)
 	{
 		this.tunerTimeLimit = tunerTimeLimit;
-		this.currentTime = 0;
+		this.currentTime = new AtomicDouble(0);
 		this.countACTime = countACTime;
 	}
 	
 	public synchronized double getTunerTime()
 	{
 		
-		return currentTime + ((countACTime) ? getCPUTime() : 0);
+		return currentTime.get() + ((countACTime) ? getCPUTime() : 0);
 	}
 
 	
@@ -55,7 +55,7 @@ public class CPULimitCondition extends AbstractTerminationCondition
 
 	@Override
 	public synchronized void notifyRun(AlgorithmRun run) {
-		currentTime+=run.getRuntime();
+		currentTime.addAndGet(run.getRuntime());
 	}
 	
 	@Override
