@@ -106,7 +106,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 		if(runConfig.getCutoffTime() <= 0 || handler.isKilled())
 		{
 			
-			log.info("Cap time is negative for {} setting run as timeout", runConfig);
+			log.info("Cap time is less than or equal to zero for {} setting run as timeout", runConfig);
 			String rawResultLine = "[DIDN'T BOTHER TO RUN ALGORITHM AS THE CAPTIME IS NOT POSITIVE]";
 			
 			this.setResult(RunResult.TIMEOUT, 0, 0, 0, runConfig.getProblemInstanceSeedPair().getSeed(), rawResultLine,"");
