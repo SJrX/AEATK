@@ -158,6 +158,10 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 		this.runResultWellFormed = runResultWellFormed;
 
 		this.additionalRunData = additionalRunData;
+		if(this.additionalRunData == null)
+		{
+			throw new IllegalArgumentException("Additional Run Data cannot be NULL");
+		}
 		this.resultSet = true;
 		if(!(this instanceof KillableAlgorithmRun))
 		{
