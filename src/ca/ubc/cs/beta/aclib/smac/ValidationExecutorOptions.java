@@ -138,7 +138,7 @@ public class ValidationExecutorOptions extends AbstractOptions {
 	}
 
 	public AlgorithmExecutionConfig getAlgorithmExecutionConfig() {
-		return this.scenarioConfig.algoExecOptions.getAlgorithmExecutionConfig(null);
+		return this.scenarioConfig.algoExecOptions.getAlgorithmExecutionConfig(experimentDir);
 	}
 	
 }
