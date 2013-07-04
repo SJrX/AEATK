@@ -4,23 +4,20 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
-import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
 
-import ca.ubc.cs.beta.aclib.example.tae.TargetAlgorithmEvaluatorRunnerOptions;
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ca.ubc.cs.beta.aclib.help.HelpOptions;
-import ca.ubc.cs.beta.aclib.misc.options.UsageSection;
 import ca.ubc.cs.beta.aclib.misc.returnvalues.ACLibReturnValues;
 import ca.ubc.cs.beta.aclib.misc.spi.SPIClassLoaderHelper;
 import ca.ubc.cs.beta.aclib.misc.version.VersionTracker;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 import ca.ubc.cs.beta.aclib.options.ConfigToLaTeX;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.init.TargetAlgorithmEvaluatorLoader;
-
 import com.beust.jcommander.JCommander;
-import com.beust.jcommander.Parameter;
 
 public final class JCommanderHelper
 {
@@ -133,6 +130,33 @@ public final class JCommanderHelper
 		
 		
 	}
+	
+	public static void logCallString(String[] args, Class<?> c) {
+		Logger log = LoggerFactory.getLogger(JCommanderHelper.class);
+		StringBuilder sb = new StringBuilder("java -cp ");
+		sb.append(System.getProperty("java.class.path")).append(" ");
+		sb.append(c.getCanonicalName()).append(" ");
+		for(String arg : args)
+		{
+			boolean escape = false;
+			if(arg.contains(" "))
+			{
+				escape = true;
+				arg = arg.replaceAll(" ", "\\ ");
+			}
+			
+			
+			if(escape) sb.append("\"");
+			sb.append(arg);
+			if(escape) 	sb.append("\"");
+			sb.append(" ");
+		}
+		
+		log.info("Call String:");
+		log.info("{}", sb.toString());
+	}
+	
+	
 	
 	
 	
