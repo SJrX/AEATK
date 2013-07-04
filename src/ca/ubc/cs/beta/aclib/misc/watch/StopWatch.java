@@ -2,10 +2,13 @@ package ca.ubc.cs.beta.aclib.misc.watch;
 
 import java.io.Serializable;
 
+import net.jcip.annotations.NotThreadSafe;
+
 /**
  * Allows measuring wallclock time between calls to {@link StopWatch#start()} and {@link StopWatch#stop()}
  * @author Steve Ramage <seramage@cs.ubc.ca>
  */
+@NotThreadSafe
 public class StopWatch implements Serializable {
 	
 	/**

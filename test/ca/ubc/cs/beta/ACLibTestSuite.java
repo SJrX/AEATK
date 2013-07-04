@@ -6,6 +6,7 @@ import org.junit.runners.Suite;
 import ca.ubc.cs.beta.configspace.ParamConfigurationTest;
 import ca.ubc.cs.beta.configspace.RandomConfigurationTest;
 import ca.ubc.cs.beta.eventsystem.EventManagerTester;
+import ca.ubc.cs.beta.misc.CPUTimeTest;
 import ca.ubc.cs.beta.objectives.RunObjectiveTester;
 import ca.ubc.cs.beta.probleminstance.BuggyFeatureFilesTester;
 import ca.ubc.cs.beta.probleminstance.ProblemInstanceHelperTester;
@@ -30,6 +31,7 @@ import ca.ubc.cs.beta.instancespecificinfo.*;
 	RunHistoryTester.class, 
 	RetryCrashedTAETester.class,
 	RunObjectiveTester.class,
+	CPUTimeTest.class
 })
 
 public class ACLibTestSuite {

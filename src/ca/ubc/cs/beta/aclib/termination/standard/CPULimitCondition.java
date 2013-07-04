@@ -2,6 +2,7 @@ package ca.ubc.cs.beta.aclib.termination.standard;
 
 import java.util.Collection;
 import java.util.Collections;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.google.common.util.concurrent.AtomicDouble;
 
@@ -26,6 +27,7 @@ public class CPULimitCondition extends AbstractTerminationCondition
 	private final String NAME = "CPUTIME";
 	private final boolean countACTime;
 
+	//private final AtomicBoolean haveToStop = new AtomicBoolean(false);
 	public CPULimitCondition(double tunerTimeLimit, boolean countACTime)
 	{
 		this.tunerTimeLimit = tunerTimeLimit;
@@ -33,7 +35,7 @@ public class CPULimitCondition extends AbstractTerminationCondition
 		this.countACTime = countACTime;
 	}
 	
-	public synchronized double getTunerTime()
+	public double getTunerTime()
 	{
 		
 		return currentTime.get() + ((countACTime) ? getCPUTime() : 0);
@@ -43,7 +45,6 @@ public class CPULimitCondition extends AbstractTerminationCondition
 	@Override
 	public boolean haveToStop() {
 		return (tunerTimeLimit <= getTunerTime());
-			
 	}
 
 	@Override

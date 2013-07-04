@@ -63,6 +63,7 @@ public class AlgorithmExecutionConfig implements Serializable {
 		return paramFile;
 	}
 
+	@Deprecated
 	public boolean isExecuteOnCluster() {
 		return executeOnCluster;
 	}
