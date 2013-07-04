@@ -61,8 +61,9 @@ public abstract class AbstractVersionInfo implements VersionInfo {
 				{
 					System.out.println(t);
 					t.printStackTrace();
+					log.error("Version Information Error: ", t);
 				}
-				log.debug("Could not retrieve version information set SHOW_ERROR=TRUE as an environment variable to see the error",t);
+				log.debug("Could not retrieve version information set SHOW_ERROR=TRUE as an environment variable to see the error");
 				
 				if(version == null)
 				{
