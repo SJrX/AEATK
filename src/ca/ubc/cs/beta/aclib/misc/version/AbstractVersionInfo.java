@@ -55,9 +55,15 @@ public abstract class AbstractVersionInfo implements VersionInfo {
 			
 				reader.close();
 			} catch (Throwable t) {
-				System.out.println(t);
-				t.printStackTrace();
-				log.debug("Could not retrieve version information",t);
+				
+				String env = System.getenv("SHOW_ERROR");
+				if(env != null && env.toUpperCase().equals("TRUE"))
+				{
+					System.out.println(t);
+					t.printStackTrace();
+				}
+				log.debug("Could not retrieve version information set SHOW_ERROR=TRUE as an environment variable to see the error",t);
+				
 				if(version == null)
 				{
 					version="ERROR LOADING VERSION INFORMATION";
