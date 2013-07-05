@@ -327,18 +327,7 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 	@Override 
 	public String toString()
 	{
-		StringBuilder sb = new StringBuilder();
-		sb.append(execConfig.toString()).append("\n");
-		sb.append(runConfig.toString());
-		sb.append("\nRawResultLine:" + rawResultLine);
-		sb.append("\nrunCompleted:" + isRunCompleted());
-		sb.append("\nresultLine:" + this._getResultLine());
-		sb.append("\nacResult:" + acResult);
-		sb.append("\nAdditional Run Data:" + additionalRunData);
-		sb.append("\nClass:" + this.getClass().getSimpleName());
-		return sb.toString();
-		
-		
+		return this.runConfig.toString() + " ==> <" + this.getResultLine()+ ">";	
 	}
 	/**
 	 * Sets the wallclock time for this target algorithm
