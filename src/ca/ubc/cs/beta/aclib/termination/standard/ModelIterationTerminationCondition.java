@@ -41,7 +41,7 @@ public class ModelIterationTerminationCondition extends AbstractTerminationCondi
 
 	@Override
 	public void handleEvent(ModelBuildEndEvent event) {
-		modelBuildIteration.get();
+		modelBuildIteration.incrementAndGet();
 	}
 	
 	@Override

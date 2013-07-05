@@ -27,6 +27,12 @@ public class WallClockLimitCondition extends AbstractTerminationCondition implem
 	}
 
 	@Override
+	public double getWallTime()
+	{
+		return System.currentTimeMillis() - applicationStartTime;
+	}
+	
+	@Override
 	public Collection<ValueMaxStatus> currentStatus() {
 		return Collections.singleton(new ValueMaxStatus(ConditionType.WALLTIME,(System.currentTimeMillis()-applicationStartTime)/1000.0, runTimeInSeconds, "WALLCLOCK", "Wall-clock Time Budget", "s"));
 	}
@@ -45,4 +51,6 @@ public class WallClockLimitCondition extends AbstractTerminationCondition implem
 			return "";
 		}
 	}
+	
+	
 }

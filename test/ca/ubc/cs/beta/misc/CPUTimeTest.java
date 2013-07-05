@@ -2,11 +2,13 @@ package ca.ubc.cs.beta.misc;
 
 import static org.junit.Assert.*;
 
+import java.io.File;
 import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import ca.ubc.cs.beta.aclib.misc.cputime.CPUTime;
@@ -112,8 +114,111 @@ public class CPUTimeTest {
 		{
 			System.out.println("Time was :" + (newCPUTime2 - cpuTime));
 		}
+
+	}
+	
+	@Test
+	@Ignore
+	/**
+	 * I have no idea how to actually make a test for this work (need something that has lots of CPU time but not
+	 * alot of User Time.
+	 * @throws InterruptedException
+	 */
+	public void testUserTimeDoesntDecrease() throws InterruptedException
+	{
+		System.out.println("CPU Time :" +  CPUTime.getCPUTime() + " User Time: "+ CPUTime.getUserTime());
+		
+		Thread t = new Thread(new Runnable()
+		{
+
+			@Override
+			public void run() {
+				for(long i = 1; i < Long.MAX_VALUE; i++)
+				{
+					
+					
+					//System.out.println("Started " + i);
+					boolean result;
+					try {
+						if(Thread.interrupted())
+						{
+							throw new InterruptedException();
+						}
+						
+						
+						StringBuilder sb = new StringBuilder("");
+						for(int j=0; j < 10000; j++)
+						{
+							sb.append("LOTS OF I/O... LOTS OF I/O...");
+						}
+						
+						for(int j = 0; j < 10000; j++)
+						{
+							System.out.println(sb.toString());
+						}
+
+					} catch (InterruptedException e) {
+						return;
+					}
+					
+				}
+				
+				
+				
+				
+				
+			}
+
+			/*private boolean scanFileSystem(File file) {
+				for(File f : file.listFiles())
+				{
+					f.isDirectory();
+					f.exists();
+					f.
+				}
+			}*/
+		
+			
+			
+		});
+		
+		t.start();
+		
+		double userTime = CPUTime.getUserTime();
+		System.out.println("CPU Time :" +  CPUTime.getCPUTime() + " User Time: "+ CPUTime.getUserTime());
+		Thread.sleep(2000);
+		double newUserTime = CPUTime.getUserTime(); 
+		System.out.println("CPU Time :" +  CPUTime.getCPUTime() + " User Time: "+ CPUTime.getUserTime());
+		
+		if(newUserTime - userTime < 1.7)
+		{
+			
+			fail("Expected userTime used to be greater than 5 seconds, not "  + (newUserTime - userTime));
+		} else
+		{
+			System.out.println("Time was :" + (newUserTime - userTime));
+		}
+		
+		System.out.println("CPU Time :" +  CPUTime.getCPUTime() + " User Time: "+ CPUTime.getUserTime());
+		Thread.sleep(500);
+		t.interrupt();
+		Thread.sleep(500);
+		System.out.println("CPU Time :" +  CPUTime.getCPUTime() + " User Time: "+ CPUTime.getUserTime());
+		
+		
+		double newUserTime2 = CPUTime.getUserTime(); 
+		
+		
+		if(newUserTime2 - userTime <  newUserTime - userTime)
+		{
+			fail("Expected userTime used to be greater than "+(newUserTime - userTime)+ "5 seconds, not "  + (newUserTime2 - userTime));
+		} else
+		{
+			System.out.println("Time was :" + (newUserTime2 - userTime));
+		}
 		
 		
 		
 	}
+	
 }

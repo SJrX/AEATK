@@ -26,9 +26,16 @@ public class CPUTime {
 	/**
 	 * JVM won't give us the CPU time of expired threads so we need to keep track of it.
 	 */
-	private static final ConcurrentHashMap<Long, Long> threadToTimeMap = new ConcurrentHashMap<Long, Long>();
+	private static final ConcurrentHashMap<Long, Long> threadToCPUTimeMap = new ConcurrentHashMap<Long, Long>();
+	
+	/**
+	 * JVM won't give us the User Time of expired threads so we need to keep track of it.
+	 */
+	private static final ConcurrentHashMap<Long, Long> threadToUserTimeMap = new ConcurrentHashMap<Long, Long>();
 	
 	private static final AtomicLong cpuTime = new AtomicLong(0);
+	
+	private static final AtomicLong userTime = new AtomicLong(0);
 	
 	private static final ScheduledExecutorService execService = Executors.newScheduledThreadPool(1, new SequentiallyNamedThreadFactory("CPU Time Accumulator", true));	
 	
@@ -48,9 +55,10 @@ public class CPUTime {
 			{
 
 				try {
+						ThreadMXBean b = ManagementFactory.getThreadMXBean();
 						try 
 						{
-							ThreadMXBean b = ManagementFactory.getThreadMXBean();
+						
 							
 				
 							for(long threadID : b.getAllThreadIds())
@@ -65,26 +73,45 @@ public class CPUTime {
 									continue;
 								} else
 								{
-									threadToTimeMap.put(threadID, threadTime);
+									threadToCPUTimeMap.put(threadID, threadTime);
 								}
 								
-								
-								
+								long threadUserTime = b.getThreadUserTime(threadID);
+								if(threadUserTime == -1)
+								{
+									log.debug("JVM didn't give usa  measurement for usertime of thread ", threadID);
+									continue;
+								} else
+								{
+									threadToUserTimeMap.put(threadID, threadTime);
+								}
 				
 							}
 							
-							long currentTime = 0;
+							long currentCPUTime = 0;
 							
-							for(Entry<Long, Long> values : threadToTimeMap.entrySet())
+							for(Entry<Long, Long> values : threadToCPUTimeMap.entrySet())
 							{
-								currentTime += values.getValue(); 
+								currentCPUTime += values.getValue(); 
 							}
 							//log.info("Updating time to {} ", currentTime);
-							cpuTime.set(currentTime);
+							cpuTime.set(currentCPUTime);
+
+							long currentUserTime = 0;
+							
+							for(Entry<Long, Long> values : threadToCPUTimeMap.entrySet())
+							{
+								currentUserTime += values.getValue(); 
+							}
+							//log.info("Updating time to {} ", currentTime);
+							userTime.set(currentUserTime);
+							
 						} catch(UnsupportedOperationException e)
 						{
+							
 							log.debug("JVM does not support CPU Time measurements");
 							cpuTime.set(0);
+							userTime.set(0);
 						}
 						
 					while(latches.peek() != null)
@@ -132,4 +159,31 @@ public class CPUTime {
 			//log.info("Returning {} ", value);
 			return value;
 	}
+	
+	/**
+	 * Returns the total CPU Time for this JVM
+	 * 
+	 * @return cpu time for this jvm if enabled&supported 0 otherwise
+	 */
+	public static double getUserTime()
+	{
+			CountDownLatch latch = new CountDownLatch(1);
+			boolean accepted = latches.offer(latch);
+			//log.info("Submitting");
+			execService.submit(threadUpdate);
+			//log.info("Waiting");
+			if(accepted)
+			{
+				try {
+					latch.await();
+				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
+				}
+			}
+			//log.info("Got value");
+			double value =  userTime.get() / 1000.0 / 1000.0 / 1000.0;
+			//log.info("Returning {} ", value);
+			return value;
+	}
+	
 }
