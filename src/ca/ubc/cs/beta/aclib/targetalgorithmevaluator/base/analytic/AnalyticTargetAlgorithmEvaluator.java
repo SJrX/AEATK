@@ -3,6 +3,9 @@ package ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.analytic;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.ExistingAlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
@@ -18,6 +21,7 @@ public class AnalyticTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorith
 
 	private final AnalyticFunctions func;
 
+	private final Logger log = LoggerFactory.getLogger(getClass());
 	public AnalyticTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig, AnalyticFunctions func) {
 		super(execConfig);
 		this.func = func;
@@ -40,6 +44,7 @@ public class AnalyticTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorith
 
 	@Override
 	protected void subtypeShutdown() {
+		log.info("Global minima for camelback function are near (-0.0898, 0.7126) & (0,0898, -0.7126)");
 	}
 
 	@Override

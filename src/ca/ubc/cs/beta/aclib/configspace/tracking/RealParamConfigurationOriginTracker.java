@@ -1,4 +1,4 @@
-package ca.ubc.cs.beta.aclib.configspace;
+package ca.ubc.cs.beta.aclib.configspace.tracking;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -7,6 +7,8 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
+
+import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 
 import net.jcip.annotations.ThreadSafe;
 
@@ -19,7 +21,7 @@ import net.jcip.annotations.ThreadSafe;
  *
  */
 @ThreadSafe
-public class ParamConfigurationOriginTracker implements Iterable<ParamConfiguration> {
+public class RealParamConfigurationOriginTracker implements ParamConfigurationOriginTracker {
 
 	
 	private final ConcurrentHashMap<ParamConfiguration, ConcurrentHashMap<String, String>> originTracker = new ConcurrentHashMap<ParamConfiguration, ConcurrentHashMap<String,String>>();
@@ -40,7 +42,9 @@ public class ParamConfigurationOriginTracker implements Iterable<ParamConfigurat
 	 */
 	private final ConcurrentHashMap<ParamConfiguration, Object> originConfigs =new ConcurrentHashMap<ParamConfiguration, Object>();
 	
-	private final Object dummyObject = new Object(); 
+	private final Object dummyObject = new Object();
+	
+	@Override
 	public void addConfiguration(ParamConfiguration config, String origin, String... addlData)
 	{
 		
@@ -69,17 +73,19 @@ public class ParamConfigurationOriginTracker implements Iterable<ParamConfigurat
 			originNames.add(origin);
 	}
 
-	
+	@Override
 	public Map<String, String> getOrigins(ParamConfiguration config)
 	{
 		return originTracker.get(config);
 	}
 	
+	@Override
 	public Long getCreationTime(ParamConfiguration config)
 	{
 		return firstGenerated.get(config);
 	}
 	
+	@Override
 	public Set<String> getOriginNames()
 	{
 		return Collections.unmodifiableSet(originNames);
@@ -91,12 +97,14 @@ public class ParamConfigurationOriginTracker implements Iterable<ParamConfigurat
 		return insertionOrderTracker.iterator();
 	}
 	
+	@Override
 	public int size()
 	{
 		//DO NOT USE insertionOrderTracker to generate the size() because it is an O(n) operation there
 		return originTracker.size();
 	}
 	
+	@Override
 	public int getGenerationCount(ParamConfiguration config)
 	{
 		AtomicInteger genCount = generationCount.get(config);
