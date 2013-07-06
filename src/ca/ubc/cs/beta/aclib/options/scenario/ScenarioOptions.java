@@ -10,7 +10,6 @@ import com.beust.jcommander.ParametersDelegate;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionOptions;
 import ca.ubc.cs.beta.aclib.misc.jcommander.converter.OverallObjectiveConverter;
 import ca.ubc.cs.beta.aclib.misc.jcommander.converter.RunObjectiveConverter;
-import ca.ubc.cs.beta.aclib.misc.jcommander.validator.*;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aclib.objectives.OverallObjective;
 import ca.ubc.cs.beta.aclib.objectives.RunObjective;

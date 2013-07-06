@@ -2,7 +2,6 @@ package ca.ubc.cs.beta.aclib.eventsystem.events.ac;
 
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.eventsystem.events.AbstractTimeEvent;
-import ca.ubc.cs.beta.aclib.eventsystem.events.AutomaticConfiguratorEvent;
 import ca.ubc.cs.beta.aclib.termination.TerminationCondition;
 
 public class ChallengeEndEvent extends AbstractTimeEvent {

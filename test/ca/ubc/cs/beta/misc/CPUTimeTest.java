@@ -2,8 +2,6 @@ package ca.ubc.cs.beta.misc;
 
 import static org.junit.Assert.*;
 
-import java.io.File;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -15,7 +13,7 @@ import ca.ubc.cs.beta.aclib.misc.cputime.CPUTime;
 
 public class CPUTimeTest {
 
-	private final AtomicBoolean shutdown = new AtomicBoolean(false);
+	
 	@Test
 	public void testCPUTimeDoesntDecrease() throws InterruptedException
 	{

@@ -130,6 +130,10 @@ public class TrajectoryFileLogger implements EventHandler<AutomaticConfiguratorE
 		
 		int thetaIdxInc = runHistory.getThetaIdx(incumbent);
 		
+		if(thetaIdxInc == -1)
+		{
+			thetaIdxInc = 1;
+		}
 		//-1 should be the variance but is allegedly the sqrt in compareChallengersagainstIncumbents.m and then is just set to -1.
 		double wallClockTime = wallclockTime;
 		
@@ -137,7 +141,7 @@ public class TrajectoryFileLogger implements EventHandler<AutomaticConfiguratorE
 		
 		
 		String outLine = tunerTime + ", " + empiricalPerformance + ", " + wallClockTime/1000.0 + ", " + thetaIdxInc + ", " + acTime + ", " + paramString +"\n";
-		log.debug("Logging incumbent: {}", outLine);
+		log.debug("Logging incumbent: (Runs {}): {}", ((this.lastIevent != null) ? this.lastIevent.getIncumbentRunCount() : "?"), outLine.trim());
 		try 
 		{
 			trajectoryFileWriter.write(outLine);

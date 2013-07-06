@@ -1,7 +1,5 @@
 package ca.ubc.cs.beta.aclib.eventsystem.handlers;
 
-import java.util.Collections;
-import java.util.Map;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -11,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.eventsystem.EventHandler;
 import ca.ubc.cs.beta.aclib.eventsystem.events.AutomaticConfiguratorEvent;
-import ca.ubc.cs.beta.aclib.eventsystem.events.ac.IncumbentChangeEvent;
+import ca.ubc.cs.beta.aclib.eventsystem.events.ac.IncumbentPerformanceChangeEvent;
 import ca.ubc.cs.beta.aclib.eventsystem.events.basic.AlgorithmRunCompletedEvent;
 import ca.ubc.cs.beta.aclib.misc.cputime.CPUTime;
 import ca.ubc.cs.beta.aclib.runhistory.ThreadSafeRunHistory;
@@ -41,7 +39,7 @@ public class LogRuntimeStatistics implements EventHandler<AutomaticConfiguratorE
 	
 	private final AtomicReference<String> lastString = new AtomicReference<String>();
 	
-	private final AtomicReference<IncumbentChangeEvent> lastICE = new AtomicReference<IncumbentChangeEvent>();
+	private final AtomicReference<IncumbentPerformanceChangeEvent> lastICE = new AtomicReference<IncumbentPerformanceChangeEvent>();
 	
 	private final double cutoffTime;
 	
@@ -81,14 +79,15 @@ public class LogRuntimeStatistics implements EventHandler<AutomaticConfiguratorE
 	public synchronized void handleEvent(AutomaticConfiguratorEvent event) {
 			
 		
-		if(event instanceof IncumbentChangeEvent)
+		if(event instanceof IncumbentPerformanceChangeEvent)
 		{
-			IncumbentChangeEvent ice = (IncumbentChangeEvent) event;
+			IncumbentPerformanceChangeEvent ice = (IncumbentPerformanceChangeEvent) event;
 			
 			
-			if((this.lastICE.get() == null) || this.lastICE.get().getTunerTime() > ice.getTunerTime())
+			if((this.lastICE.get() == null) || this.lastICE.get().getTunerTime() < ice.getTunerTime())
 			{
 				lastICE.set(ice);
+				
 			}
 			return;
 		} else if( event instanceof AlgorithmRunCompletedEvent )

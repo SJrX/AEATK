@@ -12,7 +12,6 @@ import org.slf4j.LoggerFactory;
 import net.jcip.annotations.ThreadSafe;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aclib.concurrent.ReducableSemaphore;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;

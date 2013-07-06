@@ -2,12 +2,9 @@ package ca.ubc.cs.beta.aclib.misc.cputime;
 
 import java.lang.management.ManagementFactory;
 import java.lang.management.ThreadMXBean;
-import java.util.HashMap;
-import java.util.Map;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.ScheduledExecutorService;
