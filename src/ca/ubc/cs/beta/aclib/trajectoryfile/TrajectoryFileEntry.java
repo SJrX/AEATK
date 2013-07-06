@@ -76,7 +76,7 @@ public class TrajectoryFileEntry implements Comparable<TrajectoryFileEntry>
 	
 	public String toString()
 	{
-		return "<"+getTunerTime() +","+ getEmpericalPerformance() +","+ getWallTime() + ">"; 
+		return "<"+getTunerTime() +","+ getEmpericalPerformance() +","+ getWallTime() + "," + config.getFriendlyIDHex() +">"; 
 	}
 	
 }
