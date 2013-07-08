@@ -23,7 +23,7 @@ public static void main(String[] args)
 		if(!opts.skipClassCheck)
 		{
 			try {
-				Class<?> foo = Class.forName(opts.clazz);
+				Class.forName(opts.clazz);
 			} catch (ClassNotFoundException e) {
 				
 				System.out.println("Classpath is: " + System.getProperty("java.class.path"));

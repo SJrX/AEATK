@@ -57,7 +57,7 @@ public class RegtreeBuildTester {
 		//File paramFile = TestHelper.getTestFile("RandomForestFiles/satenstein-params-mixed.txt");
 		
 		
-		File expDir = new File("/ubc/cs/home/s/seramage/experiments/run0");
+		//File expDir = new File("/ubc/cs/home/s/seramage/experiments/run0");
 		
 		File paramFile = new File("/ubc/cs/home/s/seramage/experiments/algorithms/cplex/cplex12-params-milp-mixed-cont-disc.txt");
 		

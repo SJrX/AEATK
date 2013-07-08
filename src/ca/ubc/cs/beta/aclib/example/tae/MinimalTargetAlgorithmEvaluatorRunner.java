@@ -83,7 +83,6 @@ public class MinimalTargetAlgorithmEvaluatorRunner
 		} catch(ParameterException e)
 		{	
 			List<UsageSection> sections = ConfigToLaTeX.getParameters(mainOptions, taeOptions);
-			boolean showHiddenParameters = false; 
 			ConfigToLaTeX.usage(sections, false);
 			log.error(e.getMessage());
 		}
@@ -100,7 +99,7 @@ public class MinimalTargetAlgorithmEvaluatorRunner
 			
 			AlgorithmRun run = runResults.get(i);
 			RunConfig resultRunConfig = run.getRunConfig();				
-			ProblemInstance resultPi = resultRunConfig.getProblemInstanceSeedPair().getInstance();
+
 			RunResult runResult = run.getRunResult();
 		
 			double runtime = run.getRuntime();
@@ -108,7 +107,7 @@ public class MinimalTargetAlgorithmEvaluatorRunner
 			double quality = run.getQuality();
 				
 			long resultSeed = run.getResultSeed();
-			long requestSeed = resultRunConfig.getProblemInstanceSeedPair().getSeed();
+
 		
 			String additionalData = run.getAdditionalRunData();
 			

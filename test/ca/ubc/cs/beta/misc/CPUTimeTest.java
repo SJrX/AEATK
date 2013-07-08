@@ -133,8 +133,7 @@ public class CPUTimeTest {
 				{
 					
 					
-					//System.out.println("Started " + i);
-					boolean result;
+					
 					try {
 						if(Thread.interrupted())
 						{

@@ -213,7 +213,7 @@ private static TargetAlgorithmEvaluator tae;
 		
 		for(int i=0; i < 10; i++)
 		{
-			double runtime = Math.max(0,(double) Math.random() * kappaMax - 1.0);
+			
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved","TIMEOUT");
 			config.put("runtime", "0.1");

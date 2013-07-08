@@ -18,7 +18,7 @@ public class NullParamConfigurationOriginTracker implements
 
 	@Override
 	public Map<String, String> getOrigins(ParamConfiguration config) {
-		return Collections.EMPTY_MAP;
+		return Collections.emptyMap();
 	}
 
 	@Override

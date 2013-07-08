@@ -16,7 +16,7 @@ import ca.ubc.cs.beta.aclib.termination.ValueMaxStatus;
 @ThreadSafe
 public class NoRunsForManyIterationTerminationCondition extends AbstractTerminationCondition implements EventHandler<AutomaticConfiguratorEvent> {
 
-	private final String NAME = "NUMBER OF RUNS";
+	//private final String NAME = "NUMBER OF RUNS";
 	private final  long iterationWithOutRuns;
 	private final AtomicLong successfullyBuiltModelsSinceLastRun = new AtomicLong(0);
 

@@ -9,7 +9,6 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
-import java.util.regex.Pattern;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
@@ -108,10 +107,7 @@ public class RunGroupOptions extends AbstractOptions {
 
 		
 		orderedReplacementMap.putAll(replacementMap);
-		
-		
-		Pattern p = Pattern.compile(".*%([a-zA-Z_]+).*");
-		
+
 		String line = this.runGroupName;
 	
 		for(Entry<String, String> ent : orderedReplacementMap.entrySet())

@@ -1274,7 +1274,7 @@ public class ParamConfigurationTest {
 		System.out.println("Expect 9 : " + configSpace.getUpperBoundOnSize());
 		assertTrue("Size should be >= 9", configSpace.getUpperBoundOnSize() >= 9);
 		
-		List<ParamConfiguration> neighbours = configSpace.getDefaultConfiguration().getNeighbourhood(this.rand,4);
+		List<ParamConfiguration> neighbours = configSpace.getDefaultConfiguration().getNeighbourhood(rand,4);
 		neighbours.add(configSpace.getDefaultConfiguration());
 		
 		HashSet<ParamConfiguration> newSet = new HashSet<ParamConfiguration>(neighbours);

@@ -246,9 +246,6 @@ public class TargetAlgorithmEvaluatorRunner
 			//But in general you should always use the information in the AlgorithmRun
 			RunConfig resultRunConfig = run.getRunConfig();
 
-			//Again the same ProblemInstance as above
-			ProblemInstance resultPi = resultRunConfig.getProblemInstanceSeedPair().getInstance();
-			
 			//Object representing whether the run reported SAT, UNSAT, TIMEOUT, etc...
 			RunResult runResult = run.getRunResult();
 		

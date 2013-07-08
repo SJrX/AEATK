@@ -253,7 +253,7 @@ public class EventManagerTester {
 		}
 
 		try {
-			TestHandler handler = new TestHandler();
+			//TestHandler handler = new TestHandler();
 			eventManager.fireEvent(new AutomaticConfiguratorEvent()
 			{
 				

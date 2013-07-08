@@ -167,7 +167,7 @@ public class KeyObjectManager<V> {
 		{
 			throw new IllegalStateException("Can't write a null key");
 		}
-		boolean needToWrite = true;
+		
 	
 		try {
 			myLock.writeLock().lock();	

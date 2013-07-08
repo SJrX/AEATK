@@ -1138,7 +1138,7 @@ public class ParamConfigurationSpace implements Serializable {
 		
 			int catSize = this.categoricalSize[i];
 
-			if(catSize != this.INVALID_CATEGORICAL_SIZE)
+			if(catSize != INVALID_CATEGORICAL_SIZE)
 			{
 				configSpaceSize *= catSize;
 			} else
