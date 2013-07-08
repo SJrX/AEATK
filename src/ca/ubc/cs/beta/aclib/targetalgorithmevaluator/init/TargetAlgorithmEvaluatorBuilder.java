@@ -13,6 +13,7 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration.StringFormat;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
@@ -48,6 +49,7 @@ public class TargetAlgorithmEvaluatorBuilder {
 	 * @param hashVerifiersAllowed  Whether we should apply hash verifiers
 	 * @param taeOptionsMap			A map that contains mappings between the names of TAEs and their configured options object	
 	 * @return a configured <code>TargetAlgorithmEvaluator</code>
+	 * @deprecated Use the non wrapped method
 	 */
 	public static TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(TargetAlgorithmEvaluatorOptions options, AlgorithmExecutionConfig execConfig, boolean hashVerifiersAllowed, Map<String, AbstractOptions> taeOptionsMap)
 	{
@@ -63,11 +65,12 @@ public class TargetAlgorithmEvaluatorBuilder {
 	 * @param taeOptionsMap	   		A map that contains mappings between the names of TAEs and their configured options object
 	 * @param tae			   		The TAE to use wrap (if not <code>null</code> will use this one instead of SPI)				
 	 * @return a configured <code>TargetAlgorithmEvaluator</code>
+	 * @deprecated Use the non wrapped method
 	 */
 	@Deprecated
 	public static TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(TargetAlgorithmEvaluatorOptions options, AlgorithmExecutionConfig execConfig, boolean hashVerifiersAllowed, Map<String, AbstractOptions> taeOptionsMap, TargetAlgorithmEvaluator tae)
 	{
-		return getTargetAlgorithmEvaluator(options,execConfig, hashVerifiersAllowed, false, taeOptionsMap, null);
+		return getTargetAlgorithmEvaluator(options,execConfig, hashVerifiersAllowed, false, taeOptionsMap, tae);
 	}
 	
 	/**

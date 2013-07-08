@@ -36,7 +36,7 @@ public class EchoTargetAlgorithmEvaluator  extends AbstractSyncTargetAlgorithmEv
 		this.quickEval = options.quickEval;		
 	}
     
-	@Deprecated
+	
 	public volatile double wallClockTime = 0;
 	
 	@Override
@@ -81,7 +81,7 @@ public class EchoTargetAlgorithmEvaluator  extends AbstractSyncTargetAlgorithmEv
 			
 			results.add(new ExistingAlgorithmRun(execConfig, rc, sb.toString(),wallClockTime));
 			
-			if(RunResult.valueOf(config.get("Solved")).equals(RunResult.ABORT))
+			if(RunResult.valueOf(config.get("solved")).equals(RunResult.ABORT))
 			{
 				throw new TargetAlgorithmAbortException("Echoing abort");
 			}

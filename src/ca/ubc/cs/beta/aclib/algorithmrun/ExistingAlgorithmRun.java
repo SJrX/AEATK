@@ -98,6 +98,7 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 	 * @param execConfig		execution configuration of the object
 	 * @param runConfig			run configuration we are executing
 	 * @param result			result string to parse. The format of this is currently everything after the : in the result line of {@link CommandLineAlgorithmRun}. We support both the String for the RunResult, as well as the Status Code
+	 * @deprecated  the constructor that doesn't take a result string is preferred.
 	 */
 	@Deprecated
 	public ExistingAlgorithmRun(AlgorithmExecutionConfig execConfig, RunConfig runConfig, String result)
@@ -110,6 +111,7 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 	 * @param execConfig		execution configuration of the object
 	 * @param runConfig			run configuration we are executing
 	 * @param result			result string to parse. The format of this is currently everything after the : in the result line of {@link CommandLineAlgorithmRun}. We support both the String for the RunResult, as well as the Status Code
+	 * @deprecated  the constructor that doesn't take a result string is preferred. 
 	 */
 	@Deprecated
 	public ExistingAlgorithmRun(AlgorithmExecutionConfig execConfig, RunConfig runConfig, String result, double wallClockTime) {

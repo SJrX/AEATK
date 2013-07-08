@@ -7,9 +7,13 @@ package ca.ubc.cs.beta.aclib.model.data;
  * the model data. (e.g. The clients of this, shouldn't care whether we are PCAing or not they should just get the new features, same 
  * with transformation of the columns, etc...)
  * 
+ * @deprecated There is no alternative to this class at present but it's fairly ugly, expect this class
+ * to be removed in future.
+ * 
  * @author seramage
  *
  */
+@Deprecated
 public interface SanitizedModelData {
 
 	public static final double MINIMUM_RESPONSE_VALUE = 0.005;

@@ -58,6 +58,7 @@ public interface InstanceSeedGenerator extends Serializable {
 	 * 
 	 * @return <code>true</code> if and only if all instances have the same number of seeds
 	 */
+	@Deprecated
 	public boolean allInstancesHaveSameNumberOfSeeds();
 
 	/**
