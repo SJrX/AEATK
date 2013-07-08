@@ -25,7 +25,11 @@ public static void main(String[] args)
 			try {
 				Class<?> foo = Class.forName(opts.clazz);
 			} catch (ClassNotFoundException e) {
+				
+				System.out.println("Classpath is: " + System.getProperty("java.class.path"));
 				throw new ParameterException("Error locating class: " + opts.clazz + " error: " + e.getClass().getCanonicalName() + ":" + e.getMessage() + "\n Maybe try using: --skip-class-check");
+				
+				
 			}
 		}
 		
@@ -49,12 +53,15 @@ public static void main(String[] args)
 		String script = getScript(opts.clazz,opts.nameOfProgram);
 		
 			
-		System.out.println("***Script writing to: "  + f + " ***\n" + script + "****** ");
+		System.out.println("Execution Script writing to: "  + f);
 		
 		FileWriter fWrite = new FileWriter(f);
 		
 		fWrite.write(script);
 		fWrite.close();
+		f.setExecutable(true);
+		f.setReadable(true);
+		f.setWritable(false);
 	} catch(ParameterException e)
 	{
 		e.printStackTrace();
@@ -109,7 +116,7 @@ exec java -Xmx"$SMACMEM"m -cp "$DIR/conf/:$jarconcat" $EXEC "$@"
 	sb.append("done").append("\n");
 	sb.append("jarconcat=${jarconcat:1}\n");
 	sb.append("\n");
-	sb.append("exec java -Xmx\"$SMACMEM\"m -cp \"$DIR/conf/:$jarconcat\" $EXEC \"$@\"").append("\n");
+	sb.append("exec java -Xmx\"$SMACMEM\"m -cp \"$DIR/conf/:$DIR/patches/:$jarconcat:$DIR/patches/\" $EXEC \"$@\"").append("\n");
 	
 	return sb.toString();
 }
