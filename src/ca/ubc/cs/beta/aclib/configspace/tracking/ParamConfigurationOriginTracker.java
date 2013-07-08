@@ -1,13 +1,8 @@
 package ca.ubc.cs.beta.aclib.configspace.tracking;
 
-import java.util.Collections;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.LinkedBlockingQueue;
-import java.util.concurrent.atomic.AtomicInteger;
-
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 
 import net.jcip.annotations.ThreadSafe;

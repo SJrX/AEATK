@@ -4,8 +4,6 @@ import static org.junit.Assert.*;
 
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicBoolean;
-
 import org.junit.Ignore;
 import org.junit.Test;
 

@@ -2,7 +2,6 @@ package ca.ubc.cs.beta.aclib.eventsystem.handlers;
 
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.configspace.tracking.ParamConfigurationOriginTracker;
-import ca.ubc.cs.beta.aclib.configspace.tracking.RealParamConfigurationOriginTracker;
 import ca.ubc.cs.beta.aclib.eventsystem.EventHandler;
 import ca.ubc.cs.beta.aclib.eventsystem.events.ac.IncumbentPerformanceChangeEvent;
 import ca.ubc.cs.beta.aclib.runhistory.ThreadSafeRunHistory;

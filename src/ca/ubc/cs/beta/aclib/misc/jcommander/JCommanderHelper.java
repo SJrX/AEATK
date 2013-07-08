@@ -11,6 +11,7 @@ import java.util.Map.Entry;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ca.ubc.cs.beta.aclib.ant.execscript.ExecScriptCreatorOptions;
 import ca.ubc.cs.beta.aclib.help.HelpOptions;
 import ca.ubc.cs.beta.aclib.misc.returnvalues.ACLibReturnValues;
 import ca.ubc.cs.beta.aclib.misc.spi.SPIClassLoaderHelper;
@@ -119,6 +120,25 @@ public final class JCommanderHelper
 	 * 
 	 * @return
 	 */
+	public static JCommander getJCommanderAndCheckForHelp(String[] args,AbstractOptions mainOptions) {
+		JCommander jcom = getJCommander(mainOptions, Collections.<String, AbstractOptions> emptyMap());
+		checkForHelpAndVersion(args, mainOptions, Collections.<String, AbstractOptions> emptyMap());
+		return jcom;
+		
+		
+	}
+	
+	
+	/**
+	 * Returns a JCommander object after screening for parameters that are asking for help or version information 
+	 *  
+	 * 
+	 * @param args
+	 * @param mainOptions
+	 * @param taeOptions
+	 * 
+	 * @return
+	 */
 	public static JCommander getJCommanderAndCheckForHelp(String[] args,AbstractOptions mainOptions,Map<String, AbstractOptions> taeOptions) {
 		JCommander jcom = getJCommander(mainOptions, taeOptions);
 		
@@ -155,8 +175,7 @@ public final class JCommanderHelper
 		log.info("Call String:");
 		log.info("{}", sb.toString());
 	}
-	
-	
+
 	
 	
 	
