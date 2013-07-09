@@ -24,6 +24,7 @@ import net.jcip.annotations.Immutable;
 
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration.StringFormat;
 import ca.ubc.cs.beta.aclib.misc.java.io.FileReaderNoException.FileReaderNoException;
+import ec.util.MersenneTwisterFast;
 
 enum LineType
 {
@@ -167,6 +168,15 @@ public class ParamConfigurationSpace implements Serializable {
 	 */
 	private final List<String> authorativeParameterNameOrder;
 
+	/**
+	 * Array representation of the previous value to speed up searching
+	 */
+	private final String[] authorativeParameterOrderArray;
+	
+	/**
+	 * Array representation of the ranges by index 
+	 */
+	private final NormalizedRange[] normalizedRangesByIndex;
 
 	/**
 	 * Creates a Param Configuration Space from the given file, no random object
@@ -293,6 +303,17 @@ public class ParamConfigurationSpace implements Serializable {
 		Collections.sort(paramOrder);
 		
 		this.authorativeParameterNameOrder = Collections.unmodifiableList(paramOrder);
+		
+		this.authorativeParameterOrderArray = new String[this.authorativeParameterNameOrder.size()];
+		this.normalizedRangesByIndex = new NormalizedRange[this.authorativeParameterNameOrder.size()];
+		for(int i=0; i < authorativeParameterNameOrder.size(); i++)
+		{
+			this.authorativeParameterOrderArray[i] = authorativeParameterNameOrder.get(i);
+			this.normalizedRangesByIndex[i] = this.contNormalizedRanges.get(this.authorativeParameterOrderArray[i]);
+		}
+		
+		
+		
 		
 		
 		  //TODO: Expand on these comments
@@ -435,6 +456,9 @@ public class ParamConfigurationSpace implements Serializable {
 			setValueInArray(this.searchSubspaceValues, param, value);
 			this.searchSubspaceActive[index] = true;
 		}
+		
+		
+		
 	}
 	
 	/**
@@ -1045,7 +1069,6 @@ public class ParamConfigurationSpace implements Serializable {
 		return "ParamFile:" + absoluteFileName;
 	}
 	
-	
 	/**
 	 * Generates a random configuration given the supplied random object 
 	 * @param random object we will use to generate the configuration 
@@ -1057,9 +1080,6 @@ public class ParamConfigurationSpace implements Serializable {
 		return this.getRandomConfiguration(random, false);
 	}
 	
-	
-	
-	
 	/**
 	 * Returns a random instance for the configuration space
 	 * @param random 	a random object we will use to generate the configurations
@@ -1068,10 +1088,49 @@ public class ParamConfigurationSpace implements Serializable {
 	 */
 	public ParamConfiguration getRandomConfiguration(Random random, boolean allowForbiddenParameters)
 	{
+		return getRandomConfiguration(new RandomAdapter(random), allowForbiddenParameters);
+	}
+	
+	/**
+	 * Generates a random configuration given the supplied random object 
+	 * @param a fast random object we will use to generate the configuration 
+ 	 * @return a random member of the configuration space (each parameter (ignoring the subspace) is sampled uniformly at random, and rejected if it's forbidden).
+	 */
+	public ParamConfiguration getRandomConfiguration(MersenneTwisterFast random)
+	{
+		
+		return this.getRandomConfiguration(new RandomAdapter(random), false);
+	}
+	
+	/**
+	 * Returns a random instance for the configuration space
+	 * @param random 	a fast random object we will use to generate the configurations
+	 * @param allowForbiddenParameters  <code>true</code> if we can return parameters that are forbidden, <code>false</code> otherwise.
+	 * @return	a random member of the configuration space (each parameter (ignoring the subspace) is sampled uniformly at random, and rejected if it's forbidden
+	 */
+	public ParamConfiguration getRandomConfiguration(MersenneTwisterFast random, boolean allowForbiddenParameters)
+	{
+		return this.getRandomConfiguration(new RandomAdapter(random), allowForbiddenParameters);
+	}
+	
+	
+	/**
+	 * Returns a random instance for the configuration space
+	 * @param random 	a random object we will use to generate the configurations
+	 * @param allowForbiddenParameters  <code>true</code> if we can return parameters that are forbidden, <code>false</code> otherwise.
+	 * @return	a random member of the configuration space (each parameter (ignoring the subspace) is sampled uniformly at random, and rejected if it's forbidden
+	 */
+	private ParamConfiguration getRandomConfiguration(RandomAdapter random, boolean allowForbiddenParameters)
+	{
+		
 		if(random == null) throw new IllegalArgumentException("Cannot supply null random object ");
+		
+		//fastRand.setSeed(random.nextLong());
+		double[] valueArray = new double[numberOfParameters];
+		
 		for(int j=0; j < 1000000; j++)
 		{
-			double[] valueArray = new double[numberOfParameters];
+			
 			for(int i=0; i < numberOfParameters; i++)
 			{
 				if(searchSubspaceActive[i])
@@ -1079,14 +1138,12 @@ public class ParamConfigurationSpace implements Serializable {
 					valueArray[i] = searchSubspaceValues[i];
 				}	else if (parameterDomainContinuous[i])
 				{
-					NormalizedRange nr = getNormalizedRangeMap().get(this.authorativeParameterNameOrder.get(i));
+					NormalizedRange nr = this.normalizedRangesByIndex[i]; 
 					valueArray[i] = nr.normalizeValue(nr.unnormalizeValue(random.nextDouble()));
-					
-					//valueArray[i] = random.nextDouble();
+				
 				} else
 				{
 					valueArray[i] = random.nextInt(categoricalSize[i]) + 1;
-					
 				}
 			}
 			
@@ -1503,6 +1560,48 @@ public class ParamConfigurationSpace implements Serializable {
 	}
 	
 	
+	private class RandomAdapter
+	{
+		
+		private MersenneTwisterFast fastRand;
+		private Random rand;
+
+		RandomAdapter(Random r)
+		{
+			this.rand = r;
+			this.fastRand = null;
+		}
+		
+		RandomAdapter(MersenneTwisterFast fastRand)
+		{
+			this.rand = null;
+			this.fastRand =  fastRand;
+		}
+		
+		public int nextInt(int n)
+		{
+			if(fastRand != null)
+			{
+				return fastRand.nextInt(n); 
+			} else
+			{
+				return rand.nextInt(n);
+			}
+			
+		}
+		
+		public double nextDouble()
+		{
+			if(fastRand != null)
+			{
+				return fastRand.nextDouble();
+			} else
+			{
+				return rand.nextDouble();
+			}
+		}
+	
+	}
 	
 }
 

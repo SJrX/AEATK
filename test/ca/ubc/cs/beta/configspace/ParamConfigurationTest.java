@@ -19,6 +19,7 @@ import java.util.Set;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import ca.ubc.cs.beta.TestHelper;
@@ -28,11 +29,13 @@ import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration.StringFormat;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationStringFormatException;
 import ca.ubc.cs.beta.aclib.configspace.ParamFileHelper;
 import ca.ubc.cs.beta.aclib.misc.debug.DebugUtil;
+import ca.ubc.cs.beta.aclib.misc.watch.AutoStartStopWatch;
 import ca.ubc.cs.beta.aclib.random.SeedableRandomPool;
 
 import com.beust.jcommander.internal.Lists;
 
 import ec.util.MersenneTwister;
+import ec.util.MersenneTwisterFast;
 
 @SuppressWarnings({"unused", "deprecation","unchecked"})
 public class ParamConfigurationTest {
@@ -1422,7 +1425,37 @@ public class ParamConfigurationTest {
 		*/
 	}
 	
-	
+	@Test
+	@Ignore
+	public void testRandomSpeed()
+	{
+		 
+		
+		ParamConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("x0 [-3,3] [3]\n"+
+"x1 [-2, 2] [2]\n"+
+"abs(3*X) [-4,4] [-4]\n"+
+"-cos(X)+1 [0,6.28] [2]\n"+
+"exp(X)-1 [0,10] [8]\n"+
+"abs(2*X) [-4,4] [-4]\n"+
+"abs(4*X) [-4,4] [-4]\n"+
+"abs(X) [-4,4] [-4]\n");
+		MersenneTwisterFast fast = new MersenneTwisterFast(rand.nextLong());
+		
+		AutoStartStopWatch watch = new AutoStartStopWatch();
+		for(int i=0; i < 10; i++)
+		{
+			for(int j=0; j < 2000000; j++)
+			{
+				configSpace.getRandomConfiguration(fast);
+			}
+			System.out.println(watch.laps()/1000.0 + " secs");
+		}
+		
+		System.out.println("Average time " + watch.stop() / 10000.0 + " seconds");
+		
+		fail("This doesn't actually test anything");	
+		
+	}
 	
 	@After
 	public void tearDown()
