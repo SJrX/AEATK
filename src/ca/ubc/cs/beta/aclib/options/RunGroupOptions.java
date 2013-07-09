@@ -19,15 +19,22 @@ import ca.ubc.cs.beta.aclib.misc.returnvalues.ACLibReturnValues;
 @UsageTextField(hiddenSection = true)
 public class RunGroupOptions extends AbstractOptions {
 
+	
 	@UsageTextField
 	@Parameter(names="--runGroupName", description="name of subfolder of outputdir to save all the output files of this run to")
-	public String runGroupName = "%SCENARIO_NAME-%executionMode-ac-%adaptiveCapping-cores%cores-cutoff%cutoffTime-%DATE";
+	public String runGroupName; 
 	
 	@Parameter(names="--print-rungroup-replacement-and-exit", description="print all the possible replacements in the rungroup and then exit")
 	public boolean runGroupExit;
 	
 	@Parameter(names="--runGroupReplacement", description="Character (potentially regex see source) to use as the start of a replacement in the runGroupName", hidden=true)
 	public String replacementChar = "%";
+	
+	public RunGroupOptions(String defaultRunGroupName)
+	{
+		this.runGroupName = defaultRunGroupName;
+	}
+	
 	
 	public String getRunGroupName(Collection<AbstractOptions> opts)
 	{
