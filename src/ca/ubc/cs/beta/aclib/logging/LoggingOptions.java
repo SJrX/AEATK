@@ -71,7 +71,7 @@ public class LoggingOptions extends AbstractOptions{
 
 }
 /*
- <?xml version="1.0" encoding="UTF-8" ?>
+<?xml version="1.0" encoding="UTF-8" ?>
 <configuration debug="false" >
   <appender name="FILE" class="ch.qos.logback.core.FileAppender">
   <file>${OUTPUTDIR}/log-run${NUMRUN}.txt</file>
