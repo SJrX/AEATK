@@ -19,7 +19,7 @@ import ca.ubc.cs.beta.aclib.misc.returnvalues.ACLibReturnValues;
 @UsageTextField(hiddenSection = true)
 public class RunGroupOptions extends AbstractOptions {
 
-	@UsageTextField(defaultValues="<Scenario Name>-<executionMode>-ac-<adaptiveCapping>-cores<cores>-cutoff<cutoffTime>-<date>")
+	@UsageTextField
 	@Parameter(names="--runGroupName", description="name of subfolder of outputdir to save all the output files of this run to")
 	public String runGroupName = "%SCENARIO_NAME-%executionMode-ac-%adaptiveCapping-cores%cores-cutoff%cutoffTime-%DATE";
 	
