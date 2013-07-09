@@ -157,6 +157,7 @@ public class SMACOptions extends AbstractOptions {
 	@ParameterFile(ignoreFileNotExists = true) 
 	public File smacDefaults = HomeFileUtils.getHomeFile(".aclib" + File.separator  + "smac.opt");
 
+	
 	@Parameter(names={"--deterministic-instance-ordering","--deterministicInstanceOrdering"}, description="If true, instances will be selected from the instance list file in the specified order")
 	public boolean deterministicInstanceOrdering = false;
 	

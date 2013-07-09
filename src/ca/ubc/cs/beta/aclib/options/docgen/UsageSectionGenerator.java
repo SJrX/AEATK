@@ -14,6 +14,7 @@ import java.util.Set;
 
 import ca.ubc.cs.beta.aclib.misc.options.DomainDisplay;
 import ca.ubc.cs.beta.aclib.misc.options.NoArgumentHandler;
+import ca.ubc.cs.beta.aclib.misc.options.NoopNoArgumentHandler;
 import ca.ubc.cs.beta.aclib.misc.options.UsageSection;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
@@ -53,6 +54,7 @@ public class UsageSectionGenerator {
 		{
 			
 			UsageTextField utf = getLatexField(obj);
+			NoArgumentHandler handler = new NoopNoArgumentHandler();
 			if(utf == null)
 			{
 				System.err.println("Class " + obj.getClass()  + " does not have a UsageTextField annotation, this is very ugly for users to deal. Sleeping for 5 seconds");
@@ -67,6 +69,17 @@ public class UsageSectionGenerator {
 					}
 					hasSlept = true;
 				}
+			} else
+			{
+				
+				try {
+					 handler = utf.noarg().newInstance();
+				} catch(InstantiationException e)
+				{
+					System.err.println("Couldn't create no-argument handler, are you sure that it has default (zero-argument) constructor :"+  e.getMessage());
+					throw e;
+				} 
+				
 			}
 			
 			String title = getTitleForObject(obj);
@@ -74,14 +87,7 @@ public class UsageSectionGenerator {
 			String sectionDescription = getDescriptionForObject(obj);
 			boolean isHidden = isHiddenSection(obj);
 			
-			NoArgumentHandler handler;
-			try {
-				 handler = utf.noarg().newInstance();
-			} catch(InstantiationException e)
-			{
-				System.err.println("Couldn't create no-argument handler, are you sure that it has default (zero-argument) constructor :"+  e.getMessage());
-				throw e;
-			} 
+			
 			UsageSection sec = new UsageSection(title, titleBanner, sectionDescription,isHidden, obj, handler);
 			sections.add(sec);
 			
@@ -167,7 +173,9 @@ public class UsageSectionGenerator {
 			{
 				Object child = sec2.getObject();
 				//Not related
-				//System.out.println(parent.getClass() + " and " + child.getClass());
+				System.out.println(parent.getClass() + " and " + child.getClass());
+				
+				if(parentToChildMap.get(parent) == null) continue;
 				if(!parentToChildMap.get(parent).contains(child)) continue;
 				
 				if(sec2.isSectionHidden())
@@ -250,6 +258,28 @@ public class UsageSectionGenerator {
 						objectsToScan.add(f.get(o));
 						parentToChildMap.get(o).add(f.get(o));
 						getAllObjects(f.get(o), objectsToScan, parentToChildMap);
+					}
+					
+					if(f.isAnnotationPresent(UsageTextField.class))
+					{
+						UsageTextField utf = f.getAnnotation(UsageTextField.class);
+						if(utf.relatedOption().equals(Object.class))
+						{
+							continue;
+						} else
+						{
+							try {
+								Object o2 = utf.relatedOption().newInstance();
+								//parentToChildMap.get(o).add(o2);
+								objectsToScan.add(o2);
+							} catch(InstantiationException e)
+							{
+								System.err.println("Couldn't create new instance of " + utf.relatedOption().getCanonicalName() + " this class needs to have a default (zero-arg) constructor if it is to be a related option");
+							}
+							
+							
+						}
+						
 					}
 				}
 			}
@@ -427,6 +457,7 @@ public class UsageSectionGenerator {
 	private static String getSectionBannerForObject(Object obj)
 	{
 		UsageTextField f = getLatexField(obj);
+		if( f == null) return "*****[  ]*******";
 		return f.titlebanner();
 	}
 	

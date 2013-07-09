@@ -3,6 +3,7 @@ package ca.ubc.cs.beta.aclib.misc.options;
 import java.lang.annotation.Retention;
 import java.lang.annotation.RetentionPolicy;
 
+
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UsageTextField {
 	
@@ -21,4 +22,6 @@ public @interface UsageTextField {
 	String[] claimRequired() default {};
 	
 	Class<? extends NoArgumentHandler> noarg() default NoopNoArgumentHandler.class;
+	
+	Class<? extends Object> relatedOption() default Object.class;
 }
