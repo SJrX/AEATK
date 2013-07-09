@@ -169,9 +169,14 @@ public class ConfigToLaTeX {
 		{
 			if(!sec.isSectionHidden())
 			{
-				pw.format("========== %-20s ==========%n%n", sec.getSectionName());
-				pw.format("\t%s %n %n ", sec.getSectionDescription());
-				pw.format("\tArguments:%n");
+				pw.format(sec.getSectionBanner(), sec.getSectionName());
+				pw.format("\t%s %n %n", sec.getSectionDescription());
+				
+				if(sec.getNumberOfAttributes()!=0)
+				{
+					pw.format("\tArguments:%n");
+				}
+				
 			}
 			for(String name : sec)
 			{
@@ -319,10 +324,11 @@ public class ConfigToLaTeX {
 			}
 			
 			String title = getTitleForObject(obj);
+			String titleBanner = getSectionBannerForObject(obj);
 			String sectionDescription = getDescriptionForObject(obj);
 			boolean isHidden = isHiddenSection(obj);
 			
-			UsageSection sec = new UsageSection(title, sectionDescription,isHidden, obj);
+			UsageSection sec = new UsageSection(title, titleBanner, sectionDescription,isHidden, obj);
 			sections.add(sec);
 			
 			
@@ -608,6 +614,12 @@ public class ConfigToLaTeX {
 		return f.title();
 		
 		}
+	
+	private static String getSectionBannerForObject(Object obj)
+	{
+		UsageTextField f = getLatexField(obj);
+		return f.titlebanner();
+	}
 	
 	private static String getDescriptionForObject(Object obj) {
 
