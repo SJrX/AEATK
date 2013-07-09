@@ -5,7 +5,6 @@ import java.util.Collections;
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfigHelper;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
-import ca.ubc.cs.beta.aclib.options.docgen.OptionsToLaTeX;
 import ca.ubc.cs.beta.aclib.options.docgen.OptionsToUsage;
 import ca.ubc.cs.beta.aclib.options.docgen.UsageSectionGenerator;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfigHelper;

@@ -12,7 +12,6 @@ import java.util.TreeSet;
 import com.beust.jcommander.JCommander;
 
 import ca.ubc.cs.beta.aclib.misc.options.UsageSection;
-import ca.ubc.cs.beta.aclib.options.docgen.OptionsToLaTeX;
 import ca.ubc.cs.beta.aclib.options.docgen.UsageSectionGenerator;
 
 /**

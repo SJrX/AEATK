@@ -18,7 +18,6 @@ import ca.ubc.cs.beta.aclib.misc.returnvalues.ACLibReturnValues;
 import ca.ubc.cs.beta.aclib.misc.spi.SPIClassLoaderHelper;
 import ca.ubc.cs.beta.aclib.misc.version.VersionTracker;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
-import ca.ubc.cs.beta.aclib.options.docgen.OptionsToLaTeX;
 import ca.ubc.cs.beta.aclib.options.docgen.OptionsToUsage;
 import ca.ubc.cs.beta.aclib.options.docgen.UsageSectionGenerator;
 

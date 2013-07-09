@@ -2,7 +2,6 @@ package ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.analytic;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -73,9 +72,6 @@ public class AnalyticTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorith
 				}
 				
 				double time = func.evaluate(vals);
-				
-				
-				Pattern p = Pattern.compile("x[0-9]+");
 				
 				for(String key : rc.getParamConfiguration().keySet())
 				{

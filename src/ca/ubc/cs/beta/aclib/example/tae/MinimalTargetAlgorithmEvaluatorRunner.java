@@ -17,7 +17,6 @@ import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.misc.jcommander.JCommanderHelper;
 import ca.ubc.cs.beta.aclib.misc.options.UsageSection;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
-import ca.ubc.cs.beta.aclib.options.docgen.OptionsToLaTeX;
 import ca.ubc.cs.beta.aclib.options.docgen.OptionsToUsage;
 import ca.ubc.cs.beta.aclib.options.docgen.UsageSectionGenerator;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;

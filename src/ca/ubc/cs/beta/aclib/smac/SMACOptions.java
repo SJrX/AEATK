@@ -12,7 +12,6 @@ import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.expectedimprovement.ExpectedImprovementFunctions;
 import ca.ubc.cs.beta.aclib.help.HelpOptions;
 import ca.ubc.cs.beta.aclib.initialization.InitializationMode;
-import ca.ubc.cs.beta.aclib.logging.LogLevel;
 import ca.ubc.cs.beta.aclib.logging.LoggingOptions;
 import ca.ubc.cs.beta.aclib.misc.file.HomeFileUtils;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.*;
