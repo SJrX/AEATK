@@ -12,9 +12,10 @@ import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.expectedimprovement.ExpectedImprovementFunctions;
 import ca.ubc.cs.beta.aclib.help.HelpOptions;
 import ca.ubc.cs.beta.aclib.initialization.InitializationMode;
+import ca.ubc.cs.beta.aclib.logging.LogLevel;
+import ca.ubc.cs.beta.aclib.logging.LoggingOptions;
 import ca.ubc.cs.beta.aclib.misc.file.HomeFileUtils;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.*;
-import ca.ubc.cs.beta.aclib.misc.logging.LogLevel;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 import ca.ubc.cs.beta.aclib.options.RandomForestOptions;
@@ -112,12 +113,9 @@ public class SMACOptions extends AbstractOptions {
 	@Parameter(names={"--intensificationPercentage","--frac_rawruntime"}, description="percent of time to spend intensifying versus model learning", validateWith=ZeroOneHalfOpenRightDouble.class)
 	public double intensificationPercentage = 0.50;
 	
-	@Parameter(names="--consoleLogLevel",description="default log level of console output (this cannot be more verbose than the logLevel)")
-	public LogLevel consoleLogLevel = LogLevel.INFO;
+	@ParametersDelegate
+	public LoggingOptions logOptions = new LoggingOptions();
 	
-	@Parameter(names="--logLevel",description="Log Level for SMAC")
-	public LogLevel logLevel = LogLevel.DEBUG;	
-		
 
 	
 	@Parameter(names="--maskInactiveConditionalParametersAsDefaultValue", description="build the model treating inactive conditional values as the default value")

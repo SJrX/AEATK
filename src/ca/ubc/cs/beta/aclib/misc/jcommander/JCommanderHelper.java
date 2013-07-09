@@ -123,8 +123,6 @@ public final class JCommanderHelper
 		JCommander jcom = getJCommander(mainOptions, Collections.<String, AbstractOptions> emptyMap());
 		checkForHelpAndVersion(args, mainOptions, Collections.<String, AbstractOptions> emptyMap());
 		return jcom;
-		
-		
 	}
 	
 	
