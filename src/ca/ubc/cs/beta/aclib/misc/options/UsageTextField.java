@@ -5,7 +5,9 @@ import java.lang.annotation.RetentionPolicy;
 
 @Retention(RetentionPolicy.RUNTIME)
 public @interface UsageTextField {
-
+	
+	String titlebanner() default "========== %-20s ==========%n%n";
+	
 	String description() default "" ;
 	
 	String defaultValues()  default "<NOT SET>";
