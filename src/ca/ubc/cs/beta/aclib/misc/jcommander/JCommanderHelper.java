@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
@@ -12,11 +13,15 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aclib.help.HelpOptions;
+import ca.ubc.cs.beta.aclib.misc.options.UsageSection;
 import ca.ubc.cs.beta.aclib.misc.returnvalues.ACLibReturnValues;
 import ca.ubc.cs.beta.aclib.misc.spi.SPIClassLoaderHelper;
 import ca.ubc.cs.beta.aclib.misc.version.VersionTracker;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
-import ca.ubc.cs.beta.aclib.options.ConfigToLaTeX;
+import ca.ubc.cs.beta.aclib.options.docgen.OptionsToLaTeX;
+import ca.ubc.cs.beta.aclib.options.docgen.OptionsToUsage;
+import ca.ubc.cs.beta.aclib.options.docgen.UsageSectionGenerator;
+
 import com.beust.jcommander.JCommander;
 
 public final class JCommanderHelper
@@ -66,7 +71,7 @@ public final class JCommanderHelper
 			{
 				if(possibleValues.contains(helpName))
 				{
-					ConfigToLaTeX.usage(ConfigToLaTeX.getParameters(options, taeOpts), true);
+					OptionsToUsage.usage(UsageSectionGenerator.getUsageSections(options, taeOpts), true);
 					System.exit(ACLibReturnValues.SUCCESS);
 				}
 			}
@@ -76,7 +81,7 @@ public final class JCommanderHelper
 			{
 				if(possibleValues.contains(helpName))
 				{
-					ConfigToLaTeX.usage(ConfigToLaTeX.getParameters(options, taeOpts));
+					OptionsToUsage.usage(UsageSectionGenerator.getUsageSections(options, taeOpts));
 					System.exit(ACLibReturnValues.SUCCESS);
 				}
 			}
@@ -138,11 +143,22 @@ public final class JCommanderHelper
 	 */
 	public static JCommander getJCommanderAndCheckForHelp(String[] args,AbstractOptions mainOptions,Map<String, AbstractOptions> taeOptions) {
 		JCommander jcom = getJCommander(mainOptions, taeOptions);
-		
+		if(args.length == 0)
+		{
+			List<UsageSection> secs = UsageSectionGenerator.getUsageSections(mainOptions, taeOptions);
+			boolean quit= false;
+			for(UsageSection sec  : secs)
+			{
+				quit |= sec.getHandler().handleNoArguments();
+				
+			}
+			
+			if(quit)
+			{
+				System.exit(ACLibReturnValues.PARAMETER_EXCEPTION);
+			}
+		}
 		checkForHelpAndVersion(args, mainOptions, taeOptions);
-		
-		
-		
 		return jcom;
 		
 		

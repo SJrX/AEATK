@@ -25,6 +25,7 @@ public class UsageSection implements Iterable<String> {
 	private final Map<String, Boolean> hiddenMap = new HashMap<String, Boolean>();
 	private final Object object;
 	private final boolean hidden;
+	private NoArgumentHandler noargHandler;
 	
 	/**
 	 * Constructs a new usage section
@@ -34,13 +35,15 @@ public class UsageSection implements Iterable<String> {
 	 * @param hidden				<code>true</code> if we shouldn't display the sectionName or description when displaying options.
 	 * @param object				Object this section is associated with
 	 */
-	public UsageSection(String sectionName, String sectionBanner, String sectionDescription, boolean hidden, Object object)
+	public UsageSection(String sectionName, String sectionBanner, String sectionDescription, boolean hidden, Object object, NoArgumentHandler handler)
 	{
 		this.sectionName = sectionName;
 		this.sectionBanner = sectionBanner;
 		this.sectionDescription = sectionDescription;
 		this.hidden = hidden;
 		this.object = object;
+		this.noargHandler = handler;
+		
 	}
 	
 	public Object getObject()
@@ -166,6 +169,10 @@ public class UsageSection implements Iterable<String> {
 	public boolean isAttributeHidden(String name) {
 
 		return hiddenMap.get(name);
+	}
+
+	public NoArgumentHandler getHandler() {
+		return this.noargHandler;
 	}
 
 }

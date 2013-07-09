@@ -12,7 +12,8 @@ import java.util.TreeSet;
 import com.beust.jcommander.JCommander;
 
 import ca.ubc.cs.beta.aclib.misc.options.UsageSection;
-import ca.ubc.cs.beta.aclib.options.ConfigToLaTeX;
+import ca.ubc.cs.beta.aclib.options.docgen.OptionsToLaTeX;
+import ca.ubc.cs.beta.aclib.options.docgen.UsageSectionGenerator;
 
 /**
  * Generates bash autocompletion script for options
@@ -31,7 +32,7 @@ public class BashCompletion {
 			
 			Object obj = Class.forName(opts.clazz).newInstance();
 		
-			List<UsageSection> sections = ConfigToLaTeX.getParameters(obj);
+			List<UsageSection> sections = UsageSectionGenerator.getUsageSections(obj);
 			
 			
 			String completionScript = bash(sections, opts.commandName);

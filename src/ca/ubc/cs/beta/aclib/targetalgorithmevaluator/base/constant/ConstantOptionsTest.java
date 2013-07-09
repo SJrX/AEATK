@@ -5,7 +5,9 @@ import java.util.Collections;
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfigHelper;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
-import ca.ubc.cs.beta.aclib.options.ConfigToLaTeX;
+import ca.ubc.cs.beta.aclib.options.docgen.OptionsToLaTeX;
+import ca.ubc.cs.beta.aclib.options.docgen.OptionsToUsage;
+import ca.ubc.cs.beta.aclib.options.docgen.UsageSectionGenerator;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfigHelper;
 import ca.ubc.cs.beta.aclib.smac.SMACOptions;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
@@ -48,7 +50,7 @@ public class ConstantOptionsTest {
 			
 		} catch(ParameterException e)
 		{
-			ConfigToLaTeX.usage(ConfigToLaTeX.getParameters(args2));
+			OptionsToUsage.usage(UsageSectionGenerator.getUsageSections(args2));
 			e.printStackTrace();
 
 			

@@ -42,7 +42,7 @@ import com.beust.jcommander.ParametersDelegate;
  *
  *
  */
-@UsageTextField(title="SMAC Options", description="General Options for Running SMAC", claimRequired={"--instanceFile"})
+@UsageTextField(title="SMAC Options", description="General Options for Running SMAC", claimRequired={"--instanceFile"}, noarg=SMACNoArgHandler.class)
 public class SMACOptions extends AbstractOptions {
 	
 	@ParametersDelegate
@@ -64,7 +64,7 @@ public class SMACOptions extends AbstractOptions {
 	public File modelHashCodeFile;
 	
 	@ParametersDelegate
-	public RunGroupOptions runGroupOptions = new RunGroupOptions();
+	public RunGroupOptions runGroupOptions = new RunGroupOptions("%SCENARIO_NAME-%executionMode-ac-%adaptiveCapping-cores%cores-cutoff%cutoffTime-%DATE");
 	
 	
 	@Parameter(names="--numPCA", description="number of principal components features to use when building the model", validateWith=FixedPositiveInteger.class)

@@ -19,4 +19,6 @@ public @interface UsageTextField {
 	boolean hiddenSection() default false;
 	
 	String[] claimRequired() default {};
+	
+	Class<? extends NoArgumentHandler> noarg() default NoopNoArgumentHandler.class;
 }

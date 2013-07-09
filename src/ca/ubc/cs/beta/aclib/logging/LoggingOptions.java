@@ -41,13 +41,12 @@ public class LoggingOptions extends AbstractOptions{
 	public void initializeLogging(String completeOutputDir, int numRun)
 	{
 	
-		if(completeOutputDir != null)
+		if(completeOutputDir == null)
 		{
-			System.setProperty("OUTPUTDIR", completeOutputDir); 
-		} else
-		{
-			System.setProperty("OUTPUTDIR", "./");
-		}
+			completeOutputDir = (new File("")).getAbsolutePath();
+		} 
+			
+	
 		System.setProperty("NUMRUN", String.valueOf(numRun));
 		System.setProperty("STDOUT-LEVEL", consoleLogLevel.name());
 		System.setProperty("ROOT-LEVEL",logLevel.name());

@@ -319,8 +319,10 @@ public abstract class AbstractOptions {
 							}
 						}
 					
-					}
-					else 
+					} else if(o instanceof Collection)
+					{
+						//Skip Collections
+					} else 
 					{
 						System.err.println("No idea what o is " + o.getClass()  +" value:" + o + " name " + ant.names()[0]);
 					}
