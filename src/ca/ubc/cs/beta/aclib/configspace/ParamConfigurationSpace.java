@@ -124,10 +124,11 @@ public class ParamConfigurationSpace implements Serializable {
 	private final int numberOfParameters;
 	
 	/**
-	 * 
+	 * For each parameter (in authorative order) stores the indexes of the parent parameters
 	 */	
 	private final int[][] condParents;
 
+	
 	private final int[][][] condParentVals;
 
 
@@ -1217,6 +1218,60 @@ public class ParamConfigurationSpace implements Serializable {
 		
 		return configSpaceSize;
 	}
+	
+	
+
+	/**
+	 * Returns an lower bound on the size of the configuration space. 
+	 * There are no guarantees how tight this lower bound might be, and in general it may get looser over time.
+	 * You are only guaranteed that the number of actual configurations is HIGHER than this lower bound.
+	 * <b>NOTE:</b> Search Subspaces do NOT lower the size of the bound because you can leave the subspace 
+	 * 
+	 * @return an upper bound on the size of the search space
+	 */
+	public double getLowerBoundOnSize()
+	{
+		//Default cannot be forbidden so there is at least 1 configuration
+		//We don't need to worry about the edge case
+		double configSpaceSize = 1;
+		if(this.forbiddenParameterValuesList.size() > 0)
+		{
+			return 1;
+		}
+		
+		for(int i=0; i < this.numberOfParameters; i++)
+		{
+		
+			int catSize = this.categoricalSize[i];
+
+			if(this.condParents[i].length > 0)
+			{
+				//Conditionals are ignored
+				continue;
+			}
+					
+			if(catSize != INVALID_CATEGORICAL_SIZE)
+			{
+				
+				configSpaceSize *= catSize;
+			} else
+			{
+				
+				NormalizedRange nr = this.contNormalizedRanges.get(this.authorativeParameterNameOrder.get(i));
+				
+				if(nr.isIntegerOnly())
+				{
+					configSpaceSize *= (nr.unnormalizeValue(1) - nr.unnormalizeValue(0) + 1);
+				} else
+				{
+					return Double.POSITIVE_INFINITY;
+				}
+			}
+		}
+		
+		return configSpaceSize;
+	}
+	
 	
 	
 	/**
