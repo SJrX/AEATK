@@ -25,7 +25,8 @@ public class UsageSection implements Iterable<String> {
 	private final Map<String, Boolean> hiddenMap = new HashMap<String, Boolean>();
 	private final Object object;
 	private final boolean hidden;
-	private NoArgumentHandler noargHandler;
+	private final NoArgumentHandler noargHandler;
+	private final boolean converterFileOption;
 	
 	/**
 	 * Constructs a new usage section
@@ -34,8 +35,9 @@ public class UsageSection implements Iterable<String> {
 	 * @param sectionDescription 	The Description of this section
 	 * @param hidden				<code>true</code> if we shouldn't display the sectionName or description when displaying options.
 	 * @param object				Object this section is associated with
+	 * @param converterFileOption			<code>true</code> if this object was created as a relatedObject annotation 
 	 */
-	public UsageSection(String sectionName, String sectionBanner, String sectionDescription, boolean hidden, Object object, NoArgumentHandler handler)
+	public UsageSection(String sectionName, String sectionBanner, String sectionDescription, boolean hidden, Object object, NoArgumentHandler handler, boolean converterFileOption)
 	{
 		this.sectionName = sectionName;
 		this.sectionBanner = sectionBanner;
@@ -43,6 +45,7 @@ public class UsageSection implements Iterable<String> {
 		this.hidden = hidden;
 		this.object = object;
 		this.noargHandler = handler;
+		this.converterFileOption = converterFileOption;
 		
 	}
 	
@@ -145,8 +148,6 @@ public class UsageSection implements Iterable<String> {
 			sb.append("\n");
 		}
 		
-		
-		
 		return sb.toString();
 	}
 
@@ -173,6 +174,11 @@ public class UsageSection implements Iterable<String> {
 
 	public NoArgumentHandler getHandler() {
 		return this.noargHandler;
+	}
+	
+	public boolean isConverterOptionObject()
+	{
+		return this.converterFileOption;
 	}
 
 }

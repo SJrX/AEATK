@@ -43,7 +43,9 @@ public class UsageSectionGenerator {
 		Map<Object, Set<Object>> parentToChildMap = new HashMap<Object,Set<Object>>();
 		
 		Map<String, Object> classesToScan = new HashMap<String, Object>();
-		getAllObjects(o, classesToScan, parentToChildMap);
+		Set<Object> related = new HashSet<Object>();
+		
+		getAllObjects(o, classesToScan, parentToChildMap, related);
 		
 		objectsToScan.addAll(classesToScan.values());
 		
@@ -89,7 +91,7 @@ public class UsageSectionGenerator {
 			boolean isHidden = isHiddenSection(obj);
 			
 			
-			UsageSection sec = new UsageSection(title, titleBanner, sectionDescription,isHidden, obj, handler);
+			UsageSection sec = new UsageSection(title, titleBanner, sectionDescription,isHidden, obj, handler, related.contains(obj));
 			sections.add(sec);
 			
 			
@@ -165,7 +167,7 @@ public class UsageSectionGenerator {
 		//This is buggy as multiple levels of the hierarchy won't get merged in but oh well
 		List<UsageSection> returningSec = new ArrayList<UsageSection>();
 		
-		
+		List<UsageSection> postSec = new ArrayList<UsageSection>();
 		for(UsageSection sec : sections)
 		{
 			Object parent = sec.getObject();
@@ -194,12 +196,21 @@ public class UsageSectionGenerator {
 			
 			if(!sec.isSectionHidden())
 			{
-				returningSec.add(sec);
+				if(related.contains(parent))
+				{
+					postSec.add(sec);
+				} else
+				{
+					returningSec.add(sec);
+				}
 			}
 			
 		}
 		
+		
+		
 
+		returningSec.addAll(postSec);
 		return returningSec;
 		
 		} catch (IllegalAccessException e) {
@@ -235,7 +246,7 @@ public class UsageSectionGenerator {
 	}
 	
 
-	private static void getAllObjects(Object o, Map<String, Object> objectsToScan, Map<Object, Set<Object>> parentToChildMap) 
+	private static void getAllObjects(Object o, Map<String, Object> objectsToScan, Map<Object, Set<Object>> parentToChildMap, Set<Object> related) 
 	{
 		if(parentToChildMap.get(o) == null)
 		{
@@ -246,7 +257,7 @@ public class UsageSectionGenerator {
 			{
 				for(int i=0; i < Array.getLength(o); i++)
 				{
-					getAllObjects(Array.get(o, i), objectsToScan, parentToChildMap);
+					getAllObjects(Array.get(o, i), objectsToScan, parentToChildMap, related);
 					
 				}
 			} else 
@@ -263,27 +274,31 @@ public class UsageSectionGenerator {
 					f.setAccessible(true);
 					if(f.isAnnotationPresent(ParametersDelegate.class))
 					{	
-						objectsToScan.put(o.getClass().getCanonicalName(),f.get(o));
+						
 						parentToChildMap.get(o).add(f.get(o));
-						getAllObjects(f.get(o), objectsToScan, parentToChildMap);
+						if(related.contains(o))
+						{
+							related.add(f.get(o));
+						}
+						getAllObjects(f.get(o), objectsToScan, parentToChildMap, related);
 					}
 					
 					if(f.isAnnotationPresent(UsageTextField.class))
 					{
 						UsageTextField utf = f.getAnnotation(UsageTextField.class);
-						if(utf.relatedOption().equals(Object.class))
+						if(utf.converterFileOptions().equals(Object.class))
 						{
 							continue;
 						} else
 						{
 							try {
-								Object o2 = utf.relatedOption().newInstance();
+								Object o2 = utf.converterFileOptions().newInstance();
 								//parentToChildMap.get(o).add(o2);
-								objectsToScan.put(o2.getClass().getCanonicalName(),o2);
-								getAllObjects(o2, objectsToScan, parentToChildMap);
+								related.add(o2);
+								getAllObjects(o2, objectsToScan, parentToChildMap, related);
 							} catch(InstantiationException e)
 							{
-								System.err.println("Couldn't create new instance of " + utf.relatedOption().getCanonicalName() + " this class needs to have a default (zero-arg) constructor if it is to be a related option");
+								System.err.println("Couldn't create new instance of " + utf.converterFileOptions().getCanonicalName() + " this class needs to have a default (zero-arg) constructor if it is to be a related option");
 							}
 							
 							

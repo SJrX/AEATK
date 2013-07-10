@@ -23,5 +23,5 @@ public @interface UsageTextField {
 	
 	Class<? extends NoArgumentHandler> noarg() default NoopNoArgumentHandler.class;
 	
-	Class<? extends Object> relatedOption() default Object.class;
+	Class<? extends Object> converterFileOptions() default Object.class;
 }

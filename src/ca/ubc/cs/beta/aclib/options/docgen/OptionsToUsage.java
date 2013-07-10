@@ -17,8 +17,17 @@ public class OptionsToUsage {
 		PrintWriter pw = new PrintWriter(System.out);
 		
 		System.out.println("Usage:\n");
+		boolean displayedConverter = false;
 		for(UsageSection sec : sections)
 		{
+			
+			if(!displayedConverter && sec.isConverterOptionObject())
+			{
+				
+				pw.format("%n%n%s","[NOTE]: All options that follow are not options that are able to be invoked on the command line, instead they should be specified in an option file, that will be read in as an argument to one of the above arguements \n\n");
+				displayedConverter = true;
+			}
+			
 			if(!sec.isSectionHidden())
 			{
 				pw.format(sec.getSectionBanner(), sec.getSectionName());

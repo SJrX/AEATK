@@ -115,7 +115,11 @@ public class SMACOptions extends AbstractOptions {
 	@ParametersDelegate
 	public LoggingOptions logOptions = new LoggingOptions();
 	
-
+	@UsageTextField(converterFileOptions = RandomOptionOne.class)
+	@Parameter(names="--test2")
+	public Boolean t;
+	
+	
 	
 	@Parameter(names="--maskInactiveConditionalParametersAsDefaultValue", description="build the model treating inactive conditional values as the default value")
 	public boolean maskInactiveConditionalParametersAsDefaultValue = true;
