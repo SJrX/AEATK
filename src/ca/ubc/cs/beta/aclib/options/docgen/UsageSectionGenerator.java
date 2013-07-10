@@ -6,6 +6,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -40,9 +41,9 @@ public class UsageSectionGenerator {
 			
 		try {
 		Set<Object> objectsToScan = new LinkedHashSet<Object>();
-		Map<Object, Set<Object>> parentToChildMap = new HashMap<Object,Set<Object>>();
+		Map<Object, Set<Object>> parentToChildMap = new LinkedHashMap<Object,Set<Object>>();
 		
-		Map<String, Object> classesToScan = new HashMap<String, Object>();
+		Map<String, Object> classesToScan = new LinkedHashMap<String, Object>();
 		Set<Object> related = new HashSet<Object>();
 		
 		getAllObjects(o, classesToScan, parentToChildMap, related);
