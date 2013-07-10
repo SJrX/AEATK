@@ -280,6 +280,7 @@ public class UsageSectionGenerator {
 								Object o2 = utf.relatedOption().newInstance();
 								//parentToChildMap.get(o).add(o2);
 								objectsToScan.put(o2.getClass().getCanonicalName(),o2);
+								getAllObjects(o2, objectsToScan, parentToChildMap);
 							} catch(InstantiationException e)
 							{
 								System.err.println("Couldn't create new instance of " + utf.relatedOption().getCanonicalName() + " this class needs to have a default (zero-arg) constructor if it is to be a related option");
