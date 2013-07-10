@@ -42,9 +42,10 @@ public class UsageSectionGenerator {
 		Set<Object> objectsToScan = new LinkedHashSet<Object>();
 		Map<Object, Set<Object>> parentToChildMap = new HashMap<Object,Set<Object>>();
 		
-	
-		getAllObjects(o, objectsToScan, parentToChildMap);
+		Map<String, Object> classesToScan = new HashMap<String, Object>();
+		getAllObjects(o, classesToScan, parentToChildMap);
 		
+		objectsToScan.addAll(classesToScan.values());
 		
 		Set<String> claimRequired = getAllClaimedRequired(objectsToScan);
 		
@@ -173,7 +174,7 @@ public class UsageSectionGenerator {
 			{
 				Object child = sec2.getObject();
 				//Not related
-				System.out.println(parent.getClass() + " and " + child.getClass());
+				//System.out.println(parent.getClass() + " and " + child.getClass());
 				
 				if(parentToChildMap.get(parent) == null) continue;
 				if(!parentToChildMap.get(parent).contains(child)) continue;
@@ -234,7 +235,7 @@ public class UsageSectionGenerator {
 	}
 	
 
-	private static void getAllObjects(Object o, Set<Object> objectsToScan, Map<Object, Set<Object>> parentToChildMap) 
+	private static void getAllObjects(Object o, Map<String, Object> objectsToScan, Map<Object, Set<Object>> parentToChildMap) 
 	{
 		if(parentToChildMap.get(o) == null)
 		{
@@ -250,12 +251,19 @@ public class UsageSectionGenerator {
 				}
 			} else 
 			{	
-				objectsToScan.add(o);
-				for(Field f : o.getClass().getFields())
+				Object previousValue = objectsToScan.put(o.getClass().getCanonicalName(),o);
+				if(previousValue != null)
+				{ //We already added this value to the set
+					return;
+				}
+				
+				for(Field f : o.getClass().getDeclaredFields())
 				{
+					boolean markInaccessible = !f.isAccessible();
+					f.setAccessible(true);
 					if(f.isAnnotationPresent(ParametersDelegate.class))
 					{	
-						objectsToScan.add(f.get(o));
+						objectsToScan.put(o.getClass().getCanonicalName(),f.get(o));
 						parentToChildMap.get(o).add(f.get(o));
 						getAllObjects(f.get(o), objectsToScan, parentToChildMap);
 					}
@@ -271,7 +279,7 @@ public class UsageSectionGenerator {
 							try {
 								Object o2 = utf.relatedOption().newInstance();
 								//parentToChildMap.get(o).add(o2);
-								objectsToScan.add(o2);
+								objectsToScan.put(o2.getClass().getCanonicalName(),o2);
 							} catch(InstantiationException e)
 							{
 								System.err.println("Couldn't create new instance of " + utf.relatedOption().getCanonicalName() + " this class needs to have a default (zero-arg) constructor if it is to be a related option");
@@ -281,6 +289,7 @@ public class UsageSectionGenerator {
 						}
 						
 					}
+					f.setAccessible(markInaccessible);
 				}
 			}
 		} catch (IllegalAccessException e) {
