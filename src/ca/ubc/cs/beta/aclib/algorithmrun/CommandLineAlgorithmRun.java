@@ -32,6 +32,7 @@ import ca.ubc.cs.beta.aclib.misc.logging.LoggingMarker;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluatorOptions;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.exceptions.TargetAlgorithmAbortException;
 
 /**
  * Executes a Target Algorithm Run via Command Line Execution
@@ -205,7 +206,9 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 								wasKilled = true;
 								log.debug("Trying to kill");
 								proc.destroy();
+								log.debug("Process destroy() called now waiting for completion");
 								proc.waitFor();
+								log.debug("Process has exited");
 								return;
 							}
 							Thread.sleep(observerFrequency - 25);
@@ -236,8 +239,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 					this.setResult(RunResult.KILLED, currentTime, 0,0, getRunConfig().getProblemInstanceSeedPair().getSeed(), "Killed Manually", "" );
 					
 				} else {
-					this.setCrashResult("We did not successfully read anything from the wrapper");
-					log.error("We did not find anything in our target algorithm run output that matched our regex (i.e. We found nothing that looked like \"Result For ParamILS: x,x,x,x,x\", specifically the regex we were matching is: {} ", AUTOMATIC_CONFIGURATOR_RESULT_REGEX );
+					this.setCrashResult("Wrapper did not output anything that matched our regex please see the manual for more information. Please try executing the wrapper directly and ensuring that it matches the following regex: " + AUTOMATIC_CONFIGURATOR_RESULT_REGEX );
 				}
 			}
 			
@@ -250,14 +252,16 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 			case CRASHED:
 				
 					
-					log.info( "Failed Run Detected Call: cd {} ;  {} ",new File(execConfig.getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommand(execConfig, runConfig));
+					log.error( "Failed Run Detected Call: cd {} ;  {} ",new File(execConfig.getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommand(execConfig, runConfig));
 				
-					log.info("Failed Run Detected output last {} lines", outputQueue.size());
+					log.error("Failed Run Detected output last {} lines", outputQueue.size());
+					
+					
 					for(String s : outputQueue)
 					{
-						log.info(s);
+						log.error("> "+s);
 					}
-					log.info("Output complete");
+					log.error("Output complete");
 					
 				
 			default:
@@ -285,7 +289,8 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 		} catch (IOException e1) {
 			String execCmd = getTargetAlgorithmExecutionCommand(execConfig,runConfig);
 			log.error("Failed to execute command: {}", execCmd);
-			throw new IllegalStateException(e1);
+			throw new TargetAlgorithmAbortException(e1);
+			//throw new IllegalStateException(e1);
 		}
 		
 		

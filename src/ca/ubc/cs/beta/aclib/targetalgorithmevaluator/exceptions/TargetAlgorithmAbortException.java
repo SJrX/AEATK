@@ -1,5 +1,7 @@
 package ca.ubc.cs.beta.aclib.targetalgorithmevaluator.exceptions;
 
+import java.io.IOException;
+
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 
 /**
@@ -29,6 +31,10 @@ public class TargetAlgorithmAbortException extends RuntimeException {
 
 	public TargetAlgorithmAbortException(InterruptedException e) {
 		super("TargetAlgorithmEvaluator encountered an InterruptedException", e);
+	}
+
+	public TargetAlgorithmAbortException(IOException e1) {
+		super("TargetAlgorithmEvaluator encounted an IOException ", e1);
 	}
 
 	public AlgorithmRun getAlgorithmRun()

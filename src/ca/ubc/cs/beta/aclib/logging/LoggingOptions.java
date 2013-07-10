@@ -47,13 +47,21 @@ public class LoggingOptions extends AbstractOptions{
 		} 
 			
 	
+		System.setProperty("OUTPUTDIR",completeOutputDir);
 		System.setProperty("NUMRUN", String.valueOf(numRun));
 		System.setProperty("STDOUT-LEVEL", consoleLogLevel.name());
 		System.setProperty("ROOT-LEVEL",logLevel.name());
 		
-		String logLocation = completeOutputDir + File.separator+  "log-run" + numRun+ ".txt";
+		
+		
+		String logLocation = getLogLocation(completeOutputDir, numRun);
+		
+		System.setProperty("RUNLOG", logLocation);
+		System.setProperty("ERRLOG", getErrorLogLocation(completeOutputDir,numRun));
+		System.setProperty("WARNLOG", getWarnLogLocation(completeOutputDir,numRun));
 		
 		System.out.println("*****************************\nLogging to: " + logLocation +  "\n*****************************");
+		
 		//Generally has the format: ${OUTPUTDIR}/${RUNGROUPDIR}/log-run${NUMRUN}.txt
 		Logger log = LoggerFactory.getLogger(LoggingOptions.class);
 		log.info("Logging to: {}",logLocation);
@@ -67,13 +75,46 @@ public class LoggingOptions extends AbstractOptions{
 			
 		
 	}
+	
+	public String getLogLocation(String completeOutputDir, int numRun)
+	{
+
+		if(completeOutputDir == null)
+		{
+			completeOutputDir = (new File("")).getAbsolutePath();
+		} 
+		return completeOutputDir + File.separator+  "log-run" + numRun+ ".txt";
+	}
+	
+	public String getErrorLogLocation(String completeOutputDir, int numRun)
+	{
+		
+
+		if(completeOutputDir == null)
+		{
+			completeOutputDir = (new File("")).getAbsolutePath();
+		} 
+		return completeOutputDir + File.separator+  "log-err" + numRun+ ".txt";
+	}
+	
+	public String getWarnLogLocation(String completeOutputDir, int numRun)
+	{
+
+		if(completeOutputDir == null)
+		{
+			completeOutputDir = (new File("")).getAbsolutePath();
+		} 
+		
+		return completeOutputDir + File.separator+  "log-warn" + numRun+ ".txt";
+		
+	}
 
 }
 /*
 <?xml version="1.0" encoding="UTF-8" ?>
 <configuration debug="false" >
   <appender name="FILE" class="ch.qos.logback.core.FileAppender">
-  <file>${OUTPUTDIR}/log-run${NUMRUN}.txt</file>
+  <file>${RUNLOG}.txt</file>
   <append>false</append>
   <encoder>
         <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
@@ -82,7 +123,7 @@ public class LoggingOptions extends AbstractOptions{
   
   
   <appender name="FILE-WARN" class="ch.qos.logback.core.FileAppender">
-  <file>${OUTPUTDIR}/log-warn${NUMRUN}.txt</file>
+  <file>${WARNLOG}.txt</file>
   <append>false</append>
   <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
         <level>WARN</level>
@@ -94,7 +135,7 @@ public class LoggingOptions extends AbstractOptions{
   
   
   <appender name="FILE-ERR" class="ch.qos.logback.core.FileAppender">
-  <file>${OUTPUTDIR}/log-err${NUMRUN}.txt</file>
+  <file>${ERRLOG}.txt</file>
   <append>false</append>
   <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
         <level>ERROR</level>
