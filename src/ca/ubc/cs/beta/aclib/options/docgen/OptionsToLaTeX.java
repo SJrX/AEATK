@@ -1,25 +1,68 @@
 package ca.ubc.cs.beta.aclib.options.docgen;
 
+import java.io.File;
+import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
+import java.util.Map;
+
+import com.beust.jcommander.JCommander;
+
+import ca.ubc.cs.beta.aclib.misc.bashcompletion.BashCompletionOptions;
 import ca.ubc.cs.beta.aclib.misc.options.UsageSection;
+import ca.ubc.cs.beta.aclib.options.AbstractOptions;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.init.TargetAlgorithmEvaluatorLoader;
 
 public class OptionsToLaTeX {
 
 	public static void main(String[] args) throws Exception
 	{		
 		
-		Object obj = Class.forName(args[0]);
-		List<UsageSection> sections = UsageSectionGenerator.getUsageSections(obj);
+		try {
+			OptionsToLaTexOptions opts = new OptionsToLaTexOptions();
+			JCommander jcom = new JCommander(opts,true, true);
+			jcom.parse(args);
+			
+			
+			Object obj = Class.forName(opts.clazz).newInstance();
 		
-		latex(sections);
+			List<UsageSection> sections;
+			if(opts.tae)
+			{
+				Map<String,AbstractOptions> opt2 = TargetAlgorithmEvaluatorLoader.getAvailableTargetAlgorithmEvaluators();
+				sections = UsageSectionGenerator.getUsageSections(obj, opt2);
+			} else
+			{
+				sections = UsageSectionGenerator.getUsageSections(obj);
+			}
+			 
+			
+			
+			String completionScript = latex(sections);
+			
+			FileWriter fw = new FileWriter(new File(opts.outputFile),true);
+			
+			fw.write(completionScript);
+			fw.flush();
+			fw.close();
+			System.out.println("Options LaTeX written to: " + (new File(opts.outputFile)).getAbsolutePath() + "");
+			System.exit(0);
+		} catch(Throwable t)
+		{
+			System.err.println("Couldn't generate bash completion script");
+			t.printStackTrace();
+			
+			System.exit(1);
+		}
+		
+		
 	}
 
 	
 	
 	
-	public static void latex(List<UsageSection> sections)
+	public static String latex(List<UsageSection> sections)
 	{
 		StringWriter s = new StringWriter();
 		PrintWriter pw = new PrintWriter(s);
@@ -98,7 +141,7 @@ public class OptionsToLaTeX {
 		pw.append("\\end{document}");
 		
 		pw.flush();
-		System.out.println(s.toString());
+		return s.toString();
 		
 	}
 	

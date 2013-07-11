@@ -29,6 +29,7 @@ import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration.StringFormat;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.misc.logback.MarkerFilter;
 import ca.ubc.cs.beta.aclib.misc.logging.LoggingMarker;
+import ca.ubc.cs.beta.aclib.misc.string.SplitQuotedString;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluatorOptions;
@@ -324,8 +325,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 		procIn.close();
 	}
 	
-	//See:http://stackoverflow.com/questions/7804335/split-string-on-spaces-except-if-between-quotes-i-e-treat-hello-world-as
-	Pattern p = Pattern.compile("([^\"]\\S*|\".+?\")\\s*");
+	
 
 	/**
 	 * Starts the target algorithm
@@ -341,16 +341,11 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 			log.info( "Call: cd {} ;  {} ", new File(execConfig.getAlgorithmExecutionDirectory()).getAbsolutePath(), execCmd);
 		}
 		
-		ArrayList<String> args = new ArrayList<String>();
-
-		//See:http://stackoverflow.com/questions/7804335/split-string-on-spaces-except-if-between-quotes-i-e-treat-hello-world-as
-		Matcher m = p.matcher(execCmd);
-		while(m.find())
-		{
-			args.add(m.group(1).replace("\"", ""));
-		}
 		
-		String[] execCmdArray = args.toArray(new String[0]);
+
+		
+		
+		String[] execCmdArray = SplitQuotedString.splitQuotedString(execCmd);
 		Process proc = Runtime.getRuntime().exec(execCmdArray,null, new File(execConfig.getAlgorithmExecutionDirectory()));
 
 		return proc;

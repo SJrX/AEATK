@@ -58,12 +58,6 @@ public class BashCompletion {
 		StringWriter s = new StringWriter();
 		PrintWriter pw = new PrintWriter(s);
 		
-		
-		
-		
-		
-		
-		
 		SortedSet<String> sorted = new TreeSet<String>();
 		
 		for(UsageSection sec : sections)

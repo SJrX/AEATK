@@ -1,5 +1,6 @@
 package ca.ubc.cs.beta.aclib.execconfig;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -12,6 +13,7 @@ import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorOptions;
 
 import com.beust.jcommander.Parameter;
+import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.ParametersDelegate;
 
 
@@ -68,7 +70,19 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 		{
 			dirToSearch.add(experimentDir);
 		}
-		dirToSearch.add(algoExecDir);
-		return new AlgorithmExecutionConfig(algoExec, algoExecDir, paramFileDelegate.getParamConfigurationSpace(dirToSearch), false, deterministic, this.cutoffTime);
+		
+		File execDir = new File(algoExecDir);
+		if(!execDir.exists())
+		{
+			execDir = new File(experimentDir + File.separator + algoExecDir);
+			if(!execDir.exists())
+			{
+				throw new ParameterException("Cannot find execution algorithm execution directory: " + algoExecDir +  "  in context:" + dirToSearch);
+			}
+		}
+		
+		dirToSearch.add(execDir.getAbsolutePath());
+		
+		return new AlgorithmExecutionConfig(algoExec, execDir.getAbsolutePath(), paramFileDelegate.getParamConfigurationSpace(dirToSearch), false, deterministic, this.cutoffTime);
 	}
 }
