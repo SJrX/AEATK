@@ -29,8 +29,10 @@ public abstract class AbstractOptions {
 		
 		sb.append("[").append(this.getClass().getSimpleName()).append("]").append("\n");
 		try {
-		for(Field f : this.getClass().getFields())
+		for(Field f : this.getClass().getDeclaredFields())
 		{
+			boolean isAccessible = f.isAccessible();
+			f.setAccessible(true);
 			StringBuilder line = new StringBuilder();
 		
 			if(f.getAnnotation(Parameter.class) != null || f.getAnnotation(ParametersDelegate.class) != null || f.getAnnotation(DynamicParameter.class) != null)
@@ -106,6 +108,7 @@ public abstract class AbstractOptions {
 				}
 				sb.append(line).append("\n");
 			}
+			f.setAccessible(isAccessible);
 		}
 		return sb.toString();
 		} catch(RuntimeException e)
@@ -125,8 +128,12 @@ public abstract class AbstractOptions {
 		//I don't see what the point of the string builder here is
 		StringBuilder sb = new StringBuilder();
 		ArrayList<String> list = new ArrayList<String>();
-		for(Field f : this.getClass().getFields())
+		for(Field f : this.getClass().getDeclaredFields())
 		{
+
+			boolean isAccessible = f.isAccessible();
+			f.setAccessible(true);
+			
 			if(!f.isAnnotationPresent(ParametersDelegate.class)) continue;
 			
 			
@@ -156,10 +163,14 @@ public abstract class AbstractOptions {
 				} 
 				
 			}
+			f.setAccessible(isAccessible);
 		}
 		
-		for(Field f : this.getClass().getFields())
+		for(Field f : this.getClass().getDeclaredFields())
 		{
+			boolean isAccessible = f.isAccessible();
+			f.setAccessible(true);
+			
 			if(!f.isAnnotationPresent(Parameter.class)) continue;
 			
 			
@@ -272,7 +283,7 @@ public abstract class AbstractOptions {
 				
 			}
 			
-			
+		f.setAccessible(isAccessible);	
 		}
 		return list;
 	}
@@ -281,9 +292,10 @@ public abstract class AbstractOptions {
 
 	public void populateOptionsMap(Map<String, String> opts)
 	{
-		for(Field f : this.getClass().getFields())
+		for(Field f : this.getClass().getDeclaredFields())
 		{
-			
+			boolean isAccessible = f.isAccessible();
+			f.setAccessible(true);
 			if(!f.isAnnotationPresent(Parameter.class)) continue;
 			
 			
@@ -336,11 +348,14 @@ public abstract class AbstractOptions {
 			
 		
 		
-		
+			f.setAccessible(isAccessible);
 		}
 		
-		for(Field f : this.getClass().getFields())
+		for(Field f : this.getClass().getDeclaredFields())
 		{
+			boolean isAccessible = f.isAccessible();
+			f.setAccessible(true);
+			
 			if(!f.isAnnotationPresent(ParametersDelegate.class)) continue;
 			{
 				try {
@@ -356,7 +371,7 @@ public abstract class AbstractOptions {
 					e.printStackTrace();
 				}
 			}
-			
+			f.setAccessible(isAccessible);
 		}
 		
 	}
