@@ -58,7 +58,7 @@ public class TargetAlgorithmEvaluatorRunner
 		TargetAlgorithmEvaluatorRunnerOptions mainOptions = new TargetAlgorithmEvaluatorRunnerOptions();
 		
 		//Map object that for each available TargetAlgorithmEvaluator gives it's associated options object
-		Map<String,AbstractOptions> taeOptions = TargetAlgorithmEvaluatorLoader.getAvailableTargetAlgorithmEvaluators();
+		Map<String,AbstractOptions> taeOptions = mainOptions.algoExecOptions.taeOpts.getAvailableTargetAlgorithmEvaluators();
 
 		try {
 			
@@ -73,6 +73,7 @@ public class TargetAlgorithmEvaluatorRunner
 			{
 				//Initialize the logger *AFTER* the JCommander objects have been parsed
 				//So that options that take effect
+				//See also the LoggingOption object for something a bit nicer
 				initializeLogger();
 			}
 			
@@ -102,11 +103,11 @@ public class TargetAlgorithmEvaluatorRunner
 			log.info("==== Configuration====\n {} ", mainOptions);
 			
 			
-			boolean hashVerifiers = false;
+			
 			TargetAlgorithmEvaluator tae = null;
 			try {
 				//Retrieve the target algorithm evaluator with the necessary options
-				tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(mainOptions.algoExecOptions.taeOpts, execConfig, hashVerifiers, taeOptions);
+				tae = mainOptions.algoExecOptions.taeOpts.getTargetAlgorithmEvaluator(execConfig, taeOptions);
 				
 				
 				//Create a new problem instance to run (IMMUTABLE)
@@ -139,8 +140,6 @@ public class TargetAlgorithmEvaluatorRunner
 				//"ParamFile" is a deprecated term for it that is still in use in the code base
 				ParamConfigurationSpace configSpace = execConfig.getParamFile();
 			
-				
-				
 				
 				//If we are asked to supply a random a configuration, we need to pass a Random object
 				Random configSpacePRNG = new MersenneTwister(mainOptions.configSeed);

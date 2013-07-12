@@ -2,10 +2,12 @@ package ca.ubc.cs.beta.aclib.targetalgorithmevaluator;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.NonNegativeInteger;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.OneInfinityOpenInterval;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.ReadableFileConverter;
@@ -16,6 +18,8 @@ import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceHelper;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.prepostcommand.PrePostCommandOptions;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.init.TargetAlgorithmEvaluatorBuilder;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.init.TargetAlgorithmEvaluatorLoader;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParametersDelegate;
@@ -130,6 +134,87 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 				
 		}
 		
+	}
+	
+	/**
+	 * Retrieves the available list of target algorithm evaluators
+	 * @return 
+	 */
+	public Map<String, AbstractOptions> getAvailableTargetAlgorithmEvaluators()
+	{
+		return TargetAlgorithmEvaluatorLoader.getAvailableTargetAlgorithmEvaluators();
+	}
+	/**
+	 * Retrieves a target algorithm evaluator
+	 * 
+	 * @param execConfig	execution configuration object for the target algorithm
+	 * @param taeOptionsMap	options for all taes
+	 * @param outputDir		output directory
+	 * @param numRun		number of our run (used for TAEs that output files as a suffix generally)
+	 * @return
+	 */
+	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig,  Map<String, AbstractOptions> taeOptionsMap, String outputDir, int numRun)
+	{
+		return TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(this, execConfig, true, false, taeOptionsMap, null, new File(outputDir), numRun);
+	}
+	
+	
+	/**
+	 * Retrieves a target algorithm evaluator
+	 * 
+	 * @param execConfig			execution configuration for the target algorithm
+	 * @param hashVerifiersAllowed	whether hash verifies should be applied
+	 * @param ignoreBound			whether we should ignore the bound argument
+	 * @param taeOptionsMap			options for all avaliable TAEs
+	 * @param outputDir				output directory
+	 * @param numRun				number of our run (used for TAEs that output files as a suffix generally)
+	 * @return
+	 */
+	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig, boolean hashVerifiersAllowed, boolean ignoreBound,  Map<String, AbstractOptions> taeOptionsMap, String outputDir, int numRun)
+	{
+		return TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(this, execConfig, hashVerifiersAllowed, ignoreBound, taeOptionsMap, null,new File(outputDir), numRun);
+	}
+	
+	/**
+	 * Retrieves a target algorithm evaluator
+	 * 
+	 * @param execConfig	execution configuration object for the target algorithm
+	 * @param taeOptionsMap	options for all available TAEs
+	 * @param outputDir		output directory
+	 * @param numRun		number of our run (used for TAEs that output files as a suffix generally)
+	 * @return
+	 */
+	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig,  Map<String, AbstractOptions> taeOptionsMap, File outputDir, int numRun)
+	{
+		return TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(this, execConfig, true, false, taeOptionsMap, null, outputDir, numRun);
+	}
+	
+	
+	/**
+	 * Retrieves a target algorithm evaluator
+	 * 
+	 * @param execConfig			execution configuration for the target algorithm
+	 * @param hashVerifiersAllowed	whether hash verifies should be applied
+	 * @param ignoreBound			whether we should ignore the bound argument
+	 * @param taeOptionsMap			options for all available TAEs
+	 * @param outputDir				output directory
+	 * @param numRun				number of our run (used for TAEs that output files as a suffix generally)
+	 * @return
+	 */
+	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig, boolean hashVerifiersAllowed, boolean ignoreBound,  Map<String, AbstractOptions> taeOptionsMap, File outputDir, int numRun)
+	{
+		return TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(this, execConfig, hashVerifiersAllowed, ignoreBound, taeOptionsMap, null, outputDir, numRun);
+	}
+
+	/**
+	 * Retrieves a target algorithm evaluator
+	 * @param execConfig	execution configuration for the target algorithm
+	 * @param taeOptions	options for all available TAEs
+	 * @return
+	 */
+	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig,Map<String, AbstractOptions> taeOptions) 
+	{
+		return getTargetAlgorithmEvaluator(execConfig, taeOptions, new File(".").getAbsolutePath(), 0);
 	}
 	
 	
