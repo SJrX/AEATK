@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli.CommandLineAlgorithmRun;
 /**
  * Class that is used to take an existing algorithm run (from for instance a string), and create an AlgorithmRun object
  * @author seramage

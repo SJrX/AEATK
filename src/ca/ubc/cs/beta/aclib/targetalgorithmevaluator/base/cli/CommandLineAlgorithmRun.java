@@ -1,4 +1,4 @@
-package ca.ubc.cs.beta.aclib.algorithmrun;
+package ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli;
 
 import java.io.File;
 
@@ -21,6 +21,9 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 
+import ca.ubc.cs.beta.aclib.algorithmrun.AbstractAlgorithmRun;
+import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
+import ca.ubc.cs.beta.aclib.algorithmrun.RunningAlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillHandler;
 import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableAlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableWrappedAlgorithmRun;
@@ -32,7 +35,6 @@ import ca.ubc.cs.beta.aclib.misc.logging.LoggingMarker;
 import ca.ubc.cs.beta.aclib.misc.string.SplitQuotedString;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluatorOptions;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.exceptions.TargetAlgorithmAbortException;
 
 /**
@@ -353,7 +355,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	 * Gets the execution command string
 	 * @return string containing command
 	 */
-	public static String[] getTargetAlgorithmExecutionCommand(AlgorithmExecutionConfig execConfig, RunConfig runConfig)
+	private static String[] getTargetAlgorithmExecutionCommand(AlgorithmExecutionConfig execConfig, RunConfig runConfig)
 	{
 
 				
@@ -413,7 +415,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 		list.add(String.valueOf(runConfig.getProblemInstanceSeedPair().getSeed()));
 		
 		StringFormat f = StringFormat.NODB_SYNTAX;
-		for(String key : runConfig.getParamConfiguration().keySet() )
+		for(String key : runConfig.getParamConfiguration().getActiveParameters()  )
 		{
 			
 			
