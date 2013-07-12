@@ -202,6 +202,18 @@ public final class JCommanderHelper
 	}
 
 
+	public static void logConfiguration(JCommander jcom)
+	{
+		Logger log = LoggerFactory.getLogger(JCommanderHelper.class);
+		StringBuilder sb = new StringBuilder();
+		for(Object o : jcom.getObjects())
+		{
+			sb.append(o.toString()).append("\n");
+		}
+			
+		log.info("==========Configuration Options==========\n{}", sb.toString());
+		
+	}
 	
 	
 	
