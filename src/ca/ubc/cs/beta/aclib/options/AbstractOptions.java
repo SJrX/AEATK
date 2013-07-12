@@ -136,8 +136,6 @@ public abstract class AbstractOptions {
 			
 			if(!f.isAnnotationPresent(ParametersDelegate.class)) continue;
 			
-			
-			
 			ParametersDelegate ant = f.getAnnotation(ParametersDelegate.class);
 			
 			if(ant != null)
@@ -241,6 +239,12 @@ public abstract class AbstractOptions {
 						sb.append("\""+o+"\"");
 						list.add(ant.names()[0]);
 						list.add(o.toString());
+					} else if(o instanceof AbstractOptions)
+					{
+		
+						list.addAll( ((AbstractOptions) o).configToString());
+						sb.append(" ").append(((AbstractOptions) o).configToString());
+	
 					}
 					else 
 					{
@@ -334,7 +338,12 @@ public abstract class AbstractOptions {
 					} else if(o instanceof Collection)
 					{
 						//Skip Collections
-					} else 
+					} else if(o instanceof AbstractOptions)
+					{
+						AbstractOptions abs = (AbstractOptions) o;
+						abs.populateOptionsMap(opts);
+					}
+					else 
 					{
 						System.err.println("No idea what o is " + o.getClass()  +" value:" + o + " name " + ant.names()[0]);
 					}
