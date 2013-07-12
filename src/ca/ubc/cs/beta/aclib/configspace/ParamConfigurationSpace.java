@@ -1311,7 +1311,7 @@ public class ParamConfigurationSpace implements Serializable {
 			
 			if((trySpecialParamString.equals("RANDOM") || trySpecialParamString.equals("<RANDOM>")))
 			{
-				if(rand == null) throw new IllegalArgumentException("Cannot generate random configurations unless a random object is passed with us");	
+				if(rand == null) throw new IllegalStateException("Cannot generate random configurations unless a random object is passed with us");	
 				return this.getRandomConfiguration(rand);
 			}
 			
@@ -1475,6 +1475,9 @@ public class ParamConfigurationSpace implements Serializable {
 			
 			
 			return config;
+		} catch(IllegalStateException e)
+		{
+			throw e;
 		} catch(ParamConfigurationStringFormatException e)
 		{
 			throw e;

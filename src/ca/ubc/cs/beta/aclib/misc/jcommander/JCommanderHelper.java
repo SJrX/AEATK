@@ -45,12 +45,20 @@ public final class JCommanderHelper
 	}
 
 	
-	public static void parseCheckingForHelpAndVersion(AbstractOptions options, String[] args)
+	public static void parseCheckingForHelpAndVersion(String[] args,AbstractOptions options )
 	{
-		checkForHelpAndVersion(args, options,Collections.<String, AbstractOptions> emptyMap());
+		
+		parseCheckingForHelpAndVersion(args, options,Collections.<String, AbstractOptions> emptyMap());
 	}
 	
 	
+	private static void parseCheckingForHelpAndVersion(String[] args,
+			AbstractOptions options, Map<String, AbstractOptions> emptyMap) {
+		JCommander jcom = getJCommanderAndCheckForHelp(args, options, emptyMap);
+		jcom.parse(args);
+	}
+
+
 	public static void checkForHelpAndVersion(String[] args, AbstractOptions options, Map<String, AbstractOptions> taeOpts)
 	{
 		
@@ -187,6 +195,12 @@ public final class JCommanderHelper
 		log.info("Call String:");
 		log.info("{}", sb.toString());
 	}
+
+
+	public static JCommander getJCommander(AbstractOptions t) {
+		return getJCommander(t, Collections.<String, AbstractOptions> emptyMap());
+	}
+
 
 	
 	

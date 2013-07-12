@@ -288,7 +288,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 			
 			runObserver.currentStatus(Collections.singletonList(new KillableWrappedAlgorithmRun(this)));
 		} catch (IOException e1) {
-			String execCmd = getTargetAlgorithmExecutionCommand(execConfig,runConfig);
+			String execCmd = getTargetAlgorithmExecutionCommandAsString(execConfig,runConfig);
 			log.error("Failed to execute command: {}", execCmd);
 			throw new TargetAlgorithmAbortException(e1);
 			//throw new IllegalStateException(e1);
@@ -334,18 +334,14 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	 */
 	private  Process runProcess() throws IOException
 	{
-		String execCmd = getTargetAlgorithmExecutionCommand(execConfig, runConfig);
+		String[] execCmdArray = getTargetAlgorithmExecutionCommand(execConfig, runConfig);
+		
 		
 		if(options.logAllCallStrings)
 		{
-			log.info( "Call: cd {} ;  {} ", new File(execConfig.getAlgorithmExecutionDirectory()).getAbsolutePath(), execCmd);
+			log.info( "Call: cd \"{}\" ;  {} ", new File(execConfig.getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommandAsString(execConfig, runConfig));
 		}
 		
-		
-
-		
-		
-		String[] execCmdArray = SplitQuotedString.splitQuotedString(execCmd);
 		Process proc = Runtime.getRuntime().exec(execCmdArray,null, new File(execConfig.getAlgorithmExecutionDirectory()));
 
 		return proc;
@@ -357,18 +353,99 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	 * Gets the execution command string
 	 * @return string containing command
 	 */
-	public static String getTargetAlgorithmExecutionCommand(AlgorithmExecutionConfig execConfig, RunConfig runConfig)
+	public static String[] getTargetAlgorithmExecutionCommand(AlgorithmExecutionConfig execConfig, RunConfig runConfig)
 	{
 
-		StringBuilder execString = new StringBuilder();
-		
+				
 		String cmd = execConfig.getAlgorithmExecutable();
 		cmd = cmd.replace(AlgorithmExecutionConfig.MAGIC_VALUE_ALGORITHM_EXECUTABLE_PREFIX,"");
 		
-		execString.append(cmd).append(" ").append(runConfig.getProblemInstanceSeedPair().getInstance().getInstanceName()).append(" ").append(runConfig.getProblemInstanceSeedPair().getInstance().getInstanceSpecificInformation()).append(" ").append(runConfig.getCutoffTime()).append(" ").append(Integer.MAX_VALUE).append(" ").append(runConfig.getProblemInstanceSeedPair().getSeed()).append(" ").append(runConfig.getParamConfiguration().getFormattedParamString(StringFormat.NODB_SYNTAX));
 		
-		return execString.toString();
+		String[] execCmdArray = SplitQuotedString.splitQuotedString(cmd);
+		
+		ArrayList<String> list = new ArrayList<String>(Arrays.asList(execCmdArray));
+		list.add(runConfig.getProblemInstanceSeedPair().getInstance().getInstanceName());
+		list.add(runConfig.getProblemInstanceSeedPair().getInstance().getInstanceSpecificInformation());
+		list.add(String.valueOf(runConfig.getCutoffTime()));
+		list.add(String.valueOf(Integer.MAX_VALUE));
+		list.add(String.valueOf(runConfig.getProblemInstanceSeedPair().getSeed()));
+		
+		StringFormat f = StringFormat.NODB_SYNTAX;
+		
+		for(String key : runConfig.getParamConfiguration().getActiveParameters() )
+		{
+			
+			
+			if(!f.getKeyValueSeperator().equals(" ") || !f.getGlue().equals(" "))
+			{
+				throw new IllegalStateException("Key Value seperator or glue is not a space, and this means the way we handle this logic won't work currently");
+			}
+			list.add(f.getPreKey() + key);
+			list.add(f.getValueDelimeter() + runConfig.getParamConfiguration().get(key)  + f.getValueDelimeter());	
+			
+		}
+		
+		
+		//execString.append(cmd).append(" ").append().append(" ").append().append(" ").append().append(" ").append().append(" ").append().append(" ").append();
+		
+		return list.toArray(new String[0]);
 	}
+	
+	/**
+	 * Gets the execution command string
+	 * @return string containing command
+	 */
+	public static String getTargetAlgorithmExecutionCommandAsString(AlgorithmExecutionConfig execConfig, RunConfig runConfig)
+	{
+
+				
+		String cmd = execConfig.getAlgorithmExecutable();
+		cmd = cmd.replace(AlgorithmExecutionConfig.MAGIC_VALUE_ALGORITHM_EXECUTABLE_PREFIX,"");
+		
+		
+		String[] execCmdArray = SplitQuotedString.splitQuotedString(cmd);
+		
+		ArrayList<String> list = new ArrayList<String>(Arrays.asList(execCmdArray));
+		list.add(runConfig.getProblemInstanceSeedPair().getInstance().getInstanceName());
+		list.add(runConfig.getProblemInstanceSeedPair().getInstance().getInstanceSpecificInformation());
+		list.add(String.valueOf(runConfig.getCutoffTime()));
+		list.add(String.valueOf(Integer.MAX_VALUE));
+		list.add(String.valueOf(runConfig.getProblemInstanceSeedPair().getSeed()));
+		
+		StringFormat f = StringFormat.NODB_SYNTAX;
+		for(String key : runConfig.getParamConfiguration().keySet() )
+		{
+			
+			
+			if(!f.getKeyValueSeperator().equals(" ") || !f.getGlue().equals(" "))
+			{
+				throw new IllegalStateException("Key Value seperator or glue is not a space, and this means the way we handle this logic won't work currently");
+			}
+			list.add(f.getPreKey() + key);
+			list.add(f.getValueDelimeter() + runConfig.getParamConfiguration().get(key)  + f.getValueDelimeter());	
+			
+		}
+		
+		
+		StringBuilder sb = new StringBuilder();
+		for(String s : list)
+		{
+			if(s.matches(".*\\s+.*"))
+			{
+				sb.append("\""+s + "\"");
+			} else
+			{
+				sb.append(s);
+			}
+			sb.append(" ");
+		}
+		
+		
+		//execString.append(cmd).append(" ").append().append(" ").append().append(" ").append().append(" ").append().append(" ").append().append(" ").append();
+		
+		return sb.toString();
+	}
+
 
 	
 	

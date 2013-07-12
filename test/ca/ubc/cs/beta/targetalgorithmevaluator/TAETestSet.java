@@ -28,6 +28,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+
+
 import ca.ubc.cs.beta.TestHelper;
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
@@ -36,6 +38,7 @@ import ca.ubc.cs.beta.aclib.algorithmrunner.AutomaticConfiguratorFactory;
 import ca.ubc.cs.beta.aclib.concurrent.threadfactory.SequentiallyNamedThreadFactory;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
+import ca.ubc.cs.beta.aclib.configspace.ParamFileHelper;
 import ca.ubc.cs.beta.aclib.exceptions.IllegalWrapperOutputException;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.misc.debug.DebugUtil;
@@ -2702,4 +2705,98 @@ public class TAETestSet {
 		
 		
 	}
+	
+	
+	@Test
+	public void testSpacesAndQuotesCLI()
+	{
+		//Check that a submission of run 10 runs on a bound of <5 take 5,1,1,1,1, 5,1,1,1,1 takes 6 seconds and not 10.
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		
+		StringBuilder b = new StringBuilder();
+		b.append("\"test-files/testexecutor/file test.py\"");
+		System.out.println(b);
+		
+		
+		ParamConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("Test { \"\\\" } [\"\\\"]\n");
+		
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
+		
+		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
+		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
+		
+		options.logAllCallStrings = true;
+		options.logAllProcessOutput = true;
+		options.concurrentExecution = true;
+		options.observerFrequency = 2000;
+		options.cores = 2;
+		
+		tae = fact.getTargetAlgorithmEvaluator(execConfig, options);	
+		TargetAlgorithmEvaluator cliTAE = tae;
+		tae = new BoundedTargetAlgorithmEvaluator(tae,2,execConfig);
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(4);
+		for(int i=0; i < 1; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+
+			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"),1), 3000, config);
+			runConfigs.add(rc);
+
+		}
+		
+		
+		
+		StopWatch watch = new AutoStartStopWatch();
+		cliTAE.evaluateRun(runConfigs).get(0).getAdditionalRunData().equals("'\"\"'");
+		System.out.println(watch.stop());
+		
+	}
+	
+	@Test
+	public void testBackslash()
+	{
+		//Check that a submission of run 10 runs on a bound of <5 take 5,1,1,1,1, 5,1,1,1,1 takes 6 seconds and not 10.
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		
+		StringBuilder b = new StringBuilder();
+		b.append("\"test-files/testexecutor/fi\\letest.py\"");
+		System.out.println(b);
+		
+		
+		ParamConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("Test { \"\\\" } [\"\\\"]\n");
+		
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
+		
+		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
+		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
+		
+		options.logAllCallStrings = true;
+		options.logAllProcessOutput = true;
+		options.concurrentExecution = true;
+		options.observerFrequency = 2000;
+		options.cores = 2;
+		
+		tae = fact.getTargetAlgorithmEvaluator(execConfig, options);	
+		TargetAlgorithmEvaluator cliTAE = tae;
+		tae = new BoundedTargetAlgorithmEvaluator(tae,2,execConfig);
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(4);
+		for(int i=0; i < 1; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+
+			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"),1), 3000, config);
+			runConfigs.add(rc);
+
+		}
+		
+		
+		
+		StopWatch watch = new AutoStartStopWatch();
+		cliTAE.evaluateRun(runConfigs).get(0).getAdditionalRunData().equals("'\"\"'");
+		System.out.println(watch.stop());
+		
+	}
+
+	
+	
 }
