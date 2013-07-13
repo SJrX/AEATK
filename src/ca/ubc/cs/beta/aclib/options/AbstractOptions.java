@@ -97,6 +97,9 @@ public abstract class AbstractOptions {
 							 * We take a cautious approach here, we want every object to have a MEANINGFUL toString() method
 							 * so we only add types for things we know provide this
 							 */
+							
+							
+							//if(obj.toString().equals(System.))
 							throw new IllegalArgumentException("Failed to convert type configuration option to a string " + f.getName() + "=" +  obj + " type: " + o) ;
 						}
 					}
@@ -248,7 +251,7 @@ public abstract class AbstractOptions {
 					}
 					else 
 					{
-						System.err.println("No idea what o is " + o.getClass()  +" value:" + o + " name " + ant.names()[0]);
+						System.err.println("No idea what o is " + o.getClass()  +" value:" + o + " name " + ant.names()[0] + ". We essentially have no way of faithfully inverting the object back to whatever cli argument generated it");
 					}
 					sb.append(" ");
 					
@@ -277,7 +280,7 @@ public abstract class AbstractOptions {
 						list.add(o.toString());
 					} else
 					{
-						System.err.println("No idea what o is " + o.getClass()  +" value:" + o + " name " + ant.names()[0]);
+						System.err.println("No idea what o is " + o.getClass()  +" value:" + o + " name " + ant.names()[0] + ". We essentially have no way of faithfully inverting the object back to whatever cli argument generated it");
 					}
 				} catch (Exception e) {
 					e.printStackTrace();

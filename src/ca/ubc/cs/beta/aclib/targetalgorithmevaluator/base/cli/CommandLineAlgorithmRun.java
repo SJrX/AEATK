@@ -79,8 +79,18 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	 */
 	private static transient Marker fullProcessOutputMarker = MarkerFactory.getMarker(LoggingMarker.FULL_PROCESS_OUTPUT.name());
 	
+	private static String commandSeparator = ";";
+	
+	
+	
 	static {
 		log.warn("This version of SMAC hardcodes run length for calls to the target algorithm to {}.", Integer.MAX_VALUE);
+		
+		if(System.getProperty("os.name").toLowerCase().contains("win"))
+		{
+			commandSeparator = "&";
+		}
+		
 	}
 	
 	private static final double WALLCLOCK_TIMING_SLACK = 0.001;
@@ -254,8 +264,8 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 			case ABORT:
 			case CRASHED:
 				
-					
-					log.error( "Failed Run Detected Call: cd {} ;  {} ",new File(execConfig.getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommand(execConfig, runConfig));
+			
+					log.error( "Failed Run Detected Call: cd \"{}\" " + commandSeparator + "  {} ",new File(execConfig.getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommandAsString(execConfig, runConfig));
 				
 					log.error("Failed Run Detected output last {} lines", outputQueue.size());
 					
@@ -341,7 +351,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 		
 		if(options.logAllCallStrings)
 		{
-			log.info( "Call: cd \"{}\" ;  {} ", new File(execConfig.getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommandAsString(execConfig, runConfig));
+			log.info( "Call: cd \"{}\" " + commandSeparator + "  {} ", new File(execConfig.getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommandAsString(execConfig, runConfig));
 		}
 		
 		Process proc = Runtime.getRuntime().exec(execCmdArray,null, new File(execConfig.getAlgorithmExecutionDirectory()));
@@ -521,7 +531,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 			} catch(NumberFormatException e)
 			{	 //Numeric value is probably at fault
 				this.setCrashResult("Output:" + fullLine + "\n Exception Message: " + e.getMessage() + "\n Name:" + e.getClass().getCanonicalName());
-				Object[] args = { getTargetAlgorithmExecutionCommand(execConfig, runConfig), fullLine};
+				Object[] args = { getTargetAlgorithmExecutionCommandAsString(execConfig, runConfig), fullLine};
 				log.error("Target Algorithm Call failed:{}\nResponse:{}\nComment: Most likely one of the values of runLength, runtime, quality could not be parsed as a Double, or the seed could not be parsed as a valid long", args);
 				log.error("Exception that occured trying to parse result was: ", e);
 				log.error("Run will be counted as {}", RunResult.CRASHED);
@@ -544,7 +554,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 				String[] validArgs = validValues.toArray(new String[0]);
 				
 				
-				Object[] args = { getTargetAlgorithmExecutionCommand(execConfig, runConfig), fullLine, Arrays.toString(validArgs)};
+				Object[] args = { getTargetAlgorithmExecutionCommandAsString(execConfig, runConfig), fullLine, Arrays.toString(validArgs)};
 				log.error("Target Algorithm Call failed:{}\nResponse:{}\nComment: Most likely the Algorithm did not report a result string as one of: {}", args);
 				log.error("Exception that occured trying to parse result was: ", e);
 				log.error("Run will be counted as {}", RunResult.CRASHED);
@@ -552,7 +562,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 			} catch(ArrayIndexOutOfBoundsException e)
 			{	//There aren't enough commas in the output
 				this.setCrashResult("Output:" + fullLine + "\n Exception Message: " + e.getMessage() + "\n Name:" + e.getClass().getCanonicalName());
-				Object[] args = { getTargetAlgorithmExecutionCommand(execConfig, runConfig), fullLine};
+				Object[] args = { getTargetAlgorithmExecutionCommandAsString(execConfig, runConfig), fullLine};
 				log.error("Target Algorithm Call failed:{}\nResponse:{}\nComment: Most likely the algorithm did not specify all of the required outputs that is <solved>,<runtime>,<runlength>,<quality>,<seed>", args);
 				log.error("Exception that occured trying to parse result was: ", e);
 				log.error("Run will be counted as {}", RunResult.CRASHED);

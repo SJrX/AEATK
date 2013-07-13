@@ -116,12 +116,19 @@ public abstract class AbstractTargetAlgorithmEvaluator implements TargetAlgorith
 		
 		StringBuilder sb = new StringBuilder();
 		
+		
+		String commandSeparator = ";";
+		
+		if(System.getProperty("os.name").toLowerCase().contains("win"))
+		{
+			commandSeparator = "&";
+		}
 		if(execConfig.getAlgorithmExecutionDirectory().matches(".*\\s.*"))
 		{
-			sb.append("cd \"").append(execConfig.getAlgorithmExecutionDirectory()).append("\"; ");
+			sb.append("cd \"").append(execConfig.getAlgorithmExecutionDirectory()).append("\"" +commandSeparator+ " ");
 		} else
 		{
-			sb.append("cd ").append(execConfig.getAlgorithmExecutionDirectory()).append("; ");
+			sb.append("cd ").append(execConfig.getAlgorithmExecutionDirectory()).append(commandSeparator + " ");
 		}
 		
 		sb.append(CommandLineAlgorithmRun.getTargetAlgorithmExecutionCommandAsString(execConfig, runConfig));
