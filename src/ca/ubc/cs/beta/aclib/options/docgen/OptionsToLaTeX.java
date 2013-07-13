@@ -9,7 +9,6 @@ import java.util.Map;
 
 import com.beust.jcommander.JCommander;
 
-import ca.ubc.cs.beta.aclib.misc.bashcompletion.BashCompletionOptions;
 import ca.ubc.cs.beta.aclib.misc.options.UsageSection;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.init.TargetAlgorithmEvaluatorLoader;

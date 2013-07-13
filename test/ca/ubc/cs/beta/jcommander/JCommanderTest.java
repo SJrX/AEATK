@@ -6,11 +6,7 @@ import java.io.File;
 
 import org.junit.Test;
 
-import com.beust.jcommander.JCommander;
-import com.beust.jcommander.ParametersDelegate;
-
 import ca.ubc.cs.beta.aclib.misc.jcommander.JCommanderHelper;
-import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 import ca.ubc.cs.beta.aclib.options.scenario.ScenarioOptions;
 
 public class JCommanderTest {
