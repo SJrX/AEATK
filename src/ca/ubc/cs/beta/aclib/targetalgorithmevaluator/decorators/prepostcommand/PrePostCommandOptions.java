@@ -10,20 +10,20 @@ import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 @UsageTextField(hiddenSection = true)
 public class PrePostCommandOptions extends AbstractOptions {
 
-	@Parameter(names={"--preScenarioCommand","--pre_cmd"}, description="Command that will run on startup")
+	@Parameter(names={"--pre-scenario-command","--preScenarioCommand","--pre_cmd"}, description="Command that will run on startup")
 	public String preCommand;
 	
-	@Parameter(names={"--postScenarioCommand","--post_cmd"}, description="Command that will run on shutdown")
+	@Parameter(names={"--post-scenario-command","--postScenarioCommand","--post_cmd"}, description="Command that will run on shutdown")
 	public String postCommand;
 	
-	@Parameter(names="--exceptionOnPrePostCommand", description="Throw an abort ")
+	@Parameter(names={"--exception-on-prepost-command","--exceptionOnPrePostCommand"}, description="Throw an abort ")
 	public boolean exceptionOnError=false;
 	
-	@Parameter(names="--logOutput", description="Log all the output from the pre and post commands")
+	@Parameter(names={"--prepost-log-output","--logOutput"}, description="Log all the output from the pre and post commands")
 	public boolean logOutput = true;
 
 	@UsageTextField(defaultValues="Current Working Directory")
-	@Parameter(names="--prePostExecDir", description="Execution Directory for Pre/Post commands", converter=ReadableDirectoryValidator.class)
+	@Parameter(names={"--prepost-exec-dir","--prePostExecDir"}, description="Execution Directory for Pre/Post commands", converter=ReadableDirectoryValidator.class)
 	public File directory = new File(".");
 	
 }

@@ -21,13 +21,13 @@ public class RunGroupOptions extends AbstractOptions {
 
 	
 	@UsageTextField
-	@Parameter(names="--runGroupName", description="name of subfolder of outputdir to save all the output files of this run to")
+	@Parameter(names={"--rungroup","--rungroup-name","--runGroupName"}, description="name of subfolder of outputdir to save all the output files of this run to")
 	public String runGroupName; 
 	
 	@Parameter(names="--print-rungroup-replacement-and-exit", description="print all the possible replacements in the rungroup and then exit")
 	public boolean runGroupExit;
 	
-	@Parameter(names="--runGroupReplacement", description="Character (potentially regex see source) to use as the start of a replacement in the runGroupName", hidden=true)
+	@Parameter(names={"--rungroup-char","--runGroupReplacement"}, description="Character (potentially regex see source) to use as the start of a replacement in the runGroupName", hidden=true)
 	public String replacementChar = "%";
 	
 	public RunGroupOptions(String defaultRunGroupName)

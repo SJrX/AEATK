@@ -29,10 +29,10 @@ import com.beust.jcommander.Parameter;
 @UsageTextField(hiddenSection=true)
 public class LoggingOptions extends AbstractOptions{
 
-	@Parameter(names="--consoleLogLevel",description="default log level of console output (this cannot be more verbose than the logLevel)")
+	@Parameter(names={"--console-log-level","--consoleLogLevel"},description="default log level of console output (this cannot be more verbose than the logLevel)")
 	public LogLevel consoleLogLevel = LogLevel.INFO;
 	
-	@Parameter(names="--logLevel",description="Log Level for SMAC")
+	@Parameter(names={"--log-level","--logLevel"},description="Log Level for SMAC")
 	public LogLevel logLevel = LogLevel.DEBUG;	
 	
 	//This isn't meant to be an option, you can simply change this value before calling initializeLogging

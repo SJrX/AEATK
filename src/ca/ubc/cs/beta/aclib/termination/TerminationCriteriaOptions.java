@@ -19,22 +19,22 @@ import ca.ubc.cs.beta.aclib.termination.standard.WallClockLimitCondition;
 @UsageTextField(hiddenSection=true)
 public class TerminationCriteriaOptions extends AbstractOptions {
 
-	@Parameter(names="--tunerTimeout", description="limits the total cpu time allowed between SMAC and the target algorithm runs during the automatic configuration phase", validateWith=NonNegativeInteger.class)
+	@Parameter(names={"--tunertime-limit","--tuner-timeout","--tunerTimeout"}, description="limits the total cpu time allowed between SMAC and the target algorithm runs during the automatic configuration phase", validateWith=NonNegativeInteger.class)
 	public int tunerTimeout = Integer.MAX_VALUE;
 	
-	@Parameter(names={"--numIterations","--numberOfIterations"}, description = "limits the number of iterations allowed during automatic configuration phase", validateWith=FixedPositiveInteger.class)
+	@Parameter(names={"--iteration-limit","--numIterations","--numberOfIterations"}, description = "limits the number of iterations allowed during automatic configuration phase", validateWith=FixedPositiveInteger.class)
 	public int numIterations = Integer.MAX_VALUE;
 	
-	@Parameter(names={"--runtimeLimit", "--wallClockLimit"}, description = "limits the total wall-clock time allowed during the automatic configuration phase", validateWith=FixedPositiveInteger.class)
+	@Parameter(names={"--runtime-limit","--runtimeLimit", "--wallClockLimit"}, description = "limits the total wall-clock time allowed during the automatic configuration phase", validateWith=FixedPositiveInteger.class)
 	public int runtimeLimit = Integer.MAX_VALUE;
 	
-	@Parameter(names={"--totalNumRunsLimit","--numRunsLimit","--numberOfRunsLimit"} , description = "limits the total number of target algorithm runs allowed during the automatic configuration phase ", validateWith=FixedPositiveLong.class)
+	@Parameter(names={"--runcount-limit","--totalNumRunsLimit","--numRunsLimit","--numberOfRunsLimit"} , description = "limits the total number of target algorithm runs allowed during the automatic configuration phase ", validateWith=FixedPositiveLong.class)
 	public long totalNumRunsLimit = Long.MAX_VALUE;
 
-	@Parameter(names="--countSMACTimeAsTunerTime", description="include the CPU Time of SMAC as part of the tunerTimeout")
+	@Parameter(names={"--use-cpu-time-in-tunertime","--countSMACTimeAsTunerTime"}, description="include the CPU Time of SMAC as part of the tunerTimeout")
 	public boolean countSMACTimeAsTunerTime = true;
 	
-	@Parameter(names={"--maxConsecutiveFailedChallengeIncumbent"}, description="if the parameter space is too small we may get to a point where we can make no new runs, detecting this condition is prohibitively expensive, and this heuristic controls the number of times we need to try a challenger and get no new runs before we give up")
+	@Parameter(names={"--max-norun-challenge-limit","--maxConsecutiveFailedChallengeIncumbent"}, description="if the parameter space is too small we may get to a point where we can make no new runs, detecting this condition is prohibitively expensive, and this heuristic controls the number of times we need to try a challenger and get no new runs before we give up")
 	public int challengeIncumbentAttempts = 1000;
 
 	

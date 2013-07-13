@@ -26,13 +26,13 @@ import ca.ubc.cs.beta.aclib.termination.TerminationCriteriaOptions;
 @UsageTextField(title="Scenario Options", description="Standard Scenario Options for use with SMAC. In general consider using the --scenarioFile directive to specify these parameters and Algorithm Execution Options")
 public class ScenarioOptions extends AbstractOptions{
 	
-	@Parameter(names={"--runObj","--run_obj"}, description="per target algorithm run objective type that we are optimizing for", converter=RunObjectiveConverter.class, required=true)
+	@Parameter(names={"--run-obj","--runObj","--run_obj"}, description="per target algorithm run objective type that we are optimizing for", converter=RunObjectiveConverter.class, required=true)
 	public RunObjective runObj;
 	
-	@Parameter(names={"--intraInstanceObj","--overallObj", "--overall_obj","--intra_instance_obj"}, description="objective function used to aggregate multiple runs for a single instance", converter=OverallObjectiveConverter.class, required=true)
+	@Parameter(names={"--intra-obj","--intra-instance-obj","--overall-obj","--intraInstanceObj","--overallObj", "--overall_obj","--intra_instance_obj"}, description="objective function used to aggregate multiple runs for a single instance", converter=OverallObjectiveConverter.class, required=true)
 	public OverallObjective intraInstanceObj;
 	
-	@Parameter(names={"--interInstanceObj","--inter_instance_obj"}, description="objective function used to aggregate over multiple instances (that have already been aggregated under the Intra-Instance Objective)", converter=OverallObjectiveConverter.class)
+	@Parameter(names={"--inter-obj","--inter-instance-obj","--interInstanceObj","--inter_instance_obj"}, description="objective function used to aggregate over multiple instances (that have already been aggregated under the Intra-Instance Objective)", converter=OverallObjectiveConverter.class)
 	public OverallObjective interInstanceObj = OverallObjective.MEAN;
 	
 	@ParametersDelegate
@@ -43,12 +43,12 @@ public class ScenarioOptions extends AbstractOptions{
 	public ProblemInstanceOptions instanceOptions = new ProblemInstanceOptions();
 	
 	@UsageTextField(defaultValues="")
-	@Parameter(names="--scenarioFile", description="scenario file")
+	@Parameter(names={"--scenario","--scenario-file","--scenarioFile"}, description="scenario file")
 	@ParameterFile
 	public File scenarioFile = null;
 	
 	@UsageTextField(defaultValues="<current working directory>/smac-output")
-	@Parameter(names={"--outputDirectory","--outdir"}, required=false, description="Output Directory")
+	@Parameter(names={"--output-dir","--outputDirectory","--outdir"}, required=false, description="Output Directory")
 	public String outputDirectory = System.getProperty("user.dir") + File.separator + "smac-output";
 
 	@ParametersDelegate

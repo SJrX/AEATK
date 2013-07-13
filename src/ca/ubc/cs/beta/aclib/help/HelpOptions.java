@@ -23,7 +23,7 @@ public class HelpOptions extends AbstractOptions{
 	 * Note most of these actually will never be read as we will silently scan for them in the input arguments to avoid logging
 	 */
 	@UsageTextField(defaultValues="", domain="")
-	@Parameter(names="--showHiddenParameters", description="show hidden parameters that no one has use for, and probably just break SMAC (no-arguments)")
+	@Parameter(names={"--show-hidden","--showHiddenParameters"}, description="show hidden parameters that no one has use for, and probably just break SMAC (no-arguments)")
 	public boolean showHiddenParameters = false;
 	
 	@UsageTextField(defaultValues="", domain="" )

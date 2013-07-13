@@ -41,7 +41,7 @@ public class OptionsToLaTeX {
 			
 			String completionScript = latex(sections);
 			
-			FileWriter fw = new FileWriter(new File(opts.outputFile),true);
+			FileWriter fw = new FileWriter(new File(opts.outputFile),false);
 			
 			fw.write(completionScript);
 			fw.flush();

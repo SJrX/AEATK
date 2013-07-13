@@ -15,28 +15,28 @@ import com.beust.jcommander.ParameterFile;
 public class MySQLOptions extends AbstractOptions {
 
 	@UsageTextField(defaultValues="~/.aclib/mysql.opt")
-	@Parameter(names="--mysqlDefaultsFile", description="file that contains default settings for MySQL")
+	@Parameter(names={"--mysql-defaults-file","--mysqlDefaultsFile"}, description="file that contains default settings for MySQL")
 	@ParameterFile(ignoreFileNotExists = true) 
 	public File mysqlDefaults = HomeFileUtils.getHomeFile(".aclib" + File.separator  + "mysql.opt");
 	
-	@Parameter(names={"--mysqlHostName","--mysql-hostname"}, description="Hostname of database server" )
+	@Parameter(names={"--mysql-hostname","--mysqlHostName"}, description="Hostname of database server" )
 	public String host;
 	
 	
-	@Parameter(names={"--mysqlPassword","--mysql-password"}, description="Password of database server" )
+	@Parameter(names={"--mysql-password","--mysqlPassword"}, description="Password of database server" )
 	public String password;
 	
-	@Parameter(names={"--mysqlDatabase", "--mysqlDatabaseName", "--mysql-database"}, description="Name of Database" )
+	@Parameter(names={"--mysql-database","--mysqlDatabase", "--mysqlDatabaseName"}, description="Name of Database" )
 	public String databaseName = null;
 	
 	
-	@Parameter(names={"--mysqlUsername","--mysql-username","--mysql_user"}, description="Username of the Database")
+	@Parameter(names={"--mysql-username","--mysqlUsername","--mysql_user"}, description="Username of the Database")
 	public String username;
 	
-	@Parameter(names={"--mysqlPort", "--mysql-port"}, description="Port of database server")
+	@Parameter(names={ "--mysql-port","--mysqlPort",}, description="Port of database server")
 	public int port;
 	
-	@Parameter(names="--mysqlParameterFile", description="MySQL Configuration Options")
+	@Parameter(names={"--mysql-parameter-file","--mysqlParameterFile"}, description="MySQL Configuration Options")
 	@ParameterFile
 	public File mysqlParamFile = null;
 

@@ -19,10 +19,10 @@ public class CommandLineTargetAlgorithmEvaluatorOptions extends AbstractOptions 
 	@Parameter(names="--cli-cores", validateWith=FixedPositiveInteger.class)
 	public int cores = 1;
 	
-	@Parameter(names="--logAllCallStrings", description="log every call string")
+	@Parameter(names={"--log-all-call-strings","--logAllCallStrings"}, description="log every call string")
 	public boolean logAllCallStrings = false;
 	
-	@Parameter(names="--logAllProcessOutput", description="log all process output")
+	@Parameter(names={"--log-all-process-output","--logAllProcessOutput"}, description="log all process output")
 	public boolean logAllProcessOutput = false;
 
 }

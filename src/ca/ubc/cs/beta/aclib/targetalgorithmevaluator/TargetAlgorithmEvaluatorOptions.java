@@ -30,47 +30,48 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 		
 	
 	//@UsageTextField(domain="")
-	@Parameter(names={"--targetAlgorithmEvaluator","--tae"}, description="Target Algorithm Evaluator to use when making target algorithm calls", validateWith=TAEValidator.class)
+	@Parameter(names={"--tae","--targetAlgorithmEvaluator"}, description="Target Algorithm Evaluator to use when making target algorithm calls", validateWith=TAEValidator.class)
 	public String targetAlgorithmEvaluator = "CLI";
 	
-	@Parameter(names="--abortOnCrash", description="treat algorithm crashes as an ABORT (Useful if algorithm should never CRASH). NOTE:  This only aborts if all retries fail.")
+	@Parameter(names={"--abort-on-crash","--abortOnCrash"}, description="treat algorithm crashes as an ABORT (Useful if algorithm should never CRASH). NOTE:  This only aborts if all retries fail.")
 	public boolean abortOnCrash = false;
 
-	@Parameter(names="--abortOnFirstRunCrash", description="if the first run of the algorithm CRASHED treat it as an ABORT, otherwise allow crashes.")
+	@Parameter(names={"--abort-on-first-run-crash","--abortOnFirstRunCrash"}, description="if the first run of the algorithm CRASHED treat it as an ABORT, otherwise allow crashes.")
 	public boolean abortOnFirstRunCrash = true;
 
-	@Parameter(names={"--retryCrashedRunCount","--retryTargetAlgorithmRunCount"}, description="number of times to retry an algorithm run before reporting crashed (NOTE: The original crashes DO NOT count towards any time limits, they are in effect lost). Additionally this only retries CRASHED runs, not ABORT runs, this is by design as ABORT is only for cases when we shouldn't bother further runs", validateWith=NonNegativeInteger.class)
+	@Parameter(names={"--retry-crashed-count","--retryCrashedRunCount","--retryTargetAlgorithmRunCount"}, description="number of times to retry an algorithm run before reporting crashed (NOTE: The original crashes DO NOT count towards any time limits, they are in effect lost). Additionally this only retries CRASHED runs, not ABORT runs, this is by design as ABORT is only for cases when we shouldn't bother further runs", validateWith=NonNegativeInteger.class)
 	public int retryCount = 0;
 
-	@Parameter(names={"--boundRuns"}, description="[DEPRECATED] (Use the option on the TAE instead if available) if true, permit only --cores number of runs to be evaluated concurrently. ")
+	@Parameter(names={"--bound-runs","--boundRuns"}, description="[DEPRECATED] (Use the option on the TAE instead if available) if true, permit only --cores number of runs to be evaluated concurrently. ")
 	public boolean boundRuns = false;
 	
 	@Parameter(names={"--cores","--numConcurrentAlgoExecs","--maxConcurrentAlgoExecs","--numberOfConcurrentAlgoExecs"}, description=" [DEPRECATED] (Use the TAE option instead if available) maximum number of concurrent target algorithm executions", validateWith=PositiveInteger.class)
 	public int maxConcurrentAlgoExecs = 1;
 	
 	@UsageTextField(defaultValues="")
-	@Parameter(names="--runHashCodeFile", description="file containing a list of run hashes one per line: Each line should be: \"Run Hash Codes: (Hash Code) After (n) runs\". The number of runs in this file need not match the number of runs that we execute, this file only ensures that the sequences never diverge. Note the n is completely ignored so the order they are specified in is the order we expect the hash codes in this version. Finally note you can simply point this at a previous log and other lines will be disregarded", converter=ReadableFileConverter.class)
+	@Parameter(names={"--run-hashcode-file","--runHashCodeFile"}, description="file containing a list of run hashes one per line: Each line should be: \"Run Hash Codes: (Hash Code) After (n) runs\". The number of runs in this file need not match the number of runs that we execute, this file only ensures that the sequences never diverge. Note the n is completely ignored so the order they are specified in is the order we expect the hash codes in this version. Finally note you can simply point this at a previous log and other lines will be disregarded", converter=ReadableFileConverter.class)
 	public File runHashCodeFile;
 
-	@Parameter(names="--leakMemoryAmount", hidden=true, description="amount of memory in bytes to leak")
-	public int leakMemoryAmount = 1024;
-
-	@Parameter(names="--leakMemory", hidden=true, description="leaks some amount of memory for every run")
+	@Parameter(names={"--leak-memory","--leakMemory"}, hidden=true, description="leaks some amount of memory for every run")
 	public boolean leakMemory = false;
 	
-	@Parameter(names="--verifySAT", description="Check SAT/UNSAT/UNKNOWN responses against Instance specific information (if null then performs check if every instance has specific information in the following domain {SAT, UNSAT, UNKNOWN, SATISFIABLE, UNSATISFIABLE}")
+	@Parameter(names={"--leak-memory-amount","--leakMemoryAmount"}, hidden=true, description="amount of memory in bytes to leak")
+	public int leakMemoryAmount = 1024;
+
+	
+	@Parameter(names={"--verify-sat","--verify-SAT","--verifySAT"}, description="Check SAT/UNSAT/UNKNOWN responses against Instance specific information (if null then performs check if every instance has specific information in the following domain {SAT, UNSAT, UNKNOWN, SATISFIABLE, UNSATISFIABLE}")
 	public Boolean verifySAT;
 
-	@Parameter(names="--checkSATConsistency", description="Ensure that runs on the same problem instance always return the same SAT/UNSAT result")
+	@Parameter(names={"--check-sat-consistency","--checkSATConsistency"}, description="Ensure that runs on the same problem instance always return the same SAT/UNSAT result")
 	public boolean checkSATConsistency = false;
 
-	@Parameter(names="--checkSATConsistencyException", description="Throw an exception if runs on the same problem instance disagree with respect to SAT/UNSAT")
+	@Parameter(names={"--check-sat-consistency-exception","--checkSATConsistencyException"}, description="Throw an exception if runs on the same problem instance disagree with respect to SAT/UNSAT")
 	public boolean checkSATConsistencyException = false;
 	
 	@ParametersDelegate
 	public PrePostCommandOptions prePostOptions = new PrePostCommandOptions();
 
-	@Parameter(names="--checkResultOrderConsistent", description="Check that the TAE is returning responses in the correct order")
+	@Parameter(names={"--check-result-order-consistent","--checkResultOrderConsistent"}, description="Check that the TAE is returning responses in the correct order")
 	public boolean checkResultOrderConsistent;
 	
 	@Parameter(names="--skip-outstanding-eval-tae", description="If set to true code, the TAE will not be wrapped by a decorator to support waiting for outstanding runs")

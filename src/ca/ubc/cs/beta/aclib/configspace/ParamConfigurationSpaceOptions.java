@@ -27,16 +27,16 @@ import com.beust.jcommander.ParameterException;
 @UsageTextField(hiddenSection = true)
 public class ParamConfigurationSpaceOptions extends AbstractOptions{
 	
-	@Parameter(names={"-p", "--paramFile","--paramfile"}, description="File containing algorithm parameter space information (see Algorithm Parameter File in the Manual)")
+	@Parameter(names={"--param-file","-p", "--paramFile","--paramfile"}, description="File containing algorithm parameter space information (see Algorithm Parameter File in the Manual)")
 	public String paramFile;
 
-	@Parameter(names="--searchSubspace", description="Only generate random and neighbouring configurations with these values. Specified in a \"name=value,name=value,...\" format (Overrides those set in file)", required=false)
+	@Parameter(names={"--search-subspace","--searchSubspace"}, description="Only generate random and neighbouring configurations with these values. Specified in a \"name=value,name=value,...\" format (Overrides those set in file)", required=false)
 	public String searchSubspace;
 	
-	@Parameter(names="--searchSubspaceFile", description="Only generate random and neighbouring configurations with these values. Specified each parameter on each own line with individual value", required=false, converter=ReadableFileConverter.class)
+	@Parameter(names={"--search-subspace","--searchSubspaceFile"}, description="Only generate random and neighbouring configurations with these values. Specified each parameter on each own line with individual value", required=false, converter=ReadableFileConverter.class)
 	public File searchSubspaceFile;
 	
-	@Parameter(names="--continuousNeighbours", description="Number of neighbours for continuous parameters")
+	@Parameter(names={"--continous-neighbours","--continuous-neighbors","--continuousNeighbours"}, description="Number of neighbours for continuous parameters")
 	public int continuousNeighbours = 4;
 	
 	public Map<String,String> getSubspaceMap()

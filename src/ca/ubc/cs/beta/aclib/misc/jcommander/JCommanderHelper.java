@@ -73,7 +73,7 @@ public final class JCommanderHelper
 		try {
 			Set<String> possibleValues = new HashSet<String>(Arrays.asList(args));
 			
-			String[] hiddenNames = {"--showHiddenParameters"};
+			String[] hiddenNames = {"--show-hidden","--showHiddenParameters"};
 			for(String helpName : hiddenNames)
 			{
 				if(possibleValues.contains(helpName))
