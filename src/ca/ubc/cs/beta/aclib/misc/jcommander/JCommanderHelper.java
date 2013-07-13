@@ -132,9 +132,7 @@ public final class JCommanderHelper
 	 * @return
 	 */
 	public static JCommander getJCommanderAndCheckForHelp(String[] args,AbstractOptions mainOptions) {
-		JCommander jcom = getJCommander(mainOptions, Collections.<String, AbstractOptions> emptyMap());
-		checkForHelpAndVersion(args, mainOptions, Collections.<String, AbstractOptions> emptyMap());
-		return jcom;
+		return getJCommanderAndCheckForHelp(args, mainOptions, Collections.<String, AbstractOptions> emptyMap());
 	}
 	
 	
