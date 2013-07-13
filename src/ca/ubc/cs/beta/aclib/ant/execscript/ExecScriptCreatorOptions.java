@@ -20,5 +20,7 @@ public class ExecScriptCreatorOptions extends AbstractOptions {
 	@Parameter(names="--file-to-write", description="File to output script to (if directory will use name of program as a name)")
 	public String filename = (new File("")).getAbsolutePath();
 	
+	@Parameter(names="--bat-file", description="Also output a windows .bat file")
+	public boolean batFile = true;
 	
 }

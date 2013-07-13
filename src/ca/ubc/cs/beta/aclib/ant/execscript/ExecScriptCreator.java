@@ -59,9 +59,39 @@ public static void main(String[] args)
 		
 		fWrite.write(script);
 		fWrite.close();
-		f.setExecutable(true);
-		f.setReadable(true);
-		f.setWritable(false);
+
+		if(opts.batFile)
+		{
+			
+			String batchFile = getBatch(opts.clazz, opts.nameOfProgram);
+
+			File f2 = new File(opts.filename);
+			
+			if(f2.isDirectory())
+			{
+				f2 = new File(opts.filename + File.separator + opts.nameOfProgram + ".bat");
+			} else if(!f2.getParentFile().exists())
+			{
+				boolean created = f2.getParentFile().mkdirs();
+				
+				if(!created)
+				{
+					throw new ParameterException("Could not create parent directory " + f2.getParentFile());
+				}
+						
+			}
+			
+			
+			
+			System.out.println("Execution Script writing to: "  + f2);
+			
+			FileWriter fWrite2 = new FileWriter(f2);
+			
+			fWrite2.write(batchFile);
+			fWrite2.close();
+			
+			
+		}
 	} catch(ParameterException e)
 	{
 		e.printStackTrace();
@@ -120,5 +150,46 @@ exec java -Xmx"$SMACMEM"m -cp "$DIR/conf/:$jarconcat" $EXEC "$@"
 	
 	return sb.toString();
 }
+
+	/**
+	 * Creates a batch file for a program
+	 * @param javaClassName
+	 * @param nameOfProgram
+	 * @return
+	 */
+	public static String getBatch(String javaClassName, String nameOfProgram)
+	{
+		/* courtesy of Chris Thornton
+		  @echo off
+			set SMACMEM=1024
+			IF NOT "%SMAC_MEMORY%"=="" (set SMACMEM=%SMAC_MEMORY%)
+			set DIR=%~dp0
+			set EXEC=ca.ubc.cs.beta.smac.executors.AutomaticConfigurator
+			set jarconcat=
+			SETLOCAL ENABLEDELAYEDEXPANSION
+			for /F "delims=" %%a IN ('dir /b /s "%DIR%\*.jar"') do set jarconcat=%%a;!jarconcat!
+			echo Starting with %SMACMEM% MB of RAM
+			@echo on
+			java -Xmx%SMACMEM%m -cp "%DIR%conf\;%DIR%patches\;%jarconcat%%DIR%patches\ " %EXEC% %*
+
+		 */
+		
+		
+		StringBuilder sb = new StringBuilder();
+		
+		sb.append("@echo off").append("\r\n");
+		sb.append("set SMACMEM=1024").append("\r\n");
+		sb.append("IF NOT \"%SMAC_MEMORY%\"==\"\" (set SMACMEM=%SMAC_MEMORY%)").append("\r\n");
+		sb.append("set DIR=%~dp0").append("\r\n");
+		sb.append("set EXEC="+ javaClassName).append("\r\n");
+		sb.append("set jarconcat=").append("\r\n");
+		sb.append("SETLOCAL ENABLEDELAYEDEXPANSION").append("\r\n");
+		sb.append("for /F \"delims=\" %%a IN ('dir /b /s \"%DIR%\\*.jar\"') do set jarconcat=%%a;!jarconcat!").append("\r\n");
+		sb.append("echo Starting "+ nameOfProgram + " with %SMACMEM% MB of RAM").append("\r\n");
+		//sb.append("@echo on").append("\n");
+		sb.append("java -Xmx%SMACMEM%m -cp \"%DIR%conf\\;%DIR%patches\\;%jarconcat%%DIR%patches\\ \" %EXEC% %*").append("\r\n");
+
+		return sb.toString();
+	}
 }
 
