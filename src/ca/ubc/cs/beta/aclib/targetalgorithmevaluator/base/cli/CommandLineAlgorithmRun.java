@@ -65,12 +65,12 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	/**
 	 * Stores the observer for this run
 	 */
-	private TargetAlgorithmEvaluatorRunObserver runObserver;
+	private transient TargetAlgorithmEvaluatorRunObserver runObserver;
 
 	/**
 	 * Stores the kill handler for this run
 	 */
-	private KillHandler killHandler;
+	private transient KillHandler killHandler;
 	
 	
 
@@ -95,7 +95,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	
 	private static final double WALLCLOCK_TIMING_SLACK = 0.001;
 	
-	private ExecutorService threadPoolExecutor = Executors.newCachedThreadPool(new SequentiallyNamedThreadFactory("Command Line Target Algorithm Evaluator Thread ")); 
+	private transient ExecutorService threadPoolExecutor = Executors.newCachedThreadPool(new SequentiallyNamedThreadFactory("Command Line Target Algorithm Evaluator Thread ")); 
 	
 	private final int observerFrequency;
 		

@@ -18,7 +18,7 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 	 * 
 	 */
 	private static final long serialVersionUID = -7798477429606839878L;
-	private Logger log = LoggerFactory.getLogger(this.getClass());
+	private transient Logger log = LoggerFactory.getLogger(this.getClass());
 	
 	/**
 	 * 

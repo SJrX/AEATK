@@ -74,6 +74,46 @@ public class TrajectoryFileEntry implements Comparable<TrajectoryFileEntry>
 		}
 	}
 	
+	@Override
+	public boolean equals(Object o)
+	{
+		if(o instanceof TrajectoryFileEntry)
+		{
+			TrajectoryFileEntry oTFE = (TrajectoryFileEntry) o;
+			
+			if(oTFE.acOverhead != acOverhead)
+			{
+				return false;
+			}
+					
+			if(oTFE.empiricalPerformance != empiricalPerformance)
+			{
+				return false;
+			}
+			
+			if(oTFE.wallTime != oTFE.wallTime)
+			{
+				return false;
+			}
+					
+			if(oTFE.tunerTime != oTFE.tunerTime)
+			{
+				return false;
+			}
+			
+			return oTFE.config.equals(config);
+			
+		} 
+		return false;
+	}
+	
+	public int hashCode()
+	{
+		long val = Double.doubleToLongBits(tunerTime) ^ Double.doubleToLongBits(acOverhead) ^ Double.doubleToLongBits(wallTime) ^ Double.doubleToLongBits(empiricalPerformance);
+		int hash = ((int) (val >> 32) ) ^ ((int) (val));
+		return hash ^ config.hashCode();
+		
+ 	}
 	public String toString()
 	{
 		return "<"+getTunerTime() +","+ getEmpericalPerformance() +","+ getWallTime() + "," + config.getFriendlyIDHex() +">"; 

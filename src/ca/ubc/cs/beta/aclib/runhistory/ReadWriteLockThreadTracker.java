@@ -12,7 +12,7 @@ public class ReadWriteLockThreadTracker {
 	private final ReentrantReadWriteLock internalLock = new ReentrantReadWriteLock(true);
 
 	
-	private final boolean LOCK_DEBUG = false;
+	private static final boolean LOCK_DEBUG = false;
 	
 	
 	

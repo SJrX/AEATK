@@ -236,7 +236,6 @@ public class TAETestSet {
 		System.out.println("Performing " + runConfigs.size() + " runs");
 		TargetAlgorithmEvaluator tae = new TimingCheckerTargetAlgorithmEvaluator(execConfig, TAETestSet.tae);
 		
-		StringWriter sw = new StringWriter();
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		
 		PrintStream out = System.out;
@@ -2455,7 +2454,6 @@ public class TAETestSet {
 		t.interrupt();
 		Thread.sleep(1024);
 		assertEquals("Number of outstanding requests should be zero",0, tae.getNumberOfOutstandingEvaluations());
-		StopWatch watch = new AutoStartStopWatch();
 		
 	}
 	

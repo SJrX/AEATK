@@ -33,7 +33,7 @@ public class RandomForestOptions extends AbstractOptions{
 	@Parameter(names={"--rf-min-variance","--minVariance"}, description="minimum allowed variance", validateWith=ZeroInfinityOpenInterval.class)
 	public double minVariance = Math.pow(10,-14);
 
-	@Parameter(names={"--rf-ration-features","--ratioFeatures"}, description="ratio of the number of features to consider when splitting a node", validateWith=ZeroOneHalfOpenLeftDouble.class)
+	@Parameter(names={"--rf-ratio-features","--ratioFeatures"}, description="ratio of the number of features to consider when splitting a node", validateWith=ZeroOneHalfOpenLeftDouble.class)
 	public double ratioFeatures = 5.0/6.0;
 
 	@Parameter(names={"--rf-preprocess-marginal", "preprocessMarginal"}, description="build random forest with preprocessed marginal")

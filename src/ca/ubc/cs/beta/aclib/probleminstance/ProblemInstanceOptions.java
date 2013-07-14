@@ -186,7 +186,7 @@ public class ProblemInstanceOptions extends AbstractOptions{
 	}
 	
 
-	public class TrainTestInstances
+	public static class TrainTestInstances
 	{
 		private final InstanceListWithSeeds trainingInstances;
 		private final InstanceListWithSeeds testInstances;

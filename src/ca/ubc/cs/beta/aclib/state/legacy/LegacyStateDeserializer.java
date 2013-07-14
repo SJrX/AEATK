@@ -789,7 +789,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 	 * @author sjr
 	 *
 	 */
-	private class FileLocations
+	private static class FileLocations
 	{
 		public File uniqConfigFile;
 		public File runHistoryFile;

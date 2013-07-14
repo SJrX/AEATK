@@ -23,7 +23,7 @@ import java.util.Set;
 import net.jcip.annotations.Immutable;
 
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration.StringFormat;
-import ca.ubc.cs.beta.aclib.misc.java.io.FileReaderNoException.FileReaderNoException;
+import ca.ubc.cs.beta.aclib.misc.java.io.FileReaderNoException.FileReaderNoExceptionThrown;
 import ec.util.MersenneTwisterFast;
 
 enum LineType
@@ -218,7 +218,7 @@ public class ParamConfigurationSpace implements Serializable {
 	 */
 	public ParamConfigurationSpace(File file)
 	{
-		this(new FileReaderNoException(file), file.getAbsolutePath());
+		this(new FileReaderNoExceptionThrown(file), file.getAbsolutePath());
 	}
 	
 	
@@ -1618,7 +1618,7 @@ public class ParamConfigurationSpace implements Serializable {
 	}
 	
 	
-	private class RandomAdapter
+	private static class RandomAdapter
 	{
 		
 		private MersenneTwisterFast fastRand;

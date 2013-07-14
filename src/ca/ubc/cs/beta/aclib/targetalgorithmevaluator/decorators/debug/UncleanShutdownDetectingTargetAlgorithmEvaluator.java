@@ -21,9 +21,9 @@ public class UncleanShutdownDetectingTargetAlgorithmEvaluator extends
 		{
 
 	private final AtomicLong notifyShutdownInvoked = new AtomicLong(0);
-	private final int MESSAGE_REPEAT = 2;
-	private final int SLEEP_TIME_IN_MS = 0;
-	private final int SLEEP_TIME_BETWEEN_MESSAGES = 750;
+	private static final int MESSAGE_REPEAT = 2;
+	private static final int SLEEP_TIME_IN_MS = 0;
+	private static final int SLEEP_TIME_BETWEEN_MESSAGES = 750;
 	private final Logger log = LoggerFactory.getLogger(getClass());
 	private final StackTraceElement[] taeCreationStackTrace;
 	
