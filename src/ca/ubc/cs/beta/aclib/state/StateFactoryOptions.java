@@ -32,7 +32,7 @@ public class StateFactoryOptions extends AbstractOptions{
 	 * Restore scenario is done before we parse the configuration and fixes input args
 	 * in the input string to jcommander 
 	 */
-	@Parameter(names={"--restore-iteration","--restoreScenario"}, description="Restore the scenario & state in the state folder")
+	@Parameter(names={"--restore-scenario","--restoreScenario"}, description="Restore the scenario & state in the state folder")
 	public File restoreScenario =null; 
 	
 	@Parameter(names={"--clean-old-state-on-success","--cleanOldStateOnSuccess"}, description="will clean up much of the useless state files if smac completes successfully")

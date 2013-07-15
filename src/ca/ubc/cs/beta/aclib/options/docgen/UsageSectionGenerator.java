@@ -1,5 +1,6 @@
 package ca.ubc.cs.beta.aclib.options.docgen;
 
+import java.io.File;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
@@ -26,7 +27,7 @@ import com.beust.jcommander.ParametersDelegate;
 public class UsageSectionGenerator {
 
 	
-	
+	public static final String FILE_DOMAIN = "FILES";
 	
 	private static boolean hasSlept = false;	
 
@@ -454,6 +455,11 @@ public class UsageSectionGenerator {
 			
 			//for(x.getDeclaredFields())
 			return Arrays.toString(x.getEnumConstants()).replaceAll("\\[", "{").replaceAll("\\]","}");
+		}
+		
+		if(x.equals(File.class))
+		{
+			return FILE_DOMAIN;
 		}
 		
 		return "";

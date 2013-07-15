@@ -13,4 +13,7 @@ public class BashCompletionOptions {
 	@Parameter(names="--outputFile", required = true, description="Output File to append the bash completion to")
 	public String outputFile;
 	
+	@Parameter(names="--debug")
+	public boolean debug = false;
+	
 }

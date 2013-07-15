@@ -33,7 +33,7 @@ public class ParamConfigurationSpaceOptions extends AbstractOptions{
 	@Parameter(names={"--search-subspace","--searchSubspace"}, description="Only generate random and neighbouring configurations with these values. Specified in a \"name=value,name=value,...\" format (Overrides those set in file)", required=false)
 	public String searchSubspace;
 	
-	@Parameter(names={"--search-subspace","--searchSubspaceFile"}, description="Only generate random and neighbouring configurations with these values. Specified each parameter on each own line with individual value", required=false, converter=ReadableFileConverter.class)
+	@Parameter(names={"--search-subspace-file","--searchSubspaceFile"}, description="Only generate random and neighbouring configurations with these values. Specified each parameter on each own line with individual value", required=false, converter=ReadableFileConverter.class)
 	public File searchSubspaceFile;
 	
 	@Parameter(names={"--continous-neighbours","--continuous-neighbors","--continuousNeighbours"}, description="Number of neighbours for continuous parameters")
