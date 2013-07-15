@@ -26,11 +26,11 @@ import ca.ubc.cs.beta.aclib.termination.TerminationCriteriaOptions;
 @UsageTextField(title="Scenario Options", description="Standard Scenario Options for use with SMAC. In general consider using the --scenarioFile directive to specify these parameters and Algorithm Execution Options")
 public class ScenarioOptions extends AbstractOptions{
 	
-	@Parameter(names={"--run-obj","--runObj","--run_obj"}, description="per target algorithm run objective type that we are optimizing for", converter=RunObjectiveConverter.class, required=true)
-	public RunObjective runObj;
+	@Parameter(names={"--run-obj","--runObj","--run_obj"}, description="per target algorithm run objective type that we are optimizing for", converter=RunObjectiveConverter.class)
+	public RunObjective runObj = RunObjective.RUNTIME;
 	
-	@Parameter(names={"--intra-obj","--intra-instance-obj","--overall-obj","--intraInstanceObj","--overallObj", "--overall_obj","--intra_instance_obj"}, description="objective function used to aggregate multiple runs for a single instance", converter=OverallObjectiveConverter.class, required=true)
-	public OverallObjective intraInstanceObj;
+	@Parameter(names={"--intra-obj","--intra-instance-obj","--overall-obj","--intraInstanceObj","--overallObj", "--overall_obj","--intra_instance_obj"}, description="objective function used to aggregate multiple runs for a single instance", converter=OverallObjectiveConverter.class)
+	public OverallObjective intraInstanceObj = OverallObjective.MEAN10;
 	
 	@Parameter(names={"--inter-obj","--inter-instance-obj","--interInstanceObj","--inter_instance_obj"}, description="objective function used to aggregate over multiple instances (that have already been aggregated under the Intra-Instance Objective)", converter=OverallObjectiveConverter.class)
 	public OverallObjective interInstanceObj = OverallObjective.MEAN;

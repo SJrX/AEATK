@@ -45,17 +45,17 @@ public final class JCommanderHelper
 	}
 
 	
-	public static void parseCheckingForHelpAndVersion(String[] args,AbstractOptions options )
+	public static JCommander parseCheckingForHelpAndVersion(String[] args,AbstractOptions options )
 	{
-		
-		parseCheckingForHelpAndVersion(args, options,Collections.<String, AbstractOptions> emptyMap());
+		return parseCheckingForHelpAndVersion(args, options,Collections.<String, AbstractOptions> emptyMap());
 	}
 	
 	
-	private static void parseCheckingForHelpAndVersion(String[] args,
+	public static JCommander parseCheckingForHelpAndVersion(String[] args,
 			AbstractOptions options, Map<String, AbstractOptions> emptyMap) {
 		JCommander jcom = getJCommanderAndCheckForHelp(args, options, emptyMap);
 		jcom.parse(args);
+		return jcom;
 	}
 
 

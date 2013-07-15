@@ -25,7 +25,7 @@ public class SMACNoArgHandler implements NoArgumentHandler{
 		sb.append("Please check the documentation to directory (doc/) for a manual.pdf, and the quickstart.pdf which will show you how to get up and running right away.");
 		sb.append("\n\n  See also:\n\n");
 			  
-		sb.append("  smac-algotest - for testing the wrapper\n");
+		sb.append("  algo-test - for testing the wrapper\n");
 		sb.append("  smac-validate - for stand alone validation\n");
 
 		System.out.println(sb.toString());

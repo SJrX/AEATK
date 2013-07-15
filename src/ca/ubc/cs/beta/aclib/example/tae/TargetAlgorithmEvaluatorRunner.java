@@ -55,7 +55,7 @@ public class TargetAlgorithmEvaluatorRunner
 		TargetAlgorithmEvaluatorRunnerOptions mainOptions = new TargetAlgorithmEvaluatorRunnerOptions();
 		
 		//Map object that for each available TargetAlgorithmEvaluator gives it's associated options object
-		Map<String,AbstractOptions> taeOptions = mainOptions.algoExecOptions.taeOpts.getAvailableTargetAlgorithmEvaluators();
+		Map<String,AbstractOptions> taeOptions = mainOptions.scenOptions.algoExecOptions.taeOpts.getAvailableTargetAlgorithmEvaluators();
 
 		try {
 			
@@ -63,9 +63,8 @@ public class TargetAlgorithmEvaluatorRunner
 			JCommander jcom;
 			try {
 			//This will check for help and version arguments 
-			jcom = JCommanderHelper.getJCommanderAndCheckForHelp(args, mainOptions, taeOptions);
+			jcom = JCommanderHelper.parseCheckingForHelpAndVersion(args, mainOptions,taeOptions);
 			
-			jcom.parse(args);
 			} finally
 			{
 				//Initialize the logger *AFTER* the JCommander objects have been parsed
@@ -73,16 +72,11 @@ public class TargetAlgorithmEvaluatorRunner
 				//See also the LoggingOption object for something a bit nicer
 				initializeLogger();
 			}
-			
+		
 			//Displays version information
 			//See the TargetAlgorithmEvaluatorRunnerVersionInfo class for how to manage your own versions.
 			VersionTracker.logVersions();
 			
-			//Logs the available target algorithm evaluators
-			for(String name : taeOptions.keySet())
-			{
-				log.info("Target Algorithm Evaluator Available: {} ", name);
-			}
 			
 			for(String name : jcom.getParameterFilesToRead())
 			{
@@ -104,13 +98,26 @@ public class TargetAlgorithmEvaluatorRunner
 			TargetAlgorithmEvaluator tae = null;
 			try {
 				//Retrieve the target algorithm evaluator with the necessary options
-				tae = mainOptions.algoExecOptions.taeOpts.getTargetAlgorithmEvaluator(execConfig, taeOptions);
+				tae = mainOptions.scenOptions.algoExecOptions.taeOpts.getTargetAlgorithmEvaluator(execConfig, taeOptions);
 				
 				
 				//Create a new problem instance to run (IMMUTABLE)
 				//NOTE: We don't validate the instance name at all, it's entirely up to the target algorithm how to interpret these
 				//commonly we use filenames, but as far as ACLib is concerned this is of no consequence.
-				ProblemInstance pi = new ProblemInstance(mainOptions.instanceName);
+				ProblemInstance pi;
+				if(mainOptions.instanceName == null)
+				{
+					List<ProblemInstance> instances = mainOptions.getTrainingAndTestProblemInstances().getTrainingInstances().getInstances();
+					if(instances == null || instances.size() == 0)
+					{
+						throw new ParameterException("No instances available, please specify one manually via --instance argument");
+					}
+					pi = instances.get(0);
+				} else
+				{
+					pi = new ProblemInstance(mainOptions.instanceName);
+				}
+				
 				
 			
 				//The following is a common convention used in ACLib
@@ -172,9 +179,10 @@ public class TargetAlgorithmEvaluatorRunner
 			}
 		} catch(ParameterException e)
 		{	
-			
-			
 			log.error(e.getMessage());
+		} catch(Exception e)
+		{
+			e.printStackTrace();
 		}
 	}
 	

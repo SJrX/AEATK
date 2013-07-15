@@ -47,7 +47,7 @@ public class BashCompletion {
 			{
 				System.out.println(completionScript);
 			}
-			FileWriter fw = new FileWriter(new File(opts.outputFile),false);
+			FileWriter fw = new FileWriter(new File(opts.outputFile),true);
 			
 			fw.write(completionScript);
 			fw.flush();
@@ -197,7 +197,7 @@ public class BashCompletion {
 				sb.setCharAt(sb.length() - 1, ')');
 				//sb.append("\n\t\tCOMPREPLY=( $(compgen -f -- ${cur}) )\n");
 				//sb.append("\n\t\t c")
-				sb.append("\n\t\t _filedir_xspec\n");
+				sb.append("\n\t\t _filedir\n");
 				//sb.append("\n\t\t local files=( \"$2\"* ); [[ -e ${files[0]} ]] && COMPREPLY=( \"${files[@]}\" )\n ");
 				//sb.append("\t\tif [[ ${#COMPREPLY[@]} == 1 ]] ; then\n");
 				//sb.append("\t\t echo $COMPREPLY[0]");

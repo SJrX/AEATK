@@ -59,12 +59,22 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractSyncTargetAlgor
 		{
 			return Collections.emptyList();
 		}
+		AlgorithmRunner runner =null;
 		
-		AlgorithmRunner runner = getAlgorithmRunner(runConfigs,obs);
+		try {
+		runner = getAlgorithmRunner(runConfigs,obs);
 		List<AlgorithmRun> runs =  runner.run();
 		addRuns(runs);
-		runner.shutdownThreadPool();
 		return runs;
+		} finally
+		{
+			if(runner != null)
+			{
+				runner.shutdownThreadPool();
+			}
+		}
+		
+	
 	}
 	
 
