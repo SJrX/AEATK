@@ -43,7 +43,7 @@ public class ScenarioOptions extends AbstractOptions{
 	public ProblemInstanceOptions instanceOptions = new ProblemInstanceOptions();
 	
 	@UsageTextField(defaultValues="")
-	@Parameter(names={"--scenario","--scenario-file","--scenarioFile"}, description="scenario file")
+	@Parameter(names={"--scenario-file","--scenarioFile"}, description="scenario file")
 	@ParameterFile
 	public File scenarioFile = null;
 	
