@@ -12,6 +12,7 @@ import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.expectedimprovement.ExpectedImprovementFunctions;
 import ca.ubc.cs.beta.aclib.help.HelpOptions;
 import ca.ubc.cs.beta.aclib.initialization.InitializationMode;
+import ca.ubc.cs.beta.aclib.initialization.classic.ClassicInitializationProcedureOptions;
 import ca.ubc.cs.beta.aclib.logging.LoggingOptions;
 import ca.ubc.cs.beta.aclib.misc.file.HomeFileUtils;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.*;
@@ -106,9 +107,6 @@ public class SMACOptions extends AbstractOptions {
 	@Parameter(names={"--initial-challenger-runs","--initialN","--initialChallenge"}, description="initial amount of runs to request when intensifying on a challenger", validateWith=FixedPositiveInteger.class)
 	public int initialChallengeRuns = 1;
 	
-	@Parameter(names={"--initial-incumbent-runs","--initialIncumbentRuns","--defaultConfigRuns"}, description="initial amount of runs to schedule against for the default configuration", validateWith=FixedPositiveInteger.class)
-	public int initialIncumbentRuns = 1;
-	
 	@Parameter(names={"--intensification-percentage","--intensificationPercentage","--frac_rawruntime"}, description="percent of time to spend intensifying versus model learning", validateWith=ZeroOneHalfOpenRightDouble.class)
 	public double intensificationPercentage = 0.50;
 	
@@ -169,6 +167,9 @@ public class SMACOptions extends AbstractOptions {
 	
 	@ParametersDelegate
 	public ParamConfigurationOriginTrackingOptions trackingOptions= new ParamConfigurationOriginTrackingOptions();
+
+	@ParametersDelegate
+	public ClassicInitializationProcedureOptions classicInitModeOpts = new ClassicInitializationProcedureOptions();
 	
 	
 	

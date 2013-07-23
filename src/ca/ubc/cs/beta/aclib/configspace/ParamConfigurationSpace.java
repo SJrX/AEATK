@@ -33,7 +33,6 @@ enum LineType
 	CONDITIONAL,
 	FORBIDDEN,
 	OTHER
-	
 }
 
 
