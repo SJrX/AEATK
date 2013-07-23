@@ -7,9 +7,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 import net.jcip.annotations.ThreadSafe;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aclib.algorithmrun.CommandLineAlgorithmRun;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli.CommandLineAlgorithmRun;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator;
 
 /**
@@ -115,8 +115,23 @@ public abstract class AbstractTargetAlgorithmEvaluator implements TargetAlgorith
 	public String getManualCallString(RunConfig runConfig) {
 		
 		StringBuilder sb = new StringBuilder();
-		sb.append("cd ").append(execConfig.getAlgorithmExecutionDirectory()).append("; ");
-		sb.append(CommandLineAlgorithmRun.getTargetAlgorithmExecutionCommand(execConfig, runConfig));
+		
+		
+		String commandSeparator = ";";
+		
+		if(System.getProperty("os.name").toLowerCase().contains("win"))
+		{
+			commandSeparator = "&";
+		}
+		if(execConfig.getAlgorithmExecutionDirectory().matches(".*\\s.*"))
+		{
+			sb.append("cd \"").append(execConfig.getAlgorithmExecutionDirectory()).append("\"" +commandSeparator+ " ");
+		} else
+		{
+			sb.append("cd ").append(execConfig.getAlgorithmExecutionDirectory()).append(commandSeparator + " ");
+		}
+		
+		sb.append(CommandLineAlgorithmRun.getTargetAlgorithmExecutionCommandAsString(execConfig, runConfig));
 		sb.append("");
 		
 		return sb.toString();

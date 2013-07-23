@@ -1,6 +1,7 @@
 package ca.ubc.cs.beta.aclib.example.tae;
 
 import java.io.File;
+import java.io.IOException;
 import java.util.HashMap;
 import java.util.Map;
 
@@ -10,12 +11,13 @@ import com.beust.jcommander.ParameterFile;
 import com.beust.jcommander.ParametersDelegate;
 
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
-import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionOptions;
 import ca.ubc.cs.beta.aclib.help.HelpOptions;
 import ca.ubc.cs.beta.aclib.misc.file.HomeFileUtils;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.LongGreaterThanNegativeTwoValidator;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
+import ca.ubc.cs.beta.aclib.options.scenario.ScenarioOptions;
+import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceOptions.TrainTestInstances;
 
 /**
  * A JCommander Options object that controls the command line options
@@ -26,7 +28,9 @@ import ca.ubc.cs.beta.aclib.options.AbstractOptions;
  * @author Steve Ramage <seramage@cs.ubc.ca>
  *
  */
-@UsageTextField(title="Target Algorithm Evaluator Running Options", description=" Utility that allows for making a single run against a target algorithm evaluator ")
+
+//The noarg option controls what happens if we start the application with no arguments
+@UsageTextField(title="Target Algorithm Evaluator Running Options", description=" Utility that allows for making a single run against a target algorithm evaluator ", noarg=TargetAlgorithmEvaluatorRunnerNoArgumentHandler.class)
 public class TargetAlgorithmEvaluatorRunnerOptions extends AbstractOptions {
 	
 	/**
@@ -41,17 +45,14 @@ public class TargetAlgorithmEvaluatorRunnerOptions extends AbstractOptions {
 	public File smacDefaults = HomeFileUtils.getHomeFile(".aclib" + File.separator  + "taerunner.opt");
 	
 	
-	/**
-	 * Controls options required for creating an AlgorithmExecutionConfig object
-	 */
 	@ParametersDelegate
-	public AlgorithmExecutionOptions algoExecOptions = new AlgorithmExecutionOptions();
+	public ScenarioOptions scenOptions = new ScenarioOptions();
 	
 	
 	/**
-	 * This is a required parameter
+	 * THis parameter is not required (but if set to true, would be)
 	 */
-	@Parameter(names="--instance", description="Instance name to test", required = true)
+	@Parameter(names="--instance", description="Instance name to test", required=false)
 	public String instanceName = null; 
 	
 
@@ -65,7 +66,7 @@ public class TargetAlgorithmEvaluatorRunnerOptions extends AbstractOptions {
 	@Parameter(names="--config", description="Configuration to run (Use DEFAULT for the default, RANDOM for a random, or otherwise -name 'value' syntax)")
 	public String config = "DEFAULT";
 	
-	@Parameter(names="--configSeed", description="Seed to use if we generate a RANDOM configuration")
+	@Parameter(names="--config-seed", description="Seed to use if we generate a RANDOM configuration")
 	public int configSeed = 0;
 	
 	/**
@@ -74,14 +75,18 @@ public class TargetAlgorithmEvaluatorRunnerOptions extends AbstractOptions {
 	@DynamicParameter(names="-P", description="Name value pairs in the form: (-Pname=value) of the specific configuration to override. This is useful if you'd like to change a setting of the default , or try a random with a set value)")
 	public Map<String, String> configSettingsToOverride = new HashMap<String, String>();
 
-	@Parameter(names="--killTime", description="Kill the run dynamically after this much runtime")
+	@Parameter(names="--kill-time", description="Kill the run dynamically after this much runtime")
 	public double killTime = Double.POSITIVE_INFINITY;
 
 	public AlgorithmExecutionConfig getAlgorithmExecutionConfig() {
-		return this.algoExecOptions.getAlgorithmExecutionConfig(null);
+		return this.scenOptions.algoExecOptions.getAlgorithmExecutionConfig(null);
 	}
 	
 	@ParametersDelegate
 	HelpOptions help = new HelpOptions();
+
+	public TrainTestInstances getTrainingAndTestProblemInstances() throws IOException {
+		return scenOptions.getTrainingAndTestProblemInstances("./", 0, 0, true, false, false, false);
+	}
 	
 }

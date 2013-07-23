@@ -6,6 +6,7 @@ import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli.CommandLineAlgorithmRun;
 /**
  * Class that is used to take an existing algorithm run (from for instance a string), and create an AlgorithmRun object
  * @author seramage
@@ -17,7 +18,7 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 	 * 
 	 */
 	private static final long serialVersionUID = -7798477429606839878L;
-	private Logger log = LoggerFactory.getLogger(this.getClass());
+	private transient Logger log = LoggerFactory.getLogger(this.getClass());
 	
 	/**
 	 * 
@@ -98,6 +99,7 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 	 * @param execConfig		execution configuration of the object
 	 * @param runConfig			run configuration we are executing
 	 * @param result			result string to parse. The format of this is currently everything after the : in the result line of {@link CommandLineAlgorithmRun}. We support both the String for the RunResult, as well as the Status Code
+	 * @deprecated  the constructor that doesn't take a result string is preferred.
 	 */
 	@Deprecated
 	public ExistingAlgorithmRun(AlgorithmExecutionConfig execConfig, RunConfig runConfig, String result)
@@ -110,6 +112,7 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 	 * @param execConfig		execution configuration of the object
 	 * @param runConfig			run configuration we are executing
 	 * @param result			result string to parse. The format of this is currently everything after the : in the result line of {@link CommandLineAlgorithmRun}. We support both the String for the RunResult, as well as the Status Code
+	 * @deprecated  the constructor that doesn't take a result string is preferred. 
 	 */
 	@Deprecated
 	public ExistingAlgorithmRun(AlgorithmExecutionConfig execConfig, RunConfig runConfig, String result, double wallClockTime) {

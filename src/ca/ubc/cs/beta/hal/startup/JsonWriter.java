@@ -7,7 +7,9 @@ import java.io.IOException;
 import java.util.List;
 import ca.ubc.cs.beta.aclib.misc.options.UsageSection;
 import ca.ubc.cs.beta.aclib.misc.returnvalues.ACLibReturnValues;
-import ca.ubc.cs.beta.aclib.options.ConfigToLaTeX;
+import ca.ubc.cs.beta.aclib.options.docgen.OptionsToUsage;
+import ca.ubc.cs.beta.aclib.options.docgen.UsageSectionGenerator;
+
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 
@@ -61,12 +63,13 @@ public class JsonWriter {
 		}
 		catch(ParameterException e){	
 			//Converts the actual option objects into objects "UsageSection"s that are easy to manipulate
-			List<UsageSection> sections = ConfigToLaTeX.getParameters(mainOptions);
+			
+			List<UsageSection> sections = UsageSectionGenerator.getUsageSections(mainOptions);
 			
 			boolean showHiddenParameters = false;
 			
 			//A much nicer usage screen than JCommander's 
-			ConfigToLaTeX.usage(sections, showHiddenParameters);
+			OptionsToUsage.usage(sections, showHiddenParameters);
 			e.printStackTrace();
 			System.exit(ACLibReturnValues.PARAMETER_EXCEPTION);
 		}

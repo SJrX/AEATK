@@ -74,6 +74,17 @@ public class CompositeTerminationCondition implements TerminationCondition {
 		}
 		return tunerTime;
 	}
+	
+	@Override
+	public double getWallTime() {
+		double wallclockTime = Double.MIN_VALUE;
+		for(TerminationCondition c : conditions)
+		{
+			wallclockTime = Math.max(wallclockTime, c.getWallTime());
+		}
+		return wallclockTime;
+	}
+	
 	@Override
 	public String getTerminationReason() {
 		StringBuilder sb = new StringBuilder();
@@ -99,4 +110,5 @@ public class CompositeTerminationCondition implements TerminationCondition {
 	{
 		this.conditions.add(cond);
 	}
+	
 }

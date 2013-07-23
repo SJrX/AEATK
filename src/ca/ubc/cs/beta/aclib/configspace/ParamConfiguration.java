@@ -476,6 +476,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	 * @param valueDelimiter - String to appear on either side of the value
 	 * @param glue - String to placed in between various key value pairs
 	 * @return formatted parameter string 
+	 * @deprecated Clients should always specify a String Format {@link #getFormattedParamString(StringFormat)}
 	 */
 	@Deprecated
 	public String getFormattedParamString(String preKey, String keyValSeperator,String valueDelimiter,String glue)
@@ -517,6 +518,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	
 	/**
 	 * Returns a string representation of this object
+	 * @deprecated Clients should always specify a String Format {@link #getFormattedParamString(StringFormat)}
 	 * @return string representation of this object
 	 */
 	@Deprecated

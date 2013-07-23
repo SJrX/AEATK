@@ -13,10 +13,10 @@ import java.io.Reader;
  * @author Steve Ramage 
  *
  */
-public class FileReaderNoException extends Reader
+public class FileReaderNoExceptionThrown extends Reader
 {
 	private final FileReader fileReader;  
-	public FileReaderNoException(File f)
+	public FileReaderNoExceptionThrown(File f)
 	{
 		try {
 			this.fileReader = new FileReader(f);

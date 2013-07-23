@@ -44,7 +44,6 @@ public class ConfigCSVFileHelper implements Serializable {
 	/**
 	 * Stored a boolean whether there was a header row or not, but now uses offsets
 	 */
-	@Deprecated
 	private final boolean header;
 	
 	/**

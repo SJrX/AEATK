@@ -2,33 +2,43 @@ package ca.ubc.cs.beta.aclib.eventsystem.events.ac;
 
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.eventsystem.events.AbstractTimeEvent;
+import ca.ubc.cs.beta.aclib.termination.TerminationCondition;
 
 public class AutomaticConfigurationEnd extends AbstractTimeEvent {
 
 	private final ParamConfiguration incumbent;
 	private final double empiricalPerformance;
-	private final long wallTime;
-	private final double cpuTime;
 
-	public AutomaticConfigurationEnd(ParamConfiguration incumbent, double empiricalPerformance, long wallClockTime, double tunerTime) {
-		
+	/**
+	 * Constructs an Automatic Configuration Event
+	 * @param incumbent
+	 * @param empiricalPerformance
+	 * @param termCond 
+	 */
+	public AutomaticConfigurationEnd(TerminationCondition termCond,ParamConfiguration incumbent, double empiricalPerformance) {
+		super(termCond);
 		this.incumbent = incumbent;
 		this.empiricalPerformance = empiricalPerformance;
-		this.wallTime = wallClockTime;
-		this.cpuTime = tunerTime;
-		
+	}
+
+	
+
+	/**
+	 * Constructs an Automatic Configuration Event
+	 * @param incumbent
+	 * @param empiricalPerformance
+	 * @param wallClockTime
+	 * @param tunerTime
+	 * @deprecated use the Termination Condition constructor
+	 */
+	public AutomaticConfigurationEnd(ParamConfiguration incumbent, double empiricalPerformance, long wallClockTime, double tunerTime) {
+		super(tunerTime, wallClockTime);
+		this.incumbent = incumbent;
+		this.empiricalPerformance = empiricalPerformance;
 	}
 
 	public ParamConfiguration getIncumbent() {
 		return incumbent;
-	}
-
-	public long getWallTime() {
-		return wallTime;
-	}
-
-	public double getTunerTime() {
-		return cpuTime;
 	}
 	
 	public double getEmpiricalPerformance()

@@ -26,6 +26,9 @@ public class RunningAlgorithmRun extends ExistingAlgorithmRun implements Killabl
 	}
 
 	@Deprecated
+	/**
+	 * @deprecated  the constructor that doesn't take a result string is preferred.
+	 */
 	public RunningAlgorithmRun(AlgorithmExecutionConfig execConfig,
 			RunConfig runConfig, String result, KillHandler handler) {
 		super(execConfig, runConfig, result);

@@ -17,18 +17,13 @@ import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration.StringFormat;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.misc.jcommander.JCommanderHelper;
-import ca.ubc.cs.beta.aclib.misc.options.UsageSection;
 import ca.ubc.cs.beta.aclib.misc.version.VersionTracker;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
-import ca.ubc.cs.beta.aclib.options.ConfigToLaTeX;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.init.TargetAlgorithmEvaluatorBuilder;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.init.TargetAlgorithmEvaluatorLoader;
-
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 
@@ -60,7 +55,7 @@ public class TargetAlgorithmEvaluatorRunner
 		TargetAlgorithmEvaluatorRunnerOptions mainOptions = new TargetAlgorithmEvaluatorRunnerOptions();
 		
 		//Map object that for each available TargetAlgorithmEvaluator gives it's associated options object
-		Map<String,AbstractOptions> taeOptions = TargetAlgorithmEvaluatorLoader.getAvailableTargetAlgorithmEvaluators();
+		Map<String,AbstractOptions> taeOptions = mainOptions.scenOptions.algoExecOptions.taeOpts.getAvailableTargetAlgorithmEvaluators();
 
 		try {
 			
@@ -68,25 +63,20 @@ public class TargetAlgorithmEvaluatorRunner
 			JCommander jcom;
 			try {
 			//This will check for help and version arguments 
-			jcom = JCommanderHelper.getJCommanderAndCheckForHelp(args, mainOptions, taeOptions);
+			jcom = JCommanderHelper.parseCheckingForHelpAndVersion(args, mainOptions,taeOptions);
 			
-			jcom.parse(args);
 			} finally
 			{
 				//Initialize the logger *AFTER* the JCommander objects have been parsed
 				//So that options that take effect
+				//See also the LoggingOption object for something a bit nicer
 				initializeLogger();
 			}
-			
+		
 			//Displays version information
 			//See the TargetAlgorithmEvaluatorRunnerVersionInfo class for how to manage your own versions.
 			VersionTracker.logVersions();
 			
-			//Logs the available target algorithm evaluators
-			for(String name : taeOptions.keySet())
-			{
-				log.info("Target Algorithm Evaluator Available: {} ", name);
-			}
 			
 			for(String name : jcom.getParameterFilesToRead())
 			{
@@ -104,17 +94,30 @@ public class TargetAlgorithmEvaluatorRunner
 			log.info("==== Configuration====\n {} ", mainOptions);
 			
 			
-			boolean hashVerifiers = false;
+			
 			TargetAlgorithmEvaluator tae = null;
 			try {
 				//Retrieve the target algorithm evaluator with the necessary options
-				tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(mainOptions.algoExecOptions.taeOpts, execConfig, hashVerifiers, taeOptions);
+				tae = mainOptions.scenOptions.algoExecOptions.taeOpts.getTargetAlgorithmEvaluator(execConfig, taeOptions);
 				
 				
 				//Create a new problem instance to run (IMMUTABLE)
 				//NOTE: We don't validate the instance name at all, it's entirely up to the target algorithm how to interpret these
 				//commonly we use filenames, but as far as ACLib is concerned this is of no consequence.
-				ProblemInstance pi = new ProblemInstance(mainOptions.instanceName);
+				ProblemInstance pi;
+				if(mainOptions.instanceName == null)
+				{
+					List<ProblemInstance> instances = mainOptions.getTrainingAndTestProblemInstances().getTrainingInstances().getInstances();
+					if(instances == null || instances.size() == 0)
+					{
+						throw new ParameterException("No instances available, please specify one manually via --instance argument");
+					}
+					pi = instances.get(0);
+				} else
+				{
+					pi = new ProblemInstance(mainOptions.instanceName);
+				}
+				
 				
 			
 				//The following is a common convention used in ACLib
@@ -141,8 +144,6 @@ public class TargetAlgorithmEvaluatorRunner
 				//"ParamFile" is a deprecated term for it that is still in use in the code base
 				ParamConfigurationSpace configSpace = execConfig.getParamFile();
 			
-				
-				
 				
 				//If we are asked to supply a random a configuration, we need to pass a Random object
 				Random configSpacePRNG = new MersenneTwister(mainOptions.configSeed);
@@ -178,9 +179,10 @@ public class TargetAlgorithmEvaluatorRunner
 			}
 		} catch(ParameterException e)
 		{	
-			
-			
 			log.error(e.getMessage());
+		} catch(Exception e)
+		{
+			e.printStackTrace();
 		}
 	}
 	
@@ -248,9 +250,6 @@ public class TargetAlgorithmEvaluatorRunner
 			//But in general you should always use the information in the AlgorithmRun
 			RunConfig resultRunConfig = run.getRunConfig();
 
-			//Again the same ProblemInstance as above
-			ProblemInstance resultPi = resultRunConfig.getProblemInstanceSeedPair().getInstance();
-			
 			//Object representing whether the run reported SAT, UNSAT, TIMEOUT, etc...
 			RunResult runResult = run.getRunResult();
 		

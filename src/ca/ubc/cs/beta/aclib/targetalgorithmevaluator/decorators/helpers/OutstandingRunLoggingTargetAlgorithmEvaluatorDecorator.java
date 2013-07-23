@@ -82,7 +82,7 @@ public class OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator extends Abst
 		{
 			synchronized(run.getRunConfig())
 			{
-				if(endTime.get(run.getRunConfig()) == null)
+				if(endTime.get(run) == null)
 				{
 					endTime.put(run, Math.max(0,(bucketTime(System.currentTimeMillis()) - ZERO_TIME) / 1000.0));
 				}

@@ -3,6 +3,7 @@ package ca.ubc.cs.beta.instancespecificinfo;
 import static org.junit.Assert.*;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.junit.Test;
 
@@ -15,6 +16,8 @@ import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.probleminstance.InstanceListWithSeeds;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
+import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceHelper;
+import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceOptions;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.seedgenerator.InstanceSeedGenerator;
@@ -125,6 +128,42 @@ public class AlgoExecutionInstanceSpecificInfoTest {
 				
 			}
 			
+		}
+		
+		
+	}
+	
+	@Test
+	public void testInstanceSpecificInfoWithCheckFiles() throws IOException
+	{
+		ProblemInstanceHelper.clearCache();
+		
+		
+		
+		ProblemInstanceOptions opts = new ProblemInstanceOptions();
+		
+		
+		opts.checkInstanceFilesExist = false;
+		opts.instanceFile = "classicFormatInstanceSeedSpecificValid.txt";
+		
+		InstanceListWithSeeds ilws = opts.getTrainingProblemInstances("test-files/instanceSpecificCheck/", 2, false, false, false);
+		
+		for(ProblemInstance pi : ilws.getInstances())
+		{
+			assertEquals(pi.getInstanceName(),pi.getInstanceSpecificInformation());
+		}
+		ProblemInstanceHelper.clearCache();
+		
+		
+		
+		opts.checkInstanceFilesExist = true;
+		//opts.instanceFile = "test-files/instanceFiles/classicFormatInstanceSeedSpecificValid.txt";
+		
+		ilws = opts.getTrainingProblemInstances("test-files/instanceSpecificCheck/", 2, false, false, false);
+		
+		for(ProblemInstance pi : ilws.getInstances())
+		{
+			assertEquals(new File(pi.getInstanceName()).getName(),pi.getInstanceSpecificInformation());
 		}
 		
 		

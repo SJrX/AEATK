@@ -10,9 +10,7 @@ import ca.ubc.cs.beta.aclib.eventsystem.EventHandler;
 import ca.ubc.cs.beta.aclib.eventsystem.EventManager;
 import ca.ubc.cs.beta.aclib.eventsystem.events.basic.AlgorithmRunCompletedEvent;
 import ca.ubc.cs.beta.aclib.termination.ConditionType;
-import ca.ubc.cs.beta.aclib.termination.TerminationCondition;
 import ca.ubc.cs.beta.aclib.termination.ValueMaxStatus;
-import static ca.ubc.cs.beta.aclib.misc.cputime.CPUTime.*;
 
 @ThreadSafe
 public class AlgorithmRunLimitCondition extends AbstractTerminationCondition implements EventHandler<AlgorithmRunCompletedEvent> {

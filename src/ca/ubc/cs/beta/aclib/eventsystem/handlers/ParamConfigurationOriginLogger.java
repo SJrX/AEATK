@@ -9,7 +9,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
-import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationOriginTracker;
+import ca.ubc.cs.beta.aclib.configspace.tracking.ParamConfigurationOriginTracker;
 import ca.ubc.cs.beta.aclib.eventsystem.EventHandler;
 import ca.ubc.cs.beta.aclib.eventsystem.events.ac.AutomaticConfigurationEnd;
 import ca.ubc.cs.beta.aclib.runhistory.RunHistory;
@@ -61,7 +61,10 @@ public class ParamConfigurationOriginLogger implements EventHandler<AutomaticCon
 		
 			for(ParamConfiguration config : configTracker)
 			{
-				
+				if(runHistory.getTotalNumRunsOfConfig(config) == 0)
+				{
+					continue;
+				}
 				StringBuilder line = new StringBuilder();
 				double wallTimeInSeconds = (configTracker.getCreationTime(config)-startTime)/1000.0;
 				line.append("\"" + wallTimeInSeconds + "\",");

@@ -15,6 +15,7 @@ import java.util.TreeMap;
  */
 public class UsageSection implements Iterable<String> {
 	private final String sectionName;
+	private final String sectionBanner;
 	private final String sectionDescription;
 	private final Map<String, String> attributesToDescriptionMap = new TreeMap<String, String>();
 	private final Set<String> requiredAttributes = new HashSet<String>();
@@ -24,20 +25,28 @@ public class UsageSection implements Iterable<String> {
 	private final Map<String, Boolean> hiddenMap = new HashMap<String, Boolean>();
 	private final Object object;
 	private final boolean hidden;
+	private final NoArgumentHandler noargHandler;
+	private final boolean converterFileOption;
 	
 	/**
 	 * Constructs a new usage section
 	 * @param sectionName 			The name of this section
+	 * @param sectionBanner			The banner to put around the section's title.
 	 * @param sectionDescription 	The Description of this section
 	 * @param hidden				<code>true</code> if we shouldn't display the sectionName or description when displaying options.
 	 * @param object				Object this section is associated with
+	 * @param converterFileOption			<code>true</code> if this object was created as a relatedObject annotation 
 	 */
-	public UsageSection(String sectionName, String sectionDescription, boolean hidden, Object object)
+	public UsageSection(String sectionName, String sectionBanner, String sectionDescription, boolean hidden, Object object, NoArgumentHandler handler, boolean converterFileOption)
 	{
 		this.sectionName = sectionName;
+		this.sectionBanner = sectionBanner;
 		this.sectionDescription = sectionDescription;
 		this.hidden = hidden;
 		this.object = object;
+		this.noargHandler = handler;
+		this.converterFileOption = converterFileOption;
+		
 	}
 	
 	public Object getObject()
@@ -48,6 +57,11 @@ public class UsageSection implements Iterable<String> {
 	public String getSectionName()
 	{
 		return sectionName;
+	}
+	
+	public String getSectionBanner()
+	{
+		return sectionBanner;
 	}
 	
 	public String getSectionDescription()
@@ -87,6 +101,11 @@ public class UsageSection implements Iterable<String> {
 	@Override
 	public Iterator<String> iterator() {
 		return attributesToDescriptionMap.keySet().iterator();
+	}
+	
+	public int getNumberOfAttributes()
+	{
+		return attributesToDescriptionMap.size();
 	}
 	
 	public boolean isAttributeRequired(String name)
@@ -129,8 +148,6 @@ public class UsageSection implements Iterable<String> {
 			sb.append("\n");
 		}
 		
-		
-		
 		return sb.toString();
 	}
 
@@ -153,6 +170,15 @@ public class UsageSection implements Iterable<String> {
 	public boolean isAttributeHidden(String name) {
 
 		return hiddenMap.get(name);
+	}
+
+	public NoArgumentHandler getHandler() {
+		return this.noargHandler;
+	}
+	
+	public boolean isConverterOptionObject()
+	{
+		return this.converterFileOption;
 	}
 
 }

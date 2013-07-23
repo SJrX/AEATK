@@ -19,6 +19,7 @@ import java.util.Set;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import ca.ubc.cs.beta.TestHelper;
@@ -28,11 +29,13 @@ import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration.StringFormat;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationStringFormatException;
 import ca.ubc.cs.beta.aclib.configspace.ParamFileHelper;
 import ca.ubc.cs.beta.aclib.misc.debug.DebugUtil;
+import ca.ubc.cs.beta.aclib.misc.watch.AutoStartStopWatch;
 import ca.ubc.cs.beta.aclib.random.SeedableRandomPool;
 
 import com.beust.jcommander.internal.Lists;
 
 import ec.util.MersenneTwister;
+import ec.util.MersenneTwisterFast;
 
 @SuppressWarnings({"unused", "deprecation","unchecked"})
 public class ParamConfigurationTest {
@@ -1274,7 +1277,7 @@ public class ParamConfigurationTest {
 		System.out.println("Expect 9 : " + configSpace.getUpperBoundOnSize());
 		assertTrue("Size should be >= 9", configSpace.getUpperBoundOnSize() >= 9);
 		
-		List<ParamConfiguration> neighbours = configSpace.getDefaultConfiguration().getNeighbourhood(this.rand,4);
+		List<ParamConfiguration> neighbours = configSpace.getDefaultConfiguration().getNeighbourhood(rand,4);
 		neighbours.add(configSpace.getDefaultConfiguration());
 		
 		HashSet<ParamConfiguration> newSet = new HashSet<ParamConfiguration>(neighbours);
@@ -1325,6 +1328,83 @@ public class ParamConfigurationTest {
 		
 		
 	}
+	
+	
+	
+	
+	
+	
+	@Test
+	public void testParameterSpaceLowerBounds()
+	{
+		
+		System.out.println("Expect 1 : "+ParamConfigurationSpace.getSingletonConfigurationSpace().getLowerBoundOnSize());
+		assertTrue("Singleton space should have >= 1 configuration ", ParamConfigurationSpace.getSingletonConfigurationSpace().getLowerBoundOnSize() >= 1);
+		
+		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(new StringReader("foo { a,b,c} [a]\n"),"<>",Collections.EMPTY_MAP);
+		System.out.println("Expect 3 : "+ configSpace.getLowerBoundOnSize());
+		assertTrue("Size should be <= 3", configSpace.getLowerBoundOnSize() <= 3);
+		
+		configSpace = new ParamConfigurationSpace(new StringReader("foo { a,b,c} [a]\n bar { d,e,f} [f]"),"<>",Collections.EMPTY_MAP);
+		System.out.println("Expect 9 : " +configSpace.getLowerBoundOnSize());
+		assertTrue("Size should be <= 9", configSpace.getLowerBoundOnSize() <= 9);
+		
+		configSpace = new ParamConfigurationSpace(new StringReader("foo { a,b,c} [a]\n bar { d,e,f} [f]\n bar | foo in {a}"),"<>",Collections.EMPTY_MAP);
+		System.out.println("Expect 3 : " + configSpace.getLowerBoundOnSize());
+		assertTrue("Size should be <= 5", configSpace.getLowerBoundOnSize() <= 5);
+		
+		configSpace = new ParamConfigurationSpace(new StringReader("foo { a,b,c} [a]\n bar { d,e,f} [f]\n"),"<>",Collections.singletonMap("foo", "a"));
+		System.out.println("Expect 9 : " + configSpace.getLowerBoundOnSize());
+		
+		assertTrue("Size should be <= 9", configSpace.getLowerBoundOnSize() <= 9);
+		
+		configSpace = new ParamConfigurationSpace(new StringReader("foo { a,b,c} [a]\n bar { d,e,f} [f]\n"),"<>",Collections.singletonMap("foo", "b"));
+		System.out.println("Expect 9 : " + configSpace.getLowerBoundOnSize());
+		assertTrue("Size should be <= 9", configSpace.getLowerBoundOnSize() <= 9);
+		
+		List<ParamConfiguration> neighbours = configSpace.getDefaultConfiguration().getNeighbourhood(rand,4);
+		neighbours.add(configSpace.getDefaultConfiguration());
+		
+		HashSet<ParamConfiguration> newSet = new HashSet<ParamConfiguration>(neighbours);
+		
+		
+		for(ParamConfiguration config : newSet)
+		{
+			System.out.println(config.getFormattedParamString());
+		}
+		
+		
+		configSpace = new ParamConfigurationSpace(new StringReader("foo { a,b,c} [a]\n bar { d,e,f} [f]\n {foo = a, bar = d}"),"<>",Collections.EMPTY_MAP);
+		System.out.println("Expect 1 :" + configSpace.getLowerBoundOnSize());
+		assertTrue("Size should be <= 8", configSpace.getLowerBoundOnSize() <= 8);
+		
+		configSpace = new ParamConfigurationSpace(new StringReader("foo [0,1][1]\n bar { d,e,f} [f]\n"),"<>",Collections.EMPTY_MAP);
+		System.out.println("Expect Infinity: " + configSpace.getLowerBoundOnSize());
+		assertTrue("Size should be <= Infinity", configSpace.getLowerBoundOnSize() <= Double.POSITIVE_INFINITY);
+		
+		
+		configSpace = new ParamConfigurationSpace(new StringReader("foo [0,1][1]i\n bar { d,e,f} [f]\n"),"<>",Collections.EMPTY_MAP);
+		System.out.println("Expect 6: " + configSpace.getLowerBoundOnSize());
+		assertTrue("Size should be <= 6", configSpace.getLowerBoundOnSize() <= 6);
+		
+		configSpace = new ParamConfigurationSpace(new StringReader("foo [0,9][1]i\n bar { d,e,f} [f]\n"),"<>",Collections.EMPTY_MAP);
+		System.out.println("Expect 30: " + configSpace.getLowerBoundOnSize());
+		assertTrue("Size should be <= 30", configSpace.getLowerBoundOnSize() <= 30);
+		
+		configSpace = new ParamConfigurationSpace(new StringReader("foo [0,9][1]i\n bar [0,9] [1]i\n"),"<>",Collections.EMPTY_MAP);
+		System.out.println("Expect 100: " + configSpace.getLowerBoundOnSize());
+		assertTrue("Size should be <= 100", configSpace.getLowerBoundOnSize() <= 100);
+		
+		
+		configSpace = new ParamConfigurationSpace(new StringReader("foo [0,9][1]i\n bar [0,9] [1]\n"),"<>",Collections.EMPTY_MAP);
+		System.out.println("Expect Infinity: " + configSpace.getLowerBoundOnSize());
+		assertTrue("Size should be <= Infinity", configSpace.getLowerBoundOnSize() <= Double.POSITIVE_INFINITY);
+		
+		
+	}
+	
+	
+	
 	
 	
 	
@@ -1422,7 +1502,37 @@ public class ParamConfigurationTest {
 		*/
 	}
 	
-	
+	@Test
+	@Ignore
+	public void testRandomSpeed()
+	{
+		 
+		
+		ParamConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("x0 [-3,3] [3]\n"+
+"x1 [-2, 2] [2]\n"+
+"abs(3*X) [-4,4] [-4]\n"+
+"-cos(X)+1 [0,6.28] [2]\n"+
+"exp(X)-1 [0,10] [8]\n"+
+"abs(2*X) [-4,4] [-4]\n"+
+"abs(4*X) [-4,4] [-4]\n"+
+"abs(X) [-4,4] [-4]\n");
+		MersenneTwisterFast fast = new MersenneTwisterFast(rand.nextLong());
+		
+		AutoStartStopWatch watch = new AutoStartStopWatch();
+		for(int i=0; i < 10; i++)
+		{
+			for(int j=0; j < 2000000; j++)
+			{
+				configSpace.getRandomConfiguration(fast);
+			}
+			System.out.println(watch.laps()/1000.0 + " secs");
+		}
+		
+		System.out.println("Average time " + watch.stop() / 10000.0 + " seconds");
+		
+		fail("This doesn't actually test anything");	
+		
+	}
 	
 	@After
 	public void tearDown()

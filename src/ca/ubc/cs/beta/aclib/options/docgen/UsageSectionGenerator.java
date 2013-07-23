@@ -1,298 +1,54 @@
-package ca.ubc.cs.beta.aclib.options;
+package ca.ubc.cs.beta.aclib.options.docgen;
 
-import java.io.PrintWriter;
-import java.io.StringWriter;
+import java.io.File;
 import java.lang.reflect.Array;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Set;
-import java.util.SortedSet;
-import java.util.TreeSet;
 import java.util.Map.Entry;
+import java.util.Set;
 
 import ca.ubc.cs.beta.aclib.misc.options.DomainDisplay;
+import ca.ubc.cs.beta.aclib.misc.options.NoArgumentHandler;
+import ca.ubc.cs.beta.aclib.misc.options.NoopNoArgumentHandler;
 import ca.ubc.cs.beta.aclib.misc.options.UsageSection;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
-import ca.ubc.cs.beta.aclib.smac.SMACOptions;
+import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 
 import com.beust.jcommander.DynamicParameter;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParametersDelegate;
 
-public class ConfigToLaTeX {
+public class UsageSectionGenerator {
 
-	public static void main(String[] args) throws Exception
-	{
-		
-		
-		SMACOptions config = new SMACOptions();
-		
-		List<UsageSection> sections = getParameters(config);
-		
-		//usage(sections);
-		
-		latex(sections);
-		//bash(sections);
-	}
+	
+	public static final String FILE_DOMAIN = "FILES";
+	
+	private static boolean hasSlept = false;	
 
-	public static void bash(List<UsageSection> sections)
-	{
-		StringWriter s = new StringWriter();
-		PrintWriter pw = new PrintWriter(s);
-		
-		
-		SortedSet<String> sorted = new TreeSet<String>();
-		
-		for(UsageSection sec : sections)
-		{
-			for(String attr : sec)
-			{
-				//pw.append(attr);
-				sorted.addAll(Arrays.asList(sec.getAttributeAliases(attr).replaceAll(","," ").split(" ")));
-			}
-		}
-		
-
-		for(String key : sorted)
-		{
-			if(key.trim().startsWith("--"))
-			{
-				pw.append(key);
-				pw.append(" ");
-			}
-			
-		}
-		System.out.println(s.toString());
-	}
-	
-	
-	public static void latex(List<UsageSection> sections)
-	{
-		StringWriter s = new StringWriter();
-		PrintWriter pw = new PrintWriter(s);
-		//pw.append("\\documentclass[a4paper,12pt]{article}\n");
-		pw.append("\\documentclass[manual.tex]{subfiles}");
-		pw.append("\\begin{document}\n");
-		for(UsageSection sec : sections)
-		{
-			
-			boolean isHiddenSection = sec.isSectionHidden();
-
-			if(!isHiddenSection)
-			{
-				pw.append("\t\\subsubsection{").append(sec.getSectionName()).append("}\n\n");
-				pw.append(sec.getSectionDescription()).append("\n");
-				
-			}
-			pw.append("\t\\begin{description}");
-			for(String name : sec)
-			{
-				
-				if(sec.isAttributeHidden(name)) continue;
-				String printedName = name.replaceAll("-", "-~\\$\\\\!\\$");
-				pw.append("\t\t\\item[").append(printedName).append("]");
-				String description = sec.getAttributeDescription(name);
-				//== Escape some special characters
-				description = description.replaceAll("\\_", "\\\\_");
-				description = description.replaceAll(">=","\\$\\\\geq\\$");
-				description = description.replaceAll("<","\\$<\\$");
-				description = description.replaceAll(">","\\$>\\$");
-				description = description.replaceAll("\\*", "\\$\\\\times\\$");
-				description = description.replaceAll("--", "-~\\$\\\\!\\$-");
-				description = description.replaceAll("&", "\\\\&");
-				pw.append(" ").append(description).append("\n\n");
-				
-				pw.append("\t\t\\begin{description}\n");
-				
-				
-				
-				if(sec.isAttributeRequired(name))
-				{
-					pw.append("\t\t\t\\item[REQUIRED]\n");
-				}
-				pw.format("\t\t\t\\item[Aliases:] %s %n", sec.getAttributeAliases(name).replaceAll("\\_", "\\\\_").replaceAll("--", "-~\\$\\\\!\\$-"));
-				if(sec.getAttributeDefaultValues(name).length() > 0)
-				{
-					String defaultValue = sec.getAttributeDefaultValues(name);
-					defaultValue = defaultValue.replaceAll("<","\\$<\\$");
-					defaultValue = defaultValue.replaceAll(">","\\$>\\$");
-					pw.format("\t\t\t\\item[Default Value:] %s %n", defaultValue);
-				}
-				
-				if(sec.getAttributeDomain(name).length() > 0)
-				{
-					String domain = sec.getAttributeDomain(name);
-					domain = domain.replaceAll("\\{", "\\$\\\\{");
-					domain = domain.replaceAll("\\}", "\\\\}\\$");
-					domain = domain.replaceAll("Infinity","\\$\\\\infty\\$");
-					domain = domain.replaceAll(" U ", " \\$\\\\bigcup\\$ ");
-					
-					
-					pw.format("\t\t\t\\item[Domain:] %s %n", domain);
-				}
-				
-				pw.append("\t\t\\end{description}\n");
-				
-				
-			}
-			
-			
-			pw.append("\t\\end{description}\n\n");
-			
-			
-		}
-		
-		pw.append("\\end{document}");
-		
-		pw.flush();
-		System.out.println(s.toString());
-		
-	}
-	
-	public static void usage(List<UsageSection> sections)
-	{
-		usage(sections, false);
-	}
-	
-	public static void usage(List<UsageSection> sections, boolean showHidden)
-	{
-		PrintWriter pw = new PrintWriter(System.out);
-		
-		System.out.println("Usage:\n");
-		for(UsageSection sec : sections)
-		{
-			if(!sec.isSectionHidden())
-			{
-				pw.format("========== %-20s ==========%n%n", sec.getSectionName());
-				pw.format("\t%s %n %n ", sec.getSectionDescription());
-				pw.format("\tArguments:%n");
-			}
-			for(String name : sec)
-			{
-				
-				String required = "    ";
-				
-				if(sec.isAttributeHidden(name) && showHidden)
-				{
-					required = "[H]";
-				} else if(sec.isAttributeHidden(name))
-				{
-					continue;
-				} else
-				{
-					required = "   ";
-				}
-				
-				if(sec.isAttributeRequired(name))
-				{
-					required = "[R]";
-				}
-				
-				
-				pw.format("%-10s %s %n", required, sec.getAttributeAliases(name));
-				if(sec.getAttributeDescription(name).trim().length() > 0)
-				{
-					pw.format("\t\t%s%n", sec.getAttributeDescription(name));
-				} else
-				{
-					
-					System.err.println(name + " has no DESCRIPTION");
-					System.err.flush();
-				}
-				
-				if(sec.getAttributeDomain(name).trim().length() > 0)
-				{
-					pw.format("\t\tDomain: %41s%n", sec.getAttributeDomain(name));
-				}
-				
-				
-				if(!sec.isAttributeRequired(name) && sec.getAttributeDefaultValues(name).trim().length() > 0)
-				{
-					pw.format("\t\tDefault: %40s%n", sec.getAttributeDefaultValues(name));
-				}
-				
-				pw.format("%n");
-			}
-		}
-		
-		pw.flush();
-		
-		System.out.println("\t[R] denotes a parameter is required");
-		
-		if(showHidden)
-		{
-			System.out.println("\t[H] denotes a parameter that is hidden and not to be trifled with");
-		}
-		
-	}
-	public static void getAllObjects(Object o, Set<Object> objectsToScan, Map<Object, Set<Object>> parentToChildMap) 
-	{
-		if(parentToChildMap.get(o) == null)
-		{
-			parentToChildMap.put(o, new HashSet<Object>());
-		}
-		try {
-			if(o.getClass().isArray())
-			{
-				for(int i=0; i < Array.getLength(o); i++)
-				{
-					getAllObjects(Array.get(o, i), objectsToScan, parentToChildMap);
-					
-				}
-			} else 
-			{	
-				objectsToScan.add(o);
-				for(Field f : o.getClass().getFields())
-				{
-					if(f.isAnnotationPresent(ParametersDelegate.class))
-					{	
-						objectsToScan.add(f.get(o));
-						parentToChildMap.get(o).add(f.get(o));
-						getAllObjects(f.get(o), objectsToScan, parentToChildMap);
-					}
-				}
-			}
-		} catch (IllegalAccessException e) {
-			throw new IllegalStateException("Unexpected Exception Occurred ", e);
-		}
-		
-	}
-	
-	
-	public static List<UsageSection> getParameters(Object o, Map<String, AbstractOptions> options) 
-	{
-	
-		ArrayList<Object> allOptions = new ArrayList<Object>();
-		
-		allOptions.add(o);
-		for(Entry<String, AbstractOptions> ent : options.entrySet())
-		{
-			if(ent.getValue() != null)
-			{
-				allOptions.add(ent.getValue());
-			}
-		}
-		return getParameters(allOptions.toArray());
-	}
-	
-	public static boolean hasSlept = false;
-	
-	public static List<UsageSection> getParameters(Object o) 
+	/**
+	 * Retrieves the Usage Section objects for objects given in both sets of argument
+	 * @param o			object to inspect
+	 * @return
+	 */
+	public static List<UsageSection> getUsageSections(Object o) 
 	{
 			
 		try {
 		Set<Object> objectsToScan = new LinkedHashSet<Object>();
-		Map<Object, Set<Object>> parentToChildMap = new HashMap<Object,Set<Object>>();
+		Map<Object, Set<Object>> parentToChildMap = new LinkedHashMap<Object,Set<Object>>();
 		
-	
-		getAllObjects(o, objectsToScan, parentToChildMap);
+		Map<String, Object> classesToScan = new LinkedHashMap<String, Object>();
+		Set<Object> related = new HashSet<Object>();
 		
+		getAllObjects(o, classesToScan, parentToChildMap, related);
+		
+		objectsToScan.addAll(classesToScan.values());
 		
 		Set<String> claimRequired = getAllClaimedRequired(objectsToScan);
 		
@@ -302,6 +58,7 @@ public class ConfigToLaTeX {
 		{
 			
 			UsageTextField utf = getLatexField(obj);
+			NoArgumentHandler handler = new NoopNoArgumentHandler();
 			if(utf == null)
 			{
 				System.err.println("Class " + obj.getClass()  + " does not have a UsageTextField annotation, this is very ugly for users to deal. Sleeping for 5 seconds");
@@ -316,13 +73,26 @@ public class ConfigToLaTeX {
 					}
 					hasSlept = true;
 				}
+			} else
+			{
+				
+				try {
+					 handler = utf.noarg().newInstance();
+				} catch(InstantiationException e)
+				{
+					System.err.println("Couldn't create no-argument handler, are you sure that it has default (zero-argument) constructor :"+  e.getMessage());
+					throw e;
+				} 
+				
 			}
 			
 			String title = getTitleForObject(obj);
+			String titleBanner = getSectionBannerForObject(obj);
 			String sectionDescription = getDescriptionForObject(obj);
 			boolean isHidden = isHiddenSection(obj);
 			
-			UsageSection sec = new UsageSection(title, sectionDescription,isHidden, obj);
+			
+			UsageSection sec = new UsageSection(title, titleBanner, sectionDescription,isHidden, obj, handler, related.contains(obj));
 			sections.add(sec);
 			
 			
@@ -398,7 +168,7 @@ public class ConfigToLaTeX {
 		//This is buggy as multiple levels of the hierarchy won't get merged in but oh well
 		List<UsageSection> returningSec = new ArrayList<UsageSection>();
 		
-		
+		List<UsageSection> postSec = new ArrayList<UsageSection>();
 		for(UsageSection sec : sections)
 		{
 			Object parent = sec.getObject();
@@ -408,6 +178,8 @@ public class ConfigToLaTeX {
 				Object child = sec2.getObject();
 				//Not related
 				//System.out.println(parent.getClass() + " and " + child.getClass());
+				
+				if(parentToChildMap.get(parent) == null) continue;
 				if(!parentToChildMap.get(parent).contains(child)) continue;
 				
 				if(sec2.isSectionHidden())
@@ -425,12 +197,21 @@ public class ConfigToLaTeX {
 			
 			if(!sec.isSectionHidden())
 			{
-				returningSec.add(sec);
+				if(related.contains(parent))
+				{
+					postSec.add(sec);
+				} else
+				{
+					returningSec.add(sec);
+				}
 			}
 			
 		}
 		
+		
+		
 
+		returningSec.addAll(postSec);
 		return returningSec;
 		
 		} catch (IllegalAccessException e) {
@@ -442,8 +223,98 @@ public class ConfigToLaTeX {
 		
 		
 	}
+	
+	/**
+	 * Retrieves the Usage Section objects for objects given in both sets of argument
+	 * @param o			obj to inspect
+	 * @param options	map whose values we will inspect
+	 * @return
+	 */
+	public static List<UsageSection> getUsageSections(Object o, Map<String, AbstractOptions> options) 
+	{
+	
+		ArrayList<Object> allOptions = new ArrayList<Object>();
+		
+		allOptions.add(o);
+		for(Entry<String, AbstractOptions> ent : options.entrySet())
+		{
+			if(ent.getValue() != null)
+			{
+				allOptions.add(ent.getValue());
+			}
+		}
+		return getUsageSections(allOptions.toArray());
+	}
+	
 
-
+	private static void getAllObjects(Object o, Map<String, Object> objectsToScan, Map<Object, Set<Object>> parentToChildMap, Set<Object> related) 
+	{
+		if(parentToChildMap.get(o) == null)
+		{
+			parentToChildMap.put(o, new HashSet<Object>());
+		}
+		try {
+			if(o.getClass().isArray())
+			{
+				for(int i=0; i < Array.getLength(o); i++)
+				{
+					getAllObjects(Array.get(o, i), objectsToScan, parentToChildMap, related);
+					
+				}
+			} else 
+			{	
+				Object previousValue = objectsToScan.put(o.getClass().getCanonicalName(),o);
+				if(previousValue != null)
+				{ //We already added this value to the set
+					return;
+				}
+				
+				for(Field f : o.getClass().getDeclaredFields())
+				{
+					boolean markInaccessible = !f.isAccessible();
+					f.setAccessible(true);
+					if(f.isAnnotationPresent(ParametersDelegate.class))
+					{	
+						
+						parentToChildMap.get(o).add(f.get(o));
+						if(related.contains(o))
+						{
+							related.add(f.get(o));
+						}
+						getAllObjects(f.get(o), objectsToScan, parentToChildMap, related);
+					}
+					
+					if(f.isAnnotationPresent(UsageTextField.class))
+					{
+						UsageTextField utf = f.getAnnotation(UsageTextField.class);
+						if(utf.converterFileOptions().equals(Object.class))
+						{
+							continue;
+						} else
+						{
+							try {
+								Object o2 = utf.converterFileOptions().newInstance();
+								//parentToChildMap.get(o).add(o2);
+								related.add(o2);
+								getAllObjects(o2, objectsToScan, parentToChildMap, related);
+							} catch(InstantiationException e)
+							{
+								System.err.println("Couldn't create new instance of " + utf.converterFileOptions().getCanonicalName() + " this class needs to have a default (zero-arg) constructor if it is to be a related option");
+							}
+							
+							
+						}
+						
+					}
+					f.setAccessible(markInaccessible);
+				}
+			}
+		} catch (IllegalAccessException e) {
+			throw new IllegalStateException("Unexpected Exception Occurred ", e);
+		}
+		
+	}
+	
 
 	
 	private static Set<String> getAllClaimedRequired(Set<Object> objectsToScan) {
@@ -586,6 +457,11 @@ public class ConfigToLaTeX {
 			return Arrays.toString(x.getEnumConstants()).replaceAll("\\[", "{").replaceAll("\\]","}");
 		}
 		
+		if(x.equals(File.class))
+		{
+			return FILE_DOMAIN;
+		}
+		
 		return "";
 	}
 	private static Parameter getParameterAnnotation(Field f)
@@ -608,6 +484,13 @@ public class ConfigToLaTeX {
 		return f.title();
 		
 		}
+	
+	private static String getSectionBannerForObject(Object obj)
+	{
+		UsageTextField f = getLatexField(obj);
+		if( f == null) return "*****[  ]*******";
+		return f.titlebanner();
+	}
 	
 	private static String getDescriptionForObject(Object obj) {
 
@@ -646,5 +529,7 @@ public class ConfigToLaTeX {
 		}
 	}
 		
-		
+	
+	
+	
 }

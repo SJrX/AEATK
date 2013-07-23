@@ -352,6 +352,7 @@ public class ProblemInstanceHelper {
 		for(String instanceFile : instanceList)
 		{
 			
+			String originalInstanceFilename = instanceFile;
 			if(checkFileExistsOnDisk)
 			{
 				File f = getFileForPath(experimentDir, instanceFile);
@@ -359,12 +360,16 @@ public class ProblemInstanceHelper {
 				//Should store the absolute file name if the file exists on disk
 				//If we don't check if the file exists on disks we don't know whether to add experimentDir to it
 
+				
 				instanceFile = f.getAbsolutePath();
 				if(!f.exists())
 				{					
 					throw new ParameterException("Instance does not exist on disk "+ f.getAbsolutePath());
 				}
+			
+				
 			}
+			
 			
 			/*
 			 * Map of features for instance
@@ -475,7 +480,9 @@ public class ProblemInstanceHelper {
 					fixedInstanceSpecificInfo.put(ent.getKey().replaceAll("//", "/"), ent.getValue());
 				}
 				
-				ai = new ProblemInstance(instanceFile, instID++, features, fixedInstanceSpecificInfo.get(instanceFile));
+				
+				
+				ai = new ProblemInstance(instanceFile, instID++, features, fixedInstanceSpecificInfo.get(originalInstanceFilename));
 				cachedProblemInstances.put(instanceFile, ai);
 			}
 			

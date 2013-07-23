@@ -2,11 +2,12 @@ package ca.ubc.cs.beta.aclib.eventsystem;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
+import java.util.Map.Entry;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.slf4j.Logger;
@@ -52,6 +53,10 @@ public class EventManager {
 	 * Flag variable that changes to true, if we shutdown
 	 */
 	private final boolean shutdown = false;
+	
+	
+	private final ConcurrentHashMap<String, AtomicInteger> eventNames = (new ConcurrentHashMap<String, AtomicInteger>());
+	
 	
 	public EventManager()
 	{
@@ -110,7 +115,8 @@ public class EventManager {
 		log.trace("Event requested for dispatch {}",event.getClass().getSimpleName());
 		handlerMap.putIfAbsent(event.getClass(), new ArrayList<EventHandler<?>>());
 		final List<EventHandler<?>> handlers = handlerMap.get(event.getClass());
-		
+		eventNames.putIfAbsent(event.getClass().getSimpleName(), new AtomicInteger(0));
+		eventNames.get(event.getClass().getSimpleName()).incrementAndGet();
 		for(EventHandler<?> handler : handlers)
 		{
 			final AutomaticConfiguratorEvent event2 = event;
@@ -291,8 +297,17 @@ public class EventManager {
 		this.fireEvent(new EventManagerShutdownEvent());
 		this.flush();
 		//Clean up eventDispatcherThread
+		
 		eventDispatchThread.interrupt();
 		eventDispatchThread.waitForCompletion();	
 		
+		
+		StringBuilder sb = new StringBuilder();
+		for(Entry<String, AtomicInteger> ent : this.eventNames.entrySet())
+		{
+			sb.append(ent.getKey()).append("=>(").append(ent.getValue().get()).append("), ");
+		}
+		sb.setCharAt(sb.length() - 2,' ');
+		log.debug("Event Dispatch Name / Counts: {}", sb );
 	}
 }

@@ -36,7 +36,7 @@ public class EchoTargetAlgorithmEvaluator  extends AbstractSyncTargetAlgorithmEv
 		this.quickEval = options.quickEval;		
 	}
     
-	@Deprecated
+	
 	public volatile double wallClockTime = 0;
 	
 	@Override

@@ -17,7 +17,14 @@ public abstract class AbstractTerminationCondition implements TerminationConditi
 		//noop
 	}
 
+	@Override
 	public double getTunerTime()
+	{
+		return Double.MIN_VALUE;
+	}
+	
+	@Override
+	public double getWallTime()
 	{
 		return Double.MIN_VALUE;
 	}

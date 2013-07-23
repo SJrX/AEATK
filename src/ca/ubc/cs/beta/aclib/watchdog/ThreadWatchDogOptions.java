@@ -8,7 +8,7 @@ import ca.ubc.cs.beta.aclib.misc.jcommander.validator.NonNegativeInteger;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 
-@SuppressWarnings("unused")
+
 @UsageTextField(title="Thread Watch Dog Options", description="Options that control a thread that monitors the liveness of the application ")
 public class ThreadWatchDogOptions extends AbstractOptions {
 	

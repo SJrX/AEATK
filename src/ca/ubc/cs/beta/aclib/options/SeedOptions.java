@@ -16,10 +16,10 @@ import com.beust.jcommander.ParameterException;
 @UsageTextField(hiddenSection=true)
 public class SeedOptions extends AbstractOptions{
 
-	@Parameter(names="--seedOffset", description="offset of numRun to use from seed (this plus --numRun should be less than INTEGER_MAX)")
+	@Parameter(names={"--seed-offset","--seedOffset"}, description="offset of numRun to use from seed (this plus --numRun should be less than INTEGER_MAX)")
 	public int seedOffset = 0 ;
 	
-	@Parameter(names={"--numRun","--seed"}, required=true, description="number of this run (and seed)", validateWith=NonNegativeInteger.class)
+	@Parameter(names={"--num-run","--numrun","--numRun","--seed"}, required=true, description="number of this run (and seed)", validateWith=NonNegativeInteger.class)
 	public int numRun = 0;
 	
 	@DynamicParameter(names="-S", description="Sets specific seeds (by name) in the random pool")

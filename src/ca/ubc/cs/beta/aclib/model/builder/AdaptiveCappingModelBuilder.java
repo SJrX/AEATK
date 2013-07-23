@@ -291,8 +291,6 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 				//System.out.println(sampleIdxToUse);
 				
 				//=== Get the samples (but cap them at maxValue). 
-				StopWatch sw = new AutoStartStopWatch();
-				
 				
 				TruncatedNormalDistribution tNorm = new TruncatedNormalDistribution(prediction[j][0], prediction[j][1], responseValues[sampleIdxToUse],rand);
 				//log.debug("Constructing Truncated Normal Distribution took {} seconds" ,sw.stop() / 1000.0);

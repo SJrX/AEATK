@@ -2,10 +2,12 @@ package ca.ubc.cs.beta.aclib.targetalgorithmevaluator;
 
 import java.io.File;
 import java.util.List;
+import java.util.Map;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.NonNegativeInteger;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.OneInfinityOpenInterval;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.ReadableFileConverter;
@@ -16,6 +18,8 @@ import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceHelper;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.prepostcommand.PrePostCommandOptions;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.init.TargetAlgorithmEvaluatorBuilder;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.init.TargetAlgorithmEvaluatorLoader;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParametersDelegate;
@@ -26,47 +30,48 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 		
 	
 	//@UsageTextField(domain="")
-	@Parameter(names={"--targetAlgorithmEvaluator","--tae"}, description="Target Algorithm Evaluator to use when making target algorithm calls", validateWith=TAEValidator.class)
+	@Parameter(names={"--tae","--targetAlgorithmEvaluator"}, description="Target Algorithm Evaluator to use when making target algorithm calls", validateWith=TAEValidator.class)
 	public String targetAlgorithmEvaluator = "CLI";
 	
-	@Parameter(names="--abortOnCrash", description="treat algorithm crashes as an ABORT (Useful if algorithm should never CRASH). NOTE:  This only aborts if all retries fail.")
+	@Parameter(names={"--abort-on-crash","--abortOnCrash"}, description="treat algorithm crashes as an ABORT (Useful if algorithm should never CRASH). NOTE:  This only aborts if all retries fail.")
 	public boolean abortOnCrash = false;
 
-	@Parameter(names="--abortOnFirstRunCrash", description="if the first run of the algorithm CRASHED treat it as an ABORT, otherwise allow crashes.")
+	@Parameter(names={"--abort-on-first-run-crash","--abortOnFirstRunCrash"}, description="if the first run of the algorithm CRASHED treat it as an ABORT, otherwise allow crashes.")
 	public boolean abortOnFirstRunCrash = true;
 
-	@Parameter(names={"--retryCrashedRunCount","--retryTargetAlgorithmRunCount"}, description="number of times to retry an algorithm run before reporting crashed (NOTE: The original crashes DO NOT count towards any time limits, they are in effect lost). Additionally this only retries CRASHED runs, not ABORT runs, this is by design as ABORT is only for cases when we shouldn't bother further runs", validateWith=NonNegativeInteger.class)
+	@Parameter(names={"--retry-crashed-count","--retryCrashedRunCount","--retryTargetAlgorithmRunCount"}, description="number of times to retry an algorithm run before reporting crashed (NOTE: The original crashes DO NOT count towards any time limits, they are in effect lost). Additionally this only retries CRASHED runs, not ABORT runs, this is by design as ABORT is only for cases when we shouldn't bother further runs", validateWith=NonNegativeInteger.class)
 	public int retryCount = 0;
 
-	@Parameter(names={"--boundRuns"}, description="[DEPRECATED] (Use the option on the TAE instead if available) if true, permit only --cores number of runs to be evaluated concurrently. ")
+	@Parameter(names={"--bound-runs","--boundRuns"}, description="[DEPRECATED] (Use the option on the TAE instead if available) if true, permit only --cores number of runs to be evaluated concurrently. ")
 	public boolean boundRuns = false;
 	
 	@Parameter(names={"--cores","--numConcurrentAlgoExecs","--maxConcurrentAlgoExecs","--numberOfConcurrentAlgoExecs"}, description=" [DEPRECATED] (Use the TAE option instead if available) maximum number of concurrent target algorithm executions", validateWith=PositiveInteger.class)
 	public int maxConcurrentAlgoExecs = 1;
 	
 	@UsageTextField(defaultValues="")
-	@Parameter(names="--runHashCodeFile", description="file containing a list of run hashes one per line: Each line should be: \"Run Hash Codes: (Hash Code) After (n) runs\". The number of runs in this file need not match the number of runs that we execute, this file only ensures that the sequences never diverge. Note the n is completely ignored so the order they are specified in is the order we expect the hash codes in this version. Finally note you can simply point this at a previous log and other lines will be disregarded", converter=ReadableFileConverter.class)
+	@Parameter(names={"--run-hashcode-file","--runHashCodeFile"}, description="file containing a list of run hashes one per line: Each line should be: \"Run Hash Codes: (Hash Code) After (n) runs\". The number of runs in this file need not match the number of runs that we execute, this file only ensures that the sequences never diverge. Note the n is completely ignored so the order they are specified in is the order we expect the hash codes in this version. Finally note you can simply point this at a previous log and other lines will be disregarded", converter=ReadableFileConverter.class)
 	public File runHashCodeFile;
 
-	@Parameter(names="--leakMemoryAmount", hidden=true, description="amount of memory in bytes to leak")
-	public int leakMemoryAmount = 1024;
-
-	@Parameter(names="--leakMemory", hidden=true, description="leaks some amount of memory for every run")
+	@Parameter(names={"--leak-memory","--leakMemory"}, hidden=true, description="leaks some amount of memory for every run")
 	public boolean leakMemory = false;
 	
-	@Parameter(names="--verifySAT", description="Check SAT/UNSAT/UNKNOWN responses against Instance specific information (if null then performs check if every instance has specific information in the following domain {SAT, UNSAT, UNKNOWN, SATISFIABLE, UNSATISFIABLE}")
+	@Parameter(names={"--leak-memory-amount","--leakMemoryAmount"}, hidden=true, description="amount of memory in bytes to leak")
+	public int leakMemoryAmount = 1024;
+
+	
+	@Parameter(names={"--verify-sat","--verify-SAT","--verifySAT"}, description="Check SAT/UNSAT/UNKNOWN responses against Instance specific information (if null then performs check if every instance has specific information in the following domain {SAT, UNSAT, UNKNOWN, SATISFIABLE, UNSATISFIABLE}")
 	public Boolean verifySAT;
 
-	@Parameter(names="--checkSATConsistency", description="Ensure that runs on the same problem instance always return the same SAT/UNSAT result")
+	@Parameter(names={"--check-sat-consistency","--checkSATConsistency"}, description="Ensure that runs on the same problem instance always return the same SAT/UNSAT result")
 	public boolean checkSATConsistency = false;
 
-	@Parameter(names="--checkSATConsistencyException", description="Throw an exception if runs on the same problem instance disagree with respect to SAT/UNSAT")
+	@Parameter(names={"--check-sat-consistency-exception","--checkSATConsistencyException"}, description="Throw an exception if runs on the same problem instance disagree with respect to SAT/UNSAT")
 	public boolean checkSATConsistencyException = false;
 	
 	@ParametersDelegate
 	public PrePostCommandOptions prePostOptions = new PrePostCommandOptions();
 
-	@Parameter(names="--checkResultOrderConsistent", description="Check that the TAE is returning responses in the correct order")
+	@Parameter(names={"--check-result-order-consistent","--checkResultOrderConsistent"}, description="Check that the TAE is returning responses in the correct order")
 	public boolean checkResultOrderConsistent;
 	
 	@Parameter(names="--skip-outstanding-eval-tae", description="If set to true code, the TAE will not be wrapped by a decorator to support waiting for outstanding runs")
@@ -130,6 +135,87 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 				
 		}
 		
+	}
+	
+	/**
+	 * Retrieves the available list of target algorithm evaluators
+	 * @return 
+	 */
+	public Map<String, AbstractOptions> getAvailableTargetAlgorithmEvaluators()
+	{
+		return TargetAlgorithmEvaluatorLoader.getAvailableTargetAlgorithmEvaluators();
+	}
+	/**
+	 * Retrieves a target algorithm evaluator
+	 * 
+	 * @param execConfig	execution configuration object for the target algorithm
+	 * @param taeOptionsMap	options for all taes
+	 * @param outputDir		output directory
+	 * @param numRun		number of our run (used for TAEs that output files as a suffix generally)
+	 * @return
+	 */
+	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig,  Map<String, AbstractOptions> taeOptionsMap, String outputDir, int numRun)
+	{
+		return TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(this, execConfig, true, false, taeOptionsMap, null, new File(outputDir), numRun);
+	}
+	
+	
+	/**
+	 * Retrieves a target algorithm evaluator
+	 * 
+	 * @param execConfig			execution configuration for the target algorithm
+	 * @param hashVerifiersAllowed	whether hash verifies should be applied
+	 * @param ignoreBound			whether we should ignore the bound argument
+	 * @param taeOptionsMap			options for all avaliable TAEs
+	 * @param outputDir				output directory
+	 * @param numRun				number of our run (used for TAEs that output files as a suffix generally)
+	 * @return
+	 */
+	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig, boolean hashVerifiersAllowed, boolean ignoreBound,  Map<String, AbstractOptions> taeOptionsMap, String outputDir, int numRun)
+	{
+		return TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(this, execConfig, hashVerifiersAllowed, ignoreBound, taeOptionsMap, null,new File(outputDir), numRun);
+	}
+	
+	/**
+	 * Retrieves a target algorithm evaluator
+	 * 
+	 * @param execConfig	execution configuration object for the target algorithm
+	 * @param taeOptionsMap	options for all available TAEs
+	 * @param outputDir		output directory
+	 * @param numRun		number of our run (used for TAEs that output files as a suffix generally)
+	 * @return
+	 */
+	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig,  Map<String, AbstractOptions> taeOptionsMap, File outputDir, int numRun)
+	{
+		return TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(this, execConfig, true, false, taeOptionsMap, null, outputDir, numRun);
+	}
+	
+	
+	/**
+	 * Retrieves a target algorithm evaluator
+	 * 
+	 * @param execConfig			execution configuration for the target algorithm
+	 * @param hashVerifiersAllowed	whether hash verifies should be applied
+	 * @param ignoreBound			whether we should ignore the bound argument
+	 * @param taeOptionsMap			options for all available TAEs
+	 * @param outputDir				output directory
+	 * @param numRun				number of our run (used for TAEs that output files as a suffix generally)
+	 * @return
+	 */
+	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig, boolean hashVerifiersAllowed, boolean ignoreBound,  Map<String, AbstractOptions> taeOptionsMap, File outputDir, int numRun)
+	{
+		return TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(this, execConfig, hashVerifiersAllowed, ignoreBound, taeOptionsMap, null, outputDir, numRun);
+	}
+
+	/**
+	 * Retrieves a target algorithm evaluator
+	 * @param execConfig	execution configuration for the target algorithm
+	 * @param taeOptions	options for all available TAEs
+	 * @return
+	 */
+	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig,Map<String, AbstractOptions> taeOptions) 
+	{
+		return getTargetAlgorithmEvaluator(execConfig, taeOptions, new File(".").getAbsolutePath(), 0);
 	}
 	
 	

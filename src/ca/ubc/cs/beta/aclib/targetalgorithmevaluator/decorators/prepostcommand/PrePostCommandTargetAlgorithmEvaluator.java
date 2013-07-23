@@ -9,6 +9,7 @@ import java.util.concurrent.Executors;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ca.ubc.cs.beta.aclib.concurrent.threadfactory.SequentiallyNamedThreadFactory;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbstractTargetAlgorithmEvaluatorDecorator;
 
@@ -22,6 +23,7 @@ public class PrePostCommandTargetAlgorithmEvaluator extends	AbstractTargetAlgori
 	private final PrePostCommandOptions options;
 
 	private final static Logger log = LoggerFactory.getLogger(PrePostCommandTargetAlgorithmEvaluator.class);
+	
 	
 	public PrePostCommandTargetAlgorithmEvaluator(TargetAlgorithmEvaluator tae, PrePostCommandOptions options) {
 		super(tae);
@@ -39,21 +41,21 @@ public class PrePostCommandTargetAlgorithmEvaluator extends	AbstractTargetAlgori
 		
 		log.info("Running scenario command: cd {} ; {}", options.directory.getAbsolutePath(), command );
 		try {
-			final ExecutorService execService = Executors.newCachedThreadPool();
+			final ExecutorService execService = Executors.newCachedThreadPool(new SequentiallyNamedThreadFactory("Pre Post Command Handler"));
 			try {
 				
 				final Process proc = Runtime.getRuntime().exec(command,null, options.directory);
 				
 				final CountDownLatch cLatch = new CountDownLatch(1 + (options.logOutput ? 1 :0));
 				
-				final int id =  ((int) Math.random() * 65535);
+
 				Runnable standardErrorReader = new Runnable()
 				{
 	
 					@Override
-					public void run() {
+					public void run() 
+					{
 						
-						Thread.currentThread().setName("pre-post-command-tae-stderr-" +  id);
 						try { 
 						Scanner procIn = new Scanner(proc.getErrorStream());
 						
@@ -82,7 +84,6 @@ public class PrePostCommandTargetAlgorithmEvaluator extends	AbstractTargetAlgori
 						@Override
 						public void run() {
 							
-							Thread.currentThread().setName("pre-post-command-tae-stdout" + id);
 							try { 
 							Scanner procIn = new Scanner(proc.getInputStream());
 							

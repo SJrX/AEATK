@@ -9,7 +9,6 @@ import java.util.Date;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
-import java.util.regex.Pattern;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
@@ -20,15 +19,22 @@ import ca.ubc.cs.beta.aclib.misc.returnvalues.ACLibReturnValues;
 @UsageTextField(hiddenSection = true)
 public class RunGroupOptions extends AbstractOptions {
 
-	@UsageTextField(defaultValues="<Scenario Name>-<executionMode>-ac-<adaptiveCapping>-cores<cores>-cutoff<cutoffTime>-<date>")
-	@Parameter(names="--runGroupName", description="name of subfolder of outputdir to save all the output files of this run to")
-	public String runGroupName = "%SCENARIO_NAME-%executionMode-ac-%adaptiveCapping-cores%cores-cutoff%cutoffTime-%DATE";
+	
+	@UsageTextField
+	@Parameter(names={"--rungroup","--rungroup-name","--runGroupName"}, description="name of subfolder of outputdir to save all the output files of this run to")
+	public String runGroupName; 
 	
 	@Parameter(names="--print-rungroup-replacement-and-exit", description="print all the possible replacements in the rungroup and then exit")
 	public boolean runGroupExit;
 	
-	@Parameter(names="--runGroupReplacement", description="Character (potentially regex see source) to use as the start of a replacement in the runGroupName", hidden=true)
+	@Parameter(names={"--rungroup-char","--runGroupReplacement"}, description="Character (potentially regex see source) to use as the start of a replacement in the runGroupName", hidden=true)
 	public String replacementChar = "%";
+	
+	public RunGroupOptions(String defaultRunGroupName)
+	{
+		this.runGroupName = defaultRunGroupName;
+	}
+	
 	
 	public String getRunGroupName(Collection<AbstractOptions> opts)
 	{
@@ -42,13 +48,17 @@ public class RunGroupOptions extends AbstractOptions {
 		
 		replacementMap.putAll(System.getenv());
 		
-		File f = new File(replacementMap.get("scenarioFile"));
-		replacementMap.put("SCENARIO_NAME", "Unknown");
-		replacementMap.put("SCENARIO_FILE", "Unknown");
-		if(f != null)
+		replacementMap.put("SCENARIO_NAME", "NoScenarioFile");
+		replacementMap.put("SCENARIO_FILE", "NoScenarioFile");
+		if(replacementMap.get("scenarioFile") != null)
 		{
-			replacementMap.put("SCENARIO_NAME", f.getName().substring(0,f.getName().lastIndexOf(".")));
-			replacementMap.put("SCENARIO_FILE", f.getName());
+			File f = new File(replacementMap.get("scenarioFile"));
+			
+			if(f != null)
+			{
+				replacementMap.put("SCENARIO_NAME", f.getName().substring(0,f.getName().lastIndexOf(".")));
+				replacementMap.put("SCENARIO_FILE", f.getName());
+			}
 		}
 		replacementMap.put("DATETIME", (new SimpleDateFormat("yyyy-MM-dd--HH-mm-ss-SSS").format(new Date())));
 		replacementMap.put("DATE", (new SimpleDateFormat("yyyy-MM-dd").format(new Date())));
@@ -108,10 +118,7 @@ public class RunGroupOptions extends AbstractOptions {
 
 		
 		orderedReplacementMap.putAll(replacementMap);
-		
-		
-		Pattern p = Pattern.compile(".*%([a-zA-Z_]+).*");
-		
+
 		String line = this.runGroupName;
 	
 		for(Entry<String, String> ent : orderedReplacementMap.entrySet())

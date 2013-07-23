@@ -253,7 +253,7 @@ public class EventManagerTester {
 		}
 
 		try {
-			TestHandler handler = new TestHandler();
+			//TestHandler handler = new TestHandler();
 			eventManager.fireEvent(new AutomaticConfiguratorEvent()
 			{
 				
@@ -275,13 +275,13 @@ public class EventManagerTester {
 		
 	}
 	
-	class TestEvent3 extends AutomaticConfiguratorEvent
+	static class TestEvent3 extends AutomaticConfiguratorEvent
 	{
 		
 	}
 	
 	
-	class TestHandler implements EventHandler<AutomaticConfiguratorEvent>
+	static class TestHandler implements EventHandler<AutomaticConfiguratorEvent>
 	{
 
 		AtomicReference<AutomaticConfiguratorEvent> ref = new AtomicReference<AutomaticConfiguratorEvent>();
@@ -326,7 +326,7 @@ public class EventManagerTester {
 		
 	}
 	
-	class BrokenHandler implements EventHandler<AutomaticConfiguratorEvent>
+	static class BrokenHandler implements EventHandler<AutomaticConfiguratorEvent>
 	{
 
 		AtomicReference<AutomaticConfiguratorEvent> ref = new AtomicReference<AutomaticConfiguratorEvent>();

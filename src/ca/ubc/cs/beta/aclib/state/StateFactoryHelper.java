@@ -30,7 +30,6 @@ public final class StateFactoryHelper {
 	{
 		
 		
-		StateFactory sf;
 		
 		switch(serializer)
 		{

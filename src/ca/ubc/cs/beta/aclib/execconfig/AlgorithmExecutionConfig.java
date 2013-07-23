@@ -64,6 +64,9 @@ public class AlgorithmExecutionConfig implements Serializable {
 	}
 
 	@Deprecated
+	/**
+	 * @deprecated this really never did anything and will be removed at some point
+	 */
 	public boolean isExecuteOnCluster() {
 		return executeOnCluster;
 	}

@@ -49,6 +49,13 @@ public interface TerminationCondition {
 	 * @return
 	 */
 	public String getTerminationReason();
+
+
+	/**
+	 * Retrieves the current wallclock time
+	 * @return
+	 */
+	double getWallTime();
 	
 }
 

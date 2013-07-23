@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashSet;
+import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.Map.Entry;
@@ -12,11 +13,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aclib.help.HelpOptions;
+import ca.ubc.cs.beta.aclib.misc.options.UsageSection;
 import ca.ubc.cs.beta.aclib.misc.returnvalues.ACLibReturnValues;
 import ca.ubc.cs.beta.aclib.misc.spi.SPIClassLoaderHelper;
 import ca.ubc.cs.beta.aclib.misc.version.VersionTracker;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
-import ca.ubc.cs.beta.aclib.options.ConfigToLaTeX;
+import ca.ubc.cs.beta.aclib.options.docgen.OptionsToUsage;
+import ca.ubc.cs.beta.aclib.options.docgen.UsageSectionGenerator;
+
 import com.beust.jcommander.JCommander;
 
 public final class JCommanderHelper
@@ -41,12 +45,20 @@ public final class JCommanderHelper
 	}
 
 	
-	public static void parseCheckingForHelpAndVersion(AbstractOptions options, String[] args)
+	public static JCommander parseCheckingForHelpAndVersion(String[] args,AbstractOptions options )
 	{
-		checkForHelpAndVersion(args, options,Collections.<String, AbstractOptions> emptyMap());
+		return parseCheckingForHelpAndVersion(args, options,Collections.<String, AbstractOptions> emptyMap());
 	}
 	
 	
+	public static JCommander parseCheckingForHelpAndVersion(String[] args,
+			AbstractOptions options, Map<String, AbstractOptions> emptyMap) {
+		JCommander jcom = getJCommanderAndCheckForHelp(args, options, emptyMap);
+		jcom.parse(args);
+		return jcom;
+	}
+
+
 	public static void checkForHelpAndVersion(String[] args, AbstractOptions options, Map<String, AbstractOptions> taeOpts)
 	{
 		
@@ -61,12 +73,12 @@ public final class JCommanderHelper
 		try {
 			Set<String> possibleValues = new HashSet<String>(Arrays.asList(args));
 			
-			String[] hiddenNames = {"--showHiddenParameters"};
+			String[] hiddenNames = {"--show-hidden","--showHiddenParameters"};
 			for(String helpName : hiddenNames)
 			{
 				if(possibleValues.contains(helpName))
 				{
-					ConfigToLaTeX.usage(ConfigToLaTeX.getParameters(options, taeOpts), true);
+					OptionsToUsage.usage(UsageSectionGenerator.getUsageSections(options, taeOpts), true);
 					System.exit(ACLibReturnValues.SUCCESS);
 				}
 			}
@@ -76,7 +88,7 @@ public final class JCommanderHelper
 			{
 				if(possibleValues.contains(helpName))
 				{
-					ConfigToLaTeX.usage(ConfigToLaTeX.getParameters(options, taeOpts));
+					OptionsToUsage.usage(UsageSectionGenerator.getUsageSections(options, taeOpts));
 					System.exit(ACLibReturnValues.SUCCESS);
 				}
 			}
@@ -119,13 +131,39 @@ public final class JCommanderHelper
 	 * 
 	 * @return
 	 */
+	public static JCommander getJCommanderAndCheckForHelp(String[] args,AbstractOptions mainOptions) {
+		return getJCommanderAndCheckForHelp(args, mainOptions, Collections.<String, AbstractOptions> emptyMap());
+	}
+	
+	
+	/**
+	 * Returns a JCommander object after screening for parameters that are asking for help or version information 
+	 *  
+	 * 
+	 * @param args
+	 * @param mainOptions
+	 * @param taeOptions
+	 * 
+	 * @return
+	 */
 	public static JCommander getJCommanderAndCheckForHelp(String[] args,AbstractOptions mainOptions,Map<String, AbstractOptions> taeOptions) {
 		JCommander jcom = getJCommander(mainOptions, taeOptions);
-		
+		if(args.length == 0)
+		{
+			List<UsageSection> secs = UsageSectionGenerator.getUsageSections(mainOptions, taeOptions);
+			boolean quit= false;
+			for(UsageSection sec  : secs)
+			{
+				quit |= sec.getHandler().handleNoArguments();
+				
+			}
+			
+			if(quit)
+			{
+				System.exit(ACLibReturnValues.PARAMETER_EXCEPTION);
+			}
+		}
 		checkForHelpAndVersion(args, mainOptions, taeOptions);
-		
-		
-		
 		return jcom;
 		
 		
@@ -155,8 +193,25 @@ public final class JCommanderHelper
 		log.info("Call String:");
 		log.info("{}", sb.toString());
 	}
-	
-	
+
+
+	public static JCommander getJCommander(AbstractOptions t) {
+		return getJCommander(t, Collections.<String, AbstractOptions> emptyMap());
+	}
+
+
+	public static void logConfiguration(JCommander jcom)
+	{
+		Logger log = LoggerFactory.getLogger(JCommanderHelper.class);
+		StringBuilder sb = new StringBuilder();
+		for(Object o : jcom.getObjects())
+		{
+			sb.append(o.toString()).append("\n");
+		}
+			
+		log.info("==========Configuration Options==========\n{}", sb.toString());
+		
+	}
 	
 	
 	

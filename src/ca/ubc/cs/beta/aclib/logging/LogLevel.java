@@ -1,4 +1,4 @@
-package ca.ubc.cs.beta.aclib.misc.logging;
+package ca.ubc.cs.beta.aclib.logging;
 
 /**
  * Utility Enum that controls the log level

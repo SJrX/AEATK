@@ -66,6 +66,10 @@ public class ValueMaxStatus {
 		return getStatus();
 	}
 	
+	public ConditionType getType()
+	{
+		return type;
+	}
 	
 	
 }

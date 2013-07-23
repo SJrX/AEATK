@@ -1,4 +1,4 @@
-package ca.ubc.cs.beta.aclib.algorithmrun;
+package ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli;
 
 import java.io.File;
 
@@ -21,6 +21,9 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 
+import ca.ubc.cs.beta.aclib.algorithmrun.AbstractAlgorithmRun;
+import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
+import ca.ubc.cs.beta.aclib.algorithmrun.RunningAlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillHandler;
 import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableAlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableWrappedAlgorithmRun;
@@ -29,9 +32,10 @@ import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration.StringFormat;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.misc.logback.MarkerFilter;
 import ca.ubc.cs.beta.aclib.misc.logging.LoggingMarker;
+import ca.ubc.cs.beta.aclib.misc.string.SplitQuotedString;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluatorOptions;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.exceptions.TargetAlgorithmAbortException;
 
 /**
  * Executes a Target Algorithm Run via Command Line Execution
@@ -61,12 +65,12 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	/**
 	 * Stores the observer for this run
 	 */
-	private TargetAlgorithmEvaluatorRunObserver runObserver;
+	private transient TargetAlgorithmEvaluatorRunObserver runObserver;
 
 	/**
 	 * Stores the kill handler for this run
 	 */
-	private KillHandler killHandler;
+	private transient KillHandler killHandler;
 	
 	
 
@@ -75,13 +79,23 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	 */
 	private static transient Marker fullProcessOutputMarker = MarkerFactory.getMarker(LoggingMarker.FULL_PROCESS_OUTPUT.name());
 	
+	private static String commandSeparator = ";";
+	
+	
+	
 	static {
 		log.warn("This version of SMAC hardcodes run length for calls to the target algorithm to {}.", Integer.MAX_VALUE);
+		
+		if(System.getProperty("os.name").toLowerCase().contains("win"))
+		{
+			commandSeparator = "&";
+		}
+		
 	}
 	
 	private static final double WALLCLOCK_TIMING_SLACK = 0.001;
 	
-	private ExecutorService threadPoolExecutor = Executors.newCachedThreadPool(new SequentiallyNamedThreadFactory("Command Line Target Algorithm Evaluator Thread ")); 
+	private transient ExecutorService threadPoolExecutor = Executors.newCachedThreadPool(new SequentiallyNamedThreadFactory("Command Line Target Algorithm Evaluator Thread ")); 
 	
 	private final int observerFrequency;
 		
@@ -205,7 +219,9 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 								wasKilled = true;
 								log.debug("Trying to kill");
 								proc.destroy();
+								log.debug("Process destroy() called now waiting for completion");
 								proc.waitFor();
+								log.debug("Process has exited");
 								return;
 							}
 							Thread.sleep(observerFrequency - 25);
@@ -236,8 +252,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 					this.setResult(RunResult.KILLED, currentTime, 0,0, getRunConfig().getProblemInstanceSeedPair().getSeed(), "Killed Manually", "" );
 					
 				} else {
-					this.setCrashResult("We did not successfully read anything from the wrapper");
-					log.error("We did not find anything in our target algorithm run output that matched our regex (i.e. We found nothing that looked like \"Result For ParamILS: x,x,x,x,x\", specifically the regex we were matching is: {} ", AUTOMATIC_CONFIGURATOR_RESULT_REGEX );
+					this.setCrashResult("Wrapper did not output anything that matched our regex please see the manual for more information. Please try executing the wrapper directly and ensuring that it matches the following regex: " + AUTOMATIC_CONFIGURATOR_RESULT_REGEX );
 				}
 			}
 			
@@ -249,15 +264,17 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 			case ABORT:
 			case CRASHED:
 				
-					
-					log.info( "Failed Run Detected Call: cd {} ;  {} ",new File(execConfig.getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommand(execConfig, runConfig));
+			
+					log.error( "Failed Run Detected Call: cd \"{}\" " + commandSeparator + "  {} ",new File(execConfig.getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommandAsString(execConfig, runConfig));
 				
-					log.info("Failed Run Detected output last {} lines", outputQueue.size());
+					log.error("Failed Run Detected output last {} lines", outputQueue.size());
+					
+					
 					for(String s : outputQueue)
 					{
-						log.info(s);
+						log.error("> "+s);
 					}
-					log.info("Output complete");
+					log.error("Output complete");
 					
 				
 			default:
@@ -283,9 +300,10 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 			
 			runObserver.currentStatus(Collections.singletonList(new KillableWrappedAlgorithmRun(this)));
 		} catch (IOException e1) {
-			String execCmd = getTargetAlgorithmExecutionCommand(execConfig,runConfig);
+			String execCmd = getTargetAlgorithmExecutionCommandAsString(execConfig,runConfig);
 			log.error("Failed to execute command: {}", execCmd);
-			throw new IllegalStateException(e1);
+			throw new TargetAlgorithmAbortException(e1);
+			//throw new IllegalStateException(e1);
 		}
 		
 		
@@ -319,8 +337,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 		procIn.close();
 	}
 	
-	//See:http://stackoverflow.com/questions/7804335/split-string-on-spaces-except-if-between-quotes-i-e-treat-hello-world-as
-	Pattern p = Pattern.compile("([^\"]\\S*|\".+?\")\\s*");
+	
 
 	/**
 	 * Starts the target algorithm
@@ -329,23 +346,14 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	 */
 	private  Process runProcess() throws IOException
 	{
-		String execCmd = getTargetAlgorithmExecutionCommand(execConfig, runConfig);
+		String[] execCmdArray = getTargetAlgorithmExecutionCommand(execConfig, runConfig);
+		
 		
 		if(options.logAllCallStrings)
 		{
-			log.info( "Call: cd {} ;  {} ", new File(execConfig.getAlgorithmExecutionDirectory()).getAbsolutePath(), execCmd);
+			log.info( "Call: cd \"{}\" " + commandSeparator + "  {} ", new File(execConfig.getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommandAsString(execConfig, runConfig));
 		}
 		
-		ArrayList<String> args = new ArrayList<String>();
-
-		//See:http://stackoverflow.com/questions/7804335/split-string-on-spaces-except-if-between-quotes-i-e-treat-hello-world-as
-		Matcher m = p.matcher(execCmd);
-		while(m.find())
-		{
-			args.add(m.group(1).replace("\"", ""));
-		}
-		
-		String[] execCmdArray = args.toArray(new String[0]);
 		Process proc = Runtime.getRuntime().exec(execCmdArray,null, new File(execConfig.getAlgorithmExecutionDirectory()));
 
 		return proc;
@@ -357,18 +365,99 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	 * Gets the execution command string
 	 * @return string containing command
 	 */
-	public static String getTargetAlgorithmExecutionCommand(AlgorithmExecutionConfig execConfig, RunConfig runConfig)
+	private static String[] getTargetAlgorithmExecutionCommand(AlgorithmExecutionConfig execConfig, RunConfig runConfig)
 	{
 
-		StringBuilder execString = new StringBuilder();
-		
+				
 		String cmd = execConfig.getAlgorithmExecutable();
 		cmd = cmd.replace(AlgorithmExecutionConfig.MAGIC_VALUE_ALGORITHM_EXECUTABLE_PREFIX,"");
 		
-		execString.append(cmd).append(" ").append(runConfig.getProblemInstanceSeedPair().getInstance().getInstanceName()).append(" ").append(runConfig.getProblemInstanceSeedPair().getInstance().getInstanceSpecificInformation()).append(" ").append(runConfig.getCutoffTime()).append(" ").append(Integer.MAX_VALUE).append(" ").append(runConfig.getProblemInstanceSeedPair().getSeed()).append(" ").append(runConfig.getParamConfiguration().getFormattedParamString(StringFormat.NODB_SYNTAX));
 		
-		return execString.toString();
+		String[] execCmdArray = SplitQuotedString.splitQuotedString(cmd);
+		
+		ArrayList<String> list = new ArrayList<String>(Arrays.asList(execCmdArray));
+		list.add(runConfig.getProblemInstanceSeedPair().getInstance().getInstanceName());
+		list.add(runConfig.getProblemInstanceSeedPair().getInstance().getInstanceSpecificInformation());
+		list.add(String.valueOf(runConfig.getCutoffTime()));
+		list.add(String.valueOf(Integer.MAX_VALUE));
+		list.add(String.valueOf(runConfig.getProblemInstanceSeedPair().getSeed()));
+		
+		StringFormat f = StringFormat.NODB_SYNTAX;
+		
+		for(String key : runConfig.getParamConfiguration().getActiveParameters() )
+		{
+			
+			
+			if(!f.getKeyValueSeperator().equals(" ") || !f.getGlue().equals(" "))
+			{
+				throw new IllegalStateException("Key Value seperator or glue is not a space, and this means the way we handle this logic won't work currently");
+			}
+			list.add(f.getPreKey() + key);
+			list.add(f.getValueDelimeter() + runConfig.getParamConfiguration().get(key)  + f.getValueDelimeter());	
+			
+		}
+		
+		
+		//execString.append(cmd).append(" ").append().append(" ").append().append(" ").append().append(" ").append().append(" ").append().append(" ").append();
+		
+		return list.toArray(new String[0]);
 	}
+	
+	/**
+	 * Gets the execution command string
+	 * @return string containing command
+	 */
+	public static String getTargetAlgorithmExecutionCommandAsString(AlgorithmExecutionConfig execConfig, RunConfig runConfig)
+	{
+
+				
+		String cmd = execConfig.getAlgorithmExecutable();
+		cmd = cmd.replace(AlgorithmExecutionConfig.MAGIC_VALUE_ALGORITHM_EXECUTABLE_PREFIX,"");
+		
+		
+		String[] execCmdArray = SplitQuotedString.splitQuotedString(cmd);
+		
+		ArrayList<String> list = new ArrayList<String>(Arrays.asList(execCmdArray));
+		list.add(runConfig.getProblemInstanceSeedPair().getInstance().getInstanceName());
+		list.add(runConfig.getProblemInstanceSeedPair().getInstance().getInstanceSpecificInformation());
+		list.add(String.valueOf(runConfig.getCutoffTime()));
+		list.add(String.valueOf(Integer.MAX_VALUE));
+		list.add(String.valueOf(runConfig.getProblemInstanceSeedPair().getSeed()));
+		
+		StringFormat f = StringFormat.NODB_SYNTAX;
+		for(String key : runConfig.getParamConfiguration().getActiveParameters()  )
+		{
+			
+			
+			if(!f.getKeyValueSeperator().equals(" ") || !f.getGlue().equals(" "))
+			{
+				throw new IllegalStateException("Key Value seperator or glue is not a space, and this means the way we handle this logic won't work currently");
+			}
+			list.add(f.getPreKey() + key);
+			list.add(f.getValueDelimeter() + runConfig.getParamConfiguration().get(key)  + f.getValueDelimeter());	
+			
+		}
+		
+		
+		StringBuilder sb = new StringBuilder();
+		for(String s : list)
+		{
+			if(s.matches(".*\\s+.*"))
+			{
+				sb.append("\""+s + "\"");
+			} else
+			{
+				sb.append(s);
+			}
+			sb.append(" ");
+		}
+		
+		
+		//execString.append(cmd).append(" ").append().append(" ").append().append(" ").append().append(" ").append().append(" ").append().append(" ").append();
+		
+		return sb.toString();
+	}
+
 
 	
 	
@@ -442,7 +531,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 			} catch(NumberFormatException e)
 			{	 //Numeric value is probably at fault
 				this.setCrashResult("Output:" + fullLine + "\n Exception Message: " + e.getMessage() + "\n Name:" + e.getClass().getCanonicalName());
-				Object[] args = { getTargetAlgorithmExecutionCommand(execConfig, runConfig), fullLine};
+				Object[] args = { getTargetAlgorithmExecutionCommandAsString(execConfig, runConfig), fullLine};
 				log.error("Target Algorithm Call failed:{}\nResponse:{}\nComment: Most likely one of the values of runLength, runtime, quality could not be parsed as a Double, or the seed could not be parsed as a valid long", args);
 				log.error("Exception that occured trying to parse result was: ", e);
 				log.error("Run will be counted as {}", RunResult.CRASHED);
@@ -465,7 +554,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 				String[] validArgs = validValues.toArray(new String[0]);
 				
 				
-				Object[] args = { getTargetAlgorithmExecutionCommand(execConfig, runConfig), fullLine, Arrays.toString(validArgs)};
+				Object[] args = { getTargetAlgorithmExecutionCommandAsString(execConfig, runConfig), fullLine, Arrays.toString(validArgs)};
 				log.error("Target Algorithm Call failed:{}\nResponse:{}\nComment: Most likely the Algorithm did not report a result string as one of: {}", args);
 				log.error("Exception that occured trying to parse result was: ", e);
 				log.error("Run will be counted as {}", RunResult.CRASHED);
@@ -473,7 +562,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 			} catch(ArrayIndexOutOfBoundsException e)
 			{	//There aren't enough commas in the output
 				this.setCrashResult("Output:" + fullLine + "\n Exception Message: " + e.getMessage() + "\n Name:" + e.getClass().getCanonicalName());
-				Object[] args = { getTargetAlgorithmExecutionCommand(execConfig, runConfig), fullLine};
+				Object[] args = { getTargetAlgorithmExecutionCommandAsString(execConfig, runConfig), fullLine};
 				log.error("Target Algorithm Call failed:{}\nResponse:{}\nComment: Most likely the algorithm did not specify all of the required outputs that is <solved>,<runtime>,<runlength>,<quality>,<seed>", args);
 				log.error("Exception that occured trying to parse result was: ", e);
 				log.error("Run will be counted as {}", RunResult.CRASHED);

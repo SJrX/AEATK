@@ -52,7 +52,7 @@ public class AbortOnFirstRunCrashTargetAlgorithmEvaluator extends
 		
 			if(runs.get(0).getRunResult().equals(RunResult.CRASHED))
 			{
-				throw new TargetAlgorithmAbortException("First Run Crashed : " + runs.get(0).getRunConfig().toString()); 
+				throw new TargetAlgorithmAbortException("First Run Crashed : " + runs.toString()); 
 			}
 			
 		}
