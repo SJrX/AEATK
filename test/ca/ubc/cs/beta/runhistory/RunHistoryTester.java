@@ -183,7 +183,7 @@ public class RunHistoryTester {
 		RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(ilws.getInstances().get(0), insc.getNextSeed(ilws.getInstances().get(0))), execConfig.getAlgorithmCutoffTime(), space.getDefaultConfiguration()); 
 	
 		try {
-			runHistory.append(new RunningAlgorithmRun(execConfig, rc, 0, 0, 0, 0, new KillHandler() {
+			runHistory.append(new RunningAlgorithmRun(execConfig, rc, 0, 0, 0, 0, 0, new KillHandler() {
 
 				@Override
 				public void kill() {

@@ -255,10 +255,15 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 	
 	private final String _getResultLine()
 	{
-		String resultLine = acResult.name() + ", " + runtime + ", " + runLength + ", " + quality + ", " + resultSeed;
-		if(additionalRunData.trim().length() > 0)
+		return getResultLine(this);
+	}
+	
+	public static final String getResultLine(AlgorithmRun run)
+	{
+		String resultLine = run.getRunResult().name() + ", " + run.getRuntime() + ", " + run.getRunLength() + ", " + run.getQuality() + ", " + run.getResultSeed();
+		if(run.getAdditionalRunData().trim().length() > 0)
 		{
-			resultLine += "," + additionalRunData;
+			resultLine += "," + run.getAdditionalRunData();
 		}
 		return resultLine;
 	}
@@ -327,7 +332,14 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 	@Override 
 	public String toString()
 	{
-		return this.runConfig.toString() + " ==> <" + this.getResultLine()+ ">";	
+		return toString(this);
+	}
+	
+	
+	public static String toString(AlgorithmRun run)
+	{
+		return run.getRunConfig().toString() + " ==> <" + run.getResultLine()+ "> W:(" + run.getWallclockExecutionTime() + ")";
+		
 	}
 	/**
 	 * Sets the wallclock time for this target algorithm

@@ -32,7 +32,7 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 	@Parameter(names={"--algo-exec-dir","--exec-dir","--execDir","--execdir"}, description="working directory to execute algorithm in", required=true)
 	public String algoExecDir;
 	
-	@Parameter(names={"--algo-determinstic","--deterministic"}, description="treat the target algorithm as deterministic", converter=BinaryDigitBooleanConverter.class)
+	@Parameter(names={"--algo-deterministic","--deterministic"}, description="treat the target algorithm as deterministic", converter=BinaryDigitBooleanConverter.class)
 	public boolean deterministic;
 
 	@Parameter(names={"--algo-cutoff-time","--cutoff-time","--cutoffTime","--cutoff_time"}, description="CPU time limit for an individual target algorithm run", required=true, validateWith=ZeroInfinityOpenInterval.class)

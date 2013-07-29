@@ -30,13 +30,17 @@ public class CommandLineTargetAlgorithmEvaluatorFactory extends AbstractTargetAl
 	
 	public static TargetAlgorithmEvaluator getCLITAE(AlgorithmExecutionConfig config)
 	{
-		return new CommandLineTargetAlgorithmEvaluator(config, new CommandLineTargetAlgorithmEvaluatorOptions());
+		
+		CommandLineTargetAlgorithmEvaluatorOptions opts = new CommandLineTargetAlgorithmEvaluatorOptions();
+		opts.logAllCallStrings = true;
+		return new CommandLineTargetAlgorithmEvaluator(config, opts );
 	}
 
 	public static TargetAlgorithmEvaluator getCLITAE(AlgorithmExecutionConfig config, int observerFrequency)
 	{
 		CommandLineTargetAlgorithmEvaluatorOptions options = new CommandLineTargetAlgorithmEvaluatorOptions();
 		options.observerFrequency = observerFrequency;
+		options.logAllProcessOutput = true;
 		return new CommandLineTargetAlgorithmEvaluator(config,options);
 	}
 	

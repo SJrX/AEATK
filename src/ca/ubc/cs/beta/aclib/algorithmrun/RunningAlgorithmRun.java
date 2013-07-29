@@ -20,8 +20,8 @@ public class RunningAlgorithmRun extends ExistingAlgorithmRun implements Killabl
 
 
 	public RunningAlgorithmRun(AlgorithmExecutionConfig execConfig,
-			RunConfig runConfig, double runtime, double runlength, double quality, long seed, KillHandler handler) {
-		super(execConfig, runConfig, RunResult.RUNNING, runtime, runlength, quality, seed);
+			RunConfig runConfig, double runtime, double runlength, double quality, long seed, double walltime, KillHandler handler) {
+		super(execConfig, runConfig, RunResult.RUNNING, runtime, runlength, quality, seed, walltime);
 		this.handler = handler;
 	}
 

@@ -129,7 +129,7 @@ public class BoundedTargetAlgorithmEvaluator extends
 				orderOfRuns.put(rc, i);
 				KillHandler kh  = new StatusVariableKillHandler();
 				killHandlers.put(rc, kh);
-				outstandingRuns.put(runConfigs.get(i),new RunningAlgorithmRun(execConfig, rc, 0,0,0,rc.getProblemInstanceSeedPair().getSeed() , kh));
+				outstandingRuns.put(runConfigs.get(i),new RunningAlgorithmRun(execConfig, rc, 0,0,0,rc.getProblemInstanceSeedPair().getSeed() ,0, kh));
 			}
 			
 			//Observer maps

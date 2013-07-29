@@ -30,6 +30,8 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorCal
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.WaitableTAECallback;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluatorFactory;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluatorOptions;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator;
 
 @SuppressWarnings("unused")
 public class DynamicCappingTestSet {
@@ -131,6 +133,7 @@ public class DynamicCappingTestSet {
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
 		
 		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
+		tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
 		
 		assertTrue(tae.areRunsObservable());
 		
@@ -171,13 +174,15 @@ public class DynamicCappingTestSet {
 				{
 					failure.set(true);
 				}
-				double runtimeSum = 0.0; 
+				double runtimeSum = 0.0;
+				double walltimeSum = 0.0;
 				for(AlgorithmRun run : runs)
 				{
 					runtimeSum += run.getRuntime();
+					walltimeSum += run.getWallclockExecutionTime();
 				}
 				
-				System.out.println(runtimeSum);
+				System.out.println(runtimeSum + ","+ walltimeSum);
 				if(runtimeSum > 3)
 				{
 					System.out.println("Trying to kill");
@@ -248,6 +253,7 @@ public class DynamicCappingTestSet {
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
 		
 		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);	
+		tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
 		
 		assertTrue(tae.areRunsObservable());
 		
@@ -290,7 +296,7 @@ public class DynamicCappingTestSet {
 				}
 				
 				//System.out.println(runtimeSum);
-				if(runtimeSum > 5)
+				if(runtimeSum > 4)
 				{
 					System.out.println("Issuing kill order on " + runtimeSum);
 					for(KillableAlgorithmRun run : runs)
@@ -335,9 +341,7 @@ public class DynamicCappingTestSet {
 	}
 	
 
-	/**
-	 * Tests whether warnings are generated for Algorithms exceeding there runtime
-	 */
+
 	@Test
 	public void testDynamicAdaptiveCappingMultiRunMultiCore()
 	{
@@ -351,15 +355,21 @@ public class DynamicCappingTestSet {
 		b.append(TrueSleepyParamEchoExecutor.class.getCanonicalName());
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
 		
-		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
+		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
+		
+		CommandLineTargetAlgorithmEvaluatorOptions opt = fact.getOptionObject();
+		opt.cores = 4;
+		tae = fact.getTargetAlgorithmEvaluator(execConfig, opt);
+		
+		tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
 		
 		assertTrue(tae.areRunsObservable());
-		
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(10);
 		for(int i=0; i < 10; i++)
 		{
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			
 			config.put("runtime", ""+(i+1));
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
 			{
@@ -387,20 +397,30 @@ public class DynamicCappingTestSet {
 			@Override
 			public void currentStatus(List<? extends KillableAlgorithmRun> runs) {
 				
+				//System.out.println(runs.get(0).getWallclockExecutionTime());
 				double runtimeSum = 0.0; 
+				double walltimeSum = 0.0;
 				for(AlgorithmRun run : runs)
 				{
 					runtimeSum += run.getRuntime();
+					walltimeSum += run.getWallclockExecutionTime();
 				}
 				
 				//System.out.println(runtimeSum);
-				if(runtimeSum > 5)
+			
+				
+				if(runtimeSum > 8)
 				{
+					for(KillableAlgorithmRun run : runs)
+					{
+				//		System.out.println(run.toString());
+					}
 					for(KillableAlgorithmRun run : runs)
 					{
 						run.kill();
 					}
 				}
+				
 			}
 			
 		};
@@ -411,11 +431,16 @@ public class DynamicCappingTestSet {
 		//System.setOut(out);
 		//System.out.println(bout.toString());
 		
+		long runtimeSum = 0;
+		long wallclockTime = 0;
 		for(AlgorithmRun run : runs)
 		{
-			System.out.println(run.getResultLine());
+			System.out.println("Result: " + run);
 			
 			ParamConfiguration config  = run.getRunConfig().getParamConfiguration();
+			
+			runtimeSum+= run.getRuntime();
+			wallclockTime += run.getWallclockExecutionTime();
 			
 			if(run.getRunResult().isSuccessfulAndCensored())
 			{
@@ -433,6 +458,12 @@ public class DynamicCappingTestSet {
 			
 
 		}
+		
+		assertTrue("Runtime should be greater than 5 seconds", runtimeSum > 5);
+		
+		assertTrue("Wallclocktime should be greater than 5 seconds", wallclockTime > 5);
+		
+		
 		
 		tae.notifyShutdown();
 		
@@ -461,6 +492,7 @@ public class DynamicCappingTestSet {
 			execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
 			
 			tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig, 50);	
+			tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
 			
 			assertTrue(tae.areRunsObservable());
 			
@@ -544,8 +576,15 @@ public class DynamicCappingTestSet {
 			b.append(" ");
 			b.append(TrueSleepyParamEchoExecutor.class.getCanonicalName());
 			execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
+			CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
 			
-			tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig, 50);	
+			CommandLineTargetAlgorithmEvaluatorOptions opt = fact.getOptionObject();
+			opt.cores = 1;
+			opt.observerFrequency = 50;
+			tae = fact.getTargetAlgorithmEvaluator(execConfig, opt);
+			
+				
+			tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
 			
 			assertTrue(tae.areRunsObservable());
 			

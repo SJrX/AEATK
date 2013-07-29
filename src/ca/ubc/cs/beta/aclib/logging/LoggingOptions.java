@@ -32,7 +32,7 @@ public class LoggingOptions extends AbstractOptions{
 	@Parameter(names={"--console-log-level","--consoleLogLevel"},description="default log level of console output (this cannot be more verbose than the logLevel)")
 	public LogLevel consoleLogLevel = LogLevel.INFO;
 	
-	@Parameter(names={"--log-level","--logLevel"},description="Log Level for SMAC")
+	@Parameter(names={"--log-level","--logLevel"},description="messages will only be logged if they are of this severity or higher.")
 	public LogLevel logLevel = LogLevel.DEBUG;	
 	
 	//This isn't meant to be an option, you can simply change this value before calling initializeLogging

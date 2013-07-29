@@ -56,6 +56,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorOptions;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.WaitableTAECallback;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli.CommandLineAlgorithmRun;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluatorFactory;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluatorOptions;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.preloaded.PreloadedResponseTargetAlgorithmEvaluatorOptions;
@@ -69,6 +70,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.BoundedT
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.KillCaptimeExceedingRunsRunsTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.SimulatedDelayTargetAlgorithmEvaluatorDecorator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.prepostcommand.PrePostCommandErrorException;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.safety.AbortOnCrashTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.safety.AbortOnFirstRunCrashTargetAlgorithmEvaluator;
@@ -80,6 +82,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.init.TargetAlgorithmEvaluat
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.init.TargetAlgorithmEvaluatorLoader;
 import ca.ubc.cs.beta.targetalgorithmevaluator.impl.SolQualSetTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.targetalgorithmevaluator.massiveoutput.MassiveOutputParamEchoExecutor;
+import ca.ubc.cs.beta.targetalgorithmevaluator.targetalgos.EnvironmentVariableEchoer;
 import ca.ubc.cs.beta.targetalgorithmevaluator.targetalgos.FiveSecondSleepingParamEchoExecutor;
 
 @SuppressWarnings("unused")
@@ -2553,6 +2556,8 @@ public class TAETestSet {
 		
 		tae = fact.getTargetAlgorithmEvaluator(execConfig, options);	
 		TargetAlgorithmEvaluator cliTAE = tae;
+		tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
+		
 		
 		TargetAlgorithmEvaluator taeUnity = new KillCaptimeExceedingRunsRunsTargetAlgorithmEvaluatorDecorator(cliTAE, 1.1);
 		
@@ -2795,6 +2800,162 @@ public class TAETestSet {
 		
 	}
 
+	@Test
+	public void testEnvironmentVariableSet()
+	{
+		//Check that a submission of run 10 runs on a bound of <5 take 5,1,1,1,1, 5,1,1,1,1 takes 6 seconds and not 10.
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(EnvironmentVariableEchoer.class.getCanonicalName());
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
+		
+		
+		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
+		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
+		
+		options.cores = 2;
+		options.logAllCallStrings = true;
+		options.logAllProcessOutput = true;
+		options.concurrentExecution = true;
+		options.observerFrequency = 2000;
+		
+		
+		tae = fact.getTargetAlgorithmEvaluator(execConfig, options);	
+		TargetAlgorithmEvaluator cliTAE = tae;
+		tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
+		
+		
+		
+		
+		
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(4);
+		double runtime = 50;
+		for(int i=0; i < 1; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			
+			config.put("runtime",String.valueOf(runtime));
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1.5, config);
+				runConfigs.add(rc);
+			}
+		}
+		
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		PrintStream pout = new PrintStream(bout);
+		PrintStream oldOut = System.out;
+		
+		System.setOut(pout);
+		
+		tae.evaluateRun(runConfigs);
+		
+		
+		System.setOut(oldOut);
+		System.out.println(bout.toString());
+		assertTrue(bout.toString().contains(CommandLineAlgorithmRun.PORT_ENVIRONMENT_VARIABLE));
+		assertTrue(bout.toString().contains(CommandLineAlgorithmRun.FREQUENCY_ENVIRONMENT_VARIABLE));
+		
+		
+		
+	}
+	
+	@Test
+	public void testCPUTimeUpdateWithRunsolver()
+	{
+		//Check that a submission of run 10 runs on a bound of <5 take 5,1,1,1,1, 5,1,1,1,1 takes 6 seconds and not 10.
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		StringBuilder b = new StringBuilder();
+		
+		//b.append((new File("")).getAbsolutePath() + File.separator + "test-files"+File.separator + "runsolver" + File.separator + "runsolver -C 4000 " + (new File("")).getAbsolutePath() + File.separator + "test-files"+File.separator + "runsolver" + File.separator + "/sleepy");
+		b.append((new File("")).getAbsolutePath() + File.separator + "test-files"+File.separator + "runsolver" + File.separator + "system ");
+		
+		System.out.println(b);
+		
+		
+		
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 1500);
+		
+		
+		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
+		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
+		
+		options.cores = 2;
+		options.logAllCallStrings = true;
+		options.logAllProcessOutput = true;
+		options.concurrentExecution = true;
+		options.observerFrequency = 2000;
+		
+		
+		tae = fact.getTargetAlgorithmEvaluator(execConfig, options);	
+		TargetAlgorithmEvaluator cliTAE = tae;
+		tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
+		
+		
+		
+		
+		
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(4);
+		double runtime = 50;
+		for(int i=0; i < 1; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			
+			config.put("runtime",String.valueOf(runtime));
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 20, config);
+				runConfigs.add(rc);
+			}
+		}
+		
+		
+		
+		TargetAlgorithmEvaluatorRunObserver obs = new TargetAlgorithmEvaluatorRunObserver()
+		{
+
+			@Override
+			public void currentStatus(List<? extends KillableAlgorithmRun> runs) 
+			{
+				for(KillableAlgorithmRun run : runs)
+				{
+					System.out.println("Runtime: " + run.getRuntime() + " walltime: " + run.getWallclockExecutionTime());
+					
+					if(run.getRuntime() > 4)
+					{
+						run.kill();
+					}
+					
+					if(run.getWallclockExecutionTime() > 30)
+					{
+						System.err.println("This test has almost certainly failed and will never end");
+					}
+				}
+			}
+			
+		};
+		
+		
+		
+		tae.evaluateRun(runConfigs,obs);
+		
+		
+		
+		
+	}
 	
 	
 }
