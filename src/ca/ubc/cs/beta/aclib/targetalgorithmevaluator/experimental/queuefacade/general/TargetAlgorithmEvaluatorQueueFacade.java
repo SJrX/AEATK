@@ -40,6 +40,7 @@ public class TargetAlgorithmEvaluatorQueueFacade<K extends TargetAlgorithmEvalua
 	private final boolean throwExceptions;
 	private final Logger log = LoggerFactory.getLogger(getClass());
 	private final AtomicInteger outstandingRuns = new AtomicInteger(0);
+	private final AtomicInteger queuedAndOutstandingRuns = new AtomicInteger(0);
 
 	public TargetAlgorithmEvaluatorQueueFacade(TargetAlgorithmEvaluator tae, boolean throwExceptions)
 	{
@@ -88,11 +89,13 @@ public class TargetAlgorithmEvaluatorQueueFacade<K extends TargetAlgorithmEvalua
 	{
 		context.setRunConfigs(runConfigs);
 		outstandingRuns.incrementAndGet();
+		queuedAndOutstandingRuns.incrementAndGet();
 		try {
 			tae.evaluateRunsAsync(runConfigs, new QueueingTargetAlgorithmEvaluatorCallback(context), obs);
 		} catch(RuntimeException e)
 		{
 			outstandingRuns.decrementAndGet();
+			queuedAndOutstandingRuns.decrementAndGet();
 			throw e;
 		}
 	}
@@ -103,7 +106,14 @@ public class TargetAlgorithmEvaluatorQueueFacade<K extends TargetAlgorithmEvalua
 	 */
 	public synchronized K poll()
 	{
-		return checkForException(queue.poll());
+		K context = (queue.poll());
+		
+		if(context != null)
+		{
+			this.queuedAndOutstandingRuns.decrementAndGet();
+		} 
+		
+		return checkForException(context);
 	}
 	
 	/**
@@ -113,7 +123,15 @@ public class TargetAlgorithmEvaluatorQueueFacade<K extends TargetAlgorithmEvalua
 	 */
 	public synchronized K take() throws InterruptedException
 	{
-		return checkForException(queue.take());
+		
+		K context = (queue.take());
+		
+		if(context != null)
+		{
+			this.queuedAndOutstandingRuns.decrementAndGet();
+		} 
+		
+		return checkForException(context);
 	}
 	
 	/**
@@ -125,7 +143,14 @@ public class TargetAlgorithmEvaluatorQueueFacade<K extends TargetAlgorithmEvalua
 	 */
 	public synchronized K poll(long timeout, TimeUnit unit) throws InterruptedException
 	{
-		return checkForException(queue.poll(timeout, unit));
+		K context = queue.poll(timeout, unit);
+		
+		if(context != null)
+		{
+			this.queuedAndOutstandingRuns.decrementAndGet();
+		} 
+		
+		return checkForException(context);
 	}
 
 	/**
@@ -155,6 +180,15 @@ public class TargetAlgorithmEvaluatorQueueFacade<K extends TargetAlgorithmEvalua
 	public synchronized int getApproximateNumberOfQueuedRuns()
 	{
 		return this.queue.size();
+	}
+	
+	/**
+	 * Returns the number of queued and outstanding runs (the number of runs executing in the TAE + the number of results in the queue)
+	 * @return total runs submitted but not retrieved
+	 */
+	public synchronized int getNumberOfOutstandingAndQueuedRuns()
+	{
+		return this.queuedAndOutstandingRuns.get();
 	}
 	
 	private K checkForException(K context)

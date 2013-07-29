@@ -139,5 +139,14 @@ public class BasicTargetAlgorithmEvaluatorQueue {
 		return taeQueue.getApproximateNumberOfQueuedRuns();
 	}
 	
+	/**
+	 * Returns the number of queued and outstanding runs (the number of runs executing in the TAE + the number of results in the queue)
+	 * @return total runs submitted but not retrieved
+	 */
+	public synchronized int getNumberOfOutstandingAndQueuedRuns()
+	{
+		return taeQueue.getNumberOfOutstandingAndQueuedRuns();
+	}
+	
 	
 }
