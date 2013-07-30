@@ -17,14 +17,10 @@ public class TargetAlgorithmEvaluatorRunnerNoArgumentHandler implements NoArgume
 		sb.append("  algo-test --scenarioFile <file> --config \"-name 'value' -name 'value'...\"\n\n");
 
 		sb.append("  Specifying the instance \n");
-		sb.append("  algo-test --scenarioFile <file> --instance foo.cnf \n\n");
-
-		sb.append("  Specifying the instance \n");
 		sb.append("  algo-test --scenarioFile <file> --instance <instance> \n\n");
 
 		sb.append("  Without a scenario file: \n");
-		sb.append("  algo-test --algo-exec <executable> --algo-cutoff-time <timelimit> --algo-exec-dir <dir> --param-file <filename> --instance <instance>\n");
-		
+		sb.append("  algo-test --algo-exec <executable> --algo-cutoff-time <timelimit> --algo-exec-dir <dir> --param-file <filename> --instance <instance>\n\n");
 		
 		sb.append("  Full version information is available with :\n");
 		sb.append("  algo-test -v\n\n");

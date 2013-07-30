@@ -2534,7 +2534,6 @@ public class TAETestSet {
 	@Test
 	public void testKillingRunDecorator()
 	{
-		//Check that a submission of run 10 runs on a bound of <5 take 5,1,1,1,1, 5,1,1,1,1 takes 6 seconds and not 10.
 		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		StringBuilder b = new StringBuilder();
 		b.append("java -cp ");
@@ -2547,7 +2546,7 @@ public class TAETestSet {
 		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
 		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
 		
-		options.cores = 2;
+		options.cores = 1;
 		options.logAllCallStrings = true;
 		options.logAllProcessOutput = true;
 		options.concurrentExecution = true;
@@ -2559,7 +2558,7 @@ public class TAETestSet {
 		tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
 		
 		
-		TargetAlgorithmEvaluator taeUnity = new KillCaptimeExceedingRunsRunsTargetAlgorithmEvaluatorDecorator(cliTAE, 1.1);
+		TargetAlgorithmEvaluator taeUnity = new KillCaptimeExceedingRunsRunsTargetAlgorithmEvaluatorDecorator(tae, 1.1);
 		
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(4);
@@ -2581,8 +2580,13 @@ public class TAETestSet {
 			}
 		}
 		
-		
+		long startTime = System.currentTimeMillis();
 		taeUnity.evaluateRun(runConfigs);
+		long endTime = System.currentTimeMillis();
+		if(endTime - startTime > 5000)
+		{
+			fail("This test took too long to run");
+		}
 	}
 	
 	
@@ -2875,8 +2879,8 @@ public class TAETestSet {
 		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		StringBuilder b = new StringBuilder();
 		
-		//b.append((new File("")).getAbsolutePath() + File.separator + "test-files"+File.separator + "runsolver" + File.separator + "runsolver -C 4000 " + (new File("")).getAbsolutePath() + File.separator + "test-files"+File.separator + "runsolver" + File.separator + "/sleepy");
-		b.append((new File("")).getAbsolutePath() + File.separator + "test-files"+File.separator + "runsolver" + File.separator + "system ");
+		b.append((new File("")).getAbsolutePath() + File.separator + "test-files"+File.separator + "runsolver" + File.separator + "runsolver -C 4000 " + (new File("")).getAbsolutePath() + File.separator + "test-files"+File.separator + "runsolver" + File.separator + "/sleepy");
+		//b.append((new File("")).getAbsolutePath() + File.separator + "test-files"+File.separator + "runsolver" + File.separator + "system ");
 		
 		System.out.println(b);
 		

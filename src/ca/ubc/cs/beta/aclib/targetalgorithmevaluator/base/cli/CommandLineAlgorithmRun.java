@@ -844,17 +844,29 @@ outerloop:
 					if(pid > 0)
 					{
 						
-						log.debug("Trying to send SIGTERM to pid: {}", pid);
+						log.debug("Trying to send SIGTERM to process group id: {}", pid);
 						try {
-							Process p2 = Runtime.getRuntime().exec("kill -TERM " + pid);
-							int retVal = p2.waitFor();
+							Process p2 = Runtime.getRuntime().exec("kill -s TERM -" + pid);
+							int retValPGroup = p2.waitFor();
 							
-							if(retVal > 0)
+							if(retValPGroup > 0)
 							{
-								log.debug("SIGTERM to pid: {} attempted failed with return code {}",pid, retVal);
+								Process p3 = Runtime.getRuntime().exec("kill -s TERM " + pid);
+								int retVal = p3.waitFor();
+								
+								if(retVal > 0)
+								{
+									Object[] args = { pid, pid,retVal};
+									log.debug("SIGTERM to process group id {} failed, SIGTERM to process id: {} attempted failed with return code {}",args);
+								} else
+								{
+									log.debug("SIGTERM to process group id {} failed, SIGTERM delivered successfully to process id: {}", pid, pid);
+								}
+									
+								
 							} else
 							{
-								log.debug("SIGTERM delivered successfully to pid: {} ", pid);
+								log.debug("SIGTERM delivered successfully to process group id: {} ", pid);
 							}
 						} catch (IOException e) {
 							e.printStackTrace();
@@ -880,7 +892,7 @@ outerloop:
 						
 						log.debug("Trying to send SIGKILL to pid: {}", pid);
 						try {
-							Process p2 = Runtime.getRuntime().exec("kill -KILL " + pid);
+							Process p2 = Runtime.getRuntime().exec("kill -s KILL -" + pid);
 							int retVal = p2.waitFor();
 							
 							if(retVal > 0)

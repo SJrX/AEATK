@@ -27,6 +27,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.KillCapt
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.RetryCrashedRunsTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.prepostcommand.PrePostCommandTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.safety.AbortOnCrashTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.safety.AbortOnFirstRunCrashTargetAlgorithmEvaluator;
@@ -272,7 +273,13 @@ public class TargetAlgorithmEvaluatorBuilder {
 		{
 			log.warn("[TAE] Not Checking that every request to the TAE is unique, this may cause weird errors");
 		}
-		 
+		
+		if(options.observeWalltimeIfNoRuntime)
+		{
+			log.info("[TAE] Using walltime as observer runtime if no runtime is reported");
+			tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae, options.observeWalltimeScale);
+		}
+		
 		log.debug("Final Target Algorithm Built is {}", tae);
 		return tae;
 	}

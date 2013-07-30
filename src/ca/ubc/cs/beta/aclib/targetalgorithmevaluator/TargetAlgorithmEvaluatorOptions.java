@@ -104,6 +104,11 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	@Parameter(names="--check-for-unique-runconfigs-exception", description="If true, we will throw an exception if duplicate run configurations are detected")
 	public boolean checkRunConfigsUniqueException = true;
 
+	@Parameter(names="--observer-walltime-if-no-runtime", description="If true and the target algorithm doesn't update us with runtime information we report wallclock time")
+	public boolean observeWalltimeIfNoRuntime = false;
+	
+	@Parameter(names="--observer-walltime-scale", description="What factor of the walltime should we use as the runtime (generally recommended is the 0.99 times the number of cores)", validateWith=ZeroInfinityOpenInterval.class)
+	public double observeWalltimeScale = 0.99;
 	
 	/**
 	 * Checks if the problem instances are compatible with the verify sat option
