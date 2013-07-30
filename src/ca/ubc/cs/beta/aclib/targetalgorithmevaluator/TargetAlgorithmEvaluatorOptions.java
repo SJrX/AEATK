@@ -109,6 +109,9 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	
 	@Parameter(names="--observer-walltime-scale", description="What factor of the walltime should we use as the runtime (generally recommended is the 0.99 times the number of cores)", validateWith=ZeroInfinityOpenInterval.class)
 	public double observeWalltimeScale = 0.99;
+
+	@Parameter(names="--synchronize-observers", description="Synchronize calls to the observer (this helps simplify memory visibility issues)", hidden=true)
+	public boolean synchronousObserver = true;
 	
 	/**
 	 * Checks if the problem instances are compatible with the verify sat option

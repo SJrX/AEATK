@@ -280,6 +280,13 @@ public class TargetAlgorithmEvaluatorBuilder {
 			tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae, options.observeWalltimeScale);
 		}
 		
+		if(options.synchronousObserver)
+		{
+			log.info("[TAE] Synchronizing notifications to the observer");
+		} else
+		{
+			log.debug("[TAE] Skipping synchronization of observers, this may cause weird threading issues");
+		}
 		log.debug("Final Target Algorithm Built is {}", tae);
 		return tae;
 	}
