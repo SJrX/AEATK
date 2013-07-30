@@ -11,10 +11,10 @@ public class SMACNoArgHandler implements NoArgumentHandler{
 		sb.append("SMAC (http://www.cs.ubc.ca/labs/beta/Projects/SMAC/) is an automatic configurator that allows users to automatically tune algorithm configuration spaces.").append("\n\n");
 
 		sb.append("  Basic Usage:\n");
-		sb.append("  smac --scenarioFile <file> --numRun 0\n\n");
+		sb.append("  smac --scenarioFile <file> --seed 1\n\n");
 	
 		sb.append("  Skipping Validation:\n");
-		sb.append("  smac --scenarioFile <file> --numRun 0  --doValidation false\n\n");
+		sb.append("  smac --scenarioFile <file> --seed 1  --doValidation false\n\n");
 
 		sb.append("  Full version information is available with :\n");
 		sb.append("  smac -v\n\n");
