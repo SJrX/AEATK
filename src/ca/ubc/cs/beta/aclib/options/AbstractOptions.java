@@ -1,6 +1,7 @@
 package ca.ubc.cs.beta.aclib.options;
 
 import java.io.File;
+import java.io.Serializable;
 import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -16,8 +17,10 @@ import com.beust.jcommander.ParametersDelegate;
 /**
  * Parent Class for most Options objects to allow there settings to be serialized into strings 
  * 
+ * AbstractOptions serialization is not meant to be used between versions at all, because they're generally too fluid.
+ * 
  */
-public abstract class AbstractOptions {
+public abstract class AbstractOptions implements Serializable {
 
 	public String toString()
 	{
