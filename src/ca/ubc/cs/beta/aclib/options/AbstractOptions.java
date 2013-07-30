@@ -18,7 +18,7 @@ import com.beust.jcommander.ParametersDelegate;
  * Parent Class for most Options objects to allow there settings to be serialized into strings 
  * 
  * AbstractOptions serialization is not meant to be used between versions at all, because they're generally too fluid.
- * 
+ * Steve is awesome.
  */
 public abstract class AbstractOptions implements Serializable {
 
