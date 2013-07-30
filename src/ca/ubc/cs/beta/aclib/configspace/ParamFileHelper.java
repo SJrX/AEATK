@@ -21,6 +21,9 @@ public final class ParamFileHelper {
 	{	if(filename.equals(ParamConfigurationSpace.SINGLETON_ABSOLUTE_NAME))
 		{
 			return ParamConfigurationSpace.getSingletonConfigurationSpace();
+		} else if(filename.equals(ParamConfigurationSpace.NULL_ABSOLUTE_NAME))
+		{
+			return ParamConfigurationSpace.getNullConfigurationSpace();
 		} else
 		{
 			return getParamFileParser(new File(filename));

@@ -27,7 +27,7 @@ import com.beust.jcommander.ParameterException;
 @UsageTextField(hiddenSection = true)
 public class ParamConfigurationSpaceOptions extends AbstractOptions{
 	
-	@Parameter(names={"--param-file","-p", "--paramFile","--paramfile"}, description="File containing algorithm parameter space information (see Algorithm Parameter File in the Manual)")
+	@Parameter(names={"--param-file","-p", "--paramFile","--paramfile"}, description="File containing algorithm parameter space information (see Algorithm Parameter File in the Manual). You can specify \"SINGLETON\" to get a singleton configuration space or \"NULL\" to get a null one.")
 	public String paramFile;
 
 	@Parameter(names={"--search-subspace","--searchSubspace"}, description="Only generate random and neighbouring configurations with these values. Specified in a \"name=value,name=value,...\" format (Overrides those set in file)", required=false)
@@ -134,7 +134,14 @@ public class ParamConfigurationSpaceOptions extends AbstractOptions{
 		if(this.paramFile == null)
 		{
 			throw new ParameterException("You must supply a valid parameter file");
+		} else if(this.paramFile.trim().equals("SINGLETON"))
+		{
+			return ParamConfigurationSpace.getSingletonConfigurationSpace();
+		} else if(this.paramFile.trim().equals("NULL"))
+		{
+			return ParamConfigurationSpace.getNullConfigurationSpace();
 		}
+		
 		Logger log = LoggerFactory.getLogger(this.getClass());
 		List<String> searchPaths = new ArrayList<String>(searchDirectories);
 		

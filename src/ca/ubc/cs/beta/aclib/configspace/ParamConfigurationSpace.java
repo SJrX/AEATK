@@ -1554,6 +1554,7 @@ public class ParamConfigurationSpace implements Serializable {
 	}
 	
 	public static final String SINGLETON_ABSOLUTE_NAME = "<--[SINGLETON SPACE]-->";
+	public static final String NULL_ABSOLUTE_NAME ="<--[NULL SPACE]-->";
 	/**
 	 * Returns a configuration space with a single parameter and single value
 	 * 
@@ -1563,6 +1564,11 @@ public class ParamConfigurationSpace implements Serializable {
 	{
 		return new ParamConfigurationSpace(new StringReader("singleton { singleton } [singleton]"),SINGLETON_ABSOLUTE_NAME);
 	}
+	
+	public static ParamConfigurationSpace getNullConfigurationSpace() {
+		return new ParamConfigurationSpace(new StringReader(""),NULL_ABSOLUTE_NAME);
+	}
+	
 
 	void setValueInArray(double[] valueArray, String key, String newValue) {
 		
@@ -1659,6 +1665,9 @@ public class ParamConfigurationSpace implements Serializable {
 		}
 	
 	}
+
+
+
 	
 }
 

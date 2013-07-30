@@ -1488,7 +1488,7 @@ public class ParamConfigurationTest {
 	/**
 	 * Related to bug 1728
 	 */
-	
+	@Test
 	public void testGenerateForbidden()
 	{
 
@@ -1502,6 +1502,23 @@ public class ParamConfigurationTest {
 		*/
 	}
 	
+	@Test
+	public void testNullSpace()
+	{
+		ParamConfigurationSpace configSpace = ParamConfigurationSpace.getNullConfigurationSpace();
+		ParamConfiguration config = configSpace.getDefaultConfiguration();
+		
+		System.out.println("Config String:" + config.getFormattedParamString(StringFormat.NODB_SYNTAX));
+		
+		assertEquals(config.getNeighbourhood(new Random(0),5).size(), 0);
+		
+		assertEquals(config.getActiveParameters().size(), 0);
+		assertEquals(configSpace.getLowerBoundOnSize(),1,0.0);
+		assertEquals(configSpace.getUpperBoundOnSize(),1,0.0);
+		assertEquals(configSpace.getRandomConfiguration(new Random(0)), config);
+		assertEquals(configSpace.getParameterNames().size(),0);
+			
+	}
 	@Test
 	@Ignore
 	public void testRandomSpeed()
