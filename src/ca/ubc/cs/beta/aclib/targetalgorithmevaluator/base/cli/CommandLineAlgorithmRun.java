@@ -433,8 +433,8 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 			runObserver.currentStatus(Collections.singletonList(new KillableWrappedAlgorithmRun(this)));
 			log.debug("Run {} is completed", this);
 		} catch (IOException e1) {
-			String execCmd = getTargetAlgorithmExecutionCommandAsString(execConfig,runConfig);
-			log.error("Failed to execute command: {}", execCmd);
+			//String execCmd = getTargetAlgorithmExecutionCommandAsString(execConfig,runConfig);
+			log.error( "Failed Run Detected (IOException) Call: cd \"{}\" " + commandSeparator + "  {} ",new File(execConfig.getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommandAsString(execConfig, runConfig));
 			throw new TargetAlgorithmAbortException(e1);
 			//throw new IllegalStateException(e1);
 		}
