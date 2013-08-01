@@ -2,10 +2,11 @@ package ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.preloaded;
 
 import com.beust.jcommander.Parameter;
 
+import ca.ubc.cs.beta.aclib.misc.options.OptionLevel;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 
-@UsageTextField(title="Preloaded Response Target Algorithm Evaluator", description="Target Algorithm Evaluator that provides preloaded responses")
+@UsageTextField(title="Preloaded Response Target Algorithm Evaluator", description="Target Algorithm Evaluator that provides preloaded responses", level=OptionLevel.DEVELOPER)
 public class PreloadedResponseTargetAlgorithmEvaluatorOptions extends
 		AbstractOptions {
 

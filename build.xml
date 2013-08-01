@@ -92,7 +92,7 @@ dirty: ${git.dirty}</echo>
 	                <include name="*.jar"/>
 	                <exclude name="*sources.jar"/>
 	            </fileset>
-	            <fileset dir="${software.dir}/fastrf/" id="fastrf">
+	            <fileset dir="${software.dir}/fastrf-${git.branch}/" id="fastrf">
 	                <include name="fastrf.jar"/>
 	            </fileset>
                     <fileset dir="testlib">
@@ -126,7 +126,7 @@ dirty: ${git.dirty}</echo>
 				<include name="*.jar"/>
 				<exclude name="*sources.jar"/>
 			</fileset>
-			<fileset dir="${software.dir}/fastrf/" id="fastrf">
+			<fileset dir="${software.dir}/fastrf-${git.branch}/" id="fastrf">
 	                <include name="fastrf.jar"/>
 				<include name="fastrf-src.jar"/>
 	       </fileset>
@@ -153,7 +153,7 @@ dirty: ${git.dirty}</echo>
 	       		<fileset dir="testlib">
 	       			<include name="*.jar"/>
 	       		</fileset>
-	            <fileset dir="${software.dir}/fastrf/" id="fastrf">
+	            <fileset dir="${software.dir}/fastrf-${git.branch}/" id="fastrf">
 	                <include name="fastrf.jar"/>
 	            </fileset>
 	            <pathelement path="build/classes/" /> 

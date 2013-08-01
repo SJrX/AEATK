@@ -28,17 +28,19 @@ public class WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator extends
 
 	
 	private final double wallclockMultScaleFactor;
-	
+	private final double startAt;
 	public WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(
 			TargetAlgorithmEvaluator tae) {
 		super(tae);
-		wallclockMultScaleFactor = 0.99;
+		wallclockMultScaleFactor = 0.95;
+		startAt = 0.05;
 	}
 	
 	public WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(
-			TargetAlgorithmEvaluator tae, double scaleFactor) {
+			TargetAlgorithmEvaluator tae, double scaleFactor, double startAt) {
 		super(tae);
 		wallclockMultScaleFactor = scaleFactor;
+		this.startAt = startAt;
 	}
 	
 	
@@ -75,7 +77,7 @@ public class WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator extends
 	{
 		if(run.getRunResult().equals(RunResult.KILLED))
 		{
-			if(run.getRuntime() == 0 && run.getWallclockExecutionTime() > 1.5)
+			if(run.getRuntime() == 0 && run.getWallclockExecutionTime() > startAt)
 			{
 		
 				return new WalltimeAsRuntimeKillableAlgorithmRun(run);
@@ -135,7 +137,7 @@ public class WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator extends
 				
 				if(run.getRunResult().equals(RunResult.RUNNING))
 				{
-					if(run.getRuntime() == 0 && run.getWallclockExecutionTime() > 1.5)
+					if(run.getRuntime() == 0 && run.getWallclockExecutionTime() > startAt)
 					{
 				
 						myRuns.add(new WalltimeAsRuntimeKillableAlgorithmRun(run));

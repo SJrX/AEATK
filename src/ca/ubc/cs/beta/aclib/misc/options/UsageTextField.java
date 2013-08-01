@@ -24,4 +24,6 @@ public @interface UsageTextField {
 	Class<? extends NoArgumentHandler> noarg() default NoopNoArgumentHandler.class;
 	
 	Class<? extends Object> converterFileOptions() default Object.class;
+	
+	OptionLevel level() default OptionLevel.BASIC;
 }

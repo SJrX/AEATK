@@ -27,6 +27,7 @@ public class UsageSection implements Iterable<String> {
 	private final boolean hidden;
 	private final NoArgumentHandler noargHandler;
 	private final boolean converterFileOption;
+	private final Map<String, OptionLevel> levelMap = new HashMap<String, OptionLevel>();
 	
 	/**
 	 * Constructs a new usage section
@@ -78,8 +79,9 @@ public class UsageSection implements Iterable<String> {
 	 * @param domain		A human readable string that tells us what arguments are allowed
 	 * @param allAliases	A human readable string that tells us about all the aliases for the name
 	 * @param hidden	    <code>true</code> if this attribute is hidden
+	 * @param level 
 	 */
-	public void addAttribute(String name, String description, String defaultValue, boolean required, String domain, String allAliases, boolean hidden)
+	public void addAttribute(String name, String description, String defaultValue, boolean required, String domain, String allAliases, boolean hidden, OptionLevel level)
 	{
 		if(name == null) throw new IllegalArgumentException("name can't be null");
 		name = name.trim();
@@ -96,6 +98,7 @@ public class UsageSection implements Iterable<String> {
 		domainMap.put(name, domain);
 		aliasMap.put(name,allAliases);
 		hiddenMap.put(name, hidden);
+		levelMap.put(name,level);
 	}
 
 	@Override
@@ -167,6 +170,10 @@ public class UsageSection implements Iterable<String> {
 	}
 
 
+	public OptionLevel getAttributeLevel(String s)
+	{
+		return levelMap.get(s);
+	}
 	public boolean isAttributeHidden(String name) {
 
 		return hiddenMap.get(name);

@@ -276,8 +276,8 @@ public class TargetAlgorithmEvaluatorBuilder {
 		
 		if(options.observeWalltimeIfNoRuntime)
 		{
-			log.info("[TAE] Using walltime as observer runtime if no runtime is reported");
-			tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae, options.observeWalltimeScale);
+			log.info("[TAE] Using walltime as observer runtime if no runtime is reported, scale {} , delay {} (secs)", options.observeWalltimeScale, options.observeWalltimeDelay);
+			tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae, options.observeWalltimeScale, options.observeWalltimeDelay);
 		}
 		
 		if(options.synchronousObserver)

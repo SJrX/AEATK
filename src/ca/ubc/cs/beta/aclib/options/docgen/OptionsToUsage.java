@@ -60,6 +60,24 @@ public class OptionsToUsage {
 					required = "[R]";
 				}
 				
+				switch(sec.getAttributeLevel(name))
+				{
+				case ADVANCED:
+					required += "[A]";
+					break;
+				case BASIC:
+					required += "[B]";
+					break;
+				case DEVELOPER:
+					required += "[D]";
+					break;
+				case INTERMEDIATE:
+					required += "[I]";
+					break;
+				default:
+					throw new IllegalStateException("Unknown case");
+				
+				}
 				
 				pw.format("%-10s %s %n", required, sec.getAttributeAliases(name));
 				if(sec.getAttributeDescription(name).trim().length() > 0)

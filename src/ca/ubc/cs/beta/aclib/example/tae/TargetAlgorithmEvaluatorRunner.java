@@ -180,8 +180,13 @@ public class TargetAlgorithmEvaluatorRunner
 		} catch(ParameterException e)
 		{	
 			log.error(e.getMessage());
+			if(log.isDebugEnabled())
+			{
+				log.error("Stack trace:",e);
+			}
 		} catch(Exception e)
 		{
+			
 			e.printStackTrace();
 		}
 	}

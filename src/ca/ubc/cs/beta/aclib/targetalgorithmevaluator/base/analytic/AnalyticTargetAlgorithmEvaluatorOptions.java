@@ -5,10 +5,11 @@ import com.beust.jcommander.Parameter;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.FixedPositiveInteger;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.NonNegativeInteger;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.ZeroInfinityOpenInterval;
+import ca.ubc.cs.beta.aclib.misc.options.OptionLevel;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 
-@UsageTextField(title="Analytic Target Algorithm Evaluator Options", description="This Target Algorithm Evaluator uses an analytic function to generate a runtime")
+@UsageTextField(title="Analytic Target Algorithm Evaluator Options", description="This Target Algorithm Evaluator uses an analytic function to generate a runtime", level=OptionLevel.DEVELOPER)
 public class AnalyticTargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	
 	@Parameter(names="--analytic-simulate-delay", description = "If set to true the TAE will simulate the wallclock delay")

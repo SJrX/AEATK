@@ -4,12 +4,13 @@ import ca.ubc.cs.beta.aclib.misc.jcommander.validator.FixedPositiveInteger;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.NonNegativeInteger;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.ZeroInfinityHalfOpenIntervalRight;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.ZeroInfinityOpenInterval;
+import ca.ubc.cs.beta.aclib.misc.options.OptionLevel;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 
 import com.beust.jcommander.Parameter;
 
-@UsageTextField(title="Random Target Algorithm Evaluator Options", description="This Target Algorithm Evaluator randomly generates responses from a uniform distribution")
+@UsageTextField(title="Random Target Algorithm Evaluator Options", description="This Target Algorithm Evaluator randomly generates responses from a uniform distribution", level=OptionLevel.DEVELOPER)
 public class RandomResponseTargetAlgorithmEvaluatorOptions extends AbstractOptions {
 
 	@Parameter(names="--random-simulate-delay", description = "If set to true the TAE will simulate the wallclock delay")
@@ -17,7 +18,6 @@ public class RandomResponseTargetAlgorithmEvaluatorOptions extends AbstractOptio
 	
 	@Parameter(names="--random-additional-run-data", description="Additional Run Data to return")
 	public String additionalRunData = "";
-
 	
 	@Parameter(names="--random-simulate-cores", description = "If set to greater than 0, the TAE will serialize requests so that no more than these number will execute concurrently. ", validateWith=NonNegativeInteger.class)
 	public int cores = 0;

@@ -8,6 +8,7 @@ import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpaceOptions;
 import ca.ubc.cs.beta.aclib.misc.jcommander.converter.BinaryDigitBooleanConverter;
 import ca.ubc.cs.beta.aclib.misc.jcommander.converter.StringToDoubleConverterWithMax;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.ZeroInfinityOpenInterval;
+import ca.ubc.cs.beta.aclib.misc.options.OptionLevel;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorOptions;
@@ -19,11 +20,12 @@ import com.beust.jcommander.ParametersDelegate;
 
 /**
  * Options object that defines arguments for Target Algorithm Execution
- * @author sjr
+ * 
+ * @author Steve Ramage <seramage@cs.ubc.ca>
  *
  */
 
-@UsageTextField(title="Algorithm Execution Options", description="Options related to running the target algorithm")
+@UsageTextField(title="Algorithm Execution Options", description="Options related to invoking the target algorithm")
 public class AlgorithmExecutionOptions extends AbstractOptions {
 	
 	@Parameter(names={"--algo-exec","--algoExec", "--algo"}, description="command string to execute algorithm with", required=true)
@@ -38,6 +40,7 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 	@Parameter(names={"--algo-cutoff-time","--cutoff-time","--cutoffTime","--cutoff_time"}, description="CPU time limit for an individual target algorithm run", required=true, validateWith=ZeroInfinityOpenInterval.class)
 	public double cutoffTime;
 	
+	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names={"--algo-cutoff-length","--cutoffLength","--cutoff_length"}, description="cap limit for an individual run [not implemented currently]", converter=StringToDoubleConverterWithMax.class, hidden=true)
 	public double cutoffLength = -1.0;
 	
@@ -57,13 +60,29 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 	{
 		return getAlgorithmExecutionConfig(null);
 	}
+	
+	/**
+	 * Gets an algorithm execution configuration
+	 * 
+	 * @return configured object based on the options
+	 */
+	public AlgorithmExecutionConfig getAlgorithmExecutionConfigSkipDirCheck()
+	{
+		return getAlgorithmExecutionConfig(null, false);
+	}
+	
+	
+	public AlgorithmExecutionConfig getAlgorithmExecutionConfig(String experimentDir)
+	{
+		return getAlgorithmExecutionConfig(experimentDir, true);
+	}
 	/**
 	 * Gets an algorithm execution configuration
 	 * 
 	 * @param experimentDir the experiment directory to search for parameter configurations
 	 * @return configured object based on the options
 	 */
-	public AlgorithmExecutionConfig getAlgorithmExecutionConfig(String experimentDir)
+	public AlgorithmExecutionConfig getAlgorithmExecutionConfig(String experimentDir, boolean checkExecDir)
 	{
 		List<String> dirToSearch = new ArrayList<String>();
 		if(experimentDir != null)
@@ -72,16 +91,19 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 		}
 		
 		File execDir = new File(algoExecDir);
-		if(!execDir.exists())
+		if(checkExecDir)
 		{
-			execDir = new File(experimentDir + File.separator + algoExecDir);
 			if(!execDir.exists())
 			{
-				throw new ParameterException("Cannot find execution algorithm execution directory: " + algoExecDir +  "  in context:" + dirToSearch);
+				execDir = new File(experimentDir + File.separator + algoExecDir);
+				if(!execDir.exists())
+				{
+					throw new ParameterException("Cannot find execution algorithm execution directory: " + algoExecDir +  "  in context:" + dirToSearch);
+				}
 			}
+			
+			dirToSearch.add(execDir.getAbsolutePath());
 		}
-		
-		dirToSearch.add(execDir.getAbsolutePath());
 		
 		return new AlgorithmExecutionConfig(algoExec, execDir.getAbsolutePath(), paramFileDelegate.getParamConfigurationSpace(dirToSearch), false, deterministic, this.cutoffTime);
 	}

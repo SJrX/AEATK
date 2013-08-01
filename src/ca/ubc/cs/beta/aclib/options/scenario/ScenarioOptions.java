@@ -4,12 +4,14 @@ import java.io.File;
 import java.io.IOException;
 
 import com.beust.jcommander.Parameter;
+import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.ParameterFile;
 import com.beust.jcommander.ParametersDelegate;
 
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionOptions;
 import ca.ubc.cs.beta.aclib.misc.jcommander.converter.OverallObjectiveConverter;
 import ca.ubc.cs.beta.aclib.misc.jcommander.converter.RunObjectiveConverter;
+import ca.ubc.cs.beta.aclib.misc.options.OptionLevel;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aclib.objectives.OverallObjective;
 import ca.ubc.cs.beta.aclib.objectives.RunObjective;
@@ -26,18 +28,19 @@ import ca.ubc.cs.beta.aclib.termination.TerminationCriteriaOptions;
 @UsageTextField(title="Scenario Options", description="Standard Scenario Options for use with SMAC. In general consider using the --scenarioFile directive to specify these parameters and Algorithm Execution Options")
 public class ScenarioOptions extends AbstractOptions{
 	
+	
 	@Parameter(names={"--run-obj","--runObj","--run_obj"}, description="per target algorithm run objective type that we are optimizing for", converter=RunObjectiveConverter.class)
 	public RunObjective runObj = RunObjective.RUNTIME;
 	
 	@Parameter(names={"--intra-obj","--intra-instance-obj","--overall-obj","--intraInstanceObj","--overallObj", "--overall_obj","--intra_instance_obj"}, description="objective function used to aggregate multiple runs for a single instance", converter=OverallObjectiveConverter.class)
 	public OverallObjective intraInstanceObj = OverallObjective.MEAN10;
 	
+	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names={"--inter-obj","--inter-instance-obj","--interInstanceObj","--inter_instance_obj"}, description="objective function used to aggregate over multiple instances (that have already been aggregated under the Intra-Instance Objective)", converter=OverallObjectiveConverter.class)
 	public OverallObjective interInstanceObj = OverallObjective.MEAN;
 	
 	@ParametersDelegate
 	public TerminationCriteriaOptions limitOptions = new TerminationCriteriaOptions();
-	
 	
 	@ParametersDelegate
 	public ProblemInstanceOptions instanceOptions = new ProblemInstanceOptions();
@@ -70,6 +73,21 @@ public class ScenarioOptions extends AbstractOptions{
 	public TrainTestInstances getTrainingAndTestProblemInstances(String experimentDirectory, long trainingSeed, long testingSeed, boolean trainingRequired, boolean testRequired, boolean trainingFeaturesRequired, boolean testingFeaturesRequired) throws IOException
 	{
 			return this.instanceOptions.getTrainingAndTestProblemInstances(experimentDirectory, trainingSeed, testingSeed, this.algoExecOptions.deterministic, trainingRequired, testRequired, trainingFeaturesRequired, testingFeaturesRequired);
+	}
+
+	public void makeOutputDirectory(String runGroupName) {
+		
+		
+		File outputDir = (new File(outputDirectory + File.separator + runGroupName));
+		outputDir.mkdirs();
+		
+		if(outputDir.exists() && outputDir.isDirectory())
+		{
+			return;
+		} else
+		{
+			throw new ParameterException("Output directory " + outputDir.getPath() + " does not exist and could not be created. Try executing the following command: mkdir " + outputDir.getPath());
+		}
 	}
 
 	

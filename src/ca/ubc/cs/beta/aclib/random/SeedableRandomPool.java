@@ -184,13 +184,13 @@ public class SeedableRandomPool implements Serializable {
 	
 	public synchronized void logUsage()
 	{
-		log.info("Seed for Seed Pool Was {}", poolSeed);
+		log.debug("Seed for Seed Pool Was {}", poolSeed);
 		TreeMap<String, Integer> map = new TreeMap<String, Integer>();
 		map.putAll(this.randomSeedMap);
 		for(Entry<String, Integer> seedPair : map.entrySet())
 		{ 
 			Object[] args = {seedPair.getKey(), seedPair.getValue(), this.specifiedInitialSeeds.contains(seedPair.getKey()), this.usedNames.contains(seedPair.getKey())}; 
-			log.info("Seed for {} was {}, Manually Set: {}  Used: {}",args);
+			log.debug("Seed for {} was {}, Manually Set: {}  Used: {}",args);
 		}
 	}
 	

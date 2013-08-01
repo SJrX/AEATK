@@ -1,5 +1,6 @@
 package ca.ubc.cs.beta.aclib.help;
 
+import ca.ubc.cs.beta.aclib.misc.options.OptionLevel;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 
@@ -22,15 +23,18 @@ public class HelpOptions extends AbstractOptions{
 	/**
 	 * Note most of these actually will never be read as we will silently scan for them in the input arguments to avoid logging
 	 */
-	@UsageTextField(defaultValues="", domain="")
+	@UsageTextField(defaultValues="", domain="", level=OptionLevel.INTERMEDIATE)
 	@Parameter(names={"--show-hidden","--showHiddenParameters"}, description="show hidden parameters that no one has use for, and probably just break SMAC (no-arguments)")
 	public boolean showHiddenParameters = false;
 	
-	@UsageTextField(defaultValues="", domain="" )
+	@UsageTextField(defaultValues="", domain="" , level=OptionLevel.BASIC)
 	@Parameter(names={"--help","-?","/?","-h"}, description="show help")
 	public boolean showHelp = false;
+
+	@Parameter(names={"--help-level"}, description="Show options at this level or lower")
+	public OptionLevel helpLevel = OptionLevel.BASIC;
 	
-	@UsageTextField(defaultValues="", domain="")
+	@UsageTextField(defaultValues="", domain="", level=OptionLevel.BASIC)
 	@Parameter(names={"-v","--version"}, description="print version and exit")
 	public boolean showVersion = false;
 

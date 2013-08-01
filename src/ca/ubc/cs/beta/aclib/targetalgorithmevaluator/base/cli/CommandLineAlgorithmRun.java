@@ -844,23 +844,46 @@ outerloop:
 					if(pid > 0)
 					{
 						
-						log.debug("Trying to send SIGTERM to process group id: {}", pid);
+						
+						
+						String command = "bash -c \"kill -s TERM -" + pid + "\"";
+						log.debug("Trying to send SIGTERM to process group id: {} with command \"{}\"", pid,command);
 						try {
-							Process p2 = Runtime.getRuntime().exec("kill -s TERM -" + pid);
+							
+							Process p2 = Runtime.getRuntime().exec(SplitQuotedString.splitQuotedString(command));
+							
+							BufferedReader read = new BufferedReader(new InputStreamReader(p2.getErrorStream()));
+							String line = null;
+							
+							while((line = read.readLine()) != null)
+							{
+								log.debug("Kill error output> {}", line);
+							}
+							read = new BufferedReader(new InputStreamReader(p2.getInputStream()));
+							line = null;
+							
+							
+							while((line = read.readLine()) != null)
+							{
+								log.debug("Kill output Input> {}", line);
+							}
+							
+							
 							int retValPGroup = p2.waitFor();
 							
 							if(retValPGroup > 0)
 							{
+								log.debug("SIGTERM to process group failed with error code {}", retValPGroup);
 								Process p3 = Runtime.getRuntime().exec("kill -s TERM " + pid);
 								int retVal = p3.waitFor();
 								
 								if(retVal > 0)
 								{
-									Object[] args = { pid, pid,retVal};
-									log.debug("SIGTERM to process group id {} failed, SIGTERM to process id: {} attempted failed with return code {}",args);
+									Object[] args = {  pid,retVal};
+									log.debug("SIGTERM to process id: {} attempted failed with return code {}",args);
 								} else
 								{
-									log.debug("SIGTERM to process group id {} failed, SIGTERM delivered successfully to process id: {}", pid, pid);
+									log.debug("SIGTERM delivered successfully to process id: {}", pid, pid);
 								}
 									
 								
@@ -892,7 +915,7 @@ outerloop:
 						
 						log.debug("Trying to send SIGKILL to pid: {}", pid);
 						try {
-							Process p2 = Runtime.getRuntime().exec("kill -s KILL -" + pid);
+							Process p2 = Runtime.getRuntime().exec("bash -c \"kill -s KILL -" + pid+ "\"");
 							int retVal = p2.waitFor();
 							
 							if(retVal > 0)

@@ -2,8 +2,11 @@ package ca.ubc.cs.beta.targetalgorithmevaluator;
 
 import static org.junit.Assert.*;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
@@ -3011,6 +3014,235 @@ public class TAETestSet {
 		
 		
 	}
+	
+	@Test
+	public void testProcessGroupKilled()
+	{
+		
+		/**
+		 * This tests to see if a wrapper (that sets the process group) => chained shutsdown correctly
+		 */
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		StringBuilder b = new StringBuilder();
+		
+		b.append((new File("")).getAbsolutePath() + File.separator + "test-files"+File.separator + "runsolver" + File.separator + "pgrpset.py");
+		//b.append((new File("")).getAbsolutePath() + File.separator + "test-files"+File.separator + "runsolver" + File.separator + "system ");
+		
+		System.out.println(b);
+		
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 1500);
+		
+		
+		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
+		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
+		
+		options.cores = 2;
+		options.logAllCallStrings = true;
+		options.logAllProcessOutput = true;
+		options.concurrentExecution = true;
+		options.observerFrequency = 2000;
+		
+		
+		tae = fact.getTargetAlgorithmEvaluator(execConfig, options);	
+		
+		tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
+		
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(4);
+		double runtime = 50;
+		for(int i=0; i < 1; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			
+			config.put("runtime",String.valueOf(runtime));
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 20, config);
+				runConfigs.add(rc);
+			}
+		}
+		
+		
+		
+		TargetAlgorithmEvaluatorRunObserver obs = new TargetAlgorithmEvaluatorRunObserver()
+		{
+
+			@Override
+			public void currentStatus(List<? extends KillableAlgorithmRun> runs) 
+			{
+				for(KillableAlgorithmRun run : runs)
+				{
+					System.out.println("Runtime: " + run.getRuntime() + " walltime: " + run.getWallclockExecutionTime());
+					
+					if(run.getRuntime() > 1)
+					{
+						run.kill();
+					}
+					
+					if(run.getWallclockExecutionTime() > 30)
+					{
+						System.err.println("This test has almost certainly failed and will never end");
+					}
+				}
+			}
+			
+		};
+		
+		
+		
+		tae.evaluateRun(runConfigs,obs);
+		
+		try {
+			
+			//This checks to see how many matching processes there are 
+			//It outputs a line from the wc command and we expect all zeros.
+			//If this test fails, then it may be because a previous run failed,
+			//so check that shell script for the exact line and maybe killall the other processes
+			Process proc = Runtime.getRuntime().exec((new File("")).getAbsolutePath() + File.separator + "test-files"+File.separator + "runsolver" + File.separator + "runsCounter.sh");
+			
+			BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+			
+			assertTrue("Expected that there would be zero matching process", reader.readLine().matches("^\\s*0\\s*0\\s*0\\s*$"));
+		} catch (IOException e) {
+
+			e.printStackTrace();
+			fail("Um what?");
+		}
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		/***
+		 * This checks to see if a runsolver => chained shuts down correctly.
+		 */
+
+		b = new StringBuilder();
+		
+		b.append((new File("")).getAbsolutePath() + File.separator + "test-files"+File.separator + "runsolver" + File.separator + "runsolver -C 4000 " + (new File("")).getAbsolutePath() + File.separator + "test-files"+File.separator + "runsolver" + File.separator + "/chained 5");
+		
+		System.out.println(b);
+		
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 1500);
+		tae = fact.getTargetAlgorithmEvaluator(execConfig, options);	
+		
+		tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
+		
+		runConfigs = new ArrayList<RunConfig>(4);
+		
+		for(int i=0; i < 1; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			
+			config.put("runtime",String.valueOf(runtime));
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 20, config);
+				runConfigs.add(rc);
+			}
+		}
+		
+		tae.evaluateRun(runConfigs,obs);
+		
+		try {
+			
+			//This checks to see how many matching processes there are 
+			//It outputs a line from the wc command and we expect all zeros.
+			//If this test fails, then it may be because a previous run failed,
+			//so check that shell script for the exact line and maybe killall the other processes
+			Process proc = Runtime.getRuntime().exec((new File("")).getAbsolutePath() + File.separator + "test-files"+File.separator + "runsolver" + File.separator + "runsCounter.sh");
+			
+			BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+			
+			assertTrue("Expected that there would be zero matching process", reader.readLine().matches("^\\s*0\\s*0\\s*0\\s*$"));
+		} catch (IOException e) {
+
+			e.printStackTrace();
+			fail("Um what?");
+		}
+		
+		
+		
+		
+		
+		
+		
+		
+		/***
+		 * This tests to see if a wrapper => runsolver => chained shutsdown correctly
+		 */
+		
+		b = new StringBuilder();
+		
+		b.append((new File("")).getAbsolutePath() + File.separator + "test-files"+File.separator + "runsolver" + File.separator + "pgrpset-rs.py");
+		
+		System.out.println(b);
+		
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 1500);
+		tae = fact.getTargetAlgorithmEvaluator(execConfig, options);	
+		
+		tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
+		
+		runConfigs = new ArrayList<RunConfig>(4);
+		
+		for(int i=0; i < 1; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			
+			config.put("runtime",String.valueOf(runtime));
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 20, config);
+				runConfigs.add(rc);
+			}
+		}
+		
+		tae.evaluateRun(runConfigs,obs);
+		
+		try {
+			
+			//This checks to see how many matching processes there are 
+			//It outputs a line from the wc command and we expect all zeros.
+			//If this test fails, then it may be because a previous run failed,
+			//so check that shell script for the exact line and maybe killall the other processes
+			Process proc = Runtime.getRuntime().exec((new File("")).getAbsolutePath() + File.separator + "test-files"+File.separator + "runsolver" + File.separator + "runsCounter.sh");
+			
+			BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+			
+			assertTrue("Expected that there would be zero matching process", reader.readLine().matches("^\\s*0\\s*0\\s*0\\s*$"));
+		} catch (IOException e) {
+
+			e.printStackTrace();
+			fail("Um what?");
+		}
+		
+		
+		
+	}
+	
+	
 	
 	
 }

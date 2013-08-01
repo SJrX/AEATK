@@ -1,43 +1,56 @@
 package ca.ubc.cs.beta.aclib.state;
 
 import java.io.File;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Iterator;
+import java.util.ListIterator;
 
 import com.beust.jcommander.Parameter;
+import com.beust.jcommander.ParameterException;
 
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
+import ca.ubc.cs.beta.aclib.misc.options.OptionLevel;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 import ca.ubc.cs.beta.aclib.probleminstance.InstanceListWithSeeds;
+import ca.ubc.cs.beta.aclib.state.converter.AutoAsMaxConverter;
 import ca.ubc.cs.beta.aclib.state.legacy.LegacyStateFactory;
 import ca.ubc.cs.beta.aclib.state.nullFactory.NullStateFactory;
 
 @UsageTextField(hiddenSection = true)
 public class StateFactoryOptions extends AbstractOptions{
 
+	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names={"--state-serializer","--stateSerializer"}, description="determines the format of the files to save the state in")
 	public StateSerializers stateSerializer = StateSerializers.LEGACY;
 
+	@UsageTextField( level=OptionLevel.ADVANCED)
 	@Parameter(names={"--state-deserializer","--stateDeserializer"}, description="determines the format of the files that store the saved state to restore")
 	public StateSerializers statedeSerializer = StateSerializers.LEGACY;
 	
-	@UsageTextField(defaultValues="N/A (No state is being restored)")
+	
+	@UsageTextField(defaultValues="N/A (No state is being restored)", level=OptionLevel.ADVANCED)
 	@Parameter(names={"--restore-state-from","--restoreStateFrom"}, description="location of state to restore")
 	public String restoreStateFrom = null;
 
-	@UsageTextField(defaultValues="N/A (No state is being restored)")
-	@Parameter(names={"--restore-iteration","--restoreStateIteration","--restoreIteration"}, description="iteration of the state to restore")
+	@UsageTextField(defaultValues="N/A (No state is being restored)", level=OptionLevel.ADVANCED)
+	@Parameter(names={"--restore-iteration","--restoreStateIteration","--restoreIteration"}, description="iteration of the state to restore, use \"AUTO\" to automatically pick the last iteration", converter=AutoAsMaxConverter.class)
 	public Integer restoreIteration = null;
 	
 	/**
 	 * Restore scenario is done before we parse the configuration and fixes input args
 	 * in the input string to jcommander 
 	 */
+	
 	@Parameter(names={"--restore-scenario","--restoreScenario"}, description="Restore the scenario & state in the state folder")
 	public File restoreScenario =null; 
 	
+	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names={"--clean-old-state-on-success","--cleanOldStateOnSuccess"}, description="will clean up much of the useless state files if smac completes successfully")
 	public boolean cleanOldStatesOnSuccess = true;
 	
+	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names={"--save-context","--saveContext","--saveContextWithState" }, description="saves some context with the state folder so that the data is mostly self-describing (Scenario, Instance File, Feature File, Param File are saved)")
 	public boolean saveContextWithState = true;
 	
@@ -111,5 +124,71 @@ public class StateFactoryOptions extends AbstractOptions{
 
 		}
 		
+	}
+	
+	public static String[] processScenarioStateRestore(String[] args) {
+		
+		
+		ArrayList<String> inputArgs = new ArrayList<String>(Arrays.asList(args));
+		
+		
+		ListIterator<String> inputIt =  inputArgs.listIterator();
+		
+		
+		Iterator<String> firstPass = inputArgs.iterator();
+		
+		
+		boolean foundIteration = false;
+		while(firstPass.hasNext())
+		{
+			String arg = firstPass.next();
+			if(arg.trim().equals("--restoreIteration") || arg.trim().equals("--restoreStateIteration"))
+			{
+				if(firstPass.hasNext())
+				{
+					foundIteration= true;
+				}
+			}
+		}
+		while(inputIt.hasNext())
+		{
+			String input = inputIt.next();
+			
+			if(input.trim().equals("--restoreScenario"))
+			{
+				if(!inputIt.hasNext())
+				{
+					throw new ParameterException("Failed to parse argument --restoreScenario expected 1 more argument");
+				} else
+				{
+					String dir = inputIt.next();
+					
+					
+					inputIt.add("--restoreStateFrom");
+					inputIt.add(dir);
+					if(!foundIteration)
+					{
+						inputIt.add("--restoreIteration");
+						inputIt.add(String.valueOf(Integer.MAX_VALUE));
+					}
+					inputIt.add("--scenarioFile");
+					inputIt.add(dir + File.separator + "scenario.txt");
+					inputIt.add("--instanceFeatureFile");
+					inputIt.add(dir + File.separator + "instance-features.txt");
+					inputIt.add("--instanceFile");
+					inputIt.add(dir + File.separator + "instances.txt");
+					inputIt.add("--paramFile");
+					inputIt.add(dir + File.separator + "param-file.txt");
+					inputIt.add("--testInstanceFile");
+					inputIt.add(dir + File.separator + "instances.txt");
+					
+				}
+				
+				
+			}
+			
+		}
+		
+		return inputArgs.toArray(new String[0]);
 	}
 }

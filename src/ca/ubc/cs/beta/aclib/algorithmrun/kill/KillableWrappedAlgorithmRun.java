@@ -1,5 +1,6 @@
 package ca.ubc.cs.beta.aclib.algorithmrun.kill;
 
+import ca.ubc.cs.beta.aclib.algorithmrun.AbstractAlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
@@ -108,5 +109,11 @@ public class KillableWrappedAlgorithmRun implements KillableAlgorithmRun {
 	public final boolean equals(Object o)
 	{
 		return run.equals(o);
+	}
+	
+	@Override
+	public final String toString()	
+	{
+		return AbstractAlgorithmRun.toString(this);
 	}
 }

@@ -16,6 +16,7 @@ import java.util.Set;
 import ca.ubc.cs.beta.aclib.misc.options.DomainDisplay;
 import ca.ubc.cs.beta.aclib.misc.options.NoArgumentHandler;
 import ca.ubc.cs.beta.aclib.misc.options.NoopNoArgumentHandler;
+import ca.ubc.cs.beta.aclib.misc.options.OptionLevel;
 import ca.ubc.cs.beta.aclib.misc.options.UsageSection;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
@@ -112,6 +113,7 @@ public class UsageSectionGenerator {
 					String description = getDescriptionForField(f,obj);
 					boolean required = getRequiredForField(f,obj);
 					
+					OptionLevel level = getLevelForField(f,obj);
 					
 					String aliases = getAliases(f, obj);
 					
@@ -129,7 +131,7 @@ public class UsageSectionGenerator {
 					String domain = getDomain(f,obj);
 					boolean hidden = param.hidden();
 					
-					sec.addAttribute(name, description, defaultValue, required,domain, aliases , hidden);
+					sec.addAttribute(name, description, defaultValue, required,domain, aliases , hidden, level);
 					
 				}
 				
@@ -140,7 +142,7 @@ public class UsageSectionGenerator {
 					String description = getDescriptionForDynamicField(f,obj);
 					boolean required = getRequiredForDynamicField(f,obj);
 					String aliases = getDynamicAliases(f, obj);
-					
+					OptionLevel level = getLevelForField(f,obj);
 					String[] possibleAliases = aliases.split("\\s+");
 					for(String possibleAlias : possibleAliases)
 					{
@@ -154,7 +156,7 @@ public class UsageSectionGenerator {
 					String domain = getDomain(f,obj);
 					boolean hidden = dynamicParam.hidden();
 					
-					sec.addAttribute(name, description, "", required,domain, aliases , hidden);
+					sec.addAttribute(name, description, "", required,domain, aliases , hidden, level);
 				}
 				if(!notAccessible) f.setAccessible(false);
 				
@@ -187,7 +189,7 @@ public class UsageSectionGenerator {
 					//System.out.println(sec2 + " is hidden adding to " + sec);
 					for(String secName : sec2)
 					{
-						sec.addAttribute(secName, sec2.getAttributeDescription(secName), sec2.getAttributeDefaultValues(secName), sec2.isAttributeRequired(secName),sec2.getAttributeDomain(secName), sec2.getAttributeAliases(secName), sec2.isAttributeHidden(secName));
+						sec.addAttribute(secName, sec2.getAttributeDescription(secName), sec2.getAttributeDefaultValues(secName), sec2.isAttributeRequired(secName),sec2.getAttributeDomain(secName), sec2.getAttributeAliases(secName), sec2.isAttributeHidden(secName), sec2.getAttributeLevel(secName));
 					}
 				}
 				
@@ -209,7 +211,6 @@ public class UsageSectionGenerator {
 		}
 		
 		
-		
 
 		returningSec.addAll(postSec);
 		return returningSec;
@@ -224,6 +225,8 @@ public class UsageSectionGenerator {
 		
 	}
 	
+	
+
 	/**
 	 * Retrieves the Usage Section objects for objects given in both sets of argument
 	 * @param o			obj to inspect
@@ -474,6 +477,28 @@ public class UsageSectionGenerator {
 	{
 		DynamicParameter param  = (DynamicParameter)f.getAnnotation(DynamicParameter.class);
 		return param;
+	}
+
+	private static OptionLevel getLevelForField(Field f, Object obj) {
+		
+		UsageTextField latexAnnotation = getLatexField(f);
+		if(latexAnnotation != null)
+		{
+			return latexAnnotation.level();
+		} else
+		{
+			UsageTextField objUTF = obj.getClass().getAnnotation(UsageTextField.class);
+			
+			if(objUTF != null)
+			{
+				return objUTF.level();
+			} else
+			{
+				return OptionLevel.BASIC;
+			}
+		}
+			
+		
 	}
 
 	

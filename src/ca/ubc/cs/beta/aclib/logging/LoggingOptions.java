@@ -6,6 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 
+import ca.ubc.cs.beta.aclib.misc.options.OptionLevel;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 
@@ -29,9 +30,11 @@ import com.beust.jcommander.Parameter;
 @UsageTextField(hiddenSection=true)
 public class LoggingOptions extends AbstractOptions{
 
+	@UsageTextField(level=OptionLevel.INTERMEDIATE)
 	@Parameter(names={"--console-log-level","--consoleLogLevel"},description="default log level of console output (this cannot be more verbose than the logLevel)")
 	public LogLevel consoleLogLevel = LogLevel.INFO;
 	
+	@UsageTextField(level=OptionLevel.INTERMEDIATE)
 	@Parameter(names={"--log-level","--logLevel"},description="messages will only be logged if they are of this severity or higher.")
 	public LogLevel logLevel = LogLevel.DEBUG;	
 	

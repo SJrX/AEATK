@@ -11,6 +11,7 @@ import ca.ubc.cs.beta.aclib.eventsystem.events.ac.IncumbentPerformanceChangeEven
 import ca.ubc.cs.beta.aclib.eventsystem.handlers.ParamConfigurationIncumbentChangerOriginTracker;
 import ca.ubc.cs.beta.aclib.eventsystem.handlers.ParamConfigurationOriginLogger;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aclib.misc.options.OptionLevel;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 import ca.ubc.cs.beta.aclib.runhistory.ThreadSafeRunHistory;
@@ -19,6 +20,7 @@ import ca.ubc.cs.beta.aclib.runhistory.ThreadSafeRunHistory;
 @UsageTextField(hiddenSection=true)
 public class ParamConfigurationOriginTrackingOptions extends AbstractOptions {
 
+	@UsageTextField(defaultValues="", level=OptionLevel.ADVANCED)
 	@Parameter(names={"--config-tracking"}, description="Take measurements of configuration as it goes through it's lifecycle and write to file (in state folder)")
 	public boolean configTracking;
 	

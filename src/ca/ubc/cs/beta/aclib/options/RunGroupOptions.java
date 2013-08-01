@@ -13,6 +13,7 @@ import java.util.TreeMap;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 
+import ca.ubc.cs.beta.aclib.misc.options.OptionLevel;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aclib.misc.returnvalues.ACLibReturnValues;
 
@@ -20,13 +21,15 @@ import ca.ubc.cs.beta.aclib.misc.returnvalues.ACLibReturnValues;
 public class RunGroupOptions extends AbstractOptions {
 
 	
-	@UsageTextField
+	@UsageTextField(level=OptionLevel.BASIC)
 	@Parameter(names={"--rungroup","--rungroup-name","--runGroupName"}, description="name of subfolder of outputdir to save all the output files of this run to")
 	public String runGroupName; 
 	
+	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names="--print-rungroup-replacement-and-exit", description="print all the possible replacements in the rungroup and then exit")
 	public boolean runGroupExit;
 	
+	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names={"--rungroup-char","--runGroupReplacement"}, description="Character (potentially regex see source) to use as the start of a replacement in the runGroupName", hidden=true)
 	public String replacementChar = "%";
 	

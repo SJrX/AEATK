@@ -14,6 +14,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.ReadableFileConverter;
+import ca.ubc.cs.beta.aclib.misc.options.OptionLevel;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 
@@ -27,15 +28,19 @@ import com.beust.jcommander.ParameterException;
 @UsageTextField(hiddenSection = true)
 public class ParamConfigurationSpaceOptions extends AbstractOptions{
 	
+	
 	@Parameter(names={"--param-file","-p", "--paramFile","--paramfile"}, description="File containing algorithm parameter space information (see Algorithm Parameter File in the Manual). You can specify \"SINGLETON\" to get a singleton configuration space or \"NULL\" to get a null one.")
 	public String paramFile;
 
+	@UsageTextField(level=OptionLevel.DEVELOPER)
 	@Parameter(names={"--search-subspace","--searchSubspace"}, description="Only generate random and neighbouring configurations with these values. Specified in a \"name=value,name=value,...\" format (Overrides those set in file)", required=false)
 	public String searchSubspace;
 	
+	@UsageTextField( level=OptionLevel.DEVELOPER)
 	@Parameter(names={"--search-subspace-file","--searchSubspaceFile"}, description="Only generate random and neighbouring configurations with these values. Specified each parameter on each own line with individual value", required=false, converter=ReadableFileConverter.class)
 	public File searchSubspaceFile;
 	
+	@UsageTextField( level=OptionLevel.ADVANCED)
 	@Parameter(names={"--continous-neighbours","--continuous-neighbors","--continuousNeighbours"}, description="Number of neighbours for continuous parameters")
 	public int continuousNeighbours = 4;
 	

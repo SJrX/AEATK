@@ -9,6 +9,8 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Random;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -243,8 +245,6 @@ public class DynamicCappingTestSet {
 	public void testDynamicAdaptiveCappingMultiRunSingleCore()
 	{
 		
-	
-		
 		StringBuilder b = new StringBuilder();
 		b.append("java -cp ");
 		b.append(System.getProperty("java.class.path"));
@@ -258,7 +258,7 @@ public class DynamicCappingTestSet {
 		assertTrue(tae.areRunsObservable());
 		
 		
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(10);
+		final List<RunConfig> runConfigs = new ArrayList<RunConfig>(10);
 		for(int i=0; i < 10; i++)
 		{
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
@@ -277,17 +277,23 @@ public class DynamicCappingTestSet {
 		
 		System.out.println("Performing " + runConfigs.size() + " runs");
 		
-		//StringWriter sw = new StringWriter();
-		//ByteArrayOutputStream bout = new ByteArrayOutputStream();
-		
-		//PrintStream out = System.out;
-		//System.setOut(new PrintStream(bout));
+
+		final AtomicReference<String> failed = new AtomicReference<String>();
 		
 		TargetAlgorithmEvaluatorRunObserver obs = new TargetAlgorithmEvaluatorRunObserver()
 		{
 			
 			@Override
 			public void currentStatus(List<? extends KillableAlgorithmRun> runs) {
+				
+				if(runs.size() != runConfigs.size())
+				{
+					failed.set("Expected that runConfigs.size(): " + runConfigs.size() + " is always equal to runs.size():" + runs.size());
+					for(KillableAlgorithmRun run : runs)
+					{
+						run.kill();
+					}
+				}
 				
 				double runtimeSum = 0.0; 
 				for(AlgorithmRun run : runs)
@@ -296,17 +302,30 @@ public class DynamicCappingTestSet {
 				}
 				
 				//System.out.println(runtimeSum);
-				if(runtimeSum > 4)
+				if(runtimeSum > 3.5)
 				{
+					System.out.flush();
 					System.out.println("Issuing kill order on " + runtimeSum);
+				
 					for(KillableAlgorithmRun run : runs)
 					{
+						System.out.println(run);
+					}
+					System.out.flush();
+					for(KillableAlgorithmRun run : runs)
+					{
+					
 						run.kill();
 					}
 				}
 			}
 			
 		};
+		
+		if(failed.get() != null)
+		{
+			fail(failed.get());
+		}
 		
 		long startTime  = System.currentTimeMillis();
 		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs,obs);

@@ -11,6 +11,7 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 
 import ca.ubc.cs.beta.aclib.exceptions.FeatureNotFoundException;
+import ca.ubc.cs.beta.aclib.misc.options.OptionLevel;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 
@@ -27,6 +28,7 @@ public class ProblemInstanceOptions extends AbstractOptions{
 	@Parameter(names={"--test-instance-file","--testInstanceFile","--test_instance_file","--test_instance_seed_file"}, description="file containing a list of instances to use during the validation phase (see Instance File Format section of the manual)", required=false)
 	public String testInstanceFile;
 
+	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names={"--check-instances-exist","--checkInstanceFilesExist"}, description="check if instances files exist on disk")
 	public boolean checkInstanceFilesExist = false;
 	
