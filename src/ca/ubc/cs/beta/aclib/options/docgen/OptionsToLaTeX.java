@@ -6,9 +6,11 @@ import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.List;
 import java.util.Map;
+import java.util.regex.Matcher;
 
 import com.beust.jcommander.JCommander;
 
+import ca.ubc.cs.beta.aclib.misc.options.OptionLevel;
 import ca.ubc.cs.beta.aclib.misc.options.UsageSection;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.init.TargetAlgorithmEvaluatorLoader;
@@ -38,7 +40,7 @@ public class OptionsToLaTeX {
 			 
 			
 			
-			String completionScript = latex(sections);
+			String completionScript = latex(sections, opts.level, opts.aliases);
 			
 			FileWriter fw = new FileWriter(new File(opts.outputFile),false);
 			
@@ -61,15 +63,21 @@ public class OptionsToLaTeX {
 	
 	
 	
-	public static String latex(List<UsageSection> sections)
+	public static String latex(List<UsageSection> sections, OptionLevel level, boolean aliases)
 	{
-		StringWriter s = new StringWriter();
-		PrintWriter pw = new PrintWriter(s);
+		StringWriter s2 = new StringWriter();
+		PrintWriter pw2 = new PrintWriter(s2);
 		//pw.append("\\documentclass[a4paper,12pt]{article}\n");
-		pw.append("\\documentclass[manual.tex]{subfiles}");
-		pw.append("\\begin{document}\n");
+		pw2.append("\\documentclass[manual.tex]{subfiles}\n");
+		
+		pw2.append("\\begin{document}\n");
 		for(UsageSection sec : sections)
 		{
+			
+			StringWriter s = new StringWriter();
+			PrintWriter pw = new PrintWriter(s);
+			
+			
 			
 			boolean isHiddenSection = sec.isSectionHidden();
 
@@ -79,68 +87,122 @@ public class OptionsToLaTeX {
 				pw.append(sec.getSectionDescription()).append("\n");
 				
 			}
-			pw.append("\t\\begin{description}");
-			for(String name : sec)
+			pw.append("\t\\begin{description}[itemsep=.5pt,parsep=.5pt]");
+			int options = 0;
+			
+			for(OptionLevel aLevel : OptionLevel.values())
 			{
 				
-				if(sec.isAttributeHidden(name)) continue;
-				String printedName = name.replaceAll("-", "-~\\$\\\\!\\$");
-				pw.append("\t\t\\item[").append(printedName).append("]");
-				String description = sec.getAttributeDescription(name);
-				//== Escape some special characters
-				description = description.replaceAll("\\_", "\\\\_");
-				description = description.replaceAll(">=","\\$\\\\geq\\$");
-				description = description.replaceAll("<","\\$<\\$");
-				description = description.replaceAll(">","\\$>\\$");
-				description = description.replaceAll("\\*", "\\$\\\\times\\$");
-				description = description.replaceAll("--", "-~\\$\\\\!\\$-");
-				description = description.replaceAll("&", "\\\\&");
-				pw.append(" ").append(description).append("\n\n");
-				
-				pw.append("\t\t\\begin{description}\n");
-				
-				
-				
-				if(sec.isAttributeRequired(name))
+				boolean foundOne = false;
+				for(String name : sec)
 				{
-					pw.append("\t\t\t\\item[REQUIRED]\n");
-				}
-				pw.format("\t\t\t\\item[Aliases:] %s %n", sec.getAttributeAliases(name).replaceAll("\\_", "\\\\_").replaceAll("--", "-~\\$\\\\!\\$-"));
-				if(sec.getAttributeDefaultValues(name).length() > 0)
-				{
-					String defaultValue = sec.getAttributeDefaultValues(name);
-					defaultValue = defaultValue.replaceAll("<","\\$<\\$");
-					defaultValue = defaultValue.replaceAll(">","\\$>\\$");
-					pw.format("\t\t\t\\item[Default Value:] %s %n", defaultValue);
-				}
-				
-				if(sec.getAttributeDomain(name).length() > 0)
-				{
-					String domain = sec.getAttributeDomain(name);
-					domain = domain.replaceAll("\\{", "\\$\\\\{");
-					domain = domain.replaceAll("\\}", "\\\\}\\$");
-					domain = domain.replaceAll("Infinity","\\$\\\\infty\\$");
-					domain = domain.replaceAll(" U ", " \\$\\\\bigcup\\$ ");
+					
+					if(sec.isAttributeHidden(name)) continue;
 					
 					
-					pw.format("\t\t\t\\item[Domain:] %s %n", domain);
+					if(!aLevel.equals(sec.getAttributeLevel(name)))
+					{
+						continue;
+					}
+						
+					
+					if(!level.higherOrEqual(aLevel))
+					{
+						continue;
+					}
+					
+					options++;
+					
+					if(!foundOne)
+					{
+						pw.append("\t\t\\item{\\quad\\large\\textsc{"+  aLevel.name().substring(0, 1) +  aLevel.name().toLowerCase().substring(1)  + " Options}}\n");
+						foundOne= true;
+					}
+					
+					String printedName = name.replaceAll("-", "-~\\$\\\\!\\$");
+					pw.append("\t\t\\item[").append(printedName).append("]");
+					String description = sec.getAttributeDescription(name);
+					//== Escape some special characters
+					description = description.replaceAll("\\_", "\\\\_");
+					description = description.replaceAll(">=","\\$\\\\geq\\$");
+					description = description.replaceAll("<","\\$<\\$");
+					description = description.replaceAll(">","\\$>\\$");
+					description = description.replaceAll("\\*", "\\$\\\\times\\$");
+					description = description.replaceAll("--", "-~\\$\\\\!\\$-");
+					description = description.replaceAll("&", "\\\\&");
+					pw.append(" ").append(description).append("\n\n");
+					
+					
+					StringWriter s3 = new StringWriter();
+					PrintWriter pw3 = new PrintWriter(s3);
+					
+					pw3.append("\t\t\\vspace{-5pt}");
+					pw3.append("\t\t\\begin{description}[itemsep=.5pt,parsep=.5pt]\n");
+					
+					
+					boolean item = false;
+					if(sec.isAttributeRequired(name))
+					{
+						pw3.append("\t\t\t\\item[REQUIRED]\n");
+						item = true;
+					}
+					
+					if(aliases)
+					{
+						pw3.format("\t\t\t\\item[Aliases:] %s %n", sec.getAttributeAliases(name).replaceAll("\\_", "\\\\_").replaceAll("--", "-~\\$\\\\!\\$-"));
+						item = true;
+					}
+					
+					if(sec.getAttributeDefaultValues(name).length() > 0)
+					{
+						String defaultValue = sec.getAttributeDefaultValues(name);
+						defaultValue = defaultValue.replaceAll("<","\\$<\\$");
+						defaultValue = defaultValue.replaceAll(">","\\$>\\$");
+						defaultValue = defaultValue.replaceAll("\\_",Matcher.quoteReplacement("\\_"));
+						pw3.format("\t\t\t\\item[Default Value:] %s %n", defaultValue);
+						item = true;
+					}
+					
+					if(sec.getAttributeDomain(name).length() > 0)
+					{
+						String domain = sec.getAttributeDomain(name);
+						domain = domain.replaceAll("\\{", "\\$\\\\{");
+						domain = domain.replaceAll("\\}", "\\\\}\\$");
+						domain = domain.replaceAll("Infinity","\\$\\\\infty\\$");
+						domain = domain.replaceAll(" U ", " \\$\\\\bigcup\\$ ");
+						
+						
+						pw3.format("\t\t\t\\item[Domain:] %s %n", domain);
+						item = true;
+					}
+					
+					pw3.append("\t\t\\end{description}\n");
+					
+					if(item)
+					{
+						pw3.flush();
+						pw.append(s3.toString());
+					}
+					
 				}
-				
-				pw.append("\t\t\\end{description}\n");
-				
-				
 			}
+			
 			
 			
 			pw.append("\t\\end{description}\n\n");
 			
+			if(options > 0)
+			{
+				pw.flush();
+				pw2.println(s);
+			}
 			
 		}
 		
-		pw.append("\\end{document}");
+		pw2.append("\\end{document}");
 		
-		pw.flush();
-		return s.toString();
+		pw2.flush();
+		return s2.toString();
 		
 	}
 	

@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aclib.help.HelpOptions;
+import ca.ubc.cs.beta.aclib.misc.options.OptionLevel;
 import ca.ubc.cs.beta.aclib.misc.options.UsageSection;
 import ca.ubc.cs.beta.aclib.misc.returnvalues.ACLibReturnValues;
 import ca.ubc.cs.beta.aclib.misc.spi.SPIClassLoaderHelper;
@@ -22,6 +23,7 @@ import ca.ubc.cs.beta.aclib.options.docgen.OptionsToUsage;
 import ca.ubc.cs.beta.aclib.options.docgen.UsageSectionGenerator;
 
 import com.beust.jcommander.JCommander;
+import com.beust.jcommander.ParameterException;
 
 public final class JCommanderHelper
 {
@@ -69,6 +71,24 @@ public final class JCommanderHelper
 		//=== I do this just in case the class is moved, so that javadoc isn't left out of date.
 		
 		
+		OptionLevel levelToDisplay = OptionLevel.BASIC;
+		for(int i=0; i < args.length; i++)
+		{
+			if(args[i].trim().equals("--help-level"))
+			{
+				if(i == args.length - 1)
+				{
+					throw new ParameterException("--help-level argument requires an argument");
+				}
+				
+				try {
+					levelToDisplay = OptionLevel.valueOf(args[i+1].toUpperCase().trim());
+				} catch(IllegalArgumentException e)
+				{
+					throw new ParameterException("--help-level has illegal value, must be one of: " + Arrays.toString(OptionLevel.values()));
+				}
+			}
+		}
 		
 		try {
 			Set<String> possibleValues = new HashSet<String>(Arrays.asList(args));
@@ -78,7 +98,7 @@ public final class JCommanderHelper
 			{
 				if(possibleValues.contains(helpName))
 				{
-					OptionsToUsage.usage(UsageSectionGenerator.getUsageSections(options, taeOpts), true);
+					OptionsToUsage.usage(UsageSectionGenerator.getUsageSections(options, taeOpts), true, levelToDisplay);
 					System.exit(ACLibReturnValues.SUCCESS);
 				}
 			}
@@ -88,7 +108,7 @@ public final class JCommanderHelper
 			{
 				if(possibleValues.contains(helpName))
 				{
-					OptionsToUsage.usage(UsageSectionGenerator.getUsageSections(options, taeOpts));
+					OptionsToUsage.usage(UsageSectionGenerator.getUsageSections(options, taeOpts), false, levelToDisplay);
 					System.exit(ACLibReturnValues.SUCCESS);
 				}
 			}

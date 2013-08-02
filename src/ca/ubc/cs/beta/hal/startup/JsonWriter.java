@@ -69,7 +69,7 @@ public class JsonWriter {
 			boolean showHiddenParameters = false;
 			
 			//A much nicer usage screen than JCommander's 
-			OptionsToUsage.usage(sections, showHiddenParameters);
+			//OptionsToUsage.usage(sections, showHiddenParameters);
 			e.printStackTrace();
 			System.exit(ACLibReturnValues.PARAMETER_EXCEPTION);
 		}

@@ -9,16 +9,15 @@ public enum OptionLevel {
 	ADVANCED(2),
 	DEVELOPER(3);
 	
-	
 	private final int level;
 	OptionLevel(int level)
 	{
 		this.level = level;
 	}
 	
-	public boolean higher(OptionLevel b)
+	public boolean higherOrEqual(OptionLevel b)
 	{
-		return this.level > b.level;
+		return this.level >= b.level;
 	}
 	
 	

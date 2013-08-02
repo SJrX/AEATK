@@ -1,10 +1,14 @@
 package ca.ubc.cs.beta.aclib.help;
 
+import java.io.File;
+
+import ca.ubc.cs.beta.aclib.misc.file.HomeFileUtils;
 import ca.ubc.cs.beta.aclib.misc.options.OptionLevel;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 
 import com.beust.jcommander.Parameter;
+import com.beust.jcommander.ParameterFile;
 @UsageTextField(hiddenSection=true)
 /***
  * Options that present help to the user
@@ -38,6 +42,9 @@ public class HelpOptions extends AbstractOptions{
 	@Parameter(names={"-v","--version"}, description="print version and exit")
 	public boolean showVersion = false;
 
+	@UsageTextField(defaultValues="~/.aclib/help.opt", level=OptionLevel.ADVANCED)
+	@Parameter(names={"--help-default-file","--helpDefaultsFile"}, description="file that contains default settings for SMAC")
+	@ParameterFile(ignoreFileNotExists = true) 
+	public File helpDefaults = HomeFileUtils.getHomeFile(".aclib" + File.separator  + "help.opt");
 	
-
 }

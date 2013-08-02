@@ -1,5 +1,7 @@
 package ca.ubc.cs.beta.aclib.options.docgen;
 
+import ca.ubc.cs.beta.aclib.misc.options.OptionLevel;
+
 import com.beust.jcommander.Parameter;
 
 public class OptionsToLaTexOptions {
@@ -12,5 +14,10 @@ public class OptionsToLaTexOptions {
 
 	@Parameter(names="--show-tae-options", description="If true show the TAE options as well")
 	public boolean tae = true;
+	
+	@Parameter(names="--level", description="Help level to write options for")
+	public OptionLevel level = OptionLevel.DEVELOPER;
 
+	@Parameter(names="--aliases", description="Whether to show the Aliases or not")
+	public boolean aliases = true;
 }

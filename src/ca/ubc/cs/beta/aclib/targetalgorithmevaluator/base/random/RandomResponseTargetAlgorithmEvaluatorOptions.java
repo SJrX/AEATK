@@ -38,7 +38,7 @@ public class RandomResponseTargetAlgorithmEvaluatorOptions extends AbstractOptio
 	@Parameter(names="--random-trend-coefficient", description="The Nth sample will be drawn from Max(0,Uniform(min,max) + N*(trend-coefficient)) distribution. This allows you to have the response values increase or decrease over time.")
 	public double trendCoefficient = 0.0;
 
-	@UsageTextField(defaultValues = "Current Time in Milliseconds")
+	@UsageTextField(defaultValues = "Current Time in Milliseconds", level=OptionLevel.DEVELOPER)
 	@Parameter(names="--random-sample-seed", description="Seed to use when generate random responses")
 	public long seed = System.currentTimeMillis();
 
