@@ -173,11 +173,6 @@ public class TargetAlgorithmEvaluatorBuilder {
 			tae = new SATConsistencyTargetAlgorithmEvaluator(tae, options.checkSATConsistencyException);
 		}
 		
-		if(options.killCaptimeExceedingRun)
-		{
-			log.debug("[TAE] Killing runs that exceed there captime by a factor of {} ", options.killCaptimeExceedingRunFactor);
-			tae = new KillCaptimeExceedingRunsRunsTargetAlgorithmEvaluatorDecorator(tae, options.killCaptimeExceedingRunFactor);
-		}
 		
 		if(options.trackRunsScheduled)
 		{
@@ -279,6 +274,13 @@ public class TargetAlgorithmEvaluatorBuilder {
 			log.info("[TAE] Using walltime as observer runtime if no runtime is reported, scale {} , delay {} (secs)", options.observeWalltimeScale, options.observeWalltimeDelay);
 			tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae, options.observeWalltimeScale, options.observeWalltimeDelay);
 		}
+		
+		if(options.killCaptimeExceedingRun)
+		{
+			log.debug("[TAE] Killing runs that exceed there captime by a factor of {} ", options.killCaptimeExceedingRunFactor);
+			tae = new KillCaptimeExceedingRunsRunsTargetAlgorithmEvaluatorDecorator(tae, options.killCaptimeExceedingRunFactor);
+		}
+		
 		
 		if(options.synchronousObserver)
 		{

@@ -1,9 +1,11 @@
 package ca.ubc.cs.beta.aclib.state;
 
 import java.io.File;
+import java.lang.reflect.Field;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Iterator;
+import java.util.List;
 import java.util.ListIterator;
 
 import com.beust.jcommander.Parameter;
@@ -21,6 +23,7 @@ import ca.ubc.cs.beta.aclib.state.nullFactory.NullStateFactory;
 @UsageTextField(hiddenSection = true)
 public class StateFactoryOptions extends AbstractOptions{
 
+	
 	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names={"--state-serializer","--stateSerializer"}, description="determines the format of the files to save the state in")
 	public StateSerializers stateSerializer = StateSerializers.LEGACY;
@@ -43,8 +46,9 @@ public class StateFactoryOptions extends AbstractOptions{
 	 * in the input string to jcommander 
 	 */
 	
+	
 	@Parameter(names={"--restore-scenario","--restoreScenario"}, description="Restore the scenario & state in the state folder")
-	public File restoreScenario =null; 
+	public File restoreScenario=null; 
 	
 	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names={"--clean-old-state-on-success","--cleanOldStateOnSuccess"}, description="will clean up much of the useless state files if smac completes successfully")
@@ -126,6 +130,29 @@ public class StateFactoryOptions extends AbstractOptions{
 		
 	}
 	
+	
+	private static String[] getNamesForField(String field)
+	{
+		Field f;
+		try {
+			f = StateFactoryOptions.class.getField(field);
+		} catch (SecurityException e) {
+			throw new IllegalStateException("No permissions to read field", e);
+		} catch (NoSuchFieldException e) {
+			throw new IllegalStateException("Field " + field + " doesn't exist");
+		}
+		
+		
+		Parameter p = f.getAnnotation(Parameter.class);
+		
+		if(p == null)
+		{
+			throw new IllegalStateException("Field " + field + " doesn't have correct annotation @Parameter");
+		}
+		
+		return p.names();
+		
+	}
 	public static String[] processScenarioStateRestore(String[] args) {
 		
 		
@@ -138,11 +165,21 @@ public class StateFactoryOptions extends AbstractOptions{
 		Iterator<String> firstPass = inputArgs.iterator();
 		
 		
+		
+		List<String> restoreIterationTags = Arrays.asList(getNamesForField("restoreIteration"));
+		
+		List<String> restoreScenarioTags = Arrays.asList(getNamesForField("restoreScenario"));
+		
+		
+		
+		
 		boolean foundIteration = false;
 		while(firstPass.hasNext())
 		{
 			String arg = firstPass.next();
-			if(arg.trim().equals("--restoreIteration") || arg.trim().equals("--restoreStateIteration"))
+			
+			
+			if(restoreIterationTags.contains(arg))
 			{
 				if(firstPass.hasNext())
 				{
@@ -154,7 +191,7 @@ public class StateFactoryOptions extends AbstractOptions{
 		{
 			String input = inputIt.next();
 			
-			if(input.trim().equals("--restoreScenario"))
+			if(restoreScenarioTags.contains(input))
 			{
 				if(!inputIt.hasNext())
 				{
@@ -173,8 +210,13 @@ public class StateFactoryOptions extends AbstractOptions{
 					}
 					inputIt.add("--scenarioFile");
 					inputIt.add(dir + File.separator + "scenario.txt");
-					inputIt.add("--instanceFeatureFile");
-					inputIt.add(dir + File.separator + "instance-features.txt");
+					
+					
+					if(new File(dir + File.separator + "instances-features.txt").exists())
+					{
+						inputIt.add("--instanceFeatureFile");
+						inputIt.add(dir + File.separator + "instance-features.txt");
+					}
 					inputIt.add("--instanceFile");
 					inputIt.add(dir + File.separator + "instances.txt");
 					inputIt.add("--paramFile");

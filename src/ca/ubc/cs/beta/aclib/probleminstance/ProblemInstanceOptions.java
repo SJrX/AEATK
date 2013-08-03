@@ -2,7 +2,13 @@ package ca.ubc.cs.beta.aclib.probleminstance;
 
 
 
+import java.io.File;
 import java.io.IOException;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
+import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -186,6 +192,50 @@ public class ProblemInstanceOptions extends AbstractOptions{
 
 		return new TrainTestInstances(training, testing); 
 	}
+	
+	/**
+	 * Gets both the training and the test problem instances
+	 * 
+	 * @param experimentDirectory	Directory to search for instance files
+	 * @param trainingSeed			Seed to use for the training instances
+	 * @param testingSeed			Seed to use for the testing instances
+	 * @param deterministic			Whether or not the instances should be generated with deterministic (-1) seeds
+	 * @param trainingRequired		Whether the training instance file is required
+	 * @param testRequired			Whether the test instance file is required
+	 * @return
+	 * @throws IOException
+	 */
+	public TrainTestInstances getTrainingAndTestProblemInstances(List<String> directories, long trainingSeed, long testingSeed, boolean deterministic, boolean trainingRequired, boolean testRequired, boolean trainingFeaturesRequired, boolean testingFeaturesRequired) throws IOException
+	{
+		
+		directories.add((new File(".")).getAbsolutePath());
+		
+		Map<String, String> exceptionMessages = new LinkedHashMap<String, String>();
+		Logger log = LoggerFactory.getLogger(getClass());
+		for(String dir : directories)
+		{
+			try {
+			InstanceListWithSeeds training = getTrainingProblemInstances(dir, trainingSeed, deterministic, trainingRequired, trainingFeaturesRequired);
+			InstanceListWithSeeds testing = getTestingProblemInstances(dir, testingSeed, deterministic, testRequired, testingFeaturesRequired);
+	
+			return new TrainTestInstances(training, testing);
+			} catch(ParameterException e)
+			{
+				log.debug("Ignore this exception for now: ", e);
+				exceptionMessages.put(dir,  e.getMessage());
+			}
+		}
+		
+		StringBuilder sb = new StringBuilder();
+		for(Entry<String, String> ent : exceptionMessages.entrySet())
+		{
+			sb.append(ent.getKey() + "==>" + ent.getValue()).append("\n");
+		}
+		
+		throw new ParameterException("Couldn't retrieve instances after searching several locations, errors for each location as follows: \n" + sb.toString());
+		
+	}
+	
 	
 
 	public static class TrainTestInstances

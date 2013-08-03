@@ -8,6 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aclib.misc.file.HomeFileUtils;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.NonNegativeInteger;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.OneInfinityOpenInterval;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.ReadableFileConverter;
@@ -23,6 +24,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.init.TargetAlgorithmEvaluat
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.init.TargetAlgorithmEvaluatorLoader;
 
 import com.beust.jcommander.Parameter;
+import com.beust.jcommander.ParameterFile;
 import com.beust.jcommander.ParametersDelegate;
 import com.beust.jcommander.validators.PositiveInteger;
 
@@ -125,9 +127,9 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	@Parameter(names="--check-for-unique-runconfigs-exception", description="If true, we will throw an exception if duplicate run configurations are detected")
 	public boolean checkRunConfigsUniqueException = true;
 
-	@UsageTextField(level=OptionLevel.INTERMEDIATE)
+	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names="--observer-walltime-if-no-runtime", description="If true and the target algorithm doesn't update us with runtime information we report wallclock time")
-	public boolean observeWalltimeIfNoRuntime = false;
+	public boolean observeWalltimeIfNoRuntime = true;
 	
 	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names="--observer-walltime-scale", description="What factor of the walltime should we use as the runtime (generally recommended is the 0.95 times the number of cores)", validateWith=ZeroInfinityOpenInterval.class)
@@ -141,6 +143,11 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	@Parameter(names="--synchronize-observers", description="Synchronize calls to the observer (this helps simplify memory visibility issues)", hidden=true)
 	public boolean synchronousObserver = true;
 
+	@UsageTextField(defaultValues="~/.aclib/tae.opt", level=OptionLevel.ADVANCED)
+	@Parameter(names={"--tae-default-file","--smacDefaultsFile"}, description="file that contains default settings for Target Algorithm Evaluators")
+	@ParameterFile(ignoreFileNotExists = true) 
+	public File smacDefaults = HomeFileUtils.getHomeFile(".aclib" + File.separator  + "tae.opt");
+	
 	
 	
 	/**
@@ -254,6 +261,21 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig,Map<String, AbstractOptions> taeOptions) 
 	{
 		return getTargetAlgorithmEvaluator(execConfig, taeOptions, new File(".").getAbsolutePath(), 0);
+	}
+
+	/**
+	 * Turns all options that would probably cause this application to crash off.
+	 */
+	public void turnOffCrashes() {
+		Logger log = LoggerFactory.getLogger(getClass());
+		log.info("Abort on Crash,Abort on First Run Crash, Verify SAT, and use Walltime if no Runtime are DISABLED as these options may cause unwanted crashes");
+		abortOnCrash = false;
+		abortOnFirstRunCrash = false;
+		verifySAT = false;
+		checkSATConsistency = true;
+		checkSATConsistencyException = false;
+		this.observeWalltimeIfNoRuntime = false;
+		this.runHashCodeFile = null;
 	}
 	
 	

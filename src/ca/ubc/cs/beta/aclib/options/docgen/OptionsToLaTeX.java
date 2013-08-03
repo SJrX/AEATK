@@ -166,11 +166,34 @@ public class OptionsToLaTeX {
 					if(sec.getAttributeDomain(name).length() > 0)
 					{
 						String domain = sec.getAttributeDomain(name);
-						domain = domain.replaceAll("\\{", "\\$\\\\{");
-						domain = domain.replaceAll("\\}", "\\\\}\\$");
-						domain = domain.replaceAll("Infinity","\\$\\\\infty\\$");
-						domain = domain.replaceAll(" U ", " \\$\\\\bigcup\\$ ");
 						
+						if(domain.trim().startsWith("{") && domain.trim().endsWith("}"))
+						{
+						
+							domain = domain.trim();
+							String[] vals = domain.substring(1, domain.length() - 1).split(",");
+							
+							StringBuilder sb = new StringBuilder("\\{$");
+							for(String v : vals)
+							{
+								if(v.trim().length() > 0)
+								{
+									sb.append("\\mathsf{").append(v).append("}, ");
+								}
+							}
+							sb.setCharAt(sb.length() - 2, ' ');
+							sb.append("$\\}");
+							
+							domain = sb.toString();
+						} else
+						{
+							domain = domain.replaceAll("\\{", "\\$\\\\{");
+							domain = domain.replaceAll("\\}", "\\\\}\\$");
+							domain = domain.replaceAll("Infinity","\\$\\\\infty\\$");
+							domain = domain.replaceAll(" U ", " \\$\\\\bigcup\\$ ");
+						}
+						
+						domain = domain.replaceAll("\\_",Matcher.quoteReplacement("\\_"));
 						
 						pw3.format("\t\t\t\\item[Domain:] %s %n", domain);
 						item = true;

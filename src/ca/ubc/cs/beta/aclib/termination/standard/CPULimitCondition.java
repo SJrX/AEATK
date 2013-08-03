@@ -50,7 +50,7 @@ public class CPULimitCondition extends AbstractTerminationCondition
 
 	@Override
 	public synchronized void notifyRun(AlgorithmRun run) {
-		currentTime.addAndGet(run.getRuntime());
+		currentTime.addAndGet(Math.max(0.1, run.getRuntime()));
 	}
 	
 	@Override

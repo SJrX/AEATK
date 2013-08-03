@@ -2,12 +2,15 @@ package ca.ubc.cs.beta.aclib.options.scenario;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.List;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.ParameterFile;
 import com.beust.jcommander.ParametersDelegate;
 
+import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionOptions;
 import ca.ubc.cs.beta.aclib.misc.jcommander.converter.OverallObjectiveConverter;
 import ca.ubc.cs.beta.aclib.misc.jcommander.converter.RunObjectiveConverter;
@@ -57,6 +60,17 @@ public class ScenarioOptions extends AbstractOptions{
 	@ParametersDelegate
 	public AlgorithmExecutionOptions algoExecOptions = new AlgorithmExecutionOptions();
 
+	public AlgorithmExecutionConfig getAlgorithmExecutionConfig(String experimentDir)
+	{
+		ArrayList<String> arrList = new ArrayList<String>();
+		arrList.add(experimentDir);
+		if(scenarioFile!=null)
+		{
+			arrList.add(scenarioFile.getParentFile().getAbsolutePath() + File.separator);
+		}
+		
+		return algoExecOptions.getAlgorithmExecutionConfig(arrList, true);
+	}
 	/**
 	 * Gets both the training and the test problem instances
 	 * 
@@ -72,7 +86,14 @@ public class ScenarioOptions extends AbstractOptions{
 	 */
 	public TrainTestInstances getTrainingAndTestProblemInstances(String experimentDirectory, long trainingSeed, long testingSeed, boolean trainingRequired, boolean testRequired, boolean trainingFeaturesRequired, boolean testingFeaturesRequired) throws IOException
 	{
-			return this.instanceOptions.getTrainingAndTestProblemInstances(experimentDirectory, trainingSeed, testingSeed, this.algoExecOptions.deterministic, trainingRequired, testRequired, trainingFeaturesRequired, testingFeaturesRequired);
+		List<String> dirsToSearch = new ArrayList<String>();
+		dirsToSearch.add(experimentDirectory);
+		if(scenarioFile!=null)
+		{
+			dirsToSearch.add(scenarioFile.getParentFile().getAbsolutePath() + File.separator);
+		}
+		
+		return this.instanceOptions.getTrainingAndTestProblemInstances(dirsToSearch, trainingSeed, testingSeed, this.algoExecOptions.deterministic, trainingRequired, testRequired, trainingFeaturesRequired, testingFeaturesRequired);
 	}
 
 	public void makeOutputDirectory(String runGroupName) {

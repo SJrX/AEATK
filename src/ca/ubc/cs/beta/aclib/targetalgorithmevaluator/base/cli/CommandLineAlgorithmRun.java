@@ -276,6 +276,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 									
 									if(line == null)
 									{
+										
 										return;
 									}
 									log.warn("[PROCESS-ERR]  {}", line);
@@ -291,13 +292,29 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 							} while(!processEnded.get());
 							
 							
+							StringBuilder sb = new StringBuilder();
 							
+							//In case something else has come in
+							if(procIn.ready())
+							{
+								//Probably not the most efficient way to read
+								char[] input = new char[10000];
+								procIn.read(input);
+								sb.append(String.valueOf(input));
+								
+							}
+							
+							if(sb.toString().trim().length() > 0)
+							{
+								log.warn("[PROCESS-ERR] {}", sb.toString().trim());
+							}
 						
 							procIn.close();
 						} finally
 						{
 							
 							stdErrorDone.release();
+							log.debug("Standard Error Done");
 						}
 					} catch(InterruptedException e)
 					{
@@ -462,7 +479,7 @@ outerloop:
 				
 					String line;
 					boolean read = false;
-					
+					//TODO This ready call doesn't guarantee we can read a line
 					while(procIn.ready())
 					{
 						read = true;

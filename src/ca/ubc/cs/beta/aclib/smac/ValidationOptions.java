@@ -37,7 +37,7 @@ public class ValidationOptions extends AbstractOptions{
 	public int numberOfTestSeedsPerInstance = 1000;
 	
 	@UsageTextField(level=OptionLevel.INTERMEDIATE)
-	@Parameter(names={"--num-validation-runs","--numValidationRuns","--numberOfValidationRuns"}, description = "approximate number of validation runs to do", validateWith=FixedPositiveInteger.class)
+	@Parameter(names={"--num-validation-runs","--numValidationRuns","--numberOfValidationRuns"}, description = "approximate number of validation runs to do", validateWith=NonNegativeInteger.class)
 	public int numberOfValidationRuns = 1000;
 	
 	@UsageTextField(level=OptionLevel.ADVANCED)

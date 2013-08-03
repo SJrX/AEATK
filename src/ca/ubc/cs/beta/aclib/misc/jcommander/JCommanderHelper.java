@@ -103,7 +103,7 @@ public final class JCommanderHelper
 				}
 			}
 			
-			String[] helpNames =  {"--help","-?","/?","-h"};
+			String[] helpNames =  {"--help","-?","/?","-h","--help-level"};
 			for(String helpName : helpNames)
 			{
 				if(possibleValues.contains(helpName))

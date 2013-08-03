@@ -2,6 +2,7 @@ package ca.ubc.cs.beta.aclib.execconfig;
 
 import java.io.File;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.List;
 
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpaceOptions;
@@ -68,7 +69,7 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 	 */
 	public AlgorithmExecutionConfig getAlgorithmExecutionConfigSkipDirCheck()
 	{
-		return getAlgorithmExecutionConfig(null, false);
+		return getAlgorithmExecutionConfig(Collections.<String> emptyList(), false);
 	}
 	
 	
@@ -76,26 +77,39 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 	{
 		return getAlgorithmExecutionConfig(experimentDir, true);
 	}
+	
+	public AlgorithmExecutionConfig getAlgorithmExecutionConfig(String experimentDir, boolean checkExecDir)
+	{
+		if(experimentDir == null)
+		{
+			return getAlgorithmExecutionConfig(Collections.<String> emptyList(), checkExecDir);
+		} else
+		{
+			return getAlgorithmExecutionConfig(Collections.singletonList(experimentDir), checkExecDir);
+		}
+		
+	}
 	/**
 	 * Gets an algorithm execution configuration
 	 * 
 	 * @param experimentDir the experiment directory to search for parameter configurations
 	 * @return configured object based on the options
 	 */
-	public AlgorithmExecutionConfig getAlgorithmExecutionConfig(String experimentDir, boolean checkExecDir)
+	public AlgorithmExecutionConfig getAlgorithmExecutionConfig(List<String> inputDirs, boolean checkExecDir)
 	{
 		List<String> dirToSearch = new ArrayList<String>();
-		if(experimentDir != null)
+		if(inputDirs != null)
 		{
-			dirToSearch.add(experimentDir);
+			dirToSearch.addAll(inputDirs);
 		}
 		
+
 		File execDir = new File(algoExecDir);
 		if(checkExecDir)
 		{
 			if(!execDir.exists())
 			{
-				execDir = new File(experimentDir + File.separator + algoExecDir);
+				execDir = new File(inputDirs.get(0) + File.separator + algoExecDir);
 				if(!execDir.exists())
 				{
 					throw new ParameterException("Cannot find execution algorithm execution directory: " + algoExecDir +  "  in context:" + dirToSearch);

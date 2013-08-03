@@ -47,7 +47,7 @@ import com.beust.jcommander.ParametersDelegate;
 @UsageTextField(title="SMAC Options", description="General Options for Running SMAC", claimRequired={"--instanceFile"}, noarg=SMACNoArgHandler.class)
 public class SMACOptions extends AbstractOptions {
 	
-	@UsageTextField(defaultValues="Defaults to true when --intraInstanceObjective is RUNTIME, false otherwise", level=OptionLevel.INTERMEDIATE)
+	@UsageTextField(defaultValues="Defaults to true when --runObj is RUNTIME, false otherwise", level=OptionLevel.INTERMEDIATE)
 	@Parameter(names={"--adaptive-capping","--ac","--adaptiveCapping"}, description="Use Adaptive Capping")
 	public Boolean adaptiveCapping = null;
 	
@@ -188,7 +188,7 @@ public class SMACOptions extends AbstractOptions {
 	}
 	
 	public AlgorithmExecutionConfig getAlgorithmExecutionConfig() {
-		return this.scenarioConfig.algoExecOptions.getAlgorithmExecutionConfig(experimentDir);
+		return this.scenarioConfig.getAlgorithmExecutionConfig(experimentDir);
 	}
 	
 	public String getOutputDirectory(String runGroupName)
