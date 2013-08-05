@@ -104,7 +104,7 @@ public class StateFactoryOptions extends AbstractOptions{
 	{
 		if(saveContextWithState)
 		{
-			sf.copyFileToStateDir("param-file.txt", new File(configSpace.getParamFileName()));
+			sf.copyFileToStateDir(LegacyStateFactory.PARAM_FILE, new File(configSpace.getParamFileName()));
 			
 			String instanceFileAbsolutePath = trainingILWS.getInstanceFileAbsolutePath();
 			if(instanceFileAbsolutePath != null)
@@ -123,7 +123,7 @@ public class StateFactoryOptions extends AbstractOptions{
 			
 			if ((scenFile != null) && (scenFile.exists()))
 			{
-				sf.copyFileToStateDir("scenario.txt", scenFile);
+				sf.copyFileToStateDir(LegacyStateFactory.SCENARIO_FILE, scenFile);
 			}
 
 		}
@@ -209,20 +209,37 @@ public class StateFactoryOptions extends AbstractOptions{
 						inputIt.add(String.valueOf(Integer.MAX_VALUE));
 					}
 					inputIt.add("--scenarioFile");
-					inputIt.add(dir + File.separator + "scenario.txt");
+					inputIt.add(dir + File.separator + LegacyStateFactory.SCENARIO_FILE);
 					
 					
-					if(new File(dir + File.separator + "instances-features.txt").exists())
+					if(new File(dir + File.separator + LegacyStateFactory.FEATURE_FILE).exists())
+					{
+						inputIt.add("--instanceFeatureFile");
+						inputIt.add(dir + File.separator + LegacyStateFactory.FEATURE_FILE);
+					} else if(new File(dir + File.separator + "instance-features.txt").exists())
 					{
 						inputIt.add("--instanceFeatureFile");
 						inputIt.add(dir + File.separator + "instance-features.txt");
 					}
+					
 					inputIt.add("--instanceFile");
-					inputIt.add(dir + File.separator + "instances.txt");
+					inputIt.add(dir + File.separator + LegacyStateFactory.INSTANCE_FILE);
 					inputIt.add("--paramFile");
-					inputIt.add(dir + File.separator + "param-file.txt");
+					//Old version of the file
+					if(new File(dir + File.separator + "param-file.txt").exists())
+					{
+						inputIt.add(dir + File.separator + "param-file.txt");
+					} else if(new File(dir + File.separator + LegacyStateFactory.PARAM_FILE).exists())
+					{
+						inputIt.add(dir + File.separator + LegacyStateFactory.PARAM_FILE);
+					} else
+					{
+						throw new ParameterException("Couldn't find parameter file to restore scenario");
+					}
+					
+					
 					inputIt.add("--testInstanceFile");
-					inputIt.add(dir + File.separator + "instances.txt");
+					inputIt.add(dir + File.separator + LegacyStateFactory.INSTANCE_FILE);
 					
 				}
 				

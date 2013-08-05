@@ -62,7 +62,17 @@ public class ProblemInstanceHelper {
 		
 		if(!f.exists())
 		{
-			throw new ParameterException("Could not find needed file:" + path + " Context:" + context);
+			logger.trace("Could not find needed file:" + path + " Context:" + context);
+			
+			//TODO take a full path c/d/e and a context a/b/c and somehow get a/b/c/d/e 
+			logger.trace("Trying basename of path in context");
+			
+			
+			f = new File(context + File.separator + new File(path).getName());
+			if(!f.exists())
+			{
+				throw new ParameterException("Could not find needed file:" + path + " Context:" + context);
+			}
 		}
 		
 		return f;
@@ -297,6 +307,7 @@ public class ProblemInstanceHelper {
 					}
 				} catch(NumberFormatException e)
 				{
+					e.printStackTrace();
 					for(int j=0; j < lastValue.length(); j++)
 					{
 						

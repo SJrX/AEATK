@@ -5,7 +5,6 @@ import ca.ubc.cs.beta.aclib.misc.options.OptionLevel;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 
-import com.beust.jcommander.DynamicParameter;
 import com.beust.jcommander.Parameter;
 
 

@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.util.List;
 import ca.ubc.cs.beta.aclib.misc.options.UsageSection;
 import ca.ubc.cs.beta.aclib.misc.returnvalues.ACLibReturnValues;
-import ca.ubc.cs.beta.aclib.options.docgen.OptionsToUsage;
 import ca.ubc.cs.beta.aclib.options.docgen.UsageSectionGenerator;
 
 import com.beust.jcommander.JCommander;

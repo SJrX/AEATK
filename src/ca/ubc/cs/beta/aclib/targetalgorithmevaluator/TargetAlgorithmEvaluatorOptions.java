@@ -144,9 +144,9 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	public boolean synchronousObserver = true;
 
 	@UsageTextField(defaultValues="~/.aclib/tae.opt", level=OptionLevel.ADVANCED)
-	@Parameter(names={"--tae-default-file","--smacDefaultsFile"}, description="file that contains default settings for Target Algorithm Evaluators")
+	@Parameter(names={"--tae-default-file"}, description="file that contains default settings for Target Algorithm Evaluators")
 	@ParameterFile(ignoreFileNotExists = true) 
-	public File smacDefaults = HomeFileUtils.getHomeFile(".aclib" + File.separator  + "tae.opt");
+	public File taeDefaults = HomeFileUtils.getHomeFile(".aclib" + File.separator  + "tae.opt");
 	
 	
 	

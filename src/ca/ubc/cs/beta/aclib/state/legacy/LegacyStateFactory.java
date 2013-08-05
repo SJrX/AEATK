@@ -2,9 +2,11 @@ package ca.ubc.cs.beta.aclib.state.legacy;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.OutputStream;
 import java.io.Serializable;
@@ -34,6 +36,19 @@ import ca.ubc.cs.beta.aclib.state.StateSerializer;
  */
 public class LegacyStateFactory implements StateFactory{
 
+	
+	
+
+	static final String OBJECT_MAP_KEY = "OBJECT_MAP_KEY";
+	static final String ITERATION_KEY = "ITERATION_KEY";
+	static final String INCUMBENT_TEXT_KEY = "INCUMBENT_TEXT_KEY";
+	
+	
+
+	public static final String SCENARIO_FILE = "scenario.txt";
+	public static final String PARAM_FILE = "param.pcs";
+	public static final String FEATURE_FILE = "instance-features.csv";
+	public static final String INSTANCE_FILE = "instances.txt";
 	
 	private final String saveStatePath;
 	private final String restoreFromPath;
@@ -127,10 +142,7 @@ public class LegacyStateFactory implements StateFactory{
 	@Override
 	public void copyFileToStateDir(String name, File f)
 	{
-		if(saveStatePath == null)
-		{
-			throw new IllegalArgumentException("This Serializer does not support saving State");
-		}
+		
 		
 		if(!f.isFile())
 		{
@@ -142,15 +154,37 @@ public class LegacyStateFactory implements StateFactory{
 			throw new IllegalArgumentException("Input file f does not exist :" + f.getAbsolutePath());
 		}
 		
+		try {
+			copyFileToStateDir(name, new FileInputStream(f));
+		} catch (FileNotFoundException e) {
+			throw new IllegalStateException("IOException occured :",e);
+		}
+		
+		
+	}
+	
+	/**
+	 * Copies the file to the State Dir
+	 * @param name name of the file to write
+	 * @param f source file
+	 */
+	public void copyFileToStateDir(String name, InputStream in)
+	{
+		if(saveStatePath == null)
+		{
+			throw new IllegalArgumentException("This Serializer does not support saving State");
+		}
+	
+		
 		File outputFile = new File(saveStatePath + File.separator + name);
 		
 		try {
-			InputStream in = new FileInputStream(f);
 			OutputStream out = new FileOutputStream(outputFile);
 			
 			
 			byte[] buf = new byte[8172];
 			int len;
+			
 			
 			while((len = in.read(buf)) > 0)
 			{
@@ -167,6 +201,7 @@ public class LegacyStateFactory implements StateFactory{
 		
 		
 	}
+	
 
 	/**
 	 * Generates the filename on disk that we should use to store uniq_configurations (array format of configurations)
@@ -347,6 +382,9 @@ public class LegacyStateFactory implements StateFactory{
 	
 	
 	static final String RUN_NUMBER_HEADING = "Run Number";
+	
+	
+	
 	@Override
 	public void purgePreviousStates() {
 		
@@ -397,9 +435,5 @@ public class LegacyStateFactory implements StateFactory{
 	}
 	
 
-	static final String OBJECT_MAP_KEY = "OBJECT_MAP_KEY";
-	static final String ITERATION_KEY = "ITERATION_KEY";
-	static final String INCUMBENT_TEXT_KEY = "INCUMBENT_TEXT_KEY";
-	
 	
 }

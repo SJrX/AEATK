@@ -71,6 +71,18 @@ public class ScenarioOptions extends AbstractOptions{
 		
 		return algoExecOptions.getAlgorithmExecutionConfig(arrList, true);
 	}
+	
+	public AlgorithmExecutionConfig getAlgorithmExecutionConfigSkipExecDirCheck(String experimentDir)
+	{
+		ArrayList<String> arrList = new ArrayList<String>();
+		arrList.add(experimentDir);
+		if(scenarioFile!=null)
+		{
+			arrList.add(scenarioFile.getParentFile().getAbsolutePath() + File.separator);
+		}
+		
+		return algoExecOptions.getAlgorithmExecutionConfig(arrList, false);
+	}
 	/**
 	 * Gets both the training and the test problem instances
 	 * 

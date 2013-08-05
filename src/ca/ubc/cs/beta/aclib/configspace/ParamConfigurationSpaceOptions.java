@@ -148,7 +148,7 @@ public class ParamConfigurationSpaceOptions extends AbstractOptions{
 		}
 		
 		Logger log = LoggerFactory.getLogger(this.getClass());
-		List<String> searchPaths = new ArrayList<String>(searchDirectories);
+		List<String> searchPaths = new ArrayList<String>();
 		
 		//==This will check the current working directory
 		searchPaths.add("");
@@ -156,8 +156,18 @@ public class ParamConfigurationSpaceOptions extends AbstractOptions{
 		
 		ParamConfigurationSpace configSpace = null;
 		
-		
-		
+		for(String searchDir : searchDirectories)
+		{
+			
+			File f = new File(searchDir);
+			searchPaths.add(f.getPath());
+			while(f.getParent() != null)
+			{
+				f = f.getParentFile();
+				searchPaths.add(f.getPath());
+			}
+		}
+
 		for(String path : searchPaths)
 		{
 			try {
