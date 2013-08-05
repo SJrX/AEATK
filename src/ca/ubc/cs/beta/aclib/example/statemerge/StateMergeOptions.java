@@ -10,7 +10,7 @@ import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 import ca.ubc.cs.beta.aclib.options.scenario.ScenarioOptions;
 
-@UsageTextField(title="State File Merge Utility", description="Merges many different state files")
+@UsageTextField(title="State File Merge Utility", description="Merges many different state files", noarg=StateMergeNoArgumentHandler.class)
 public class StateMergeOptions extends AbstractOptions {
 
 	@ParametersDelegate
