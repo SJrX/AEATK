@@ -93,6 +93,8 @@ public class LegacyStateDeserializer implements StateDeserializer {
 	private ParamConfiguration potentialIncumbent;
 	private final  Map<String, Serializable> objectStateMap; 
 	
+	
+	private static final Pattern filePattern = Pattern.compile("it(\\d+).");
 	@SuppressWarnings("unchecked")
 	/**
 	 * Generates objects necessary to restore SMAC to the state in the saved files
@@ -149,6 +151,31 @@ public class LegacyStateDeserializer implements StateDeserializer {
 					}
 				}
 				
+				if(iteration == 0)
+				{
+					log.debug("Auto-detected iteration 0 on first pass trying by filename, doing another pass");
+					
+					for(File f : files)
+					{
+
+						if(f.getName().matches(LegacyStateFactory.getRunAndResultsFilename("", "it", "\\d+")))
+						{
+							
+							Matcher m = filePattern.matcher(f.getName());
+							
+							if(m.find())
+							{
+								String group = m.group(1);
+								log.debug("Found iteration {} from file {} ", group , f.getName());
+								iteration = Math.max(Integer.valueOf(group), iteration);
+							}
+							
+						}
+						
+						
+						
+					}
+				}
 				log.info("Iteration restoring to {} ", iteration);
 			}
 			
