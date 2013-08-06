@@ -89,6 +89,18 @@ public class MapList<K,V> implements Map<K, List<V>> {
 		return map.entrySet();
 	}
 	
+	
+	public List<V> getList(K key)
+	{
+		
+		if(map.get(key) == null)
+		{
+			map.put(key, new ArrayList<V>());
+		}
+		
+		return map.get(key);
+		
+	}
 	public void addToList(K key, V value)
 	{
 		if(map.get(key) == null)

@@ -12,6 +12,7 @@ import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 
@@ -24,6 +25,8 @@ import com.beust.jcommander.ParameterException;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.ExistingAlgorithmRun;
+import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
+import ca.ubc.cs.beta.aclib.exceptions.DeveloperMadeABooBooException;
 import ca.ubc.cs.beta.aclib.exceptions.DuplicateRunException;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.misc.MapList;
@@ -33,12 +36,15 @@ import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.runhistory.NewRunHistory;
+import ca.ubc.cs.beta.aclib.runhistory.ReindexSeedRunHistoryDecorator;
 import ca.ubc.cs.beta.aclib.runhistory.RunData;
+import ca.ubc.cs.beta.aclib.runhistory.RunHistory;
 import ca.ubc.cs.beta.aclib.runhistory.ThreadSafeRunHistory;
 import ca.ubc.cs.beta.aclib.runhistory.ThreadSafeRunHistoryWrapper;
 import ca.ubc.cs.beta.aclib.state.StateFactoryOptions;
 import ca.ubc.cs.beta.aclib.state.StateSerializer;
 import ca.ubc.cs.beta.aclib.state.legacy.LegacyStateFactory;
+import ec.util.MersenneTwister;
 
 public class StateMergeExecutor {
 
@@ -67,110 +73,46 @@ public class StateMergeExecutor {
 			}
 			
 			
-			Set<String> directoriesWithState = new HashSet<String>();
-			log.info("Beginning Directory Scan");
-			for(String dir: smo.directories)
-			{
-				 directoriesWithState.addAll(scanDirectories(dir));
-			}
 			
 			log.info("Determining Scenario Options");
-			
 			List<ProblemInstance> pis = smo.scenOpts.getTrainingAndTestProblemInstances(".", 0, 0, true, false, false, false).getTrainingInstances().getInstances();;
 			AlgorithmExecutionConfig execConfig = smo.scenOpts.getAlgorithmExecutionConfigSkipExecDirCheck(".");
-			
 			MapList<Integer, AlgorithmRun> runsPerIteration = new MapList<Integer, AlgorithmRun>(new LinkedHashMap<Integer, List<AlgorithmRun>>());
+			
+			if(execConfig.isDeterministicAlgorithm())
+			{
+				smo.replaceSeeds = false;
+			} else
+			{
+				smo.replaceSeeds = true;
+			}
+			log.info("Scanning directories");
+			Set<String> directoriesWithState = getAllRestoreDirectories(smo.directories);
+			
+			
+			
 			
 			for(String dir: directoriesWithState)
 			{
-				ThreadSafeRunHistory rh = new ThreadSafeRunHistoryWrapper(new NewRunHistory(smo.scenOpts.intraInstanceObj, smo.scenOpts.interInstanceObj, smo.scenOpts.runObj));
-				restoreState(dir, smo.scenOpts, pis, execConfig, rh);
-				
-				for(RunData rd : rh.getAlgorithmRunData())
-				{
-					runsPerIteration.addToList(rd.getIteration(), rd.getRun());
-				}
+				extractRunsFromDirectory(smo, pis, execConfig, runsPerIteration, dir);
 			}
 			
-			
-			
-			MapList<Integer, AlgorithmRun> repairedRuns = new MapList<Integer, AlgorithmRun>(new HashMap<Integer, List<AlgorithmRun>>());
 			
 			Map<String, ProblemInstance> fixedPi = new LinkedHashMap<String, ProblemInstance>();
 			
-			int instanceId = 1;
-			Set<String> featureKeys = new HashSet<String>();
-			ProblemInstance firstPi = null;
-			for(Entry<Integer,List<AlgorithmRun>> runsForIt : runsPerIteration.entrySet())
-			{
-				for(AlgorithmRun run: runsForIt.getValue())
-				{
-					ProblemInstance pi =  run.getRunConfig().getProblemInstanceSeedPair().getInstance();
-					
-					
-					
-					
-					ProblemInstance repairedPi;
-					if(fixedPi.containsKey(pi.getInstanceName()))
-					{
-						repairedPi = fixedPi.get(pi.getInstanceName());
-					} else
-					{
-						repairedPi = new ProblemInstance(pi.getInstanceName(), instanceId, pi.getFeatures(), pi.getInstanceSpecificInformation());
-						fixedPi.put(pi.getInstanceName(), repairedPi);
-						
-						if(featureKeys.isEmpty())
-						{
-							featureKeys.addAll(pi.getFeatures().keySet());
-							firstPi = pi;
-						} else
-						{
-							if(!featureKeys.equals(pi.getFeatures().keySet()))
-							{
-								
-								String prevMinusCurr = "";
-								{
-									Set<String> previousFeatures = new HashSet<String>(featureKeys);
-									Set<String> currentFeatures = new HashSet<String>(pi.getFeatures().keySet());
-									previousFeatures.removeAll(currentFeatures);
-									prevMinusCurr = previousFeatures.toString();
-								}
-								
-								String currMinusPrev = "";
-								{
-									Set<String> previousFeatures = new HashSet<String>(featureKeys);
-									Set<String> currentFeatures = new HashSet<String>(pi.getFeatures().keySet());
-									currentFeatures.removeAll(previousFeatures);
-									currMinusPrev = currentFeatures.toString();
-								}
-							throw new ParameterException("Feature mismatch exception, features the current instance " + pi.getInstanceName() + " has but we previously on instance "+ firstPi.getInstanceName() +"  didn't find: " + currMinusPrev + " . Features the previous instance has but current instance doesn't: " + prevMinusCurr);
-							}
-						}
-						
-						instanceId++;
-					}
-					
-					ProblemInstanceSeedPair newPisp = new ProblemInstanceSeedPair(repairedPi, run.getRunConfig().getProblemInstanceSeedPair().getSeed());
-					RunConfig rc = new RunConfig(newPisp, run.getRunConfig().getCutoffTime(), run.getRunConfig().getParamConfiguration());
-					
-					ExistingAlgorithmRun repairedRun = new ExistingAlgorithmRun(run.getExecutionConfig(), rc, run.getRunResult(), run.getRuntime(), run.getRunLength(), run.getQuality(), run.getResultSeed(), run.getAdditionalRunData(), run.getWallclockExecutionTime());
-
-					Object[] args2 = { runsForIt.getKey(), run.getRunConfig().getProblemInstanceSeedPair().getInstance(), run, repairedPi, repairedRun };
-					log.debug("Run Restored on iteration {} : {} => {} repaired: {} => {}",args2);
-					repairedRuns.addToList(runsForIt.getKey(), repairedRun);
-					
-				}
-				
-				
-				
-			}
+			MapList<Integer, AlgorithmRun> repairedRuns = repairProblemInstances(runsPerIteration, fixedPi);
 			
+			
+			Random r = new MersenneTwister(smo.seed);
 			
 			log.info("Processing Runs");
+			RunHistory rh = new NewRunHistory(smo.scenOpts.intraInstanceObj, smo.scenOpts.interInstanceObj, smo.scenOpts.runObj);
+			if(smo.replaceSeeds)
+			{
+				rh = new ReindexSeedRunHistoryDecorator(rh,r );
+			}
+			ThreadSafeRunHistory rhToFilter = new ThreadSafeRunHistoryWrapper(rh);
 			
-			ThreadSafeRunHistory rhToSave = new ThreadSafeRunHistoryWrapper(new NewRunHistory(smo.scenOpts.intraInstanceObj, smo.scenOpts.interInstanceObj, smo.scenOpts.runObj));
-			
-			//NOTE: I assume that the map will 
 			for(Entry<Integer, List<AlgorithmRun>> itToRun :repairedRuns.entrySet())
 			{
 				
@@ -178,20 +120,89 @@ public class StateMergeExecutor {
 				{
 					try {
 						
-						rhToSave.append(run);
+						rhToFilter.append(run);
 					} catch (DuplicateRunException e) {
 					
 						e.printStackTrace();
 					}
 				}
-				rhToSave.incrementIteration();
+				rhToFilter.incrementIteration();
 			}
 			
-			for(RunData rd : rhToSave.getAlgorithmRunData())
+			
+			int rdi=0;
+			for(RunData rd : rhToFilter.getAlgorithmRunData())
 			{
-				log.info("Restored Data Iteration {} => {} ", rd.getIteration(), rd.getRun());
+				rdi++;
+				log.debug("Restored Data Iteration {} => {} ", rd.getIteration(), rd.getRun());
+			}
+			log.info("Restored Runs Count {} ", rdi);
+			
+			
+			List<ParamConfiguration> configs = rhToFilter.getAllParameterConfigurationsRan();
+			
+			Set<ProblemInstanceSeedPair> maxSet = new HashSet<ProblemInstanceSeedPair>();
+			
+			Set<ProblemInstanceSeedPair> allPisps = new HashSet<ProblemInstanceSeedPair>();
+			
+			ParamConfiguration maxConfig = null;
+			
+			
+			for(ParamConfiguration config : configs)
+			{
+				log.info("Number of runs for configuration {} is {}", config, rhToFilter.getAlgorithmInstanceSeedPairsRan(config).size());
+				
+				allPisps.addAll(rhToFilter.getAlgorithmInstanceSeedPairsRan(config));
+				if(maxSet.size() < rhToFilter.getAlgorithmInstanceSeedPairsRan(config).size())
+				{
+					maxSet = rhToFilter.getAlgorithmInstanceSeedPairsRan(config);
+					maxConfig = config;
+				}
+			}
+			
+			
+			Object[] arg2 = { maxConfig, execConfig.getParamFile().getDefaultConfiguration().equals(maxConfig), maxSet.size(), allPisps.size() };
+			log.info("Max runs is config {} (default: {}), size: {}). All pisps {} ", arg2);
+					
+		
+			
+	
+			ThreadSafeRunHistory rhToSaveToDisk = new ThreadSafeRunHistoryWrapper(new NewRunHistory(smo.scenOpts.intraInstanceObj, smo.scenOpts.interInstanceObj, smo.scenOpts.runObj));
+			
+			
+			for(RunData rd : rhToFilter.getAlgorithmRunData())
+			{
+				while(rd.getIteration() > rhToSaveToDisk.getIteration())
+				{
+					rhToSaveToDisk.incrementIteration();
+				}
+				
+				
+				if(maxSet.contains(rd.getRun().getRunConfig().getProblemInstanceSeedPair()))
+				{
+					try {
+						rhToSaveToDisk.append(rd.getRun());
+					} catch (DuplicateRunException e) {
+						throw new DeveloperMadeABooBooException("All the runs are coming from a run history object so this really shouldn't happen");
+					}
+				} else
+				{
+					log.debug("No match for pisp {}", rd.getRun().getRunConfig().getProblemInstanceSeedPair());
+				}
 				
 			}
+			
+			
+			
+			rdi=0;
+			for(RunData rd : rhToSaveToDisk.getAlgorithmRunData())
+			{
+				rdi++;
+				log.debug("Will Save Run Iteration {} => {} ", rd.getIteration(), rd.getRun());
+			}
+			
+			
+			log.info("Restored Runs Count {} ", rdi);
 			
 			
 			
@@ -201,7 +212,7 @@ public class StateMergeExecutor {
 				pisToSave.add(ent.getValue());
 			}
 		
-			saveState(smo.scenOpts.outputDirectory, rhToSave, pisToSave, execConfig.getParamFile().getParamFileName(), execConfig, smo.scenOpts);
+			saveState(smo.scenOpts.outputDirectory, rhToSaveToDisk, pisToSave, execConfig.getParamFile().getParamFileName(), execConfig, smo.scenOpts);
 			
 		} catch(ParameterException e)
 		{
@@ -215,6 +226,139 @@ public class StateMergeExecutor {
 		} catch (IOException e) {
 			log.error("IO Exception occurred", e);
 		}
+	}
+
+
+	
+	
+	/**
+	 * This takes the previously computed runsPerIteration and creates an identical map but with instance ids fixed
+	 * @param runsPerIteration MapList, with the runs broken down by iteration
+	 * @param fixedPi Map will be populated with new Problem instance objects
+	 * @return new map list with the correct problem instance objects.
+	 */
+	private static MapList<Integer, AlgorithmRun> repairProblemInstances(
+			MapList<Integer, AlgorithmRun> runsPerIteration,
+			Map<String, ProblemInstance> fixedPi) {
+		
+		MapList<Integer, AlgorithmRun> repairedRuns = new MapList<Integer, AlgorithmRun>(new HashMap<Integer, List<AlgorithmRun>>());
+		int instanceId = 1;
+		Set<String> featureKeys = new HashSet<String>();
+		ProblemInstance firstPi = null;
+		for(Entry<Integer,List<AlgorithmRun>> runsForIt : runsPerIteration.entrySet())
+		{
+			for(AlgorithmRun run: runsForIt.getValue())
+			{
+				ProblemInstance pi =  run.getRunConfig().getProblemInstanceSeedPair().getInstance();
+				
+				ProblemInstance repairedPi;
+				if(fixedPi.containsKey(pi.getInstanceName()))
+				{
+					repairedPi = fixedPi.get(pi.getInstanceName());
+				} else
+				{
+					repairedPi = new ProblemInstance(pi.getInstanceName(), instanceId, pi.getFeatures(), pi.getInstanceSpecificInformation());
+					fixedPi.put(pi.getInstanceName(), repairedPi);
+					
+					if(featureKeys.isEmpty())
+					{
+						featureKeys.addAll(pi.getFeatures().keySet());
+						firstPi = pi;
+					} else
+					{
+						if(!featureKeys.equals(pi.getFeatures().keySet()))
+						{
+							
+							String prevMinusCurr = "";
+							{
+								Set<String> previousFeatures = new HashSet<String>(featureKeys);
+								Set<String> currentFeatures = new HashSet<String>(pi.getFeatures().keySet());
+								previousFeatures.removeAll(currentFeatures);
+								prevMinusCurr = previousFeatures.toString();
+							}
+							
+							String currMinusPrev = "";
+							{
+								Set<String> previousFeatures = new HashSet<String>(featureKeys);
+								Set<String> currentFeatures = new HashSet<String>(pi.getFeatures().keySet());
+								currentFeatures.removeAll(previousFeatures);
+								currMinusPrev = currentFeatures.toString();
+							}
+						throw new ParameterException("Feature mismatch exception, features the current instance " + pi.getInstanceName() + " has but we previously on instance "+ firstPi.getInstanceName() +"  didn't find: " + currMinusPrev + " . Features the previous instance has but current instance doesn't: " + prevMinusCurr);
+						}
+					}
+					
+					instanceId++;
+				}
+				
+				ProblemInstanceSeedPair newPisp = new ProblemInstanceSeedPair(repairedPi, run.getRunConfig().getProblemInstanceSeedPair().getSeed());
+				RunConfig rc = new RunConfig(newPisp, run.getRunConfig().getCutoffTime(), run.getRunConfig().getParamConfiguration());
+				
+				ExistingAlgorithmRun repairedRun = new ExistingAlgorithmRun(run.getExecutionConfig(), rc, run.getRunResult(), run.getRuntime(), run.getRunLength(), run.getQuality(), run.getResultSeed(), run.getAdditionalRunData(), run.getWallclockExecutionTime());
+
+				Object[] args2 = { runsForIt.getKey(), run.getRunConfig().getProblemInstanceSeedPair().getInstance(), run, repairedPi, repairedRun };
+				log.debug("Run Restored on iteration {} : {} => {} repaired: {} => {}",args2);
+				repairedRuns.addToList(runsForIt.getKey(), repairedRun);
+				
+			}
+			
+			
+			
+		}
+		
+		return repairedRuns;
+	}
+
+
+	/**
+	 * Extract the runs from a given directory and add them to the runsPerIterationMap
+	 * 
+	 * @param smo options object
+	 * @param pis instances
+	 * @param execConfig execConfig object
+	 * @param runsPerIteration MapList containing the runs for each iteration
+	 * @param dir	directory with valid state information
+	 * @throws IOException
+	 */
+	private static void extractRunsFromDirectory(StateMergeOptions smo,
+			List<ProblemInstance> pis, AlgorithmExecutionConfig execConfig,
+			MapList<Integer, AlgorithmRun> runsPerIteration, String dir)
+			throws IOException {
+		ThreadSafeRunHistory rh = new ThreadSafeRunHistoryWrapper(new NewRunHistory(smo.scenOpts.intraInstanceObj, smo.scenOpts.interInstanceObj, smo.scenOpts.runObj));
+		restoreState(dir, smo.scenOpts, pis, execConfig, rh);
+		double restoredRuntime = 0.0;
+		for(RunData rd : rh.getAlgorithmRunData())
+		{
+			restoredRuntime+=rd.getRun().getRuntime();
+			
+			if(rd.getIteration() > smo.iterationLimit)
+			{
+				break;
+			}
+			runsPerIteration.addToList(rd.getIteration(), rd.getRun());
+			
+			if(restoredRuntime > smo.tunerTime)
+			{
+				break;
+			}
+			
+		}
+	}
+
+
+	/**
+	 * For each directory option, finds the directories to restore and returns a set containing all of them
+	 * @param directories 
+	 * @return set of directories with state data to restore
+	 */
+	private static Set<String> getAllRestoreDirectories(List<String> directories) {
+		Set<String> directoriesWithState = new HashSet<String>();
+		log.info("Beginning Directory Scan");
+		for(String dir: directories)
+		{
+			 directoriesWithState.addAll(scanDirectories(dir));
+		}
+		return directoriesWithState;
 	}
 
 	

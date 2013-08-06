@@ -25,8 +25,14 @@ public class StateMergeOptions extends AbstractOptions {
 	@Parameter(names="--up-to-tunertime", description="Only restore runs up to tuner time limit")
 	public int tunerTime = Integer.MAX_VALUE;
 	
-	
 	@ParametersDelegate 
 	public HelpOptions helpOptions = new HelpOptions();
 	
+	@UsageTextField(defaultValues="false if scenario is deterministic, true otherwise")
+	@Parameter(names="--replace-seeds", description="If true, existing seeds for problem instances will be replaced by new seeds starting from 1. (every run for the same pisp will map to the same new pisps)")
+	public Boolean replaceSeeds = null;
+	
+	
+	@Parameter(names="--seed", description="Seed to use for randomization")
+	public int seed = 1;
 }
