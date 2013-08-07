@@ -840,6 +840,11 @@ outerloop:
 			return false;
 		}
 	}
+	
+	private String replacePid(String input, int pid)
+	{
+		return input.replaceAll("%pid", String.valueOf(pid));
+	}
 	private void killProcess(Process p)
 	{
 		
@@ -861,7 +866,7 @@ outerloop:
 						
 						
 						
-						String command = "bash -c \"kill -s TERM -" + pid + "\"";
+						String command = replacePid(options.pgNiceKillCommand,pid);
 						log.debug("Trying to send SIGTERM to process group id: {} with command \"{}\"", pid,command);
 						try {
 							
@@ -889,7 +894,7 @@ outerloop:
 							if(retValPGroup > 0)
 							{
 								log.debug("SIGTERM to process group failed with error code {}", retValPGroup);
-								Process p3 = Runtime.getRuntime().exec("kill -s TERM " + pid);
+								Process p3 = Runtime.getRuntime().exec(SplitQuotedString.splitQuotedString(replacePid(options.procNiceKillCommand,pid)));
 								int retVal = p3.waitFor();
 								
 								if(retVal > 0)
@@ -907,7 +912,7 @@ outerloop:
 								log.debug("SIGTERM delivered successfully to process group id: {} ", pid);
 							}
 						} catch (IOException e) {
-							e.printStackTrace();
+							log.error("Couldn't SIGTERM process or process group ", e);
 						}
 						
 					
@@ -928,20 +933,35 @@ outerloop:
 							
 						}
 						
-						log.debug("Trying to send SIGKILL to pid: {}", pid);
+						log.debug("Trying to send SIGKILL to process group id: {}", pid);
 						try {
-							Process p2 = Runtime.getRuntime().exec("bash -c \"kill -s KILL -" + pid+ "\"");
+							Process p2 = Runtime.getRuntime().exec(SplitQuotedString.splitQuotedString(replacePid(options.pgForceKillCommand,pid)));
 							int retVal = p2.waitFor();
 							
 							if(retVal > 0)
 							{
 								log.debug("SIGKILL to pid: {} attempted failed with return code {}",pid, retVal);
+								
+								Process p3 = Runtime.getRuntime().exec(SplitQuotedString.splitQuotedString(replacePid(options.procForceKillCommand,pid)));
+								int retVal3 = p3.waitFor();
+								
+								if(retVal3 > 0)
+								{
+									Object[] args = {  pid,retVal};
+									log.debug("SIGKILL to process id: {} attempted failed with return code {}",args);
+								} else
+								{
+									log.debug("SIGKILL delivered successfully to process id: {}", pid, pid);
+								}
+								
+								
 							} else
 							{
 								log.debug("SIGKILL delivered successfully to pid: {} ", pid);
 							}
 						} catch (IOException e) {
-							e.printStackTrace();
+							log.error("Couldn't SIGKILL process or process group ", e);
+							
 						}
 					
 						
