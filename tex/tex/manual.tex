@@ -1,0 +1,152 @@
+\documentclass[11pt,letterpaper,oneside]{article}
+\include{fh_commands}
+\usepackage{fullpage}
+\usepackage{setspace}
+\usepackage{subfiles}
+\usepackage{graphicx}
+%%\usepackage{hyperref}
+
+\newcommand{\note}[1]{}
+% comment the next line to turn off notes
+\renewcommand{\note}[1]{~\\\frame{\begin{minipage}[c]{\textwidth}\vspace{2pt}\center{#1}\vspace{2pt}\end{minipage}}\vspace{3pt}\\}
+
+
+\begin{document}
+
+%%\title{Manual for SMAC version \input{version}}
+
+\title{Manual for ACLib Version }
+\author{
+Steve~Ramage\\
+Department of Computer Science\\
+University of British Columbia\\
+Vancouver, BC\ \ V6T~1Z4, Canada\\
+\texttt{\{seramage\}@cs.ubc.ca}
+}
+
+
+\maketitle
+
+\tableofcontents
+
+\section{Introduction}
+
+\subsection{Document Overview}
+
+This document is the manual for ACLib \footnote{Which at some point stood for \emph{Automatic Configurator Library}}. At a high level ACLib contains Java classes for three primarily purposes:
+
+\begin{enumerate}
+\item Classes whose primary role are as domain objects related to algorithm configuration (i.e., Problem Instances, Parameter Configuration Spaces, Algorithm Runs).
+
+\item Classes whose primary role is to facilitate evaluating or measuring various aspects of a program or \emph{Target Algorithm}'s execution. These classes are referred to as \texttt{Target Algorithm Evaluators}. 
+
+\item Classes whose primary role is to parse and validate command line arguments to programs written with ACLib, and to facilitate easy conversion between the files and input arguments to their domain representations. This aspect of ACLib is heavily coupled to JCommander \footnote{See: http://www.jcommander.org}.
+
+\end{enumerate}
+
+The former two groups are designed to \emph{Thread Safe} and used in highly concurrent environments.
+
+\subsection{System Requirements}
+
+ACLib requires at a minimum Java 6 to run, all other dependencies are included within ACLib.
+
+\subsection{License}
+
+ACLib will be released under a dual usage license. Academic \& non-commercial usage is permitted free of charge. Please contact us to discuss commercial usage.
+
+
+\subsection{Audience Background}
+
+It is expected that users of ACLib will be comfortable with Java. Additionally   some knowledge of Design Patterns, and Java Concurrency programming will be helpful. Additionally some of the documentation is described using UML diagrams. 
+
+Some recommended reading is:
+
+\begin{description}
+
+\item[Java Concurrency In Practice] Goetz, Brain. (2006) ISBN: 978-0321349606
+
+\item[Head First Design Patterns] Freeman, E. Robson, E. Bates B, Sierra K. (2004) ISBN: 978-0596007126
+
+\item[Effective Java $2^{nd}$ Edition] Bloch, Joshua. (2008) ISBN: 978-0321356680 
+\end{description}
+
+
+At a bare minimum, one should be acquianted with what \emph{Thread Safety} is (as a concept), most of ACLib can be used without knowing more than this. The only time more advanced knowledge is needed is when using some of the advanced features of the Target Algorithm Evaluators.
+
+As far as Design Patterns are concerned, familiarity with the Decorator, Observer,and Factory pattern are the most important.
+
+Effective Java is recommended only because it is likely to help the reader gain insights into why certain things in ACLib are designed the way they are, and to make changes in a way that isn't likely to cause problems later.
+
+\subsection{Software Dependencies}
+
+ACLib is designed to introduce very little dependencies into codes that use aspects of it, (in other words it should be easy to use one part of ACLib, without requiring others). One exception however is that almost all aspects of ACLib are coupled to SLF4J \footnote{http://www.slf4j.org}, which is used for logging.
+
+SLF4J is simply a front end and does not provide any logging functionality on it's own, ACLib also includes logback \footnote{http://logback.qos.ch/} by default to do it's logging although this aspect can be replaced with log4j, java.util.logging, etc.
+
+Different aspects of ACLib depend on other libraries as follows:
+
+\begin{tabular}{c c }
+Name & Description  \\
+
+\hline
+\hline
+Apache Commons Collections & Provides some new convenient collection types \\
+Apache Commons I/O & Provides a Null Output Stream used for testing \\
+Apache Commons Math & Provides Probability Distributions and other mathematical operations \\
+Logback & 	Provides a default logging implementation for ACLib \\
+slf4J & Logging API that ACLib links to \\
+Spi & Provides an easy way to utilize the Service Provider Interface . \\
+exp4j & Provides support for converting strings to formula, and evaluating them. \\
+JCIP Annotations & Documents classes thread safety properties \\
+OpenCSV & Used for parsing CSV Files \\
+JCommander & Used for parsing Command line options\footnote{the version included is a custom and modified build of JCommander available here: https://github.com/SJrX/jcommander} \\
+Guava & Used to provide an AtomicDouble class. \\ 
+Numerics & Used to provide additional probability distributions and mathematical operations \\
+Jama & Used to provide PCA Functionality used by the model. \\
+
+
+
+\end{tabular}
+
+
+\subsection{Design Principles and Conventions}
+
+Certain conventions exist within ACLib for a variety of reasons:
+
+\begin{enumerate}
+
+\item Most domain objects are entirely immutable. Those objects which aren't immutable, have generally been designed to have the bare minimum in mutability, for instance the \texttt{RunHistory} object has one method that modifies it's state, the \texttt{append()} method.
+
+\item Most classes are related to each other through a design principle known as \emph{constructor based dependency injection}. In short, everything a class needs to operate is given to it, in its constructor. The aim is to allow the code to be much more flexible, by decoupling the object from it's dependencies. 
+
+\end{enumerate}
+
+
+\subsection{Glossary}
+
+
+
+\section{Domain Objects}
+
+
+\section{Target Algorithm Evaluation}
+
+\section{Options \& JCommander}
+
+\section{Miscellaneous}
+
+
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+\section{Acknowledgements}
+%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%%
+
+We are indebted to Jonathan Shen for porting our random forest code from C to Java in preparation for a Java port of all of SMAC. We thank Marius Schneider for many valuable bug reports and suggestions for improvements. Thanks also to Chris Thornton, and Alexandre Fr\'echette for being a secondary beta testers.
+
+
+\renewcommand{\bibsection}{\section{References}}
+\bibliographystyle{apalike}
+\bibliography{short,frankbib}
+
+
+\end{document}
+

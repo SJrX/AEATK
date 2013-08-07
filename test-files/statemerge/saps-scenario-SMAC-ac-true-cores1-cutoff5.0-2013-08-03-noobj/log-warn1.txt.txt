@@ -1,0 +1,2 @@
+16:50:44.550 [main] WARN  c.u.c.b.a.s.l.LegacyStateFactory - Found previous state output, renamed to: /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/smac-output/saps-scenario-SMAC-ac-true-cores1-cutoff5.0-2013-08-03/old-state-1375573844547
+16:50:44.911 [main] WARN  c.u.c.b.a.t.b.c.CommandLineAlgorithmRun - This version of SMAC hardcodes run length for calls to the target algorithm to 2147483647.

@@ -8,3 +8,12 @@
 /plugins
 /exspace.txt
 /.apt_generated
+*.pdf
+*.cb
+*.synctex.gz
+*.log
+*.cb2
+*.toc
+*.aux
+*.tex.bak
+
