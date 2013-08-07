@@ -117,7 +117,7 @@ public class LoggingOptions extends AbstractOptions{
 <?xml version="1.0" encoding="UTF-8" ?>
 <configuration debug="false" >
   <appender name="FILE" class="ch.qos.logback.core.FileAppender">
-  <file>${RUNLOG}.txt</file>
+  <file>${RUNLOG}</file>
   <append>false</append>
   <encoder>
         <pattern>%d{HH:mm:ss.SSS} [%thread] %-5level %logger{36} - %msg%n</pattern>
@@ -126,7 +126,7 @@ public class LoggingOptions extends AbstractOptions{
   
   
   <appender name="FILE-WARN" class="ch.qos.logback.core.FileAppender">
-  <file>${WARNLOG}.txt</file>
+  <file>${WARNLOG}</file>
   <append>false</append>
   <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
         <level>WARN</level>
@@ -138,7 +138,7 @@ public class LoggingOptions extends AbstractOptions{
   
   
   <appender name="FILE-ERR" class="ch.qos.logback.core.FileAppender">
-  <file>${ERRLOG}.txt</file>
+  <file>${ERRLOG}</file>
   <append>false</append>
   <filter class="ch.qos.logback.classic.filter.ThresholdFilter">
         <level>ERROR</level>

@@ -6,6 +6,7 @@ import java.util.List;
 
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.help.HelpOptions;
+import ca.ubc.cs.beta.aclib.logging.LoggingOptions;
 import ca.ubc.cs.beta.aclib.misc.file.HomeFileUtils;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.FixedPositiveInteger;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
@@ -17,6 +18,7 @@ import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceOptions.TrainTestInst
 import ca.ubc.cs.beta.aclib.random.SeedOptions;
 import ca.ubc.cs.beta.aclib.random.SeedableRandomPool;
 import ca.ubc.cs.beta.aclib.random.SeedableRandomPoolConstants;
+import ca.ubc.cs.beta.aclib.random.SeperateSeedNumRunOptions;
 import ca.ubc.cs.beta.aclib.trajectoryfile.TrajectoryFileOptions;
 
 import com.beust.jcommander.Parameter;
@@ -44,7 +46,7 @@ public class ValidationExecutorOptions extends AbstractOptions {
 	
 	
 	@ParametersDelegate
-	public SeedOptions seedOptions = new SeedOptions();
+	public SeperateSeedNumRunOptions seedOptions = new SeperateSeedNumRunOptions();
 	
 	
 	@ParametersDelegate
@@ -56,6 +58,9 @@ public class ValidationExecutorOptions extends AbstractOptions {
 	@Parameter(names="--numRun", description="Number of Run the Run", required=true)
 	public long numRun = 0;
 	*/
+	
+	@ParametersDelegate
+	public LoggingOptions logOptions = new LoggingOptions();
 	
 	@Parameter(names="--configuration", description="Parameter configuration to validate (In the same format calls are made to the algorithm) [Use 'DEFAULT' to validate the default]")
 	public String incumbent;
