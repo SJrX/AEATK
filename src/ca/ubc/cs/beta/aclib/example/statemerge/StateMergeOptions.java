@@ -1,11 +1,13 @@
 package ca.ubc.cs.beta.aclib.example.statemerge;
 
+import java.io.File;
 import java.util.List;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParametersDelegate;
 
 import ca.ubc.cs.beta.aclib.help.HelpOptions;
+import ca.ubc.cs.beta.aclib.misc.options.OptionLevel;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aclib.model.ModelBuildingOptions;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
@@ -43,4 +45,10 @@ public class StateMergeOptions extends AbstractOptions {
 	
 	@ParametersDelegate
 	public RandomForestOptions rfo = new RandomForestOptions();
+	
+	@UsageTextField(defaultValues="<current working directory>", level=OptionLevel.BASIC)
+	@Parameter(names={"--experiment-dir","--experimentDir","-e"}, description="root directory for experiments folder")
+	public String experimentDir = System.getProperty("user.dir") + File.separator + "";
+	
+	
 }

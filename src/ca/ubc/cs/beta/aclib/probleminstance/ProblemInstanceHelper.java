@@ -228,6 +228,12 @@ public class ProblemInstanceHelper {
 	 */
 	public static InstanceListWithSeeds getInstances(String filename, String experimentDir, String featureFileName, boolean checkFileExistsOnDisk, long seed, int maxSeedsPerInstance, boolean deterministic) throws IOException {
 		
+		
+		if(experimentDir == null)
+		{
+			throw new ParameterException("Experiment directory cannot be null");
+		}
+		
 		logger.debug("Loading instances from file: {} and experiment dir {}", filename, experimentDir);
 		
 

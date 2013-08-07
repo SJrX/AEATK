@@ -80,8 +80,8 @@ public class StateMergeExecutor {
 			
 			
 			log.info("Determining Scenario Options");
-			List<ProblemInstance> pis = smo.scenOpts.getTrainingAndTestProblemInstances(".", 0, 0, true, false, false, false).getTrainingInstances().getInstances();;
-			AlgorithmExecutionConfig execConfig = smo.scenOpts.getAlgorithmExecutionConfigSkipExecDirCheck(".");
+			List<ProblemInstance> pis = smo.scenOpts.getTrainingAndTestProblemInstances(smo.experimentDir, 0, 0, true, false, false, false).getTrainingInstances().getInstances();;
+			AlgorithmExecutionConfig execConfig = smo.scenOpts.getAlgorithmExecutionConfigSkipExecDirCheck(smo.experimentDir);
 			MapList<Integer, AlgorithmRun> runsPerIteration = new MapList<Integer, AlgorithmRun>(new LinkedHashMap<Integer, List<AlgorithmRun>>());
 			
 			if(execConfig.isDeterministicAlgorithm())
