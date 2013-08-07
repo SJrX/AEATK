@@ -7,7 +7,9 @@ import com.beust.jcommander.ParametersDelegate;
 
 import ca.ubc.cs.beta.aclib.help.HelpOptions;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
+import ca.ubc.cs.beta.aclib.model.ModelBuildingOptions;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
+import ca.ubc.cs.beta.aclib.options.RandomForestOptions;
 import ca.ubc.cs.beta.aclib.options.scenario.ScenarioOptions;
 
 @UsageTextField(title="State File Merge Utility", description="Merges many different state files", noarg=StateMergeNoArgumentHandler.class)
@@ -35,4 +37,10 @@ public class StateMergeOptions extends AbstractOptions {
 	
 	@Parameter(names="--seed", description="Seed to use for randomization")
 	public int seed = 1;
+	
+	@ParametersDelegate
+	public ModelBuildingOptions mbo = new ModelBuildingOptions();
+	
+	@ParametersDelegate
+	public RandomForestOptions rfo = new RandomForestOptions();
 }

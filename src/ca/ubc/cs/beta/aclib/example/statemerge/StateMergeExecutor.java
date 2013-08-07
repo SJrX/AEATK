@@ -4,6 +4,7 @@ import java.io.File;
 import java.io.IOException;
 import java.io.StringReader;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -26,14 +27,17 @@ import com.beust.jcommander.ParameterException;
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.ExistingAlgorithmRun;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
+import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration.StringFormat;
 import ca.ubc.cs.beta.aclib.exceptions.DeveloperMadeABooBooException;
 import ca.ubc.cs.beta.aclib.exceptions.DuplicateRunException;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.misc.MapList;
 import ca.ubc.cs.beta.aclib.misc.jcommander.JCommanderHelper;
+import ca.ubc.cs.beta.aclib.objectives.RunObjective;
 import ca.ubc.cs.beta.aclib.options.scenario.ScenarioOptions;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
+import ca.ubc.cs.beta.aclib.random.SeedableRandomPool;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.runhistory.NewRunHistory;
 import ca.ubc.cs.beta.aclib.runhistory.ReindexSeedRunHistoryDecorator;
@@ -44,6 +48,7 @@ import ca.ubc.cs.beta.aclib.runhistory.ThreadSafeRunHistoryWrapper;
 import ca.ubc.cs.beta.aclib.state.StateFactoryOptions;
 import ca.ubc.cs.beta.aclib.state.StateSerializer;
 import ca.ubc.cs.beta.aclib.state.legacy.LegacyStateFactory;
+import ca.ubc.cs.beta.models.fastrf.RandomForest;
 import ec.util.MersenneTwister;
 
 public class StateMergeExecutor {
@@ -100,6 +105,9 @@ public class StateMergeExecutor {
 			
 			Map<String, ProblemInstance> fixedPi = new LinkedHashMap<String, ProblemInstance>();
 			
+			
+			
+			
 			MapList<Integer, AlgorithmRun> repairedRuns = repairProblemInstances(runsPerIteration, fixedPi);
 			
 			
@@ -138,36 +146,103 @@ public class StateMergeExecutor {
 			}
 			log.info("Restored Runs Count {} ", rdi);
 			
+			ThreadSafeRunHistory rhToSaveToDisk;
 			
+
 			List<ParamConfiguration> configs = rhToFilter.getAllParameterConfigurationsRan();
 			
-			Set<ProblemInstanceSeedPair> maxSet = new HashSet<ProblemInstanceSeedPair>();
+			
 			
 			Set<ProblemInstanceSeedPair> allPisps = new HashSet<ProblemInstanceSeedPair>();
 			
 			ParamConfiguration maxConfig = null;
 			
-			
+			Set<ParamConfiguration> maxConfigs = new HashSet<ParamConfiguration>();
+			int maxSetSize = 0;
 			for(ParamConfiguration config : configs)
 			{
 				log.info("Number of runs for configuration {} is {}", config, rhToFilter.getAlgorithmInstanceSeedPairsRan(config).size());
 				
 				allPisps.addAll(rhToFilter.getAlgorithmInstanceSeedPairsRan(config));
-				if(maxSet.size() < rhToFilter.getAlgorithmInstanceSeedPairsRan(config).size())
+				if(maxSetSize < rhToFilter.getAlgorithmInstanceSeedPairsRan(config).size())
 				{
-					maxSet = rhToFilter.getAlgorithmInstanceSeedPairsRan(config);
-					maxConfig = config;
+					maxConfigs.clear();
+					maxConfigs.add(config);
+					maxSetSize = rhToFilter.getAlgorithmInstanceSeedPairsRan(config).size();
+					
+				} else if(maxSetSize == rhToFilter.getAlgorithmInstanceSeedPairsRan(config).size())
+				{
+					maxConfigs.add(config);
+					//maxSetSize = rhToFilter.getAlgorithmInstanceSeedPairsRan(config).size();
 				}
+				
 			}
 			
+			log.info("Number of possible incumbents are {}", maxConfigs.size());
 			
-			Object[] arg2 = { maxConfig, execConfig.getParamFile().getDefaultConfiguration().equals(maxConfig), maxSet.size(), allPisps.size() };
-			log.info("Max runs is config {} (default: {}), size: {}). All pisps {} ", arg2);
+			StateMergeModelBuilder smmb = new StateMergeModelBuilder();
+			
+			List<ProblemInstance> instances = new ArrayList<ProblemInstance>();
+			instances.addAll(fixedPi.values());
+			
+			 SeedableRandomPool srp = new SeedableRandomPool(1);
+			log.info("Building model");
+			
+			boolean adaptiveCapping = true;
+			if(smo.rfo.logModel == null)
+			{
+				if(smo.scenOpts.runObj.equals(RunObjective.RUNTIME))
+				{
+					smo.rfo.logModel = true;
+				}  else
+				{
+					smo.rfo.logModel = false;
+					adaptiveCapping = false;
+				}
+			} 
 					
-		
+			smmb.learnModel(instances, rhToFilter, execConfig.getParamFile(), smo.rfo, smo.mbo, smo.scenOpts, adaptiveCapping, srp);
+			
+			RandomForest rf = smmb.getPreparedForest();
+			
+			int[] tree_indxs_used = new int[10];
+			for(int i=0; i < smo.rfo.numTrees; i++)
+			{
+				tree_indxs_used[i]= i;
+			}
+			
+			double[][] Theta = new double[1][];
+			
+			ParamConfiguration newIncumbent = null;
+			double bestMean = Double.POSITIVE_INFINITY;
+			
+			for(ParamConfiguration config : maxConfigs)
+			{
+				Theta[0] = config.toValueArray();
+				
+				double[][] ypred = RandomForest.applyMarginal(rf, tree_indxs_used, Theta);
+				
+				log.debug("Incumbent {} has predicted mean {}", config, ypred[0]);
+				if(ypred[0][0] < bestMean)
+				{
+					newIncumbent = config;
+					bestMean = ypred[0][0];
+				}
+				
+				
+			}
+			
+			log.info("New incumbent selected from random forest prediction is {} with string \"{}\" ", newIncumbent, newIncumbent.getFormattedParamString(StringFormat.NODB_SYNTAX));
+			Set<ProblemInstanceSeedPair> maxSet = new HashSet<ProblemInstanceSeedPair>();
+			
+			maxSet.addAll(rhToFilter.getAlgorithmInstanceSeedPairsRan(newIncumbent));
+			
+			
+			
+			
 			
 	
-			ThreadSafeRunHistory rhToSaveToDisk = new ThreadSafeRunHistoryWrapper(new NewRunHistory(smo.scenOpts.intraInstanceObj, smo.scenOpts.interInstanceObj, smo.scenOpts.runObj));
+			rhToSaveToDisk = new ThreadSafeRunHistoryWrapper(new NewRunHistory(smo.scenOpts.intraInstanceObj, smo.scenOpts.interInstanceObj, smo.scenOpts.runObj));
 			
 			
 			for(RunData rd : rhToFilter.getAlgorithmRunData())
@@ -209,10 +284,11 @@ public class StateMergeExecutor {
 			List<ProblemInstance> pisToSave = new ArrayList<ProblemInstance>();
 			for(Entry<String, ProblemInstance> ent : fixedPi.entrySet())
 			{
+				log.info("Problem instance saving {}", ent.getValue());
 				pisToSave.add(ent.getValue());
 			}
 		
-			saveState(smo.scenOpts.outputDirectory, rhToSaveToDisk, pisToSave, execConfig.getParamFile().getParamFileName(), execConfig, smo.scenOpts);
+			saveState(smo.scenOpts.outputDirectory, rhToSaveToDisk, pisToSave, execConfig.getParamFile().getParamFileName(), execConfig, smo.scenOpts, newIncumbent);
 			
 		} catch(ParameterException e)
 		{
@@ -326,6 +402,8 @@ public class StateMergeExecutor {
 			throws IOException {
 		ThreadSafeRunHistory rh = new ThreadSafeRunHistoryWrapper(new NewRunHistory(smo.scenOpts.intraInstanceObj, smo.scenOpts.interInstanceObj, smo.scenOpts.runObj));
 		restoreState(dir, smo.scenOpts, pis, execConfig, rh);
+		
+		log.debug("Restored state of {} has {} runs for default configuration ", dir, rh.getAlgorithmRunData(execConfig.getParamFile().getDefaultConfiguration()).size());
 		double restoredRuntime = 0.0;
 		for(RunData rd : rh.getAlgorithmRunData())
 		{
@@ -362,7 +440,7 @@ public class StateMergeExecutor {
 	}
 
 	
-	private static void saveState(String dir, ThreadSafeRunHistory rh, List<ProblemInstance> pis, String configSpaceFileName, AlgorithmExecutionConfig execConfig, ScenarioOptions scenOpts) throws IOException 
+	private static void saveState(String dir, ThreadSafeRunHistory rh, List<ProblemInstance> pis, String configSpaceFileName, AlgorithmExecutionConfig execConfig, ScenarioOptions scenOpts, ParamConfiguration newIncumbent) throws IOException 
 	{
 		
 		//StateFactoryOptions sfo = new StateFactoryOptions();
@@ -382,8 +460,8 @@ public class StateMergeExecutor {
 		
 		
 		scen.append("# Automatically generated by State Merge Utility").append("\n");
-		scen.append("algo="+execConfig.getAlgorithmExecutable()).append("\n");
-		scen.append("execdir="+execConfig.getAlgorithmExecutionDirectory()).append("\n");
+		scen.append("algo="+scenOpts.algoExecOptions.algoExec).append("\n");
+		scen.append("execdir="+scenOpts.algoExecOptions.algoExecDir).append("\n");
 		scen.append("deterministic=" + scenOpts.algoExecOptions.deterministic).append("\n");
 		scen.append("run_obj=" + scenOpts.runObj.toString().toLowerCase()).append("\n");
 		scen.append("#outdir = (Outdir is not recommended in a scenario file anymore)").append("\n");
@@ -434,7 +512,7 @@ public class StateMergeExecutor {
 		
 		lsf.copyFileToStateDir(LegacyStateFactory.INSTANCE_FILE, new ReaderInputStream(new StringReader(piTxt.toString()),"UTF-8"));
 		lsf.copyFileToStateDir(LegacyStateFactory.PARAM_FILE, new File(configSpaceFileName));
-		
+		ss.setIncumbent(newIncumbent);
 		
 		ss.save();
 	}

@@ -64,7 +64,10 @@ public class ReindexSeedRunHistoryDecorator extends AbstractRunHistoryDecorator 
 		
 		ProblemInstanceSeedPair pisp = run.getRunConfig().getProblemInstanceSeedPair();
 		
-		
+		if(run.getRunConfig().getParamConfiguration().getConfigurationSpace().getDefaultConfiguration().equals(run.getRunConfig().getParamConfiguration()))
+		{
+			log.debug("Transforming run of default configuration {}", run);
+		}
 		
 		
 		
@@ -79,7 +82,7 @@ public class ReindexSeedRunHistoryDecorator extends AbstractRunHistoryDecorator 
 			return;
 			} catch(DuplicateRunException e)
 			{
-				log.debug("Duplicate run has been dropped, so far: {} ",  duplicateRunsDropped.get());
+				log.debug("Duplicate run has been dropped, so far: {} ",  duplicateRunsDropped.incrementAndGet());
 			}
 		} else
 		{
@@ -118,7 +121,7 @@ public class ReindexSeedRunHistoryDecorator extends AbstractRunHistoryDecorator 
 				return;
 			} catch(DuplicateRunException e)
 			{
-				log.debug("Duplicate run has been dropped, so far: {} ",  duplicateRunsDropped.get());
+				log.debug("Duplicate run has been dropped, so far: {} ",  duplicateRunsDropped.incrementAndGet());
 			}
 			
 		

@@ -858,7 +858,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 
 	@Override
 	public Map<String, Serializable> getObjectStateMap() {
-		return objectStateMap;
+		return ((objectStateMap != null) ? objectStateMap : Collections.<String, Serializable>emptyMap());
 	}
 	
 	

@@ -363,7 +363,6 @@ public class LegacyStateFactory implements StateFactory{
 				Object o = oReader.readObject();
 				@SuppressWarnings("unchecked")
 				Map<String, Serializable> map = (Map<String, Serializable>) o;
-				System.out.println("FOO");
 				return Integer.valueOf(map.get(ITERATION_KEY).toString());
 				//if(true) throw new IllegalStateException();
 				
