@@ -7,6 +7,7 @@ import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.AbstractTargetAlgorithmEvaluatorFactory;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorFactory;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.BoundedTargetAlgorithmEvaluator;
 @ProviderFor(TargetAlgorithmEvaluatorFactory.class)
 public class CommandLineTargetAlgorithmEvaluatorFactory extends AbstractTargetAlgorithmEvaluatorFactory  {
 
@@ -19,7 +20,10 @@ public class CommandLineTargetAlgorithmEvaluatorFactory extends AbstractTargetAl
 	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(
 			AlgorithmExecutionConfig config, AbstractOptions options) {
 
-		return new CommandLineTargetAlgorithmEvaluator(config, (CommandLineTargetAlgorithmEvaluatorOptions) options );
+		CommandLineTargetAlgorithmEvaluatorOptions cliOpts = (CommandLineTargetAlgorithmEvaluatorOptions) options;
+		//CLI TAE doesn't bound properly accross runs and the workaround, until we rewrite the
+		//the AutomaticConfiguratorRunner crap is to simply bound it (See Issue #1811 for more info)
+		return new BoundedTargetAlgorithmEvaluator(new CommandLineTargetAlgorithmEvaluator(config, cliOpts ), cliOpts.cores, config);
 	}
 
 	@Override
