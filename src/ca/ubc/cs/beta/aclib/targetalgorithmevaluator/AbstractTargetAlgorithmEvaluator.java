@@ -10,7 +10,7 @@ import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli.CommandLineAlgorithmRun;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.functionality.OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator;
 
 /**
  * Abstract Target Algorithm Evalutar

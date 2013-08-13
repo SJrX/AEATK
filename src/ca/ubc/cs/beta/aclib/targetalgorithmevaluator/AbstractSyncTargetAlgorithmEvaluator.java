@@ -59,6 +59,8 @@ public abstract class AbstractSyncTargetAlgorithmEvaluator extends
 		if(this.areRunsPersisted())
 		{
 			//Need to ensure that the runs get checked for being done.
+			//I don't remember why this case is here and I don't think anything ever
+			//returns true that implements this.
 			run.run();
 		} else
 		{

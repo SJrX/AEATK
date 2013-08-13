@@ -19,7 +19,7 @@ public class MySQLOptions extends AbstractOptions {
 	@ParameterFile(ignoreFileNotExists = true) 
 	public File mysqlDefaults = HomeFileUtils.getHomeFile(".aclib" + File.separator  + "mysql.opt");
 	
-	@Parameter(names={"--mysql-hostname","--mysqlHostName"}, description="Hostname of database server" )
+	@Parameter(names={"--mysql-hostname","--mysql-host","--mysqlHostName"}, description="Hostname of database server" )
 	public String host;
 	
 	

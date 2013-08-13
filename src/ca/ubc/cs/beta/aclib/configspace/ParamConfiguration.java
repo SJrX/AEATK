@@ -14,6 +14,9 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import net.jcip.annotations.NotThreadSafe;
+import net.jcip.annotations.ThreadSafe;
+
 
 /**
  * This class represents an element in the associated {@link ParamConfigurationSpace} and provides a natural {@link Map} like interface for accessing it's members 
@@ -29,8 +32,13 @@ import java.util.concurrent.atomic.AtomicInteger;
  * 4) EntrySet and valueSet() are not implemented, size() is constant and unaffected by removing a key<br/>
  * 5) Two objects are considered equal if and only if all there active parameters are equal. 
  * 
+ * <p><b>Thread Safety:</b>This class is NOT thread safe under mutations but typically
+ * the lifecycle of a ParamConfiguration object is that it is created with specific values,
+ * and then never modified again. This class is thread safe under non-mutation operations.
+ * 
  *
  */
+@NotThreadSafe
 public class ParamConfiguration implements Map<String, String>, Serializable {
 
 	/**

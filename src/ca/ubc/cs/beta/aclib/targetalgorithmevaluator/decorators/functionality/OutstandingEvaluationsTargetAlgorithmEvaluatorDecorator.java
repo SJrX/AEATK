@@ -1,4 +1,4 @@
-package ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers;
+package ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.functionality;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;

@@ -297,8 +297,6 @@ public abstract class AbstractOptions implements Serializable {
 		}
 		return list;
 	}
-	
-	
 
 	public void populateOptionsMap(Map<String, String> opts)
 	{
