@@ -9,6 +9,7 @@ import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 
 
 import com.beust.jcommander.Parameter;
+import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.ParameterFile;
 
 @UsageTextField(title="MySQL Options", description="Options that control how to connect to the MySQL Server")
@@ -34,21 +35,41 @@ public class MySQLOptions extends AbstractOptions {
 	public String username;
 	
 	@Parameter(names={ "--mysql-port","--mysqlPort",}, description="Port of database server")
-	public int port;
+	public int port = 3306;
 	
 	@Parameter(names={"--mysql-parameter-file","--mysqlParameterFile"}, description="MySQL Configuration Options")
 	@ParameterFile
 	public File mysqlParamFile = null;
 
+	public String getJDBCString()
+	{
+		if(databaseName == null)
+		{
+			throw new ParameterException("Database name was not specified");
+		} 
+		
+		if(port <=0 || port >= 65536)
+		{
+			throw new ParameterException("Port must be between [1,65535]");
+		}
+		
+		if((host == null) || (host.trim().length() == 0))
+		{
+			throw new ParameterException("host must be specified, and a non-empty string");
+		}
+		return "jdbc:mysql://"+host + ":" + port + "/" + databaseName+"?user="+username + "&password="+password;
+		
+	}
+	
 	public Connection getConnection()
 	{
-		String url="jdbc:mysql://" + host + ":" + port + "/" + databaseName;
+		
 		try {
-			Class.forName("com.mysql.jdbc.Driver").newInstance();
-			return DriverManager.getConnection(url,username, password);
+			
+			return DriverManager.getConnection(getJDBCString(),username, password);
 			
 		} catch (Exception e) {
-			throw new RuntimeException(e);
+			throw new IllegalStateException(e);
 			
 		}
 		
