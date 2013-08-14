@@ -7,6 +7,7 @@ import java.util.TreeMap;
 
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.NonNegativeInteger;
 import ca.ubc.cs.beta.aclib.misc.options.OptionLevel;
+import ca.ubc.cs.beta.aclib.misc.options.Semantics;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 
@@ -21,6 +22,7 @@ public class SeedOptions extends AbstractOptions{
 	@Parameter(names={"--seed-offset","--seedOffset"}, description="offset of numRun to use from seed (this plus --numRun should be less than INTEGER_MAX)")
 	public int seedOffset = 0 ;
 	
+	@Semantics(name="SEED", domain="SCENARIO")
 	@Parameter(names={"--num-run","--numrun","--numRun","--seed"}, required=true, description="number of this run (also used as part of seed)", validateWith=NonNegativeInteger.class)
 	public int numRun = 0;
 	

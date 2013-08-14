@@ -14,6 +14,7 @@ import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionOptions;
 import ca.ubc.cs.beta.aclib.misc.jcommander.converter.OverallObjectiveConverter;
 import ca.ubc.cs.beta.aclib.misc.jcommander.converter.RunObjectiveConverter;
+import ca.ubc.cs.beta.aclib.misc.options.CommandLineOnly;
 import ca.ubc.cs.beta.aclib.misc.options.OptionLevel;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aclib.objectives.OverallObjective;
@@ -32,12 +33,15 @@ import ca.ubc.cs.beta.aclib.termination.TerminationCriteriaOptions;
 public class ScenarioOptions extends AbstractOptions{
 	
 	
+	@CommandLineOnly
 	@Parameter(names={"--run-obj","--runObj","--run_obj"}, description="per target algorithm run objective type that we are optimizing for", converter=RunObjectiveConverter.class)
 	public RunObjective runObj = RunObjective.RUNTIME;
 	
+	@CommandLineOnly
 	@Parameter(names={"--intra-obj","--intra-instance-obj","--overall-obj","--intraInstanceObj","--overallObj", "--overall_obj","--intra_instance_obj"}, description="objective function used to aggregate multiple runs for a single instance", converter=OverallObjectiveConverter.class)
 	public OverallObjective intraInstanceObj = OverallObjective.MEAN10;
 	
+	@CommandLineOnly
 	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names={"--inter-obj","--inter-instance-obj","--interInstanceObj","--inter_instance_obj"}, description="objective function used to aggregate over multiple instances (that have already been aggregated under the Intra-Instance Objective)", converter=OverallObjectiveConverter.class)
 	public OverallObjective interInstanceObj = OverallObjective.MEAN;

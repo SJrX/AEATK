@@ -16,6 +16,7 @@ import ca.ubc.cs.beta.aclib.initialization.classic.ClassicInitializationProcedur
 import ca.ubc.cs.beta.aclib.logging.LoggingOptions;
 import ca.ubc.cs.beta.aclib.misc.file.HomeFileUtils;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.*;
+import ca.ubc.cs.beta.aclib.misc.options.CommandLineOnly;
 import ca.ubc.cs.beta.aclib.misc.options.OptionLevel;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aclib.model.ModelBuildingOptions;
@@ -71,6 +72,7 @@ public class SMACOptions extends AbstractOptions {
 	@Parameter(names={"--deterministic-instance-ordering","--deterministicInstanceOrdering"}, description="If true, instances will be selected from the instance list file in the specified order")
 	public boolean deterministicInstanceOrdering = false;
 	
+	@CommandLineOnly
 	@UsageTextField(level=OptionLevel.BASIC)
 	@Parameter(names={"--validation","--doValidation"}, description="perform validation when SMAC completes")
 	public boolean doValidation = true;
@@ -79,6 +81,7 @@ public class SMACOptions extends AbstractOptions {
 	@Parameter(names={"--exec-mode","--execution-mode","--executionMode"}, description="execution mode of the automatic configurator")
 	public ExecutionMode execMode = ExecutionMode.SMAC;
 
+	@CommandLineOnly
 	@UsageTextField(defaultValues="<current working directory>", level=OptionLevel.BASIC)
 	@Parameter(names={"--experiment-dir","--experimentDir","-e"}, description="root directory for experiments Folder")
 	public String experimentDir = System.getProperty("user.dir") + File.separator + "";

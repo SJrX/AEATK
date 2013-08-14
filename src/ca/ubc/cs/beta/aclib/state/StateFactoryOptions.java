@@ -12,6 +12,7 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
+import ca.ubc.cs.beta.aclib.misc.options.CommandLineOnly;
 import ca.ubc.cs.beta.aclib.misc.options.OptionLevel;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
@@ -28,15 +29,17 @@ public class StateFactoryOptions extends AbstractOptions{
 	@Parameter(names={"--state-serializer","--stateSerializer"}, description="determines the format of the files to save the state in")
 	public StateSerializers stateSerializer = StateSerializers.LEGACY;
 
+	@CommandLineOnly
 	@UsageTextField( level=OptionLevel.ADVANCED)
 	@Parameter(names={"--state-deserializer","--stateDeserializer"}, description="determines the format of the files that store the saved state to restore")
 	public StateSerializers statedeSerializer = StateSerializers.LEGACY;
 	
-	
+	@CommandLineOnly
 	@UsageTextField(defaultValues="N/A (No state is being restored)", level=OptionLevel.ADVANCED)
 	@Parameter(names={"--restore-state-from","--restoreStateFrom"}, description="location of state to restore")
 	public String restoreStateFrom = null;
-
+	
+	@CommandLineOnly
 	@UsageTextField(defaultValues="N/A (No state is being restored)", level=OptionLevel.ADVANCED)
 	@Parameter(names={"--restore-iteration","--restoreStateIteration","--restoreIteration"}, description="iteration of the state to restore, use \"AUTO\" to automatically pick the last iteration", converter=AutoAsMaxConverter.class)
 	public Integer restoreIteration = null;
@@ -46,7 +49,7 @@ public class StateFactoryOptions extends AbstractOptions{
 	 * in the input string to jcommander 
 	 */
 	
-	
+	@CommandLineOnly
 	@Parameter(names={"--restore-scenario","--restoreScenario"}, description="Restore the scenario & state in the state folder")
 	public File restoreScenario=null; 
 	

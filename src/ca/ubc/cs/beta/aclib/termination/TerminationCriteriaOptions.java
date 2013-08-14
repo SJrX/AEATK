@@ -9,6 +9,7 @@ import ca.ubc.cs.beta.aclib.misc.jcommander.validator.FixedPositiveInteger;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.FixedPositiveLong;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.NonNegativeInteger;
 import ca.ubc.cs.beta.aclib.misc.options.OptionLevel;
+import ca.ubc.cs.beta.aclib.misc.options.Semantics;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 import ca.ubc.cs.beta.aclib.termination.standard.AlgorithmRunLimitCondition;
@@ -20,7 +21,7 @@ import ca.ubc.cs.beta.aclib.termination.standard.WallClockLimitCondition;
 @UsageTextField(hiddenSection=false, description="Options that control how long the scenario will run for", title="Scenario Configuration Limit Options")
 public class TerminationCriteriaOptions extends AbstractOptions {
 
-	
+	@Semantics(name="MAX_CPUTIME", domain="SCENARIO")
 	@Parameter(names={"--tunertime-limit","--tuner-timeout","--tunerTimeout"}, description="limits the total cpu time allowed between SMAC and the target algorithm runs during the automatic configuration phase", validateWith=NonNegativeInteger.class)
 	public int tunerTimeout = Integer.MAX_VALUE;
 	

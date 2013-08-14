@@ -10,6 +10,7 @@ import ca.ubc.cs.beta.aclib.misc.jcommander.converter.BinaryDigitBooleanConverte
 import ca.ubc.cs.beta.aclib.misc.jcommander.converter.StringToDoubleConverterWithMax;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.ZeroInfinityOpenInterval;
 import ca.ubc.cs.beta.aclib.misc.options.OptionLevel;
+import ca.ubc.cs.beta.aclib.misc.options.Semantics;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorOptions;
@@ -38,9 +39,11 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 	@Parameter(names={"--algo-deterministic","--deterministic"}, description="treat the target algorithm as deterministic", converter=BinaryDigitBooleanConverter.class)
 	public boolean deterministic;
 
+	@Semantics(name="MAX_SUBRUN_CPUTIME", domain="OPT")
 	@Parameter(names={"--algo-cutoff-time","--cutoff-time","--cutoffTime","--cutoff_time"}, description="CPU time limit for an individual target algorithm run", required=true, validateWith=ZeroInfinityOpenInterval.class)
 	public double cutoffTime;
 	
+	@Semantics(name="MAX_SUBRUN_RUNLENGTH", domain="OPT")
 	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names={"--algo-cutoff-length","--cutoffLength","--cutoff_length"}, description="cap limit for an individual run [not implemented currently]", converter=StringToDoubleConverterWithMax.class, hidden=true)
 	public double cutoffLength = -1.0;
