@@ -104,9 +104,10 @@ public class ScenarioOptions extends AbstractOptions{
 	{
 		List<String> dirsToSearch = new ArrayList<String>();
 		dirsToSearch.add(experimentDirectory);
+		
 		if(scenarioFile!=null)
 		{
-			dirsToSearch.add(scenarioFile.getParentFile().getAbsolutePath() + File.separator);
+			dirsToSearch.add(scenarioFile.getAbsoluteFile().getParentFile().getAbsolutePath() + File.separator);
 		}
 		
 		return this.instanceOptions.getTrainingAndTestProblemInstances(dirsToSearch, trainingSeed, testingSeed, this.algoExecOptions.deterministic, trainingRequired, testRequired, trainingFeaturesRequired, testingFeaturesRequired);

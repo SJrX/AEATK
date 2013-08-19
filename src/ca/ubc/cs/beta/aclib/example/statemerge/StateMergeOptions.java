@@ -1,6 +1,7 @@
 package ca.ubc.cs.beta.aclib.example.statemerge;
 
 import java.io.File;
+import java.util.Collections;
 import java.util.List;
 
 import com.beust.jcommander.Parameter;
@@ -23,7 +24,7 @@ public class StateMergeOptions extends AbstractOptions {
 	ScenarioOptions scenOpts = new ScenarioOptions();
 	
 	@Parameter(names="--directories", description="Directories to search for state files", variableArity = true)
-	public List<String> directories;
+	public List<String> directories =Collections.singletonList(".");
 	
 	@Parameter(names="--up-to-iteration", description="Only restore runs up to iteration ")
 	public int iterationLimit = Integer.MAX_VALUE;
