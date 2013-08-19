@@ -13,7 +13,7 @@ import ca.ubc.cs.beta.aclib.expectedimprovement.ExpectedImprovementFunctions;
 import ca.ubc.cs.beta.aclib.help.HelpOptions;
 import ca.ubc.cs.beta.aclib.initialization.InitializationMode;
 import ca.ubc.cs.beta.aclib.initialization.classic.ClassicInitializationProcedureOptions;
-import ca.ubc.cs.beta.aclib.logging.LoggingOptions;
+import ca.ubc.cs.beta.aclib.logging.ComplexLoggingOptions;
 import ca.ubc.cs.beta.aclib.misc.file.HomeFileUtils;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.*;
 import ca.ubc.cs.beta.aclib.misc.options.CommandLineOnly;
@@ -118,7 +118,7 @@ public class SMACOptions extends AbstractOptions {
 	public int iterativeCappingK = 1;
 	
 	@ParametersDelegate
-	public LoggingOptions logOptions = new LoggingOptions();
+	public ComplexLoggingOptions logOptions = new ComplexLoggingOptions();
 	
 	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names={"--max-incumbent-runs","--maxIncumbentRuns","--maxRunsForIncumbent"}, description="maximum number of incumbent runs allowed", validateWith=FixedPositiveInteger.class)

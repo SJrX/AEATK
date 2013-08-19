@@ -6,7 +6,7 @@ import java.util.List;
 
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.help.HelpOptions;
-import ca.ubc.cs.beta.aclib.logging.LoggingOptions;
+import ca.ubc.cs.beta.aclib.logging.ComplexLoggingOptions;
 import ca.ubc.cs.beta.aclib.misc.file.HomeFileUtils;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.FixedPositiveInteger;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
@@ -60,7 +60,7 @@ public class ValidationExecutorOptions extends AbstractOptions {
 	*/
 	
 	@ParametersDelegate
-	public LoggingOptions logOptions = new LoggingOptions();
+	public ComplexLoggingOptions logOptions = new ComplexLoggingOptions();
 	
 	@Parameter(names="--configuration", description="Parameter configuration to validate (In the same format calls are made to the algorithm) [Use 'DEFAULT' to validate the default]")
 	public String incumbent;

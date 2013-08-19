@@ -68,6 +68,7 @@ public class StateMergeExecutor {
 			 jcom = JCommanderHelper.parseCheckingForHelpAndVersion(args, smo);
 			} finally
 			{
+				smo.logOpts.initializeLogging();
 				log = LoggerFactory.getLogger(StateMergeExecutor.class);
 			}
 			

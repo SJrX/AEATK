@@ -177,7 +177,16 @@ dirty: ${git.dirty}</echo>
 		
 		
 		<!--<jar destfile="dist/aclib-v${version.major}_${version.minor}_${build.number}.jar" basedir="build/classes"/>-->
-		<jar destfile="dist/aclib.jar" basedir="build/classes"/>
+		<jar destfile="dist/aclib.jar">
+			<fileset dir="build/classes">
+				<include name="**/*"/>
+			</fileset>
+			<fileset dir="src/">
+				 <include name="**/*.xml"/>
+			</fileset>
+		</jar>
+		
+		
 		<jar destfile="dist/aclib-src.jar">
 			<fileset dir="src/">
 				 <include name="**/*.java"/>
