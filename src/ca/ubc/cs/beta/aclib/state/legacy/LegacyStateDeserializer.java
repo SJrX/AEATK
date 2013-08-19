@@ -359,6 +359,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 				
 				boolean seedErrorLogged = false;
 				
+				int duplicateRunsDropped = 0;
 				while((runHistoryLine = runlist.readNext()) != null)
 				{
 					
@@ -537,7 +538,8 @@ public class LegacyStateDeserializer implements StateDeserializer {
 								
 							} else
 							{
-								log.error("Duplicate Run Detected dropped {} from line: {}",run, Arrays.toString(runHistoryLine));
+								duplicateRunsDropped++;
+								log.debug("Duplicate Run Detected dropped {} from line: {}",run, Arrays.toString(runHistoryLine));
 								
 							}
 							
@@ -547,13 +549,12 @@ public class LegacyStateDeserializer implements StateDeserializer {
 						 throw e;
 					} catch(RuntimeException e) 
 					{
-					
-						
 						throw new StateSerializationException("Error occured while parsing the following line of the runHistory file: " + i + " data "+ Arrays.toString(runHistoryLine), e);
 					}
 
 				}
 				
+				log.info("Restored {} runs, {} duplicates were dropped", i, duplicateRunsDropped);
 				if(this.incumbent == null)
 				{
 					log.info("No incumbent found in state files, doing our best to select the incumbent, may not be identical but should be indistinguishable");
