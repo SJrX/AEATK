@@ -57,7 +57,7 @@ public class MySQLOptions extends AbstractOptions {
 		{
 			throw new ParameterException("host must be specified, and a non-empty string");
 		}
-		return "jdbc:mysql://"+host + ":" + port + "/" + databaseName+"?user="+username + "&password="+password;
+		return "jdbc:mysql://"+host + ":" + port + "/" + databaseName+"?username="+username + "&password="+password;
 		
 	}
 	
