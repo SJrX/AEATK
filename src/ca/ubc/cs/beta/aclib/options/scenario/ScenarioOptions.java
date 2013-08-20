@@ -70,7 +70,7 @@ public class ScenarioOptions extends AbstractOptions{
 		arrList.add(experimentDir);
 		if(scenarioFile!=null)
 		{
-			arrList.add(scenarioFile.getParentFile().getAbsolutePath() + File.separator);
+			arrList.add(scenarioFile.getAbsoluteFile().getParentFile().getAbsolutePath() + File.separator);
 		}
 		
 		return algoExecOptions.getAlgorithmExecutionConfig(arrList, true);
@@ -82,7 +82,7 @@ public class ScenarioOptions extends AbstractOptions{
 		arrList.add(experimentDir);
 		if(scenarioFile!=null)
 		{
-			arrList.add(scenarioFile.getParentFile().getAbsolutePath() + File.separator);
+			arrList.add(scenarioFile.getAbsoluteFile().getAbsolutePath() + File.separator);
 		}
 		
 		return algoExecOptions.getAlgorithmExecutionConfig(arrList, false);

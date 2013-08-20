@@ -31,7 +31,7 @@ public class InstanceSelectorTest {
 		}
 		
 		
-		String instanceFilesRoot =  f.getParentFile().getParentFile().toString();
+		String instanceFilesRoot =  f.getAbsoluteFile().getParentFile().getParentFile().toString();
 		/*System.out.println(instanceFilesRoot);*/
 
 

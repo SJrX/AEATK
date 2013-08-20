@@ -159,7 +159,7 @@ public class ParamConfigurationSpaceOptions extends AbstractOptions{
 		for(String searchDir : searchDirectories)
 		{
 			
-			File f = new File(searchDir);
+			File f = new File(searchDir).getAbsoluteFile();
 			searchPaths.add(f.getPath());
 			while(f.getParent() != null)
 			{

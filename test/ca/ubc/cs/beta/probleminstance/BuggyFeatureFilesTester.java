@@ -55,7 +55,7 @@ public class BuggyFeatureFilesTester {
 		}
 		
 		
-		String instanceFilesRoot =  f.getParentFile().getParentFile().toString();
+		String instanceFilesRoot =  f.getAbsoluteFile().getParentFile().getParentFile().toString();
 		/*System.out.println(instanceFilesRoot);*/
 
 		

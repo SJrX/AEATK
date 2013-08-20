@@ -34,11 +34,11 @@ public static void main(String[] args)
 		}
 		
 		
-		File f = new File(opts.filename);
+		File f = new File(opts.filename).getAbsoluteFile();
 		
 		if(f.isDirectory())
 		{
-			f = new File(opts.filename + File.separator + opts.nameOfProgram);
+			f = new File(opts.filename + File.separator + opts.nameOfProgram).getAbsoluteFile();
 		} else if(!f.getParentFile().exists())
 		{
 			boolean created = f.getParentFile().mkdirs();
