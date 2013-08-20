@@ -32,6 +32,8 @@ import ca.ubc.cs.beta.aclib.random.SeedableRandomPool;
 import ca.ubc.cs.beta.aclib.random.SeedableRandomPoolConstants;
 import ca.ubc.cs.beta.aclib.state.StateFactory;
 import ca.ubc.cs.beta.aclib.state.StateFactoryOptions;
+import ca.ubc.cs.beta.aclib.state.WarmStartOptions;
+
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterFile;
 import com.beust.jcommander.ParametersDelegate;
@@ -180,6 +182,9 @@ public class SMACOptions extends AbstractOptions {
 
 	@ParametersDelegate
 	public ValidationOptions validationOptions = new ValidationOptions();
+	
+	@ParametersDelegate
+	public WarmStartOptions warmStartOptions = new WarmStartOptions();
 	
 	/**
 	 * Checks if the verify sat option is compatible with this set of probelm instances
