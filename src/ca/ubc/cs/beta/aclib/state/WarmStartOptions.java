@@ -22,6 +22,7 @@ import ca.ubc.cs.beta.aclib.state.nullFactory.NullStateFactory;
 
 import com.beust.jcommander.Parameter;
 
+@UsageTextField(hiddenSection=true)
 public class WarmStartOptions extends AbstractOptions {
 	
 	@CommandLineOnly
