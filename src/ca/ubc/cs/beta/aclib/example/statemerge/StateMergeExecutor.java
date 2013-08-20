@@ -149,127 +149,129 @@ public class StateMergeExecutor {
 			
 			ThreadSafeRunHistory rhToSaveToDisk;
 			
-
-			List<ParamConfiguration> configs = rhToFilter.getAllParameterConfigurationsRan();
-			
-			
-			
-			Set<ProblemInstanceSeedPair> allPisps = new HashSet<ProblemInstanceSeedPair>();
-			
-			ParamConfiguration maxConfig = null;
-			
-			Set<ParamConfiguration> maxConfigs = new HashSet<ParamConfiguration>();
-			int maxSetSize = 0;
-			for(ParamConfiguration config : configs)
-			{
-				log.info("Number of runs for configuration {} is {}", config, rhToFilter.getAlgorithmInstanceSeedPairsRan(config).size());
-				
-				allPisps.addAll(rhToFilter.getAlgorithmInstanceSeedPairsRan(config));
-				if(maxSetSize < rhToFilter.getAlgorithmInstanceSeedPairsRan(config).size())
-				{
-					maxConfigs.clear();
-					maxConfigs.add(config);
-					maxSetSize = rhToFilter.getAlgorithmInstanceSeedPairsRan(config).size();
-					
-				} else if(maxSetSize == rhToFilter.getAlgorithmInstanceSeedPairsRan(config).size())
-				{
-					maxConfigs.add(config);
-					//maxSetSize = rhToFilter.getAlgorithmInstanceSeedPairsRan(config).size();
-				}
-				
-			}
-			
-			log.info("Number of possible incumbents are {}", maxConfigs.size());
-			
-			StateMergeModelBuilder smmb = new StateMergeModelBuilder();
-			
-			List<ProblemInstance> instances = new ArrayList<ProblemInstance>();
-			instances.addAll(fixedPi.values());
-			
-			 SeedableRandomPool srp = new SeedableRandomPool(1);
-			log.info("Building model");
-			
-			boolean adaptiveCapping = true;
-			if(smo.rfo.logModel == null)
-			{
-				if(smo.scenOpts.runObj.equals(RunObjective.RUNTIME))
-				{
-					smo.rfo.logModel = true;
-				}  else
-				{
-					smo.rfo.logModel = false;
-					adaptiveCapping = false;
-				}
-			} 
-					
-			smmb.learnModel(instances, rhToFilter, execConfig.getParamFile(), smo.rfo, smo.mbo, smo.scenOpts, adaptiveCapping, srp);
-			
-			RandomForest rf = smmb.getPreparedForest();
-			
-			int[] tree_indxs_used = new int[10];
-			for(int i=0; i < smo.rfo.numTrees; i++)
-			{
-				tree_indxs_used[i]= i;
-			}
-			
-			double[][] Theta = new double[1][];
-			
 			ParamConfiguration newIncumbent = null;
-			double bestMean = Double.POSITIVE_INFINITY;
-			
-			for(ParamConfiguration config : maxConfigs)
+			if(smo.repairMaxRunsForIncumbentInvariant)
 			{
-				Theta[0] = config.toValueArray();
 				
-				double[][] ypred = RandomForest.applyMarginal(rf, tree_indxs_used, Theta);
 				
-				log.debug("Incumbent {} has predicted mean {}", config, ypred[0]);
-				if(ypred[0][0] < bestMean)
+				List<ParamConfiguration> configs = rhToFilter.getAllParameterConfigurationsRan();
+				
+				
+				
+				Set<ProblemInstanceSeedPair> allPisps = new HashSet<ProblemInstanceSeedPair>();
+				
+				ParamConfiguration maxConfig = null;
+				
+				Set<ParamConfiguration> maxConfigs = new HashSet<ParamConfiguration>();
+				int maxSetSize = 0;
+				for(ParamConfiguration config : configs)
 				{
-					newIncumbent = config;
-					bestMean = ypred[0][0];
-				}
-				
-				
-			}
-			
-			log.info("New incumbent selected from random forest prediction is {} with string \"{}\" ", newIncumbent, newIncumbent.getFormattedParamString(StringFormat.NODB_SYNTAX));
-			Set<ProblemInstanceSeedPair> maxSet = new HashSet<ProblemInstanceSeedPair>();
-			
-			maxSet.addAll(rhToFilter.getAlgorithmInstanceSeedPairsRan(newIncumbent));
-			
-			
-			
-			
-			
-	
-			rhToSaveToDisk = new ThreadSafeRunHistoryWrapper(new NewRunHistory(smo.scenOpts.intraInstanceObj, smo.scenOpts.interInstanceObj, smo.scenOpts.runObj));
-			
-			
-			for(RunData rd : rhToFilter.getAlgorithmRunData())
-			{
-				while(rd.getIteration() > rhToSaveToDisk.getIteration())
-				{
-					rhToSaveToDisk.incrementIteration();
-				}
-				
-				
-				if(maxSet.contains(rd.getRun().getRunConfig().getProblemInstanceSeedPair()))
-				{
-					try {
-						rhToSaveToDisk.append(rd.getRun());
-					} catch (DuplicateRunException e) {
-						throw new DeveloperMadeABooBooException("All the runs are coming from a run history object so this really shouldn't happen");
+					log.info("Number of runs for configuration {} is {}", config, rhToFilter.getAlgorithmInstanceSeedPairsRan(config).size());
+					
+					allPisps.addAll(rhToFilter.getAlgorithmInstanceSeedPairsRan(config));
+					if(maxSetSize < rhToFilter.getAlgorithmInstanceSeedPairsRan(config).size())
+					{
+						maxConfigs.clear();
+						maxConfigs.add(config);
+						maxSetSize = rhToFilter.getAlgorithmInstanceSeedPairsRan(config).size();
+						
+					} else if(maxSetSize == rhToFilter.getAlgorithmInstanceSeedPairsRan(config).size())
+					{
+						maxConfigs.add(config);
+						//maxSetSize = rhToFilter.getAlgorithmInstanceSeedPairsRan(config).size();
 					}
-				} else
-				{
-					log.debug("No match for pisp {}", rd.getRun().getRunConfig().getProblemInstanceSeedPair());
+					
 				}
 				
+				log.info("Number of possible incumbents are {}", maxConfigs.size());
+				
+				StateMergeModelBuilder smmb = new StateMergeModelBuilder();
+				
+				List<ProblemInstance> instances = new ArrayList<ProblemInstance>();
+				instances.addAll(fixedPi.values());
+				
+				 SeedableRandomPool srp = new SeedableRandomPool(1);
+				log.info("Building model");
+				
+				boolean adaptiveCapping = true;
+				if(smo.rfo.logModel == null)
+				{
+					if(smo.scenOpts.runObj.equals(RunObjective.RUNTIME))
+					{
+						smo.rfo.logModel = true;
+					}  else
+					{
+						smo.rfo.logModel = false;
+						adaptiveCapping = false;
+					}
+				} 
+						
+				smmb.learnModel(instances, rhToFilter, execConfig.getParamFile(), smo.rfo, smo.mbo, smo.scenOpts, adaptiveCapping, srp);
+				
+				RandomForest rf = smmb.getPreparedForest();
+				
+				int[] tree_indxs_used = new int[10];
+				for(int i=0; i < smo.rfo.numTrees; i++)
+				{
+					tree_indxs_used[i]= i;
+				}
+				
+				double[][] Theta = new double[1][];
+				
+			
+				double bestMean = Double.POSITIVE_INFINITY;
+				
+				for(ParamConfiguration config : maxConfigs)
+				{
+					Theta[0] = config.toValueArray();
+					
+					double[][] ypred = RandomForest.applyMarginal(rf, tree_indxs_used, Theta);
+					
+					log.debug("Incumbent {} has predicted mean {}", config, ypred[0]);
+					if(ypred[0][0] < bestMean)
+					{
+						newIncumbent = config;
+						bestMean = ypred[0][0];
+					}
+					
+					
+				}
+				
+				log.info("New incumbent selected from random forest prediction is {} with string \"{}\" ", newIncumbent, newIncumbent.getFormattedParamString(StringFormat.NODB_SYNTAX));
+				Set<ProblemInstanceSeedPair> maxSet = new HashSet<ProblemInstanceSeedPair>();
+				
+				maxSet.addAll(rhToFilter.getAlgorithmInstanceSeedPairsRan(newIncumbent));
+				
+				rhToSaveToDisk = new ThreadSafeRunHistoryWrapper(new NewRunHistory(smo.scenOpts.intraInstanceObj, smo.scenOpts.interInstanceObj, smo.scenOpts.runObj));
+				
+				
+				for(RunData rd : rhToFilter.getAlgorithmRunData())
+				{
+					while(rd.getIteration() > rhToSaveToDisk.getIteration())
+					{
+						rhToSaveToDisk.incrementIteration();
+					}
+					
+					
+					if(maxSet.contains(rd.getRun().getRunConfig().getProblemInstanceSeedPair()))
+					{
+						try {
+							rhToSaveToDisk.append(rd.getRun());
+						} catch (DuplicateRunException e) {
+							throw new DeveloperMadeABooBooException("All the runs are coming from a run history object so this really shouldn't happen");
+						}
+					} else
+					{
+						log.debug("No match for pisp {}", rd.getRun().getRunConfig().getProblemInstanceSeedPair());
+					}
+					
+				}
+				
+			} else
+			{
+				rhToSaveToDisk = rhToFilter;
 			}
-			
-			
-			
+			int originalRestored = rdi;
 			rdi=0;
 			for(RunData rd : rhToSaveToDisk.getAlgorithmRunData())
 			{
@@ -278,7 +280,11 @@ public class StateMergeExecutor {
 			}
 			
 			
-			log.info("Restored Runs Count {} ", rdi);
+			log.info("Restored Runs Count {} out of {} runs found  ", rdi, originalRestored );
+			
+			
+			
+			
 			
 			
 			
@@ -322,6 +328,47 @@ public class StateMergeExecutor {
 		int instanceId = 1;
 		Set<String> featureKeys = new HashSet<String>();
 		ProblemInstance firstPi = null;
+		
+		
+		
+		boolean idcollision = false;
+outerLoop:
+		for(Entry<Integer, List<AlgorithmRun>> runsForIt: runsPerIteration.entrySet())
+		{
+
+			int maxIDFound = -1;
+			Map<Integer, String> piIDMap = new HashMap<Integer, String>();
+			for(AlgorithmRun run : runsForIt.getValue())
+			{
+				ProblemInstance pi = run.getRunConfig().getProblemInstanceSeedPair().getInstance();
+				
+				if(piIDMap.containsKey(pi.getInstanceID()))
+				{
+					
+					if(piIDMap.get(pi.getInstanceID()).equals(pi.getInstanceName()))
+					{
+						continue;
+					}
+					idcollision = true;
+					log.info("Problem Instance ID collision detected, this generally means you are merging run history files over different instance distributions. This is OK but note that instance IDs need to be changed, and so you cannot use this runhistory file to warm start a SMAC run.");
+					log.debug("Instance ID: {} previously mapped to: {} but now maps to: {}", pi.getInstanceID(),  piIDMap.get(pi.getInstanceID()), pi.getInstanceName());
+					fixedPi.clear();
+					break outerLoop;
+				} else
+				{
+					piIDMap.put(pi.getInstanceID(), pi.getInstanceName());
+					fixedPi.put(pi.getInstanceName(), pi);
+				}
+
+			}
+			
+		}
+		
+		if(!idcollision)
+		{
+			log.info("Problem IDs seem to come from one distribution, this state-merge file should be compatible with warm-starts.");
+		}
+		
 		for(Entry<Integer,List<AlgorithmRun>> runsForIt : runsPerIteration.entrySet())
 		{
 			for(AlgorithmRun run: runsForIt.getValue())
@@ -331,10 +378,12 @@ public class StateMergeExecutor {
 				ProblemInstance repairedPi;
 				if(fixedPi.containsKey(pi.getInstanceName()))
 				{
+					
 					repairedPi = fixedPi.get(pi.getInstanceName());
 				} else
 				{
 					repairedPi = new ProblemInstance(pi.getInstanceName(), instanceId, pi.getFeatures(), pi.getInstanceSpecificInformation());
+					log.debug("Original problem instance {} has ID transformed from {} to {}", pi.getInstanceID(), instanceId);
 					fixedPi.put(pi.getInstanceName(), repairedPi);
 					
 					if(featureKeys.isEmpty())

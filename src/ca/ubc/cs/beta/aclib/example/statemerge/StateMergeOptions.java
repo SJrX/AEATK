@@ -55,6 +55,9 @@ public class StateMergeOptions extends AbstractOptions {
 	@UsageTextField(defaultValues="<current working directory>", level=OptionLevel.BASIC)
 	@Parameter(names={"--experiment-dir","--experimentDir","-e"}, description="root directory for experiments folder")
 	public String experimentDir = System.getProperty("user.dir") + File.separator + "";
+
+	@Parameter(names={"--repair-smac-invariant","--repair"}, description="If true we will ensure that the incumbent has all runs that are saved in the state file, using a random forest to pick the best run. ")
+	public boolean repairMaxRunsForIncumbentInvariant = true;
 	
 	
 }
