@@ -7,6 +7,13 @@ import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.exceptions.DuplicateRunException;
 
 
+/**
+ * TeeRunHistory is a RunHistory object that on top of notifying the decorated RunHistory object, also notifies another one but otherwise acts as a transparent decorator.
+ * <br>
+ * <b>Note:</b>Duplicate runs in the branch are simply silenced.
+ * 
+ * @author Steve Ramage <seramage@cs.ubc.ca>
+ */
 public class TeeRunHistory extends AbstractRunHistoryDecorator{
 
 	private RunHistory branch;
