@@ -61,7 +61,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	/**
 	 * Regex that we hope to match
 	 */
-	public static final String AUTOMATIC_CONFIGURATOR_RESULT_REGEX = "^\\s*(Final)?\\s*[Rr]esult\\s+(?:([Ff]or)|([oO]f))\\s+(?:(HAL)|(ParamILS)|(SMAC)|([tT]his [wR]rapper)):";
+	public static final String AUTOMATIC_CONFIGURATOR_RESULT_REGEX = "^\\s*(Final)?\\s*[Rr]esult\\s+(?:([Ff]or)|([oO]f))\\s+(?:(HAL)|(ParamILS)|(SMAC)|([tT]his [wW]rapper)):";
 	
 	/**
 	 * Compiled REGEX
