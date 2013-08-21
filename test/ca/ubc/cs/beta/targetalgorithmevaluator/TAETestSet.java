@@ -85,6 +85,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.init.TargetAlgorithmEvaluat
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.init.TargetAlgorithmEvaluatorLoader;
 import ca.ubc.cs.beta.targetalgorithmevaluator.impl.SolQualSetTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.targetalgorithmevaluator.massiveoutput.MassiveOutputParamEchoExecutor;
+import ca.ubc.cs.beta.targetalgorithmevaluator.targetalgos.CapitalForParamEchoExecutor;
 import ca.ubc.cs.beta.targetalgorithmevaluator.targetalgos.DummyExecutor;
 import ca.ubc.cs.beta.targetalgorithmevaluator.targetalgos.EnvironmentVariableEchoer;
 import ca.ubc.cs.beta.targetalgorithmevaluator.targetalgos.FiveSecondSleepingParamEchoExecutor;
@@ -1324,6 +1325,64 @@ public class TAETestSet {
 			//This executor should not have any additional run data
 			assertEquals("",run.getAdditionalRunData());
 
+		}
+	}
+	
+	/**
+	 * This tests to see if the Random white space executor and various other supported
+	 * output formats are matched correctly
+	 * This also tests for capitalization as in Issue 1842.
+	 */
+	@Test
+	public void testCapitizalionOfFor()
+	{
+		
+	
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(CapitalForParamEchoExecutor.class.getCanonicalName());
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
+		
+		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		
+		
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		for(int i=0; i < 1; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
+				runConfigs.add(rc);
+			}
+		}
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		
+		for(int i =0; i < this.TARGET_RUNS_IN_LOOPS; i++)
+		{
+			List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+			
+			
+			for(AlgorithmRun run : runs)
+			{
+				ParamConfiguration config  = run.getRunConfig().getParamConfiguration();
+				assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
+				assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
+				assertDEquals(config.get("quality"), run.getQuality(), 0.1);
+				assertDEquals(config.get("seed"), run.getResultSeed(), 0.1);
+				assertEquals(config.get("solved"), run.getRunResult().name());
+				//This executor should not have any additional run data
+				assertEquals("",run.getAdditionalRunData());
+			}
 		}
 	}
 	

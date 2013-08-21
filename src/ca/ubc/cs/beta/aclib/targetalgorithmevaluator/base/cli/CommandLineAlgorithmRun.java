@@ -61,7 +61,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	/**
 	 * Regex that we hope to match
 	 */
-	public static final String AUTOMATIC_CONFIGURATOR_RESULT_REGEX = "^\\s*(Final)?\\s*[Rr]esult\\s+(?:(for)|(of))\\s+(?:(HAL)|(ParamILS)|(SMAC)|(this wrapper)):";
+	public static final String AUTOMATIC_CONFIGURATOR_RESULT_REGEX = "^\\s*(Final)?\\s*[Rr]esult\\s+(?:([Ff]or)|([oO]f))\\s+(?:(HAL)|(ParamILS)|(SMAC)|([tT]his [wR]rapper)):";
 	
 	/**
 	 * Compiled REGEX
@@ -398,7 +398,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 					this.setResult(RunResult.KILLED, currentTime, 0,0, getRunConfig().getProblemInstanceSeedPair().getSeed(), "Killed Manually", "" );
 					
 				} else {
-					this.setCrashResult("Wrapper did not output anything that matched our regex please see the manual for more information. Please try executing the wrapper directly and ensuring that it matches the following regex: " + AUTOMATIC_CONFIGURATOR_RESULT_REGEX );
+					this.setCrashResult("Wrapper did not output anything that matched our regex please see the manual for more information. Please try executing the wrapper directly and ensuring that some line starts with: \"Results for ParamILS:\" (case sensitive). In more gorey detail it needs to match the following Regular Expression: " + AUTOMATIC_CONFIGURATOR_RESULT_REGEX );
 				}
 			}
 			
