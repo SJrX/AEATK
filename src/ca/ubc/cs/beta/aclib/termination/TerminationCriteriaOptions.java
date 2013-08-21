@@ -15,7 +15,7 @@ import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 import ca.ubc.cs.beta.aclib.termination.standard.AlgorithmRunLimitCondition;
 import ca.ubc.cs.beta.aclib.termination.standard.CPULimitCondition;
 import ca.ubc.cs.beta.aclib.termination.standard.ModelIterationTerminationCondition;
-import ca.ubc.cs.beta.aclib.termination.standard.NoRunsForManyIterationTerminationCondition;
+import ca.ubc.cs.beta.aclib.termination.standard.NoRunsForManyChallengesEvent;
 import ca.ubc.cs.beta.aclib.termination.standard.WallClockLimitCondition;
 
 @UsageTextField(hiddenSection=false, description="Options that control how long the scenario will run for", title="Scenario Configuration Limit Options")
@@ -53,7 +53,7 @@ public class TerminationCriteriaOptions extends AbstractOptions {
 		termConds.add(new WallClockLimitCondition(System.currentTimeMillis(),runtimeLimit));
 		termConds.add(new AlgorithmRunLimitCondition(totalNumRunsLimit));
 		termConds.add(new ModelIterationTerminationCondition(this.numIterations));
-		termConds.add(new NoRunsForManyIterationTerminationCondition(challengeIncumbentAttempts));
+		termConds.add(new NoRunsForManyChallengesEvent(challengeIncumbentAttempts));
 		return new CompositeTerminationCondition(termConds);
 	}
 	

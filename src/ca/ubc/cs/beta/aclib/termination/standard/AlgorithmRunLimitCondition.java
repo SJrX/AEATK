@@ -6,6 +6,7 @@ import java.util.concurrent.atomic.AtomicLong;
 
 import net.jcip.annotations.ThreadSafe;
 
+import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.eventsystem.EventHandler;
 import ca.ubc.cs.beta.aclib.eventsystem.EventManager;
 import ca.ubc.cs.beta.aclib.eventsystem.events.basic.AlgorithmRunCompletedEvent;
@@ -34,6 +35,12 @@ public class AlgorithmRunLimitCondition extends AbstractTerminationCondition imp
 
 	@Override
 	public void handleEvent(AlgorithmRunCompletedEvent event) {
+		
+	}
+	
+	@Override
+	public void notifyRun(AlgorithmRun run)
+	{
 		algorithmRuns.incrementAndGet();
 	}
 	
@@ -45,7 +52,7 @@ public class AlgorithmRunLimitCondition extends AbstractTerminationCondition imp
 
 	@Override
 	public void registerWithEventManager(EventManager evtManager) {
-		evtManager.registerHandler(AlgorithmRunCompletedEvent.class, this);
+		//evtManager.registerHandler(AlgorithmRunCompletedEvent.class, this);
 	}
 
 

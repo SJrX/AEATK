@@ -4,6 +4,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicLong;
 
+import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.eventsystem.EventHandler;
 import ca.ubc.cs.beta.aclib.eventsystem.EventManager;
@@ -45,6 +46,12 @@ public class ConfigurationSpaceExhaustedCondition extends AbstractTerminationCon
 	}
 	
 	@Override
+	public void notifyRun(AlgorithmRun run)
+	{
+		algorithmRuns.incrementAndGet();
+	}
+	
+	@Override
 	public String toString()
 	{
 		return currentStatus().toString();
@@ -52,7 +59,7 @@ public class ConfigurationSpaceExhaustedCondition extends AbstractTerminationCon
 
 	@Override
 	public void registerWithEventManager(EventManager evtManager) {
-		evtManager.registerHandler(AlgorithmRunCompletedEvent.class, this);
+		//evtManager.registerHandler(AlgorithmRunCompletedEvent.class, this);
 	}
 
 

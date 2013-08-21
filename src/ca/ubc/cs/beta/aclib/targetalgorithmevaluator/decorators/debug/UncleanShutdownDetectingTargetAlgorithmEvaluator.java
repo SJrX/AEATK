@@ -21,9 +21,9 @@ public class UncleanShutdownDetectingTargetAlgorithmEvaluator extends
 		{
 
 	private final AtomicLong notifyShutdownInvoked = new AtomicLong(0);
-	private static final int MESSAGE_REPEAT = 2;
+	private static final int MESSAGE_REPEAT = 1;
 	private static final int SLEEP_TIME_IN_MS = 0;
-	private static final int SLEEP_TIME_BETWEEN_MESSAGES = 750;
+	private static final int SLEEP_TIME_BETWEEN_MESSAGES = 0;
 	private final Logger log = LoggerFactory.getLogger(getClass());
 	private final StackTraceElement[] taeCreationStackTrace;
 	
@@ -81,10 +81,13 @@ public class UncleanShutdownDetectingTargetAlgorithmEvaluator extends
 					
 					synchronized(stackTracePrintingLock)
 					{
-						System.err.println("Target Algorithm Evaluator that wasn't shutdown, was created here");
-						for(StackTraceElement el : taeCreationStackTrace)
+						if(log.isDebugEnabled())
 						{
-							System.err.println(el);
+							System.err.println("Target Algorithm Evaluator that wasn't shutdown, was created here");
+							for(StackTraceElement el : taeCreationStackTrace)
+							{
+								System.err.println(el);
+							}
 						}
 					}
 					

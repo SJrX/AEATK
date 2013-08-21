@@ -6,11 +6,13 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.eventsystem.EventHandler;
 import ca.ubc.cs.beta.aclib.eventsystem.events.AutomaticConfiguratorEvent;
 import ca.ubc.cs.beta.aclib.eventsystem.events.ac.IncumbentPerformanceChangeEvent;
 import ca.ubc.cs.beta.aclib.eventsystem.events.basic.AlgorithmRunCompletedEvent;
+import ca.ubc.cs.beta.aclib.eventsystem.events.state.StateRestoredEvent;
 import ca.ubc.cs.beta.aclib.misc.cputime.CPUTime;
 import ca.ubc.cs.beta.aclib.runhistory.ThreadSafeRunHistory;
 import ca.ubc.cs.beta.aclib.termination.TerminationCondition;
@@ -95,8 +97,16 @@ public class LogRuntimeStatistics implements EventHandler<AutomaticConfiguratorE
 			this.sumOfWallclockTime += ((AlgorithmRunCompletedEvent) event).getRun().getWallclockExecutionTime();
 			this.sumOfRuntime += ((AlgorithmRunCompletedEvent) event).getRun().getRuntime();
 			
-		}	else 
+		} else if( event instanceof StateRestoredEvent)
+		{
+			this.logCount.set(((StateRestoredEvent) event).getModelsBuilt());
 			
+			for(AlgorithmRun run : ((StateRestoredEvent) event).getRunHistory().getAlgorithmRuns())
+			{
+				this.sumOfWallclockTime += run.getWallclockExecutionTime();
+				this.sumOfRuntime += run.getRuntime();
+			}
+		}
 		{
 			if(msToWait + lastMessage > System.currentTimeMillis())
 			{

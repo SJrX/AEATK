@@ -111,7 +111,7 @@ public class MapList<K,V> implements Map<K, List<V>> {
 		map.get(key).add(value);
 	}
 	
-	public void addAllToList(K key, List<V> value)
+	public void addAllToList(K key, Collection<V> value)
 	{
 		if(map.get(key) == null)
 		{
