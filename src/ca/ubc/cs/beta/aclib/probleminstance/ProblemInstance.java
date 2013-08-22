@@ -7,7 +7,7 @@ import java.util.Map.Entry;
 
 /**
  * Immutable Class that represents a Problem Instance of a target algorithm
- * @author seramage
+ * @author Steve Ramage <seramage@cs.ubc.ca>
  */
 public class ProblemInstance implements Serializable{
 
@@ -191,6 +191,7 @@ public class ProblemInstance implements Serializable{
 	@Override
 	public boolean equals(Object o)
 	{
+		if(this == o) return true;
 		if(o instanceof ProblemInstance)
 		{
 			ProblemInstance ai = (ProblemInstance) o;

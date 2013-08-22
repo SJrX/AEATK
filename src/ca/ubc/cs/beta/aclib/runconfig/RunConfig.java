@@ -125,6 +125,7 @@ public class RunConfig implements Serializable{
 	@Override
 	public boolean equals(Object o)
 	{
+		if(this == o) return true;
 		if (o instanceof RunConfig)
 		{
 			RunConfig oar = (RunConfig) o;

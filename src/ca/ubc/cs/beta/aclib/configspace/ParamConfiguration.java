@@ -415,9 +415,11 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	
 	public boolean equals(Object o)
 	{
+
+		if(this == o) return true;
 		if (o instanceof ParamConfiguration)
 		{
-
+			
 			ParamConfiguration opc = (ParamConfiguration )o;
 			if(isDirty) cleanUp();
 			if(opc.isDirty) opc.cleanUp();

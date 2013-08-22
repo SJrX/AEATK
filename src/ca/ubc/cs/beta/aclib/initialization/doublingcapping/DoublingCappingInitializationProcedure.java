@@ -2,6 +2,7 @@ package ca.ubc.cs.beta.aclib.initialization.doublingcapping;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.EnumMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Random;
@@ -13,12 +14,14 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableAlgorithmRun;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.exceptions.DuplicateRunException;
 import ca.ubc.cs.beta.aclib.exceptions.OutOfTimeException;
 import ca.ubc.cs.beta.aclib.initialization.InitializationProcedure;
+import ca.ubc.cs.beta.aclib.misc.MapList;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aclib.random.SeedableRandomPool;
@@ -82,7 +85,6 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 		ParamConfiguration incumbent = this.initialIncumbent;
 		log.info("Configuration Set as initial Incumbent: {}", incumbent);
 		
-		//iteration = 0;
 		
 		
 		double startKappa=cutoffTime;
@@ -95,28 +97,28 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 			divisions++;
 		}
 	
-		//Generate all the random configurations required
 		
 		Set<ParamConfiguration> randomConfigurations = new HashSet<ParamConfiguration>();
-		
-		
 		
 		int totalFirstRoundChallengers = numberOfChallengers * numberOfRunsPerChallenger * divisions;
 		if(totalFirstRoundChallengers > configSpace.getUpperBoundOnSize())
 		{
 			throw new IllegalStateException("Doubling Capping initialization won't work with this configuration space as it's too small, use classic");
 		}
-		Random configRandom = pool.getRandom("DOUBLING_INITIALIZATION_CONFIGS");
 		
+		
+		
+		//Get enough random configurations for the first round
+		Random configRandom = pool.getRandom("DOUBLING_INITIALIZATION_CONFIGS");
 		while(randomConfigurations.size() < totalFirstRoundChallengers)
 		{
-			
 			randomConfigurations.add(configSpace.getRandomConfiguration(configRandom));
 		}
 		
 		List<ProblemInstanceSeedPair> pisps = new ArrayList<ProblemInstanceSeedPair>(totalFirstRoundChallengers);
 		
-		
+		//Generate enough problem instance seed pairs for the first round
+		//If we make 10000 attempts without getting a 
 		Random pispRandom = pool.getRandom("DOUBLING_INITIALIZATION_PISPS");
 		for(int i=0, attempts=0; i < totalFirstRoundChallengers; i++, attempts++)
 		{
@@ -148,6 +150,11 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 		}
 		
 		
+		/**
+		 * Construct a giant queue of runConfigs to do essentially everything we will do in the first round
+		 * (That is over all configurations, all problem instance seed pairs, all cutofftimes)
+		 * 
+		 */
 		BasicTargetAlgorithmEvaluatorQueue taeQueue = new BasicTargetAlgorithmEvaluatorQueue(tae, true);
 		
 		LinkedBlockingQueue<ParamConfiguration> configsQueue = new LinkedBlockingQueue<ParamConfiguration>();
@@ -160,7 +167,7 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 		
 		for(double kappa = startKappa ; kappa <= cutoffTime; kappa*=2)
 		{
-			for(int i=0; i < numberOfChallengers * numberOfRunsPerChallenger; i++)
+			for(int i=0; i <= numberOfChallengers * numberOfRunsPerChallenger; i++)
 			{
 				ParamConfiguration config;
 				if(i == 0)
@@ -196,43 +203,115 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 				
 			}
 			
+			
 		};
 		
+		
+		
+		
+		
+		/**
+		 * Essentially this block of code is doing the following:
+		 * 
+		 * While completed runs < numberOfChallengers.
+		 * 			
+		 * 		Take the next runToDo (if it is the incumbent and we have a solved run, skip it).
+		 * 		Schedule the run
+		 * 		While there are runs that are done:
+		 * 			If the run is SAT or UNSAT increase the number of completed runs (and keep track if it was the incumbent). 
+		 * 			If the run is anything else and has cutoff of Kappa Max then increase the number of completed runs.
+		 * 		
+		 * 			
+		 * 			 
+		 * 
+		 * 
+		 * 
+		 * 
+		 */
+		
 		int completedRuns = 0;
+		AtomicBoolean incumbentSolved = new AtomicBoolean(false);
+		
 		while(runsToDo.peek() != null)
 		{
-				
-			taeQueue.evaluateRunAsync(Collections.singletonList(runsToDo.poll()), obs);
 			
-		
-			BasicTargetAlgorithmEvaluatorQueueResultContext context = taeQueue.poll();
-			
-			while(context != null)
+			try 
 			{
-				AlgorithmRun run = context.getAlgorithmRuns().get(0);
+				RunConfig rc = runsToDo.take();
 				
-				switch(run.getRunResult())
+				
+				
+				while((incumbentSolved.get() == true) && rc.getParamConfiguration().equals(initialIncumbent))
 				{
-				
-				
-					case SAT:
-					case UNSAT:
-						completedRuns++;
-						
-					case TIMEOUT:
-						if(!run.getRunConfig().hasCutoffLessThanMax())
-						{
-							completedRuns++;
-						}
-					case KILLED:
-					case CRASHED:
-						
-						break;
-					default:
-						throw new IllegalStateException("Got unexpected run result back " + context.getAlgorithmRuns().get(0).getRunResult());
+					rc = runsToDo.take();
 				}
+					
+				taeQueue.evaluateRunAsync(Collections.singletonList(rc), obs);
+				
 			
-				context = taeQueue.poll();
+				BasicTargetAlgorithmEvaluatorQueueResultContext context = taeQueue.poll();
+				
+				
+				
+				
+				MapList<RunResult, AlgorithmRun> runs = new MapList<RunResult,AlgorithmRun>(new EnumMap<RunResult,List<AlgorithmRun>>(RunResult.class));
+				
+				while(context != null)
+				{
+					AlgorithmRun run = context.getAlgorithmRuns().get(0);
+					
+					switch(run.getRunResult())
+					{
+					
+					
+						case SAT:
+						case UNSAT:
+							completedRuns++;
+							if(run.getRunConfig().getParamConfiguration().equals(initialIncumbent))
+							{
+								completedRuns--;
+								incumbentSolved.set(true);
+							}
+							runs.addToList(run.getRunResult(), run);
+						case TIMEOUT:
+							if(!run.getRunConfig().hasCutoffLessThanMax())
+							{
+								if(run.getRunConfig().getParamConfiguration().equals(initialIncumbent))
+								{
+									completedRuns--;
+									incumbentSolved.set(true);
+								}
+								completedRuns++;
+								runs.addToList(run.getRunResult(), run);
+							}
+						case KILLED:
+							  log.debug("Killed run detected in First round ");
+							break;
+							
+							
+							
+						case CRASHED:
+							if(!run.getRunConfig().hasCutoffLessThanMax())
+							{
+								if(run.getRunConfig().getParamConfiguration().equals(initialIncumbent))
+								{
+									incumbentSolved.set(true);
+								}
+								completedRuns++;
+								runs.addToList(run.getRunResult(), run);
+							}
+							
+							break;
+						default:
+							throw new IllegalStateException("Got unexpected run result back " + context.getAlgorithmRuns().get(0).getRunResult());
+					}
+				
+					context = taeQueue.poll();
+				}
+			} catch(InterruptedException e)
+			{
+				Thread.currentThread().interrupt();
+				return;
 			}
 		}
 		

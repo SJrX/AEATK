@@ -320,7 +320,9 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 	@Override
 	public final boolean equals(Object o)
 	{
+		if(this == o) return true;
 		if(o == null) return false;
+		
 		if(o instanceof AlgorithmRun)
 		{
 			AlgorithmRun aro = (AlgorithmRun) o;

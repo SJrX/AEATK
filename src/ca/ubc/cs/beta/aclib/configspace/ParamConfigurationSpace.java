@@ -1045,6 +1045,7 @@ public class ParamConfigurationSpace implements Serializable {
 	 */
 	public boolean equals(Object o)
 	{
+		if(this == o) return true;
 		if (o instanceof ParamConfigurationSpace)
 		{
 			ParamConfigurationSpace po = (ParamConfigurationSpace) o;

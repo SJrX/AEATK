@@ -89,7 +89,7 @@ public class AlgorithmExecutionConfig implements Serializable {
 	
 	public boolean equals(Object o)
 	{ 
-		
+		if(this == o) return true;
 		if (o instanceof AlgorithmExecutionConfig)
 		{
 			AlgorithmExecutionConfig co = (AlgorithmExecutionConfig) o;

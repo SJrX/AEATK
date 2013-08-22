@@ -38,6 +38,7 @@ public class ProblemInstanceSeedPair implements Comparable<ProblemInstanceSeedPa
 	
 	public boolean equals(Object o)
 	{
+		if(this == o) return true;
 		if(o instanceof ProblemInstanceSeedPair)
 		{
 			ProblemInstanceSeedPair aisp = (ProblemInstanceSeedPair) o;

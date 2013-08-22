@@ -30,6 +30,7 @@ import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationStringFormatException;
 import ca.ubc.cs.beta.aclib.configspace.ParamFileHelper;
 import ca.ubc.cs.beta.aclib.misc.debug.DebugUtil;
 import ca.ubc.cs.beta.aclib.misc.watch.AutoStartStopWatch;
+import ca.ubc.cs.beta.aclib.misc.watch.StopWatch;
 import ca.ubc.cs.beta.aclib.random.SeedableRandomPool;
 
 import com.beust.jcommander.internal.Lists;
@@ -1519,6 +1520,28 @@ public class ParamConfigurationTest {
 		assertEquals(configSpace.getParameterNames().size(),0);
 			
 	}
+	
+	@Test
+	@Ignore
+	public void testSpeed()
+	{
+		//This really isn't a test
+		//Just times it.
+		
+		ParamConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("a { 1,2} [1]\n b { 1,2} [1]\n c { 1,2} [1]\n d { 1,2} [1]\n e { 1,2} [1]\n f { 1,2} [1]\n g { 1,2} [1]\n h { 1,2} [1]\n i { 1,2} [1]\n");
+		
+		StopWatch t = new AutoStartStopWatch();
+		
+		HashSet<ParamConfiguration> configs = new HashSet<ParamConfiguration>();
+		for(int i=0; i < 1000000; i++)
+		{
+			configs.add(configSpace.getDefaultConfiguration());
+			
+		}
+		
+		System.out.println(t.stop() / 1000.0);
+	}
+	
 	@Test
 	@Ignore
 	public void testRandomSpeed()
