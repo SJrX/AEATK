@@ -44,6 +44,8 @@ public class SeedableRandomPool implements Serializable {
 	
 	private final transient Logger log = LoggerFactory.getLogger(getClass());
 
+	private Map<String, Integer> originalSeeds;
+
 	
 	/**
  	 * @param poolSeed  The initial seed for the pool
@@ -113,9 +115,18 @@ public class SeedableRandomPool implements Serializable {
 		this.poolSeed = poolSeed;
 		this.fact = randomFactory;
 		this.randomSeedMap = new ConcurrentHashMap<String, Integer>(initialSeeds);
+		this.originalSeeds = Collections.unmodifiableMap(new HashMap<String, Integer>(initialSeeds));
 		this.specifiedInitialSeeds = new HashSet<String>(initialSeeds.keySet());
 	}
 	
+	/**
+	 * Returns an unmodifable view of the map of initial seeds.
+	 * @return
+	 */
+	public synchronized Map<String, Integer> getInitialSeeds()
+	{
+		return originalSeeds;
+	}
 	/**
 	 * Returns a random object for a given name
 	 * @param   enumeration   An enumeration for the object

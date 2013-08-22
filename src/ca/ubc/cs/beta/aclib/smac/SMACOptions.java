@@ -186,6 +186,11 @@ public class SMACOptions extends AbstractOptions {
 	@ParametersDelegate
 	public WarmStartOptions warmStartOptions = new WarmStartOptions();
 	
+	
+	@UsageTextField(defaultValues="0 which should cause it to run exactly the same as the stand-alone utility.")
+	@Parameter(names="--validation-seed", description="Seed to use for validating SMAC")
+	public int validationSeed = 0;
+	
 	/**
 	 * Checks if the verify sat option is compatible with this set of probelm instances
 	 * @param instances 	The problem instances
@@ -241,9 +246,9 @@ public class SMACOptions extends AbstractOptions {
 	 * @return
 	 * @throws IOException
 	 */
-	public TrainTestInstances getTrainingAndTestProblemInstances(SeedableRandomPool pool) throws IOException
+	public TrainTestInstances getTrainingAndTestProblemInstances(SeedableRandomPool instancePool, SeedableRandomPool testInstancePool) throws IOException
 	{
-			return this.scenarioConfig.getTrainingAndTestProblemInstances(this.experimentDir, pool.getRandom(SeedableRandomPoolConstants.INSTANCE_SEEDS).nextInt(), pool.getRandom(SeedableRandomPoolConstants.TEST_SEED_INSTANCES).nextInt(), true, this.doValidation, false, false);
+			return this.scenarioConfig.getTrainingAndTestProblemInstances(this.experimentDir, instancePool.getRandom(SeedableRandomPoolConstants.INSTANCE_SEEDS).nextInt(), testInstancePool.getRandom(SeedableRandomPoolConstants.TEST_SEED_INSTANCES).nextInt(), true, this.doValidation, false, false);
 	}
 
 	public void saveContextWithState(ParamConfigurationSpace configSpace, InstanceListWithSeeds trainingILWS,	StateFactory sf)

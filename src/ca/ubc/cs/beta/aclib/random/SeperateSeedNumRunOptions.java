@@ -21,7 +21,7 @@ public class SeperateSeedNumRunOptions extends AbstractOptions{
 	@Parameter(names={"--seed-offset","--seedOffset"}, description="offset of numRun to use from seed (this plus --numRun should be less than INTEGER_MAX)")
 	public int seedOffset = 0 ;
 	
-	@Parameter(names={"--seed"}, description="seed to use", validateWith=NonNegativeInteger.class)
+	@Parameter(names={"--seed"}, description="Seed to Use", validateWith=NonNegativeInteger.class)
 	public int seed = 0;
 	
 	@Parameter(names={"--num-run","--numrun","--numRun"}, required=true, description="number of this run (NOT used as part of seed)", validateWith=NonNegativeInteger.class)
