@@ -36,5 +36,8 @@ public class VerifyScenarioOptions extends AbstractOptions{
 	@Parameter(names="--verify-instances", description="Verify every instance exists on disk")
 	public boolean checkInstances = true;
 
+	@Parameter(names="--output-details", description="Output details of the scenario")
+	public boolean details = true;
+
 
 }

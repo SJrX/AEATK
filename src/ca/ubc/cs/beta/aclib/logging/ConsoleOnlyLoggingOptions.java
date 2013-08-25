@@ -28,7 +28,7 @@ import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 @UsageTextField(hiddenSection=true)
 public class ConsoleOnlyLoggingOptions extends AbstractOptions implements LoggingOptions{
 
-	private static final String LOGBACK_CONFIGURATION_FILE_PROPERTY ="logback.configurationFile"; 
+	static final String LOGBACK_CONFIGURATION_FILE_PROPERTY ="logback.configurationFile"; 
 	
 	@CommandLineOnly
 	@UsageTextField(level=OptionLevel.INTERMEDIATE)

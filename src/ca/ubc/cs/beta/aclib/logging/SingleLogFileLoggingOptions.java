@@ -29,7 +29,7 @@ import com.beust.jcommander.Parameter;
  *
  */
 @UsageTextField(hiddenSection=true)
-public class ComplexLoggingOptions  extends AbstractOptions implements LoggingOptions{
+public class SingleLogFileLoggingOptions  extends AbstractOptions implements LoggingOptions{
 
 	@CommandLineOnly
 	@UsageTextField(level=OptionLevel.INTERMEDIATE)
@@ -46,12 +46,12 @@ public class ComplexLoggingOptions  extends AbstractOptions implements LoggingOp
 	
 	
 	private final String prefix; 
-	public ComplexLoggingOptions()
+	public SingleLogFileLoggingOptions()
 	{
 		prefix = "";
 	}
 	
-	public ComplexLoggingOptions(String prefix)
+	public SingleLogFileLoggingOptions(String prefix)
 	{
 		if(prefix.matches("\\s"))
 		{
@@ -69,6 +69,9 @@ public class ComplexLoggingOptions  extends AbstractOptions implements LoggingOp
 			completeOutputDir = (new File("")).getAbsolutePath();
 		} 
 			
+		System.setProperty("LOGLEVEL", logLevel.name());
+		
+		
 	
 		System.setProperty("OUTPUTDIR",completeOutputDir);
 		System.setProperty("NUMRUN", String.valueOf(numRun));
@@ -80,13 +83,37 @@ public class ComplexLoggingOptions  extends AbstractOptions implements LoggingOp
 		String logLocation = getLogLocation(completeOutputDir, numRun);
 		
 		System.setProperty("RUNLOG", logLocation);
-		System.setProperty("ERRLOG", getErrorLogLocation(completeOutputDir,numRun));
-		System.setProperty("WARNLOG", getWarnLogLocation(completeOutputDir,numRun));
+	
 		
 		System.out.println("*****************************\nLogging to: " + logLocation +  "\n*****************************");
+	
 		
+		
+		if(System.getProperty(ConsoleOnlyLoggingOptions.LOGBACK_CONFIGURATION_FILE_PROPERTY)!= null)
+		{
+			Logger log = LoggerFactory.getLogger(getClass());
+			log.debug("System property for logback.configurationFile has been found already set as {} , logging will follow this file", System.getProperty(ConsoleOnlyLoggingOptions.LOGBACK_CONFIGURATION_FILE_PROPERTY));
+		} else
+		{
+			
+			String newXML = this.getClass().getPackage().getName().replace(".", File.separator) + File.separator+  "singlefile-logback.xml";
+			
+			
+			
+			System.setProperty(ConsoleOnlyLoggingOptions.LOGBACK_CONFIGURATION_FILE_PROPERTY, newXML);
+			
+			Logger log = LoggerFactory.getLogger(getClass());
+			if(log.isDebugEnabled())
+			{
+				log.debug("Logging initialized to use file:" + newXML);
+			} else
+			{
+				log.info("Logging initialized");
+			}
+			
+		}
 		//Generally has the format: ${OUTPUTDIR}/${RUNGROUPDIR}/log-run${NUMRUN}.txt
-		Logger log = LoggerFactory.getLogger(ComplexLoggingOptions.class);
+		Logger log = LoggerFactory.getLogger(SingleLogFileLoggingOptions.class);
 		log.info("Logging to: {}",logLocation);
 		
 		
@@ -106,30 +133,7 @@ public class ComplexLoggingOptions  extends AbstractOptions implements LoggingOp
 		{
 			completeOutputDir = (new File("")).getAbsolutePath();
 		} 
-		return completeOutputDir + File.separator+  "log-run" + prefix + numRun+ ".txt";
-	}
-	
-	public String getErrorLogLocation(String completeOutputDir, int numRun)
-	{
-		
-
-		if(completeOutputDir == null)
-		{
-			completeOutputDir = (new File("")).getAbsolutePath();
-		} 
-		return completeOutputDir + File.separator+  "log-err" + prefix + numRun+ ".txt";
-	}
-	
-	public String getWarnLogLocation(String completeOutputDir, int numRun)
-	{
-
-		if(completeOutputDir == null)
-		{
-			completeOutputDir = (new File("")).getAbsolutePath();
-		} 
-		
-		return completeOutputDir + File.separator+  "log-warn"  + prefix + numRun+ ".txt";
-		
+		return completeOutputDir + File.separator+  "log-"+prefix + numRun+ ".txt";
 	}
 
 	@Override

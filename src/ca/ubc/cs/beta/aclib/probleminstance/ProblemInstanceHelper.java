@@ -238,7 +238,7 @@ public class ProblemInstanceHelper {
 		
 		logger.debug("Loading instances from file: {} and experiment dir {}", filename, experimentDir);
 		
-
+		
 		List<ProblemInstance> instances = new ArrayList<ProblemInstance>();
 		Set<ProblemInstance> instancesSet = new HashSet<ProblemInstance>();
 		
@@ -262,7 +262,7 @@ public class ProblemInstanceHelper {
 		if(featureFileName != null)
 		{
 			//=======Parse Features=====
-			logger.debug("Feature File specified reading features from: {} ", featureFileName);
+			logger.debug("Feature File specified reading features from: {} ", new File(featureFileName).getAbsolutePath());
 			File featureFile = getFileForPath(experimentDir, featureFileName);
 			
 			if(!featureFile.exists())
@@ -350,6 +350,7 @@ public class ProblemInstanceHelper {
 			}
 			File instanceListFile = getFileForPath(experimentDir, filename);
 			instanceFileAbsolutePath = instanceListFile.getAbsolutePath();
+			logger.info("Reading instances from file {}", instanceFileAbsolutePath);
 			InstanceListWithSeeds insc = getListAndSeedGen(instanceListFile,seed, maxSeedsPerInstance);
 			instanceList = insc.getInstancesByName();
 			gen = insc.getSeedGen();
@@ -361,6 +362,7 @@ public class ProblemInstanceHelper {
 		{   
 			//====Just use Instances specified in Feature File====
 			instanceList.addAll(featuresMap.keySet());
+			logger.info("Reading instances from feature file");
 			gen = new RandomInstanceSeedGenerator(instanceList.size(), seed, maxSeedsPerInstance);
 			
 		}

@@ -67,9 +67,16 @@ public class VerifyScenarioExecutor {
 			searchDirectories.add(new File(".").getAbsolutePath());
 			
 			
+			int maxLength = -1;
 			for(String s : opts.scenarios)
 			{
-				verifyScenario(s,new ArrayList<String>(searchDirectories), opts.checkInstances);
+				File f = new File(s);
+				String name = f.getName();
+				maxLength = Math.max(maxLength, name.trim().length());
+			}
+			for(String s : opts.scenarios)
+			{
+				verifyScenario(s,new ArrayList<String>(searchDirectories), opts.checkInstances, opts.details,maxLength);
 			}
 			
 			
@@ -82,11 +89,11 @@ public class VerifyScenarioExecutor {
 		}
 	}
 	
-	private static void verifyScenario(String s, List<String> searchDirectories, boolean checkInstances) {
+	private static void verifyScenario(String s, List<String> searchDirectories, boolean checkInstances, boolean outputDetails,int maxLength) {
 		
 		
 		File f = new File(s);
-		String name = f.getName();
+		String name = String.format("%-"+maxLength + "s",f.getName().trim());
 		log.debug("Attempting to verify scenario file : {}", name);
 		
 		ScenarioOptions scenOpts;
@@ -165,12 +172,17 @@ public class VerifyScenarioExecutor {
 		
 		int instances;
 		
+		int features = -1;
+		boolean noFeatures = false;
+		
 		try {
 			TrainTestInstances tti = scenOpts.getTrainingAndTestProblemInstances(searchDirectories.get(0), 0, 0, true, false, false, false);
 			instances = tti.getTrainingInstances().getInstances().size();
+	
 			if((tti.getTrainingInstances().getInstances().size() > 1) && (scenOpts.instanceOptions.instanceFeatureFile == null || scenOpts.instanceOptions.instanceFeatureFile.trim().equals("")))
 			{
 				log.warn("Scenario {} verification detected that no feature file is present and there is more than one instance, features are HIGHLY recommended", name);
+				noFeatures = true;
 			}
 			
 			if(checkInstances)
@@ -203,6 +215,43 @@ public class VerifyScenarioExecutor {
 					return;
 				}
 			}
+
+			boolean absoluteDetected = false;
+			for(ProblemInstance pi : tti.getTrainingInstances().getInstances())
+			{
+				
+				if(new File(pi.getInstanceName()).isAbsolute())
+				{
+					if(absoluteDetected == false)
+					{
+						
+						log.debug("Absolute instance name detected example: {} ", pi.getInstanceName());
+						absoluteDetected = true;
+					}
+				}
+				
+			}
+			
+			if(absoluteDetected)
+			{
+				log.warn("Scenario {} verification detected absolute instance names, this can make the scenario non-portable and brittle and is discouraged",name);
+			}  
+					
+					
+			if(!noFeatures)
+			{	
+				for(ProblemInstance pi: tti.getTrainingInstances().getInstances())
+				{
+					features = Math.max(features,  pi.getFeaturesDouble().length);
+					
+				}
+				
+				if(features == 0)
+				{
+					log.warn("Scenario {} has a feature file but we detected NO features (probably the wrong feature file)", name);
+				}
+			}
+		
 		} catch(RuntimeException e)
 		{
 			log.error("Scenario {} verification failed due to problem reading instances: {}",name, e.getMessage());
@@ -214,8 +263,15 @@ public class VerifyScenarioExecutor {
 			return;
 		}
 		
-		
-		log.info("Scenario {} is OK    (Info: Configuration space has size [{},{}] and there are {} instances)", name, pcsLB, pcsUB, instances);
+		if(outputDetails)
+		{
+			String info = String.format("Scenario %s is OK  (%5d instances with %4d features, %5.1f cutoff (s), %7d tunertime (s),  PCS Size is in: [%11.7g,%11.7g])", name, instances,Math.max(0,features), scenOpts.algoExecOptions.cutoffTime, scenOpts.limitOptions.tunerTimeout,  pcsLB, pcsUB);
+			
+			log.info(info);
+		} else
+		{
+			log.info("Scenario {} is OK", name);
+		}
 		return;
 	}
 	
