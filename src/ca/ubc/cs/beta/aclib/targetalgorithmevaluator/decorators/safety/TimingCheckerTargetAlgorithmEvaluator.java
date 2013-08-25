@@ -27,7 +27,7 @@ public class TimingCheckerTargetAlgorithmEvaluator extends	AbstractForEachRunTar
 	
 	private double totalWallClockOverhead = 0;
 	private double totalRuntimeOverhead = 0;
-	
+	private double totalWallClockVersusRuntimeDifference = 0;
 	private static Logger log = LoggerFactory.getLogger(TimingCheckerTargetAlgorithmEvaluator.class);
 	
 	public TimingCheckerTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig, TargetAlgorithmEvaluator tae) {
@@ -59,6 +59,7 @@ public class TimingCheckerTargetAlgorithmEvaluator extends	AbstractForEachRunTar
 		{
 			log.info("Total Runtime Overhead (Sum of the amount of reported runtime that exceeded the cutoff time): {} seconds", totalRuntimeOverhead );
 			log.info("Total Wallclock Overhead (Sum of the amount of wallclock time that exceeded the cutoff time): {} seconds", totalWallClockOverhead );
+			log.info("Total Difference between Walltime and Runtime (Sum of the amount of wallclock time - sum of the amount of reported CPU time) : {} seconds");
 		}
 		tae.notifyShutdown();
 	}
@@ -88,6 +89,8 @@ public class TimingCheckerTargetAlgorithmEvaluator extends	AbstractForEachRunTar
 			Object[] args = {run.getWallclockExecutionTime(), run.getRunConfig().getCutoffTime(), wallClockOverhead, wallClockDeltaToRequireLogging};
 			log.warn("Algorithm Run Result reported wallclock time of {} (secs) that exceeded it's cutoff time of {} (secs) by {} (secs). Next warning at {} (secs)  ", args);
 		}
+		
+		this.totalWallClockVersusRuntimeDifference += Math.max(run.getWallclockExecutionTime()-run.getRuntime(), 0); 
 		
 		return run;
 	}

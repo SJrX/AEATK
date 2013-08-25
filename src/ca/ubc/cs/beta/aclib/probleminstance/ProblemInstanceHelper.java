@@ -49,7 +49,7 @@ public class ProblemInstanceHelper {
 	{
 		File f;
 		logger.trace("Trying to find file with context {} and path {}", context, path);
-		if(path.substring(0, 1).equals(File.separator))
+		if(path.length() > 0 && path.substring(0, 1).equals(File.separator))
 		{
 			logger.trace("Absolute path given for path, checking {}", path);
 			f = new File(path);
@@ -234,6 +234,8 @@ public class ProblemInstanceHelper {
 			throw new ParameterException("Experiment directory cannot be null");
 		}
 		
+		
+		
 		logger.debug("Loading instances from file: {} and experiment dir {}", filename, experimentDir);
 		
 
@@ -342,6 +344,10 @@ public class ProblemInstanceHelper {
 		if(filename != null)
 		{	
 			//====Parse Instance File=====
+			if(filename.trim().equals(""))
+			{
+				throw new ParameterException("File name is specified but empty");
+			}
 			File instanceListFile = getFileForPath(experimentDir, filename);
 			instanceFileAbsolutePath = instanceListFile.getAbsolutePath();
 			InstanceListWithSeeds insc = getListAndSeedGen(instanceListFile,seed, maxSeedsPerInstance);
@@ -437,7 +443,7 @@ public class ProblemInstanceHelper {
 					{
 						if(instanceFile.endsWith(e.getKey()))
 						{
-							logger.info("Matched instance {} with this entry {}", instanceFile, e.getKey());
+							logger.debug("Matched instance {} with this entry {}", instanceFile, e.getKey());
 							features = e.getValue();
 							break;
 						} else
@@ -538,7 +544,7 @@ public class ProblemInstanceHelper {
 				logger.warn("Detected that seeds have been preloaded, yet the algorithm is listed as deterministic, generally this means we should use -1 as a seed");
 			} else
 			{
-				logger.info("Deterministic algorithm, selecting hard coded instance seed generator");
+				logger.debug("Deterministic algorithm, selecting hard coded instance seed generator");
 				
 				LinkedHashMap<String, List<Long>> instanceSeedMap = new LinkedHashMap<String, List<Long>>(); 
 				

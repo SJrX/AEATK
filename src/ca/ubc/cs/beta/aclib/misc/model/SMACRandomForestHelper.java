@@ -42,7 +42,7 @@ public class SMACRandomForestHelper {
 	buildParams.splitMin = rfOptions.splitMin;
 	buildParams.ratioFeatures = rfOptions.ratioFeatures;//(5.0/6);
 	
-	buildParams.logModel = ((rfOptions.logModel) ? 1 : 0);
+	buildParams.logModel = ((rfOptions.logModel == null) ? 1 :(((rfOptions.logModel) ? 1 : 0)));
 	buildParams.storeResponses = rfOptions.storeDataInLeaves;
 	buildParams.random = rand;
 	//System.out.println("Random: " + buildParams.random.nextInt());

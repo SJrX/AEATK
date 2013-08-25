@@ -96,10 +96,10 @@ public class ProblemInstanceOptions extends AbstractOptions{
 		//instanceFileAbsolutePath = ilws.getInstanceFileAbsolutePath();
 		//instanceFeatureFileAbsolutePath = ilws.getInstanceFeatureFileAbsolutePath();
 	
-		log.info("Training Instance Seed Generator reports {} seeds ",  ilws.getSeedGen().getInitialInstanceSeedCount());
+		log.debug("Training Instance Seed Generator reports {} seeds ",  ilws.getSeedGen().getInitialInstanceSeedCount());
 		if(ilws.getSeedGen().allInstancesHaveSameNumberOfSeeds())
 		{
-			log.info("Training Instance Seed Generator reports that all instances have the same number of available seeds");
+			log.debug("Training Instance Seed Generator reports that all instances have the same number of available seeds");
 		} else
 		{
 			log.error("Training Instance Seed Generator reports that some instances have a different number of seeds than others");
@@ -160,13 +160,13 @@ public class ProblemInstanceOptions extends AbstractOptions{
 		//instanceFileAbsolutePath = ilws.getInstanceFileAbsolutePath();
 		//instanceFeatureFileAbsolutePath = ilws.getInstanceFeatureFileAbsolutePath();
 	
-		log.info("Test Instance Seed Generator reports {} seeds ",  ilws.getSeedGen().getInitialInstanceSeedCount());
+		log.debug("Test Instance Seed Generator reports {} seeds ",  ilws.getSeedGen().getInitialInstanceSeedCount());
 		if(ilws.getSeedGen().allInstancesHaveSameNumberOfSeeds())
 		{
-			log.info("Test Instance Seed Generator reports that all instances have the same number of available seeds");
+			log.debug("Test Instance Seed Generator reports that all instances have the same number of available seeds");
 		} else
 		{
-			log.error("Test Instance Seed Generator reports that some instances have a different number of seeds than others");
+			log.debug("Test Instance Seed Generator reports that some instances have a different number of seeds than others");
 			throw new ParameterException("All Testing instances must have the same number of seeds in this version of SMAC");
 		}
 		
