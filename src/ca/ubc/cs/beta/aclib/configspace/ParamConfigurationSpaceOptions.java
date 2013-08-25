@@ -29,7 +29,7 @@ import com.beust.jcommander.ParameterException;
 public class ParamConfigurationSpaceOptions extends AbstractOptions{
 	
 	
-	@Parameter(names={"--param-file","-p", "--paramFile","--paramfile"}, description="File containing algorithm parameter space information (see Algorithm Parameter File in the Manual). You can specify \"SINGLETON\" to get a singleton configuration space or \"NULL\" to get a null one.")
+	@Parameter(names={"--param-file","--pcs-file","-p", "--paramFile","--paramfile"}, description="File containing algorithm parameter space information in PCS format (see Algorithm Parameter File in the Manual). You can specify \"SINGLETON\" to get a singleton configuration space or \"NULL\" to get a null one.")
 	public String paramFile;
 
 	@UsageTextField(level=OptionLevel.DEVELOPER)
@@ -138,7 +138,7 @@ public class ParamConfigurationSpaceOptions extends AbstractOptions{
 		
 		if(this.paramFile == null)
 		{
-			throw new ParameterException("You must supply a valid parameter file");
+			throw new ParameterException("No PCS file specified, please check your command line options / scenario file");
 		} else if(this.paramFile.trim().equals("SINGLETON"))
 		{
 			return ParamConfigurationSpace.getSingletonConfigurationSpace();
@@ -199,7 +199,7 @@ public class ParamConfigurationSpaceOptions extends AbstractOptions{
 		
 		if(configSpace == null)
 		{
-			throw new ParameterException("Could not find a valid parameter file named " + this.paramFile  +  "  in any of the following locations: (" + searchPaths.toString()+ ") please check the file exists or for a previous error");
+			throw new ParameterException("Could not find a valid PCS file named " + this.paramFile  +  "  in any of the following locations: (" + searchPaths.toString()+ ") please check the file exists or for a previous error");
 		} else
 		{
 			return configSpace;

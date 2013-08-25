@@ -132,7 +132,7 @@ public class ParamConfigurationSpace implements Serializable {
 
 
 	/**
-	 * Flag variable that controls whether there exists a real parameter file
+	 * Flag variable that controls whether there exists a real PCS file
 	 * NOTE: This field should not be changed after being set.
 	 */
 	private boolean hasRealParameterFile = true;
