@@ -28,6 +28,10 @@ public class TimingCheckerTargetAlgorithmEvaluator extends	AbstractForEachRunTar
 	private double totalWallClockOverhead = 0;
 	private double totalRuntimeOverhead = 0;
 	private double totalWallClockVersusRuntimeDifference = 0;
+	private double totalWalltime;
+	private double totalRuntime;
+	
+	
 	private static Logger log = LoggerFactory.getLogger(TimingCheckerTargetAlgorithmEvaluator.class);
 	
 	public TimingCheckerTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig, TargetAlgorithmEvaluator tae) {
@@ -57,9 +61,9 @@ public class TimingCheckerTargetAlgorithmEvaluator extends	AbstractForEachRunTar
 	{
 		synchronized(this)
 		{
-			log.info("Total Runtime Overhead (Sum of the amount of reported runtime that exceeded the cutoff time): {} seconds", totalRuntimeOverhead );
-			log.info("Total Wallclock Overhead (Sum of the amount of wallclock time that exceeded the cutoff time): {} seconds", totalWallClockOverhead );
-			log.info("Total Difference between Walltime and Runtime (Sum of the amount of wallclock time - sum of the amount of reported CPU time) : {} seconds");
+			log.info("Total Reported Runtime: {} (s), Total of Sum Max(runtime-cutoff,0): {} (s)", totalRuntime, totalRuntimeOverhead);
+			log.info("Total Walltime: {} (s), Total of Sum Max(walltime - cutoff, 0): {} (s)", totalWalltime, totalWallClockOverhead);
+			log.info("Total Difference between Walltime and Runtime (Sum of the amount of wallclock time - sum of the amount of reported CPU time) : {} seconds", this.totalWallClockVersusRuntimeDifference);
 		}
 		tae.notifyShutdown();
 	}
@@ -69,7 +73,9 @@ public class TimingCheckerTargetAlgorithmEvaluator extends	AbstractForEachRunTar
 		
 		double runtimeOverhead = run.getRuntime() - run.getRunConfig().getCutoffTime();
 		
+		totalRuntime += Math.max(run.getRuntime(), 0);
 		totalRuntimeOverhead += Math.max(runtimeOverhead, 0);
+		
 		
 		if(runtimeOverhead > runtimeDeltaToRequireLogging)
 		{
@@ -81,6 +87,7 @@ public class TimingCheckerTargetAlgorithmEvaluator extends	AbstractForEachRunTar
 		
 		double wallClockOverhead = run.getWallclockExecutionTime() - run.getRunConfig().getCutoffTime();
 		
+		totalWalltime += Math.max(run.getWallclockExecutionTime(), 0);
 		totalWallClockOverhead += Math.max(wallClockOverhead, 0);
 		
 		if(wallClockOverhead > wallClockDeltaToRequireLogging)
