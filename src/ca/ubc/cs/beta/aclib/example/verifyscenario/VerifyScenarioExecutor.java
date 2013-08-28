@@ -3,11 +3,13 @@ package ca.ubc.cs.beta.aclib.example.verifyscenario;
 
 
 import java.io.File;
+import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
+import java.util.Properties;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -89,6 +91,8 @@ public class VerifyScenarioExecutor {
 		}
 	}
 	
+	
+	
 	private static void verifyScenario(String s, List<String> searchDirectories, boolean checkInstances, boolean outputDetails,int maxLength) {
 		
 		
@@ -98,7 +102,32 @@ public class VerifyScenarioExecutor {
 		
 		ScenarioOptions scenOpts;
 		try {
-			scenOpts = getScenarioOptions(s);
+			try {
+				scenOpts = getScenarioOptions(s);
+			} catch(ParameterException e)
+			{
+
+				//Here we are manually checking if there is an invalid scenario key
+				Properties p = new Properties();
+				
+				try
+				{
+					p.load(new FileReader(f));
+				} catch(IOException e2)
+				{
+					throw e;
+				}
+				String reason = p.getProperty(ScenarioOptions.invalidScenarioKey);
+				
+				if(reason != null && reason.trim().length() > 0 )
+				{
+					log.info("Scenario {} is (probably) OK.   We cannot verify it, but it says: " + reason.trim() + "", name);	
+					return;
+					
+				}
+				throw e;
+			}
+			
 		} catch(RuntimeException e)
 		{
 			log.error("Scenario {} failed verification due to problem parsing scenario file: {}", name,  e.getMessage());

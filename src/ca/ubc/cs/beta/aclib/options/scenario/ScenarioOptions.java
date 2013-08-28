@@ -61,6 +61,11 @@ public class ScenarioOptions extends AbstractOptions{
 	@Parameter(names={"--output-dir","--outputDirectory","--outdir"}, required=false, description="Output Directory")
 	public String outputDirectory = System.getProperty("user.dir") + File.separator + "smac-output";
 
+	
+	public static final String invalidScenarioKey = "invalid-scenario-reason";
+	@Parameter(names="--" + invalidScenarioKey, description="If this scenario file is invalid this a little notice that says why. This field is only used internally by verify-scenario", hidden= true)
+	public String invalidScenarioReason;
+	
 	@ParametersDelegate
 	public AlgorithmExecutionOptions algoExecOptions = new AlgorithmExecutionOptions();
 
