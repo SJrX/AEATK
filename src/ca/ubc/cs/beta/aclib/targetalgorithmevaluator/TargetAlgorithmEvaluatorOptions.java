@@ -19,6 +19,7 @@ import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceHelper;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.functionality.transform.TransformTargetAlgorithmEvaluatorDecoratorOptions;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.prepostcommand.PrePostCommandOptions;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.init.TargetAlgorithmEvaluatorBuilder;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.init.TargetAlgorithmEvaluatorLoader;
@@ -147,6 +148,9 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	@Parameter(names={"--tae-default-file"}, description="file that contains default settings for Target Algorithm Evaluators")
 	@ParameterFile(ignoreFileNotExists = true) 
 	public File taeDefaults = HomeFileUtils.getHomeFile(".aclib" + File.separator  + "tae.opt");
+	
+	@ParametersDelegate
+	public TransformTargetAlgorithmEvaluatorDecoratorOptions ttaedo = new TransformTargetAlgorithmEvaluatorDecoratorOptions();
 	
 	
 	

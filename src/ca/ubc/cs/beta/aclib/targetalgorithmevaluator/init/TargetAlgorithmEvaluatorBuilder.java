@@ -23,6 +23,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.debug.LogEveryTa
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.debug.RunHashCodeVerifyingAlgorithmEvalutor;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.debug.UncleanShutdownDetectingTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.functionality.OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.functionality.transform.TransformTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.KillCaptimeExceedingRunsRunsTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.RetryCrashedRunsTargetAlgorithmEvaluator;
@@ -156,6 +157,11 @@ public class TargetAlgorithmEvaluatorBuilder {
 			}
 		}
 		
+		if(options.ttaedo.transform)
+		{
+			log.debug("[TAE] Using Transforming Target Algorithm Evaluator");
+			tae = new TransformTargetAlgorithmEvaluatorDecorator(tae, options.ttaedo);
+		}
 		
 		if(options.verifySAT != null)
 		{

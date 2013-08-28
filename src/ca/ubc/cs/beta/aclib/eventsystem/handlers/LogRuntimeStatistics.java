@@ -1,5 +1,6 @@
 package ca.ubc.cs.beta.aclib.eventsystem.handlers;
 
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
@@ -53,6 +54,7 @@ public class LogRuntimeStatistics implements EventHandler<AutomaticConfiguratorE
 	private double sumOfRuntime = 0.0;
 	private double sumOfWallclockTime = 0.0;
 	
+	private final AtomicBoolean noIceMessage = new AtomicBoolean(false);
 	public LogRuntimeStatistics(ThreadSafeRunHistory rh, TerminationCondition termCond, double cutoffTime)
 	{
 		this.runHistory = rh;
@@ -120,7 +122,10 @@ public class LogRuntimeStatistics implements EventHandler<AutomaticConfiguratorE
 				String myLastLogMessage;
 				if(this.lastICE.get() == null)
 				{
-					log.info("Runtime Statistics Not Available");
+					if(this.noIceMessage.get() == false)
+					{
+						log.debug("Runtime Statistics are Not Available because we haven't seen an Incumbent Performance Changed Event yet");	
+					}
 					return;
 				}
 				ParamConfiguration incumbent = this.lastICE.get().getIncumbent();

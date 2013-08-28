@@ -93,7 +93,7 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 	public void run()
 	{
 		
-		log.warn("Doubling Capping initialization procedure is in EXPERIMENTAL currently. It may not work in all scenarios, such as those with small configurations and/or instance distributions. Termination conditions will be updated but not actually checked until after the procedure is completed, and state restoration will not properly restore the state (some runs will be lost).  ");
+		log.warn("Doubling Capping initialization procedure is EXPERIMENTAL currently. It may not work in all scenarios, such as those with small configurations and/or instance distributions. Termination conditions will be updated but not actually checked until after the procedure is completed, and state restoration will not properly restore the state (some runs will be lost). Finally as it has a lot of edge cases bugs are likely, the bugs should only manifest themselves as a crash");
 		
 		
 		if(numberOfChallengers == 1)
@@ -202,7 +202,6 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 				}
 				
 				RunConfig rc = new RunConfig(pispsQueue.poll(), kappa, config, kappa < cutoffTime);
-				log.info("Created Run Config: {} ", rc);
 				runsToDo.add(rc);
 			}
 		}
@@ -243,7 +242,7 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 		
 		if(phaseTwoRuns.size() <  numberOfChallengers )
 		{
-			log.info("Insufficient runs with SAT and UNSAT were found, using some TIMEOUT runs for Phase 2 of initialization");
+			log.info("Insufficient runs with SAT and UNSAT were found {} but needed {}, using some TIMEOUT runs for Phase 2 of initialization", phaseTwoRuns.size(), numberOfChallengers);
 			
 			int i=0; 
 			List<AlgorithmRun> timeouts = runs.getList(RunResult.TIMEOUT);
@@ -262,7 +261,7 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 			log.info("Phase one did not have enough completed runs ({}) to satisfy request of challengers: {}", phaseTwoRuns.size(), numberOfChallengers); 
 		} else
 		{
-			log.info("Beginning Phase 2 of initialization with {} completed runs", phaseTwoRuns);
+			log.info("Beginning Phase 2 of initialization with {} completed runs", phaseTwoRuns.size());
 		}
 		
 		
@@ -371,6 +370,10 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 					log.debug("New Incumbent set to {} with performance {} previous best was {} ", newIncumbent, myPerformance, previousBest);
 				}
 				try {
+					for(AlgorithmRun run : currentResults)
+					{
+						this.insc.take(run.getRunConfig().getProblemInstanceSeedPair().getInstance(), run.getRunConfig().getProblemInstanceSeedPair().getSeed());
+					}
 					this.runHistory.append(currentResults);
 				} catch (DuplicateRunException e) {
 					throw new IllegalStateException(e);
@@ -384,8 +387,8 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
  		}
  		
  		
- 		log.info("Phase Two Complete");
- 		log.info("Initialization Procedure complete");
+ 		
+ 		log.info("Initialization Procedure Completed. Selected incumbent {} ({}) incumbent has performance: {} ", this.runHistory.getThetaIdx(incumbent), incumbent, bestPerformance.get());
  		this.incumbent = newIncumbent;
  		
 	}
