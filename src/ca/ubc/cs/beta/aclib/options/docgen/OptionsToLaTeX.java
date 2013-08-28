@@ -4,8 +4,10 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.regex.Matcher;
 
 import com.beust.jcommander.JCommander;
@@ -225,7 +227,36 @@ public class OptionsToLaTeX {
 		pw2.append("\\end{document}");
 		
 		pw2.flush();
-		return s2.toString();
+		
+		
+		String result = s2.toString();
+		
+		Map<String, String> map = new HashMap<String, String>();
+				
+		map.put("\\'{e}","é");
+		/*
+		map.put("\\`{o}","ò");
+		map.put("\\'{o}","ó");
+		map.put("\\^{o}","ô");
+		map.put("\\\"{o}","ö");
+		map.put("\\H{o}","ő");
+		map.put("\\~{o}","õ");
+		map.put("\\c{c}","ç");
+		map.put("\\k{a}","ą");
+		map.put("\\l","ł");
+		map.put("\\={o}","ō");
+		map.put("\\b{o}","o");
+		map.put("\\.{o}","ȯ");
+		map.put("\\d{u}","ụ");
+		map.put("\\r{a}","å");
+		map.put("\\u{o}","ŏ");
+		map.put("\\v{s}","š");
+*/
+		for(Entry<String, String> replacements : map.entrySet())
+		{
+			result = result.replaceAll(replacements.getValue(), Matcher.quoteReplacement(replacements.getKey()));
+		}
+		return result;
 		
 	}
 	
