@@ -112,7 +112,12 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 		{
 			if(!execDir.exists())
 			{
-				execDir = new File(inputDirs.get(0) + File.separator + algoExecDir);
+				if (inputDirs.size()> 0)
+				{
+					//Only check if there is another place to look
+					execDir = new File(inputDirs.get(0) + File.separator + algoExecDir);
+				}
+				
 				if(!execDir.exists())
 				{
 					throw new ParameterException("Cannot find execution algorithm execution directory: " + algoExecDir +  "  in context:" + dirToSearch);
