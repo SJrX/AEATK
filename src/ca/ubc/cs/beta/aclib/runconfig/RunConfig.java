@@ -64,7 +64,7 @@ public class RunConfig implements Serializable{
 	{
 		if(pisp == null)
 		{
-			throw new IllegalArgumentException("AlgorithmInstanceSeedPair Name cannot be null");
+			throw new IllegalArgumentException("ProblemInstanceSeedPair Name cannot be null");
 		}
 		
 		if(cutoffTime  < 0)

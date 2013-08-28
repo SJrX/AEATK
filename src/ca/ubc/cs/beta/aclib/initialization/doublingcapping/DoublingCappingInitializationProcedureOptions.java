@@ -10,10 +10,10 @@ import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 public class DoublingCappingInitializationProcedureOptions extends AbstractOptions{
 
 	@Parameter(names="--doubling-capping-challengers", description="Number of challengers to use with the doubling capping mechanism", validateWith=FixedPositiveInteger.class)
-	public int numberOfChallengers = 1;
+	public int numberOfChallengers = 2;
 	
 	@Parameter(names="--doubling-capping-runs-per-challenger", description="Number of runs each challenger will get with the doubling capping initilization strategy", validateWith=FixedPositiveInteger.class)
-	public int numberOfRunsPerChallenger = 1;
+	public int numberOfRunsPerChallenger = 2;
 
 	
 	

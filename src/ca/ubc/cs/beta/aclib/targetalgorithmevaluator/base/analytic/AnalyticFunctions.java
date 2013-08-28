@@ -3,10 +3,10 @@ package ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.analytic;
 import java.util.List;
 
 public enum AnalyticFunctions {
-	ZERO("xN in R for all N"),
-	ADD("xN = 0, for all N"),
-	CAMELBACK( "(x0,x1) = (-0.0898, 0.7126) & (0,0898, -0.7126), xN , N > 2 are all ignored"),
-	BRANINS("(x0,x1) = (-pi, 12.275) & (pi , 2.275) & (9,42478, 2.475), xN, N > 2 are all ignored");
+	ZERO("xN in R for all N, y = 0"),
+	ADD("xN = 0, for all N, y = 0"),
+	CAMELBACK( "(x0,x1) = (-0.0898, 0.7126) & (0,0898, -0.7126), xN , N > 2 are all ignored,y=3.9684 (because it is shifted by 5)"),
+	BRANINS("(x0,x1) = (-pi, 12.275) & (pi , 2.275) & (9,42478, 2.475), xN, N > 2 are all ignored, y = 0.397887");
 	
 	
 	double BRANIN_A=1;

@@ -350,7 +350,7 @@ public class ProblemInstanceHelper {
 			}
 			File instanceListFile = getFileForPath(experimentDir, filename);
 			instanceFileAbsolutePath = instanceListFile.getAbsolutePath();
-			logger.info("Reading instances from file {}", instanceFileAbsolutePath);
+			logger.debug("Reading instances from file {}", instanceFileAbsolutePath);
 			InstanceListWithSeeds insc = getListAndSeedGen(instanceListFile,seed, maxSeedsPerInstance);
 			instanceList = insc.getInstancesByName();
 			gen = insc.getSeedGen();

@@ -2,9 +2,12 @@ package ca.ubc.cs.beta.aclib.misc;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.TreeMap;
 
 import net.jcip.annotations.NotThreadSafe;
 
@@ -12,6 +15,22 @@ import net.jcip.annotations.NotThreadSafe;
 public class MapList<K,V> implements Map<K, List<V>> {
 
 	private final Map<K, List<V>> map;
+
+	public static final <K,V> MapList<K,V> getHashMapList()
+	{
+		return new MapList<K,V>(new HashMap<K,List<V>>());
+	}
+	public static final <K,V> MapList<K,V> getLinkedHashMapList()
+	{
+		return new MapList<K,V>(new LinkedHashMap<K,List<V>>());
+	}
+	public static final <K,V> MapList<K,V> getTreeMapList()
+	{
+		return new MapList<K,V>(new TreeMap<K,List<V>>());
+	}
+	/**
+	 *  DO NOT ADD A CONCURRENT HASH MAP AS THIS CLASS IS NOT THREAD SAFE
+	 */
 
 	public MapList(Map<K, List<V>> emptyMap)
 	{
