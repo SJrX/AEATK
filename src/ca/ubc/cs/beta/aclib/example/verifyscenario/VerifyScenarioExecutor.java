@@ -6,6 +6,7 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -22,6 +23,7 @@ import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.misc.jcommander.JCommanderHelper;
 import ca.ubc.cs.beta.aclib.misc.returnvalues.ACLibReturnValues;
+import ca.ubc.cs.beta.aclib.misc.string.SplitQuotedString;
 import ca.ubc.cs.beta.aclib.misc.version.VersionTracker;
 import ca.ubc.cs.beta.aclib.options.scenario.ScenarioOptions;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
@@ -78,7 +80,7 @@ public class VerifyScenarioExecutor {
 			}
 			for(String s : opts.scenarios)
 			{
-				verifyScenario(s,new ArrayList<String>(searchDirectories), opts.checkInstances, opts.details,maxLength);
+				verifyScenario(s,new ArrayList<String>(searchDirectories), opts.checkInstances, opts.details,maxLength, opts.restoreScenarioArguments);
 			}
 			
 			
@@ -93,7 +95,7 @@ public class VerifyScenarioExecutor {
 	
 	
 	
-	private static void verifyScenario(String s, List<String> searchDirectories, boolean checkInstances, boolean outputDetails,int maxLength) {
+	private static void verifyScenario(String s, List<String> searchDirectories, boolean checkInstances, boolean outputDetails,int maxLength, String restoreScenarioArgs) {
 		
 		
 		File f = new File(s);
@@ -103,7 +105,7 @@ public class VerifyScenarioExecutor {
 		ScenarioOptions scenOpts;
 		try {
 			try {
-				scenOpts = getScenarioOptions(s);
+				scenOpts = getScenarioOptions(s, restoreScenarioArgs);
 			} catch(ParameterException e)
 			{
 
@@ -304,12 +306,22 @@ public class VerifyScenarioExecutor {
 		return;
 	}
 	
-	private static ScenarioOptions getScenarioOptions(String file)
+	private static ScenarioOptions getScenarioOptions(String file, String restoreScenarioArgs)
 	{
-		String[] args = {"--scenario-file",file};
+		
+		ArrayList<String> argL = new ArrayList<String>();
+		
+		argL.add("--scenario-file");
+		argL.add(file);
+		
+		argL.addAll(Arrays.asList(SplitQuotedString.splitQuotedString(restoreScenarioArgs)));
+		
+		
+		
+		
 		ScenarioOptions scenOptions = new ScenarioOptions();
 		
-		JCommander jcom = JCommanderHelper.parseCheckingForHelpAndVersion(args, scenOptions);
+		JCommander jcom = JCommanderHelper.parseCheckingForHelpAndVersion(argL.toArray(new String[0]), scenOptions);
 		
 		return scenOptions;
 	}

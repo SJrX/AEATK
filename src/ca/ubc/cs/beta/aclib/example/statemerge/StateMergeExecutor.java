@@ -33,6 +33,7 @@ import ca.ubc.cs.beta.aclib.exceptions.DuplicateRunException;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.misc.MapList;
 import ca.ubc.cs.beta.aclib.misc.jcommander.JCommanderHelper;
+import ca.ubc.cs.beta.aclib.misc.string.SplitQuotedString;
 import ca.ubc.cs.beta.aclib.objectives.RunObjective;
 import ca.ubc.cs.beta.aclib.options.scenario.ScenarioOptions;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
@@ -451,7 +452,7 @@ outerLoop:
 			MapList<Integer, AlgorithmRun> runsPerIteration, String dir)
 			throws IOException {
 		ThreadSafeRunHistory rh = new ThreadSafeRunHistoryWrapper(new NewRunHistory(smo.scenOpts.intraInstanceObj, smo.scenOpts.interInstanceObj, smo.scenOpts.runObj));
-		restoreState(dir, smo.scenOpts, pis, execConfig, rh);
+		restoreState(dir, smo.scenOpts, pis, execConfig, rh, smo.restoreScenarioArguments);
 		
 		log.debug("Restored state of {} has {} runs for default configuration ", dir, rh.getAlgorithmRunData(execConfig.getParamFile().getDefaultConfiguration()).size());
 		double restoredRuntime = 0.0;
@@ -567,7 +568,7 @@ outerLoop:
 		ss.save();
 	}
 
-	private static void restoreState(String dir, ScenarioOptions scenOpts, List<ProblemInstance> pis, AlgorithmExecutionConfig execConfig, ThreadSafeRunHistory rh) throws IOException {
+	private static void restoreState(String dir, ScenarioOptions scenOpts, List<ProblemInstance> pis, AlgorithmExecutionConfig execConfig, ThreadSafeRunHistory rh, String restoreScenarioOptions) throws IOException {
 		
 		StateFactoryOptions sfo = new StateFactoryOptions();
 		
@@ -604,6 +605,8 @@ outerLoop:
 					args.add("--feature-file");
 					args.add(dir + File.separator +"instance-features.txt");
 				}
+				
+				args.addAll(Arrays.asList(SplitQuotedString.splitQuotedString(restoreScenarioOptions)));
 				jcom.parse(args.toArray(new String[0]));
 				
 				pis = scenOpts.getTrainingAndTestProblemInstances(dir, 0, 0, true, false, false, false).getTrainingInstances().getInstances();

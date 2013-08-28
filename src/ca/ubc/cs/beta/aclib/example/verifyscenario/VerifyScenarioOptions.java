@@ -39,5 +39,7 @@ public class VerifyScenarioOptions extends AbstractOptions{
 	@Parameter(names="--output-details", description="Output details of the scenario")
 	public boolean details = true;
 
-
+	@Parameter(names={"--restore-args","--restore-scenario-arguments"}, description="A string that will be used to restore the individual state files, this allows you to override options in the saved scenarios for instance \"--cutoffTime 5.0\" would change the cutoff time on all restored scenarios")
+	public String restoreScenarioArguments = "";
+	
 }
