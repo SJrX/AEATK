@@ -32,7 +32,7 @@ public class ConsoleOnlyLoggingOptions extends AbstractOptions implements Loggin
 	
 	@CommandLineOnly
 	@UsageTextField(level=OptionLevel.INTERMEDIATE)
-	@Parameter(names={"--log-level","--logLevel"},description="messages will only be logged if they are of this severity or higher.")
+	@Parameter(names={"--log-level","--logLevel","--console-log-level","--consoleLogLevel"},description="messages will only be logged if they are of this severity or higher.")
 	public LogLevel logLevel = LogLevel.INFO;	
 	
 	@Override

@@ -34,6 +34,7 @@ import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.misc.MapList;
 import ca.ubc.cs.beta.aclib.misc.jcommander.JCommanderHelper;
 import ca.ubc.cs.beta.aclib.misc.string.SplitQuotedString;
+import ca.ubc.cs.beta.aclib.misc.version.VersionTracker;
 import ca.ubc.cs.beta.aclib.objectives.RunObjective;
 import ca.ubc.cs.beta.aclib.options.scenario.ScenarioOptions;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
@@ -71,6 +72,7 @@ public class StateMergeExecutor {
 			{
 				smo.logOpts.initializeLogging();
 				log = LoggerFactory.getLogger(StateMergeExecutor.class);
+				VersionTracker.logVersions();
 			}
 			
 			
@@ -428,9 +430,7 @@ outerLoop:
 				repairedRuns.addToList(runsForIt.getKey(), repairedRun);
 				
 			}
-			
-			
-			
+						
 		}
 		
 		return repairedRuns;
