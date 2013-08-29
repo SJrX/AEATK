@@ -50,7 +50,7 @@ public static void main(String[] args)
 					
 		}
 		
-		String script = getScript(opts.clazz,opts.nameOfProgram);
+		String script = getScript(opts.clazz,opts.nameOfProgram, opts.mem);
 		
 			
 		System.out.println("Execution Script writing to: "  + f);
@@ -63,7 +63,7 @@ public static void main(String[] args)
 		if(opts.batFile)
 		{
 			
-			String batchFile = getBatch(opts.clazz, opts.nameOfProgram);
+			String batchFile = getBatch(opts.clazz, opts.nameOfProgram,opts.mem);
 
 			File f2 = new File(opts.filename);
 			
@@ -108,7 +108,7 @@ public static void main(String[] args)
 	
 }
 
-public static String getScript(String javaClassName, String nameOfProgram)
+public static String getScript(String javaClassName, String nameOfProgram, int ram)
 {
 	
 	/*
@@ -133,7 +133,7 @@ exec java -Xmx"$SMACMEM"m -cp "$DIR/conf/:$jarconcat" $EXEC "$@"
 	StringBuilder sb = new StringBuilder();
 	sb.append("#!/usr/bin/env bash").append("\n"); 
 	sb.append("SMAC_MEMORY_INPUT=$SMAC_MEMORY").append("\n");
-	sb.append("SMACMEM=1024").append("\n");
+	sb.append("SMACMEM=").append(ram).append("\n");
 	sb.append("test \"$SMAC_MEMORY_INPUT\" -ge 1 2>&- && SMACMEM=$SMAC_MEMORY_INPUT").append("\n"); 
 	sb.append("EXEC=").append(javaClassName).append("\n"); 
 	sb.append("DIR=\"$( cd \"$( dirname \"${BASH_SOURCE[0]}\" )\" && pwd )\"").append("\n");
@@ -155,9 +155,9 @@ exec java -Xmx"$SMACMEM"m -cp "$DIR/conf/:$jarconcat" $EXEC "$@"
 	 * Creates a batch file for a program
 	 * @param javaClassName
 	 * @param nameOfProgram
-	 * @return
+	 * @return the batch file 
 	 */
-	public static String getBatch(String javaClassName, String nameOfProgram)
+	public static String getBatch(String javaClassName, String nameOfProgram,int ram)
 	{
 		/* courtesy of Chris Thornton
 		  @echo off
@@ -178,7 +178,7 @@ exec java -Xmx"$SMACMEM"m -cp "$DIR/conf/:$jarconcat" $EXEC "$@"
 		StringBuilder sb = new StringBuilder();
 		
 		sb.append("@echo off").append("\r\n");
-		sb.append("set SMACMEM=1024").append("\r\n");
+		sb.append("set SMACMEM=").append(ram).append("\r\n");
 		sb.append("IF NOT \"%SMAC_MEMORY%\"==\"\" (set SMACMEM=%SMAC_MEMORY%)").append("\r\n");
 		sb.append("set DIR=%~dp0").append("\r\n");
 		sb.append("set EXEC="+ javaClassName).append("\r\n");

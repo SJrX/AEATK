@@ -4,6 +4,7 @@ import java.io.File;
 
 import com.beust.jcommander.Parameter;
 
+import ca.ubc.cs.beta.aclib.misc.jcommander.validator.FixedPositiveInteger;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 
 public class ExecScriptCreatorOptions extends AbstractOptions {
@@ -23,4 +24,6 @@ public class ExecScriptCreatorOptions extends AbstractOptions {
 	@Parameter(names="--bat-file", description="Also output a windows .bat file")
 	public boolean batFile = true;
 	
+	@Parameter(names="--default-mem", description="Default amount of RAM to reserve in MB", validateWith=FixedPositiveInteger.class)
+	public int mem = 128;
 }

@@ -102,21 +102,12 @@ public class ClassicInitializationProcedure implements InitializationProcedure {
 		return incumbent;
 	}
 	
-	/**
-	 * Evaluates a single run, and updates our runHistory
-	 * @param runConfig
-	 * @return
-	 */
 	protected List<AlgorithmRun> evaluateRun(RunConfig runConfig)
 	{
 		return evaluateRun(Collections.singletonList(runConfig));
 	}
 	
-	/**
-	 * Evaluates a list of runs and updates our runHistory
-	 * @param runConfigs
-	 * @return
-	 */
+	
 	protected List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs)
 	{
 	

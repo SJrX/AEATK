@@ -95,7 +95,8 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 	/**
 	 * Gets an algorithm execution configuration
 	 * 
-	 * @param experimentDir the experiment directory to search for parameter configurations
+	 * @param inputDirs the experiment directory to search for parameter configurations (it is expected that the first one will be the experiment directory)
+	 * @param checkExecDir  if <code>true</code> we will check that the execution directory exists
 	 * @return configured object based on the options
 	 */
 	public AlgorithmExecutionConfig getAlgorithmExecutionConfig(List<String> inputDirs, boolean checkExecDir)

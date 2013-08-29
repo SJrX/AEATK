@@ -238,7 +238,6 @@ public class ParamConfigurationSpace implements Serializable {
 	 * @param file 			    				A reader object that will allow us to read the configuration space
 	 * @param absoluteFileName  				A file name of the object (a unique string used for equality)
 	 * @param searchSubspace					A map that controls which parameters should be used to generate a subspace
-	 * @param neighboursForNumericalParameters The number of neighbours that should be generated for numerical parameters
 	 */
 	public ParamConfigurationSpace(Reader file, String absoluteFileName, Map<String, String> searchSubspace)
 	{
@@ -1094,7 +1093,7 @@ public class ParamConfigurationSpace implements Serializable {
 	
 	/**
 	 * Generates a random configuration given the supplied random object 
-	 * @param a fast random object we will use to generate the configuration 
+	 * @param random a fast random object we will use to generate the configuration 
  	 * @return a random member of the configuration space (each parameter (ignoring the subspace) is sampled uniformly at random, and rejected if it's forbidden).
 	 */
 	public ParamConfiguration getRandomConfiguration(MersenneTwisterFast random)

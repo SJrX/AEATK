@@ -10,7 +10,7 @@ public interface NoArgumentHandler {
 	/**
 	 * Return true if we should quit the program after all handlers called
 	 * The default logic is if any of these say yes, then we will quit
-	 * @return 
+	 * @return  <code>true</code> if the program should terminate, <code>false</code> otherwise.
 	 */
 	public boolean handleNoArguments();
 	
