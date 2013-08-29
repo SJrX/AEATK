@@ -14,7 +14,8 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import ca.ubc.cs.beta.models.fastrf.utils.Hash;
+import net.jcip.annotations.NotThreadSafe;
+import net.jcip.annotations.ThreadSafe;
 
 
 /**
@@ -31,8 +32,13 @@ import ca.ubc.cs.beta.models.fastrf.utils.Hash;
  * 4) EntrySet and valueSet() are not implemented, size() is constant and unaffected by removing a key<br/>
  * 5) Two objects are considered equal if and only if all there active parameters are equal. 
  * 
+ * <p><b>Thread Safety:</b>This class is NOT thread safe under mutations but typically
+ * the lifecycle of a ParamConfiguration object is that it is created with specific values,
+ * and then never modified again. This class is thread safe under non-mutation operations.
+ * 
  *
  */
+@NotThreadSafe
 public class ParamConfiguration implements Map<String, String>, Serializable {
 
 	/**
@@ -81,7 +87,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	 * 
 	 * Prior to a read if this is true, we will call cleanUp()
 	 */
-	private boolean isDirty = true; 
+	private volatile boolean isDirty = true; 
 	
 	
 	/**
@@ -144,20 +150,6 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 		this.lastHash = oConfig.lastHash;
 		
 	}
-	
-	/**
-	 * Initializes a new / empty map
-	 * 
-	 * @param configSpace 					paramconfigurationspace we are from
-	 * @param categoricalSize 				array that has the size of the domain for categorical variables. (DO NOT MODIFY THIS) 
-	 * @param parameterDomainContinuous		array that tells us whether an entry in the value array is continuous. (DO NOT MODIFY THIS)
-	 * @param paramKeyToValueArrayIndexMap	map from param keys to index into the value arry.
-	 */
-	ParamConfiguration(ParamConfigurationSpace configSpace, int[] categoricalSize, boolean[] parameterDomainContinuous, Map<String, Integer> paramKeyIndexMap)
-	{
-		this(configSpace, new double[categoricalSize.length], categoricalSize, parameterDomainContinuous, paramKeyIndexMap);
-	}
-
 	
 	@Override
 	public int size() {
@@ -241,6 +233,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	 */
 	public String put(String key, String newValue) 
 	{
+	
 		/* We find the index into the valueArray from paramKeyIndexMap,
 		 * then we find the new value to set from it's position in the getValuesMap() for the key. 
 		 * NOTE: i = 1 since the valueArray numbers elements from 1
@@ -419,15 +412,31 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	 * 
 	 * @param o object to check equality with
 	 */
+	
 	public boolean equals(Object o)
 	{
+
+		if(this == o) return true;
 		if (o instanceof ParamConfiguration)
 		{
+			
 			ParamConfiguration opc = (ParamConfiguration )o;
 			if(isDirty) cleanUp();
 			if(opc.isDirty) opc.cleanUp();
 			
-			return configSpace.equals(opc.configSpace) && Arrays.equals(valueArrayForComparsion, opc.valueArrayForComparsion);
+			if(!configSpace.equals(opc.configSpace)) return false;
+			
+			
+			for(int i=0; i < valueArrayForComparsion.length; i++)
+			{
+
+				if(Math.abs(valueArrayForComparsion[i] - opc.valueArrayForComparsion[i]) > EPSILON)
+				{
+					return false;
+				}
+			}
+			
+			return true;
 		} else
 		{
 			return false;
@@ -444,6 +453,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 		{
 			if(isDirty) cleanUp();
 			
+			
 			float[] values = new float[valueArrayForComparsion.length];
 			
 			
@@ -453,7 +463,8 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 				
 			}
 			
-			lastHash = Hash.hashCode(values); 
+			lastHash = Arrays.hashCode(values);
+			//lastHash = Hash.hashCode(values); 
 			
 			
 			hashSet = true;
@@ -475,6 +486,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	 * @param valueDelimiter - String to appear on either side of the value
 	 * @param glue - String to placed in between various key value pairs
 	 * @return formatted parameter string 
+	 * @deprecated Clients should always specify a String Format {@link #getFormattedParamString(StringFormat)}
 	 */
 	@Deprecated
 	public String getFormattedParamString(String preKey, String keyValSeperator,String valueDelimiter,String glue)
@@ -516,6 +528,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	
 	/**
 	 * Returns a string representation of this object
+	 * @deprecated Clients should always specify a String Format {@link #getFormattedParamString(StringFormat)}
 	 * @return string representation of this object
 	 */
 	@Deprecated
@@ -565,7 +578,10 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 					sb.append(valueArray[i]);
 					if(i+1 != valueArray.length) sb.append(",");
 				}
-				return sb.toString();		
+				return sb.toString();
+				
+			case NODB_OR_STATEFILE_SYNTAX:
+				return getFormattedParamString(StringFormat.NODB_SYNTAX);
 			//case SILLY:
 			//	return "RANDOM";
 		default:
@@ -586,7 +602,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 			/**
 			 * Uses a -(name) 'value' -(name) 'value' ... format [hiding inactive parameters]
 			 */
-			NODB_SYNTAX("-"," ", "'", " ", true), //Parameters are prefixed with a -(name) '(value)'
+			NODB_SYNTAX("-"," ", "'", " ", true), 
 			/**
 			 * Stores a number and colon before entry of <code>NODB_SYNTAX</code>. Used only for deserializing
 			 */
@@ -609,8 +625,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 			 */
 			SURROGATE_EXECUTOR("-P","=",""," ",true),
 			
-			
-
+		
 			/**
 			 * Stores the values as an array (value array syntax). This format is non human-readable and fragile
 			 */
@@ -634,6 +649,10 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 			 */
 			FIXED_WIDTH_ARRAY_STRING_MASK_INACTIVE_SYNTAX("","","","", true),
 			
+			/**
+			 * Stores values in a NODB syntax, parses values from either.
+			 */
+			NODB_OR_STATEFILE_SYNTAX("","","","",true)
 			
 			//SILLY("","","","",false)
 			;
@@ -687,11 +706,13 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	
 	/**
 	 * Returns a list of configurations in the neighbourhood of this one (Forbidden Configurations are excluded)
+	 * @param  rand 					An object that will be used to generate neighbours for numerical parameters.
+	 * @param  numNumericalNeighbours 	The number of neighbours numerical parameters should have
 	 * @return list of configurations in the neighbourhood
 	 */
-	public List<ParamConfiguration> getNeighbourhood()
+	public List<ParamConfiguration> getNeighbourhood(Random rand, int numNumericalNeighbours)
 	{
-		List<ParamConfiguration> neighbours = new ArrayList<ParamConfiguration>(numberOfNeighboursExcludingForbidden());
+		List<ParamConfiguration> neighbours = new ArrayList<ParamConfiguration>(numberOfNeighboursExcludingForbidden(numNumericalNeighbours));
 		Set<String> activeParams = getActiveParameters();
 		/*
 		 * i is the number of parameters
@@ -701,9 +722,9 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 		{
 			double[] newValueArray = valueArray.clone();
 			
-			for(int j=1; j <= numberOfNeighboursForParam(i,activeParams.contains(configSpace.getParameterNamesInAuthorativeOrder().get(i))); j++)
+			for(int j=1; j <= numberOfNeighboursForParam(i,activeParams.contains(configSpace.getParameterNamesInAuthorativeOrder().get(i)),numNumericalNeighbours); j++)
 			{
-				newValueArray[i] = getNeighbourForParam(i,j);
+				newValueArray[i] = getNeighbourForParam(i,j,rand);
 				
 				if(configSpace.isForbiddenParamConfiguration(newValueArray)) continue;
 				
@@ -712,9 +733,9 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 		}
 		
 		
-		if(neighbours.size() > numberOfNeighboursExcludingForbidden())
+		if(neighbours.size() > numberOfNeighboursExcludingForbidden(numNumericalNeighbours))
 		{
-			throw new IllegalStateException("Expected " + numberOfNeighboursExcludingForbidden() + " neighbours (should be greater than or equal to) but got " + neighbours.size());
+			throw new IllegalStateException("Expected " + numberOfNeighboursExcludingForbidden(numNumericalNeighbours) + " neighbours (should be greater than or equal to) but got " + neighbours.size());
 		}
 		return neighbours;
 		
@@ -725,7 +746,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	 * Returns the number of neighbours for this configuration
 	 * @return number of neighbours that this configuration has
 	 */
-	private int numberOfNeighboursExcludingForbidden()
+	private int numberOfNeighboursExcludingForbidden(int numNumericalNeighbours)
 	{
 		int neighbours = 0;
 		
@@ -734,7 +755,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 		for(int i=0; i < configSpace.getParameterNamesInAuthorativeOrder().size(); i++)
 		{
 			
-			neighbours += numberOfNeighboursForParam(i, activeParams.contains(configSpace.getParameterNamesInAuthorativeOrder().get(i)));
+			neighbours += numberOfNeighboursForParam(i, activeParams.contains(configSpace.getParameterNamesInAuthorativeOrder().get(i)), numNumericalNeighbours);
 		}
 		return neighbours;
 		
@@ -746,13 +767,15 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	 * @param isParameterActive boolean for if this parameter is active
 	 * @return 0 if inactive, number of neighbours if active
 	 */
-	private int numberOfNeighboursForParam(int valueArrayIndex, boolean isParameterActive)
+	private int numberOfNeighboursForParam(int valueArrayIndex, boolean isParameterActive, int neighboursForNumericalParameters)
 	{
 		if(isParameterActive == false) return 0;
-
+		
+		if(configSpace.searchSubspaceActive[valueArrayIndex]) return 0;
+		
 		if(parameterDomainContinuous[valueArrayIndex])
 		{
-		  return ParamConfigurationSpace.NEIGHBOURS_FOR_CONTINUOUS;
+		  return neighboursForNumericalParameters;
 		} else
 		{
 		  return categoricalSize[valueArrayIndex] - 1;
@@ -766,7 +789,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	 * @param neighbourNumber   number of the neighbour to generate
 	 * @return
 	 */
-	private double getNeighbourForParam(int valueArrayIndex, int neighbourNumber)
+	private double getNeighbourForParam(int valueArrayIndex, int neighbourNumber, Random rand)
 	{
 		if(parameterDomainContinuous[valueArrayIndex])
 		{ 
@@ -775,11 +798,11 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 			//0.2 is simply a magic constant
 			double mean = valueArray[valueArrayIndex];
 			
-			Random r = configSpace.getPRNG();
+			
 			
 			while(true)
 			{
-				double randValue = 0.2*r.nextGaussian() + mean;
+				double randValue = 0.2*rand.nextGaussian() + mean;
 				
 				if(randValue >= 0 && randValue <= 1)
 				{
@@ -825,7 +848,15 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 			
 			if(this.activeParams[keyVal.getValue()])
 			{
-				this.valueArrayForComparsion[keyVal.getValue()] = valueArray[keyVal.getValue()];
+				if(this.parameterDomainContinuous[keyVal.getValue()])
+				{
+					this.valueArrayForComparsion[keyVal.getValue()] = valueArray[keyVal.getValue()];
+				} else
+				{
+					this.valueArrayForComparsion[keyVal.getValue()] = valueArray[keyVal.getValue()];
+				}
+				
+
 			} else
 			{
 				this.valueArrayForComparsion[keyVal.getValue()] = Double.NaN;
@@ -982,6 +1013,29 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	public ParamConfigurationSpace getConfigurationSpace() {
 		return configSpace;
 	}
+
+
+	private static final double EPSILON = Math.pow(10, -14);
+
+	public boolean isInSearchSubspace() {
+		
+		for(int i=0; i < valueArray.length; i++)
+		{
+			if(configSpace.searchSubspaceActive[i])
+			{
+				if(Math.abs(valueArray[i]-configSpace.searchSubspaceValues[i]) > EPSILON)
+				{
+					return false;
+				}
+			}
+		}
+		
+		return true;
+	}
+
+
+
+	
 
 
 

@@ -63,6 +63,10 @@ public class AlgorithmExecutionConfig implements Serializable {
 		return paramFile;
 	}
 
+	@Deprecated
+	/**
+	 * @deprecated this really never did anything and will be removed at some point
+	 */
 	public boolean isExecuteOnCluster() {
 		return executeOnCluster;
 	}
@@ -85,7 +89,7 @@ public class AlgorithmExecutionConfig implements Serializable {
 	
 	public boolean equals(Object o)
 	{ 
-		
+		if(this == o) return true;
 		if (o instanceof AlgorithmExecutionConfig)
 		{
 			AlgorithmExecutionConfig co = (AlgorithmExecutionConfig) o;
@@ -103,6 +107,5 @@ public class AlgorithmExecutionConfig implements Serializable {
 	}
 	
 	
-	
-
+	public final static String MAGIC_VALUE_ALGORITHM_EXECUTABLE_PREFIX = "Who am I, Alan Turing?...also from X-Men?";
 }

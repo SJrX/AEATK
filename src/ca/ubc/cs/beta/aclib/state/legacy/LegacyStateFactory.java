@@ -2,13 +2,17 @@ package ca.ubc.cs.beta.aclib.state.legacy;
 
 import java.io.File;
 import java.io.FileInputStream;
+import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.io.ObjectInputStream;
 import java.io.OutputStream;
+import java.io.Serializable;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Set;
 import java.util.concurrent.ConcurrentSkipListMap;
 
@@ -18,9 +22,8 @@ import org.slf4j.LoggerFactory;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.exceptions.StateSerializationException;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
-import ca.ubc.cs.beta.aclib.objectives.OverallObjective;
-import ca.ubc.cs.beta.aclib.objectives.RunObjective;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
+import ca.ubc.cs.beta.aclib.runhistory.RunHistory;
 import ca.ubc.cs.beta.aclib.state.StateDeserializer;
 import ca.ubc.cs.beta.aclib.state.StateFactory;
 import ca.ubc.cs.beta.aclib.state.StateSerializer;
@@ -33,6 +36,19 @@ import ca.ubc.cs.beta.aclib.state.StateSerializer;
  */
 public class LegacyStateFactory implements StateFactory{
 
+	
+	
+
+	static final String OBJECT_MAP_KEY = "OBJECT_MAP_KEY";
+	static final String ITERATION_KEY = "ITERATION_KEY";
+	static final String INCUMBENT_TEXT_KEY = "INCUMBENT_TEXT_KEY";
+	
+	
+
+	public static final String SCENARIO_FILE = "scenario.txt";
+	public static final String PARAM_FILE = "param.pcs";
+	public static final String FEATURE_FILE = "instance-features.csv";
+	public static final String INSTANCE_FILE = "instances.txt";
 	
 	private final String saveStatePath;
 	private final String restoreFromPath;
@@ -98,13 +114,13 @@ public class LegacyStateFactory implements StateFactory{
 		
 	}
 	@Override
-	public StateDeserializer getStateDeserializer(String id, int iteration, ParamConfigurationSpace configSpace, OverallObjective intraInstanceObjective, OverallObjective interInstanceObjective, RunObjective runObj, List<ProblemInstance> instances, AlgorithmExecutionConfig execConfig) throws StateSerializationException
+	public StateDeserializer getStateDeserializer(String id, int iteration, ParamConfigurationSpace configSpace, List<ProblemInstance> instances, AlgorithmExecutionConfig execConfig, RunHistory rh) throws StateSerializationException
 	{
 		if(restoreFromPath == null) 
 		{
 			throw new IllegalArgumentException("This Serializer does not support restoring state");
 		}
-		return new LegacyStateDeserializer(restoreFromPath, id, iteration, configSpace, intraInstanceObjective, interInstanceObjective, runObj, instances, execConfig);
+		return new LegacyStateDeserializer(restoreFromPath, id, iteration, configSpace, instances, execConfig, rh);
 	}
 
 	@Override
@@ -126,10 +142,7 @@ public class LegacyStateFactory implements StateFactory{
 	@Override
 	public void copyFileToStateDir(String name, File f)
 	{
-		if(saveStatePath == null)
-		{
-			throw new IllegalArgumentException("This Serializer does not support saving State");
-		}
+		
 		
 		if(!f.isFile())
 		{
@@ -141,15 +154,37 @@ public class LegacyStateFactory implements StateFactory{
 			throw new IllegalArgumentException("Input file f does not exist :" + f.getAbsolutePath());
 		}
 		
+		try {
+			copyFileToStateDir(name, new FileInputStream(f));
+		} catch (FileNotFoundException e) {
+			throw new IllegalStateException("IOException occured :",e);
+		}
+		
+		
+	}
+	
+	/**
+	 * Copies the file to the State Dir
+	 * @param name name of the file to write
+	 * @param f source file
+	 */
+	public void copyFileToStateDir(String name, InputStream in)
+	{
+		if(saveStatePath == null)
+		{
+			throw new IllegalArgumentException("This Serializer does not support saving State");
+		}
+	
+		
 		File outputFile = new File(saveStatePath + File.separator + name);
 		
 		try {
-			InputStream in = new FileInputStream(f);
 			OutputStream out = new FileOutputStream(outputFile);
 			
 			
 			byte[] buf = new byte[8172];
 			int len;
+			
 			
 			while((len = in.read(buf)) > 0)
 			{
@@ -166,6 +201,7 @@ public class LegacyStateFactory implements StateFactory{
 		
 		
 	}
+	
 
 	/**
 	 * Generates the filename on disk that we should use to store uniq_configurations (array format of configurations)
@@ -286,7 +322,7 @@ public class LegacyStateFactory implements StateFactory{
 	 */
 	static String getJavaObjectDumpFilename(String path, String id, int iteration)
 	{
-	 	return path + File.separator + "java_obj_dump-"+id + iteration +".obj";
+	 	return path + File.separator + "java_obj_dump-v2-"+id + iteration +".obj";
 	}
 	
 	/**
@@ -298,7 +334,7 @@ public class LegacyStateFactory implements StateFactory{
 	 */
 	static String getJavaQuickObjectDumpFilename(String path, String id,
 			int iteration) {
-		return path + File.separator + "java_obj_dump-"+id + "quick.obj";
+		return path + File.separator + "java_obj_dump-v2-"+id + "quick.obj";
 	}
 	
 	/**
@@ -310,7 +346,7 @@ public class LegacyStateFactory implements StateFactory{
 	 */
 	public static String getJavaQuickBackObjectDumpFilename(String path, String id,
 			int iteration) {
-		return path + File.separator + "java_obj_dump-"+id + "quick-bak.obj";
+		return path + File.separator + "java_obj_dump-v2-"+id + "quick-bak.obj";
 	}
 	
 	/**
@@ -324,15 +360,20 @@ public class LegacyStateFactory implements StateFactory{
 			try {
 				
 				oReader =  new ObjectInputStream(new FileInputStream(javaObjDumpFile));
-					
-				return oReader.readInt();
+				Object o = oReader.readObject();
+				@SuppressWarnings("unchecked")
+				Map<String, Serializable> map = (Map<String, Serializable>) o;
+				return Integer.valueOf(map.get(ITERATION_KEY).toString());
+				//if(true) throw new IllegalStateException();
+				
 		
 			} finally
 			{
 				if(oReader != null) oReader.close();
 			}
-		} catch(IOException e)
+		} catch(Exception e)
 		{
+			
 			return -1;
 		}	
 	}
@@ -340,6 +381,9 @@ public class LegacyStateFactory implements StateFactory{
 	
 	
 	static final String RUN_NUMBER_HEADING = "Run Number";
+	
+	
+	
 	@Override
 	public void purgePreviousStates() {
 		
@@ -388,4 +432,7 @@ public class LegacyStateFactory implements StateFactory{
 			 Set<String> iterationFiles = this.savedFilesPerIteration.get(iteration);
 			iterationFiles.addAll(savedFiles);
 	}
+	
+
+	
 }

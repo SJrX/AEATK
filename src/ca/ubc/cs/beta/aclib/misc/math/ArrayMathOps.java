@@ -3,10 +3,11 @@ package ca.ubc.cs.beta.aclib.misc.math;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Random;
 
 import org.apache.commons.math.stat.StatUtils;
 
-import ca.ubc.cs.beta.aclib.misc.random.SeedableRandomSingleton;
+import ca.ubc.cs.beta.aclib.random.RandomUtil;
 import ca.ubc.cs.beta.models.fastrf.utils.Hash;
 
 /**
@@ -165,11 +166,11 @@ public class ArrayMathOps {
 	 * @param list list of objects to randomly permute
 	 * @return a copy of the list with elements permuted
 	 */
-	public static <X> List<X> permute(List<X> list)
+	public static <X> List<X> permute(List<X> list, Random rand)
 	{
 		List<X> newList = new ArrayList<X>(list.size());
 		
-		int[] perms = SeedableRandomSingleton.getPermutation(list.size(), 0);
+		int[] perms = RandomUtil.getPermutation(list.size(), 0,rand);
 		for(int i=0; i < list.size(); i++)
 		{
 			newList.add(list.get(perms[i]));
@@ -316,6 +317,19 @@ public class ArrayMathOps {
 	}
 	
 
+	
+	public static double[] add(double[] operL, double[] operR) {
+		double[] result = new double[operL.length];
+		
+		for(int i=0; i < result.length; i++)
+		{
+			result[i] = operL[i]+operR[i];
+		}
+		
+		return result;
+		
+	}
+	
 	
 
 }

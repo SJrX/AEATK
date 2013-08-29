@@ -6,13 +6,13 @@ import java.io.FileInputStream;
 import java.io.FileReader;
 import java.io.IOException;
 import java.io.ObjectInputStream;
+import java.io.Serializable;
 import java.util.Arrays;
-import java.util.EnumMap;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -31,16 +31,10 @@ import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration.StringFormat;
 import ca.ubc.cs.beta.aclib.exceptions.DuplicateRunException;
 import ca.ubc.cs.beta.aclib.exceptions.StateSerializationException;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
-import ca.ubc.cs.beta.aclib.objectives.OverallObjective;
-import ca.ubc.cs.beta.aclib.objectives.RunObjective;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
-import ca.ubc.cs.beta.aclib.runhistory.NewRunHistory;
 import ca.ubc.cs.beta.aclib.runhistory.RunHistory;
-import ca.ubc.cs.beta.aclib.seedgenerator.InstanceSeedGenerator;
-import ca.ubc.cs.beta.aclib.seedgenerator.RandomInstanceSeedGenerator;
-import ca.ubc.cs.beta.aclib.state.RandomPoolType;
 import ca.ubc.cs.beta.aclib.state.StateDeserializer;
 
 /**
@@ -63,15 +57,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 	 * RunHistory object that we restored
 	 */
 	private final RunHistory runHistory;
-	/**
-	 * Instance Seed Generator that we restored
-	 */
-	private final InstanceSeedGenerator instanceSeedGenerator;
 	
-	/**
-	 * Map of Random Objects that we restored
-	 */
-	private final EnumMap<RandomPoolType, Random> randomMap;
 	
 	/**
 	 * Iteration that we restored
@@ -104,8 +90,11 @@ public class LegacyStateDeserializer implements StateDeserializer {
 	
 	public final double cutoffTime;
 	
-	private ParamConfiguration potentialIncumbent; 
+	private ParamConfiguration potentialIncumbent;
+	private final  Map<String, Serializable> objectStateMap; 
 	
+	
+	private static final Pattern filePattern = Pattern.compile("it(\\d+).");
 	@SuppressWarnings("unchecked")
 	/**
 	 * Generates objects necessary to restore SMAC to the state in the saved files
@@ -117,20 +106,20 @@ public class LegacyStateDeserializer implements StateDeserializer {
 	 * @param id							The id to restore (generally this is "it" but maybe "CRASH")
 	 * @param iteration						The iteration to restore
 	 * @param configSpace					The configuration space the state files are from
-	 * @param intraInstanceObjective		The intraInstanceObjective of the run
-	 * @param interInstanceObjective		The interInstanceObjective of the run
-	 * @param runObj						The run Objective of the run
 	 * @param instances						The instances used in the run
 	 * @param execConfig					The execution configuration used in the run
+	 * @param emptyRunHistory				A RunHistory object that has no runs in it
 	 * @throws StateSerializationException  If we cannot restore the state
 	 */
-	LegacyStateDeserializer(String restoreFromPath, String id, int iteration, ParamConfigurationSpace configSpace, OverallObjective intraInstanceObjective,OverallObjective interInstanceObjective, RunObjective runObj, List<ProblemInstance> instances, AlgorithmExecutionConfig execConfig) 
+	LegacyStateDeserializer(String restoreFromPath, String id, int iteration, ParamConfigurationSpace configSpace, List<ProblemInstance> instances, AlgorithmExecutionConfig execConfig, RunHistory emptyRunHistory) 
 	{
 			if (configSpace == null) throw new IllegalArgumentException("Config Space cannot be null");
-			if(interInstanceObjective == null) throw new IllegalArgumentException("Inter Instance Objective cannot be null");
-			if(intraInstanceObjective == null) throw new IllegalArgumentException("Intra Instance Objective cannot be null");
-			
-			if(runObj == null) throw new IllegalArgumentException("Run Objective cannot be null");
+			if(emptyRunHistory == null) throw new IllegalArgumentException("Run History cannot be null");
+			if(emptyRunHistory.getAlgorithmRunData().size() > 0)
+			{
+				log.warn("RunHistory object already contains runs this may cause problems restoring runs");
+			}
+			this.runHistory = emptyRunHistory;
 			if(instances == null) throw new IllegalArgumentException("Instances cannot be null");
 			
 			if(execConfig == null) throw new IllegalArgumentException("execConfig cannot be null");
@@ -139,6 +128,55 @@ public class LegacyStateDeserializer implements StateDeserializer {
 			if(instances.size() == 0) 
 			{
 				log.warn("Got empty instance list, except in the trivial case this will result in an exception");
+			}
+			
+			if (iteration == Integer.MAX_VALUE)
+			{
+				iteration = 0;
+				log.info("Auto detecting iteration for directory {}" , restoreFromPath);
+				
+				File restoreDirectory = new File(restoreFromPath);
+				File[] files = restoreDirectory.listFiles();
+				Arrays.sort(files);
+				for(File f : files)
+				{
+					int thisIteration = LegacyStateFactory.readIterationFromObjectFile(f);
+					if(thisIteration != -1)
+					{
+						
+						
+						//System.out.println(f.getAbsolutePath().substring(restoreDirectory.getAbsolutePath().length()+1) + " => Iteration " + thisIteration);
+						
+						iteration = Math.max(thisIteration, iteration);
+					}
+				}
+				
+				if(iteration == 0)
+				{
+					log.debug("Auto-detected iteration 0 on first pass trying by filename, doing another pass");
+					
+					for(File f : files)
+					{
+
+						if(f.getName().matches(LegacyStateFactory.getRunAndResultsFilename("", "it", "\\d+")))
+						{
+							
+							Matcher m = filePattern.matcher(f.getName());
+							
+							if(m.find())
+							{
+								String group = m.group(1);
+								log.debug("Found iteration {} from file {} ", group , f.getName());
+								iteration = Math.max(Integer.valueOf(group), iteration);
+							}
+							
+						}
+						
+						
+						
+					}
+				}
+				log.info("Iteration restoring to {} ", iteration);
 			}
 			
 			
@@ -178,19 +216,23 @@ public class LegacyStateDeserializer implements StateDeserializer {
 				ObjectInputStream oReader =  null;
 				try {
 					oReader =  new ObjectInputStream(new FileInputStream(f.javaObjDumpFile));
-						
-					int storedIteration = oReader.readInt();
+
+					Map<String, Serializable> objectMap = (Map<String, Serializable>) oReader.readObject();
+					
+
+					
+					int storedIteration =(Integer) objectMap.get(LegacyStateFactory.ITERATION_KEY);
 					if(storedIteration != iteration) 
 					{
 						
 						throw new IllegalStateException("File Found claimed to be for iteration " + iteration + " but contained iteration " + storedIteration + " in file: " + f.javaObjDumpFile.getAbsolutePath());
 					}
+					
 					this.iteration = storedIteration;
 					
-					randomMap = ((EnumMap<RandomPoolType, Random>) oReader.readObject());
+
 					
-					instanceSeedGenerator = (InstanceSeedGenerator) oReader.readObject();
-					String paramString = (String) oReader.readObject();
+					String paramString = (String) objectMap.get(LegacyStateFactory.INCUMBENT_TEXT_KEY);
 					
 					if(paramString != null)
 					{
@@ -201,7 +243,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 						incumbent = null;
 					}
 					 
-					
+					this.objectStateMap = (Map<String, Serializable>) objectMap.get(LegacyStateFactory.OBJECT_MAP_KEY);
 				} finally
 				{
 					if(oReader != null) oReader.close(); 
@@ -213,12 +255,10 @@ public class LegacyStateDeserializer implements StateDeserializer {
 				
 				
 				
-				randomMap = null;
-				//The RunHistory object will need an instanceseed generator. We will not allow this to be returned to the client however
-				instanceSeedGenerator = new RandomInstanceSeedGenerator(0, 0);
+				
 				this.iteration = iteration;
 				
-				
+				this.objectStateMap = Collections.EMPTY_MAP;
 				
 			
 				this.incumbent = null;
@@ -238,31 +278,10 @@ public class LegacyStateDeserializer implements StateDeserializer {
 			
 			try {
 				
-					if(f.paramStringsFile != null)
-					{
-						log.info("Parsing Parameter Settings from: {}",f.paramStringsFile.getAbsolutePath());
-					
-						reader =  new BufferedReader(new FileReader(f.paramStringsFile));
-						
-						String line = null;
-					
-						while( (line = reader.readLine()) != null)
-						{
-							log.trace("Parsing config line: {}", line);
-							String[] lineResults = line.split(":",2);
-							
-							if(lineResults.length != 2) throw new IllegalArgumentException("Configuration Param Strings File is corrupted, no colon detected on line: \"" + line + "\"");
-							
-							Integer configId = Integer.valueOf(lineResults[0]);
-							configMap.put(configId,configSpace.getConfigurationFromString(lineResults[1], StringFormat.STATEFILE_SYNTAX));
-							
-							
-						} 
-					}
-					else if(f.uniqConfigFile != null)
+					if(f.uniqConfigFile != null)
 					{
 						log.info("Parsing Parameter Settings from: {}", f.uniqConfigFile.getAbsolutePath());
-						log.warn("Parameter Settings specified in array format, which is less portable than paramString format");
+						log.info("Parameter Settings specified in array format, which is less portable (but more accurate) than paramString format");
 						reader =  new BufferedReader(new FileReader(f.uniqConfigFile));
 						
 						String line = null;
@@ -282,6 +301,26 @@ public class LegacyStateDeserializer implements StateDeserializer {
 						}
 						
 						
+					} else if(f.paramStringsFile != null)
+					{
+						log.info("Parsing Parameter Settings from: {}",f.paramStringsFile.getAbsolutePath());
+					
+						reader =  new BufferedReader(new FileReader(f.paramStringsFile));
+						
+						String line = null;
+					
+						while( (line = reader.readLine()) != null)
+						{
+							log.trace("Parsing config line: {}", line);
+							String[] lineResults = line.split(":",2);
+							
+							if(lineResults.length != 2) throw new IllegalArgumentException("Configuration Param Strings File is corrupted, no colon detected on line: \"" + line + "\"");
+							
+							Integer configId = Integer.valueOf(lineResults[0]);
+							configMap.put(configId,configSpace.getConfigurationFromString(lineResults[1], StringFormat.STATEFILE_SYNTAX));
+							
+							
+						} 
 					} else
 					{
 						throw new IllegalStateException("One of Unique Configuration File, or Param Strings File should have been non-null, cannot continue");
@@ -308,7 +347,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 			 * Create Run History Object
 			 */
 			
-			runHistory = new NewRunHistory(instanceSeedGenerator, intraInstanceObjective, interInstanceObjective, runObj);
+			//runHistory = new NewRunHistory(instanceSeedGenerator, intraInstanceObjective, interInstanceObjective, runObj);
 			
 			
 			CSVReader runlist = null;
@@ -320,6 +359,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 				
 				boolean seedErrorLogged = false;
 				
+				int duplicateRunsDropped = 0;
 				while((runHistoryLine = runlist.readNext()) != null)
 				{
 					
@@ -465,23 +505,8 @@ public class LegacyStateDeserializer implements StateDeserializer {
 					
 						ProblemInstanceSeedPair pisp = new ProblemInstanceSeedPair(pi, seed); 
 						RunConfig runConfig = new RunConfig(pisp, cutOffTime, configMap.get(thetaIdx),isCensored);
-						
-						
-						
-						StringBuffer resultLine = new StringBuffer();
-						
-						resultLine.append(runResult.getResultCode()).append(", ");
-						resultLine.append(runtime).append(", ");
-						resultLine.append(runLength).append(", ");
-						resultLine.append(quality).append(", ");
-						resultLine.append(seed);
-						
-						if(additionalRunData.length() > 0)
-						{
-							resultLine.append(",").append(additionalRunData);
-						}
-						
-						AlgorithmRun run = new ExistingAlgorithmRun(execConfig, runConfig, resultLine.toString(), wallClockTime);
+												
+						AlgorithmRun run = new ExistingAlgorithmRun(execConfig, runConfig, runResult, runtime, runLength, quality, seed, additionalRunData, wallClockTime);
 						
 						log.trace("Appending new run to runHistory: ", run);
 						try {
@@ -498,15 +523,8 @@ public class LegacyStateDeserializer implements StateDeserializer {
 								
 								seed = newSeeds++;
 								
-								
 
-								resultLine.append(runResult.getResultCode()).append(", ");
-								resultLine.append(runtime).append(", ");
-								resultLine.append(runLength).append(", ");
-								resultLine.append(quality).append(", ");
-								resultLine.append(seed);
-								
-								run = new ExistingAlgorithmRun(execConfig, runConfig, resultLine.toString());
+								run = new ExistingAlgorithmRun(execConfig, runConfig, runResult, runtime, runLength, quality, seed, wallClockTime);
 								
 								log.trace("Appending new run to runHistory: ", run);
 								try {
@@ -520,7 +538,8 @@ public class LegacyStateDeserializer implements StateDeserializer {
 								
 							} else
 							{
-								log.error("Duplicate Run Detected dropped {} from line: {}",run, Arrays.toString(runHistoryLine));
+								duplicateRunsDropped++;
+								log.debug("Duplicate Run Detected dropped {} from line: {}",run, Arrays.toString(runHistoryLine));
 								
 							}
 							
@@ -530,12 +549,12 @@ public class LegacyStateDeserializer implements StateDeserializer {
 						 throw e;
 					} catch(RuntimeException e) 
 					{
-					
 						throw new StateSerializationException("Error occured while parsing the following line of the runHistory file: " + i + " data "+ Arrays.toString(runHistoryLine), e);
 					}
 
 				}
 				
+				log.info("Restored {} runs, {} duplicates were dropped", i, duplicateRunsDropped);
 				if(this.incumbent == null)
 				{
 					log.info("No incumbent found in state files, doing our best to select the incumbent, may not be identical but should be indistinguishable");
@@ -606,18 +625,6 @@ public class LegacyStateDeserializer implements StateDeserializer {
 		return runHistory;
 	}
 
-	@Override
-	public Random getPRNG(RandomPoolType t) {
-		if(incompleteSavedState) throw new StateSerializationException("This is an incomplete state with no java objects found");
-		return randomMap.get(t);
-	}
-
-	@Override
-	public InstanceSeedGenerator getInstanceSeedGenerator() {
-		if(incompleteSavedState) throw new StateSerializationException("This is an incomplete state with no java objects found");
-		return instanceSeedGenerator;
-	}
-	
 	/**
 	 * Determines which files we should use to read the data out of the state directory
 	 * 
@@ -658,7 +665,12 @@ public class LegacyStateDeserializer implements StateDeserializer {
 				{
 					f.runHistoryFile = new File(LegacyStateFactory.getRunAndResultsFilename(path, id, savedFileIteration));
 					f.paramStringsFile = new File(LegacyStateFactory.getParamStringsFilename(path, id, savedFileIteration));
-
+					f.uniqConfigFile = new File(LegacyStateFactory.getUniqConfigurationsFilename(path, id, savedFileIteration));
+					
+					if(!f.uniqConfigFile.exists())
+					{
+						f.uniqConfigFile = null;
+					}
 					filesFound = true;
 					break;
 				} else
@@ -805,7 +817,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 	 * @author sjr
 	 *
 	 */
-	private class FileLocations
+	private static class FileLocations
 	{
 		public File uniqConfigFile;
 		public File runHistoryFile;
@@ -819,6 +831,8 @@ public class LegacyStateDeserializer implements StateDeserializer {
 		{
 			if ((runHistoryFile != null) && (!runHistoryFile.exists())) throw new StateSerializationException("Run History File does not exist");
 			if ((javaObjDumpFile != null) && (!javaObjDumpFile.exists())) throw new StateSerializationException("Java Object File does not exist");
+			
+			
 			if ((paramStringsFile != null) && (!paramStringsFile.exists())) throw new StateSerializationException("Param Strings File does not exist");
 			if ((uniqConfigFile != null) && (!uniqConfigFile.exists())) throw new StateSerializationException("Unique Config File does not exist");
 			
@@ -840,6 +854,12 @@ public class LegacyStateDeserializer implements StateDeserializer {
 		{
 			return incumbent;
 		}
+	}
+
+
+	@Override
+	public Map<String, Serializable> getObjectStateMap() {
+		return ((objectStateMap != null) ? objectStateMap : Collections.<String, Serializable>emptyMap());
 	}
 	
 	

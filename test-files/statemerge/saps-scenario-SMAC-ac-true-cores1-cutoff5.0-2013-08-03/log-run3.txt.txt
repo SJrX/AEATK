@@ -1,0 +1,962 @@
+16:52:14.824 [main] INFO  c.u.c.b.aclib.logging.LoggingOptions - Logging to: /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/smac-output/saps-scenario-SMAC-ac-true-cores1-cutoff5.0-2013-08-03/log-run3.txt
+16:52:14.892 [main] INFO  c.u.c.b.a.m.version.VersionTracker - Version of Automatic Configurator Library is v2.06.00-development-594 (64db2a93ec00) 
+16:52:14.892 [main] INFO  c.u.c.b.a.m.version.VersionTracker - Version of Random Forest Library is v1.05.01-development-95 (4a8077e95b21) 
+16:52:14.893 [main] INFO  c.u.c.b.a.m.version.VersionTracker - Version of SMAC is v2.06.00b-development-571 (9acad50ea89d) 
+16:52:14.893 [main] INFO  c.u.c.b.smac.executors.SMACExecutor - Parsing (default) options from file: /home/sjr/.aclib/tae.opt 
+16:52:14.893 [main] INFO  c.u.c.b.smac.executors.SMACExecutor - Parsing (default) options from file: /home/sjr/.aclib/smac.opt 
+16:52:14.893 [main] INFO  c.u.c.b.smac.executors.SMACExecutor - Parsing (default) options from file: /home/sjr/.aclib/help.opt 
+16:52:14.893 [main] INFO  c.u.c.b.a.m.j.JCommanderHelper - Call String:
+16:52:14.893 [main] INFO  c.u.c.b.a.m.j.JCommanderHelper - java -cp /home/sjr/software/smac-development/conf/:/home/sjr/software/smac-development/patches/:/home/sjr/software/smac-development/aclib.jar:/home/sjr/software/smac-development/aclib-src.jar:/home/sjr/software/smac-development/commons-collections-3.2.1.jar:/home/sjr/software/smac-development/commons-collections-3.2.1-sources.jar:/home/sjr/software/smac-development/commons-io-2.1.jar:/home/sjr/software/smac-development/commons-math-2.2.jar:/home/sjr/software/smac-development/commons-math3-3.2.jar:/home/sjr/software/smac-development/DomainInter.jar:/home/sjr/software/smac-development/exp4j-0.3.10.jar:/home/sjr/software/smac-development/fastrf.jar:/home/sjr/software/smac-development/fastrf-src.jar:/home/sjr/software/smac-development/guava-14.0.1.jar:/home/sjr/software/smac-development/Jama-1.0.2.jar:/home/sjr/software/smac-development/jcip-annotations.jar:/home/sjr/software/smac-development/jcip-annotations-src.jar:/home/sjr/software/smac-development/jcommander.jar:/home/sjr/software/smac-development/jmatharray.jar:/home/sjr/software/smac-development/logback-access-1.0.0.jar:/home/sjr/software/smac-development/logback-classic-1.0.0.jar:/home/sjr/software/smac-development/logback-core-1.0.0.jar:/home/sjr/software/smac-development/numerics4j-1.3.jar:/home/sjr/software/smac-development/opencsv-2.3.jar:/home/sjr/software/smac-development/slf4j-api-1.6.4.jar:/home/sjr/software/smac-development/smac.jar:/home/sjr/software/smac-development/smac-src.jar:/home/sjr/software/smac-development/spi-0.2.4.jar:/home/sjr/software/smac-development/patches/ ca.ubc.cs.beta.smac.executors.SMACExecutor --scenario-file ./example_scenarios/saps/saps-scenario.txt --seed 3 --validation false 
+16:52:14.894 [main] DEBUG c.u.c.b.smac.executors.SMACExecutor - ==========Enviroment Variables===========
+COLORFGBG=15;0
+DBUS_SESSION_BUS_ADDRESS=unix:abstract=/tmp/dbus-lIeA2rCkWT,guid=806855aea2d898f3a8e7eecd51fc1152
+DEFAULTS_PATH=/usr/share/gconf/kde-plasma.default.path
+DESKTOP_SESSION=kde-plasma
+DISPLAY=:0
+GDMSESSION=kde-plasma
+GPG_AGENT_INFO=/tmp/gpg-plydUA/S.gpg-agent:3663:1
+GS_LIB=/home/sjr/.fonts
+GTK2_RC_FILES=/etc/gtk-2.0/gtkrc:/home/sjr/.gtkrc-2.0:/home/sjr/.kde/share/config/gtkrc-2.0
+GTK_RC_FILES=/etc/gtk/gtkrc:/home/sjr/.gtkrc:/home/sjr/.kde/share/config/gtkrc
+HOME=/home/sjr
+KDE_FULL_SESSION=true
+KDE_MULTIHEAD=false
+KDE_SESSION_UID=1000
+KDE_SESSION_VERSION=4
+KONSOLE_DBUS_SERVICE=:1.52
+KONSOLE_DBUS_SESSION=/Sessions/2
+KONSOLE_PROFILE_NAME=Shell
+LANG=en_CA.UTF-8
+LANGUAGE=en_CA:en
+LESSCLOSE=/usr/bin/lesspipe %s %s
+LESSOPEN=| /usr/bin/lesspipe %s
+LOGNAME=sjr
+LS_COLORS=rs=0:di=01;34:ln=01;36:mh=00:pi=40;33:so=01;35:do=01;35:bd=40;33;01:cd=40;33;01:or=40;31;01:su=37;41:sg=30;43:ca=30;41:tw=30;42:ow=34;42:st=37;44:ex=01;32:*.tar=01;31:*.tgz=01;31:*.arj=01;31:*.taz=01;31:*.lzh=01;31:*.lzma=01;31:*.tlz=01;31:*.txz=01;31:*.zip=01;31:*.z=01;31:*.Z=01;31:*.dz=01;31:*.gz=01;31:*.lz=01;31:*.xz=01;31:*.bz2=01;31:*.bz=01;31:*.tbz=01;31:*.tbz2=01;31:*.tz=01;31:*.deb=01;31:*.rpm=01;31:*.jar=01;31:*.war=01;31:*.ear=01;31:*.sar=01;31:*.rar=01;31:*.ace=01;31:*.zoo=01;31:*.cpio=01;31:*.7z=01;31:*.rz=01;31:*.jpg=01;35:*.jpeg=01;35:*.gif=01;35:*.bmp=01;35:*.pbm=01;35:*.pgm=01;35:*.ppm=01;35:*.tga=01;35:*.xbm=01;35:*.xpm=01;35:*.tif=01;35:*.tiff=01;35:*.png=01;35:*.svg=01;35:*.svgz=01;35:*.mng=01;35:*.pcx=01;35:*.mov=01;35:*.mpg=01;35:*.mpeg=01;35:*.m2v=01;35:*.mkv=01;35:*.webm=01;35:*.ogm=01;35:*.mp4=01;35:*.m4v=01;35:*.mp4v=01;35:*.vob=01;35:*.qt=01;35:*.nuv=01;35:*.wmv=01;35:*.asf=01;35:*.rm=01;35:*.rmvb=01;35:*.flc=01;35:*.avi=01;35:*.fli=01;35:*.flv=01;35:*.gl=01;35:*.dl=01;35:*.xcf=01;35:*.xwd=01;35:*.yuv=01;35:*.cgm=01;35:*.emf=01;35:*.axv=01;35:*.anx=01;35:*.ogv=01;35:*.ogx=01;35:*.aac=00;36:*.au=00;36:*.flac=00;36:*.mid=00;36:*.midi=00;36:*.mka=00;36:*.mp3=00;36:*.mpc=00;36:*.ogg=00;36:*.ra=00;36:*.wav=00;36:*.axa=00;36:*.oga=00;36:*.spx=00;36:*.xspf=00;36:
+MANDATORY_PATH=/usr/share/gconf/kde-plasma.mandatory.path
+PATH=/usr/lib/x86_64-linux-gnu/qt4/bin:/home/sjr/bin:/usr/lib/lightdm/lightdm:/usr/local/sbin:/usr/local/bin:/usr/sbin:/usr/bin:/sbin:/bin:/usr/games:/usr/local/games:/opt/ant/bin/
+PROFILEHOME=
+PWD=/home/sjr/software/smac-development
+QT_PLUGIN_PATH=/home/sjr/.kde/lib/kde4/plugins/:/usr/lib/kde4/plugins/
+SESSION_MANAGER=local/hilbert:@/tmp/.ICE-unix/4248,unix/hilbert:/tmp/.ICE-unix/4248
+SHELL=/bin/bash
+SHELL_SESSION_ID=c222733d714040009e301933322b5c74
+SHLVL=1
+SSH_AGENT_PID=3662
+SSH_AUTH_SOCK=/tmp/ssh-2xhQ3r1gAA0C/agent.3590
+TERM=xterm
+TEXTDOMAIN=im-config
+TEXTDOMAINDIR=/usr/share/locale/
+UBUNTU_MENUPROXY=libappmenu.so
+USER=sjr
+WINDOWID=58720282
+XAUTHORITY=/tmp/kde-sjr/xauth-1000-_0
+XCURSOR_THEME=default
+XDG_CONFIG_DIRS=/etc/xdg/xdg-kde-plasma:/etc/xdg
+XDG_CURRENT_DESKTOP=KDE
+XDG_DATA_DIRS=/usr/share:/usr/share/kde-plasma:/usr/local/share/:/usr/share/
+XDG_RUNTIME_DIR=/run/user/sjr
+XDG_SEAT_PATH=/org/freedesktop/DisplayManager/Seat0
+XDG_SESSION_COOKIE=9e5c5792effce65653f62c4951804c1d-1375474002.713299-137209631
+XDG_SESSION_PATH=/org/freedesktop/DisplayManager/Session0
+
+16:52:14.894 [main] DEBUG c.u.c.b.smac.executors.SMACExecutor - Hostname:hilbert
+16:52:14.894 [main] DEBUG c.u.c.b.smac.executors.SMACExecutor - ==========System Properties==============
+ERRLOG=/disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/smac-output/saps-scenario-SMAC-ac-true-cores1-cutoff5.0-2013-08-03/log-err3.txt
+NUMRUN=3
+OUTPUTDIR=/disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/smac-output/saps-scenario-SMAC-ac-true-cores1-cutoff5.0-2013-08-03
+ROOT-LEVEL=DEBUG
+RUNLOG=/disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/smac-output/saps-scenario-SMAC-ac-true-cores1-cutoff5.0-2013-08-03/log-run3.txt
+STDOUT-LEVEL=INFO
+WARNLOG=/disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/smac-output/saps-scenario-SMAC-ac-true-cores1-cutoff5.0-2013-08-03/log-warn3.txt
+awt.toolkit=sun.awt.X11.XToolkit
+file.encoding=UTF-8
+file.encoding.pkg=sun.io
+file.separator=/
+java.awt.graphicsenv=sun.awt.X11GraphicsEnvironment
+java.awt.printerjob=sun.print.PSPrinterJob
+java.class.path=/home/sjr/software/smac-development/conf/:/home/sjr/software/smac-development/patches/:/home/sjr/software/smac-development/aclib.jar:/home/sjr/software/smac-development/aclib-src.jar:/home/sjr/software/smac-development/commons-collections-3.2.1.jar:/home/sjr/software/smac-development/commons-collections-3.2.1-sources.jar:/home/sjr/software/smac-development/commons-io-2.1.jar:/home/sjr/software/smac-development/commons-math-2.2.jar:/home/sjr/software/smac-development/commons-math3-3.2.jar:/home/sjr/software/smac-development/DomainInter.jar:/home/sjr/software/smac-development/exp4j-0.3.10.jar:/home/sjr/software/smac-development/fastrf.jar:/home/sjr/software/smac-development/fastrf-src.jar:/home/sjr/software/smac-development/guava-14.0.1.jar:/home/sjr/software/smac-development/Jama-1.0.2.jar:/home/sjr/software/smac-development/jcip-annotations.jar:/home/sjr/software/smac-development/jcip-annotations-src.jar:/home/sjr/software/smac-development/jcommander.jar:/home/sjr/software/smac-development/jmatharray.jar:/home/sjr/software/smac-development/logback-access-1.0.0.jar:/home/sjr/software/smac-development/logback-classic-1.0.0.jar:/home/sjr/software/smac-development/logback-core-1.0.0.jar:/home/sjr/software/smac-development/numerics4j-1.3.jar:/home/sjr/software/smac-development/opencsv-2.3.jar:/home/sjr/software/smac-development/slf4j-api-1.6.4.jar:/home/sjr/software/smac-development/smac.jar:/home/sjr/software/smac-development/smac-src.jar:/home/sjr/software/smac-development/spi-0.2.4.jar:/home/sjr/software/smac-development/patches/
+java.class.version=51.0
+java.endorsed.dirs=/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/endorsed
+java.ext.dirs=/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/ext:/usr/java/packages/lib/ext
+java.home=/usr/lib/jvm/java-7-openjdk-amd64/jre
+java.io.tmpdir=/tmp
+java.library.path=/usr/java/packages/lib/amd64:/usr/lib/jni:/lib:/usr/lib
+java.runtime.name=OpenJDK Runtime Environment
+java.runtime.version=1.7.0_25-b30
+java.specification.name=Java Platform API Specification
+java.specification.vendor=Oracle Corporation
+java.specification.version=1.7
+java.vendor=Oracle Corporation
+java.vendor.url=http://java.oracle.com/
+java.vendor.url.bug=http://bugreport.sun.com/bugreport/
+java.version=1.7.0_25
+java.vm.info=mixed mode
+java.vm.name=OpenJDK 64-Bit Server VM
+java.vm.specification.name=Java Virtual Machine Specification
+java.vm.specification.vendor=Oracle Corporation
+java.vm.specification.version=1.7
+java.vm.vendor=Oracle Corporation
+java.vm.version=23.7-b01
+line.separator=
+
+os.arch=amd64
+os.name=Linux
+os.version=3.8.0-27-generic
+path.separator=:
+sun.arch.data.model=64
+sun.boot.class.path=/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/resources.jar:/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/rt.jar:/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/sunrsasign.jar:/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/jsse.jar:/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/jce.jar:/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/charsets.jar:/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/netx.jar:/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/plugin.jar:/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/rhino.jar:/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/jfr.jar:/usr/lib/jvm/java-7-openjdk-amd64/jre/classes
+sun.boot.library.path=/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/amd64
+sun.cpu.endian=little
+sun.cpu.isalist=
+sun.io.unicode.encoding=UnicodeLittle
+sun.java.command=ca.ubc.cs.beta.smac.executors.SMACExecutor --scenario-file ./example_scenarios/saps/saps-scenario.txt --seed 3 --validation false
+sun.java.launcher=SUN_STANDARD
+sun.jnu.encoding=UTF-8
+sun.management.compiler=HotSpot 64-Bit Tiered Compilers
+sun.os.patch.level=unknown
+user.country=CA
+user.dir=/disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571
+user.home=/home/sjr
+user.language=en
+user.name=sjr
+user.timezone=America/Vancouver
+
+16:52:14.915 [main] INFO  c.u.c.b.a.m.j.JCommanderHelper - ==========Configuration Options==========
+[SMACOptions]
+ adaptiveCapping = true
+ alwaysRunInitialConfiguration = false
+ capAddSlack = 1.0
+ capSlack = 1.3
+classicInitModeOpts = [ClassicInitializationProcedureOptions]
+		 initialIncumbentRuns = 1
+
+ deterministicInstanceOrdering = false
+ doValidation = false
+ execMode = SMAC
+ experimentDir = /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/
+ expFunc = EXPONENTIAL
+help = [HelpOptions]
+		 showHiddenParameters = false
+		 showHelp = false
+		 helpLevel = BASIC
+		 showVersion = false
+		 helpDefaults = /home/sjr/.aclib/help.opt
+
+ initialChallengeRuns = 1
+ initialIncumbent = DEFAULT
+ initializationMode = CLASSIC
+ intensificationPercentage = 0.5
+ iterativeCappingBreakOnFirstCompletion = false
+ iterativeCappingK = 1
+logOptions = [LoggingOptions]
+		 consoleLogLevel = INFO
+		 logLevel = DEBUG
+
+ maxIncumbentRuns = 2000
+mbOptions = [ModelBuildingOptions]
+		 maskCensoredDataAsKappaMax = false
+		 maskInactiveConditionalParametersAsDefaultValue = true
+		 maskCensoredDataAsUncensored = false
+		 imputationIterations = 2
+
+ modelHashCodeFile = null
+ numberOfChallengers = 10
+ numberOfRandomConfigsInEI = 10000
+ numPCA = 7
+ optionFile = null
+ optionFile2 = null
+randomForestOptions = [RandomForestOptions]
+		 brokenVarianceCalculation = false
+		 freeMemoryPercentageToSubsample = 0.25
+		 fullTreeBootstrap = false
+		 ignoreConditionality = false
+		 imputeMean = false
+		 logModel = true
+		 minVariance = 1.0E-14
+		 numTrees = 10
+		 penalizeImputedValues = false
+		 preprocessMarginal = true
+		 ratioFeatures = 0.8333333333333334
+		 shuffleImputedValues = false
+		 splitMin = 10
+		 storeDataInLeaves = false
+		 subsamplePercentage = 0.9
+		 subsampleValuesWhenLowMemory = false
+
+runGroupOptions = [RunGroupOptions]
+		 runGroupName = %SCENARIO_NAME-%executionMode-ac-%adaptiveCapping-cores%cores-cutoff%cutoffTime-%DATE
+		 runGroupExit = false
+		 replacementChar = %
+
+scenarioConfig = [ScenarioOptions]
+		 runObj = RUNTIME
+		 intraInstanceObj = MEAN
+		 interInstanceObj = MEAN
+		limitOptions = [TerminationCriteriaOptions]
+				 tunerTimeout = 30
+				 numIterations = 2147483647
+				 runtimeLimit = 2147483647
+				 totalNumRunsLimit = 9223372036854775807
+				 countSMACTimeAsTunerTime = true
+				 challengeIncumbentAttempts = 1000
+
+		instanceOptions = [ProblemInstanceOptions]
+				 instanceFile = example_scenarios/saps/instances-train.txt
+				 instanceFeatureFile = null
+				 testInstanceFile = example_scenarios/saps/instances-test.txt
+				 checkInstanceFilesExist = false
+
+		 scenarioFile = /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/./example_scenarios/saps/saps-scenario.txt
+		 outputDirectory = /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/smac-output
+		algoExecOptions = [AlgorithmExecutionOptions]
+				 algoExec = ruby saps_wrapper.rb
+				 algoExecDir = example_scenarios/saps/
+				 deterministic = false
+				 cutoffTime = 5.0
+				 cutoffLength = 1.7976931348623157E308
+				taeOpts = [TargetAlgorithmEvaluatorOptions]
+						 targetAlgorithmEvaluator = CLI
+						 abortOnCrash = false
+						 abortOnFirstRunCrash = true
+						 retryCount = 0
+						 boundRuns = false
+						 maxConcurrentAlgoExecs = 1
+						 runHashCodeFile = null
+						 leakMemory = false
+						 leakMemoryAmount = 1024
+						 verifySAT = null
+						 checkSATConsistency = true
+						 checkSATConsistencyException = true
+						prePostOptions = [PrePostCommandOptions]
+								 preCommand = null
+								 postCommand = null
+								 exceptionOnError = false
+								 logOutput = true
+								 directory = /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/.
+
+						 checkResultOrderConsistent = false
+						 skipOutstandingEvaluationsTAE = false
+						 logRequestResponses = false
+						 logRequestResponsesRCOnly = false
+						 trackRunsScheduled = false
+						 trackRunsScheduledResolution = 10.0
+						 uncleanShutdownCheck = true
+						 killCaptimeExceedingRun = true
+						 killCaptimeExceedingRunFactor = 10.0
+						 checkRunConfigsUnique = true
+						 checkRunConfigsUniqueException = true
+						 observeWalltimeIfNoRuntime = true
+						 observeWalltimeScale = 0.95
+						 observeWalltimeDelay = 5.0
+						 synchronousObserver = true
+						 taeDefaults = /home/sjr/.aclib/tae.opt
+
+				paramFileDelegate = [ParamConfigurationSpaceOptions]
+						 paramFile = example_scenarios/saps/saps-params.pcs
+						 searchSubspace = null
+						 searchSubspaceFile = null
+						 continuousNeighbours = 4
+
+
+
+seedOptions = [SeedOptions]
+		 seedOffset = 0
+		 numRun = 3
+		 initialSeedMap = {}
+
+ smacDefaults = /home/sjr/.aclib/smac.opt
+stateOpts = [StateFactoryOptions]
+		 stateSerializer = LEGACY
+		 statedeSerializer = LEGACY
+		 restoreStateFrom = null
+		 restoreIteration = null
+		 restoreScenario = null
+		 cleanOldStatesOnSuccess = true
+		 saveContextWithState = true
+
+trackingOptions = [ParamConfigurationOriginTrackingOptions]
+		 configTracking = false
+
+validationOptions = [ValidationOptions]
+		 maxTimestamp = -1.0
+		 minTimestamp = 0.0
+		 multFactor = 2.0
+		 numberOfTestInstances = 2147483647
+		 numberOfTestSeedsPerInstance = 1000
+		 numberOfValidationRuns = 1000
+		 outputFileSuffix = 
+		 saveStateFile = false
+		 useWallClockTime = false
+		 validateAll = false
+		 validateOnlyIfTunerTimeReached = 0.0
+		 validateOnlyIfWallTimeReached = 0.0
+		 validateOnlyLastIncumbent = true
+		 validationHeaders = true
+		 validationRoundingMode = UP
+		 writeThetaMatrix = false
+
+
+[AnalyticTargetAlgorithmEvaluatorOptions]
+ simulateDelay = false
+ cores = 0
+ observerFrequency = 100
+ func = CAMELBACK
+ scaleDelay = 1.0
+
+[CommandLineTargetAlgorithmEvaluatorOptions]
+ observerFrequency = 750
+ concurrentExecution = true
+ cores = 1
+ logAllCallStrings = false
+ logAllProcessOutput = false
+ listenForUpdates = true
+
+[ConstantTargetAlgorithmEvaluatorOptions]
+ runResult = SAT
+ runtime = 1.0
+ quality = 0.0
+ runlength = 0.0
+ additionalRunData = 
+
+[PreloadedResponseTargetAlgorithmEvaluatorOptions]
+ preloadedResponses = 
+ runLength = -1.0
+ quality = 0.0
+ additionalRunData = 
+
+[RandomResponseTargetAlgorithmEvaluatorOptions]
+ simulateDelay = false
+ additionalRunData = 
+ cores = 0
+ maxResponse = 10.0
+ minResponse = 0.0
+ observerFrequency = 100
+ trendCoefficient = 0.0
+ seed = 1375573933495
+ persistent = false
+ scaleDelay = 1.0
+
+
+16:52:14.933 [main] DEBUG c.u.c.b.a.p.ProblemInstanceHelper - Loading instances from file: example_scenarios/saps/instances-train.txt and experiment dir /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/
+16:52:14.934 [main] DEBUG c.u.c.b.a.p.ProblemInstanceHelper - Reading instance file detecting format
+16:52:14.945 [main] DEBUG c.u.c.b.a.p.ProblemInstanceHelper - Line with only 1 entry found, trying LEGACY_INSTANCE_PER_ROW
+16:52:14.951 [main] DEBUG c.u.c.b.a.s.RandomInstanceSeedGenerator - Initializing Instance Seed PRNG with Seed -2010893594 and 2147483647 allowed seeds
+16:52:14.951 [main] DEBUG c.u.c.b.a.s.RandomInstanceSeedGenerator - Re-Initializing Instance Seed PRNG with Seed -2010893594 and instances 5 
+16:52:14.952 [main] DEBUG c.u.c.b.a.p.ProblemInstanceHelper - Instances loaded from file named: example_scenarios/saps/instances-train.txt
+16:52:14.952 [main] INFO  c.u.c.b.a.p.ProblemInstanceOptions - Training Instance Seed Generator reports 2147483647 seeds 
+16:52:14.952 [main] INFO  c.u.c.b.a.p.ProblemInstanceOptions - Training Instance Seed Generator reports that all instances have the same number of available seeds
+16:52:14.952 [main] DEBUG c.u.c.b.a.p.ProblemInstanceHelper - Loading instances from file: example_scenarios/saps/instances-train.txt and experiment dir /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/
+16:52:14.953 [main] DEBUG c.u.c.b.a.p.ProblemInstanceHelper - Reading instance file detecting format
+16:52:14.956 [main] DEBUG c.u.c.b.a.p.ProblemInstanceHelper - Line with only 1 entry found, trying LEGACY_INSTANCE_PER_ROW
+16:52:14.956 [main] DEBUG c.u.c.b.a.s.RandomInstanceSeedGenerator - Initializing Instance Seed PRNG with Seed 141302016 and 2147483647 allowed seeds
+16:52:14.956 [main] DEBUG c.u.c.b.a.s.RandomInstanceSeedGenerator - Re-Initializing Instance Seed PRNG with Seed 141302016 and instances 5 
+16:52:14.957 [main] DEBUG c.u.c.b.a.p.ProblemInstanceHelper - Instances loaded from file named: example_scenarios/saps/instances-train.txt
+16:52:14.958 [main] INFO  c.u.c.b.a.p.ProblemInstanceOptions - Test Instance Seed Generator reports 2147483647 seeds 
+16:52:14.958 [main] INFO  c.u.c.b.a.p.ProblemInstanceOptions - Test Instance Seed Generator reports that all instances have the same number of available seeds
+16:52:14.960 [main] DEBUG c.u.c.b.smac.executors.SMACExecutor - JVM Supports CPU Timing Measurements
+16:52:15.009 [main] DEBUG c.u.c.b.a.c.ParamConfigurationSpaceOptions - Configuration space found in /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571//example_scenarios/saps/saps-params.pcs
+16:52:15.013 [main] DEBUG c.u.c.b.a.c.ParamConfigurationSpaceOptions - Configuration space found in example_scenarios/saps/saps-params.pcs
+16:52:15.031 [main] INFO  c.u.c.b.a.s.l.LegacyStateFactory - Directory created for states: /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/smac-output/saps-scenario-SMAC-ac-true-cores1-cutoff5.0-2013-08-03/state-run3
+16:52:15.032 [main] INFO  c.u.cs.beta.smac.builder.SMACBuilder - Configuration Space Size is less than or equal to Infinity 
+16:52:15.036 [main] DEBUG c.u.c.b.a.t.TargetAlgorithmEvaluatorOptions - Instance Specific Information is NOT compatible with Verifying SAT, disabling option
+16:52:15.039 [main] INFO  c.u.cs.beta.smac.builder.SMACBuilder - Initial Incumbent is the default "-alpha '1.189' -ps '0.1' -rho '0.5' -wp '0.03'" 
+16:52:15.059 [main] DEBUG c.u.c.b.a.t.b.c.CommandLineTargetAlgorithmEvaluator - Initalized with the following Execution Configuration algoExec:ruby saps_wrapper.rb
+AlgorithmExecutionDirectory:/disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/example_scenarios/saps
+ParamFile:/disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/example_scenarios/saps/saps-params.pcs
+ Cluster:false
+Determininstic:false 
+16:52:15.060 [main] DEBUG c.u.c.b.a.t.b.c.CommandLineTargetAlgorithmEvaluator - Concurrent Execution true
+16:52:15.060 [main] DEBUG c.u.c.b.a.t.i.TargetAlgorithmEvaluatorBuilder - [TAE] Checking for unclean shutdown
+16:52:15.075 [main] DEBUG c.u.c.b.a.t.i.TargetAlgorithmEvaluatorBuilder - [TAE] Ensuring SAT Response consistency
+16:52:15.080 [main] INFO  c.u.c.b.a.t.i.TargetAlgorithmEvaluatorBuilder - [TAE] Algorithm Execution will NOT verify run Hash Codes
+16:52:15.088 [main] DEBUG c.u.c.b.a.t.d.d.RunHashCodeVerifyingAlgorithmEvalutor - Created with 0 hash codes to verify
+16:52:15.101 [main] DEBUG c.u.c.b.a.t.i.TargetAlgorithmEvaluatorBuilder - [TAE] Waiting / Monitoring outstanding target algorithm evaluations is supported
+16:52:15.101 [main] INFO  c.u.c.b.a.t.i.TargetAlgorithmEvaluatorBuilder - [TAE] Checking that every request in a batch is unique
+16:52:15.103 [main] INFO  c.u.c.b.a.t.i.TargetAlgorithmEvaluatorBuilder - [TAE] Using walltime as observer runtime if no runtime is reported, scale 0.95 , delay 5.0 (secs)
+16:52:15.108 [main] DEBUG c.u.c.b.a.t.i.TargetAlgorithmEvaluatorBuilder - [TAE] Killing runs that exceed there captime by a factor of 10.0 
+16:52:15.111 [main] INFO  c.u.c.b.a.t.i.TargetAlgorithmEvaluatorBuilder - [TAE] Synchronizing notifications to the observer
+16:52:15.111 [main] DEBUG c.u.c.b.a.t.i.TargetAlgorithmEvaluatorBuilder - Final Target Algorithm Built is KillCaptimeExceedingRunsRunsTargetAlgorithmEvaluatorDecorator( 0x23edbbb9 ) ==> [ WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator( 0x4cbf811c ) ==> [ CheckForDuplicateRunConfigDecorator( 0x30b57ca1 ) ==> [ OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator( 0x5b094702 ) ==> [ PrePostCommandTargetAlgorithmEvaluator( 0x3e1502ff ) ==> [ TimingCheckerTargetAlgorithmEvaluator( 0x5577d330 ) ==> [ RunHashCodeVerifyingAlgorithmEvalutor( 0x2dca2026 ) ==> [ SATConsistencyTargetAlgorithmEvaluator( 0x3104b646 ) ==> [ AbortOnFirstRunCrashTargetAlgorithmEvaluator( 0x2c5ac6ce ) ==> [ UncleanShutdownDetectingTargetAlgorithmEvaluator( 0x7bb21521 ) ==> [ CommandLineTargetAlgorithmEvaluator ] ] ] ] ] ] ] ] ] ]
+16:52:15.183 [main] DEBUG c.u.c.b.a.t.TrajectoryFileLogger - Incumbent Performance changed
+16:52:15.183 [main] DEBUG c.u.c.b.a.t.TrajectoryFileLogger - Logging incumbent: (Runs ?): 0.0, 1.7976931348623157E308, 0.0, 1, 0.0,  alpha='1.189', ps='0.1', rho='0.5', wp='0.03'
+16:52:15.228 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Automatic Configuration Start Time is 3-Aug-2013 4:52:15 PM
+16:52:15.228 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Maximimum Number of Runs for the Incumbent Initialized to 2000
+16:52:15.238 [main] INFO  c.u.c.b.a.s.l.LegacyStateFactory - File copied to /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/smac-output/saps-scenario-SMAC-ac-true-cores1-cutoff5.0-2013-08-03/state-run3/param-file.txt 
+16:52:15.247 [main] INFO  c.u.c.b.a.s.l.LegacyStateFactory - File copied to /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/smac-output/saps-scenario-SMAC-ac-true-cores1-cutoff5.0-2013-08-03/state-run3/instances.txt 
+16:52:15.254 [main] INFO  c.u.c.b.a.s.l.LegacyStateFactory - File copied to /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/smac-output/saps-scenario-SMAC-ac-true-cores1-cutoff5.0-2013-08-03/state-run3/scenario.txt 
+16:52:15.255 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Initial Incumbent set as Incumbent: 0x0007
+16:52:15.255 [main] DEBUG c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Initialization Procedure Started
+16:52:15.256 [main] INFO  c.u.c.b.a.i.c.ClassicInitializationProcedure - Using Classic Initialization
+16:52:15.256 [main] INFO  c.u.c.b.a.i.c.ClassicInitializationProcedure - Configuration Set as Incumbent: 0x0007
+16:52:15.256 [main] DEBUG c.u.c.b.a.i.c.ClassicInitializationProcedure - Scheduling default configuration for 1 runs
+16:52:15.270 [main] INFO  c.u.c.b.a.i.c.ClassicInitializationProcedure - Initialization: Scheduling 1 run(s):
+16:52:15.270 [main] INFO  c.u.c.b.a.i.c.ClassicInitializationProcedure - Initialization: Scheduling run for config (0x0007) on instance 4 with seed 3699413 and captime 5.0
+16:52:15.275 [main] DEBUG c.u.c.b.a.t.b.c.CommandLineTargetAlgorithmEvaluator - Using single-threaded algorithm runner
+16:52:15.312 [main] WARN  c.u.c.b.a.t.b.c.CommandLineAlgorithmRun - This version of SMAC hardcodes run length for calls to the target algorithm to 2147483647.
+16:52:15.582 [Command Line Target Algorithm Evaluator Thread (Standard Error Processor)<Instance:4, Seed:3699413, Config:0x0007, Kappa:5.0>] DEBUG c.u.c.b.a.t.b.c.CommandLineAlgorithmRun - Standard Error Done
+16:52:15.586 [main] DEBUG c.u.c.b.a.t.b.c.CommandLineAlgorithmRun - Run <Instance:4, Seed:3699413, Config:0x0007, Kappa:5.0> ==> <SAT, 0.14, 126279.0, 0.0, 3699413> W:(0.241) is completed
+16:52:15.589 [main] DEBUG c.u.c.b.a.t.d.d.RunHashCodeVerifyingAlgorithmEvalutor - Run Hash Codes:7358581 After 1 runs
+16:52:15.594 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x229fb9a2) to handler: AlgorithmRunLimitCondition
+16:52:15.595 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x229fb9a2) to handler: NoRunsForManyIterationTerminationCondition
+16:52:15.595 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x229fb9a2) to handler: LogRuntimeStatistics
+16:52:15.595 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x229fb9a2) to handler: ConfigurationSpaceExhaustedCondition
+16:52:15.595 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event FlushEvent (0x24544c70) to handler: 
+16:52:15.595 [main] INFO  c.u.c.b.a.i.c.ClassicInitializationProcedure - Initialization: Completed run for config (0x0007) on instance 4 with seed 3699413 and captime 5.0 => Result: SAT, 0.14, 126279.0, 0.0, 3699413, wallclock time: 0.241 seconds
+16:52:15.601 [main] DEBUG c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Initialization Procedure Completed
+16:52:15.602 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Sample Call for New Incumbent 1 (0x0007) 
+cd /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/example_scenarios/saps; ruby saps_wrapper.rb instances/SWlin2006.4072.cnf 0 5.0 2147483647 3699413 -alpha '1.189' -wp '0.03' -rho '0.5' -ps '0.1'  
+16:52:15.667 [main] DEBUG c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Incumbent Cost now: 0.14
+16:52:15.667 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Incumbent currently is: 1 (0x0007) 
+16:52:15.668 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event IncumbentPerformanceChangeEvent (0x55bce763) to handler: TrajectoryFileLogger
+16:52:15.668 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.t.TrajectoryFileLogger - Incumbent Performance changed
+16:52:15.669 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.t.TrajectoryFileLogger - Logging incumbent: (Runs 1): 0.9966623600000001, 0.14, 0.517, 1, 0.8570482079999999,  alpha='1.189', ps='0.1', rho='0.5', wp='0.03'
+16:52:15.669 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event IncumbentPerformanceChangeEvent (0x55bce763) to handler: LogRuntimeStatistics
+16:52:15.669 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event FlushEvent (0x64fb408e) to handler: 
+16:52:15.675 [main] DEBUG c.u.c.b.a.s.l.LegacyStateSerializer - State Serialization for iteration 0 commencing
+16:52:15.675 [main] DEBUG c.u.c.b.a.s.l.LegacyStateSerializer - Unique Configurations Saved in /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/smac-output/saps-scenario-SMAC-ac-true-cores1-cutoff5.0-2013-08-03/state-run3/uniq_configurations-it0.csv
+16:52:15.679 [main] DEBUG c.u.c.b.a.s.l.LegacyStateSerializer - Parameter Strings Saved in /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/smac-output/saps-scenario-SMAC-ac-true-cores1-cutoff5.0-2013-08-03/state-run3/uniq_configurations-it0.csv
+16:52:15.687 [main] DEBUG c.u.c.b.a.s.l.LegacyStateSerializer - Run Results Saved in /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/smac-output/saps-scenario-SMAC-ac-true-cores1-cutoff5.0-2013-08-03/state-run3/runs_and_results-it0.csv
+16:52:15.770 [main] DEBUG c.u.c.b.a.s.l.LegacyStateSerializer - Java Object Dump Saved in /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/smac-output/saps-scenario-SMAC-ac-true-cores1-cutoff5.0-2013-08-03/state-run3/java_obj_dump-v2-it0.obj
+16:52:15.770 [main] INFO  c.u.c.b.a.s.l.LegacyStateSerializer - State saved for iteration 0 in /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/smac-output/saps-scenario-SMAC-ac-true-cores1-cutoff5.0-2013-08-03/state-run3 
+16:52:15.770 [main] INFO  c.u.c.b.a.s.l.LegacyStateSerializer - Saving state took 95 ms
+16:52:15.770 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Starting Iteration 1
+16:52:15.771 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event ModelBuildStartEvent (0x562798e8) to handler: LogRuntimeStatistics
+16:52:15.778 [Event Manager Dispatch Thread] INFO  c.u.c.b.a.e.h.LogRuntimeStatistics - *****Runtime Statistics*****
+ Count: 1
+ Incumbent ID: 1 (0x0007)
+ Number of Runs for Incumbent: 1
+ Number of Instances for Incumbent: 1
+ Number of Configurations Run: 1
+ Performance of the Incumbent: 0.14
+ Configuration Time Budget used: 1.0316065620000001 s (3%)
+ Configuration Time Budget remaining: 28.968393438 s
+ Wall-clock Time Budget used: 0.628 s (0%)
+ Wall-clock Time Budget remaining: 2.147483646372E9 s
+ Algorithm Runs used: 1.0  (0%)
+ Algorithm Runs remaining: 9.223372036854776E18 
+ Model/Iteration used: 0.0  (0%)
+ Model/Iteration remaining: 2.147483647E9 
+ Configuration Space Searched 0.0 % 
+ Sum of Target Algorithm Execution Times (treating minimum value as 0.1): 0.14 s
+ CPU time of Configurator: 0.890892803 s
+ User time of Configurator: 0.891217351 s
+ Total Reported Algorithm Runtime: 0.14 s
+ Sum of Measured Wallclock Runtime: 0.241 s
+ Max Memory: 910.25 MB
+ Total Java Memory: 236.25 MB
+ Free Java Memory: 185.68272399902344 MB
+16:52:15.778 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event FlushEvent (0x2cb549af) to handler: 
+16:52:15.789 [main] INFO  c.u.c.b.a.m.d.PCAModelDataSanitizer - Discarding 0 constant inputs of 0 in total.
+16:52:15.795 [main] INFO  c.u.c.b.a.m.b.AdaptiveCappingModelBuilder - Building Random Forest with 0 censored runs out of 1 total 
+16:52:15.801 [main] DEBUG c.u.c.b.a.m.b.AdaptiveCappingModelBuilder - Building Random Forest with 1 data points 
+16:52:15.813 [main] DEBUG c.u.c.b.a.m.b.AdaptiveCappingModelBuilder - Building Random Forest took 0.011 seconds 
+16:52:15.813 [main] DEBUG c.u.c.b.a.m.b.AdaptiveCappingModelBuilder - Preprocessing marginal for Random Forest
+16:52:15.816 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Random Forest Built
+16:52:15.816 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Model Learn Time: 0.038 (s)
+16:52:15.817 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event ModelBuildEndEvent (0x403c78e9) to handler: ModelIterationTerminationCondition
+16:52:15.817 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event ModelBuildEndEvent (0x403c78e9) to handler: NoRunsForManyIterationTerminationCondition
+16:52:15.817 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event FlushEvent (0x422629f1) to handler: 
+16:52:15.817 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Prediction for incumbent: -0.853871964321762 +/- 1.0E-14 (in log space if logModel=true)
+16:52:15.818 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Optimizing EI at valdata.iteration 1. fmin: -0.8538719643217619, fmin (accounting for minimum response value): -0.8538719643217619
+16:52:15.818 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Compute negEI for all conf. seen at valdata.iteration 1: took 0.0 s
+16:52:15.826 [main] DEBUG c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Local Search took 1 steps
+16:52:15.826 [main] DEBUG c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - LS 1 took 0.003 seconds and yielded neg log EI 18.14697482175228
+16:52:15.826 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - 1 Local Searches took 0.003 seconds in total 
+16:52:15.865 [main] DEBUG c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Generating 10000 Random Configurations for EI took 0.039 (s)
+16:52:15.907 [main] DEBUG c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Prediction for Random Configurations took 0.042 (s)
+16:52:15.925 [main] DEBUG c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - EI Calculation for Random Configurations took 0.017 (s)
+16:52:16.008 [main] DEBUG c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Map Insertion for Random Configurations took 0.083 (s)
+16:52:16.031 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Challenger 1 predicted -0.853871964321762 +/- 1.0E-7, expected improvement -18.14697482175228
+16:52:16.035 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Selecting 10001 challengers based on EI took 0.217 seconds
+16:52:16.041 [main] DEBUG c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Generating 10001 Random Configurations took 0.006 seconds
+16:52:16.048 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Calling intensify with 20002 challenger(s)
+16:52:16.048 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Intensification timeBound: 1.0 (s); used: 0.0  (s)
+16:52:16.049 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event FlushEvent (0x5fb155b7) to handler: 
+16:52:16.049 [main] DEBUG c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Performing additional run with the incumbent 
+16:52:16.050 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Iteration 1: Scheduling 1 run(s):
+16:52:16.050 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Iteration 1: Scheduling run for config 1 (0x0007) on instance 2 with seed 15963022 and captime 5.0
+16:52:16.050 [main] DEBUG c.u.c.b.a.t.b.c.CommandLineTargetAlgorithmEvaluator - Using single-threaded algorithm runner
+16:52:16.255 [Command Line Target Algorithm Evaluator Thread (Standard Error Processor)<Instance:2, Seed:15963022, Config:0x0007, Kappa:5.0>] DEBUG c.u.c.b.a.t.b.c.CommandLineAlgorithmRun - Standard Error Done
+16:52:16.255 [main] DEBUG c.u.c.b.a.t.b.c.CommandLineAlgorithmRun - Run <Instance:2, Seed:15963022, Config:0x0007, Kappa:5.0> ==> <SAT, 0.12, 93467.0, 0.0, 15963022> W:(0.179) is completed
+16:52:16.255 [main] DEBUG c.u.c.b.a.t.d.d.RunHashCodeVerifyingAlgorithmEvalutor - Run Hash Codes:13504356 After 2 runs
+16:52:16.256 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x31dbfb7a) to handler: AlgorithmRunLimitCondition
+16:52:16.256 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x31dbfb7a) to handler: NoRunsForManyIterationTerminationCondition
+16:52:16.256 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x31dbfb7a) to handler: LogRuntimeStatistics
+16:52:16.256 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x31dbfb7a) to handler: ConfigurationSpaceExhaustedCondition
+16:52:16.257 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event FlushEvent (0x615b2028) to handler: 
+16:52:16.257 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Iteration 1: Completed run for config 1 (0x0007) on instance 2 with seed 15963022 and captime 5.0 => Result: SAT, response: 0.12, wallclock time: 0.179 seconds
+16:52:16.257 [main] DEBUG c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Incumbent Cost now: 0.13
+16:52:16.258 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event IncumbentPerformanceChangeEvent (0x259c5407) to handler: TrajectoryFileLogger
+16:52:16.258 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.t.TrajectoryFileLogger - Incumbent Performance changed
+16:52:16.259 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.t.TrajectoryFileLogger - Logging incumbent: (Runs 2): 1.387533777, 0.13, 1.107, 1, 1.1278791559999999,  alpha='1.189', ps='0.1', rho='0.5', wp='0.03'
+16:52:16.259 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event IncumbentPerformanceChangeEvent (0x259c5407) to handler: LogRuntimeStatistics
+16:52:16.259 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event FlushEvent (0x3a50aadb) to handler: 
+16:52:16.260 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Performing up to 1 run(s) for challenger (0x40A1) up to a total bound of 0.121 
+16:52:16.261 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Iteration 1: Scheduling 1 run(s):
+16:52:16.262 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Iteration 1: Scheduling run for config (0x40A1) on instance 2 with seed 15963022 and captime 1.1586005318641663
+16:52:16.262 [main] DEBUG c.u.c.b.a.t.b.c.CommandLineTargetAlgorithmEvaluator - Using single-threaded algorithm runner
+16:52:16.366 [Command Line Target Algorithm Evaluator Thread (Standard Error Processor)<Instance:2, Seed:15963022, Config:0x40A1, Kappa:1.1586005318641663>] DEBUG c.u.c.b.a.t.b.c.CommandLineAlgorithmRun - Standard Error Done
+16:52:16.367 [main] DEBUG c.u.c.b.a.t.b.c.CommandLineAlgorithmRun - Run <Instance:2, Seed:15963022, Config:0x40A1, Kappa:1.1586005318641663> ==> <SAT, 0.02, 16778.0, 0.0, 15963022> W:(0.079) is completed
+16:52:16.367 [main] DEBUG c.u.c.b.a.t.d.d.RunHashCodeVerifyingAlgorithmEvalutor - Run Hash Codes:18009134 After 3 runs
+16:52:16.367 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x44bc8807) to handler: AlgorithmRunLimitCondition
+16:52:16.368 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x44bc8807) to handler: NoRunsForManyIterationTerminationCondition
+16:52:16.368 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x44bc8807) to handler: LogRuntimeStatistics
+16:52:16.368 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x44bc8807) to handler: ConfigurationSpaceExhaustedCondition
+16:52:16.368 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event FlushEvent (0x3586a6d2) to handler: 
+16:52:16.368 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Iteration 1: Completed run for config (0x40A1) on instance 2 with seed 15963022 and captime 1.1586005318641663 => Result: SAT, response: 0.02, wallclock time: 0.079 seconds
+16:52:16.369 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Based on 1 common runs on (up to) 2 instances, challenger 2 (0x40A1)  has a lower bound 0.02 and incumbent 1 (0x0007) has obj 0.12
+16:52:16.369 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Performing up to 2 run(s) for challenger 2 (0x40A1) up to a total bound of 0.131 
+16:52:16.370 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Iteration 1: Scheduling 1 run(s):
+16:52:16.371 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Iteration 1: Scheduling run for config 2 (0x40A1) on instance 4 with seed 3699413 and captime 1.3159002888679505
+16:52:16.371 [main] DEBUG c.u.c.b.a.t.b.c.CommandLineTargetAlgorithmEvaluator - Using single-threaded algorithm runner
+16:52:17.827 [Command Line Target Algorithm Evaluator Thread (Standard Error Processor)<Instance:4, Seed:3699413, Config:0x40A1, Kappa:1.3159002888679505>] DEBUG c.u.c.b.a.t.b.c.CommandLineAlgorithmRun - Standard Error Done
+16:52:17.827 [main] DEBUG c.u.c.b.a.t.b.c.CommandLineAlgorithmRun - Run <Instance:4, Seed:3699413, Config:0x40A1, Kappa:1.3159002888679505> ==> <TIMEOUT, 1.32, 415976.0, 1.0, 3699413> W:(1.435) is completed
+16:52:17.828 [main] DEBUG c.u.c.b.a.t.d.d.RunHashCodeVerifyingAlgorithmEvalutor - Run Hash Codes:28806650 After 4 runs
+16:52:17.828 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x6253fd6a) to handler: AlgorithmRunLimitCondition
+16:52:17.828 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x6253fd6a) to handler: NoRunsForManyIterationTerminationCondition
+16:52:17.828 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x6253fd6a) to handler: LogRuntimeStatistics
+16:52:17.828 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x6253fd6a) to handler: ConfigurationSpaceExhaustedCondition
+16:52:17.829 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event FlushEvent (0x78226c94) to handler: 
+16:52:17.829 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Iteration 1: Completed run for config 2 (0x40A1) on instance 4 with seed 3699413 and captime 1.3159002888679505 => Result: TIMEOUT, response: 1.3159002888679505, wallclock time: 1.435 seconds
+16:52:17.829 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Based on 2 common runs on (up to) 2 instances, challenger 2 (0x40A1)  has a lower bound 0.6679501444339753 and incumbent 1 (0x0007) has obj 0.13
+16:52:17.829 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Challenger 2 (0x40A1) is worse; aborting its evaluation
+16:52:17.829 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Intensification timeBound: 1.0 (s); used: 1.54  (s)
+16:52:17.830 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event FlushEvent (0x1c06a62a) to handler: 
+16:52:17.830 [main] DEBUG c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Performing additional run with the incumbent 
+16:52:17.831 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Iteration 1: Scheduling 1 run(s):
+16:52:17.831 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Iteration 1: Scheduling run for config 1 (0x0007) on instance 3 with seed 5574276 and captime 5.0
+16:52:17.831 [main] DEBUG c.u.c.b.a.t.b.c.CommandLineTargetAlgorithmEvaluator - Using single-threaded algorithm runner
+16:52:18.739 [Command Line Target Algorithm Evaluator Thread (Standard Error Processor)<Instance:3, Seed:5574276, Config:0x0007, Kappa:5.0>] DEBUG c.u.c.b.a.t.b.c.CommandLineAlgorithmRun - Standard Error Done
+16:52:18.740 [main] DEBUG c.u.c.b.a.t.b.c.CommandLineAlgorithmRun - Run <Instance:3, Seed:5574276, Config:0x0007, Kappa:5.0> ==> <SAT, 0.72, 618064.0, 0.0, 5574276> W:(0.86) is completed
+16:52:18.740 [main] DEBUG c.u.c.b.a.t.d.d.RunHashCodeVerifyingAlgorithmEvalutor - Run Hash Codes:19573583 After 5 runs
+16:52:18.740 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x69a97135) to handler: AlgorithmRunLimitCondition
+16:52:18.741 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x69a97135) to handler: NoRunsForManyIterationTerminationCondition
+16:52:18.741 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x69a97135) to handler: LogRuntimeStatistics
+16:52:18.741 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x69a97135) to handler: ConfigurationSpaceExhaustedCondition
+16:52:18.741 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event FlushEvent (0x734784c4) to handler: 
+16:52:18.741 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Iteration 1: Completed run for config 1 (0x0007) on instance 3 with seed 5574276 and captime 5.0 => Result: SAT, response: 0.72, wallclock time: 0.86 seconds
+16:52:18.741 [main] DEBUG c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Incumbent Cost now: 0.32666666666666666
+16:52:18.742 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event IncumbentPerformanceChangeEvent (0x5c5d9afc) to handler: TrajectoryFileLogger
+16:52:18.743 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.t.TrajectoryFileLogger - Incumbent Performance changed
+16:52:18.743 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.t.TrajectoryFileLogger - Logging incumbent: (Runs 3): 3.5563781920000004, 0.32666666666666666, 3.592, 1, 1.15675624,  alpha='1.189', ps='0.1', rho='0.5', wp='0.03'
+16:52:18.743 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event IncumbentPerformanceChangeEvent (0x5c5d9afc) to handler: LogRuntimeStatistics
+16:52:18.743 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event FlushEvent (0x56a45c4) to handler: 
+16:52:18.743 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Performing up to 1 run(s) for challenger (0x754B) up to a total bound of 0.14100000000000001 
+16:52:18.744 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Iteration 1: Scheduling 1 run(s):
+16:52:18.745 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Iteration 1: Scheduling run for config (0x754B) on instance 4 with seed 3699413 and captime 1.1846001971244813
+16:52:18.745 [main] DEBUG c.u.c.b.a.t.b.c.CommandLineTargetAlgorithmEvaluator - Using single-threaded algorithm runner
+16:52:20.101 [Command Line Target Algorithm Evaluator Thread (Standard Error Processor)<Instance:4, Seed:3699413, Config:0x754B, Kappa:1.1846001971244813>] DEBUG c.u.c.b.a.t.b.c.CommandLineAlgorithmRun - Standard Error Done
+16:52:20.102 [main] DEBUG c.u.c.b.a.t.b.c.CommandLineAlgorithmRun - Run <Instance:4, Seed:3699413, Config:0x754B, Kappa:1.1846001971244813> ==> <TIMEOUT, 1.2, 445041.0, 1.0, 3699413> W:(1.333) is completed
+16:52:20.102 [main] DEBUG c.u.c.b.a.t.d.d.RunHashCodeVerifyingAlgorithmEvalutor - Run Hash Codes:19517904 After 6 runs
+16:52:20.103 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x330ec6d0) to handler: AlgorithmRunLimitCondition
+16:52:20.103 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x330ec6d0) to handler: NoRunsForManyIterationTerminationCondition
+16:52:20.103 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x330ec6d0) to handler: LogRuntimeStatistics
+16:52:20.104 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x330ec6d0) to handler: ConfigurationSpaceExhaustedCondition
+16:52:20.104 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event FlushEvent (0xf1e9be0) to handler: 
+16:52:20.104 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Iteration 1: Completed run for config (0x754B) on instance 4 with seed 3699413 and captime 1.1846001971244813 => Result: TIMEOUT, response: 1.1846001971244813, wallclock time: 1.333 seconds
+16:52:20.104 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Based on 1 common runs on (up to) 3 instances, challenger 3 (0x754B)  has a lower bound 1.1846001971244813 and incumbent 1 (0x0007) has obj 0.14
+16:52:20.104 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Challenger 3 (0x754B) is worse; aborting its evaluation
+16:52:20.105 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Out of time for intensification timeBound: 1.0 (s); used: 3.4600000000000004  (s)
+16:52:20.105 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - At end of iteration 1, incumbent is 1 (0x0007) 
+16:52:20.105 [main] DEBUG c.u.c.b.a.s.l.LegacyStateSerializer - State Serialization for iteration 1 commencing
+16:52:20.105 [main] DEBUG c.u.c.b.a.s.l.LegacyStateSerializer - Unique Configurations Saved in /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/smac-output/saps-scenario-SMAC-ac-true-cores1-cutoff5.0-2013-08-03/state-run3/uniq_configurations-it1.csv
+16:52:20.121 [main] DEBUG c.u.c.b.a.s.l.LegacyStateSerializer - Parameter Strings Saved in /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/smac-output/saps-scenario-SMAC-ac-true-cores1-cutoff5.0-2013-08-03/state-run3/uniq_configurations-it1.csv
+16:52:20.129 [main] DEBUG c.u.c.b.a.s.l.LegacyStateSerializer - Run Results Saved in /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/smac-output/saps-scenario-SMAC-ac-true-cores1-cutoff5.0-2013-08-03/state-run3/runs_and_results-it1.csv
+16:52:20.165 [main] DEBUG c.u.c.b.a.s.l.LegacyStateSerializer - Java Object Dump Saved in /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/smac-output/saps-scenario-SMAC-ac-true-cores1-cutoff5.0-2013-08-03/state-run3/java_obj_dump-v2-it1.obj
+16:52:20.166 [main] INFO  c.u.c.b.a.s.l.LegacyStateSerializer - State saved for iteration 1 in /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/smac-output/saps-scenario-SMAC-ac-true-cores1-cutoff5.0-2013-08-03/state-run3 
+16:52:20.166 [main] INFO  c.u.c.b.a.s.l.LegacyStateSerializer - Saving state took 61 ms
+16:52:20.166 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Starting Iteration 2
+16:52:20.167 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event ModelBuildStartEvent (0x2376f91f) to handler: LogRuntimeStatistics
+16:52:20.168 [Event Manager Dispatch Thread] INFO  c.u.c.b.a.e.h.LogRuntimeStatistics - *****Runtime Statistics*****
+ Count: 2
+ Incumbent ID: 1 (0x0007)
+ Number of Runs for Incumbent: 3
+ Number of Instances for Incumbent: 3
+ Number of Configurations Run: 3
+ Performance of the Incumbent: 0.32666666666666666
+ Configuration Time Budget used: 4.785987649000001 s (15%)
+ Configuration Time Budget remaining: 25.214012351 s
+ Wall-clock Time Budget used: 5.018 s (0%)
+ Wall-clock Time Budget remaining: 2.147483641982E9 s
+ Algorithm Runs used: 6.0  (0%)
+ Algorithm Runs remaining: 9.223372036854776E18 
+ Model/Iteration used: 1.0  (0%)
+ Model/Iteration remaining: 2.147483646E9 
+ Configuration Space Searched 0.0 % 
+ Sum of Target Algorithm Execution Times (treating minimum value as 0.1): 3.6000000000000005 s
+ CPU time of Configurator: 1.185305068 s
+ User time of Configurator: 1.185644685 s
+ Total Reported Algorithm Runtime: 3.5200000000000005 s
+ Sum of Measured Wallclock Runtime: 4.127 s
+ Max Memory: 910.25 MB
+ Total Java Memory: 236.25 MB
+ Free Java Memory: 209.2063980102539 MB
+16:52:20.169 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event FlushEvent (0x57dd7469) to handler: 
+16:52:20.169 [main] INFO  c.u.c.b.a.m.d.PCAModelDataSanitizer - Discarding 0 constant inputs of 0 in total.
+16:52:20.169 [main] INFO  c.u.c.b.a.m.b.AdaptiveCappingModelBuilder - Building Random Forest with 2 censored runs out of 6 total 
+16:52:20.169 [main] DEBUG c.u.c.b.a.m.b.AdaptiveCappingModelBuilder - Building Random Forest with 4 data points 
+16:52:20.169 [main] DEBUG c.u.c.b.a.m.b.AdaptiveCappingModelBuilder - Building Random Forest took 0.0 seconds 
+16:52:20.347 [main] INFO  c.u.c.b.a.m.b.AdaptiveCappingModelBuilder - Building random forest with imputed values iteration 0
+16:52:20.347 [main] DEBUG c.u.c.b.a.m.b.AdaptiveCappingModelBuilder - Building Random Forest with 6 data points 
+16:52:20.347 [main] DEBUG c.u.c.b.a.m.b.AdaptiveCappingModelBuilder - Building Random Forest took 0.0 seconds 
+16:52:20.347 [main] INFO  c.u.c.b.a.m.b.AdaptiveCappingModelBuilder - Mean increase in imputed values in imputation iteration 0 is 0.16079775554753623
+16:52:20.356 [main] INFO  c.u.c.b.a.m.b.AdaptiveCappingModelBuilder - Building random forest with imputed values iteration 1
+16:52:20.356 [main] DEBUG c.u.c.b.a.m.b.AdaptiveCappingModelBuilder - Building Random Forest with 6 data points 
+16:52:20.357 [main] DEBUG c.u.c.b.a.m.b.AdaptiveCappingModelBuilder - Building Random Forest took 0.001 seconds 
+16:52:20.357 [main] INFO  c.u.c.b.a.m.b.AdaptiveCappingModelBuilder - Mean increase in imputed values in imputation iteration 1 is 0.08975622846913352
+16:52:20.357 [main] DEBUG c.u.c.b.a.m.b.AdaptiveCappingModelBuilder - Preprocessing marginal for Random Forest
+16:52:20.357 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Random Forest Built
+16:52:20.358 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Model Learn Time: 0.189 (s)
+16:52:20.358 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event ModelBuildEndEvent (0x56715157) to handler: ModelIterationTerminationCondition
+16:52:20.358 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event ModelBuildEndEvent (0x56715157) to handler: NoRunsForManyIterationTerminationCondition
+16:52:20.358 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event FlushEvent (0x29935317) to handler: 
+16:52:20.359 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Prediction for incumbent: -0.09090852308798796 +/- 0.07312455920859988 (in log space if logModel=true)
+16:52:20.359 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Optimizing EI at valdata.iteration 2. fmin: -0.4858951790271676, fmin (accounting for minimum response value): -0.4858951790271676
+16:52:20.359 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Compute negEI for all conf. seen at valdata.iteration 2: took 0.0 s
+16:52:20.360 [main] DEBUG c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Local Search took 1 steps
+16:52:20.360 [main] DEBUG c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - LS 1 took 0.0 seconds and yielded neg log EI 5.256721316989229
+16:52:20.361 [main] DEBUG c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Local Search took 1 steps
+16:52:20.361 [main] DEBUG c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - LS 2 took 0.001 seconds and yielded neg log EI 5.256721316989229
+16:52:20.361 [main] DEBUG c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Local Search took 1 steps
+16:52:20.361 [main] DEBUG c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - LS 3 took 0.0 seconds and yielded neg log EI 5.256721316989229
+16:52:20.362 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - 3 Local Searches took 0.002 seconds in total 
+16:52:20.372 [main] DEBUG c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Generating 10000 Random Configurations for EI took 0.01 (s)
+16:52:20.394 [main] DEBUG c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Prediction for Random Configurations took 0.021 (s)
+16:52:20.406 [main] DEBUG c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - EI Calculation for Random Configurations took 0.012 (s)
+16:52:20.462 [main] DEBUG c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Map Insertion for Random Configurations took 0.056 (s)
+16:52:20.474 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Challenger 1 predicted -0.09090852308798796 +/- 0.27041553063498386, expected improvement -5.256721316989229
+16:52:20.474 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Challenger 2 predicted -0.09090852308798796 +/- 0.27041553063498386, expected improvement -5.256721316989229
+16:52:20.475 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Challenger 3 predicted -0.09090852308798796 +/- 0.27041553063498386, expected improvement -5.256721316989229
+16:52:20.478 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Selecting 10003 challengers based on EI took 0.119 seconds
+16:52:20.488 [main] DEBUG c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Generating 10003 Random Configurations took 0.01 seconds
+16:52:20.494 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Calling intensify with 20006 challenger(s)
+16:52:20.494 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Intensification timeBound: 1.0 (s); used: 0.0  (s)
+16:52:20.498 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event FlushEvent (0x426545b3) to handler: 
+16:52:20.498 [main] DEBUG c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Performing additional run with the incumbent 
+16:52:20.498 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Iteration 2: Scheduling 1 run(s):
+16:52:20.499 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Iteration 2: Scheduling run for config 1 (0x0007) on instance 1 with seed 15828581 and captime 5.0
+16:52:20.499 [main] DEBUG c.u.c.b.a.t.b.c.CommandLineTargetAlgorithmEvaluator - Using single-threaded algorithm runner
+16:52:25.510 [main] DEBUG c.u.c.b.a.t.b.c.CommandLineAlgorithmRun - Slept for 5 second waiting for pid 4459  && false 
+16:52:26.324 [Command Line Target Algorithm Evaluator Thread (Standard Error Processor)<Instance:1, Seed:15828581, Config:0x0007, Kappa:5.0>] DEBUG c.u.c.b.a.t.b.c.CommandLineAlgorithmRun - Standard Error Done
+16:52:26.325 [main] DEBUG c.u.c.b.a.t.b.c.CommandLineAlgorithmRun - Run <Instance:1, Seed:15828581, Config:0x0007, Kappa:5.0> ==> <TIMEOUT, 5.02, 5.0, 1.0, 15828581> W:(5.79) is completed
+16:52:26.325 [main] DEBUG c.u.c.b.a.t.d.d.RunHashCodeVerifyingAlgorithmEvalutor - Run Hash Codes:31343729 After 7 runs
+16:52:26.326 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x6fdb6621) to handler: AlgorithmRunLimitCondition
+16:52:26.326 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x6fdb6621) to handler: NoRunsForManyIterationTerminationCondition
+16:52:26.326 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x6fdb6621) to handler: LogRuntimeStatistics
+16:52:26.326 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x6fdb6621) to handler: ConfigurationSpaceExhaustedCondition
+16:52:26.326 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event FlushEvent (0x2d0e39e6) to handler: 
+16:52:26.326 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Iteration 2: Completed run for config 1 (0x0007) on instance 1 with seed 15828581 and captime 5.0 => Result: TIMEOUT, response: 5.0, wallclock time: 5.79 seconds
+16:52:26.327 [main] DEBUG c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Incumbent Cost now: 1.4949999999999999
+16:52:26.327 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event IncumbentPerformanceChangeEvent (0xfb4226) to handler: TrajectoryFileLogger
+16:52:26.328 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.t.TrajectoryFileLogger - Incumbent Performance changed
+16:52:26.328 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.t.TrajectoryFileLogger - Logging incumbent: (Runs 4): 10.024863734, 1.4949999999999999, 11.177, 1, 1.405204624,  alpha='1.189', ps='0.1', rho='0.5', wp='0.03'
+16:52:26.328 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event IncumbentPerformanceChangeEvent (0xfb4226) to handler: LogRuntimeStatistics
+16:52:26.328 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event FlushEvent (0x6fb3cd4a) to handler: 
+16:52:26.329 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Performing up to 1 run(s) for challenger (0xA80D) up to a total bound of 5.001 
+16:52:26.330 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Iteration 2: Scheduling 1 run(s):
+16:52:26.330 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Iteration 2: Scheduling run for config (0xA80D) on instance 1 with seed 15828581 and captime 5.0
+16:52:26.330 [main] DEBUG c.u.c.b.a.t.b.c.CommandLineTargetAlgorithmEvaluator - Using single-threaded algorithm runner
+16:52:26.390 [Command Line Target Algorithm Evaluator Thread (Standard Error Processor)<Instance:1, Seed:15828581, Config:0xA80D, Kappa:5.0>] DEBUG c.u.c.b.a.t.b.c.CommandLineAlgorithmRun - Standard Error Done
+16:52:26.391 [main] DEBUG c.u.c.b.a.t.b.c.CommandLineAlgorithmRun - Run <Instance:1, Seed:15828581, Config:0xA80D, Kappa:5.0> ==> <SAT, 0.0, 6623.0, 0.0, 15828581> W:(0.053) is completed
+16:52:26.391 [main] DEBUG c.u.c.b.a.t.d.d.RunHashCodeVerifyingAlgorithmEvalutor - Run Hash Codes:28611666 After 8 runs
+16:52:26.391 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x76fd5428) to handler: AlgorithmRunLimitCondition
+16:52:26.391 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x76fd5428) to handler: NoRunsForManyIterationTerminationCondition
+16:52:26.392 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x76fd5428) to handler: LogRuntimeStatistics
+16:52:26.392 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x76fd5428) to handler: ConfigurationSpaceExhaustedCondition
+16:52:26.392 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event FlushEvent (0x71a04b1f) to handler: 
+16:52:26.392 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Iteration 2: Completed run for config (0xA80D) on instance 1 with seed 15828581 and captime 5.0 => Result: SAT, response: 0.0, wallclock time: 0.053 seconds
+16:52:26.392 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Based on 1 common runs on (up to) 4 instances, challenger 4 (0xA80D)  has a lower bound 0.0 and incumbent 1 (0x0007) has obj 5.0
+16:52:26.393 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Performing up to 2 run(s) for challenger 4 (0xA80D) up to a total bound of 1.9543333333333333 
+16:52:26.395 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Iteration 2: Scheduling 1 run(s):
+16:52:26.395 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Iteration 2: Scheduling run for config 4 (0xA80D) on instance 4 with seed 3699413 and captime 5.0
+16:52:26.396 [main] DEBUG c.u.c.b.a.t.b.c.CommandLineTargetAlgorithmEvaluator - Using single-threaded algorithm runner
+16:52:31.395 [main] DEBUG c.u.c.b.a.t.b.c.CommandLineAlgorithmRun - Slept for 5 second waiting for pid 4477  && false 
+16:52:31.810 [Command Line Target Algorithm Evaluator Thread (Standard Error Processor)<Instance:4, Seed:3699413, Config:0xA80D, Kappa:5.0>] DEBUG c.u.c.b.a.t.b.c.CommandLineAlgorithmRun - Standard Error Done
+16:52:31.811 [main] DEBUG c.u.c.b.a.t.b.c.CommandLineAlgorithmRun - Run <Instance:4, Seed:3699413, Config:0xA80D, Kappa:5.0> ==> <TIMEOUT, 5.02, 2.0, 1.0, 3699413> W:(5.376) is completed
+16:52:31.811 [main] DEBUG c.u.c.b.a.t.d.d.RunHashCodeVerifyingAlgorithmEvalutor - Run Hash Codes:3110101 After 9 runs
+16:52:31.812 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x2d656f92) to handler: AlgorithmRunLimitCondition
+16:52:31.812 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x2d656f92) to handler: NoRunsForManyIterationTerminationCondition
+16:52:31.812 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x2d656f92) to handler: LogRuntimeStatistics
+16:52:31.812 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x2d656f92) to handler: ConfigurationSpaceExhaustedCondition
+16:52:31.812 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event FlushEvent (0x5e7ff186) to handler: 
+16:52:31.812 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Iteration 2: Completed run for config 4 (0xA80D) on instance 4 with seed 3699413 and captime 5.0 => Result: TIMEOUT, response: 5.0, wallclock time: 5.376 seconds
+16:52:31.814 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Iteration 2: Scheduling 1 run(s):
+16:52:31.814 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Iteration 2: Scheduling run for config 4 (0xA80D) on instance 3 with seed 5574276 and captime 2.123200200843811
+16:52:31.815 [main] DEBUG c.u.c.b.a.t.b.c.CommandLineTargetAlgorithmEvaluator - Using single-threaded algorithm runner
+16:52:34.322 [Command Line Target Algorithm Evaluator Thread (Standard Error Processor)<Instance:3, Seed:5574276, Config:0xA80D, Kappa:2.123200200843811>] DEBUG c.u.c.b.a.t.b.c.CommandLineAlgorithmRun - Standard Error Done
+16:52:34.323 [main] DEBUG c.u.c.b.a.t.b.c.CommandLineAlgorithmRun - Run <Instance:3, Seed:5574276, Config:0xA80D, Kappa:2.123200200843811> ==> <TIMEOUT, 2.14, 1.0, 1.0, 5574276> W:(2.463) is completed
+16:52:34.323 [main] DEBUG c.u.c.b.a.t.d.d.RunHashCodeVerifyingAlgorithmEvalutor - Run Hash Codes:15613259 After 10 runs
+16:52:34.324 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x690a614) to handler: AlgorithmRunLimitCondition
+16:52:34.324 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x690a614) to handler: NoRunsForManyIterationTerminationCondition
+16:52:34.324 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x690a614) to handler: LogRuntimeStatistics
+16:52:34.324 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x690a614) to handler: ConfigurationSpaceExhaustedCondition
+16:52:34.324 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event FlushEvent (0x2876e6a) to handler: 
+16:52:34.325 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Iteration 2: Completed run for config 4 (0xA80D) on instance 3 with seed 5574276 and captime 2.123200200843811 => Result: TIMEOUT, response: 2.123200200843811, wallclock time: 2.463 seconds
+16:52:34.325 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Based on 3 common runs on (up to) 4 instances, challenger 4 (0xA80D)  has a lower bound 2.374400066947937 and incumbent 1 (0x0007) has obj 1.9533333333333334
+16:52:34.325 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Challenger 4 (0xA80D) is worse; aborting its evaluation
+16:52:34.325 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Intensification timeBound: 1.0 (s); used: 12.280000000000001  (s)
+16:52:34.326 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event FlushEvent (0x961f272) to handler: 
+16:52:34.326 [main] DEBUG c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Performing additional run with the incumbent 
+16:52:34.327 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Iteration 2: Scheduling 1 run(s):
+16:52:34.327 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Iteration 2: Scheduling run for config 1 (0x0007) on instance 5 with seed 7651328 and captime 5.0
+16:52:34.327 [main] DEBUG c.u.c.b.a.t.b.c.CommandLineTargetAlgorithmEvaluator - Using single-threaded algorithm runner
+16:52:39.326 [main] DEBUG c.u.c.b.a.t.b.c.CommandLineAlgorithmRun - Slept for 5 second waiting for pid 4495  && false 
+16:52:40.141 [Command Line Target Algorithm Evaluator Thread (Standard Error Processor)<Instance:5, Seed:7651328, Config:0x0007, Kappa:5.0>] DEBUG c.u.c.b.a.t.b.c.CommandLineAlgorithmRun - Standard Error Done
+16:52:40.141 [main] DEBUG c.u.c.b.a.t.b.c.CommandLineAlgorithmRun - Run <Instance:5, Seed:7651328, Config:0x0007, Kappa:5.0> ==> <TIMEOUT, 5.02, 5.0, 2.0, 7651328> W:(5.778) is completed
+16:52:40.142 [main] DEBUG c.u.c.b.a.t.d.d.RunHashCodeVerifyingAlgorithmEvalutor - Run Hash Codes:1687817 After 11 runs
+16:52:40.142 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x204ad33f) to handler: AlgorithmRunLimitCondition
+16:52:40.143 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x204ad33f) to handler: NoRunsForManyIterationTerminationCondition
+16:52:40.143 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x204ad33f) to handler: LogRuntimeStatistics
+16:52:40.143 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x204ad33f) to handler: ConfigurationSpaceExhaustedCondition
+16:52:40.143 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event FlushEvent (0x1072dda9) to handler: 
+16:52:40.143 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Iteration 2: Completed run for config 1 (0x0007) on instance 5 with seed 7651328 and captime 5.0 => Result: TIMEOUT, response: 5.0, wallclock time: 5.778 seconds
+16:52:40.144 [main] DEBUG c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Incumbent Cost now: 2.196
+16:52:40.145 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event IncumbentPerformanceChangeEvent (0x65368aae) to handler: TrajectoryFileLogger
+16:52:40.145 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.t.TrajectoryFileLogger - Incumbent Performance changed
+16:52:40.145 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.t.TrajectoryFileLogger - Logging incumbent: (Runs 5): 22.381368930999997, 2.196, 24.994, 1, 1.481827303,  alpha='1.189', ps='0.1', rho='0.5', wp='0.03'
+16:52:40.146 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event IncumbentPerformanceChangeEvent (0x65368aae) to handler: LogRuntimeStatistics
+16:52:40.146 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event FlushEvent (0x5fcad96b) to handler: 
+16:52:40.146 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Performing up to 1 run(s) for challenger 3 (0xEAB0) up to a total bound of 2.571 
+16:52:40.148 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Iteration 2: Scheduling 1 run(s):
+16:52:40.148 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Iteration 2: Scheduling run for config 3 (0xEAB0) on instance 1 with seed 15828581 and captime 5.0
+16:52:40.148 [main] DEBUG c.u.c.b.a.t.b.c.CommandLineTargetAlgorithmEvaluator - Using single-threaded algorithm runner
+16:52:45.146 [main] DEBUG c.u.c.b.a.t.b.c.CommandLineAlgorithmRun - Slept for 5 second waiting for pid 4504  && false 
+16:52:45.811 [Command Line Target Algorithm Evaluator Thread (Standard Error Processor)<Instance:1, Seed:15828581, Config:0xEAB0, Kappa:5.0>] DEBUG c.u.c.b.a.t.b.c.CommandLineAlgorithmRun - Standard Error Done
+16:52:45.813 [main] DEBUG c.u.c.b.a.t.b.c.CommandLineAlgorithmRun - Run <Instance:1, Seed:15828581, Config:0xEAB0, Kappa:5.0> ==> <TIMEOUT, 5.02, 3.0, 1.0, 15828581> W:(5.626) is completed
+16:52:45.813 [main] DEBUG c.u.c.b.a.t.d.d.RunHashCodeVerifyingAlgorithmEvalutor - Run Hash Codes:28670583 After 12 runs
+16:52:45.814 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x16bf08c7) to handler: AlgorithmRunLimitCondition
+16:52:45.814 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x16bf08c7) to handler: NoRunsForManyIterationTerminationCondition
+16:52:45.814 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x16bf08c7) to handler: LogRuntimeStatistics
+16:52:45.814 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x16bf08c7) to handler: ConfigurationSpaceExhaustedCondition
+16:52:45.814 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event FlushEvent (0x57d94c7b) to handler: 
+16:52:45.814 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Iteration 2: Completed run for config 3 (0xEAB0) on instance 1 with seed 15828581 and captime 5.0 => Result: TIMEOUT, response: 5.0, wallclock time: 5.626 seconds
+16:52:45.815 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Based on 2 common runs on (up to) 5 instances, challenger 3 (0xEAB0)  has a lower bound 3.092300098562241 and incumbent 1 (0x0007) has obj 2.5700000000000003
+16:52:45.815 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Challenger 3 (0xEAB0) is worse; aborting its evaluation
+16:52:45.815 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Out of time for intensification timeBound: 1.0 (s); used: 22.319999999999997  (s)
+16:52:45.815 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - At end of iteration 2, incumbent is 1 (0x0007) 
+16:52:45.816 [main] DEBUG c.u.c.b.a.s.l.LegacyStateSerializer - State Serialization for iteration 2 commencing
+16:52:45.816 [main] DEBUG c.u.c.b.a.s.l.LegacyStateSerializer - Unique Configurations Saved in /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/smac-output/saps-scenario-SMAC-ac-true-cores1-cutoff5.0-2013-08-03/state-run3/uniq_configurations-it2.csv
+16:52:45.837 [main] DEBUG c.u.c.b.a.s.l.LegacyStateSerializer - Parameter Strings Saved in /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/smac-output/saps-scenario-SMAC-ac-true-cores1-cutoff5.0-2013-08-03/state-run3/uniq_configurations-it2.csv
+16:52:45.847 [main] DEBUG c.u.c.b.a.s.l.LegacyStateSerializer - Run Results Saved in /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/smac-output/saps-scenario-SMAC-ac-true-cores1-cutoff5.0-2013-08-03/state-run3/runs_and_results-it2.csv
+16:52:45.883 [main] DEBUG c.u.c.b.a.s.l.LegacyStateSerializer - Java Object Dump Saved in /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/smac-output/saps-scenario-SMAC-ac-true-cores1-cutoff5.0-2013-08-03/state-run3/java_obj_dump-v2-it2.obj
+16:52:45.883 [main] INFO  c.u.c.b.a.s.l.LegacyStateSerializer - State saved for iteration 2 in /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/smac-output/saps-scenario-SMAC-ac-true-cores1-cutoff5.0-2013-08-03/state-run3 
+16:52:45.883 [main] INFO  c.u.c.b.a.s.l.LegacyStateSerializer - Saving state took 67 ms
+16:52:45.883 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Starting Iteration 3
+16:52:45.884 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event ModelBuildStartEvent (0x44f4660b) to handler: LogRuntimeStatistics
+16:52:45.885 [Event Manager Dispatch Thread] INFO  c.u.c.b.a.e.h.LogRuntimeStatistics - *****Runtime Statistics*****
+ Count: 3
+ Incumbent ID: 1 (0x0007)
+ Number of Runs for Incumbent: 5
+ Number of Instances for Incumbent: 5
+ Number of Configurations Run: 4
+ Performance of the Incumbent: 2.196
+ Configuration Time Budget used: 27.443532832 s (91%)
+ Configuration Time Budget remaining: 2.556467168000001 s
+ Wall-clock Time Budget used: 30.735 s (0%)
+ Wall-clock Time Budget remaining: 2.147483616265E9 s
+ Algorithm Runs used: 12.0  (0%)
+ Algorithm Runs remaining: 9.223372036854776E18 
+ Model/Iteration used: 2.0  (0%)
+ Model/Iteration remaining: 2.147483645E9 
+ Configuration Space Searched 0.0 % 
+ Sum of Target Algorithm Execution Times (treating minimum value as 0.1): 25.919999999999998 s
+ CPU time of Configurator: 1.522860656 s
+ User time of Configurator: 1.5231985030000001 s
+ Total Reported Algorithm Runtime: 25.74 s
+ Sum of Measured Wallclock Runtime: 29.213 s
+ Max Memory: 910.25 MB
+ Total Java Memory: 236.25 MB
+ Free Java Memory: 179.3713836669922 MB
+16:52:45.886 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event FlushEvent (0x9577f8b) to handler: 
+16:52:45.886 [main] INFO  c.u.c.b.a.m.d.PCAModelDataSanitizer - Discarding 0 constant inputs of 0 in total.
+16:52:45.886 [main] INFO  c.u.c.b.a.m.b.AdaptiveCappingModelBuilder - Building Random Forest with 3 censored runs out of 12 total 
+16:52:45.886 [main] DEBUG c.u.c.b.a.m.b.AdaptiveCappingModelBuilder - Building Random Forest with 9 data points 
+16:52:45.887 [main] DEBUG c.u.c.b.a.m.b.AdaptiveCappingModelBuilder - Building Random Forest took 0.001 seconds 
+16:52:45.895 [main] INFO  c.u.c.b.a.m.b.AdaptiveCappingModelBuilder - Building random forest with imputed values iteration 0
+16:52:45.895 [main] DEBUG c.u.c.b.a.m.b.AdaptiveCappingModelBuilder - Building Random Forest with 12 data points 
+16:52:45.896 [main] DEBUG c.u.c.b.a.m.b.AdaptiveCappingModelBuilder - Building Random Forest took 0.001 seconds 
+16:52:45.896 [main] INFO  c.u.c.b.a.m.b.AdaptiveCappingModelBuilder - Mean increase in imputed values in imputation iteration 0 is 0.2986717891753421
+16:52:45.905 [main] INFO  c.u.c.b.a.m.b.AdaptiveCappingModelBuilder - Building random forest with imputed values iteration 1
+16:52:45.905 [main] DEBUG c.u.c.b.a.m.b.AdaptiveCappingModelBuilder - Building Random Forest with 12 data points 
+16:52:45.906 [main] DEBUG c.u.c.b.a.m.b.AdaptiveCappingModelBuilder - Building Random Forest took 0.001 seconds 
+16:52:45.906 [main] INFO  c.u.c.b.a.m.b.AdaptiveCappingModelBuilder - Mean increase in imputed values in imputation iteration 1 is 0.05174213928960106
+16:52:45.906 [main] DEBUG c.u.c.b.a.m.b.AdaptiveCappingModelBuilder - Preprocessing marginal for Random Forest
+16:52:45.906 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Random Forest Built
+16:52:45.906 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Model Learn Time: 0.02 (s)
+16:52:45.907 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event ModelBuildEndEvent (0x2aba391a) to handler: ModelIterationTerminationCondition
+16:52:45.907 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event ModelBuildEndEvent (0x2aba391a) to handler: NoRunsForManyIterationTerminationCondition
+16:52:45.907 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event FlushEvent (0x27faefe0) to handler: 
+16:52:45.908 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Prediction for incumbent: 0.2595771507306689 +/- 0.09618372046016475 (in log space if logModel=true)
+16:52:45.908 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Optimizing EI at valdata.iteration 3. fmin: 0.34163233577805435, fmin (accounting for minimum response value): 0.34163233577805435
+16:52:45.908 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Compute negEI for all conf. seen at valdata.iteration 3: took 0.0 s
+16:52:45.909 [main] DEBUG c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Local Search took 4 steps
+16:52:45.909 [main] DEBUG c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - LS 1 took 0.0 seconds and yielded neg log EI 0.03281639454924912
+16:52:45.910 [main] DEBUG c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Local Search took 3 steps
+16:52:45.910 [main] DEBUG c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - LS 2 took 0.0 seconds and yielded neg log EI 0.009094209126653707
+16:52:45.911 [main] DEBUG c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Local Search took 5 steps
+16:52:45.911 [main] DEBUG c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - LS 3 took 0.001 seconds and yielded neg log EI 0.009094209126653707
+16:52:45.913 [main] DEBUG c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Local Search took 5 steps
+16:52:45.913 [main] DEBUG c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - LS 4 took 0.001 seconds and yielded neg log EI 0.009094209126653707
+16:52:45.913 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - 4 Local Searches took 0.004 seconds in total 
+16:52:45.920 [main] DEBUG c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Generating 10000 Random Configurations for EI took 0.007 (s)
+16:52:45.929 [main] DEBUG c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Prediction for Random Configurations took 0.009 (s)
+16:52:45.936 [main] DEBUG c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - EI Calculation for Random Configurations took 0.007 (s)
+16:52:45.948 [main] DEBUG c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Map Insertion for Random Configurations took 0.012 (s)
+16:52:45.961 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Challenger 1 predicted 0.03513783523126701 +/- 0.6834021565155802, expected improvement -0.009094209126653707
+16:52:45.962 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Challenger 2 predicted 0.03513783523126701 +/- 0.6834021565155802, expected improvement -0.009094209126653707
+16:52:45.962 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Challenger 3 predicted 0.03513783523126701 +/- 0.6834021565155802, expected improvement -0.009094209126653707
+16:52:45.962 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Challenger 4 predicted 0.03513783523126701 +/- 0.6834021565155802, expected improvement -0.009094209126653707
+16:52:45.963 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Selecting 10004 challengers based on EI took 0.055 seconds
+16:52:45.970 [main] DEBUG c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Generating 10004 Random Configurations took 0.007 seconds
+16:52:45.972 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Calling intensify with 20008 challenger(s)
+16:52:45.972 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Intensification timeBound: 1.0 (s); used: 0.0  (s)
+16:52:45.973 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event FlushEvent (0x739bce0b) to handler: 
+16:52:45.973 [main] DEBUG c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Performing additional run with the incumbent 
+16:52:45.974 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Iteration 3: Scheduling 1 run(s):
+16:52:45.974 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Iteration 3: Scheduling run for config 1 (0x0007) on instance 5 with seed 7694943 and captime 5.0
+16:52:45.974 [main] DEBUG c.u.c.b.a.t.b.c.CommandLineTargetAlgorithmEvaluator - Using single-threaded algorithm runner
+16:52:46.694 [Command Line Target Algorithm Evaluator Thread (Standard Error Processor)<Instance:5, Seed:7694943, Config:0x0007, Kappa:5.0>] DEBUG c.u.c.b.a.t.b.c.CommandLineAlgorithmRun - Standard Error Done
+16:52:46.695 [main] DEBUG c.u.c.b.a.t.b.c.CommandLineAlgorithmRun - Run <Instance:5, Seed:7694943, Config:0x0007, Kappa:5.0> ==> <SAT, 0.54, 421122.0, 0.0, 7694943> W:(0.717) is completed
+16:52:46.695 [main] DEBUG c.u.c.b.a.t.d.d.RunHashCodeVerifyingAlgorithmEvalutor - Run Hash Codes:16926480 After 13 runs
+16:52:46.696 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x3484038c) to handler: AlgorithmRunLimitCondition
+16:52:46.696 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x3484038c) to handler: NoRunsForManyIterationTerminationCondition
+16:52:46.696 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x3484038c) to handler: LogRuntimeStatistics
+16:52:46.696 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x3484038c) to handler: ConfigurationSpaceExhaustedCondition
+16:52:46.696 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event FlushEvent (0x4704f743) to handler: 
+16:52:46.696 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Iteration 3: Completed run for config 1 (0x0007) on instance 5 with seed 7694943 and captime 5.0 => Result: SAT, response: 0.54, wallclock time: 0.717 seconds
+16:52:46.697 [main] DEBUG c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Incumbent Cost now: 1.75
+16:52:46.698 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event IncumbentPerformanceChangeEvent (0x17057422) to handler: TrajectoryFileLogger
+16:52:46.698 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.t.TrajectoryFileLogger - Incumbent Performance changed
+16:52:46.699 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.t.TrajectoryFileLogger - Logging incumbent: (Runs 6): 28.073733197999996, 1.75, 31.547, 1, 1.614234195,  alpha='1.189', ps='0.1', rho='0.5', wp='0.03'
+16:52:46.699 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event IncumbentPerformanceChangeEvent (0x17057422) to handler: LogRuntimeStatistics
+16:52:46.699 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event FlushEvent (0x670b6ffc) to handler: 
+16:52:46.699 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Performing up to 1 run(s) for challenger (0x113A4) up to a total bound of 0.721 
+16:52:46.701 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Iteration 3: Scheduling 1 run(s):
+16:52:46.701 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Iteration 3: Scheduling run for config (0x113A4) on instance 3 with seed 5574276 and captime 1.9386005628585816
+16:52:46.701 [main] DEBUG c.u.c.b.a.t.b.c.CommandLineTargetAlgorithmEvaluator - Using single-threaded algorithm runner
+16:52:46.809 [Command Line Target Algorithm Evaluator Thread (Standard Error Processor)<Instance:3, Seed:5574276, Config:0x113A4, Kappa:1.9386005628585816>] DEBUG c.u.c.b.a.t.b.c.CommandLineAlgorithmRun - Standard Error Done
+16:52:46.810 [main] DEBUG c.u.c.b.a.t.b.c.CommandLineAlgorithmRun - Run <Instance:3, Seed:5574276, Config:0x113A4, Kappa:1.9386005628585816> ==> <SAT, 0.02, 25422.0, 0.0, 5574276> W:(0.081) is completed
+16:52:46.810 [main] DEBUG c.u.c.b.a.t.d.d.RunHashCodeVerifyingAlgorithmEvalutor - Run Hash Codes:32445726 After 14 runs
+16:52:46.811 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x5dc31eb3) to handler: AlgorithmRunLimitCondition
+16:52:46.811 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x5dc31eb3) to handler: NoRunsForManyIterationTerminationCondition
+16:52:46.811 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x5dc31eb3) to handler: LogRuntimeStatistics
+16:52:46.811 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0x5dc31eb3) to handler: ConfigurationSpaceExhaustedCondition
+16:52:46.811 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event FlushEvent (0x3514a9dc) to handler: 
+16:52:46.811 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Iteration 3: Completed run for config (0x113A4) on instance 3 with seed 5574276 and captime 1.9386005628585816 => Result: SAT, response: 0.02, wallclock time: 0.081 seconds
+16:52:46.812 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Based on 1 common runs on (up to) 5 instances, challenger 5 (0x113A4)  has a lower bound 0.02 and incumbent 1 (0x0007) has obj 0.72
+16:52:46.813 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Performing up to 2 run(s) for challenger 5 (0x113A4) up to a total bound of 2.831 
+16:52:46.814 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Iteration 3: Scheduling 1 run(s):
+16:52:46.815 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Iteration 3: Scheduling run for config 5 (0x113A4) on instance 5 with seed 7694943 and captime 5.0
+16:52:46.815 [main] DEBUG c.u.c.b.a.t.b.c.CommandLineTargetAlgorithmEvaluator - Using single-threaded algorithm runner
+16:52:49.122 [Command Line Target Algorithm Evaluator Thread (Standard Error Processor)<Instance:5, Seed:7694943, Config:0x113A4, Kappa:5.0>] DEBUG c.u.c.b.a.t.b.c.CommandLineAlgorithmRun - Standard Error Done
+16:52:49.123 [main] DEBUG c.u.c.b.a.t.b.c.CommandLineAlgorithmRun - Run <Instance:5, Seed:7694943, Config:0x113A4, Kappa:5.0> ==> <SAT, 2.12, 1.0, 0.0, 7694943> W:(2.289) is completed
+16:52:49.123 [main] DEBUG c.u.c.b.a.t.d.d.RunHashCodeVerifyingAlgorithmEvalutor - Run Hash Codes:7937842 After 15 runs
+16:52:49.124 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0xd5589d4) to handler: AlgorithmRunLimitCondition
+16:52:49.124 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0xd5589d4) to handler: NoRunsForManyIterationTerminationCondition
+16:52:49.125 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0xd5589d4) to handler: LogRuntimeStatistics
+16:52:49.125 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AlgorithmRunCompletedEvent (0xd5589d4) to handler: ConfigurationSpaceExhaustedCondition
+16:52:49.125 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event FlushEvent (0x6acbc422) to handler: 
+16:52:49.126 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Iteration 3: Completed run for config 5 (0x113A4) on instance 5 with seed 7694943 and captime 5.0 => Result: SAT, response: 2.12, wallclock time: 2.289 seconds
+16:52:49.127 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Cannot schedule any more runs, out of time
+16:52:49.128 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - At end of iteration 3, incumbent is 1 (0x0007) 
+16:52:49.128 [main] DEBUG c.u.c.b.a.s.l.LegacyStateSerializer - State Serialization for iteration 3 commencing
+16:52:49.128 [main] DEBUG c.u.c.b.a.s.l.LegacyStateSerializer - Unique Configurations Saved in /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/smac-output/saps-scenario-SMAC-ac-true-cores1-cutoff5.0-2013-08-03/state-run3/uniq_configurations-it3.csv
+16:52:49.133 [main] DEBUG c.u.c.b.a.s.l.LegacyStateSerializer - Parameter Strings Saved in /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/smac-output/saps-scenario-SMAC-ac-true-cores1-cutoff5.0-2013-08-03/state-run3/uniq_configurations-it3.csv
+16:52:49.141 [main] DEBUG c.u.c.b.a.s.l.LegacyStateSerializer - Run Results Saved in /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/smac-output/saps-scenario-SMAC-ac-true-cores1-cutoff5.0-2013-08-03/state-run3/runs_and_results-it3.csv
+16:52:49.173 [main] DEBUG c.u.c.b.a.s.l.LegacyStateSerializer - Java Object Dump Saved in /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/smac-output/saps-scenario-SMAC-ac-true-cores1-cutoff5.0-2013-08-03/state-run3/java_obj_dump-v2-it3.obj
+16:52:49.173 [main] INFO  c.u.c.b.a.s.l.LegacyStateSerializer - State saved for iteration 3 in /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/smac-output/saps-scenario-SMAC-ac-true-cores1-cutoff5.0-2013-08-03/state-run3 
+16:52:49.173 [main] INFO  c.u.c.b.a.s.l.LegacyStateSerializer - Saving state took 45 ms
+16:52:49.174 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - SMAC Completed
+16:52:49.174 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Cleaning old states
+16:52:49.174 [main] INFO  c.u.c.b.a.s.l.LegacyStateFactory - Deleting all saved state files except those applicable to iteration 3 
+16:52:49.174 [main] DEBUG c.u.c.b.a.s.l.LegacyStateFactory - Deleting file /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/smac-output/saps-scenario-SMAC-ac-true-cores1-cutoff5.0-2013-08-03/state-run3/runs_and_results-it1.csv
+16:52:49.178 [main] DEBUG c.u.c.b.a.s.l.LegacyStateFactory - Deleting file /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/smac-output/saps-scenario-SMAC-ac-true-cores1-cutoff5.0-2013-08-03/state-run3/paramstrings-it1.txt
+16:52:49.180 [main] DEBUG c.u.c.b.a.s.l.LegacyStateFactory - Deleting file /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/smac-output/saps-scenario-SMAC-ac-true-cores1-cutoff5.0-2013-08-03/state-run3/uniq_configurations-it2.csv
+16:52:49.183 [main] DEBUG c.u.c.b.a.s.l.LegacyStateFactory - Deleting file /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/smac-output/saps-scenario-SMAC-ac-true-cores1-cutoff5.0-2013-08-03/state-run3/uniq_configurations-it0.csv
+16:52:49.187 [main] DEBUG c.u.c.b.a.s.l.LegacyStateFactory - Deleting file /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/smac-output/saps-scenario-SMAC-ac-true-cores1-cutoff5.0-2013-08-03/state-run3/runs_and_results-it0.csv
+16:52:49.191 [main] DEBUG c.u.c.b.a.s.l.LegacyStateFactory - Deleting file /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/smac-output/saps-scenario-SMAC-ac-true-cores1-cutoff5.0-2013-08-03/state-run3/paramstrings-it2.txt
+16:52:49.193 [main] DEBUG c.u.c.b.a.s.l.LegacyStateFactory - Deleting file /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/smac-output/saps-scenario-SMAC-ac-true-cores1-cutoff5.0-2013-08-03/state-run3/runs_and_results-it2.csv
+16:52:49.196 [main] DEBUG c.u.c.b.a.s.l.LegacyStateFactory - Deleting file /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/smac-output/saps-scenario-SMAC-ac-true-cores1-cutoff5.0-2013-08-03/state-run3/paramstrings-it0.txt
+16:52:49.199 [main] DEBUG c.u.c.b.a.s.l.LegacyStateFactory - Deleting file /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/smac-output/saps-scenario-SMAC-ac-true-cores1-cutoff5.0-2013-08-03/state-run3/uniq_configurations-it1.csv
+16:52:49.203 [main] DEBUG c.u.c.b.a.s.l.LegacyStateFactory - Deleting file /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/smac-output/saps-scenario-SMAC-ac-true-cores1-cutoff5.0-2013-08-03/state-run3/java_obj_dump-v2-it1.obj
+16:52:49.207 [main] DEBUG c.u.c.b.a.s.l.LegacyStateFactory - Deleting file /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/smac-output/saps-scenario-SMAC-ac-true-cores1-cutoff5.0-2013-08-03/state-run3/java_obj_dump-v2-it0.obj
+16:52:49.210 [main] DEBUG c.u.c.b.a.s.l.LegacyStateFactory - Deleting file /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/smac-output/saps-scenario-SMAC-ac-true-cores1-cutoff5.0-2013-08-03/state-run3/java_obj_dump-v2-it2.obj
+16:52:49.213 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AutomaticConfigurationEnd (0x3390d028) to handler: TrajectoryFileLogger
+16:52:49.213 [Event Manager Dispatch Thread] INFO  c.u.c.b.a.t.TrajectoryFileLogger - Writing trajectory file to /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/smac-output/saps-scenario-SMAC-ac-true-cores1-cutoff5.0-2013-08-03/traj-run-3
+16:52:49.215 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.t.TrajectoryFileLogger - Incumbent Performance changed
+16:52:49.215 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.t.TrajectoryFileLogger - Logging incumbent: (Runs 6): 30.334243478, 1.75, 34.064, 1, 1.6546355600000002,  alpha='1.189', ps='0.1', rho='0.5', wp='0.03'
+16:52:49.216 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event AutomaticConfigurationEnd (0x3390d028) to handler: LogRuntimeStatistics
+16:52:49.218 [Event Manager Dispatch Thread] INFO  c.u.c.b.a.e.h.LogRuntimeStatistics - *****Runtime Statistics*****
+ Count: 4
+ Incumbent ID: 1 (0x0007)
+ Number of Runs for Incumbent: 6
+ Number of Instances for Incumbent: 5
+ Number of Configurations Run: 5
+ Performance of the Incumbent: 1.75
+ Configuration Time Budget used: 30.337101936 s (101%)
+ Configuration Time Budget remaining: -0.3371019359999998 s
+ Wall-clock Time Budget used: 34.067 s (0%)
+ Wall-clock Time Budget remaining: 2.147483612933E9 s
+ Algorithm Runs used: 15.0  (0%)
+ Algorithm Runs remaining: 9.223372036854776E18 
+ Model/Iteration used: 3.0  (0%)
+ Model/Iteration remaining: 2.147483644E9 
+ Configuration Space Searched 0.0 % 
+ Sum of Target Algorithm Execution Times (treating minimum value as 0.1): 28.68 s
+ CPU time of Configurator: 1.6563594739999998 s
+ User time of Configurator: 1.6567128770000001 s
+ Total Reported Algorithm Runtime: 28.419999999999998 s
+ Sum of Measured Wallclock Runtime: 32.3 s
+ Max Memory: 910.25 MB
+ Total Java Memory: 236.25 MB
+ Free Java Memory: 217.39202117919922 MB
+16:52:49.218 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event FlushEvent (0x68520c8a) to handler: 
+16:52:49.218 [main] INFO  c.u.c.b.a.t.d.s.TimingCheckerTargetAlgorithmEvaluator - Total Runtime Overhead (Sum of the amount of reported runtime that exceeded the cutoff time): 0.11629931316375552 seconds
+16:52:49.218 [main] INFO  c.u.c.b.a.t.d.s.TimingCheckerTargetAlgorithmEvaluator - Total Wallclock Overhead (Sum of the amount of wallclock time that exceeded the cutoff time): 3.1772993131637577 seconds
+16:52:49.219 [main] INFO  c.u.c.b.smac.executors.SMACExecutor - SMAC Termination Reason: Tuner Time Limit (30.0 s) has been reached   
+16:52:49.220 [main] DEBUG c.u.c.b.a.random.SeedableRandomPool - Seed for Seed Pool Was 3
+16:52:49.220 [main] DEBUG c.u.c.b.a.random.SeedableRandomPool - Seed for CHALLENGE_INCUMBENT_INSTANCE_SELECTION was 399077341, Manually Set: false  Used: true
+16:52:49.220 [main] DEBUG c.u.c.b.a.random.SeedableRandomPool - Seed for CHALLENGE_INCUMBENT_SHUFFLE was 82040510, Manually Set: false  Used: true
+16:52:49.220 [main] DEBUG c.u.c.b.a.random.SeedableRandomPool - Seed for CLASSIC_INITIALIZATION was -2028841970, Manually Set: false  Used: true
+16:52:49.220 [main] DEBUG c.u.c.b.a.random.SeedableRandomPool - Seed for INITIAL_INCUMBENT_SELECTION was 2127902898, Manually Set: false  Used: true
+16:52:49.220 [main] DEBUG c.u.c.b.a.random.SeedableRandomPool - Seed for INSTANCE_SEEDS was -1172804645, Manually Set: false  Used: true
+16:52:49.220 [main] DEBUG c.u.c.b.a.random.SeedableRandomPool - Seed for RANDOM_FOREST_BUILDING_PRNG was -1436879037, Manually Set: false  Used: true
+16:52:49.221 [main] DEBUG c.u.c.b.a.random.SeedableRandomPool - Seed for SMAC_EI_LOCAL_SEARCH_NEIGHBOURS was 1141471874, Manually Set: false  Used: true
+16:52:49.221 [main] DEBUG c.u.c.b.a.random.SeedableRandomPool - Seed for SMAC_RANDOM_EI_CONFIG_PRNG was -1062863371, Manually Set: false  Used: true
+16:52:49.221 [main] DEBUG c.u.c.b.a.random.SeedableRandomPool - Seed for SMAC_RANDOM_INTERLEAVED_CONFIG_PRNG was -78042038, Manually Set: false  Used: true
+16:52:49.221 [main] DEBUG c.u.c.b.a.random.SeedableRandomPool - Seed for TEST_SEED_INSTANCES was 1837461854, Manually Set: false  Used: true
+16:52:49.221 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Total Objective of Incumbent 1 (0x0007) at time 30.334243478 on training set: 1.75
+16:52:49.222 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - **********************************************
+16:52:49.223 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Total Objective of Final Incumbent 1 (0x0007) on training set: 1.75
+16:52:49.223 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Sample Call for Final Incumbent 1 (0x0007) 
+cd /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/example_scenarios/saps; ruby saps_wrapper.rb instances/SWlin2006.10286.cnf 0 5.0 2147483647 15828581 -alpha '1.189' -wp '0.03' -rho '0.5' -ps '0.1'  
+16:52:49.223 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Complete Configuration (no inactive conditionals): alpha='1.189', ps='0.1', rho='0.5', wp='0.03'
+16:52:49.223 [main] INFO  c.u.c.b.s.c.SequentialModelBasedAlgorithmConfiguration - Complete Configuration (including inactive conditionals): alpha='1.189', ps='0.1', rho='0.5', wp='0.03'
+16:52:49.223 [main] INFO  c.u.c.b.a.e.h.LogRuntimeStatistics - *****Runtime Statistics*****
+ Count: 4
+ Incumbent ID: 1 (0x0007)
+ Number of Runs for Incumbent: 6
+ Number of Instances for Incumbent: 5
+ Number of Configurations Run: 5
+ Performance of the Incumbent: 1.75
+ Configuration Time Budget used: 30.337101936 s (101%)
+ Configuration Time Budget remaining: -0.3371019359999998 s
+ Wall-clock Time Budget used: 34.067 s (0%)
+ Wall-clock Time Budget remaining: 2.147483612933E9 s
+ Algorithm Runs used: 15.0  (0%)
+ Algorithm Runs remaining: 9.223372036854776E18 
+ Model/Iteration used: 3.0  (0%)
+ Model/Iteration remaining: 2.147483644E9 
+ Configuration Space Searched 0.0 % 
+ Sum of Target Algorithm Execution Times (treating minimum value as 0.1): 28.68 s
+ CPU time of Configurator: 1.6563594739999998 s
+ User time of Configurator: 1.6567128770000001 s
+ Total Reported Algorithm Runtime: 28.419999999999998 s
+ Sum of Measured Wallclock Runtime: 32.3 s
+ Max Memory: 910.25 MB
+ Total Java Memory: 236.25 MB
+ Free Java Memory: 217.39202117919922 MB
+16:52:49.224 [Event Manager Dispatch Thread] DEBUG c.u.c.b.a.eventsystem.EventManager - Dispatching event FlushEvent (0x7529ecb1) to handler: 
+16:52:49.224 [main] DEBUG c.u.c.b.a.eventsystem.EventManager - Event Dispatch Name / Counts: EventManagerShutdownEvent=>(1), FlushEvent=>(1)  
+16:52:49.225 [main] INFO  c.u.c.b.smac.executors.SMACExecutor - SMAC Termination Reason: Tuner Time Limit (30.0 s) has been reached   
+16:52:49.225 [main] INFO  c.u.c.b.smac.executors.SMACExecutor - SMAC Completed Successfully. Log: /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/smac-output/saps-scenario-SMAC-ac-true-cores1-cutoff5.0-2013-08-03/log-run3.txt
+16:52:49.225 [main] INFO  c.u.c.b.smac.executors.SMACExecutor - Returning with value: 0

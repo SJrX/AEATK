@@ -9,7 +9,7 @@ import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
  * <b>NOTE:</b> This class has nothing to do with executing a surrogate 
  * and is used when making a surrogate from RunHistory results, we convert runs into these objects
  * 
- * @author sjr
+ * @author Steve Ramage <sjr@sjrx.net>
  *
  */
 public class SurrogateAlgorithmRun extends AbstractAlgorithmRun {

@@ -10,6 +10,8 @@ import java.util.TreeMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ca.ubc.cs.beta.aclib.misc.spi.SPIClassLoaderHelper;
+
 /**
  * Utility class that allows various related projects to log their versions and have them reported
  * @author sjr
@@ -19,12 +21,13 @@ public class VersionTracker {
 
 	private static final Logger log = LoggerFactory.getLogger(VersionTracker.class);
 
-	private static ClassLoader cl = VersionTracker.class.getClassLoader();
+	private static ClassLoader cl = SPIClassLoaderHelper.getClassLoader();
 	
 
 	private static SortedMap<String, String> init()
 	{
-			
+			//System.err.println(VersionTracker.class.getClassLoader().getResource( VersionTracker.class.getCanonicalName().replaceAll("\\.","/") + ".class").getFile());
+			boolean errorPrinted = false;
 			Iterator<VersionInfo> versionInfo = ServiceLoader.load(VersionInfo.class, cl).iterator();
 			SortedMap<String, String> versionMap = new TreeMap<String, String>();
 			
@@ -38,6 +41,15 @@ public class VersionTracker {
 				} catch(Exception e)
 				{
 					log.warn("Error occured while loading version Information", e);
+					
+					if(!errorPrinted)
+					{
+						errorPrinted = true;
+						System.err.println(SPIClassLoaderHelper.getDefaultSearchPath());
+						System.err.println(VersionTracker.class.getClassLoader().getResource( VersionTracker.class.getCanonicalName().replaceAll("\\.","/") + ".java"));
+					}
+					
+					
 				}
 			}
 				
@@ -84,7 +96,12 @@ public class VersionTracker {
 	 */
 	public static void logVersions()
 	{
+		
 		SortedMap<String, String> versionMap = init();
+		if(versionMap.isEmpty())
+		{
+			log.warn("Unable to find ANY version information, if you made this JAR yourself chances are you did not setup SPI correctly. See the SMAC Manual Developer Reference for more information");
+		}
 		for(Entry<String, String> ent : versionMap.entrySet())
 		{
 			log.info("Version of {} is {} ", ent.getKey(), ent.getValue());

@@ -14,7 +14,7 @@ public final class TestHelper {
 	{
 		URL url = TestHelper.class.getClassLoader().getResource(s);
 		
-		File file = new File(url.getPath());
+		File file = new File(url.getPath()).getAbsoluteFile();
 		return file;
 	}
 	

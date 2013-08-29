@@ -26,7 +26,6 @@ import org.slf4j.LoggerFactory;
 import au.com.bytecode.opencsv.CSVReader;
 import ca.ubc.cs.beta.aclib.exceptions.FeatureNotFoundException;
 import ca.ubc.cs.beta.aclib.misc.csvhelpers.ConfigCSVFileHelper;
-import ca.ubc.cs.beta.aclib.options.ScenarioOptions;
 import ca.ubc.cs.beta.aclib.seedgenerator.InstanceSeedGenerator;
 import ca.ubc.cs.beta.aclib.seedgenerator.RandomInstanceSeedGenerator;
 import ca.ubc.cs.beta.aclib.seedgenerator.SetInstanceSeedGenerator;
@@ -50,7 +49,7 @@ public class ProblemInstanceHelper {
 	{
 		File f;
 		logger.trace("Trying to find file with context {} and path {}", context, path);
-		if(path.substring(0, 1).equals(File.separator))
+		if(path.length() > 0 && path.substring(0, 1).equals(File.separator))
 		{
 			logger.trace("Absolute path given for path, checking {}", path);
 			f = new File(path);
@@ -63,7 +62,17 @@ public class ProblemInstanceHelper {
 		
 		if(!f.exists())
 		{
-			throw new ParameterException("Could not find needed file:" + path + " Context:" + context);
+			logger.trace("Could not find needed file:" + path + " Context:" + context);
+			
+			//TODO take a full path c/d/e and a context a/b/c and somehow get a/b/c/d/e 
+			logger.trace("Trying basename of path in context");
+			
+			
+			f = new File(context + File.separator + new File(path).getName());
+			if(!f.exists())
+			{
+				throw new ParameterException("Could not find needed file:" + path + " Context:" + context);
+			}
 		}
 		
 		return f;
@@ -200,23 +209,7 @@ public class ProblemInstanceHelper {
 		
 		return getInstances(filename, experimentDir, featureFileName, checkFileExistsOnDisk, 0, Integer.MAX_VALUE, deterministic);
 	}
-	
-	
-	public static InstanceListWithSeeds getInstances(ScenarioOptions scenarioOptions, String experimentDir, long seed) throws IOException {
-	
-		return getInstances(scenarioOptions.instanceFile,experimentDir, scenarioOptions.instanceFeatureFile, scenarioOptions.checkInstanceFilesExist,   seed,  Integer.MAX_VALUE, scenarioOptions.algoExecOptions.deterministic);
-		
-		
-	}
-	
-	public static InstanceListWithSeeds getTestInstances(ScenarioOptions scenarioOptions, String experimentDir, long seed) throws IOException {
-		
-		return getInstances(scenarioOptions.testInstanceFile,experimentDir, scenarioOptions.instanceFeatureFile, scenarioOptions.checkInstanceFilesExist,   seed,  Integer.MAX_VALUE, scenarioOptions.algoExecOptions.deterministic);
-		
-		
-	}
-	
-	
+
 	/**
 	 * Returns the InstanceList and Seed Generator for the given parameters 
 	 * 
@@ -235,9 +228,17 @@ public class ProblemInstanceHelper {
 	 */
 	public static InstanceListWithSeeds getInstances(String filename, String experimentDir, String featureFileName, boolean checkFileExistsOnDisk, long seed, int maxSeedsPerInstance, boolean deterministic) throws IOException {
 		
+		
+		if(experimentDir == null)
+		{
+			throw new ParameterException("Experiment directory cannot be null");
+		}
+		
+		
+		
 		logger.debug("Loading instances from file: {} and experiment dir {}", filename, experimentDir);
 		
-
+		
 		List<ProblemInstance> instances = new ArrayList<ProblemInstance>();
 		Set<ProblemInstance> instancesSet = new HashSet<ProblemInstance>();
 		
@@ -261,7 +262,7 @@ public class ProblemInstanceHelper {
 		if(featureFileName != null)
 		{
 			//=======Parse Features=====
-			logger.debug("Feature File specified reading features from: {} ", featureFileName);
+			logger.debug("Feature File specified reading features from: {} ", new File(featureFileName).getAbsolutePath());
 			File featureFile = getFileForPath(experimentDir, featureFileName);
 			
 			if(!featureFile.exists())
@@ -272,7 +273,10 @@ public class ProblemInstanceHelper {
 			instanceFeatureFileAbsolutePath = featureFile.getAbsolutePath();
 			
 			CSVReader featureCSV = new CSVReader(new InputStreamReader(new FileInputStream(featureFile)));
+			
 			ConfigCSVFileHelper features = new ConfigCSVFileHelper(featureCSV.readAll(),1,1);
+			
+			featureCSV.close();
 			
 			numberOfFeatures = features.getNumberOfDataColumns();
 			
@@ -311,6 +315,7 @@ public class ProblemInstanceHelper {
 					}
 				} catch(NumberFormatException e)
 				{
+					e.printStackTrace();
 					for(int j=0; j < lastValue.length(); j++)
 					{
 						
@@ -339,8 +344,13 @@ public class ProblemInstanceHelper {
 		if(filename != null)
 		{	
 			//====Parse Instance File=====
+			if(filename.trim().equals(""))
+			{
+				throw new ParameterException("File name is specified but empty");
+			}
 			File instanceListFile = getFileForPath(experimentDir, filename);
 			instanceFileAbsolutePath = instanceListFile.getAbsolutePath();
+			logger.debug("Reading instances from file {}", instanceFileAbsolutePath);
 			InstanceListWithSeeds insc = getListAndSeedGen(instanceListFile,seed, maxSeedsPerInstance);
 			instanceList = insc.getInstancesByName();
 			gen = insc.getSeedGen();
@@ -352,6 +362,7 @@ public class ProblemInstanceHelper {
 		{   
 			//====Just use Instances specified in Feature File====
 			instanceList.addAll(featuresMap.keySet());
+			logger.info("Reading instances from feature file");
 			gen = new RandomInstanceSeedGenerator(instanceList.size(), seed, maxSeedsPerInstance);
 			
 		}
@@ -366,6 +377,7 @@ public class ProblemInstanceHelper {
 		for(String instanceFile : instanceList)
 		{
 			
+			String originalInstanceFilename = instanceFile;
 			if(checkFileExistsOnDisk)
 			{
 				File f = getFileForPath(experimentDir, instanceFile);
@@ -373,12 +385,16 @@ public class ProblemInstanceHelper {
 				//Should store the absolute file name if the file exists on disk
 				//If we don't check if the file exists on disks we don't know whether to add experimentDir to it
 
+				
 				instanceFile = f.getAbsolutePath();
 				if(!f.exists())
 				{					
 					throw new ParameterException("Instance does not exist on disk "+ f.getAbsolutePath());
 				}
+			
+				
 			}
+			
 			
 			/*
 			 * Map of features for instance
@@ -429,7 +445,7 @@ public class ProblemInstanceHelper {
 					{
 						if(instanceFile.endsWith(e.getKey()))
 						{
-							logger.info("Matched instance {} with this entry {}", instanceFile, e.getKey());
+							logger.debug("Matched instance {} with this entry {}", instanceFile, e.getKey());
 							features = e.getValue();
 							break;
 						} else
@@ -489,7 +505,9 @@ public class ProblemInstanceHelper {
 					fixedInstanceSpecificInfo.put(ent.getKey().replaceAll("//", "/"), ent.getValue());
 				}
 				
-				ai = new ProblemInstance(instanceFile, instID++, features, fixedInstanceSpecificInfo.get(instanceFile));
+				
+				
+				ai = new ProblemInstance(instanceFile, instID++, features, fixedInstanceSpecificInfo.get(originalInstanceFilename));
 				cachedProblemInstances.put(instanceFile, ai);
 			}
 			
@@ -528,7 +546,7 @@ public class ProblemInstanceHelper {
 				logger.warn("Detected that seeds have been preloaded, yet the algorithm is listed as deterministic, generally this means we should use -1 as a seed");
 			} else
 			{
-				logger.info("Deterministic algorithm, selecting hard coded instance seed generator");
+				logger.debug("Deterministic algorithm, selecting hard coded instance seed generator");
 				
 				LinkedHashMap<String, List<Long>> instanceSeedMap = new LinkedHashMap<String, List<Long>>(); 
 				
@@ -611,6 +629,7 @@ topOfLoop:
 			instances = v.instanceSeedMap;
 			instanceSpecificInfo = v.instanceSpecificInfoMap;
 			declaredInstanceOrderForSeeds = v.declaredInstanceOrderForSeeds;
+			reader.close();
 		} catch(IllegalArgumentException e)
 		{
 			try { 
@@ -619,11 +638,15 @@ topOfLoop:
 			 * For the old format we trim each line to get rid of spurious whitespace
 			 */
 			BufferedReader bufferedReader = new BufferedReader(new FileReader(instanceListFile));
+			
 			StringBuilder sb = new StringBuilder();
 			while((line = bufferedReader.readLine()) != null)
 			{
 				sb.append(line.trim()).append("\n");
 			}
+			
+			bufferedReader.close();
+			
 			
 				
 			CSVReader reader = new CSVReader(new StringReader(sb.toString().trim()),' ');
@@ -632,7 +655,7 @@ topOfLoop:
 			instances = v.instanceSeedMap;
 			instanceSpecificInfo = v.instanceSpecificInfoMap;
 			declaredInstanceOrderForSeeds = v.declaredInstanceOrderForSeeds;
-					
+			reader.close();
 			} catch(IllegalArgumentException e2)
 			{
 				throw new ParameterException("Could not parse instanceFile " + instanceListFile.getAbsolutePath());

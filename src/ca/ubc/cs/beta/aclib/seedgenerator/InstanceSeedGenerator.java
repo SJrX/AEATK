@@ -24,13 +24,6 @@ public interface InstanceSeedGenerator extends Serializable {
 	 */
 	public int getNextSeed(ProblemInstance pi);
 
-	/**
-	 * Returns a seed based on a given instance id
-	 * @deprecated this is primarily used for matlab synchronization and is ugly
-	 * @param id instanceid to get a seed for 
-	 * @return next seed
-	 */
-	public int getNextSeed(Integer id);
 
 	/**
 	 * Checks if there is another seed available for this instance
@@ -65,7 +58,16 @@ public interface InstanceSeedGenerator extends Serializable {
 	 * 
 	 * @return <code>true</code> if and only if all instances have the same number of seeds
 	 */
+	@Deprecated
 	public boolean allInstancesHaveSameNumberOfSeeds();
+
+	/**
+	 * Takes the following problem instance seed pair and prevents it from ever being returned
+	 * 
+	 * @param pi  		the problem instance
+	 * @param seed		seed
+	 */
+	public void take(ProblemInstance pi, long seed);
 	
 	
 }

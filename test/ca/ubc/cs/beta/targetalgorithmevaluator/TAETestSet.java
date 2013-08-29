@@ -2,42 +2,95 @@ package ca.ubc.cs.beta.targetalgorithmevaluator;
 
 import static org.junit.Assert.*;
 
+import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStreamReader;
 import java.io.PrintStream;
+import java.io.PrintWriter;
 import java.io.StringWriter;
+import java.lang.Thread.UncaughtExceptionHandler;
+import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Date;
 import java.util.HashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
+import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
+
 import org.apache.commons.io.output.NullOutputStream;
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+
+
 import ca.ubc.cs.beta.TestHelper;
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
+import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableAlgorithmRun;
+import ca.ubc.cs.beta.aclib.algorithmrunner.AutomaticConfiguratorFactory;
+import ca.ubc.cs.beta.aclib.concurrent.threadfactory.SequentiallyNamedThreadFactory;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
-import ca.ubc.cs.beta.aclib.exceptions.TargetAlgorithmAbortException;
+import ca.ubc.cs.beta.aclib.configspace.ParamFileHelper;
+import ca.ubc.cs.beta.aclib.exceptions.IllegalWrapperOutputException;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aclib.misc.debug.DebugUtil;
 import ca.ubc.cs.beta.aclib.misc.logback.MarkerFilter;
 import ca.ubc.cs.beta.aclib.misc.logging.LoggingMarker;
-import ca.ubc.cs.beta.aclib.misc.random.SeedableRandomSingleton;
+import ca.ubc.cs.beta.aclib.misc.watch.AutoStartStopWatch;
+import ca.ubc.cs.beta.aclib.misc.watch.StopWatch;
+import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
+import ca.ubc.cs.beta.aclib.random.SeedableRandomPool;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.CommandLineTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.VerifySATTargetAlgorithmEvaluator;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbortOnCrashTargetAlgorithmEvaluator;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbortOnFirstRunCrashTargetAlgorithmEvaluator;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.TimingCheckerTargetAlgorithmEvaluator;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.EqualTargetAlgorithmEvaluatorTester;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorOptions;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.WaitableTAECallback;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli.CommandLineAlgorithmRun;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluatorFactory;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluatorOptions;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.preloaded.PreloadedResponseTargetAlgorithmEvaluatorOptions;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.random.RandomResponseTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.random.RandomResponseTargetAlgorithmEvaluatorFactory;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.random.RandomResponseTargetAlgorithmEvaluatorOptions;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbstractTargetAlgorithmEvaluatorDecorator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.debug.CheckForDuplicateRunConfigDecorator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.debug.EqualTargetAlgorithmEvaluatorTester;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.functionality.OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.functionality.SimulatedDelayTargetAlgorithmEvaluatorDecorator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.KillCaptimeExceedingRunsRunsTargetAlgorithmEvaluatorDecorator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.prepostcommand.PrePostCommandErrorException;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.resource.BoundedTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.safety.AbortOnCrashTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.safety.AbortOnFirstRunCrashTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.safety.ResultOrderCorrectCheckerTargetAlgorithmEvaluatorDecorator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.safety.TimingCheckerTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.safety.VerifySATTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.exceptions.TargetAlgorithmAbortException;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.init.TargetAlgorithmEvaluatorBuilder;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.init.TargetAlgorithmEvaluatorLoader;
+import ca.ubc.cs.beta.targetalgorithmevaluator.impl.SolQualSetTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.targetalgorithmevaluator.massiveoutput.MassiveOutputParamEchoExecutor;
+import ca.ubc.cs.beta.targetalgorithmevaluator.targetalgos.CapitalForParamEchoExecutor;
+import ca.ubc.cs.beta.targetalgorithmevaluator.targetalgos.DummyExecutor;
+import ca.ubc.cs.beta.targetalgorithmevaluator.targetalgos.EnvironmentVariableEchoer;
+import ca.ubc.cs.beta.targetalgorithmevaluator.targetalgos.FiveSecondSleepingParamEchoExecutor;
 
-
+@SuppressWarnings("unused")
 public class TAETestSet {
 
 	
@@ -54,10 +107,12 @@ public class TAETestSet {
 		File paramFile = TestHelper.getTestFile("paramFiles/paramEchoParamFile.txt");
 		configSpace = new ParamConfigurationSpace(paramFile);
 	}
-	Random r;
 	
 	PrintStream old;
 	ByteArrayOutputStream bout;
+	
+	private static final SeedableRandomPool pool = new SeedableRandomPool(System.currentTimeMillis());
+	
 	public void startOutputCapture()
 	{
 	
@@ -85,24 +140,25 @@ public class TAETestSet {
 		b.append(ParamEchoExecutor.class.getCanonicalName());
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 		
-		tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false);
-		SeedableRandomSingleton.reinit();
-		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
-		this.r = SeedableRandomSingleton.getRandom();
+		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
 		
-		
+
 		
 	}
 	
+	@AfterClass
+	public static void afterClass()
+	{
+		pool.logUsage();
+	}
 	/**
 	 * This just tests to see if ParamEchoExecutor does what it should
 	 */
 	@Test
 	public void testMirror()
 	{
-		
-	
-		
+
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		StringBuilder b = new StringBuilder();
 		b.append("java -cp ");
 		b.append(System.getProperty("java.class.path"));
@@ -110,13 +166,10 @@ public class TAETestSet {
 		b.append(ParamEchoExecutor.class.getCanonicalName());
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 		
-		
-		configSpace.setPRNG(r);
-		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT"))
 			{
 				//Only want good configurations
@@ -155,7 +208,7 @@ public class TAETestSet {
 	public void testTimingWarningGeneratorTAE()
 	{
 		
-	
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		
 		StringBuilder b = new StringBuilder();
 		b.append("java -cp ");
@@ -169,12 +222,12 @@ public class TAETestSet {
 		((EchoTargetAlgorithmEvaluator) tae).wallClockTime = 50;
 		
 		
-		configSpace.setPRNG(r);
+		
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < 10; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("runtime", ""+(i));
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT"))
 			{
@@ -189,23 +242,25 @@ public class TAETestSet {
 		}
 		
 		System.out.println("Performing " + runConfigs.size() + " runs");
-		TargetAlgorithmEvaluator tae = new TimingCheckerTargetAlgorithmEvaluator(execConfig, this.tae);
+		TargetAlgorithmEvaluator tae = new TimingCheckerTargetAlgorithmEvaluator(execConfig, TAETestSet.tae);
 		
-		StringWriter sw = new StringWriter();
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		
 		PrintStream out = System.out;
 		System.setOut(new PrintStream(bout));
 		
 		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
-		assertTrue(bout.toString().contains("Algorithm has exceeded allowed wallclock time by 49.99 seconds"));
-		assertTrue(bout.toString().contains("Algorithm has exceeded allowed runtime by 1.99 seconds"));
-		assertTrue(bout.toString().contains("Algorithm has exceeded allowed runtime by 3.99 seconds"));
-		assertTrue(bout.toString().contains("Algorithm has exceeded allowed runtime by 5.99 seconds"));
-		assertTrue(bout.toString().contains("Algorithm has exceeded allowed runtime by 7.99 seconds"));
 		
 		System.setOut(out);
 		System.out.println(bout.toString());
+		
+		
+		assertTrue(bout.toString().contains("Algorithm Run Result reported wallclock time of 50.0 (secs) that exceeded it's cutoff time of "));
+		assertTrue(bout.toString().contains("exceeded it's cutoff time of 0.01 (secs) by 1.99 (secs)"));
+		assertTrue(bout.toString().contains("exceeded it's cutoff time of 0.01 (secs) by 3.99 (secs)"));
+		assertTrue(bout.toString().contains("exceeded it's cutoff time of 0.01 (secs) by 5.99 (secs)"));
+		assertTrue(bout.toString().contains("exceeded it's cutoff time of 0.01 (secs) by 7.99 (secs)"));
+		
 		
 		for(AlgorithmRun run : runs)
 		{
@@ -226,6 +281,7 @@ public class TAETestSet {
 	
 	
 	
+	
 	/**
 	 * This just tests to see if EchoTargetAlgorithmEvaluator matches the CLI Version
 	 */
@@ -235,12 +291,12 @@ public class TAETestSet {
 		
 	
 		
-		configSpace.setPRNG(r);
 		
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT"))
 			{
 				//Only want good configurations
@@ -291,18 +347,17 @@ public class TAETestSet {
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 		
 		
-		tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false);
-		SeedableRandomSingleton.reinit();
-		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
-		this.r = SeedableRandomSingleton.getRandom();
+		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
+		
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		
 		
-		configSpace.setPRNG(r);
+		
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT"))
 			{
 				//Only want good configurations
@@ -348,16 +403,16 @@ public class TAETestSet {
 	@Test
 	public void testRunCountIncrement()
 	{
-	
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		
 			
-			configSpace.setPRNG(r);
+			
 			
 			List<RunConfig> runConfigs = new ArrayList<RunConfig>(2);
 			for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 			{
 				runConfigs.clear();
-				ParamConfiguration config = configSpace.getRandomConfiguration();
+				ParamConfiguration config = configSpace.getRandomConfiguration(r);
 				if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT"))
 				{
 					//Only want good configurations
@@ -401,12 +456,12 @@ public class TAETestSet {
 	public void testABORT()
 	{
 		
-		configSpace.setPRNG(r);
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved","ABORT");
 			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
 			runConfigs.add(rc);
@@ -435,11 +490,11 @@ public class TAETestSet {
 	public void testIllegalCaptimeException()
 	{
 		
-		configSpace.setPRNG(r);
 		
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(100);
 	
-		ParamConfiguration config = configSpace.getRandomConfiguration();
+		ParamConfiguration config = configSpace.getRandomConfiguration(r);
 		
 		RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), -1, config);
 		runConfigs.add(rc);
@@ -461,15 +516,15 @@ public class TAETestSet {
 	{
 		
 		
-	
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		
-		configSpace.setPRNG(r);
+		
 		
 		double cutoffTime = 300;
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			
 			config.put("solved", "SAT");
 			
@@ -513,12 +568,12 @@ public class TAETestSet {
 	{
 		
 		
-		configSpace.setPRNG(r);
 		
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved","CRASHED");
 			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
 			runConfigs.add(rc);
@@ -578,14 +633,14 @@ public class TAETestSet {
 	public void testAbortOnFirstRunCrashTAEfirstIsACrash()
 	{
 		
-	
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		
-		configSpace.setPRNG(r);
+		
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved","CRASHED");
 			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
 			runConfigs.add(rc);
@@ -650,13 +705,13 @@ public class TAETestSet {
 	{
 		
 		
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		
-		configSpace.setPRNG(r);
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			if(i == 0 )
 			{
 				config.put("solved","SAT");
@@ -706,12 +761,12 @@ public class TAETestSet {
 		
 	
 		
-		configSpace.setPRNG(r);
 		
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
 		
 		
-		ParamConfiguration config = configSpace.getRandomConfiguration();
+		ParamConfiguration config = configSpace.getRandomConfiguration(r);
 		config.put("solved","SAT");
 		RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
 		runConfigs.add(rc);
@@ -727,7 +782,7 @@ public class TAETestSet {
 		
 		AlgorithmExecutionConfig execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500); 
 		
-		TargetAlgorithmEvaluator tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false);
+		TargetAlgorithmEvaluator tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
 		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
 		for(AlgorithmRun run : runs)
 		{
@@ -744,6 +799,7 @@ public class TAETestSet {
 		
 		ParamConfigurationSpace configSpace;
 		
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		
 		File paramFile = TestHelper.getTestFile("paramFiles/paramAliasEchoParamFile.txt");
 			configSpace = new ParamConfigurationSpace(paramFile);
@@ -758,10 +814,7 @@ public class TAETestSet {
 		
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 			
-		tae = new AbortOnCrashTargetAlgorithmEvaluator(new CommandLineTargetAlgorithmEvaluator( execConfig, false));
-		SeedableRandomSingleton.reinit();
-		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
-		this.r = SeedableRandomSingleton.getRandom();
+		tae = new AbortOnCrashTargetAlgorithmEvaluator(CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig));
 		
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
@@ -772,7 +825,7 @@ public class TAETestSet {
 		for(String alias : RunResult.SAT.getAliases())
 		{
 			
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved", alias);
 			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
 			runConfigs.add(rc);
@@ -806,6 +859,7 @@ public class TAETestSet {
 		ParamConfigurationSpace configSpace;
 		
 		
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		File paramFile = TestHelper.getTestFile("paramFiles/paramAliasEchoParamFile.txt");
 			configSpace = new ParamConfigurationSpace(paramFile);
 			
@@ -819,12 +873,8 @@ public class TAETestSet {
 		
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 			
-		tae = new AbortOnCrashTargetAlgorithmEvaluator(new CommandLineTargetAlgorithmEvaluator( execConfig, false));
-		SeedableRandomSingleton.reinit();
-		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
-		this.r = SeedableRandomSingleton.getRandom();
-		
-		
+		tae = new AbortOnCrashTargetAlgorithmEvaluator(CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig));
+			
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
 				
 		
@@ -833,7 +883,7 @@ public class TAETestSet {
 		for(String alias : RunResult.UNSAT.getAliases())
 		{
 			
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved", alias);
 			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
 			runConfigs.add(rc);
@@ -860,6 +910,75 @@ public class TAETestSet {
 	}
 	
 	
+	@Test
+	public void testExceptionWithDuplicateRunConfigs()
+	{
+		AlgorithmExecutionConfig execConfig;
+		
+		ParamConfigurationSpace configSpace;
+		
+		
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		File paramFile = TestHelper.getTestFile("paramFiles/paramAliasEchoParamFile.txt");
+			configSpace = new ParamConfigurationSpace(paramFile);
+			
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(ParamAliasEchoExecutor.class.getCanonicalName());
+		
+		
+		
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
+			
+		tae = new CheckForDuplicateRunConfigDecorator(new AbortOnCrashTargetAlgorithmEvaluator(CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig)), true);
+			
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+				
+		
+		
+		
+		for(String alias : RunResult.UNSAT.getAliases())
+		{
+			
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			config.put("solved", alias);
+			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
+			runConfigs.add(rc);
+		}
+
+		List<AlgorithmRun> runs;
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		try {
+			runs = tae.evaluateRun(runConfigs);
+		} catch(IllegalStateException e)
+		{
+			//Unexpected
+			e.printStackTrace();
+			
+			throw e;
+			
+		}
+
+		runConfigs.add(runConfigs.get(0));
+		
+		
+		try {
+			runs = tae.evaluateRun(runConfigs);
+			fail("Expected Exception");
+		} catch(IllegalStateException e)
+		{
+			System.out.println("Got exception which was expected: YAY:");
+			e.printStackTrace();
+			
+		}
+		
+	
+		
+	}
+	
+	
 
 	@Test
 	/**
@@ -874,7 +993,10 @@ public class TAETestSet {
 		
 		File paramFile = TestHelper.getTestFile("paramFiles/paramAliasEchoParamFile.txt");
 			configSpace = new ParamConfigurationSpace(paramFile);
+		
 			
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		
 		StringBuilder b = new StringBuilder();
 		b.append("java -cp ");
 		b.append(System.getProperty("java.class.path"));
@@ -885,10 +1007,7 @@ public class TAETestSet {
 		
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 			
-		tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false);
-		SeedableRandomSingleton.reinit();
-		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
-		this.r = SeedableRandomSingleton.getRandom();
+		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
 		
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
@@ -899,7 +1018,7 @@ public class TAETestSet {
 		for(String alias : RunResult.UNSAT.getAliases())
 		{
 			
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved", alias);
 			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
 			runConfigs.add(rc);
@@ -959,13 +1078,12 @@ public class TAETestSet {
 		b.append(RegexMatchingButInvalidNumberOutputExecutor.class.getCanonicalName());
 		
 		
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 			
-		tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false);
-		SeedableRandomSingleton.reinit();
-		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
-		this.r = SeedableRandomSingleton.getRandom();
+		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
+		
 		
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
@@ -976,7 +1094,7 @@ public class TAETestSet {
 		for(String alias : RunResult.UNSAT.getAliases())
 		{
 			
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved", alias);
 			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
 			runConfigs.add(rc);
@@ -1036,13 +1154,10 @@ public class TAETestSet {
 		b.append(RegexMatchingButMissingOutputExecutor.class.getCanonicalName());
 		
 		
-		
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 			
-		tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false);
-		SeedableRandomSingleton.reinit();
-		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
-		this.r = SeedableRandomSingleton.getRandom();
+		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
 		
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
@@ -1053,7 +1168,7 @@ public class TAETestSet {
 		for(String alias : RunResult.UNSAT.getAliases())
 		{
 			
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved", alias);
 			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
 			runConfigs.add(rc);
@@ -1111,18 +1226,15 @@ public class TAETestSet {
 		b.append(MassiveOutputParamEchoExecutor.class.getCanonicalName());
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 		
-		tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false);
-		SeedableRandomSingleton.reinit();
-		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
-		this.r = SeedableRandomSingleton.getRandom();
+		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		
 		
-		configSpace.setPRNG(r);
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(1);
 		for(int i=0; i < 1; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT"))
 			{
 				//Only want good configurations
@@ -1178,18 +1290,14 @@ public class TAETestSet {
 		b.append(RandomWhitespaceParamEchoExecutor.class.getCanonicalName());
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 		
-		tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false);
-		SeedableRandomSingleton.reinit();
-		System.out.println("Seed" + SeedableRandomSingleton.getSeed());;
-		this.r = SeedableRandomSingleton.getRandom();
+		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		
-		
-		configSpace.setPRNG(r);
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT"))
 			{
 				//Only want good configurations
@@ -1220,6 +1328,64 @@ public class TAETestSet {
 		}
 	}
 	
+	/**
+	 * This tests to see if the Random white space executor and various other supported
+	 * output formats are matched correctly
+	 * This also tests for capitalization as in Issue 1842.
+	 */
+	@Test
+	public void testCapitizalionOfFor()
+	{
+		
+	
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(CapitalForParamEchoExecutor.class.getCanonicalName());
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
+		
+		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		
+		
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		for(int i=0; i < 1; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
+				runConfigs.add(rc);
+			}
+		}
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		
+		for(int i =0; i < this.TARGET_RUNS_IN_LOOPS; i++)
+		{
+			List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+			
+			
+			for(AlgorithmRun run : runs)
+			{
+				ParamConfiguration config  = run.getRunConfig().getParamConfiguration();
+				assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
+				assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
+				assertDEquals(config.get("quality"), run.getQuality(), 0.1);
+				assertDEquals(config.get("seed"), run.getResultSeed(), 0.1);
+				assertEquals(config.get("solved"), run.getRunResult().name());
+				//This executor should not have any additional run data
+				assertEquals("",run.getAdditionalRunData());
+			}
+		}
+	}
+	
 	
 	/**
 	 * This tests to make sure that VerifySATTargetAlgorithmEvaluator fires warnings when it is suppose to
@@ -1232,30 +1398,30 @@ public class TAETestSet {
 	public void testVerifySATTargetAlgorithmEvaluator()
 	{
 		
-	
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		
-		configSpace.setPRNG(r);
+		
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
 		
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved", "SAT");
 			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("SAT",1,new HashMap<String, Double>(),"SAT"), Long.valueOf(config.get("seed"))), 1001, config);
 			runConfigs.add(rc);
 		
-			config = configSpace.getRandomConfiguration();
+			config = configSpace.getRandomConfiguration(r);
 			config.put("solved", "SAT");
 			rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("UNSAT",2,new HashMap<String, Double>(),"UNSAT"), Long.valueOf(config.get("seed"))), 1001, config);
 			runConfigs.add(rc);
 			
-			config = configSpace.getRandomConfiguration();
+			config = configSpace.getRandomConfiguration(r);
 			config.put("solved", "UNSAT");
 			rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("UNSAT",2,new HashMap<String, Double>(),"UNSAT"), Long.valueOf(config.get("seed"))), 1001, config);
 			runConfigs.add(rc);
 			
 			
-			config = configSpace.getRandomConfiguration();
+			config = configSpace.getRandomConfiguration(r);
 			config.put("solved", "UNSAT");
 			rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("SAT",1,new HashMap<String, Double>(),"SAT"), Long.valueOf(config.get("seed"))), 1001, config);
 			runConfigs.add(rc);
@@ -1263,23 +1429,23 @@ public class TAETestSet {
 			
 			
 			
-			config = configSpace.getRandomConfiguration();
+			config = configSpace.getRandomConfiguration(r);
 			config.put("solved", "SAT");
 			rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("SATISFIABLE",3,new HashMap<String, Double>(),"SATISFIABLE"), Long.valueOf(config.get("seed"))), 1001, config);
 			runConfigs.add(rc);
 		
-			config = configSpace.getRandomConfiguration();
+			config = configSpace.getRandomConfiguration(r);
 			config.put("solved", "SAT");
 			rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("UNSATISFIABLE",4,new HashMap<String, Double>(),"UNSATISFIABLE"), Long.valueOf(config.get("seed"))), 1001, config);
 			runConfigs.add(rc);
 			
-			config = configSpace.getRandomConfiguration();
+			config = configSpace.getRandomConfiguration(r);
 			config.put("solved", "UNSAT");
 			rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("UNSATISFIABLE",4,new HashMap<String, Double>(),"UNSATISFIABLE"), Long.valueOf(config.get("seed"))), 1001, config);
 			runConfigs.add(rc);
 			
 			
-			config = configSpace.getRandomConfiguration();
+			config = configSpace.getRandomConfiguration(r);
 			config.put("solved", "UNSAT");
 			rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("SATISFIABLE",3,new HashMap<String, Double>(),"SATISFIABLE"), Long.valueOf(config.get("seed"))), 1001, config);
 			runConfigs.add(rc);
@@ -1291,12 +1457,12 @@ public class TAETestSet {
 			
 			
 			
-			config = configSpace.getRandomConfiguration();
+			config = configSpace.getRandomConfiguration(r);
 			config.put("solved", "TIMEOUT");
 			rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("SAT",1,new HashMap<String, Double>(),"SAT"), Long.valueOf(config.get("seed"))), 1001, config);
 			runConfigs.add(rc);
 		
-			config = configSpace.getRandomConfiguration();
+			config = configSpace.getRandomConfiguration(r);
 			config.put("solved", "SAT");
 			rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("UNKNOWN",2,new HashMap<String, Double>(),"UNKNOWN"), Long.valueOf(config.get("seed"))), 1001, config);
 			runConfigs.add(rc);
@@ -1365,58 +1531,1777 @@ public class TAETestSet {
 	}
 	
 	
+	@Test
+	/**
+	 * Tests the SAT consistency checker
+	 */
+	public void testSATConsistencyChecker()
+	{
 	
-	//You can delete this if you see it
-//	
-//	/***
-//	 * This is related to Task 1442, 
-//	 * 
-//	 * Long story short, The target algorithms see a modified LD_LIBRARY_PATH with 
-//	 * java paths prepended, this can cause problems in certain circumstances.
-//	 * {@link http://bugs.sun.com/view_bug.do?bug_id=6670965}
-//	 */
-//	
-//	public void testLDLibraryPathNotModified()
-//	{
-//		/**
-//		 * This test does the following and is only useful in Sun Java 6
-//		 * Calls an executable, that executes another
-//		 * executable with a specific LD_LIBRARY_PATH set, 
-//		 * and this one Command Line Target Algorithm Executable
-//		 * That outputs the LD_LIBRARY_PATH as the additional algorithm run data.
-//		 * Then the executable outputs this value back to us. 
-//		 * 
-//		 */
-//		
-//		String execString = TestHelper.getJavaExecString() + CLIExecutor.class.getCanonicalName();
-//		String[] envp = { "LD_LIBRARY_PATH=foo" };
-//		Process proc;
-//		try {
-//			proc = Runtime.getRuntime().exec(execString, envp );
-//			Scanner procIn = new Scanner(proc.getInputStream());
-//			
-//			
-//			while(procIn.hasNext())
-//			{
-//				String line = procIn.nextLine();
-//				//I expect that the wrapper script we execute only outputs the LD_LIBRARY PATH
-//				System.out.println(line.trim());
-//				String expected = "LD_LIBRARY_PATH=foo";
-//				System.out.println(expected);
-//				assertEquals(expected, line.trim());
-//				return;
-//			}
-//			
-//			
-//			fail("Did not find matching line");
-//		} catch (IOException e) {
-//			e.printStackTrace();
-//			fail("Execption Occurred");
-//		}
-//		
-//		
-//				
-//		
-//	}
+		Map<String, AbstractOptions> taeOptionsMap = TargetAlgorithmEvaluatorLoader.getAvailableTargetAlgorithmEvaluators();
+		
+		TargetAlgorithmEvaluatorOptions opts = new TargetAlgorithmEvaluatorOptions();
+		System.out.println(taeOptionsMap);
+		opts.targetAlgorithmEvaluator = "PRELOADED";
+		opts.checkSATConsistency = true;
+		opts.checkSATConsistencyException = false;
+		opts.boundRuns = false;
+		
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).preloadedResponses="[TIMEOUT=4],[CRASHED=2],[TIMEOUT=3],[CRASHED=1],[SAT=1],[SAT=2],[UNSAT=2],[UNSAT=3],[TIMEOUT=4],[CRASHED=2],[TIMEOUT=3],[CRASHED=1],[SAT=1],[SAT=2],[UNSAT=2],[UNSAT=3]";
+		TargetAlgorithmEvaluator tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts, execConfig, false, taeOptionsMap);
+		
+		ProblemInstance satPi = new ProblemInstance("SATInstance");
+		ProblemInstance unsatPi = new ProblemInstance("UNSATInstance");
+		
+		
+		ProblemInstanceSeedPair satPiOne = new ProblemInstanceSeedPair(satPi, 1);
+		ProblemInstanceSeedPair satPiTwo = new ProblemInstanceSeedPair(satPi, 2);
+		ProblemInstanceSeedPair satPiThree = new ProblemInstanceSeedPair(satPi, 3);
+		ProblemInstanceSeedPair satPiFour = new ProblemInstanceSeedPair(satPi, 4);
+		
+		ProblemInstanceSeedPair unSatPiOne = new ProblemInstanceSeedPair(unsatPi, 1);
+		ProblemInstanceSeedPair unSatPiTwo = new ProblemInstanceSeedPair(unsatPi, 2);
+		ProblemInstanceSeedPair unSatPiThree = new ProblemInstanceSeedPair(unsatPi, 3);
+		ProblemInstanceSeedPair unSatPiFour = new ProblemInstanceSeedPair(unsatPi, 4);
+		
+		RunConfig satPiOneRC = new RunConfig(satPiOne, 0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration());
+		RunConfig satPiTwoRC = new RunConfig(satPiTwo, 0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration());
+		RunConfig unSatPiOneRC = new RunConfig(unSatPiOne, 0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration());
+		RunConfig unSatPiTwoRC = new RunConfig(unSatPiTwo, 0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration());
+		
+		
+		RunConfig satPiThreeRC = new RunConfig(satPiThree, 0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration());
+		RunConfig satPiFourRC = new RunConfig(satPiFour, 0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration());
+		RunConfig unSatPiThreeRC = new RunConfig(unSatPiThree, 0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration());
+		RunConfig unSatPiFourRC = new RunConfig(unSatPiFour, 0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration());
+		
+		
+		
+		List<RunConfig> rcs = Arrays.asList(satPiOneRC, satPiTwoRC, unSatPiOneRC, unSatPiTwoRC, satPiThreeRC, satPiFourRC, unSatPiThreeRC, unSatPiFourRC);
+		
+		tae.evaluateRun(rcs);
+		
+		
+		rcs = Arrays.asList(satPiOneRC, satPiTwoRC, unSatPiOneRC, unSatPiTwoRC, satPiThreeRC,  unSatPiThreeRC, satPiFourRC, unSatPiFourRC);
+		
+		
+
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		PrintStream pw = new PrintStream(bout);
+		
+		PrintStream oldOut = System.out;
+		
+		System.setOut(pw);
+		
+		try {
+			tae.evaluateRun(rcs);
+		} finally
+		{
+		   System.setOut(oldOut);
+		   System.out.println(bout.toString());
+		   pw.close();
+		}
+		
+		//The actual string value isn't important, and if this test is failing because a log message changed you can simply update this string 
+		assertTrue("Expected error message to appear",bout.toString().contains("SAT/UNSAT discrepancy detected on problem instance: Instance:UNSATInstance"));
+		assertTrue("Expected error message to appear",bout.toString().contains("SAT/UNSAT discrepancy detected on problem instance: Instance:SATInstance"));
+		
+		
+		
+		tae.notifyShutdown();
+		
+		
+		opts.checkSATConsistencyException = true;
+		
+		tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts, execConfig, false, taeOptionsMap);
+		rcs = Arrays.asList(satPiOneRC, satPiTwoRC, unSatPiOneRC, unSatPiTwoRC, satPiThreeRC,  unSatPiThreeRC, satPiFourRC, unSatPiFourRC);
+		boolean exception = false;
+		try {
+			tae.evaluateRun(rcs);
+		} catch(TargetAlgorithmAbortException e)
+		{
+			exception = true;
+		}
+		assertTrue("Expected that a TargetAlgorithmAbortException would have occured", exception);
+		tae.notifyShutdown();
+	}
+	
+	@Test
+	/**
+	 * Tests the Pre and Post commands work
+	 */
+	public void testPrePostCommandTAE()
+	{
+	
+		Map<String, AbstractOptions> taeOptionsMap = TargetAlgorithmEvaluatorLoader.getAvailableTargetAlgorithmEvaluators();
+		
+		TargetAlgorithmEvaluatorOptions opts = new TargetAlgorithmEvaluatorOptions();
+		System.out.println(taeOptionsMap);
+		opts.targetAlgorithmEvaluator = "PRELOADED";
+		opts.checkSATConsistency = true;
+		opts.checkSATConsistencyException = false;
+		opts.boundRuns = false;
+		opts.uncleanShutdownCheck = false;
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(ReturnCodeTester.class.getCanonicalName()).append(" ");
+		
+		
+		opts.prePostOptions.preCommand = b.toString() + "0";
+		opts.prePostOptions.postCommand = b.toString() + "0";
+		
+		
+		/***
+		 * Normal Test
+		 */
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		PrintStream pw = new PrintStream(bout);		
+		PrintStream oldOut = System.out;
+		System.setOut(pw);
+		TargetAlgorithmEvaluator tae;
+		try {
+			 tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts, execConfig, false, taeOptionsMap);
+		} finally
+		{
+		   System.setOut(oldOut);
+		   System.out.println(bout.toString());
+		   pw.close();
+		}
+		
+		assertTrue(bout.toString().contains("Command completed"));
+
+		
+		bout = new ByteArrayOutputStream();
+		pw = new PrintStream(bout);		
+		oldOut = System.out;
+		System.setOut(pw);
+		
+		try {
+			tae.notifyShutdown();
+		} finally
+		{
+		   System.setOut(oldOut);
+		   System.out.println(bout.toString());
+		   pw.close();
+		   
+		}
+		
+		/**
+		 * Error Test (no exception)
+		 */
+		opts.prePostOptions.preCommand = b.toString() + "227";
+		opts.prePostOptions.postCommand = b.toString() + "228";
+		
+		bout = new ByteArrayOutputStream();
+		pw = new PrintStream(bout);		
+		oldOut = System.out;
+		System.setOut(pw);
+	
+		try {
+			 tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts, execConfig, false, taeOptionsMap);
+		} finally
+		{
+		   System.setOut(oldOut);
+		   System.out.println(bout.toString());
+		   pw.close();
+		   
+		}
+		
+		assertTrue(bout.toString().contains("Got a non-zero return code from process: 227"));
+
+		
+		bout = new ByteArrayOutputStream();
+		pw = new PrintStream(bout);		
+		oldOut = System.out;
+		System.setOut(pw);
+		
+		try {
+			tae.notifyShutdown();
+		} finally
+		{
+		   System.setOut(oldOut);
+		   System.out.println(bout.toString());
+		   pw.close();
+		}
+		
+		assertTrue(bout.toString().contains("Got a non-zero return code from process: 228"));
+		
+		/**
+		 * Error Test (exception on startup)
+		 */
+		
+		
+		opts.prePostOptions.preCommand = b.toString() + "2";
+		opts.prePostOptions.exceptionOnError = true;
+		bout = new ByteArrayOutputStream();
+		pw = new PrintStream(bout);		
+		oldOut = System.out;
+		System.setOut(pw);
+		boolean exceptionOccurred = true;
+		try {
+			try {
+				 tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts, execConfig, false, taeOptionsMap);
+			} finally
+			{
+			   System.setOut(oldOut);
+			   System.out.println(bout.toString());
+			   pw.close();
+			   tae.notifyShutdown();
+			}
+		} catch(PrePostCommandErrorException e)
+		{
+			exceptionOccurred = true;
+		}
+		
+		assertTrue("Expect exception", exceptionOccurred);
+		
+		
+		
+		
+	}
+	
+	/**
+	 * Test invalid wrapper outputs
+	 */
+	@Test
+	public void testInvalidArguments()
+	{
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		Map<String, AbstractOptions> taeOptionsMap = TargetAlgorithmEvaluatorLoader.getAvailableTargetAlgorithmEvaluators();
+		
+		TargetAlgorithmEvaluatorOptions opts = new TargetAlgorithmEvaluatorOptions();
+		System.out.println(taeOptionsMap);
+		opts.targetAlgorithmEvaluator = "PRELOADED";
+		opts.checkSATConsistency = true;
+		opts.checkSATConsistencyException = false;
+		opts.boundRuns = false;
+		
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).preloadedResponses="[SAT=-1],";
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).quality = 0.0;
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).runLength = 0.0;
+		
+		TargetAlgorithmEvaluator tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts, execConfig, false, taeOptionsMap);
+		
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		for(int i=0; i < 1; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
+				runConfigs.add(rc);
+			}
+		}
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		
+		
+		try {
+			List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+			fail("Expected exception to be thrown: " + runs);
+		} catch(IllegalWrapperOutputException e)
+		{
+			System.out.println(e.getMessage());
+		}
+		
+
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).preloadedResponses="[SAT=1],";
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).quality = Double.NaN;
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).runLength = 0.0;
+		
+		tae.notifyShutdown();
+		tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts, execConfig, false, taeOptionsMap);
+		
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		
+		
+		try {
+			List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+			fail("Expected exception to be thrown: " + runs);
+		} catch(IllegalArgumentException e)
+		{
+			System.out.println(e.getMessage());
+		}
+		
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).preloadedResponses="[SAT=1],";
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).quality = 0;
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).runLength = -2;
+		
+		tae.notifyShutdown();
+		tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts, execConfig, false, taeOptionsMap);
+		
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		
+		
+		try {
+			List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+			fail("Expected exception to be thrown: " + runs);
+		} catch(IllegalArgumentException e)
+		{
+			System.out.println(e.getMessage());
+		}
+		tae.notifyShutdown();
+		
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).preloadedResponses="[SAT=1],";
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).quality = 0;
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).runLength = Double.NaN;
+		
+		tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts, execConfig, false, taeOptionsMap);
+		
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		
+		
+		try {
+			List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+			fail("Expected exception to be thrown: " + runs);
+		} catch(IllegalArgumentException e)
+		{
+			System.out.println(e.getMessage());
+		}
+			
+		
+		
+		tae.notifyShutdown();
+		
+		
+
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).preloadedResponses="[SAT=1],";
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).quality = 0;
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).runLength = -1;
+		
+		tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts, execConfig, false, taeOptionsMap);
+		
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		
+		
+		try {
+			List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+			
+		} catch(IllegalArgumentException e)
+		{
+			fail("Unexpected Exception Thrown: " + e);
+		}
+		tae.notifyShutdown();
+		
+
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).preloadedResponses="[SAT=" + Double.POSITIVE_INFINITY + "],";
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).quality = 0;
+		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).runLength = -1;
+
+		tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts, execConfig, false, taeOptionsMap);
+		
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		
+		
+		try {
+			List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+			
+		} catch(IllegalArgumentException e)
+		{
+			fail("Unexpected exception");
+			
+		}
+		
+		
+		tae.notifyShutdown();
+	}
+	
+	@Test
+	public void testOrderCheckingDecorator()
+	{
+		
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(ParamEchoExecutor.class.getCanonicalName());
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
+		
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
+				runConfigs.add(rc);
+			}
+		}
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		
+		
+		//Test the TAE when we shuffle responses
+		RandomResponseTargetAlgorithmEvaluatorOptions randOpts = new RandomResponseTargetAlgorithmEvaluatorOptions();
+		long seed = System.currentTimeMillis();
+		System.out.println("Order Checking Decorator used seed" + seed);
+		randOpts.seed =seed;
+		randOpts.shuffleResponses = true;
+		
+		TargetAlgorithmEvaluator tae = new RandomResponseTargetAlgorithmEvaluator(execConfig, randOpts);
+		
+		tae = new ResultOrderCorrectCheckerTargetAlgorithmEvaluatorDecorator(tae);
+		try {
+			try {
+				List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+				fail("Expected Exception to have occured");
+			} catch(IllegalStateException e)
+			{
+				System.out.println("GOOD: " + e.getMessage());
+			}
+	
+			
+			final AtomicBoolean taeCompletedSuccessfully = new AtomicBoolean();
+			TargetAlgorithmEvaluatorCallback callback = new TargetAlgorithmEvaluatorCallback()
+			{
+	
+				@Override
+				public void onSuccess(List<AlgorithmRun> runs) {
+					taeCompletedSuccessfully.set(true);
+				}
+	
+				@Override
+				public void onFailure(RuntimeException t) {
+					System.out.println("GOOD ASYNC: " + t.getMessage());	
+				}
+				
+			};
+			
+			WaitableTAECallback wait = new WaitableTAECallback(callback);
+				
+			tae.evaluateRunsAsync(runConfigs, wait);
+			
+			wait.waitForCompletion();
+			
+			assertFalse("TAE Should not have completed successfully", taeCompletedSuccessfully.get());
+		} finally
+		{
+			tae.notifyShutdown();
+		}
+		
+		
+		//Test the TAE when we don't shuffle
+		try {
+			randOpts = new RandomResponseTargetAlgorithmEvaluatorOptions();
+			
+			System.out.println("Order Checking Decorator used seed" + seed);
+			randOpts.seed =seed;
+			
+			tae = new RandomResponseTargetAlgorithmEvaluator(execConfig, randOpts);
+			
+			tae = new ResultOrderCorrectCheckerTargetAlgorithmEvaluatorDecorator(tae);
+			
+			try {
+				List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+				System.out.println("GOOD: Completed");
+			} catch(IllegalStateException e)
+			{
+				throw e;
+			}
+	
+			
+			final AtomicBoolean taeCompletedSuccessfully = new AtomicBoolean();
+			TargetAlgorithmEvaluatorCallback callback = new TargetAlgorithmEvaluatorCallback()
+			{
+	
+				@Override
+				public void onSuccess(List<AlgorithmRun> runs) {
+					taeCompletedSuccessfully.set(true);
+				}
+	
+				@Override
+				public void onFailure(RuntimeException t) {
+					taeCompletedSuccessfully.set(false);
+					t.printStackTrace();
+				}
+				
+			};
+			
+			WaitableTAECallback wait = new WaitableTAECallback(callback);
+				
+			tae.evaluateRunsAsync(runConfigs, wait);
+			
+			wait.waitForCompletion();
+			
+			assertTrue("TAE Should not have completed successfully", taeCompletedSuccessfully.get());
+			
+		} finally
+		{
+			tae.notifyShutdown();
+		}
+		
+		
+	}
+	
+	@Test
+	/**
+	 * This tests for that the CLI will return eventually
+	 * This is related to issue https://mantis.sjrx.net/view.php?id=1675
+	 * 
+	 * This test roughly tries to simulate a deadlock, if you look at the commit 0702803124e3513b8b5479b8ae5391d2df5ba38a the changes will show you where the deadlocks were
+	 * occurring.
+	 * 
+	 */
+	public void testDeadLockinCommandLineTargetAlgorithmEvaluator()
+	{
+	
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(ParamEchoExecutor.class.getCanonicalName());
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
+		
+		final List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		for(int i=0; i < 100; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
+				runConfigs.add(rc);
+			}
+		}
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		
+		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
+		
+		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
+		
+		options.concurrentExecution = true;
+		options.cores = 100;
+		
+		tae = fact.getTargetAlgorithmEvaluator(execConfig, options);
+		
+		tae = new BoundedTargetAlgorithmEvaluator(tae,100, execConfig);
+		
+		
+		
+		
+		final AtomicBoolean finishedRuns = new AtomicBoolean(false);
+		Runnable run = new Runnable()
+		{
+			public void run()
+			{
+				for(int i=0; i < 10; i++)
+				{
+					List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+				}
+			
+				finishedRuns.set(true);
+			}
+		};
+		
+		
+		Executors.newSingleThreadExecutor(new SequentiallyNamedThreadFactory("DeadLock JUnit Test")).submit(run);
+		
+		
+		
+		
+			//This 45 second sleep is probably incredibly sensitive.
+
+		for(int i=0; i < 45; i++)
+		{
+			try {
+				Thread.sleep(1000);
+				if(finishedRuns.get())
+				{
+					break;
+				}
+				
+				if(i == 40)
+				{
+					System.err.println("IF THIS TEST IS STILL OUTPUTTING THEN THE 45 SECOND SLEEP IS TOO LITTLE");
+				}
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				return;
+			}
+		}
+		assertTrue("Deadlock probably occured", finishedRuns.get());	
+	}
+	
+	@Test
+	/**
+	 * This tests if a deadlock occurs when we try and resubmit runs in a onSuccess Method
+	 */
+	public void testBlockingTAEResubmitRunsHandler()
+	{
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		RandomResponseTargetAlgorithmEvaluatorFactory fact = new RandomResponseTargetAlgorithmEvaluatorFactory();
+		
+		RandomResponseTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
+		options.persistent = true;
+		TargetAlgorithmEvaluator tae = fact.getTargetAlgorithmEvaluator(execConfig, options);
+		
+		
+		tae = new BoundedTargetAlgorithmEvaluator(tae, 1, execConfig);
+		
+		final List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		for(int i=0; i < 1; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
+				runConfigs.add(rc);
+			}
+		}
+		
+		
+		final TargetAlgorithmEvaluator tae2 = tae;
+		
+		final List<RunConfig> runConfigs2 = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		for(int i=0; i < 1; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
+				runConfigs2.add(rc);
+			}
+		}
+		
+		
+		
+		
+		
+		final CountDownLatch latch = new CountDownLatch(1); 
+		
+		tae.evaluateRunsAsync(runConfigs, new TargetAlgorithmEvaluatorCallback()
+		{
+
+			@Override
+			public void onSuccess(List<AlgorithmRun> runs) {
+
+				System.out.println(runs);
+				
+				
+				System.out.println(tae2.evaluateRun(runConfigs2));
+				
+				
+				latch.countDown();
+				
+			}
+
+			@Override
+			public void onFailure(RuntimeException e) {
+				e.printStackTrace();
+				
+			}
+			
+		});
+		
+		
+		try {
+			System.out.println("Deadlock if this is the last thing you see");
+			latch.await();
+		} catch (InterruptedException e1) {
+			Thread.currentThread().interrupt();
+			fail();
+			return;
+		}
+		
+	}
+	
+	
+	
+	@Test
+	/**
+	 * Schedules a set of runs in the form of 3,1,3,1 on a bound of 2x, if the Bounding is done properly this should be doable in under 5 seconds,
+	 * if not then it might take about 8 seconds.
+	 */
+	public void testBoundedTAESubmissionSpeed()
+	{
+		//Check that a submission of run 10 runs on a bound of <5 take 5,1,1,1,1, 5,1,1,1,1 takes 6 seconds and not 10.
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(TrueSleepyParamEchoExecutor.class.getCanonicalName());
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
+		
+		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
+		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
+		
+		options.logAllCallStrings = true;
+		options.logAllProcessOutput = true;
+		options.concurrentExecution = true;
+		options.observerFrequency = 2000;
+		options.cores = 2;
+		
+		tae = fact.getTargetAlgorithmEvaluator(execConfig, options);	
+		TargetAlgorithmEvaluator cliTAE = tae;
+		tae = new BoundedTargetAlgorithmEvaluator(tae,2,execConfig);
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(4);
+		for(int i=0; i < 4; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			if( i % 2 == 0)
+			{
+				config.put("runtime", "3");
+			} else
+			{
+				config.put("runtime","1");
+			}
+
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config);
+				runConfigs.add(rc);
+			}
+		}
+		
+		
+		
+		StopWatch watch = new AutoStartStopWatch();
+		cliTAE.evaluateRun(runConfigs);
+		System.out.println(watch.stop());
+		assertTrue("Expected time for CLI Direct to be less than 5 seconds", watch.time() < 5000 );
+		
+		StopWatch watch2 = new AutoStartStopWatch();
+		tae.evaluateRun(runConfigs);
+		System.out.println(watch2.stop());
+		assertTrue("Expected time for Bounded to be less than 5 seconds", watch2.time() < 5000 );
+		
+	}
+	
+
+	@Test
+	/**
+	 * Wraps a bunch of TAEs together and checks to see if an Illegal State Exception happens
+	 */
+	public void testBoundedTAEOrderOfCallsObserverPreserved()
+	{
+	
+		//Check that a submission of run 10 runs on a bound of <5 take 5,1,1,1,1, 5,1,1,1,1 takes 6 seconds and not 10.
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(TrueSleepyParamEchoExecutor.class.getCanonicalName());
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
+		
+		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
+		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
+		
+		options.logAllCallStrings = true;
+		options.logAllProcessOutput = true;
+		options.concurrentExecution = true;
+		options.observerFrequency = 50;
+		options.cores = 100;
+		
+		tae = fact.getTargetAlgorithmEvaluator(execConfig, options);	
+		TargetAlgorithmEvaluator cliTAE = tae;
+		
+
+		tae = new BoundedTargetAlgorithmEvaluator(tae,100,execConfig);
+		tae = new BoundedTargetAlgorithmEvaluator(tae,100,execConfig);
+		tae = new BoundedTargetAlgorithmEvaluator(tae,100,execConfig);
+		tae = new BoundedTargetAlgorithmEvaluator(tae,100,execConfig);
+
+		
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(4);
+		for(int i=0; i < 100; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			
+			config.put("runtime", String.valueOf(1 + (i%10)));
+			
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config);
+				runConfigs.add(rc);
+			}
+		}
+		
+		
+		
+		StopWatch watch = new AutoStartStopWatch();
+		System.out.println(watch.stop());
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		PrintStream pout = new PrintStream(bout);
+		
+		
+		
+		
+		System.out.println("Turning off STDOUT");
+		final PrintStream origOut = System.out;
+		System.setOut(pout);
+		
+		tae.evaluateRun(runConfigs, new TargetAlgorithmEvaluatorRunObserver()
+		{
+
+			final long startTime = System.currentTimeMillis();
+			int numCompleted = 0;
+			int calls = 0;
+			@Override
+			public void currentStatus(List<? extends KillableAlgorithmRun> runs) {
+				//if(Math.random() > 0.95)
+				//System.out.println("Called");
+				calls++;
+				int complete = 0;
+				for(AlgorithmRun run : runs)
+				{
+					if(run.isRunCompleted())
+					{
+						complete++;
+					}
+				}
+				if(numCompleted < complete)
+				{
+					numCompleted = complete;
+					origOut.println("Status: " + numCompleted + " out of " + runs.size() + " calls: " + calls);
+					
+				}
+				
+				
+			}
+				
+			
+		}
+		);
+		
+		System.setOut(origOut);
+		System.out.println("Outputting Everything...");
+		String output = bout.toString();
+		System.out.println(output);
+		
+
+		System.out.println(watch.stop());
+		if(output.contains("ERROR"))
+		{
+			fail("Output contained some error this is unexpected");
+		}
+		//assertTrue("Expected time for CLI Direct to be less than 5 seconds", watch.time() < 5000 );
+		
+		
+		//assertTrue("Expected time for Bounded to be less than 5 seconds", watch2.time() < 5000 );
+		
+	}
+	
+	
+	@Test
+	/**
+	 * Wraps a bunch of TAEs together and checks to see if an Illegal State Exception happens
+	 */
+	public void testBoundedTAEShutdownExceptionHandled() throws InterruptedException 
+	{
+	
+		//Check that a submission of run 10 runs on a bound of <5 take 5,1,1,1,1, 5,1,1,1,1 takes 6 seconds and not 10.
+		final Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(TrueSleepyParamEchoExecutor.class.getCanonicalName());
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
+		
+		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
+		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
+		
+		options.logAllCallStrings = true;
+		options.logAllProcessOutput = true;
+		options.concurrentExecution = true;
+		options.observerFrequency = 50;
+		options.cores = 1;
+		
+		tae = fact.getTargetAlgorithmEvaluator(execConfig, options);	
+		TargetAlgorithmEvaluator cliTAE = tae;
+		
+
+		tae = new BoundedTargetAlgorithmEvaluator(tae,1,execConfig);
+		
+		tae = new OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator(tae);
+		
+		Runnable run = new Runnable()
+		{
+			public void run()
+			{
+				List<RunConfig> runConfigs = new ArrayList<RunConfig>(4);
+				for(int i=0; i < 4; i++)
+				{
+					ParamConfiguration config = configSpace.getRandomConfiguration(r);
+					
+					config.put("runtime", String.valueOf(1 + (i%10)));
+					
+					if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
+					{
+						//Only want good configurations
+						i--;
+						continue;
+					} else
+					{
+						RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config);
+						runConfigs.add(rc);
+					}
+				}
+				
+				try {
+				
+				tae.evaluateRun(runConfigs);
+				} catch(RuntimeException e)
+				{
+					System.out.println("Got Exception:");
+					e.printStackTrace();
+					System.out.println("This is okay:");
+					tae.evaluateRun(runConfigs);
+					
+					if(Thread.interrupted())
+					{
+						System.out.println("Interrupted");
+					} else
+					{
+						System.out.println("Not Interrupted");
+					}
+					//System.out.println("TEST");
+				}
+				
+				
+				
+			}
+		};
+		
+		
+		
+
+		Thread t = new Thread(run);
+		t.start();
+		
+		Thread.sleep(2048);
+		
+		t.interrupt();
+		Thread.sleep(1024);
+		assertEquals("Number of outstanding requests should be zero",0, tae.getNumberOfOutstandingEvaluations());
+		
+	}
+	
+	
+	
+	
+	
+	
+	@Test
+	public void testSimulateDelayScaling()
+	{
+		//Check that a submission of run 10 runs on a bound of <5 take 5,1,1,1,1, 5,1,1,1,1 takes 6 seconds and not 10.
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(ParamEchoExecutor.class.getCanonicalName());
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
+		
+		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
+		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
+		
+		options.logAllCallStrings = true;
+		options.logAllProcessOutput = true;
+		options.concurrentExecution = true;
+		options.observerFrequency = 2000;
+		options.cores = 2;
+		
+		tae = fact.getTargetAlgorithmEvaluator(execConfig, options);	
+		TargetAlgorithmEvaluator cliTAE = tae;
+		
+		TargetAlgorithmEvaluator taeFourth = new SimulatedDelayTargetAlgorithmEvaluatorDecorator(cliTAE, 20, 0.25);
+		TargetAlgorithmEvaluator taeHalf = new SimulatedDelayTargetAlgorithmEvaluatorDecorator(cliTAE, 20, 0.5);
+		TargetAlgorithmEvaluator taeUnity = new SimulatedDelayTargetAlgorithmEvaluatorDecorator(cliTAE, 20, 1);
+		TargetAlgorithmEvaluator taeDouble = new SimulatedDelayTargetAlgorithmEvaluatorDecorator(cliTAE, 20, 2);
+		TargetAlgorithmEvaluator taeFour = new SimulatedDelayTargetAlgorithmEvaluatorDecorator(cliTAE, 20, 4);
+		
+		
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(4);
+		double runtime = 2;
+		for(int i=0; i < 1; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			
+			config.put("runtime",String.valueOf(runtime));
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config);
+				runConfigs.add(rc);
+			}
+		}
+		
+		
+		
+		checkExceptedObserverCount(taeFourth, 0.25, runConfigs, runtime, 20);
+		checkExceptedObserverCount(taeHalf, 0.5, runConfigs, runtime, 20);
+		checkExceptedObserverCount(taeUnity, 1.0, runConfigs, runtime, 20);
+		checkExceptedObserverCount(taeDouble, 2, runConfigs, runtime, 20);
+		checkExceptedObserverCount(taeFour, 4, runConfigs, runtime, 20);
+		
+		/*
+		StopWatch watch2 = new AutoStartStopWatch();
+		tae.evaluateRun(runConfigs);
+		System.out.println(watch2.stop());
+		assertTrue("Expected time for Bounded to be less than 5 seconds", watch2.time() < 5000 );
+		*/
+	}
+	
+	@Test
+	public void testNullConfigurationSpace()
+	{
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(DummyExecutor.class.getCanonicalName());
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), ParamConfigurationSpace.getNullConfigurationSpace(), false, false, 0.01);
+		
+		
+		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
+		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
+		
+		options.cores = 1;
+		options.logAllCallStrings = true;
+		options.logAllProcessOutput = true;
+		options.concurrentExecution = true;
+		options.observerFrequency = 2000;
+		
+		
+		tae = fact.getTargetAlgorithmEvaluator(execConfig, options);	
+		TargetAlgorithmEvaluator cliTAE = tae;
+		tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
+		
+		
+		TargetAlgorithmEvaluator taeUnity = new KillCaptimeExceedingRunsRunsTargetAlgorithmEvaluatorDecorator(tae, 1.1);
+		
+		
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(4);
+		double runtime = 50;
+		for(int i=0; i < 1; i++)
+		{
+			ParamConfiguration config = ParamConfigurationSpace.getNullConfigurationSpace().getDefaultConfiguration();
+			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), 1), 1.5, config);
+			runConfigs.add(rc);
+		}
+		
+		long startTime = System.currentTimeMillis();
+		taeUnity.evaluateRun(runConfigs);
+		long endTime = System.currentTimeMillis();
+		if(endTime - startTime > 5000)
+		{
+			fail("This test took too long to run");
+		}
+	}
+	
+	
+	
+	@Test
+	public void testKillingRunDecorator()
+	{
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(FiveSecondSleepingParamEchoExecutor.class.getCanonicalName());
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
+		
+		
+		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
+		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
+		
+		options.cores = 1;
+		options.logAllCallStrings = true;
+		options.logAllProcessOutput = true;
+		options.concurrentExecution = true;
+		options.observerFrequency = 2000;
+		
+		
+		tae = fact.getTargetAlgorithmEvaluator(execConfig, options);	
+		TargetAlgorithmEvaluator cliTAE = tae;
+		tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
+		
+		
+		TargetAlgorithmEvaluator taeUnity = new KillCaptimeExceedingRunsRunsTargetAlgorithmEvaluatorDecorator(tae, 1.1);
+		
+		
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(4);
+		double runtime = 50;
+		for(int i=0; i < 1; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			
+			config.put("runtime",String.valueOf(runtime));
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1.5, config);
+				runConfigs.add(rc);
+			}
+		}
+		
+		long startTime = System.currentTimeMillis();
+		taeUnity.evaluateRun(runConfigs);
+		long endTime = System.currentTimeMillis();
+		if(endTime - startTime > 5000)
+		{
+			fail("This test took too long to run");
+		}
+	}
+	
+	
+	
+	public void checkExceptedObserverCount(TargetAlgorithmEvaluator tae, double scale, List<RunConfig> runConfigs, double runtime, double observerFrequency)
+	{
+
+		final AtomicInteger count = new AtomicInteger(0);
+		TargetAlgorithmEvaluatorRunObserver obs = new TargetAlgorithmEvaluatorRunObserver()
+		{
+
+			@Override
+			public void currentStatus(List<? extends KillableAlgorithmRun> runs) {
+				count.incrementAndGet();
+				
+			}
+			
+		};
+		
+		
+		StopWatch watch = new AutoStartStopWatch();
+		tae.evaluateRun(runConfigs, obs);
+		watch.stop();
+		
+		
+		double timeInSeconds = watch.time() / 1000.0;
+		System.out.println("Runs completed in " + timeInSeconds + " observerCounts: " + count.get() + " expect:" + (( runtime / scale) - 1) / observerFrequency * 1000);
+		assertTrue("Expected that the number of observer notifications " + count.get() + " > " + (( runtime / scale) - 1) / observerFrequency * 1000  , count.get() > (( runtime / scale) - 1) / observerFrequency * 1000);
+		
+		assertTrue("Expected that time taken " + timeInSeconds + " > " + ((runtime / scale) - 1) , timeInSeconds >  (runtime / scale) - 1 );
+		assertTrue("Expected that time taken " + timeInSeconds + " < " + ((runtime / scale) + 1) , timeInSeconds <  (runtime / scale) + 1 );
+	}
+	
+	@Test
+	public void testDecoratorsApplyTheSameWay()
+	{
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		RandomResponseTargetAlgorithmEvaluatorFactory fact = new RandomResponseTargetAlgorithmEvaluatorFactory();
+		
+		RandomResponseTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
+		options.persistent = true;
+		options.cores = 10000;
+		TargetAlgorithmEvaluator tae = fact.getTargetAlgorithmEvaluator(execConfig, options);
+		
+		
+		tae = new BoundedTargetAlgorithmEvaluator(tae, 1, execConfig);
+		
+		final List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		for(int i=0; i < 1; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
+				runConfigs.add(rc);
+			}
+		}
+		
+		TargetAlgorithmEvaluator tae10 = new SolQualSetTargetAlgorithmEvaluatorDecorator( new SolQualSetTargetAlgorithmEvaluatorDecorator(tae, 5), 10);
+		TargetAlgorithmEvaluator tae5 = new SolQualSetTargetAlgorithmEvaluatorDecorator( new SolQualSetTargetAlgorithmEvaluatorDecorator(tae, 10), 5);
+		
+		
+		
+		
+		List<AlgorithmRun> runs = tae10.evaluateRun(runConfigs);
+		for(AlgorithmRun run : runs)
+		{
+			assertEquals("Expected quality to be 10", 10, run.getQuality(), 0.01);
+		}
+		
+		
+		runs = tae5.evaluateRun(runConfigs);
+		for(AlgorithmRun run : runs)
+		{
+			assertEquals("Expected quality to be 5", 5, run.getQuality(), 0.01);
+		}
+		
+		final Semaphore s = new Semaphore(0);
+		final AtomicInteger solQual = new AtomicInteger(0);
+		tae10.evaluateRunsAsync(runConfigs, new TargetAlgorithmEvaluatorCallback() {
+			
+			@Override
+			public void onSuccess(List<AlgorithmRun> runs) {
+				solQual.set((int) runs.get(0).getQuality());
+				s.release();
+				
+			}
+			
+			@Override
+			public void onFailure(RuntimeException e) {
+				e.printStackTrace();
+				
+			}
+		});
+
+		s.acquireUninterruptibly();
+		assertEquals("Expect SolQual to be 10", 10,  solQual.get());
+		
+		tae5.evaluateRunsAsync(runConfigs, new TargetAlgorithmEvaluatorCallback() {
+			
+			@Override
+			public void onSuccess(List<AlgorithmRun> runs) {
+				solQual.set((int) runs.get(0).getQuality());
+				s.release();
+				
+			}
+			
+			@Override
+			public void onFailure(RuntimeException e) {
+				e.printStackTrace();
+				
+			}
+		});
+
+		s.acquireUninterruptibly();
+		assertEquals("Expect SolQual to be 5", 5,  solQual.get());
+		
+		
+		
+	}
+	
+	
+	@Test
+	public void testSpacesAndQuotesCLI()
+	{
+		//Check that a submission of run 10 runs on a bound of <5 take 5,1,1,1,1, 5,1,1,1,1 takes 6 seconds and not 10.
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		
+		StringBuilder b = new StringBuilder();
+		b.append("\"test-files/testexecutor/file test.py\"");
+		System.out.println(b);
+		
+		
+		ParamConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("Test { \"\\\" } [\"\\\"]\n");
+		
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
+		
+		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
+		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
+		
+		options.logAllCallStrings = true;
+		options.logAllProcessOutput = true;
+		options.concurrentExecution = true;
+		options.observerFrequency = 2000;
+		options.cores = 2;
+		
+		tae = fact.getTargetAlgorithmEvaluator(execConfig, options);	
+		TargetAlgorithmEvaluator cliTAE = tae;
+		tae = new BoundedTargetAlgorithmEvaluator(tae,2,execConfig);
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(4);
+		for(int i=0; i < 1; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+
+			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"),1), 3000, config);
+			runConfigs.add(rc);
+
+		}
+		
+		
+		
+		StopWatch watch = new AutoStartStopWatch();
+		cliTAE.evaluateRun(runConfigs).get(0).getAdditionalRunData().equals("'\"\"'");
+		System.out.println(watch.stop());
+		
+	}
+	
+	@Test
+	public void testBackslash()
+	{
+		//Check that a submission of run 10 runs on a bound of <5 take 5,1,1,1,1, 5,1,1,1,1 takes 6 seconds and not 10.
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		
+		StringBuilder b = new StringBuilder();
+		b.append("\"test-files/testexecutor/fi\\letest.py\"");
+		System.out.println(b);
+		
+		
+		ParamConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("Test { \"\\\" } [\"\\\"]\n");
+		
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
+		
+		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
+		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
+		
+		options.logAllCallStrings = true;
+		options.logAllProcessOutput = true;
+		options.concurrentExecution = true;
+		options.observerFrequency = 2000;
+		options.cores = 2;
+		
+		tae = fact.getTargetAlgorithmEvaluator(execConfig, options);	
+		TargetAlgorithmEvaluator cliTAE = tae;
+		tae = new BoundedTargetAlgorithmEvaluator(tae,2,execConfig);
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(4);
+		for(int i=0; i < 1; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+
+			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"),1), 3000, config);
+			runConfigs.add(rc);
+
+		}
+		
+		
+		
+		StopWatch watch = new AutoStartStopWatch();
+		cliTAE.evaluateRun(runConfigs).get(0).getAdditionalRunData().equals("'\"\"'");
+		System.out.println(watch.stop());
+		
+	}
+
+	@Test
+	public void testEnvironmentVariableSet()
+	{
+		//Check that a submission of run 10 runs on a bound of <5 take 5,1,1,1,1, 5,1,1,1,1 takes 6 seconds and not 10.
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(EnvironmentVariableEchoer.class.getCanonicalName());
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
+		
+		
+		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
+		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
+		
+		options.cores = 2;
+		options.logAllCallStrings = true;
+		options.logAllProcessOutput = true;
+		options.concurrentExecution = true;
+		options.observerFrequency = 2000;
+		
+		
+		tae = fact.getTargetAlgorithmEvaluator(execConfig, options);	
+		TargetAlgorithmEvaluator cliTAE = tae;
+		tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
+		
+		
+		
+		
+		
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(4);
+		double runtime = 50;
+		for(int i=0; i < 1; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			
+			config.put("runtime",String.valueOf(runtime));
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1.5, config);
+				runConfigs.add(rc);
+			}
+		}
+		
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		PrintStream pout = new PrintStream(bout);
+		PrintStream oldOut = System.out;
+		
+		System.setOut(pout);
+		
+		tae.evaluateRun(runConfigs);
+		
+		
+		System.setOut(oldOut);
+		System.out.println(bout.toString());
+		assertTrue(bout.toString().contains(CommandLineAlgorithmRun.PORT_ENVIRONMENT_VARIABLE));
+		assertTrue(bout.toString().contains(CommandLineAlgorithmRun.FREQUENCY_ENVIRONMENT_VARIABLE));
+		
+		
+		
+	}
+	
+	@Test
+	public void testCPUTimeUpdateWithRunsolver()
+	{
+		//Check that a submission of run 10 runs on a bound of <5 take 5,1,1,1,1, 5,1,1,1,1 takes 6 seconds and not 10.
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		StringBuilder b = new StringBuilder();
+		
+		b.append((new File("")).getAbsolutePath() + File.separator + "test-files"+File.separator + "runsolver" + File.separator + "runsolver -C 4000 " + (new File("")).getAbsolutePath() + File.separator + "test-files"+File.separator + "runsolver" + File.separator + "/sleepy");
+		//b.append((new File("")).getAbsolutePath() + File.separator + "test-files"+File.separator + "runsolver" + File.separator + "system ");
+		
+		System.out.println(b);
+		
+		
+		
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 1500);
+		
+		
+		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
+		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
+		
+		options.cores = 2;
+		options.logAllCallStrings = true;
+		options.logAllProcessOutput = true;
+		options.concurrentExecution = true;
+		options.observerFrequency = 2000;
+		
+		
+		tae = fact.getTargetAlgorithmEvaluator(execConfig, options);	
+		TargetAlgorithmEvaluator cliTAE = tae;
+		tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
+		
+		
+		
+		
+		
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(4);
+		double runtime = 50;
+		for(int i=0; i < 1; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			
+			config.put("runtime",String.valueOf(runtime));
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 20, config);
+				runConfigs.add(rc);
+			}
+		}
+		
+		
+		
+		TargetAlgorithmEvaluatorRunObserver obs = new TargetAlgorithmEvaluatorRunObserver()
+		{
+
+			@Override
+			public void currentStatus(List<? extends KillableAlgorithmRun> runs) 
+			{
+				for(KillableAlgorithmRun run : runs)
+				{
+					System.out.println("Runtime: " + run.getRuntime() + " walltime: " + run.getWallclockExecutionTime());
+					
+					if(run.getRuntime() > 4)
+					{
+						run.kill();
+					}
+					
+					if(run.getWallclockExecutionTime() > 30)
+					{
+						System.err.println("This test has almost certainly failed and will never end");
+					}
+				}
+			}
+			
+		};
+		
+		
+		
+		tae.evaluateRun(runConfigs,obs);
+		
+		
+		
+		
+	}
+	
+	@Test
+	public void testProcessGroupKilled()
+	{
+		
+		/**
+		 * This tests to see if a wrapper (that sets the process group) => chained shutsdown correctly
+		 */
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		StringBuilder b = new StringBuilder();
+		
+		b.append((new File("")).getAbsolutePath() + File.separator + "test-files"+File.separator + "runsolver" + File.separator + "pgrpset.py");
+		//b.append((new File("")).getAbsolutePath() + File.separator + "test-files"+File.separator + "runsolver" + File.separator + "system ");
+		
+		System.out.println(b);
+		
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 1500);
+		
+		
+		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
+		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
+		
+		options.cores = 2;
+		options.logAllCallStrings = true;
+		options.logAllProcessOutput = true;
+		options.concurrentExecution = true;
+		options.observerFrequency = 2000;
+		
+		
+		tae = fact.getTargetAlgorithmEvaluator(execConfig, options);	
+		
+		tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
+		
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(4);
+		double runtime = 50;
+		for(int i=0; i < 1; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			
+			config.put("runtime",String.valueOf(runtime));
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 20, config);
+				runConfigs.add(rc);
+			}
+		}
+		
+		
+		
+		TargetAlgorithmEvaluatorRunObserver obs = new TargetAlgorithmEvaluatorRunObserver()
+		{
+
+			@Override
+			public void currentStatus(List<? extends KillableAlgorithmRun> runs) 
+			{
+				for(KillableAlgorithmRun run : runs)
+				{
+					System.out.println("Runtime: " + run.getRuntime() + " walltime: " + run.getWallclockExecutionTime());
+					
+					if(run.getRuntime() > 1)
+					{
+						run.kill();
+					}
+					
+					if(run.getWallclockExecutionTime() > 30)
+					{
+						System.err.println("This test has almost certainly failed and will never end");
+					}
+				}
+			}
+			
+		};
+		
+		
+		
+		tae.evaluateRun(runConfigs,obs);
+		
+		try {
+			
+			//This checks to see how many matching processes there are 
+			//It outputs a line from the wc command and we expect all zeros.
+			//If this test fails, then it may be because a previous run failed,
+			//so check that shell script for the exact line and maybe killall the other processes
+			Process proc = Runtime.getRuntime().exec((new File("")).getAbsolutePath() + File.separator + "test-files"+File.separator + "runsolver" + File.separator + "runsCounter.sh");
+			
+			BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+			
+			assertTrue("Expected that there would be zero matching process", reader.readLine().matches("^\\s*0\\s*0\\s*0\\s*$"));
+		} catch (IOException e) {
+
+			e.printStackTrace();
+			fail("Um what?");
+		}
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		/***
+		 * This checks to see if a runsolver => chained shuts down correctly.
+		 */
+
+		b = new StringBuilder();
+		
+		b.append((new File("")).getAbsolutePath() + File.separator + "test-files"+File.separator + "runsolver" + File.separator + "runsolver -C 4000 " + (new File("")).getAbsolutePath() + File.separator + "test-files"+File.separator + "runsolver" + File.separator + "/chained 5");
+		
+		System.out.println(b);
+		
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 1500);
+		tae = fact.getTargetAlgorithmEvaluator(execConfig, options);	
+		
+		tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
+		
+		runConfigs = new ArrayList<RunConfig>(4);
+		
+		for(int i=0; i < 1; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			
+			config.put("runtime",String.valueOf(runtime));
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 20, config);
+				runConfigs.add(rc);
+			}
+		}
+		
+		tae.evaluateRun(runConfigs,obs);
+		
+		try {
+			
+			//This checks to see how many matching processes there are 
+			//It outputs a line from the wc command and we expect all zeros.
+			//If this test fails, then it may be because a previous run failed,
+			//so check that shell script for the exact line and maybe killall the other processes
+			Process proc = Runtime.getRuntime().exec((new File("")).getAbsolutePath() + File.separator + "test-files"+File.separator + "runsolver" + File.separator + "runsCounter.sh");
+			
+			BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+			
+			assertTrue("Expected that there would be zero matching process", reader.readLine().matches("^\\s*0\\s*0\\s*0\\s*$"));
+		} catch (IOException e) {
+
+			e.printStackTrace();
+			fail("Um what?");
+		}
+		
+		
+		
+		
+		
+		
+		
+		
+		/***
+		 * This tests to see if a wrapper => runsolver => chained shutsdown correctly
+		 */
+		
+		b = new StringBuilder();
+		
+		b.append((new File("")).getAbsolutePath() + File.separator + "test-files"+File.separator + "runsolver" + File.separator + "pgrpset-rs.py");
+		
+		System.out.println(b);
+		
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 1500);
+		tae = fact.getTargetAlgorithmEvaluator(execConfig, options);	
+		
+		tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
+		
+		runConfigs = new ArrayList<RunConfig>(4);
+		
+		for(int i=0; i < 1; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			
+			config.put("runtime",String.valueOf(runtime));
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 20, config);
+				runConfigs.add(rc);
+			}
+		}
+		
+		tae.evaluateRun(runConfigs,obs);
+		
+		try {
+			
+			//This checks to see how many matching processes there are 
+			//It outputs a line from the wc command and we expect all zeros.
+			//If this test fails, then it may be because a previous run failed,
+			//so check that shell script for the exact line and maybe killall the other processes
+			Process proc = Runtime.getRuntime().exec((new File("")).getAbsolutePath() + File.separator + "test-files"+File.separator + "runsolver" + File.separator + "runsCounter.sh");
+			
+			BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+			
+			assertTrue("Expected that there would be zero matching process", reader.readLine().matches("^\\s*0\\s*0\\s*0\\s*$"));
+		} catch (IOException e) {
+
+			e.printStackTrace();
+			fail("Um what?");
+		}
+		
+		
+		
+	}
+	
+	
+	
 	
 }

@@ -8,7 +8,7 @@ import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
 /**
  * Immutable class that contains all the information necessary for a target algorithm run.
  *
- * @author seramage
+ * @author Steve Ramage <seramage@cs.ubc.ca>
  */
 public class RunConfig implements Serializable{
 	
@@ -64,7 +64,7 @@ public class RunConfig implements Serializable{
 	{
 		if(pisp == null)
 		{
-			throw new IllegalArgumentException("AlgorithmInstanceSeedPair Name cannot be null");
+			throw new IllegalArgumentException("ProblemInstanceSeedPair Name cannot be null");
 		}
 		
 		if(cutoffTime  < 0)
@@ -108,7 +108,6 @@ public class RunConfig implements Serializable{
 	 */
 	public ParamConfiguration getParamConfiguration()
 	{
-		
 		return new ParamConfiguration(params);
 	}
 	
@@ -126,6 +125,7 @@ public class RunConfig implements Serializable{
 	@Override
 	public boolean equals(Object o)
 	{
+		if(this == o) return true;
 		if (o instanceof RunConfig)
 		{
 			RunConfig oar = (RunConfig) o;
@@ -152,8 +152,11 @@ public class RunConfig implements Serializable{
 	@Override
 	public String toString()
 	{
+		int instID = this.getProblemInstanceSeedPair().getInstance().getInstanceID();
+		long seed = this.getProblemInstanceSeedPair().getSeed();
+		String confID = this.params.getFriendlyIDHex();
 		StringBuilder sb = new StringBuilder();
-		sb.append("Instance&Seed:\n").append(pisp.toString()).append("\nCutoffTime: ").append(cutoffTime).append("\nParamString: ").append(params.toString());
+		sb.append("<Instance:" +instID + ", Seed:" + seed + ", Config:" + confID+", Kappa:" + cutoffTime+">");
 		return sb.toString();
 		
 	}

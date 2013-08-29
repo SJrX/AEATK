@@ -38,6 +38,7 @@ public class ProblemInstanceSeedPair implements Comparable<ProblemInstanceSeedPa
 	
 	public boolean equals(Object o)
 	{
+		if(this == o) return true;
 		if(o instanceof ProblemInstanceSeedPair)
 		{
 			ProblemInstanceSeedPair aisp = (ProblemInstanceSeedPair) o;
@@ -54,7 +55,8 @@ public class ProblemInstanceSeedPair implements Comparable<ProblemInstanceSeedPa
 	
 	public String toString()
 	{
-		return ai.toString() + "\nSeed:" + seed;
+		return "<Instance:" + ai.getInstanceID() + ", Seed:" + seed + ">";
+		//return ai.toString() + "\nSeed:" + seed;
 	}
 
 	@Override

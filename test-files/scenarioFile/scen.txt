@@ -1,0 +1,11 @@
+algo = "C:\Program Files\Java\jre6\bin\java" -Xmx3000m -cp "C:\Users\Chris\Dropbox\Lillypad Share\autoweka-standalone.jar" autoweka.smac.SMACWrapper -prop "datasetString=testArff=__dummy__\:type=trainTestArff\:trainArff=C\\:\Users\Chris\Dropbox\Lillypad Share\car.arff:instanceGenerator=autoweka.instancegenerators.CrossValidation:resultMetric=errorRate" -prop "executionMode=SMAC:initialIncumbent=RANDOM:initialN=1" -wrapper
+execdir = ./
+deterministic = 1
+run_obj = quality
+overall_obj = mean
+cutoff_time = 3600
+tunerTimeout = 86400
+outdir = out
+paramfile = autoweka.params
+instance_file = autoweka.instances
+test_instance_file = autoweka.test.instances

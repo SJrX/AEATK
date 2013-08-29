@@ -1,9 +1,10 @@
 package ca.ubc.cs.beta.aclib.misc.model;
 
+import java.util.Random;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ca.ubc.cs.beta.aclib.misc.random.SeedableRandomSingleton;
 import ca.ubc.cs.beta.aclib.options.RandomForestOptions;
 import ca.ubc.cs.beta.models.fastrf.RegtreeBuildParams;
 /**
@@ -25,7 +26,7 @@ public class SMACRandomForestHelper {
 	 * @param condParentVals	 for each parameter specifies the value required for the indepnedent parameters for this parameter to be activee
 	 * @return regtreeBuildParams object for Random Forest construction
 	 */
-	public static RegtreeBuildParams getRandomForestBuildParams(RandomForestOptions rfOptions, int numberOfFeatures, int[] categoricalSize, int[][] condParents, int[][][] condParentVals)
+	public static RegtreeBuildParams getRandomForestBuildParams(RandomForestOptions rfOptions, int numberOfFeatures, int[] categoricalSize, int[][] condParents, int[][][] condParentVals, Random rand)
 	{
 	/*
 	 * Parameter File Generator
@@ -41,9 +42,9 @@ public class SMACRandomForestHelper {
 	buildParams.splitMin = rfOptions.splitMin;
 	buildParams.ratioFeatures = rfOptions.ratioFeatures;//(5.0/6);
 	
-	buildParams.logModel = ((rfOptions.logModel) ? 1 : 0);
+	buildParams.logModel = ((rfOptions.logModel == null) ? 1 :(((rfOptions.logModel) ? 1 : 0)));
 	buildParams.storeResponses = rfOptions.storeDataInLeaves;
-	buildParams.random = SeedableRandomSingleton.getRandom();
+	buildParams.random = rand;
 	//System.out.println("Random: " + buildParams.random.nextInt());
 	buildParams.minVariance = rfOptions.minVariance;
 	

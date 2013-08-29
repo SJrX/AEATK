@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
+import java.util.Map;
 import java.util.Random;
 import java.util.Set;
 import java.util.SortedMap;
@@ -40,6 +41,7 @@ public class RandomInstanceSeedGenerator implements InstanceSeedGenerator {
 	private final int maxSeedsPerInstance;
 	
 	
+	private final Map<Integer, Set<Long>> blacklistedSeeds = new HashMap<Integer, Set<Long>>();
 	
 	/**
 	 * Default Constructor 
@@ -117,9 +119,13 @@ public class RandomInstanceSeedGenerator implements InstanceSeedGenerator {
 		}
 	}
 	
-	@Override
-	public int getNextSeed(Integer id)
+	
+	private int getNextSeed(Integer id)
 	{
+		if(this.blacklistedSeeds.get(id) == null)
+		{
+			this.blacklistedSeeds.put(id, new HashSet<Long>());
+		}
 		
 		Random r = randomPool.get(id);
 		
@@ -137,7 +143,7 @@ public class RandomInstanceSeedGenerator implements InstanceSeedGenerator {
 		do
 		{
 			i = r.nextInt(256*256*256);
-		} while(!generatedSeeds.add(i));
+		} while(!generatedSeeds.add(i) || this.blacklistedSeeds.get(id).contains(i));
 		
 		return i;
 	}
@@ -192,6 +198,17 @@ public class RandomInstanceSeedGenerator implements InstanceSeedGenerator {
 	public boolean allInstancesHaveSameNumberOfSeeds() {
 
 		return true; 
+	}
+	@Override
+	public void take(ProblemInstance pi, long seed) {
+		
+		if(this.blacklistedSeeds.get(pi.getInstanceID()) == null)
+		{
+			this.blacklistedSeeds.put(pi.getInstanceID(), new HashSet<Long>());
+		}
+		this.blacklistedSeeds.get(pi.getInstanceID()).add(seed);
+	
+	
 	}
 	
 	

@@ -5,7 +5,7 @@ package ca.ubc.cs.beta.aclib.misc.associatedvalue;
  * 
  * Note: At some point we refactor this class to not use Comparables, and have a subtype use this
  * 
- * @author seramage
+ * @author Steve Ramage <seramage@cs.ubc.ca>
  *
  * @param <T>
  * @param <V>
@@ -73,6 +73,11 @@ public class AssociatedValue<T extends Comparable<T>,V> implements Comparable<As
 		}
 	}
 
+	@Override
+	public int hashCode()
+	{
+		return Vobj.hashCode() ^ Tobj.hashCode();
+	}
 
 
 }

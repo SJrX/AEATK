@@ -3,6 +3,7 @@ package ca.ubc.cs.beta.aclib.model.builder;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.util.Arrays;
+import java.util.Random;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -30,11 +31,11 @@ public class BasicModelBuilder implements ModelBuilder{
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
 	
 	
-	public BasicModelBuilder(SanitizedModelData smd, RandomForestOptions rfConfig)
+	public BasicModelBuilder(SanitizedModelData smd, RandomForestOptions rfConfig, Random rand)
 	{
-		this(smd, rfConfig, 1);
+		this(smd, rfConfig, 1, rand);
 	}
-	public BasicModelBuilder(SanitizedModelData smd, RandomForestOptions rfConfig, double subsamplePercentage)
+	public BasicModelBuilder(SanitizedModelData smd, RandomForestOptions rfConfig, double subsamplePercentage, Random rand)
 	{
 		
 		double[][] features = smd.getPCAFeatures();
@@ -67,7 +68,7 @@ public class BasicModelBuilder implements ModelBuilder{
 			theta_inst_idxs[i][0]--;
 			theta_inst_idxs[i][1]--;
 		}
-		RegtreeBuildParams buildParams = SMACRandomForestHelper.getRandomForestBuildParams(rfConfig, features[0].length, categoricalSize, condParents, condParentVals);
+		RegtreeBuildParams buildParams = SMACRandomForestHelper.getRandomForestBuildParams(rfConfig, features[0].length, categoricalSize, condParents, condParentVals, rand);
 		
 		
 		

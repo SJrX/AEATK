@@ -8,18 +8,41 @@ import java.net.URL;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Map;
+import java.util.Random;
 import java.util.Set;
 
+import org.junit.AfterClass;
+import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.configspace.ParamFileHelper;
+import ca.ubc.cs.beta.aclib.misc.debug.DebugUtil;
+import ca.ubc.cs.beta.aclib.random.SeedableRandomPool;
 
 
 public class RandomConfigurationTest {
 
+	
+	
+	
+	private static final SeedableRandomPool pool = new SeedableRandomPool(System.currentTimeMillis());
+	
+	@AfterClass
+	public static void afterClass()
+	{
+		pool.logUsage();
+	}
+	
+	@BeforeClass
+	public static void setUpClass()
+	{
+	
+	}
+	
+	
 	
 	
 	public boolean allValues(Map<String, Integer> possibleValues, Map<String, Set<String>> seenValues)
@@ -57,6 +80,7 @@ public class RandomConfigurationTest {
 	public void testUniformInteger()
 	{
 		
+		Random random = pool.getRandom(DebugUtil.getCurrentMethodName());
 		String paramFile = "a [ 1 , " + BUCKETS +  "] [1] i";
 		
 		
@@ -71,7 +95,7 @@ public class RandomConfigurationTest {
 		
 		for(int i=0; i < TRIALS; i++)
 		{
-			count[Integer.valueOf(configSpace.getRandomConfiguration().get("a"))-1]++;
+			count[Integer.valueOf(configSpace.getRandomConfiguration(random).get("a"))-1]++;
 		}
 
 		//Each bucket is binomially distributed
@@ -112,6 +136,7 @@ public class RandomConfigurationTest {
 	public void testLogInteger()
 	{
 		
+		Random random = pool.getRandom(DebugUtil.getCurrentMethodName());
 		String paramFile = "b [ 1 , " + BUCKETS +  "] [1] il";
 		StringReader sr = new StringReader(paramFile);
 		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(sr);
@@ -123,7 +148,7 @@ public class RandomConfigurationTest {
 		
 		for(int i=0; i < TRIALS; i++)
 		{
-			int index = Integer.valueOf(configSpace.getRandomConfiguration().get("b"));
+			int index = Integer.valueOf(configSpace.getRandomConfiguration(random).get("b"));
 			count[index-1]++;
 		}
 
@@ -186,7 +211,8 @@ public class RandomConfigurationTest {
 	@Test
 	@Ignore("Fix input paramfile")
 	public void testAllValuesAppear() {
-		ParamConfigurationSpace f = ParamFileHelper.getParamFileParser(("/ubc/cs/home/s/seramage/arrowspace/sm/sample_inputs/spear-params.txt"), 1234);
+		ParamConfigurationSpace f = ParamFileHelper.getParamFileParser(("/ubc/cs/home/s/seramage/arrowspace/sm/sample_inputs/spear-params.txt"));
+		Random random = pool.getRandom(DebugUtil.getCurrentMethodName());
 		
 	
 		Map<String,Integer> possibleValues =  new HashMap<String, Integer>(); 
@@ -203,7 +229,7 @@ public class RandomConfigurationTest {
 		
 		while(!allValues(possibleValues, seenValues))
 		{
-			ParamConfiguration config = f.getRandomConfiguration();
+			ParamConfiguration config = f.getRandomConfiguration(random);
 			
 			for(String key : config.keySet())
 			{

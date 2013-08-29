@@ -1,73 +1,53 @@
 package ca.ubc.cs.beta.aclib.configspace;
 
 import java.io.File;
-import java.util.concurrent.ConcurrentHashMap;
-
-import ec.util.MersenneTwister;
+import java.io.StringReader;
 
 /**
  * Contains Factory Methods for getting ParamConfigurationSpaces
  * 
  * 
  */
-public class ParamFileHelper {
+public final class ParamFileHelper {
 
 	/**
 	 * Returns a ParamConfigurationSpace via the filename and seeded with seed
 	 * 
-	 *  This method will return the same instance for subsequent file names, and can only been seeded once
-	 * @param filename					string for the filename
-	 * @param seedForRandomSampling		seed for prng
-	 * @return ParamConfigurationSpace instance
+	 * @param 	filename				 string for the filename
+	 * @return	ParamConfigurationSpace  the configuration space
 	 * 
 	 */
-	public static ParamConfigurationSpace getParamFileParser(String filename, long seedForRandomSampling)
-	{
-		return getParamFileParser(new File(filename),seedForRandomSampling);
-	}
-	
-
-	private static ConcurrentHashMap<String, ParamConfigurationSpace> paramFiles = new ConcurrentHashMap<String, ParamConfigurationSpace>();
-	
-	/**
-	 * Returns a ParamConfigurationSpace via the filename and seeded with seed
-	 * 
-	 *  This method will return the same instance for subsequent file names, and can only been seeded once
-	 * @param file  					file with the param arguments
-	 * @param seedForRandomSampling		seed for prng
-	 * @return ParamConfigurationSpace instance
-	 */
-	public static ParamConfigurationSpace getParamFileParser(File file, long seedForRandomSampling)
-	{
-		//TODO Fix Thread Safety of this code (I'm not sure if the double-check locking idiom works here)
-		ParamConfigurationSpace param = paramFiles.get(file.getAbsolutePath());
-		
-		if(param == null)
-		{ 
-				param = new ParamConfigurationSpace(file, new MersenneTwister(seedForRandomSampling));
-								
-				 ParamConfigurationSpace p = paramFiles.putIfAbsent(file.getAbsolutePath(),param);
-				 if(p == null)
-				 {			
-					 return param; 
-				 } else
-				 {
-					 return p;
-				 }
+	public static ParamConfigurationSpace getParamFileParser(String filename)
+	{	if(filename.equals(ParamConfigurationSpace.SINGLETON_ABSOLUTE_NAME))
+		{
+			return ParamConfigurationSpace.getSingletonConfigurationSpace();
+		} else if(filename.equals(ParamConfigurationSpace.NULL_ABSOLUTE_NAME))
+		{
+			return ParamConfigurationSpace.getNullConfigurationSpace();
 		} else
 		{
-			return param;
+			return getParamFileParser(new File(filename));
 		}
-		
 	}
 
 	/**
-	 * Clears the cache so that param files can be re-seeded
+	 * Returns a ParamConfigurationSpace via the filename and seeded with seed
+	 * 
+	 * @param file  					file with the param arguments
+	 * @return ParamConfigurationSpace instance
 	 */
-	public static void clear() {
-		paramFiles.clear();
-		
+	public static ParamConfigurationSpace getParamFileParser(File file)
+	{
+		return new ParamConfigurationSpace(file);
+	}
+
+	public static ParamConfigurationSpace getParamFileFromString(String string) {
+		return new ParamConfigurationSpace(new StringReader(string));
 	}
 	
-	
+	//Non-initializable
+	private ParamFileHelper()
+	{
+		
+	}
 }

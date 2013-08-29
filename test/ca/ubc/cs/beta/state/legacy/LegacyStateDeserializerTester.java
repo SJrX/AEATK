@@ -8,6 +8,7 @@ import java.io.IOException;
 import java.io.PrintStream;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.Date;
 import java.util.HashSet;
@@ -15,20 +16,25 @@ import java.util.List;
 import java.util.Random;
 import java.util.Set;
 
+import org.junit.AfterClass;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
 import ca.ubc.cs.beta.TestHelper;
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aclib.algorithmrun.ExistingAlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
+import ca.ubc.cs.beta.aclib.configspace.ParamFileHelper;
 import ca.ubc.cs.beta.aclib.exceptions.*;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aclib.misc.debug.DebugUtil;
 import ca.ubc.cs.beta.aclib.objectives.OverallObjective;
 import ca.ubc.cs.beta.aclib.objectives.RunObjective;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
+import ca.ubc.cs.beta.aclib.random.SeedableRandomPool;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.runhistory.NewRunHistory;
 import ca.ubc.cs.beta.aclib.runhistory.RunData;
@@ -56,6 +62,7 @@ public class LegacyStateDeserializerTester {
 	
 	private static AlgorithmExecutionConfig execConfig = new AlgorithmExecutionConfig("foo", "bar", configSpace, false, false, 300);
 	
+	private static SeedableRandomPool pool = new SeedableRandomPool(System.currentTimeMillis());
 	
 	@BeforeClass
 	public static void init()
@@ -67,6 +74,13 @@ public class LegacyStateDeserializerTester {
 			instances.add(new ProblemInstance("Instance " + i,i));
 		}
 	
+	}
+	
+	
+	@AfterClass
+	public static void afterClass()
+	{
+		pool.logUsage();
 	}
 	
 	PrintStream old;
@@ -95,7 +109,75 @@ public class LegacyStateDeserializerTester {
 		StateFactory sf = new LegacyStateFactory(null,f.getAbsolutePath());	
 		
 		
-		sf.getStateDeserializer("unknown_instance", 4, configSpace, OverallObjective.MEAN10,OverallObjective.MEAN, RunObjective.RUNTIME, emptyInstanceList, execConfig);
+		sf.getStateDeserializer("unknown_instance", 4, configSpace, emptyInstanceList, execConfig, new NewRunHistory( OverallObjective.MEAN10,OverallObjective.MEAN, RunObjective.RUNTIME));
+	}
+	
+	public static File createTempDirectory()
+		    throws IOException
+		{
+		    final File temp;
+
+		    temp = File.createTempFile("temp", Long.toString(System.nanoTime()));
+
+		    if(!(temp.delete()))
+		    {
+		        throw new IOException("Could not delete temp file: " + temp.getAbsolutePath());
+		    }
+
+		    if(!(temp.mkdir()))
+		    {
+		        throw new IOException("Could not create temp directory: " + temp.getAbsolutePath());
+		    }
+
+		    return (temp);
+		}
+	
+	@Test
+	public void saveRestoreFidelityTest() throws IOException, DuplicateRunException
+	{
+		
+		
+		Random rand = pool.getRandom(DebugUtil.getCurrentMethodName());
+		for(int i=0; i < 10; i++)
+		{
+			
+		
+			ParamConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("a [1,1000] [1]i \n b { on, off } [off] \n a | b in { on } ");
+			AlgorithmExecutionConfig execConfig = new AlgorithmExecutionConfig("foo", "foo", configSpace, false, false, 0);
+			
+			File tempDir = createTempDirectory();
+			
+			
+			
+			StateFactory sf = new LegacyStateFactory(tempDir.getAbsolutePath(), tempDir.getAbsolutePath());
+			
+			
+			StateSerializer ss = sf.getStateSerializer("it", 1);
+			
+			ParamConfiguration config = configSpace.getRandomConfiguration(rand);
+			
+			ProblemInstance pi = new ProblemInstance("test");
+			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(pi,1), 0, config);
+			AlgorithmRun run = new ExistingAlgorithmRun(execConfig, rc,RunResult.SAT, 0,0,0,1);
+			//(InstanceSeedGenerator instanceSeedGenerator, OverallObjective intraInstanceObjective,  OverallObjective interInstanceObjective, RunObjective runObj)
+			
+			RunHistory rh = new NewRunHistory( OverallObjective.MEAN, OverallObjective.MEAN ,RunObjective.RUNTIME);
+			
+			
+			rh.append(run);
+			ss.setRunHistory(rh);
+			ss.save();
+			System.out.println(Arrays.toString(config.toValueArray()));
+			
+			StateDeserializer sd = sf.getStateDeserializer("it",1, configSpace, Collections.singletonList(pi), execConfig,new NewRunHistory( OverallObjective.MEAN10,OverallObjective.MEAN, RunObjective.RUNTIME));
+			System.out.println(Arrays.toString(config.toValueArray()));
+			ParamConfiguration restoredConfig = sd.getRunHistory().getAlgorithmRuns().get(0).getRunConfig().getParamConfiguration();
+			System.out.println(Arrays.toString(restoredConfig.toValueArray()));
+			assertTrue("Testing for equality ",config.equals(restoredConfig));
+			assertTrue("Testing for Array equality", Arrays.equals(config.toValueArray(), restoredConfig.toValueArray()));
+		}
+		
+		
 	}
 	
 	@Test
@@ -105,7 +187,7 @@ public class LegacyStateDeserializerTester {
 		StateFactory sf = new LegacyStateFactory(null,f.getAbsolutePath());	
 		
 		startOutputCapture();
-		sf.getStateDeserializer("valid", 4, configSpace, OverallObjective.MEAN10, OverallObjective.MEAN, RunObjective.RUNTIME, instances, execConfig);
+		sf.getStateDeserializer("valid", 4, configSpace, instances, execConfig,new NewRunHistory( OverallObjective.MEAN10,OverallObjective.MEAN, RunObjective.RUNTIME));
 		String output = stopOutputCapture();
 		assertFalse(output.contains("Cutoff time discrepancy"));
 		
@@ -122,7 +204,7 @@ public class LegacyStateDeserializerTester {
 		StateFactory sf = new LegacyStateFactory(null,f.getAbsolutePath());	
 		
 		
-		sf.getStateDeserializer("inf", 4, configSpace, OverallObjective.MEAN10,OverallObjective.MEAN, RunObjective.RUNTIME, instances, execConfig);
+		sf.getStateDeserializer("inf", 4, configSpace, instances, execConfig,new NewRunHistory( OverallObjective.MEAN10,OverallObjective.MEAN, RunObjective.RUNTIME));
 	}
 	
 	@Test
@@ -134,7 +216,7 @@ public class LegacyStateDeserializerTester {
 		
 		 AlgorithmExecutionConfig execConfig = new AlgorithmExecutionConfig("foo", "bar", configSpace, false, false, 1);
 		startOutputCapture();
-		StateDeserializer sd = sf.getStateDeserializer("valid", 4, configSpace, OverallObjective.MEAN10, OverallObjective.MEAN, RunObjective.RUNTIME, instances, execConfig);
+		StateDeserializer sd = sf.getStateDeserializer("valid", 4, configSpace, instances, execConfig,new NewRunHistory( OverallObjective.MEAN10,OverallObjective.MEAN, RunObjective.RUNTIME));
 		String output = stopOutputCapture();
 		assertTrue(output.contains("Cutoff time discrepancy"));
 		assertFalse(output.contains("marking run as TIMEOUT and Censored"));
@@ -169,7 +251,7 @@ public class LegacyStateDeserializerTester {
 		
 
 		 startOutputCapture();
-		StateDeserializer sd = sf.getStateDeserializer("valid", 4, configSpace, OverallObjective.MEAN10, OverallObjective.MEAN, RunObjective.RUNTIME, instances, execConfig);
+		StateDeserializer sd = sf.getStateDeserializer("valid", 4, configSpace, instances, execConfig,new NewRunHistory( OverallObjective.MEAN10,OverallObjective.MEAN, RunObjective.RUNTIME));
 			String output = stopOutputCapture();
 			assertTrue(output.contains("Cutoff time discrepancy"));
 			assertTrue(output.contains("marking run as TIMEOUT and Censored"));
@@ -212,7 +294,7 @@ public class LegacyStateDeserializerTester {
 		
 		  
 				
-		File paramFile = TestHelper.getTestFile("paramFiles/paramEchoParamFile.txt");
+		File paramFile = TestHelper.getTestFile("paramFiles/paramEchoParamFileWithKilled.txt");
 		ParamConfigurationSpace configSpace;
 		
 		
@@ -227,7 +309,7 @@ public class LegacyStateDeserializerTester {
 		System.out.println("Seed was:" + seed);
 		Random r = new MersenneTwister(seed);
 		
-		configSpace = new ParamConfigurationSpace(paramFile,r);
+		configSpace = new ParamConfigurationSpace(paramFile);
 		
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 5000);
 		List<ProblemInstance> pis = new ArrayList<ProblemInstance>();
@@ -246,7 +328,7 @@ public class LegacyStateDeserializerTester {
 	
 		TargetAlgorithmEvaluator tae = new EchoTargetAlgorithmEvaluator( execConfig);
 		
-		RunHistory runHistory = new NewRunHistory(isg, OverallObjective.MEAN10, OverallObjective.MEAN, RunObjective.RUNTIME);
+		RunHistory runHistory = new NewRunHistory(OverallObjective.MEAN10, OverallObjective.MEAN, RunObjective.RUNTIME);
 		for(int i=0; i < 10; i++)
 		{
 			runHistory.incrementIteration();
@@ -254,7 +336,7 @@ public class LegacyStateDeserializerTester {
 		
 		
 		System.out.println("Performing " + runConfigs.size() + " runs");
-		PrintStream ps = System.out;
+		//PrintStream ps = System.out;
 		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
 		
 		
@@ -284,7 +366,7 @@ public class LegacyStateDeserializerTester {
 		stateS.setIncumbent(runs.get(0).getRunConfig().getParamConfiguration());
 		stateS.save();
 		
-		StateDeserializer stateD =  sf.getStateDeserializer("deleteMe-unitTest", 10, configSpace, OverallObjective.MEAN10, OverallObjective.MEAN, RunObjective.RUNTIME, pis, execConfig);
+		StateDeserializer stateD =  sf.getStateDeserializer("deleteMe-unitTest", 10, configSpace, pis, execConfig,new NewRunHistory( OverallObjective.MEAN10,OverallObjective.MEAN, RunObjective.RUNTIME));
 		
 		
 		compareRestoredStateWithOriginalRunHistory(stateD, runHistory, pis, runs.size());
@@ -331,7 +413,7 @@ public class LegacyStateDeserializerTester {
 		System.out.println("Seed was:" + seed);
 		Random r = new MersenneTwister(seed);
 		
-		configSpace = new ParamConfigurationSpace(paramFile,r);
+		configSpace = new ParamConfigurationSpace(paramFile);
 		
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 5000);
 		List<ProblemInstance> pis = new ArrayList<ProblemInstance>();
@@ -345,7 +427,7 @@ public class LegacyStateDeserializerTester {
 		List<RunConfig> runConfigs = getValidRunConfigurations(pis, r, isg, configSpace);
 		
 		TargetAlgorithmEvaluator tae = new EchoTargetAlgorithmEvaluator( execConfig);
-		RunHistory runHistory = new NewRunHistory(isg, OverallObjective.MEAN10, OverallObjective.MEAN, RunObjective.RUNTIME);
+		RunHistory runHistory = new NewRunHistory( OverallObjective.MEAN10, OverallObjective.MEAN, RunObjective.RUNTIME);
 				
 		System.out.println("Performing " + runConfigs.size() + " runs");
 		//=== Suppress System output to speed up test execution
@@ -378,7 +460,7 @@ public class LegacyStateDeserializerTester {
 		stateS.setIncumbent(runs.get(0).getRunConfig().getParamConfiguration());
 		stateS.save();
 		
-		StateDeserializer stateD =  sf.getStateDeserializer("deleteMe-unitTest-gibberish", 10, configSpace, OverallObjective.MEAN10, OverallObjective.MEAN, RunObjective.RUNTIME, pis, execConfig);
+		StateDeserializer stateD =  sf.getStateDeserializer("deleteMe-unitTest-gibberish", 10, configSpace, pis, execConfig,new NewRunHistory( OverallObjective.MEAN10,OverallObjective.MEAN, RunObjective.RUNTIME));
 		
 		compareRestoredStateWithOriginalRunHistory(stateD, runHistory, pis, runs.size());
 		
@@ -418,7 +500,7 @@ public class LegacyStateDeserializerTester {
 		System.out.println("Seed was:" + seed);
 		Random r = new MersenneTwister(seed);
 		
-		configSpace = new ParamConfigurationSpace(paramFile,r);
+		configSpace = new ParamConfigurationSpace(paramFile);
 		
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 5000);
 		List<ProblemInstance> pis = new ArrayList<ProblemInstance>();
@@ -444,7 +526,7 @@ public class LegacyStateDeserializerTester {
 		
 		TargetAlgorithmEvaluator tae =  new EchoTargetAlgorithmEvaluator( execConfig);
 		
-		RunHistory runHistory = new NewRunHistory(isg, OverallObjective.MEAN10, OverallObjective.MEAN, RunObjective.RUNTIME);
+		RunHistory runHistory = new NewRunHistory(OverallObjective.MEAN10, OverallObjective.MEAN, RunObjective.RUNTIME);
 		
 		
 		for(int i=0; i < 10; i++)
@@ -463,7 +545,7 @@ public class LegacyStateDeserializerTester {
 			
 			System.out.println("Performing " + runConfigs.size() + " runs");
 		
-			List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+			List<AlgorithmRun> runs = tae.evaluateRun(runConfigs,null);
 			allRuns.addAll(runs);
 			for(AlgorithmRun run : runs)
 			{
@@ -480,7 +562,7 @@ public class LegacyStateDeserializerTester {
 			
 			if(i%5 == 0 )
 			{ //Only try to restore every 5th one because we need a runhistory later to even test this
-				StateDeserializer stateD =  sf.getStateDeserializer("deleteMe-unitTest", 10+i, configSpace, OverallObjective.MEAN10, OverallObjective.MEAN, RunObjective.RUNTIME, pis, execConfig);
+				StateDeserializer stateD =  sf.getStateDeserializer("deleteMe-unitTest", 10+i, configSpace, pis, execConfig,new NewRunHistory( OverallObjective.MEAN10,OverallObjective.MEAN, RunObjective.RUNTIME));
 				compareRestoredStateWithOriginalRunHistory(stateD, runHistory, pis, allRuns.size());
 			}
 			
@@ -494,7 +576,7 @@ public class LegacyStateDeserializerTester {
 		
 		for(int i=0; i < 20; i++)
 		{
-			StateDeserializer stateD =  sf.getStateDeserializer("deleteMe-unitTest", 10+i, configSpace, OverallObjective.MEAN10, OverallObjective.MEAN, RunObjective.RUNTIME, pis, execConfig);
+			StateDeserializer stateD =  sf.getStateDeserializer("deleteMe-unitTest", 10+i, configSpace, pis, execConfig,new NewRunHistory( OverallObjective.MEAN10,OverallObjective.MEAN, RunObjective.RUNTIME));
 			assertEquals(stateD.getIteration(),(10+i));
 			assertEquals(stateD.getRunHistory().getAlgorithmRuns().size() , 200*(i+1));	
 		}
@@ -503,7 +585,7 @@ public class LegacyStateDeserializerTester {
 	
 		for(int i=0; i < 20; i++)
 		{
-			StateDeserializer stateD =  sf.getStateDeserializer("deleteMe-unitTest", 10+i, configSpace, OverallObjective.MEAN10, OverallObjective.MEAN, RunObjective.RUNTIME, pis, execConfig);
+			StateDeserializer stateD =  sf.getStateDeserializer("deleteMe-unitTest", 10+i, configSpace, pis, execConfig,new NewRunHistory( OverallObjective.MEAN10,OverallObjective.MEAN, RunObjective.RUNTIME));
 			assertEquals(stateD.getIteration(),(10+i));
 			assertEquals(stateD.getRunHistory().getAlgorithmRuns().size() , 200*(i+1));	
 		}
@@ -537,7 +619,7 @@ public class LegacyStateDeserializerTester {
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(number+2);
 		for(int i=0; i < number; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration();
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("TIMEOUT") || config.get("solved").equals("CRASHED"))
 			{
 				//Only want good configurations
@@ -632,7 +714,7 @@ public class LegacyStateDeserializerTester {
 		
 	}
 	/**
-	 * This test is related to 
+	 * This test is related to Task 
 	 * 
 	 */
 	@SuppressWarnings("deprecation")
@@ -640,9 +722,9 @@ public class LegacyStateDeserializerTester {
 	public void stateSerializationMemHeavy() throws DuplicateRunException
 	{
 	
-		if(Runtime.getRuntime().maxMemory() / 1024.0 / 1024  > 64)
+		if(Runtime.getRuntime().maxMemory() / 1024.0 / 1024  > 80)
 		{
-			fail("Too much memory this test will fail");
+			fail("Too much memory this test will not make any sense");
 		}
 		  
 				
@@ -661,7 +743,7 @@ public class LegacyStateDeserializerTester {
 		System.out.println("Seed was:" + seed);
 		Random r = new MersenneTwister(seed);
 		
-		configSpace = new ParamConfigurationSpace(paramFile,r);
+		configSpace = new ParamConfigurationSpace(paramFile);
 		
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 5000);
 		List<ProblemInstance> pis = new ArrayList<ProblemInstance>();
@@ -683,7 +765,7 @@ public class LegacyStateDeserializerTester {
 		
 		TargetAlgorithmEvaluator tae = new EchoTargetAlgorithmEvaluator( execConfig);
 		
-		RunHistory runHistory = new NewRunHistory(isg, OverallObjective.MEAN10, OverallObjective.MEAN, RunObjective.RUNTIME);
+		RunHistory runHistory = new NewRunHistory( OverallObjective.MEAN10, OverallObjective.MEAN, RunObjective.RUNTIME);
 		for(int i=0; i < 10; i++)
 		{
 			runHistory.incrementIteration();
@@ -691,7 +773,7 @@ public class LegacyStateDeserializerTester {
 		
 		
 		System.out.println("Performing " + runConfigs.size() + " runs");
-		PrintStream ps = System.out;
+		//PrintStream ps = System.out;
 		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
 		
 		

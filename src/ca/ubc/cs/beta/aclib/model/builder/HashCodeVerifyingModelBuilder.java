@@ -2,6 +2,7 @@ package ca.ubc.cs.beta.aclib.model.builder;
 
 import java.util.LinkedList;
 import java.util.Queue;
+import java.util.Random;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,8 +33,8 @@ public class HashCodeVerifyingModelBuilder extends BasicModelBuilder {
 	
 	
 	public HashCodeVerifyingModelBuilder(SanitizedModelData mds,
-			RandomForestOptions rfConfig, RunHistory runHistory) {
-		super(mds, rfConfig);
+			RandomForestOptions rfConfig, RunHistory runHistory, Random rand) {
+		super(mds, rfConfig, rand);
 		
 		int forestCode = forest.matlabHashCode();
 		log.info("Random Forest Built with Hash Code: {}", forestCode);

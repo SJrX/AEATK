@@ -5,9 +5,10 @@ import java.io.FileOutputStream;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.util.EnumMap;
+import java.io.Serializable;
+import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Random;
+import java.util.Map;
 import java.util.Set;
 
 import org.slf4j.Logger;
@@ -21,8 +22,7 @@ import ca.ubc.cs.beta.aclib.exceptions.StateSerializationException;
 import ca.ubc.cs.beta.aclib.misc.watch.AutoStartStopWatch;
 import ca.ubc.cs.beta.aclib.runhistory.RunData;
 import ca.ubc.cs.beta.aclib.runhistory.RunHistory;
-import ca.ubc.cs.beta.aclib.seedgenerator.InstanceSeedGenerator;
-import ca.ubc.cs.beta.aclib.state.RandomPoolType;
+import static ca.ubc.cs.beta.aclib.state.legacy.LegacyStateFactory.*;
 import ca.ubc.cs.beta.aclib.state.StateSerializer;
 
 /**
@@ -42,11 +42,10 @@ import ca.ubc.cs.beta.aclib.state.StateSerializer;
 public class LegacyStateSerializer implements StateSerializer {
 
 	private RunHistory runHistory = null;
-	private final EnumMap<RandomPoolType, Random> randomMap = new EnumMap<RandomPoolType,Random>(RandomPoolType.class);
+	//private final EnumMap<RandomPoolType, Random> randomMap = new EnumMap<RandomPoolType,Random>(RandomPoolType.class);
 	private ParamConfiguration incumbent;
 	
 	private final String id ;
-	private InstanceSeedGenerator instanceSeedGenerator;
 	private final int iteration;
 	private final String path;
 	
@@ -56,6 +55,7 @@ public class LegacyStateSerializer implements StateSerializer {
 	
 	
 	private final Set<String> savedFiles = new HashSet<String>();
+	private Map<String, Serializable> objectState;
 	/**
 	 * Constructs the Legacy State Serializer
 	 * @param path      	string representing directory we should save to
@@ -79,24 +79,10 @@ public class LegacyStateSerializer implements StateSerializer {
 	}
 
 	@Override
-	public void setPRNG(RandomPoolType randType, Random random) {
-		
-		this.randomMap.put(randType, random);
-
-	}
-
-	@Override
-	public void setInstanceSeedGenerator(InstanceSeedGenerator gen) {
-		this.instanceSeedGenerator = gen;
-		
-	}
-	
-	@Override
 	public void setIncumbent(ParamConfiguration incumbent) {
 		this.incumbent = incumbent;
 		
 	}
-	
 	
 	
 	@Override
@@ -185,7 +171,7 @@ public class LegacyStateSerializer implements StateSerializer {
 					runResults.append(runHistory.getRunObjective().getObjective(run)+","); //3
 					int isCensored = 0;
 					
-					if(run.getRunResult().equals(RunResult.TIMEOUT) && run.getRunConfig().hasCutoffLessThanMax())
+					if((run.getRunResult().equals(RunResult.TIMEOUT) && run.getRunConfig().hasCutoffLessThanMax()) || run.getRunResult().equals(RunResult.KILLED))
 					{
 						isCensored = 1;
 					}
@@ -265,8 +251,6 @@ public class LegacyStateSerializer implements StateSerializer {
 
 
 	
-	
-	
 	/**
 	 * Saves all java objects to file
 	 * @param f file to save the objects to
@@ -275,19 +259,20 @@ public class LegacyStateSerializer implements StateSerializer {
 	private void saveToFile(File f) throws IOException
 	{
 		
-
+		Map<String, Object> mapToWrite = new HashMap<String, Object>();
+		
+		mapToWrite.put(OBJECT_MAP_KEY,this.objectState);
+		mapToWrite.put(ITERATION_KEY, iteration);
+		
+		
 		ObjectOutputStream oWriter = new ObjectOutputStream(new FileOutputStream(f));
-		oWriter.writeInt(iteration);
-		oWriter.writeObject(randomMap);
-		oWriter.writeObject(instanceSeedGenerator);
 		
 		if(incumbent != null)
 		{
-			oWriter.writeObject(incumbent.getFormattedParamString(StringFormat.STATEFILE_SYNTAX));
-		} else
-		{
-			oWriter.writeObject(null);
+			mapToWrite.put(INCUMBENT_TEXT_KEY, incumbent.getFormattedParamString(StringFormat.STATEFILE_SYNTAX));
+			
 		}
+		oWriter.writeObject(mapToWrite);
 		oWriter.close();
 	
 		log.debug("Java Object Dump Saved in {}", f.getAbsolutePath());
@@ -301,20 +286,6 @@ public class LegacyStateSerializer implements StateSerializer {
 	{
 		return config.getFormattedParamString(StringFormat.ARRAY_STRING_SYNTAX);
 	}
-	/**
-	 * Writes the StringBuilder to file
-	 * @param b				stringBuilder to save
-	 * @param f				file to save to
-	 * @throws IOException	when an error occurs 
-	 */
-	private void writeStringBuffer(StringBuilder b, File f) throws IOException
-	{
-		if(!f.createNewFile()) throw new IllegalStateException("File: " + f.getAbsolutePath() + " already exists ");
-		
-		FileWriter writer = new FileWriter(f);
-		writer.write(b.toString());
-		writer.close();
-	}
 
 	/**
 	 * Adds a file to the set of files written for this iteration.
@@ -323,6 +294,12 @@ public class LegacyStateSerializer implements StateSerializer {
 	private void addFileToSet(File f)
 	{
 		this.savedFiles.add(f.getAbsolutePath());
+	}
+
+	@Override
+	public void setObjectStateMap(Map<String, Serializable> objectState) {
+		this.objectState = objectState;
+		
 	}
 
 }

@@ -143,7 +143,7 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 		log.info("Building Random Forest with {} censored runs out of {} total ", censoredCount, censoringIndicators.length);
 		
 		//=== Building random forest with non censored data.
-		RandomForest rf = buildRandomForest(mds,rfOptions,non_cens_theta_inst_idxs, non_cens_responses, false, subsamplePercentage);
+		RandomForest rf = buildRandomForest(mds,rfOptions,non_cens_theta_inst_idxs, non_cens_responses, false, subsamplePercentage, rand);
 		
 	
 		int numTrees = rfOptions.numTrees;
@@ -291,22 +291,27 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 				//System.out.println(sampleIdxToUse);
 				
 				//=== Get the samples (but cap them at maxValue). 
-				StopWatch sw = new AutoStartStopWatch();
-				
 				
 				TruncatedNormalDistribution tNorm = new TruncatedNormalDistribution(prediction[j][0], prediction[j][1], responseValues[sampleIdxToUse],rand);
 				//log.debug("Constructing Truncated Normal Distribution took {} seconds" ,sw.stop() / 1000.0);
 				j++;
 				
 				double[] samples;
+					if(rfOptions.imputeMean)
+					{
+						samples = new double[numSamplesToGet];
+						for(int k=0; k < samples.length; k++)
+						{
+							samples[k] = prediction[j][0];
+						}
+					} else if(rfOptions.shuffleImputedValues)
+					{
+						samples = tNorm.getValuesAtStratifiedShuffledIntervals(numSamplesToGet);
+					} else
+					{
+						samples = tNorm.getValuesAtStratifiedIntervals(numSamplesToGet);
+					}
 				
-				if(rfOptions.shuffleImputedValues)
-				{
-					samples = tNorm.getValuesAtStratifiedShuffledIntervals(numSamplesToGet);
-				} else
-				{
-					samples = tNorm.getValuesAtStratifiedIntervals(numSamplesToGet);
-				}
 				
 				for (int k = 0; k < samples.length; k++) 
 				{
@@ -318,6 +323,7 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 					samples[k] = Math.min(samples[k], maxPenalizedValue);
 				}
 
+				
 				//=== Populate the trees at their dataIdxs with the samples (and update differenceFromLastMean)
 				int count=0;
 				double increaseThisDataPoint = 0;
@@ -339,7 +345,7 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 			
 			//=== Build a new random forest.
 			log.info("Building random forest with imputed values iteration {}", i);
-			rf = buildImputedRandomForest(mds,rfOptions,theta_inst_idxs, dataIdxs, yHallucinated, false);
+			rf = buildImputedRandomForest(mds,rfOptions,theta_inst_idxs, dataIdxs, yHallucinated, false, rand);
 			
 			if(differenceFromLastMean < Math.pow(10,-10) && i >= 1)
 			{
@@ -415,7 +421,7 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 	 * @param preprocessed		<code>true</code> if we should build a model with preprocessed marginals, <code>false</code> otherwise
 	 * @return constructed random forest
 	 */
-	private static RandomForest buildRandomForest(SanitizedModelData mds, RandomForestOptions rfOptions, int[][] theta_inst_idxs, double[] responseValues, boolean preprocessed, double subsamplePercentage)
+	private static RandomForest buildRandomForest(SanitizedModelData mds, RandomForestOptions rfOptions, int[][] theta_inst_idxs, double[] responseValues, boolean preprocessed, double subsamplePercentage, Random rand)
 	{
 		
 		double[][] features = mds.getPCAFeatures();
@@ -443,7 +449,7 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 			theta_inst_idxs[i][1]--;
 		}
 */
-		RegtreeBuildParams buildParams = SMACRandomForestHelper.getRandomForestBuildParams(rfOptions, features[0].length, categoricalSize, condParents, condParentVals);
+		RegtreeBuildParams buildParams = SMACRandomForestHelper.getRandomForestBuildParams(rfOptions, features[0].length, categoricalSize, condParents, condParentVals, rand);
 		
 		log.trace("Building Random Forest with Parameters: {}", buildParams);
 		RandomForest forest;
@@ -500,7 +506,7 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 	 * @param preprocessed		<code>true</code> if we should build a model with preprocessed marginals, <code>false</code> otherwise
 	 * @return
 	 */
-	private static RandomForest buildImputedRandomForest(SanitizedModelData mds, RandomForestOptions rfOptions, int[][] theta_inst_idxs,int[][] dataIdxs, double[][] responseValues, boolean preprocessed)
+	private static RandomForest buildImputedRandomForest(SanitizedModelData mds, RandomForestOptions rfOptions, int[][] theta_inst_idxs,int[][] dataIdxs, double[][] responseValues, boolean preprocessed, Random rand)
 	{
 		
 		double[][] features = mds.getPCAFeatures();
@@ -528,7 +534,7 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 			theta_inst_idxs[i][1]--;
 		}
 */		
-		RegtreeBuildParams buildParams = SMACRandomForestHelper.getRandomForestBuildParams(rfOptions, features[0].length, categoricalSize, condParents, condParentVals);
+		RegtreeBuildParams buildParams = SMACRandomForestHelper.getRandomForestBuildParams(rfOptions, features[0].length, categoricalSize, condParents, condParentVals, rand);
 		
 		log.trace("Building Random Forest with Parameters: {}", buildParams);
 		log.debug("Building Random Forest with {} data points ", responseValues[0].length);

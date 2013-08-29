@@ -4,9 +4,11 @@ import java.util.List;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
-import ca.ubc.cs.beta.aclib.exceptions.TargetAlgorithmAbortException;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluatorOptions;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.exceptions.TargetAlgorithmAbortException;
 
 class SingleThreadedAlgorithmRunner extends AbstractAlgorithmRunner
 {
@@ -15,10 +17,11 @@ class SingleThreadedAlgorithmRunner extends AbstractAlgorithmRunner
 	 * Default Constructor 
 	 * @param execConfig	execution configuration of target algorithm
 	 * @param runConfigs	run configurations to execute
+	 * @param obs 
 	 */
 	public SingleThreadedAlgorithmRunner(AlgorithmExecutionConfig execConfig,
-			List<RunConfig> runConfigs) {
-		super(execConfig, runConfigs);
+			List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs, CommandLineTargetAlgorithmEvaluatorOptions options) {
+		super(execConfig, runConfigs,obs, options);
 		
 	}
 
@@ -40,4 +43,5 @@ class SingleThreadedAlgorithmRunner extends AbstractAlgorithmRunner
 		
 	}
 
+	
 }

@@ -33,6 +33,7 @@ import ca.ubc.cs.beta.aclib.options.RandomForestOptions;
 import ca.ubc.cs.beta.aclib.probleminstance.InstanceListWithSeeds;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceHelper;
+import ca.ubc.cs.beta.aclib.runhistory.NewRunHistory;
 import ca.ubc.cs.beta.aclib.runhistory.RunHistory;
 import ca.ubc.cs.beta.aclib.state.StateDeserializer;
 import ca.ubc.cs.beta.aclib.state.StateFactory;
@@ -56,12 +57,12 @@ public class RegtreeBuildTester {
 		//File paramFile = TestHelper.getTestFile("RandomForestFiles/satenstein-params-mixed.txt");
 		
 		
-		File expDir = new File("/ubc/cs/home/s/seramage/experiments/run0");
+		//File expDir = new File("/ubc/cs/home/s/seramage/experiments/run0");
 		
 		File paramFile = new File("/ubc/cs/home/s/seramage/experiments/algorithms/cplex/cplex12-params-milp-mixed-cont-disc.txt");
 		
 		
-		configSpace = ParamFileHelper.getParamFileParser(paramFile, 1);
+		configSpace = ParamFileHelper.getParamFileParser(paramFile);
 		
 		
 		
@@ -99,7 +100,7 @@ public class RegtreeBuildTester {
 		
 		OverallObjective intraObjective = OverallObjective.MEAN;
 		//Old iteration was 1106
-		StateDeserializer sd = sf.getStateDeserializer("it", 1106, configSpace, intraObjective, OverallObjective.MEAN, RunObjective.RUNTIME, ilws.getInstances(), dummyExecConfig);
+		StateDeserializer sd = sf.getStateDeserializer("it", 1106, configSpace, ilws.getInstances(), dummyExecConfig,new NewRunHistory( OverallObjective.MEAN10,OverallObjective.MEAN, RunObjective.RUNTIME));
 		
 		
 		

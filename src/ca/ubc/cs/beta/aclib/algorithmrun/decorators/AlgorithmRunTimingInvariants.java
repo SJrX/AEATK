@@ -7,7 +7,12 @@ import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
  * 
  * Specifically it ensures that:
  * 
- * SAT results are always less than the captime.
+ * If Runtime >= Cutofftime, Result is TIMEOUT, and time is cap time.
+ * 
+ * 
+ * 
+ *
+ * 
  * 
  * @author seramage
  *
@@ -18,6 +23,8 @@ public class AlgorithmRunTimingInvariants extends AbstractAlgorithmRunDecorator 
 		super(run);
 	}
 
+	
+	
 	/**
 	 * 
 	 */

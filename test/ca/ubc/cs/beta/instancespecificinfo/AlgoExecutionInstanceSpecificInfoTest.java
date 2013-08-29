@@ -3,6 +3,7 @@ package ca.ubc.cs.beta.instancespecificinfo;
 import static org.junit.Assert.*;
 
 import java.io.File;
+import java.io.IOException;
 
 import org.junit.Test;
 
@@ -15,11 +16,13 @@ import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.probleminstance.InstanceListWithSeeds;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
+import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceHelper;
+import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceOptions;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.seedgenerator.InstanceSeedGenerator;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.CommandLineTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluatorFactory;
 
 import ca.ubc.cs.beta.probleminstance.ProblemInstanceHelperTester;
 
@@ -42,7 +45,8 @@ public class AlgoExecutionInstanceSpecificInfoTest {
 		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(paramFile);
 		
 		AlgorithmExecutionConfig execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, true, 500);
-		TargetAlgorithmEvaluator tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false);
+		
+		TargetAlgorithmEvaluator tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
 		
 		InstanceListWithSeeds ilws = ProblemInstanceHelperTester.getInstanceListWithSeeds("classicFormatInstanceSeedSpecificValid.txt", false);
 		
@@ -74,7 +78,7 @@ public class AlgoExecutionInstanceSpecificInfoTest {
 			
 		}
 		
-		
+		tae.notifyShutdown();
 	}
 	
 	@Test
@@ -94,7 +98,7 @@ public class AlgoExecutionInstanceSpecificInfoTest {
 		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(paramFile);
 		
 		AlgorithmExecutionConfig execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, true, 500);
-		TargetAlgorithmEvaluator tae = new CommandLineTargetAlgorithmEvaluator( execConfig, false);
+		TargetAlgorithmEvaluator tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
 		
 		InstanceListWithSeeds ilws = ProblemInstanceHelperTester.getInstanceListWithSeeds("manju.txt", false);
 		
@@ -112,7 +116,7 @@ public class AlgoExecutionInstanceSpecificInfoTest {
 				AlgorithmRun run = tae.evaluateRun(rc).get(0);
 				
 				try {
-				assertEquals(pi.getInstanceName().hashCode() + 37*pi.getInstanceSpecificInformation().hashCode(), (long) run.getRunLength());
+				assertEquals(Math.abs((long) pi.getInstanceName().hashCode() + 37*pi.getInstanceSpecificInformation().hashCode()), (long) run.getRunLength());
 				} catch(AssertionError e)
 				{
 					System.out.println(run.getResultLine());
@@ -124,6 +128,42 @@ public class AlgoExecutionInstanceSpecificInfoTest {
 				
 			}
 			
+		}
+		
+		
+	}
+	
+	@Test
+	public void testInstanceSpecificInfoWithCheckFiles() throws IOException
+	{
+		ProblemInstanceHelper.clearCache();
+		
+		
+		
+		ProblemInstanceOptions opts = new ProblemInstanceOptions();
+		
+		
+		opts.checkInstanceFilesExist = false;
+		opts.instanceFile = "classicFormatInstanceSeedSpecificValid.txt";
+		
+		InstanceListWithSeeds ilws = opts.getTrainingProblemInstances("test-files/instanceSpecificCheck/", 2, false, false, false);
+		
+		for(ProblemInstance pi : ilws.getInstances())
+		{
+			assertEquals(pi.getInstanceName(),pi.getInstanceSpecificInformation());
+		}
+		ProblemInstanceHelper.clearCache();
+		
+		
+		
+		opts.checkInstanceFilesExist = true;
+		//opts.instanceFile = "test-files/instanceFiles/classicFormatInstanceSeedSpecificValid.txt";
+		
+		ilws = opts.getTrainingProblemInstances("test-files/instanceSpecificCheck/", 2, false, false, false);
+		
+		for(ProblemInstance pi : ilws.getInstances())
+		{
+			assertEquals(new File(pi.getInstanceName()).getName(),pi.getInstanceSpecificInformation());
 		}
 		
 		

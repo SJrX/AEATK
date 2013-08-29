@@ -6,8 +6,6 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
-import java.util.Arrays;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -15,7 +13,6 @@ import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.misc.math.ArrayMathOps;
 import ca.ubc.cs.beta.aclib.misc.math.MessyMathHelperClass;
 import ca.ubc.cs.beta.aclib.misc.math.MessyMathHelperClass.Operation;
-import ca.ubc.cs.beta.models.fastrf.RoundingMode;
 
 /**
  * This class roughly does all the processing for sanitizing data
@@ -111,6 +108,7 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 		
 		this.prePCAInstanceFeatures = ArrayMathOps.copy(instanceFeatures);
 		
+		/*
 		if(RoundingMode.ROUND_NUMBERS_FOR_MATLAB_SYNC)
 		{
 			if(!printFeatures)
@@ -129,6 +127,7 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 			System.out.println("Log Model: " + logModel);
 		
 		}
+		*/
 		instanceFeatures = ArrayMathOps.copy(instanceFeatures);
 		writeOutput = false;
 		if(writeOutput)
@@ -199,6 +198,7 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 		
 		
 		log.info("Discarding {} constant inputs of {} in total.", constFeatures.length, prePCAInstanceFeatures[0].length);
+	/*
 		if(RoundingMode.ROUND_NUMBERS_FOR_MATLAB_SYNC)
 		{
 			System.out.print("Constant Columns: ");
@@ -210,6 +210,7 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 			System.out.println("\n");
 			System.out.println("Discarding "+ constFeatures.length + "  constant inputs of " + prePCAInstanceFeatures[0].length +" total ");
 		}
+		*/
 		double[][] instanceFeaturesT = pca.transpose(instanceFeatures);
 		
 		
@@ -267,10 +268,12 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 		//double[][] pcaVecT = pca.transpose(pcaVec);
 		pcaFeatures = pca.matrixMultiply(instanceFeatures, pcaVec);
 		
+		/*
 		if(RoundingMode.ROUND_NUMBERS_FOR_MATLAB_SYNC)
 		{
 			System.out.println("PCA Features Hash: " + ArrayMathOps.matlabHashCode(pcaFeatures));
 		}
+		*/
 		
 	}
 

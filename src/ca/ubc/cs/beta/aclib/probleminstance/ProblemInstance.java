@@ -7,7 +7,7 @@ import java.util.Map.Entry;
 
 /**
  * Immutable Class that represents a Problem Instance of a target algorithm
- * @author seramage
+ * @author Steve Ramage <seramage@cs.ubc.ca>
  */
 public class ProblemInstance implements Serializable{
 
@@ -64,6 +64,28 @@ public class ProblemInstance implements Serializable{
 		this.featuresMap = Collections.emptyMap();
 		this.featuresDouble = new double[0];
 		this.instanceSpecificInformation = "0";
+	}
+	
+	/**
+	 * Standard Constructor
+	 * @param instanceName  unique name for this instance
+	 * @param instanceSpecificInformation instance specific information
+	 */
+	public ProblemInstance(String instanceName, String instanceSpecificInformation)
+	{
+		if (instanceName == null)
+		{
+			throw new IllegalArgumentException("Instance cannot be null");
+		}
+		this.instanceName = instanceName;
+		this.instanceId = 0;
+		this.featuresMap = Collections.emptyMap();
+		this.featuresDouble = new double[0];
+		if((instanceSpecificInformation == null) || (instanceSpecificInformation.trim().length() == 0))
+		{
+			instanceSpecificInformation = "0";
+		}
+		this.instanceSpecificInformation = instanceSpecificInformation;
 	}
 	
 	/**
@@ -169,6 +191,7 @@ public class ProblemInstance implements Serializable{
 	@Override
 	public boolean equals(Object o)
 	{
+		if(this == o) return true;
 		if(o instanceof ProblemInstance)
 		{
 			ProblemInstance ai = (ProblemInstance) o;

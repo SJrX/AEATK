@@ -5,16 +5,15 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
-import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
-import java.util.Random;
 import java.util.Set;
 import java.util.Map.Entry;
 
+import net.jcip.annotations.NotThreadSafe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -27,21 +26,17 @@ import ca.ubc.cs.beta.aclib.objectives.RunObjective;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aclib.seedgenerator.InstanceSeedGenerator;
-import ca.ubc.cs.beta.models.fastrf.RoundingMode;
 
 /**
- * THIS CLASS IS NOT THREAD SAFE!!!
+ * 
  * @author seramage
  *
  */
+@SuppressWarnings("unused")
+@NotThreadSafe
 public class NewRunHistory implements RunHistory {
 
-	
-	/**
-	 * Generates seeds for given instances in sequence
-	 */
-	private final InstanceSeedGenerator instanceSeedGenerator;
-	
+
 	/**
 	 * Objective function that allows us to aggregate various instance / seed pairs to 
 	 * give us a value for the instance
@@ -113,16 +108,15 @@ public class NewRunHistory implements RunHistory {
 	private Set<ProblemInstance> instancesRanSet = new HashSet<ProblemInstance>();
 	
 	
+	private final HashMap<ParamConfiguration, List<AlgorithmRun>> configToRunMap = new HashMap<ParamConfiguration, List<AlgorithmRun>>();
 	/**
 	 * Creates NewRunHistory object
-	 * @param instanceSeedGenerator		instanceSeedGenerator to use when getting new instances
 	 * @param intraInstanceObjective	intraInstanceObjective to use when calculating costs
 	 * @param interInstanceObjective	interInstanceObjective to use when calculating costs
 	 * @param runObj					run objective to use 
 	 */
-	public NewRunHistory(InstanceSeedGenerator instanceSeedGenerator, OverallObjective intraInstanceObjective,  OverallObjective interInstanceObjective, RunObjective runObj)
+	public NewRunHistory( OverallObjective intraInstanceObjective,  OverallObjective interInstanceObjective, RunObjective runObj)
 	{
-		this.instanceSeedGenerator = instanceSeedGenerator;
 		this.perInstanceObjectiveFunction = intraInstanceObjective;
 		this.aggregateInstanceObjectiveFunction = interInstanceObjective;
 		this.runObj = runObj;
@@ -134,6 +128,10 @@ public class NewRunHistory implements RunHistory {
 
 		log.trace("Appending Run {}",run);
 		
+		if(run.getRunResult().equals(RunResult.RUNNING))
+		{
+			throw new IllegalArgumentException("Runs with Run Result RUNNING cannot be saved to a RunHistory object");
+		}
 		ParamConfiguration config = run.getRunConfig().getParamConfiguration();
 		ProblemInstanceSeedPair pisp = run.getRunConfig().getProblemInstanceSeedPair();
 		ProblemInstance pi = pisp.getInstance();
@@ -189,12 +187,32 @@ public class NewRunHistory implements RunHistory {
 			{
 			
 			
-				Object[] args = { run, config, pi,dOldValue};
-				log.error("RunHistory already contains a run with identical config, instance and seed\nRun:{}\nConfig:{}\nInstance:{}\nPrevious Performance:{}", args);
+			
+				
+				AlgorithmRun matchingRun = null;
+				for(AlgorithmRun algoRun : this.getAlgorithmRunData(config))
+				{
+					if(algoRun.getRunConfig().getProblemInstanceSeedPair().equals(run.getRunConfig().getProblemInstanceSeedPair()))
+					{
+						matchingRun = algoRun;
+					}
+				}
+				
+				Object[] args = {matchingRun, run, config, pi,dOldValue};
+				
+				
+				log.error("RunHistory already contains a run with identical config, instance and seed \n Original Run:{}\nRun:{}\nConfig:{}\nInstance:{}\nPrevious Performance:{}", args);
 				throw new DuplicateRunException("Duplicate Run Detected", run);
 			}
 			
 		}
+		
+		if(this.configToRunMap.get(config) == null)
+		{
+			this.configToRunMap.put(config, new ArrayList<AlgorithmRun>());
+		}
+		
+		this.configToRunMap.get(config).add(run);
 		totalRuntimeSum += Math.max(0.1, run.getRuntime());
 		
 		/*
@@ -205,7 +223,9 @@ public class NewRunHistory implements RunHistory {
 	
 		
 		int instanceIdx = pi.getInstanceID();
-		runHistoryList.add(new RunData(iteration, thetaIdx, instanceIdx, run,runResult,run.getRunResult().equals(RunResult.TIMEOUT) && run.getRunConfig().hasCutoffLessThanMax()));
+		RunResult result = run.getRunResult();
+		boolean cappedRun = (result.equals(RunResult.TIMEOUT) && run.getRunConfig().hasCutoffLessThanMax() || result.equals(RunResult.KILLED));
+		runHistoryList.add(new RunData(iteration, thetaIdx, instanceIdx, run,runResult, cappedRun));
 		
 		
 		/*
@@ -227,7 +247,7 @@ public class NewRunHistory implements RunHistory {
 		/*
 		 * Add to the capped runs set
 		 */
-		if(run.getRunResult().equals(RunResult.TIMEOUT) && run.getRunConfig().hasCutoffLessThanMax())
+		if(cappedRun)
 		{
 			if(!cappedRuns.containsKey(config))
 			{
@@ -239,10 +259,7 @@ public class NewRunHistory implements RunHistory {
 		
 		Object[] args = {iteration, paramConfigurationList.getKey(config), pi.getInstanceID(), pisp.getSeed(), format.format(run.getRunConfig().getCutoffTime())};
 		
-		if(RoundingMode.ROUND_NUMBERS_FOR_MATLAB_SYNC)
-		{
-			log.debug("Iteration {}: running config {} on instance {} with seed {} and captime {}", args);
-		}
+		
 		
 		//
 	
@@ -469,103 +486,7 @@ public class NewRunHistory implements RunHistory {
 		return Collections.unmodifiableSet(cappedRuns.get(config));
 	}
 
-	@Override
-	public ProblemInstance getRandomInstanceWithFewestRunsFor(
-			ParamConfiguration config, List<ProblemInstance> instanceList,
-			Random rand) {
-
-		Map<ProblemInstance, LinkedHashMap<Long, Double>> instanceSeedToPerformanceMap = configToPerformanceMap.get(config);
-		
-		/*
-		 * First try and see if if there are some candidate instances with zero runs
-		 */
-		List<ProblemInstance> candidates = new ArrayList<ProblemInstance>(instanceList.size());
-		candidates.addAll(instanceList);
-		if (configToPerformanceMap.containsKey(config)){
-			//Allegedly this is a very slow operation (http://www.ahmadsoft.org/articles/removeall/index.html)
-			candidates.removeAll(instanceSeedToPerformanceMap.keySet());
-		}
-		
-		/*
-		 * If not find the set with the smallest number of runs
-		 */
-		if (candidates.size() == 0){
-			int minNumRuns = Integer.MAX_VALUE;
-			for (Iterator<ProblemInstance> iterator = instanceList.iterator(); iterator.hasNext();) {
-				ProblemInstance inst = iterator.next();
-				int numRuns = instanceSeedToPerformanceMap.get(inst).size();
-				if (numRuns <= minNumRuns){
-					if (numRuns < minNumRuns){ // new value for fewest runs -> ditch all previous candidates
-						candidates.clear();
-						minNumRuns = numRuns;
-					}
-					candidates.add(inst);
-				}
-			}
-		}
-		
-		//=== Return a random element of the candidate instance set (it's sad there is no method for that in Java's Set).\
-		int candidateIdx = rand.nextInt(candidates.size());
-		
-		//log.error("Always selecting first instance");
-		//int candidateIdx =0;
-		
-		log.trace("Selected Instance {}", candidates.get(candidateIdx));
-		return candidates.get(candidateIdx);	
-	}
-
-	@Override
-	public ProblemInstanceSeedPair getRandomInstanceSeedWithFewestRunsFor(
-			ParamConfiguration config, List<ProblemInstance> instanceList,
-			Random rand) {
-		ProblemInstance pi = getRandomInstanceWithFewestRunsFor(config, instanceList, rand);
-		
-		if(seedsUsedByInstance.get(pi) == null)
-		{
-			seedsUsedByInstance.put(pi, new ArrayList<Long>());
-		}
-		
-		
-		List<Long> seedsUsedByPi = seedsUsedByInstance.get(pi);
-		
-		Set<Long> seedsUsedByPiConfigSet;
-		if(configToPerformanceMap.get(config) == null || configToPerformanceMap.get(config).get(pi) == null) 
-		{ 
-			seedsUsedByPiConfigSet = Collections.emptySet();
-		} else
-		{
-			seedsUsedByPiConfigSet= configToPerformanceMap.get(config).get(pi).keySet();
-		}
-		
-		List<Long> seedsUsedByPiConfig = new ArrayList<Long>(seedsUsedByPiConfigSet.size());
-				
-		for(Long seed : seedsUsedByPiConfigSet)
-		{
-			seedsUsedByPiConfig.add(seed);
-		}
-		 
-		
-		List<Long> potentialSeeds = new ArrayList<Long>(seedsUsedByPi.size() - seedsUsedByPiConfig.size());
-		
-		potentialSeeds.addAll(seedsUsedByPi);
-		potentialSeeds.removeAll(seedsUsedByPiConfig);
-		
-		long seed;
-		if(potentialSeeds.size() == 0)
-		{
-			//We generate only positive seeds 
-			 seed = instanceSeedGenerator.getNextSeed(pi);
-		} else
-		{
-			seed = potentialSeeds.get(rand.nextInt(potentialSeeds.size()));
-		}
-		ProblemInstanceSeedPair pisp = new ProblemInstanceSeedPair(pi, seed);
-		log.trace("New Problem Instance Seed Pair Selected {}", pisp );
-		return pisp;
-	}
 	
-	
-
 	@Override
 	public int getTotalNumRunsOfConfig(ParamConfiguration config) {
 		Integer value = configToNumRunsMap.get(config);
@@ -602,7 +523,7 @@ public class NewRunHistory implements RunHistory {
 		int i=0;
 		for(RunData runData : runHistoryList)
 		{
-			responseValues[i] = runData.getRun().getRunResult().equals(RunResult.TIMEOUT) && runData.getRun().getRunConfig().hasCutoffLessThanMax();
+			responseValues[i] = (((runData.getRun().getRunResult().equals(RunResult.TIMEOUT) && runData.getRun().getRunConfig().hasCutoffLessThanMax())) || runData.getRun().getRunResult().equals(RunResult.KILLED));
 			i++;
 		}
 		return responseValues;
@@ -679,14 +600,18 @@ public class NewRunHistory implements RunHistory {
 		return Collections.unmodifiableList(runHistoryList);
 	}
 
-	@Override
-	public InstanceSeedGenerator getInstanceSeedGenerator() {
-		return instanceSeedGenerator;
-	}
 
 	@Override
 	public int getThetaIdx(ParamConfiguration config) {
-		return paramConfigurationList.getOrCreateKey(config);
+		Integer thetaIdx = paramConfigurationList.getKey(config);
+		if(thetaIdx == null)
+		{
+			return -1;
+		} else
+		{
+			return thetaIdx;
+		}
+		//return paramConfigurationList.getOrCreateKey(config);
 	}
 
 	@Override
@@ -702,6 +627,44 @@ public class NewRunHistory implements RunHistory {
 		 
 		 return total;
 		
+	}
+	
+	@Override
+	public Map<ProblemInstance, LinkedHashMap<Long, Double>> getPerformanceForConfig(ParamConfiguration config)
+	{
+		Map<ProblemInstance, LinkedHashMap<Long,Double>> map =  configToPerformanceMap.get(config);
+		if(map != null)
+		{
+			return Collections.unmodifiableMap(map);
+		} else
+		{
+			return Collections.emptyMap();
+		}
+	}
+	
+	@Override
+	public List<AlgorithmRun> getAlgorithmRunData(ParamConfiguration config) {
+		
+		List<AlgorithmRun> runs = this.configToRunMap.get(config);
+		
+		if(runs != null)
+		{
+			return Collections.unmodifiableList(runs);
+		} else
+		{
+			return Collections.emptyList();
+		}
+	}
+
+	@Override
+	public List<Long> getSeedsUsedByInstance(ProblemInstance pi) 
+	{
+
+		if(seedsUsedByInstance.get(pi) == null)
+		{
+			seedsUsedByInstance.put(pi, new ArrayList<Long>());
+		}
+		return Collections.unmodifiableList(seedsUsedByInstance.get(pi));
 	}
 
 }

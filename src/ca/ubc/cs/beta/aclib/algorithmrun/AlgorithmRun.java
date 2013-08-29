@@ -34,9 +34,13 @@ public interface AlgorithmRun extends Runnable, Serializable,  Callable<Object> 
 	/**
 	 * Get the Run Result
 	 * 
-	 *  The Run Result should be TIMEOUT, CRASHED or ABORT if and only if the runtime() is >= the associated cutoff time.
+	 * <b>Implementation Notes:</b>
 	 * 
-	 *  The Run Result should be TIMEOUT if the cutoff time is zero, and we probably shouldn't bother doing anything 
+	 *  The Run Result should be TIMEOUT if the cutoff time is zero, and implementations may not do anything else but return this run. 
+	 *  
+	 *  The Run Result should NEVER be RUNNING, unless this is an appropriate subtype that supports Killing.
+	 *  
+	 *  If the result is RUNNING then isRunComplete() should return <code>false</code> otherwise it should return </code>true</code>
 	 *  
 	 * @return RunResult for run
 	 * @throws IllegalStateException if the run has not completed
@@ -44,9 +48,9 @@ public interface AlgorithmRun extends Runnable, Serializable,  Callable<Object> 
 	public RunResult getRunResult();
 
 	/**
-	 * Get reported runtime of run
+	 * Get reported runtime of run 
 	 * 
-	 * @return double for the runtime
+	 * @return double for the runtime (>= 0) && < Infinity
 	 * @throws IllegalStateException if the run has not completed
 	 */
 	public double getRuntime();
@@ -54,7 +58,7 @@ public interface AlgorithmRun extends Runnable, Serializable,  Callable<Object> 
 	/**
 	 * Get the reported run length
 	 * 
-	 * @return double for the runlength
+	 * @return double for the runlength ( >= 0 && < Infinity) || -1 
 	 * @throws IllegalStateException if the run has not completed
 	 */
 	public double getRunLength();
@@ -62,7 +66,7 @@ public interface AlgorithmRun extends Runnable, Serializable,  Callable<Object> 
 	/**
 	 * Get the reported quality 
 	 * 
-	 * @return double for the quality
+	 * @return double for the quality ( > -Infinity && < +Infinity)
 	 * @throws IllegalStateException if the run has not completed
 	 */
 	public double getQuality();
@@ -123,8 +127,12 @@ public interface AlgorithmRun extends Runnable, Serializable,  Callable<Object> 
 	
 
 	/**
-	 * Returns whether this run is completed
+	 * Returns true if the run is complete
+	 * <b>Implementation Note:</b>This should always be the same as run.getRunResult().equals(RunResult.RUNNING)
+	 * 
 	 * @return <code>true</code> if this run has finished executing, <code>false</code> otherwise
+	 * 
+	 * 
 	 */
 	public boolean isRunCompleted();
 

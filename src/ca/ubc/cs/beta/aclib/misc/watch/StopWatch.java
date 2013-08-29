@@ -2,16 +2,22 @@ package ca.ubc.cs.beta.aclib.misc.watch;
 
 import java.io.Serializable;
 
+import net.jcip.annotations.NotThreadSafe;
+
 /**
  * Allows measuring wallclock time between calls to {@link StopWatch#start()} and {@link StopWatch#stop()}
- * @author sjr
- *
+ * @author Steve Ramage <seramage@cs.ubc.ca>
  */
+@NotThreadSafe
 public class StopWatch implements Serializable {
 	
+	/**
+	 * 
+	 */
+	private static final long serialVersionUID = 9116898201991111651L;
 	private long startTime = -1;
 	private long endTime = Long.MAX_VALUE;
-	
+	private long lastLaps;
 	/**
 	 * Default constructor
 	 */
@@ -32,6 +38,7 @@ public class StopWatch implements Serializable {
 		}
 		
 		startTime = System.currentTimeMillis();
+		lastLaps = startTime;
 		return startTime;
 	}
 	
@@ -64,6 +71,13 @@ public class StopWatch implements Serializable {
 	}
 	 
 	
+	public long laps()
+	{
+		long cTime = System.currentTimeMillis();
+		long lapTime = cTime - lastLaps;
+		lastLaps = cTime;
+		return lapTime;
+	}
 	
 	
 }

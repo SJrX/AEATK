@@ -1,0 +1,8 @@
+#Used for getting specific results out from a target wrapper
+#Some invalid values are specified so that we can test code
+
+solved { SAT, UNSAT, TIMEOUT, CRASHED, ABORT, INVALID, KILLED } [SAT]
+runtime [0,1000] [0]
+runlength [0,1000000][0]
+quality [0, 1000000] [0]
+seed [ -1,4294967295][1]i

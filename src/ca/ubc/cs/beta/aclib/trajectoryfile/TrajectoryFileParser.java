@@ -15,6 +15,7 @@ import org.slf4j.LoggerFactory;
 import au.com.bytecode.opencsv.CSVReader;
 
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
+import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration.StringFormat;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.misc.csvhelpers.ConfigCSVFileHelper;
 
@@ -28,35 +29,35 @@ public class TrajectoryFileParser {
 	 * @param configSpace   Config Space to parse from
 	 * @return SkipListMap that maps the time of the incumbent to a <cpuOverhead, incumbent> pair.
 	 */
-	private static ConcurrentSkipListMap<Double, TrajectoryFileEntry> parseSMACTrajectoryFile(ConfigCSVFileHelper configs, ParamConfigurationSpace configSpace)
+	private static ConcurrentSkipListMap<Double, TrajectoryFileEntry> parseSMACTrajectoryFile(ConfigCSVFileHelper configs, ParamConfigurationSpace configSpace,boolean useTunerTimeAsWallTime)
 	{
 		ConcurrentSkipListMap<Double,  TrajectoryFileEntry> skipList = new ConcurrentSkipListMap<Double, TrajectoryFileEntry>();
 		for(int i=0; i < configs.getNumberOfDataRows(); i++)
-		{
-			
-		
+		{		
 			String time = configs.getStringDataValue(i, 0);
+	
+			String[] dataRow =  configs.getDataRow(i);
 			
 			StringBuilder sb = new StringBuilder();
 			
-			String[] dataRow =  configs.getDataRow(i);
-			ParamConfiguration configObj = configSpace.getEmptyConfiguration();
-			
 			for(int j=5; j < dataRow.length; j++)
 			{
-				String[] splitValues = dataRow[j].split("=");
-				configObj.put(splitValues[0], splitValues[1].replaceAll("'", ""));
-				sb.append("").append(dataRow[j]).append(" ");
+				sb.append(dataRow[j]).append(",");
 			}
-			//System.out.println(time + "=>" + sb.toString());
+			
 			double tunerTime = Double.valueOf(dataRow[0]);
-			double empericalPerformance = Double.valueOf(dataRow[1]);
-			//2 is the stdDeviation of the performance
+			double empiricalPerformance = Double.valueOf(dataRow[1]);
+			double wallTime = Double.valueOf(dataRow[2]);
+			if(wallTime == -1)
+			{
+				wallTime = tunerTime;
+			}
 			//3 is the theta Idx of it
 			double overhead = Double.valueOf(dataRow[4]);
 			
-
-			TrajectoryFileEntry tfe = new TrajectoryFileEntry(configObj,tunerTime, empericalPerformance, overhead );
+			ParamConfiguration configObj = configSpace.getConfigurationFromString(sb.toString(), StringFormat.STATEFILE_SYNTAX);
+			
+			TrajectoryFileEntry tfe = new TrajectoryFileEntry(configObj,tunerTime, wallTime, empiricalPerformance, overhead );
 			
 			skipList.put(Double.valueOf(time), tfe);
 			
@@ -69,7 +70,7 @@ public class TrajectoryFileParser {
 	 * @param configSpace 	Configuration Space to draw examples from
 	 * @return SkipListMap that maps the time of the incumbent to a <cpuOverhead, incumbent> pair.
 	 */
-	private static ConcurrentSkipListMap<Double, TrajectoryFileEntry> parseParamILSTrajectoryFile(ConfigCSVFileHelper configs, ParamConfigurationSpace configSpace)
+	private static ConcurrentSkipListMap<Double, TrajectoryFileEntry> parseParamILSTrajectoryFile(ConfigCSVFileHelper configs, ParamConfigurationSpace configSpace, boolean useTunerTimeAsWallTime)
 	{
 		ConcurrentSkipListMap<Double,  TrajectoryFileEntry> skipList = new ConcurrentSkipListMap<Double, TrajectoryFileEntry>();
 		List<String> paramNames = new ArrayList<String>(configSpace.getParameterNames());
@@ -77,27 +78,32 @@ public class TrajectoryFileParser {
 		
 		for(int i=0; i < configs.getNumberOfDataRows(); i++)
 		{
-			
-		
+
 			String time = configs.getStringDataValue(i, 0);
 			
 			
 			String[] dataRow =  configs.getDataRow(i);
-			ParamConfiguration configObj = configSpace.getEmptyConfiguration();
+			StringBuilder sb = new StringBuilder();
 			
 			int dataOffset = 5;
 			for(int j=0; j < paramNames.size(); j++)
 			{
-				configObj.put(paramNames.get(j), dataRow[j+dataOffset]);
+				sb.append(paramNames.get(j)).append("=").append("'").append(dataRow[j+dataOffset]).append("',");
 			}
 			//System.out.println(time + "=>" + sb.toString());
 			double tunerTime = Double.valueOf(dataRow[0]);
-			Double empericalPerformance = Double.valueOf(dataRow[1]);
+			Double empiricalPerformance = Double.valueOf(dataRow[1]);
+			Double wallTime = Double.valueOf(dataRow[2]);
 			Double overhead = Double.valueOf(dataRow[4]);
 			
-
+			if(wallTime == -1)
+			{
+				wallTime = tunerTime;
+			}
+		
+			ParamConfiguration configObj = configSpace.getConfigurationFromString(sb.toString(), StringFormat.STATEFILE_SYNTAX);
 			
-			TrajectoryFileEntry tfe = new TrajectoryFileEntry(configObj, tunerTime, empericalPerformance, overhead);
+			TrajectoryFileEntry tfe = new TrajectoryFileEntry(configObj, tunerTime, wallTime, empiricalPerformance, overhead);
 			
 			skipList.put(Double.valueOf(time), tfe);
 			
@@ -114,22 +120,27 @@ public class TrajectoryFileParser {
 	 * @param configSpace 	Configuration Space to create Configurations in
 	 * @return SkipListMap that maps the time of the incumbent to a <cpuOverhead, incumbent> pair.
 	 */
-	public static ConcurrentSkipListMap<Double, TrajectoryFileEntry> parseTrajectoryFile(ConfigCSVFileHelper configs, ParamConfigurationSpace configSpace)
+	public static ConcurrentSkipListMap<Double, TrajectoryFileEntry> parseTrajectoryFile(ConfigCSVFileHelper configs, ParamConfigurationSpace configSpace, boolean useTunerTimeAsWallTime)
 	{
 		ConcurrentSkipListMap<Double,TrajectoryFileEntry> skipList;
 		
 		try {
-			skipList = TrajectoryFileParser.parseSMACTrajectoryFile(configs, configSpace);
+			skipList = TrajectoryFileParser.parseSMACTrajectoryFile(configs, configSpace, useTunerTimeAsWallTime);
 		} catch(ArrayIndexOutOfBoundsException e )
 		{
 			log.info("Trajectory File is not in SMAC Format, falling back to ParamILS Format");
-			skipList = TrajectoryFileParser.parseParamILSTrajectoryFile(configs, configSpace);
+			
+			skipList = TrajectoryFileParser.parseParamILSTrajectoryFile(configs, configSpace, useTunerTimeAsWallTime);
 		}
 		return skipList;
 		
 		
 	}
 	
+	public static ConcurrentSkipListMap<Double, TrajectoryFileEntry> parseTrajectoryFile(ConfigCSVFileHelper configs, ParamConfigurationSpace configSpace)
+	{
+		return parseTrajectoryFile(configs, configSpace, false);
+	}
 
 	/**
 	 * Parses a Trajectory File (both SMAC and ParamILS Formats)
@@ -142,18 +153,23 @@ public class TrajectoryFileParser {
 	 * @throws FileNotFoundException, IOException 
 	 */
 	
-	public static ConcurrentSkipListMap<Double, TrajectoryFileEntry> parseTrajectoryFile(File trajectoryFile, ParamConfigurationSpace configSpace) throws FileNotFoundException, IOException
+	public static ConcurrentSkipListMap<Double, TrajectoryFileEntry> parseTrajectoryFile(File trajectoryFile, ParamConfigurationSpace configSpace, boolean useTunerTimeAsWallTime) throws FileNotFoundException, IOException
 	{
-		CSVReader configCSV = new CSVReader(new FileReader(trajectoryFile));
+		CSVReader configCSV = new CSVReader(new FileReader(trajectoryFile),',',(char) 1);
+		try {
+			ConfigCSVFileHelper configs = new ConfigCSVFileHelper(configCSV.readAll(),1,0);
+			return parseTrajectoryFile(configs, configSpace, useTunerTimeAsWallTime);
+		} finally
+		{
+			configCSV.close();
+		}
 		
-		ConfigCSVFileHelper configs = new ConfigCSVFileHelper(configCSV.readAll(),1,0);
-		
-		return parseTrajectoryFile(configs, configSpace);
 	}
 	
-	public static List<TrajectoryFileEntry> parseTrajectoryFileAsList(File trajectoryFile, ParamConfigurationSpace configSpace) throws FileNotFoundException, IOException
+	
+	public static List<TrajectoryFileEntry> parseTrajectoryFileAsList(File trajectoryFile, ParamConfigurationSpace configSpace, boolean useTunerTimeAsWallTime) throws FileNotFoundException, IOException
 	{
-		 ConcurrentSkipListMap<Double, TrajectoryFileEntry> parseTrajectoryFile = parseTrajectoryFile(trajectoryFile, configSpace);
+		 ConcurrentSkipListMap<Double, TrajectoryFileEntry> parseTrajectoryFile = parseTrajectoryFile(trajectoryFile, configSpace,useTunerTimeAsWallTime);
 		 
 		 List<TrajectoryFileEntry> tfes = new ArrayList<TrajectoryFileEntry>(parseTrajectoryFile.size());
 		
@@ -163,6 +179,17 @@ public class TrajectoryFileParser {
 		 }
 		 
 		 return tfes;
+	}
+	
+	public static ConcurrentSkipListMap<Double, TrajectoryFileEntry> parseTrajectoryFile(File trajectoryFile, ParamConfigurationSpace configSpace) throws FileNotFoundException, IOException
+	{
+		return parseTrajectoryFile(trajectoryFile,configSpace, false);
+	}
+	
+	
+	public static List<TrajectoryFileEntry> parseTrajectoryFileAsList(File trajectoryFile, ParamConfigurationSpace configSpace) throws FileNotFoundException, IOException
+	{
+		return parseTrajectoryFileAsList(trajectoryFile,configSpace, false);
 	}
 	
 	

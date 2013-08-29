@@ -209,7 +209,7 @@ public class MessyMathHelperClass {
 			
 			
 			
-			double mean = ArrayMathOps.meanIgnoreNaNs(values);
+			//double mean = ArrayMathOps.meanIgnoreNaNs(values);
 			
 			 //System.out.println("Mean: " + j + ":" + mean);
 			double stdDev = ArrayMathOps.stdDevIgnoreNaNs(values);

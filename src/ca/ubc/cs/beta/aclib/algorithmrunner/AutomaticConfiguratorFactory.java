@@ -7,12 +7,18 @@ import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.CommandLineTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluatorOptions;
 
 /**
  * Factory that creates various Algorithm Runners for things that request it.
  * 
  * </b>NOTE:</b> This factory is probably unnecessary, originally it was meant to do more, but things got side tracked.
+ * This class should probably be refactored out and merged in with just the CLI TAE
+ * 
+ * 
+ * 
  * @see CommandLineTargetAlgorithmEvaluator
  * @author sjr
  *
@@ -21,21 +27,7 @@ public class AutomaticConfiguratorFactory {
 
 	
 	private static int maxThreads = Runtime.getRuntime().availableProcessors();
-	
-	/**
-	 * Sets the maximum number of threads (defaults to the number of available processors)
-	 * <p>
-	 * <b>Note:</b> This method was only added to aid in Unit testing and speeding up some dummy
-	 * algorithm runs. This mechanism in general does not work and should be avoided, if other TargetAlgorithmEvaluators
-	 * need more control over this, that interface should be refactored.
-	 *
-	 * @param threads that can be executed directly
-	 * @deprecated
-	 */
-	public static void setMaximumNumberOfThreads(int threads)
-	{
-		maxThreads = threads;
-	}
+
 	
 	private static Logger log = LoggerFactory.getLogger(AutomaticConfiguratorFactory.class);
 	/**
@@ -44,9 +36,9 @@ public class AutomaticConfiguratorFactory {
 	 * @param runConfigs		run configurations to execute
 	 * @return	algorithmrunner which will run it
 	 */
-	public static AlgorithmRunner getSingleThreadedAlgorithmRunner(AlgorithmExecutionConfig execConfig, List<RunConfig> runConfigs)
+	public static AlgorithmRunner getSingleThreadedAlgorithmRunner(AlgorithmExecutionConfig execConfig, List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs, CommandLineTargetAlgorithmEvaluatorOptions options)
 	{
-		return new SingleThreadedAlgorithmRunner(execConfig, runConfigs);
+		return new SingleThreadedAlgorithmRunner(execConfig, runConfigs,obs, options);
 	}
 	
 	/**
@@ -55,13 +47,19 @@ public class AutomaticConfiguratorFactory {
 	 * @param runConfigs		run configurations to execute
 	 * @return	algorithmrunner which will run it
 	 */	
-	public static AlgorithmRunner getConcurrentAlgorithmRunner(AlgorithmExecutionConfig execConfig, List<RunConfig> runConfigs)
+	public static AlgorithmRunner getConcurrentAlgorithmRunner(AlgorithmExecutionConfig execConfig, List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs, CommandLineTargetAlgorithmEvaluatorOptions options)
 	{
 		if(runConfigs.size() == 1)
 		{
-			return getSingleThreadedAlgorithmRunner(execConfig, runConfigs);
+			return getSingleThreadedAlgorithmRunner(execConfig, runConfigs,obs, options);
 		}
-		return getConcurrentAlgorithmRunner(execConfig, runConfigs, maxThreads);
+		
+		if(options.cores > maxThreads)
+		{
+			log.warn("Number of cores requested is seemingly greater than the number of available cores. This may affect runtime measurements");
+		}
+		
+		return getConcurrentAlgorithmRunner(execConfig, runConfigs, options.cores, obs, options);
 	}
 	
 	/**
@@ -71,9 +69,10 @@ public class AutomaticConfiguratorFactory {
 	 * @param nThreads			number of concurrent executions to allow
 	 * @return	algorithmrunner which will run it
 	 */
-	public static AlgorithmRunner getConcurrentAlgorithmRunner(AlgorithmExecutionConfig execConfig, List<RunConfig> runConfigs, int nThreads)
+	public static AlgorithmRunner getConcurrentAlgorithmRunner(AlgorithmExecutionConfig execConfig, List<RunConfig> runConfigs, int nThreads, TargetAlgorithmEvaluatorRunObserver obs, CommandLineTargetAlgorithmEvaluatorOptions options)
 	{
-		log.info("Concurrent Algorithm Runner created allowing {} threads");
-		return new ConcurrentAlgorithmRunner(execConfig, runConfigs, nThreads);
+		log.debug("Concurrent Algorithm Runner created allowing {} threads", nThreads);
+		return new ConcurrentAlgorithmRunner(execConfig, runConfigs, nThreads, obs, options);
 	}
+
 }

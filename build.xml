@@ -54,6 +54,24 @@ dirty: ${git.dirty}</echo>
 		<mkdir dir="build/testclasses/"/>
 		<mkdir dir="dist"/>
 		<mkdir dir="models"/>
+		<path id="compile.classpath">
+						<fileset dir="lib" id="lib">
+							<include name="*.jar"/>
+							<exclude name="*sources.jar"/>
+						</fileset>
+						<fileset dir="${software.dir}/fastrf-${git.branch}/" id="fastrf">
+							<include name="*"/>
+						</fileset>
+					</path>	
+		<!--<path id="compile.classpath">
+								<fileset dir="lib" id="lib">
+									<include name="*.jar"/>
+									<exclude name="*sources.jar"/>
+								</fileset>
+								<fileset dir="${software.dir}/fastrf-${git.branch}/" id="fastrf">
+									<include name="*"/>
+								</fileset>
+		</path>-->	
 	</target>
 	
 	<target name="clean" description="Cleans up build environment">
@@ -63,16 +81,6 @@ dirty: ${git.dirty}</echo>
 	</target>
 	
 	<target name="compile" depends="init" description="Compiles the source">
-		<path id="compile.classpath">
-				<fileset dir="lib" id="lib">
-					<include name="*.jar"/>
-					<exclude name="*sources.jar"/>
-				</fileset>
-				<fileset dir="${software.dir}/fastrf-${git.branch}/" id="fastrf">
-					<include name="*"/>
-				</fileset>
-			</path>	
-		
 		<javac srcdir="src" destdir="build/classes" debug="true" includeantruntime="false" >
 		<classpath refid="compile.classpath"/>
 		</javac>		
@@ -84,7 +92,7 @@ dirty: ${git.dirty}</echo>
 	                <include name="*.jar"/>
 	                <exclude name="*sources.jar"/>
 	            </fileset>
-	            <fileset dir="${software.dir}/fastrf/" id="fastrf">
+	            <fileset dir="${software.dir}/fastrf-${git.branch}/" id="fastrf">
 	                <include name="fastrf.jar"/>
 	            </fileset>
                     <fileset dir="testlib">
@@ -99,7 +107,7 @@ dirty: ${git.dirty}</echo>
 			</javac>
 	 </target>
 	
-	<target name="javadoc" depends="setjavaprop,doc" description="Make Javadoc"/>
+	<target name="javadoc" depends="setjavaprop,doc, init" description="Make Javadoc"/>
 	
 	<target name="setjavaprop">
 		<property name="build.javadoc" value="true"/>
@@ -111,7 +119,25 @@ dirty: ${git.dirty}</echo>
 			
 			
 	<target name="javadoc-internal"  if="build.javadoc">
-		<javadoc sourcepath="src/" author="true" destdir="doc/" classpathref="compile.classpath" />
+		
+		<path id="doc.classpath">
+			
+			<fileset dir="doclib" id="doclib">
+				<include name="*.jar"/>
+				<exclude name="*sources.jar"/>
+			</fileset>
+			<fileset dir="${software.dir}/fastrf-${git.branch}/" id="fastrf">
+	                <include name="fastrf.jar"/>
+				<include name="fastrf-src.jar"/>
+	       </fileset>
+			<path refid="compile.classpath"/>
+		</path>	
+		
+		
+		
+		
+		<javadoc sourcepath="src/" author="true" destdir="doc/" classpathref="doc.classpath" excludepackagenames="ca.ubc.cs.beta.hal.startup,ca.ubc.cs.beta.hal" />
+			
 	</target>
 	<target name="nodoc" unless="build.javadoc">
 		<echo>build.javadoc property not set so skipping building of javadoc</echo>
@@ -127,7 +153,7 @@ dirty: ${git.dirty}</echo>
 	       		<fileset dir="testlib">
 	       			<include name="*.jar"/>
 	       		</fileset>
-	            <fileset dir="${software.dir}/fastrf/" id="fastrf">
+	            <fileset dir="${software.dir}/fastrf-${git.branch}/" id="fastrf">
 	                <include name="fastrf.jar"/>
 	            </fileset>
 	            <pathelement path="build/classes/" /> 
@@ -151,11 +177,20 @@ dirty: ${git.dirty}</echo>
 		
 		
 		<!--<jar destfile="dist/aclib-v${version.major}_${version.minor}_${build.number}.jar" basedir="build/classes"/>-->
-		<jar destfile="dist/aclib.jar" basedir="build/classes"/>
+		<jar destfile="dist/aclib.jar">
+			<fileset dir="build/classes">
+				<include name="**/*"/>
+			</fileset>
+			<fileset dir="src/">
+				 <include name="**/*.xml"/>
+			</fileset>
+		</jar>
+		
+		
 		<jar destfile="dist/aclib-src.jar">
-					<fileset dir="src/">
-						 <include name="**/*.java"/>
-					</fileset>
+			<fileset dir="src/">
+				 <include name="**/*.java"/>
+			</fileset>
 		</jar>
 		<copy todir="dist/" force="true">
 			<fileset refid="lib"/>
@@ -178,7 +213,8 @@ dirty: ${git.dirty}</echo>
 				</and>
 			</condition>
 		</fail>
-				
+		
+		<delete dir="${deploy.dir}-${git.branch}"/>
 		<mkdir dir="${deploy.dir}-${git.branch}"/>
 		<chmod perm="666">
 						<fileset dir="${deploy.dir}-${git.branch}">

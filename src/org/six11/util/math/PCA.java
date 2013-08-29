@@ -69,6 +69,7 @@ public class PCA {
           matrix[i][j] = vec.get(j);
         }
       }
+      br.close();
     } else {
       source = "from the Smith MessyMathHelperClass tutorial";
       matrix = new double[][] {

@@ -21,7 +21,7 @@ import static ca.ubc.cs.beta.TestHelper.*;
 
 /**
  * Tests that Instance's are loaded correctly 
- * @author seramage
+ * @author Steve Ramage <seramage@cs.ubc.ca>
  *
  */
 //TODO: Check Features
