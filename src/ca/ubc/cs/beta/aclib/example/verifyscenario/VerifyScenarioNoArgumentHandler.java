@@ -7,10 +7,13 @@ public class VerifyScenarioNoArgumentHandler implements NoArgumentHandler {
 	@Override
 	public boolean handleNoArguments() {
 		System.out.println("Verify Scenario Utility");
-		System.out.println("\n\n\tUsage:\n");
-		System.out.println("\t\tverify-scenario --scenarios <scenario1> <scenario2> <scenario3> ....");
-		System.out.println("Skip instance check on disk");
-		System.out.println("\t\tverify-instances false --scenarios <scenario1> <scenario2>");
+		System.out.println("\n\n  Usage:\n");
+		System.out.println("\tverify-scenario --scenarios <scenario1> <scenario2> <scenario3> ....\n");
+		System.out.println("  Skip instance check on disk:");
+		System.out.println("\tverify-scenario --verify-instances false --scenarios <scenario1> <scenario2>\n");
+		System.out.println("  To specify the remaining scenario options if the files are partial:");
+		System.out.println("\tverify-scenario --restore-args \"\"  --scenarios <scenario1> <scenario2>");
+		
 		return true;
 	}
 
