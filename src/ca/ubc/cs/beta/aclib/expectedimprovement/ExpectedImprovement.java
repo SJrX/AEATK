@@ -12,7 +12,7 @@ import static ca.ubc.cs.beta.aclib.expectedimprovement.ExpectedImprovementHelper
  * @author Frank Hutter <fh@informatik.uni-freiburg.de> (Original Author?) 
  *  
  */
-public class StandardExpectedImprovement implements ExpectedImprovementFunction {
+public class ExpectedImprovement implements ExpectedImprovementFunction {
 
 	private static final double MIN_VALUE = -Math.pow(10, 100);
 

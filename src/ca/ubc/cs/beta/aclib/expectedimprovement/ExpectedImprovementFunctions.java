@@ -25,7 +25,7 @@ public enum ExpectedImprovementFunctions {
 	 * EI Improvement Function (NOT IMPLEMENTED)
 	 */
 	
-	EI(StandardExpectedImprovement.class);
+	EI(ExpectedImprovement.class);
 	
 	
 	/**
