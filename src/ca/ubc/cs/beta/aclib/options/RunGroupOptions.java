@@ -63,7 +63,15 @@ public class RunGroupOptions extends AbstractOptions {
 			
 			if(f != null)
 			{
-				replacementMap.put("SCENARIO_NAME", f.getName().substring(0,f.getName().lastIndexOf(".")));
+				
+				if(f.getName().lastIndexOf(".") >= 0)
+				{
+					replacementMap.put("SCENARIO_NAME", f.getName().substring(0,f.getName().lastIndexOf(".")));
+				} else
+				{
+					replacementMap.put("SCENARIO_NAME", f.getName());
+				}
+				
 				replacementMap.put("SCENARIO_FILE", f.getName());
 			}
 		}
