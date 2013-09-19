@@ -1,15 +1,15 @@
-package ca.ubc.cs.beta.aclib.expectedimprovement;
+package ca.ubc.cs.beta.aclib.acquisitionfunctions;
 
 import static ca.ubc.cs.beta.aclib.misc.math.ArrayMathOps.*;
 
 
 /**
- * Helper functions for Expected Improvement
+ * Helper functions for Acquisition Functions
  * 
  * @author Frank Hutter <hutter@cs.ubc.ca>
  * @author Steve Ramage <seramage@cs.ubc.ca>
  */
-class ExpectedImprovementHelper {
+class AcquisitionFunctionHelper {
 
 	static final double PI =  3.14159265358979323846264338327950288419716939937510;
 	static final double LOG2PI = 1.83787706640935;

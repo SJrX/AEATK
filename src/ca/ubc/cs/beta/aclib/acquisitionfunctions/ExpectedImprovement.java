@@ -1,7 +1,7 @@
-package ca.ubc.cs.beta.aclib.expectedimprovement;
+package ca.ubc.cs.beta.aclib.acquisitionfunctions;
 
 import static ca.ubc.cs.beta.aclib.misc.math.ArrayMathOps.*;
-import static ca.ubc.cs.beta.aclib.expectedimprovement.ExpectedImprovementHelper.*;
+import static ca.ubc.cs.beta.aclib.acquisitionfunctions.AcquisitionFunctionHelper.*;
 
 /***
  * Standard Expected Improvement Function
@@ -12,19 +12,19 @@ import static ca.ubc.cs.beta.aclib.expectedimprovement.ExpectedImprovementHelper
  * @author Frank Hutter <fh@informatik.uni-freiburg.de> (Original Author?) 
  *  
  */
-public class ExpectedImprovement implements ExpectedImprovementFunction {
+public class ExpectedImprovement implements AcquisitionFunction {
 
 	private static final double MIN_VALUE = -Math.pow(10, 100);
 
 	@Override
-	public double[] computeNegativeExpectedImprovement(double f_min_samples, double[] predmean, double[] predvar) {
+	public double[] computeAcquisitionFunctionValue(double f_min_samples, double[] predmean, double[] predvar) {
 
 		double[] predstddev = sqrt(predvar);
 			
 		double[] u = divide(subtract(f_min_samples,predmean), predstddev);
 		
-		double[] cdfU = ExpectedImprovementHelper.normcdf(u);
-		double[] pdfU = ExpectedImprovementHelper.normpdf(u);
+		double[] cdfU = AcquisitionFunctionHelper.normcdf(u);
+		double[] pdfU = AcquisitionFunctionHelper.normpdf(u);
 		
 		double[] term1 = (times(subtract(f_min_samples,predmean),cdfU));
 		double[] term2 = (times(predstddev,pdfU));

@@ -1,16 +1,16 @@
-package ca.ubc.cs.beta.aclib.expectedimprovement;
+package ca.ubc.cs.beta.aclib.acquisitionfunctions;
 import static ca.ubc.cs.beta.aclib.misc.math.ArrayMathOps.*;
 /**
- * Simple expected improvement
+ * A simple acquisition function
  * (Probably look at the matlab code for the origin of this)
- * @author sjr
+ * @author Steve Ramage <seramage@cs.ubc.ca>
  *
  */
-public class SimpleExpectedImprovement implements ExpectedImprovementFunction {
+public class SimpleAcquisitionFunction implements AcquisitionFunction {
 
 	
 	@Override
-	public double[] computeNegativeExpectedImprovement(double f_min_samples,
+	public double[] computeAcquisitionFunctionValue(double f_min_samples,
 			double[] predmean, double[] predvar) {
 		if(predmean.length != predvar.length)
 		{

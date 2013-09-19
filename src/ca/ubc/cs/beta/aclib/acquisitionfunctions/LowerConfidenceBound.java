@@ -1,9 +1,9 @@
-package ca.ubc.cs.beta.aclib.expectedimprovement;
+package ca.ubc.cs.beta.aclib.acquisitionfunctions;
 
 
 import static ca.ubc.cs.beta.aclib.misc.math.ArrayMathOps.*;
 
-public class LowerConfidenceBound implements ExpectedImprovementFunction {
+public class LowerConfidenceBound implements AcquisitionFunction {
 	
 	
 	public LowerConfidenceBound()
@@ -12,7 +12,7 @@ public class LowerConfidenceBound implements ExpectedImprovementFunction {
 	}
 	
 	@Override
-	public double[] computeNegativeExpectedImprovement(double k,
+	public double[] computeAcquisitionFunctionValue(double k,
 			double[] predmean, double[] predvar) {
 			if(predmean.length != predvar.length)
 			{

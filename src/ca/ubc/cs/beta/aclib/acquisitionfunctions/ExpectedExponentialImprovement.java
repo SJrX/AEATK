@@ -1,6 +1,6 @@
-package ca.ubc.cs.beta.aclib.expectedimprovement;
+package ca.ubc.cs.beta.aclib.acquisitionfunctions;
 import static ca.ubc.cs.beta.aclib.misc.math.ArrayMathOps.*;
-import static ca.ubc.cs.beta.aclib.expectedimprovement.ExpectedImprovementHelper.*;
+import static ca.ubc.cs.beta.aclib.acquisitionfunctions.AcquisitionFunctionHelper.*;
 /**
  * The ExpectedExponentialImprovement
  * 
@@ -11,7 +11,7 @@ import static ca.ubc.cs.beta.aclib.expectedimprovement.ExpectedImprovementHelper
  * @author Steve Ramage <seramage@cs.ubc.ca>
  *
  */
-public class ExpectedExponentialImprovement implements ExpectedImprovementFunction {
+public class ExpectedExponentialImprovement implements AcquisitionFunction {
 
 	
 	
@@ -57,7 +57,7 @@ public class ExpectedExponentialImprovement implements ExpectedImprovementFuncti
 	    return log_expEI;
 	}
 	@Override
-	public double[] computeNegativeExpectedImprovement(double f_min_samples,
+	public double[] computeAcquisitionFunctionValue(double f_min_samples,
 			double[] predmean, double[] predvar) {
 		
 		if(predmean.length != predvar.length)

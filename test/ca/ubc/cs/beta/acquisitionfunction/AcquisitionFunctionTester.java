@@ -1,4 +1,4 @@
-package ca.ubc.cs.beta.expectedimprovement;
+package ca.ubc.cs.beta.acquisitionfunction;
 
 import static org.junit.Assert.*;
 
@@ -8,10 +8,10 @@ import java.util.List;
 
 import org.junit.Test;
 
-import ca.ubc.cs.beta.aclib.expectedimprovement.ExpectedImprovementFunction;
-import ca.ubc.cs.beta.aclib.expectedimprovement.ExpectedImprovementFunctions;
+import ca.ubc.cs.beta.aclib.acquisitionfunctions.AcquisitionFunction;
+import ca.ubc.cs.beta.aclib.acquisitionfunctions.AcquisitionFunctions;
 
-public class ExpectedImprovementFunctionTester {
+public class AcquisitionFunctionTester {
 
 	
 	@Test
@@ -22,12 +22,12 @@ public class ExpectedImprovementFunctionTester {
 	{
 		
 		
-		for(ExpectedImprovementFunctions f : ExpectedImprovementFunctions.values())
+		for(AcquisitionFunctions f : AcquisitionFunctions.values())
 		{
 			double f_min_samples = 1.0;
 			double[] predmean = { 1.0, 10}; 
 			double[] predvar = { 0.001, 0.001}; 
-			double[] predictions = f.getFunction().computeNegativeExpectedImprovement(f_min_samples, predmean, predvar);
+			double[] predictions = f.getFunction().computeAcquisitionFunctionValue(f_min_samples, predmean, predvar);
 
 			System.out.println( f.name() + ":" + Arrays.toString(predictions));
 			assertTrue("Expected that for expected improvment function " + f.name()+ " first value should be less than second", predictions[0] <= predictions[1]);
@@ -44,12 +44,12 @@ public class ExpectedImprovementFunctionTester {
 	{
 		
 		
-		for(ExpectedImprovementFunctions f : ExpectedImprovementFunctions.values())
+		for(AcquisitionFunctions f : AcquisitionFunctions.values())
 		{
 			double f_min_samples = 1.0;
 			double[] predmean = { 2.0, 2.0}; 
 			double[] predvar = { 0.1, 0.001}; 
-			double[] predictions = f.getFunction().computeNegativeExpectedImprovement(f_min_samples, predmean, predvar);
+			double[] predictions = f.getFunction().computeAcquisitionFunctionValue(f_min_samples, predmean, predvar);
 
 			System.out.println( f.name() + ":" + Arrays.toString(predictions));
 			assertTrue("Expected that for expected improvment function " + f.name()+ " first value should be less than second", predictions[0] <= predictions[1]);
@@ -61,19 +61,19 @@ public class ExpectedImprovementFunctionTester {
 	public void testKnownValues()
 	{
 		
-		EnumMap<ExpectedImprovementFunctions, List<Double>> solutions = new EnumMap<ExpectedImprovementFunctions, List<Double>>(ExpectedImprovementFunctions.class);
+		EnumMap<AcquisitionFunctions, List<Double>> solutions = new EnumMap<AcquisitionFunctions, List<Double>>(AcquisitionFunctions.class);
 		
 		
-		solutions.put(ExpectedImprovementFunctions.EXPONENTIAL, Arrays.asList(1.28111062544401, 8010.91730546862,40512.5386959303));
-		solutions.put(ExpectedImprovementFunctions.SIMPLE,Arrays.asList( -0.367879441171442, -0.00673794699908547, -4.53999297624848e-05));
-		solutions.put(ExpectedImprovementFunctions.LCB, Arrays.asList( 0.968377223398316,4.96837722339832, 9.96837722339832));
-		solutions.put(ExpectedImprovementFunctions.EI, Arrays.asList(4.37281617269574,  8014.05334762749, 40515.6750575457));
-		for(ExpectedImprovementFunctions f : solutions.keySet())
+		solutions.put(AcquisitionFunctions.EXPONENTIAL, Arrays.asList(1.28111062544401, 8010.91730546862,40512.5386959303));
+		solutions.put(AcquisitionFunctions.SIMPLE,Arrays.asList( -0.367879441171442, -0.00673794699908547, -4.53999297624848e-05));
+		solutions.put(AcquisitionFunctions.LCB, Arrays.asList( 0.968377223398316,4.96837722339832, 9.96837722339832));
+		solutions.put(AcquisitionFunctions.EI, Arrays.asList(4.37281617269574,  8014.05334762749, 40515.6750575457));
+		for(AcquisitionFunctions f : solutions.keySet())
 		{
 			double f_min_samples = 1.0;
 			double[] predmean = { 1.0, 5.0, 10}; 
 			double[] predvar = { 0.001, 0.001, 0.001}; 
-			double[] predictions = f.getFunction().computeNegativeExpectedImprovement(f_min_samples, predmean, predvar);
+			double[] predictions = f.getFunction().computeAcquisitionFunctionValue(f_min_samples, predmean, predvar);
 
 			System.out.println( f.name() + ":" + Arrays.toString(predictions));
 			
