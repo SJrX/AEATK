@@ -89,7 +89,41 @@ public class ArrayMathOps {
 			y[i] = x1*x2[i];
 		}
 		return y;
+	}
+	
+	/**
+	 * Multiplies every element of x2, by the element in x1
+	 * @param x1 scalar value
+	 * @param x2 array value
+	 * @return	x1 * x2;
+	 */
+	public static double[] times( double[] x1, double[] x2)
+	{
+		double[] y = new double[x2.length];
+		for(int i=0; i < x2.length; i++)
+		{
+			y[i] = x1[i]*x2[i];
+		}
+		return y;
 	}	
+	
+	
+	/**
+	 * divide every element of x1, by x2
+	 * @param x1 scalar value
+	 * @param x2 array value
+	 * @return	x1 * x2;
+	 */
+	public static double[] divide( double[] x1, double[] x2)
+	{
+		double[] y = new double[x1.length];
+		for(int i=0; i < x1.length; i++)
+		{
+			y[i] = x1[i]/x2[i];
+		}
+		return y;
+	}	
+	
 	
 	/**
 	 * Raises every element in exp, by the base 
@@ -106,6 +140,78 @@ public class ArrayMathOps {
 		}
 		return y;
 	}
+	
+	/**
+	 * Adds left operands and right operands
+	 * @param operL
+	 * @param operR
+	 * @return
+	 */
+	public static double[] add(double[] operL, double[] operR) {
+		double[] result = new double[operL.length];
+		
+		for(int i=0; i < result.length; i++)
+		{
+			result[i] = operL[i]+operR[i];
+		}
+		
+		return result;
+	}
+	
+	/**
+	 * Subtract right from left 
+	 * @param operL
+	 * @param operR
+	 * @return
+	 */
+	public static double[] subtract(double[] operL, double[] operR) {
+		double[] result = new double[operL.length];
+		
+		for(int i=0; i < result.length; i++)
+		{
+			result[i] = operL[i]-operR[i];
+		}
+		
+		return result;
+	}
+	
+
+	/**
+	 * Subtract right from left 
+	 * @param operL
+	 * @param operR
+	 * @return
+	 */
+	public static double[] subtract(double operL, double[] operR) {
+		double[] result = new double[operR.length];
+		
+		for(int i=0; i < result.length; i++)
+		{
+			result[i] = operL-operR[i];
+		}
+		
+		return result;
+	}
+	
+
+	/**
+	 * Subtract right from left 
+	 * @param operL
+	 * @param operR
+	 * @return
+	 */
+	public static double[] subtract(double[] operL, double operR) {
+		double[] result = new double[operL.length];
+		
+		for(int i=0; i < result.length; i++)
+		{
+			result[i] = operL[i]-operR;
+		}
+		
+		return result;
+	}
+	
+	
 	
 	/**
 	 * Computes exp(x) for every entry in x
@@ -317,19 +423,7 @@ public class ArrayMathOps {
 	}
 	
 
-	
-	public static double[] add(double[] operL, double[] operR) {
-		double[] result = new double[operL.length];
-		
-		for(int i=0; i < result.length; i++)
-		{
-			result[i] = operL[i]+operR[i];
-		}
-		
-		return result;
-		
-	}
-	
+
 	
 
 }

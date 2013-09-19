@@ -12,7 +12,11 @@ public class SimpleExpectedImprovement implements ExpectedImprovementFunction {
 	@Override
 	public double[] computeNegativeExpectedImprovement(double f_min_samples,
 			double[] predmean, double[] predvar) {
-
+		if(predmean.length != predvar.length)
+		{
+			throw new IllegalArgumentException("Expected predmean and predvar to have the same length");
+		}
+		
 		return times(-1,exp(times(-1,predmean)));
 	}
 

@@ -14,10 +14,11 @@ public class LowerConfidenceBound implements ExpectedImprovementFunction {
 	@Override
 	public double[] computeNegativeExpectedImprovement(double k,
 			double[] predmean, double[] predvar) {
+			if(predmean.length != predvar.length)
+			{
+				throw new IllegalArgumentException("Expected predmean and predvar to have the same length");
+			}
 			return	add( predmean,	times(-k,sqrt(predvar)));
-								
-						
-		
 	}
 
 
