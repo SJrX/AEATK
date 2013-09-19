@@ -93,7 +93,7 @@ public class SMACOptions extends AbstractOptions {
 	
 	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names={"--ei-func","--expected-improvement-function","--expectedImprovementFunction"}, description="expected improvement function to use during local search")
-	public ExpectedImprovementFunctions expFunc = ExpectedImprovementFunctions.EXPONENTIAL;
+	public ExpectedImprovementFunctions expFunc = null;
 	
 	@ParametersDelegate
 	public HelpOptions help = new HelpOptions();

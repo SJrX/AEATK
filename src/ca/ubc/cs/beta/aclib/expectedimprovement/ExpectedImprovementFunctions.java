@@ -20,13 +20,11 @@ public enum ExpectedImprovementFunctions {
 	 */
 	LCB(LowerConfidenceBound.class),
 	
-	
 	/**
-	 * EI Improvement Function (NOT IMPLEMENTED)
+	 * Standard EI Improvement Function
 	 */
 	
 	EI(ExpectedImprovement.class);
-	
 	
 	/**
 	 * SPO Improvement Function (NOT IMPLEMENTED)
