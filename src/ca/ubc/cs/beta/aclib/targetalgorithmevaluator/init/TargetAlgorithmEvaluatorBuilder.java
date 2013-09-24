@@ -23,6 +23,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.debug.LogEveryTa
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.debug.RunHashCodeVerifyingAlgorithmEvalutor;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.debug.UncleanShutdownDetectingTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.functionality.OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.functionality.TerminateAllRunsOnFileDeleteTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.functionality.transform.TransformTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.KillCaptimeExceedingRunsRunsTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator;
@@ -287,6 +288,11 @@ public class TargetAlgorithmEvaluatorBuilder {
 			tae = new KillCaptimeExceedingRunsRunsTargetAlgorithmEvaluatorDecorator(tae, options.killCaptimeExceedingRunFactor);
 		}
 		
+		if(options.fileToWatch != null)
+		{
+			log.debug("[TAE] Killing runs if {} is deleted", options.fileToWatch);
+			tae = new TerminateAllRunsOnFileDeleteTargetAlgorithmEvaluatorDecorator(tae, new File(options.fileToWatch));
+		}
 		
 		if(options.synchronousObserver)
 		{

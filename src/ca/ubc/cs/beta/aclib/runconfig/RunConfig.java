@@ -48,9 +48,7 @@ public class RunConfig implements Serializable{
 		this.cutoffTime = cutoffTime;
 		this.params = config;
 		this.cutoffLessThanMax = false;
-		
-		
-		
+
 	}
 	
 	/**
