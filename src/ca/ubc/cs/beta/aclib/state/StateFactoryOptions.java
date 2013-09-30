@@ -29,6 +29,7 @@ public class StateFactoryOptions extends AbstractOptions{
 	@Parameter(names={"--state-serializer","--stateSerializer"}, description="determines the format of the files to save the state in")
 	public StateSerializers stateSerializer = StateSerializers.LEGACY;
 
+	
 	@CommandLineOnly
 	@UsageTextField( level=OptionLevel.ADVANCED)
 	@Parameter(names={"--state-deserializer","--stateDeserializer"}, description="determines the format of the files that store the saved state to restore")

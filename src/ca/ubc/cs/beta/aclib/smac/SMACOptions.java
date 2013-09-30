@@ -194,6 +194,11 @@ public class SMACOptions extends AbstractOptions {
 	@Parameter(names="--validation-seed", description="Seed to use for validating SMAC")
 	public int validationSeed = 0;
 	
+	@UsageTextField(level=OptionLevel.INTERMEDIATE)
+	@Parameter(names={"--save-runs-every-iteration"}, description="if true will save the runs and results file to disk every iteration. Useful if your runs are expensive and your cluster unreliable, not recommended if your runs are short as this may add an unacceptable amount of overhead")
+	public boolean saveRunsEveryIteration = false;
+	
+	
 	/**
 	 * Checks if the verify sat option is compatible with this set of probelm instances
 	 * @param instances 	The problem instances

@@ -127,7 +127,7 @@ public class ProblemInstanceOptions extends AbstractOptions{
 		{
 			if(required)
 			{			
-				throw new ParameterException("The instance file option --instanceFile must be set");
+				throw new ParameterException("The instance file option --testInstanceFile must be set");
 			} else
 			{
 				return null;
