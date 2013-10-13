@@ -41,8 +41,12 @@ public class OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator extends
 	@Override
 	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
 		try{
+			
 			logReduce(runConfigs);
-			return tae.evaluateRun(runConfigs, obs);
+			preRun(runConfigs);
+			List<AlgorithmRun> runs =  tae.evaluateRun(runConfigs, obs);
+			postRun(runConfigs);
+			return runs;
 		} finally
 		{
 			logRelease(runConfigs);
@@ -84,14 +88,16 @@ public class OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator extends
 		
 		
 		logReduce(runConfigs);
+		preRun(runConfigs);
 		TargetAlgorithmEvaluatorCallback callback = new TargetAlgorithmEvaluatorCallback()
 		{
 
 			AtomicBoolean bool = new AtomicBoolean(false);
 			@Override
 			public void onSuccess(List<AlgorithmRun> runs) {
-				
+				postRun(runConfigs);
 				handler.onSuccess(runs);
+				//Release happens after because it is still outstanding at this point until the callback has fired.
 				synchronized (this) {
 					if(!bool.get())
 						{
@@ -105,9 +111,12 @@ public class OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator extends
 			@Override
 			public void onFailure(RuntimeException t) {
 				try {
+					postRun(runConfigs);
 					handler.onFailure(t);
+					
 				} finally
 				{
+					//Release happens after because it is still outstanding at this point until the callback has fired.
 					synchronized (this) {
 						if(!bool.get())
 							{
@@ -148,6 +157,22 @@ public class OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator extends
 	public synchronized int getNumberOfOutstandingEvaluations()
 	{
 		return 1 - outstandingRunBlocks.availablePermits();
+	}
+	
+	
+	
+	/***
+	 * Additionally template methods
+	 */
+	
+	protected void preRun(List<RunConfig> runConfigs)
+	{
+		
+	}
+	
+	protected void postRun(List<RunConfig> runConfigs)
+	{
+		
 	}
 	
 	
