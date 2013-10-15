@@ -46,7 +46,7 @@ public class LogRuntimeStatistics implements EventHandler<AutomaticConfiguratorE
 	
 	private final double cutoffTime;
 	
-	private final AtomicInteger logCount = new AtomicInteger();
+	private final AtomicInteger logCount = new AtomicInteger(1);
 	private final long msToWait; 
 	
 	private long lastMessage = Long.MIN_VALUE;
@@ -110,13 +110,7 @@ public class LogRuntimeStatistics implements EventHandler<AutomaticConfiguratorE
 			}
 		}
 		{
-			if(msToWait + lastMessage > System.currentTimeMillis())
-			{
-				return;
-			} else
-			{
-				lastMessage = System.currentTimeMillis();
-			}
+			
 			try {
 				runHistory.readLock();
 				String myLastLogMessage;
@@ -130,7 +124,7 @@ public class LogRuntimeStatistics implements EventHandler<AutomaticConfiguratorE
 				}
 				ParamConfiguration incumbent = this.lastICE.get().getIncumbent();
 				
-				Object[] arr = { logCount.incrementAndGet(),
+				Object[] arr = { logCount.get(),
 						runHistory.getThetaIdx(incumbent) + " (" + incumbent +")",
 						runHistory.getTotalNumRunsOfConfig(incumbent),
 						runHistory.getInstancesRan(incumbent).size(),
@@ -187,7 +181,18 @@ public class LogRuntimeStatistics implements EventHandler<AutomaticConfiguratorE
 			}
 			
 			
-			log.info(lastString.get());
+			if(msToWait + lastMessage > System.currentTimeMillis())
+			{
+				
+				return;
+			} else
+			{
+				logCount.incrementAndGet();
+				lastMessage = System.currentTimeMillis();
+				log.info(lastString.get());
+			}
+			
+			
 		}
 		
 		
