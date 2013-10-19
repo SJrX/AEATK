@@ -1,5 +1,6 @@
 package ca.ubc.cs.beta.aclib.termination;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -14,6 +15,7 @@ import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 import ca.ubc.cs.beta.aclib.termination.standard.AlgorithmRunLimitCondition;
 import ca.ubc.cs.beta.aclib.termination.standard.CPULimitCondition;
+import ca.ubc.cs.beta.aclib.termination.standard.FileDeletedTerminateCondition;
 import ca.ubc.cs.beta.aclib.termination.standard.ModelIterationTerminationCondition;
 import ca.ubc.cs.beta.aclib.termination.standard.NoRunsForManyChallengesEvent;
 import ca.ubc.cs.beta.aclib.termination.standard.WallClockLimitCondition;
@@ -44,6 +46,10 @@ public class TerminationCriteriaOptions extends AbstractOptions {
 	@Parameter(names={"--max-norun-challenge-limit","--maxConsecutiveFailedChallengeIncumbent"}, description="if the parameter space is too small we may get to a point where we can make no new runs, detecting this condition is prohibitively expensive, and this heuristic controls the number of times we need to try a challenger and get no new runs before we give up")
 	public int challengeIncumbentAttempts = 1000;
 
+	@UsageTextField(level=OptionLevel.ADVANCED)
+	@Parameter(names={"--terminate-on-delete"}, description="Terminate the procedure if this file is deleted")
+	public String fileToWatch = null;
+	
 	
 	public CompositeTerminationCondition getTerminationConditions()
 	{
@@ -54,6 +60,10 @@ public class TerminationCriteriaOptions extends AbstractOptions {
 		termConds.add(new AlgorithmRunLimitCondition(totalNumRunsLimit));
 		termConds.add(new ModelIterationTerminationCondition(this.numIterations));
 		termConds.add(new NoRunsForManyChallengesEvent(challengeIncumbentAttempts));
+		if(fileToWatch != null)
+		{
+			termConds.add(new FileDeletedTerminateCondition(new File(fileToWatch)));
+		}
 		return new CompositeTerminationCondition(termConds);
 	}
 	

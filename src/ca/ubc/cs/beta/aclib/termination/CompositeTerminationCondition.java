@@ -2,6 +2,7 @@ package ca.ubc.cs.beta.aclib.termination;
 
 import java.util.ArrayList;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 
@@ -12,6 +13,11 @@ public class CompositeTerminationCondition implements TerminationCondition {
 
 	
 	private final LinkedHashSet<TerminationCondition> conditions;
+	
+	public CompositeTerminationCondition(TerminationCondition c)
+	{
+		this(Collections.singletonList(c));
+	}
 	
 	public CompositeTerminationCondition(Collection<? extends TerminationCondition> conditions)
 	{

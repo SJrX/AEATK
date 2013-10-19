@@ -4,9 +4,15 @@ import static org.junit.Assert.*;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicInteger;
 
+import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
@@ -23,17 +29,22 @@ import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.configspace.ParamFileHelper;
 import ca.ubc.cs.beta.aclib.exceptions.DuplicateRunException;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aclib.misc.debug.DebugUtil;
 import ca.ubc.cs.beta.aclib.objectives.OverallObjective;
 import ca.ubc.cs.beta.aclib.objectives.RunObjective;
 import ca.ubc.cs.beta.aclib.probleminstance.InstanceListWithSeeds;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceHelper;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
+import ca.ubc.cs.beta.aclib.random.SeedableRandomPool;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.runhistory.NewRunHistory;
 import ca.ubc.cs.beta.aclib.runhistory.RunHistory;
 import ca.ubc.cs.beta.aclib.runhistory.RunHistoryHelper;
+import ca.ubc.cs.beta.aclib.runhistory.ThreadSafeRunHistory;
+import ca.ubc.cs.beta.aclib.runhistory.ThreadSafeRunHistoryWrapper;
 import ca.ubc.cs.beta.aclib.seedgenerator.InstanceSeedGenerator;
+import ca.ubc.cs.beta.aclib.seedgenerator.RandomInstanceSeedGenerator;
 import ca.ubc.cs.beta.configspace.ParamConfigurationTest;
 import ca.ubc.cs.beta.probleminstance.ProblemInstanceHelperTester;
 import ec.util.MersenneTwister;
@@ -60,10 +71,19 @@ public class RunHistoryTester {
 	private final ParamConfigurationSpace configSpace = ParamConfigurationTest.getConfigSpaceForFile("paramFiles/daisy-chain-param.txt");
 	private final AlgorithmExecutionConfig execConfig = new AlgorithmExecutionConfig("boo", "foo", configSpace, false, false, 500);
 	
+	
+	private static final SeedableRandomPool pool = new SeedableRandomPool(System.currentTimeMillis());
+	
 	@Before
 	public void setUp()
 	{
 		ProblemInstanceHelper.clearCache();
+	}
+	
+	@AfterClass
+	public static void after()
+	{
+		pool.logUsage();
 	}
 	/**
 	 * Trying to replace a capped run causes an UnsupportedOperationException
@@ -215,6 +235,122 @@ public class RunHistoryTester {
 		//runs.add(new ExistingAlgorithmRun)
 		return runs;
 		
+	}
+	
+	private final ThreadSafeRunHistory rh = new ThreadSafeRunHistoryWrapper(new NewRunHistory(OverallObjective.MEAN, OverallObjective.MEAN, RunObjective.RUNTIME));
+	
+	public void appendRun(AlgorithmRun run)
+	{
+		try {
+			rh.append(run);
+		} catch (DuplicateRunException e) {
+			throw new IllegalStateException(e);
+		}
+	}
+	
+	/**
+	 * This tests that we can get multiple seeds to do at once
+	 * 
+	 */
+	@Test
+	public void testRunHistoryHelperMultipleRequests()
+	{
+		
+		
+		Random rand = pool.getRandom(DebugUtil.getCurrentMethodName());
+		
+		List<ProblemInstance> pis = new ArrayList<ProblemInstance>();
+		
+		
+		
+		double cutoffTime = 50;
+		
+		
+		ParamConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("x [0,10][5]\n");
+		ParamConfiguration incumbent = configSpace.getDefaultConfiguration();
+		
+		
+		
+		
+		InstanceSeedGenerator inscgen = new RandomInstanceSeedGenerator(pis, 0);
+		pis.add(new ProblemInstance("Test1",1));
+		appendRun(new ExistingAlgorithmRun(execConfig, new RunConfig(new ProblemInstanceSeedPair(pis.get(0), 0), cutoffTime, incumbent), RunResult.SAT, 5, 0, 0, 0));
+		
+		
+		
+		for(int j=0; j< 20; j++)
+		{
+			int[] sizes = { 1, rand.nextInt(4)+1, rand.nextInt(4)+8, rand.nextInt(20)+1, rand.nextInt(200)+1, rand.nextInt(200)+ 150, rand.nextInt(1000)+1, rand.nextInt(2000)+1, rand.nextInt(2000) + 250, rand.nextInt(2000)+1000};
+			
+			
+			pis.clear();
+			pis.add(new ProblemInstance("Test1",1));
+			int numbers = rand.nextInt(j+1)+2;
+			for(int i=1; i < numbers; i++)
+			{
+				pis.add(new ProblemInstance("Test" + (i+1),(i+1)));
+			}
+			
+			
+			System.out.println("Executing against " + numbers + " instances");
+			/*pis.add(new ProblemInstance("Test2",2));
+			pis.add(new ProblemInstance("Test3",3));
+			pis.add(new ProblemInstance("Test4",4));
+			pis.add(new ProblemInstance("Test5",5));
+			pis.add(new ProblemInstance("Test6",6));
+			pis.add(new ProblemInstance("Test7",7));
+			*/
+			
+			
+			for(int numberOfPispsToGenerate : sizes)
+			{
+			
+				System.out.println("Trying to generate :" + numberOfPispsToGenerate);
+
+				Map<ProblemInstance, AtomicInteger> piCount = new LinkedHashMap<ProblemInstance, AtomicInteger>();
+				
+				
+				for(ProblemInstance pi : pis)
+				{
+					piCount.put(pi, new AtomicInteger(0));
+				}
+				
+				piCount.get(pis.get(0)).incrementAndGet();
+				
+				List<ProblemInstanceSeedPair> pisps = RunHistoryHelper.getRandomInstanceSeedWithFewestRunsFor(rh, inscgen, incumbent, pis, rand, false,numberOfPispsToGenerate); 
+				for(int i=0; i < numberOfPispsToGenerate; i++)
+				{
+					ProblemInstanceSeedPair pisp = pisps.get(i);
+					piCount.get(pisp.getInstance()).incrementAndGet();
+				}
+				
+				
+				int mathMin = -1;
+				int mathMax = -1;
+				for(Entry<ProblemInstance, AtomicInteger> vals : piCount.entrySet())
+				{
+					if(mathMin == -1)
+					{
+						mathMin = vals.getValue().get();
+						mathMax = vals.getValue().get();
+					} else
+					{
+						mathMin = Math.min(mathMin, vals.getValue().get());
+						mathMax = Math.max(mathMax, vals.getValue().get());
+					}
+					System.out.println("Mapping: "+  vals);
+					
+				}
+				
+				
+				
+				
+				
+				assertTrue("Expected the instance with the most entries has at most one more entry than the one with the least. Instead have max: " + mathMax + " min: " + mathMin , (mathMax-mathMin) <= 1);
+				
+				assertEquals("Expected number of generated instances is", mathMax, (int) Math.ceil((numberOfPispsToGenerate+1.0)/pis.size() ) );
+			}
+		}
 	}
 	
 	

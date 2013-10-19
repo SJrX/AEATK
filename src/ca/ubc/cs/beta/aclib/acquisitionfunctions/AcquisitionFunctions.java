@@ -1,4 +1,4 @@
-package ca.ubc.cs.beta.aclib.expectedimprovement;
+package ca.ubc.cs.beta.aclib.acquisitionfunctions;
 
 import com.beust.jcommander.ParameterException;
 /**
@@ -6,7 +6,7 @@ import com.beust.jcommander.ParameterException;
  * @author sjr
  *
  */
-public enum ExpectedImprovementFunctions {
+public enum AcquisitionFunctions {
 	/**
 	 * The standard expected improvement function
 	 */
@@ -14,38 +14,40 @@ public enum ExpectedImprovementFunctions {
 	/**
 	 * A simple expected improvement function
 	 */
-	SIMPLE(SimpleExpectedImprovement.class),
+	SIMPLE(SimpleAcquisitionFunction.class),
 	/**
 	 * Lower Confidence Bound
 	 */
-	LCB(LowerConfidenceBound.class);
+	LCB(LowerConfidenceBound.class),
+	
+	/**
+	 * Standard EI Improvement Function
+	 */
+	
+	EI(ExpectedImprovement.class);
 	
 	/**
 	 * SPO Improvement Function (NOT IMPLEMENTED)
 	 */
 	//SPO,
-	/**
-	 * EI Improvement Function (NOT IMPLEMENTED)
-	 */
-	//EI,
-	/**
+	 /*
 	 * EIh Improvement Function (NOT IMPLEMENTED)
 	 */
 	//EIh;
 	
-	Class<? extends ExpectedImprovementFunction> c;
+	Class<? extends AcquisitionFunction> c;
 	
-	ExpectedImprovementFunctions(Class<? extends ExpectedImprovementFunction> c)
+	AcquisitionFunctions(Class<? extends AcquisitionFunction> c)
 	{
 		this.c=c;
 	}
 	
-	ExpectedImprovementFunctions()
+	AcquisitionFunctions()
 	{
 		this.c = null;
 	}
 	
-	public ExpectedImprovementFunction getFunction()
+	public AcquisitionFunction getFunction()
 	{
 		if(c == null)
 		{

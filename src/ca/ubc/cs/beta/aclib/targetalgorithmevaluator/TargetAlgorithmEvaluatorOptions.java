@@ -152,6 +152,9 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	@ParametersDelegate
 	public TransformTargetAlgorithmEvaluatorDecoratorOptions ttaedo = new TransformTargetAlgorithmEvaluatorDecoratorOptions();
 	
+	@UsageTextField(level=OptionLevel.DEVELOPER)
+	@Parameter(names={"--kill-runs-on-file-delete"}, description="All runs will be forcibly killed if the file is deleted. This option may cause the application to enter an infinite loop if the file is deleted, so care is needed. As a rule, you need to set this and some other option to point to the same file, if there is another option, then the application will probably shutdown nicely, if not, then it will probably infinite loop." )
+	public String fileToWatch = null;
 	
 	
 	/**

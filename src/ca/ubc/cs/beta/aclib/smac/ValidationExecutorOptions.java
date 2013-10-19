@@ -4,6 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.List;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.help.HelpOptions;
 import ca.ubc.cs.beta.aclib.logging.ComplexLoggingOptions;
@@ -123,11 +126,14 @@ public class ValidationExecutorOptions extends AbstractOptions {
 	{
 			TrainTestInstances tti = this.scenarioConfig.getTrainingAndTestProblemInstances(this.experimentDir, pool.getRandom(SeedableRandomPoolConstants.INSTANCE_SEEDS).nextInt(), pool.getRandom(SeedableRandomPoolConstants.TEST_SEED_INSTANCES).nextInt(), true, false, false, false);
 			
+			Logger log = LoggerFactory.getLogger(getClass());
 			if(this.validateTestInstances)
 			{
+				log.info("Validating using test instances");
 				return tti.getTestInstances();
 			} else
 			{
+				log.info("Validating using training instances");
 				return tti.getTrainingInstances();
 			}
 	}

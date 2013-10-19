@@ -6,10 +6,10 @@ import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
 
+import ca.ubc.cs.beta.aclib.acquisitionfunctions.AcquisitionFunctions;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.configspace.tracking.ParamConfigurationOriginTrackingOptions;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
-import ca.ubc.cs.beta.aclib.expectedimprovement.ExpectedImprovementFunctions;
 import ca.ubc.cs.beta.aclib.help.HelpOptions;
 import ca.ubc.cs.beta.aclib.initialization.InitializationMode;
 import ca.ubc.cs.beta.aclib.initialization.classic.ClassicInitializationProcedureOptions;
@@ -92,8 +92,8 @@ public class SMACOptions extends AbstractOptions {
 	public String experimentDir = System.getProperty("user.dir") + File.separator + "";
 	
 	@UsageTextField(level=OptionLevel.ADVANCED)
-	@Parameter(names={"--ei-func","--expected-improvement-function","--expectedImprovementFunction"}, description="expected improvement function to use during local search")
-	public ExpectedImprovementFunctions expFunc = ExpectedImprovementFunctions.EXPONENTIAL;
+	@Parameter(names={"--acq-func","--acquisition-function", "--ei-func","--expected-improvement-function","--expectedImprovementFunction"}, description="acquisition function to use during local search")
+	public AcquisitionFunctions expFunc = null;
 	
 	@ParametersDelegate
 	public HelpOptions help = new HelpOptions();
@@ -193,6 +193,11 @@ public class SMACOptions extends AbstractOptions {
 	@UsageTextField(defaultValues="0 which should cause it to run exactly the same as the stand-alone utility.")
 	@Parameter(names="--validation-seed", description="Seed to use for validating SMAC")
 	public int validationSeed = 0;
+	
+	@UsageTextField(level=OptionLevel.INTERMEDIATE)
+	@Parameter(names={"--save-runs-every-iteration"}, description="if true will save the runs and results file to disk every iteration. Useful if your runs are expensive and your cluster unreliable, not recommended if your runs are short as this may add an unacceptable amount of overhead")
+	public boolean saveRunsEveryIteration = false;
+	
 	
 	/**
 	 * Checks if the verify sat option is compatible with this set of probelm instances

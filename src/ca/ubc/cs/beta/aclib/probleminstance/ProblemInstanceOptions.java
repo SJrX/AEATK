@@ -76,6 +76,7 @@ public class ProblemInstanceOptions extends AbstractOptions{
 			
 		} catch(FeatureNotFoundException e)
 		{
+			ProblemInstanceHelper.clearCache();
 			if(featuresRequired)
 			{
 				throw new ParameterException("Training instances require features and there was a problem loading features for all instances: " + e.getMessage());
@@ -126,7 +127,7 @@ public class ProblemInstanceOptions extends AbstractOptions{
 		{
 			if(required)
 			{			
-				throw new ParameterException("The instance file option --instanceFile must be set");
+				throw new ParameterException("The instance file option --testInstanceFile must be set");
 			} else
 			{
 				return null;
@@ -137,17 +138,18 @@ public class ProblemInstanceOptions extends AbstractOptions{
 		
 		Logger log = LoggerFactory.getLogger(getClass());
 		try {
-			ilws = ProblemInstanceHelper.getInstances(instanceFile,experimentDirectory, instanceFeatureFile, checkInstanceFilesExist, seed, deterministic);
+			ilws = ProblemInstanceHelper.getInstances(testInstanceFile,experimentDirectory, instanceFeatureFile, checkInstanceFilesExist, seed, deterministic);
 			
 			
 		} catch(FeatureNotFoundException e)
 		{
+			ProblemInstanceHelper.clearCache();
 			if(featuresRequired)
 			{
 				throw new ParameterException("Testing instances require features and there was a problem loading features for all instances: " + e.getMessage());
 			} else
 			{
-				ilws = ProblemInstanceHelper.getInstances(instanceFile,experimentDirectory, null, checkInstanceFilesExist, seed, deterministic);
+				ilws = ProblemInstanceHelper.getInstances(testInstanceFile,experimentDirectory, null, checkInstanceFilesExist, seed, deterministic);
 			}
 			
 			
