@@ -138,7 +138,7 @@ public class ProblemInstanceOptions extends AbstractOptions{
 		
 		Logger log = LoggerFactory.getLogger(getClass());
 		try {
-			ilws = ProblemInstanceHelper.getInstances(instanceFile,experimentDirectory, instanceFeatureFile, checkInstanceFilesExist, seed, deterministic);
+			ilws = ProblemInstanceHelper.getInstances(testInstanceFile,experimentDirectory, instanceFeatureFile, checkInstanceFilesExist, seed, deterministic);
 			
 			
 		} catch(FeatureNotFoundException e)
@@ -149,7 +149,7 @@ public class ProblemInstanceOptions extends AbstractOptions{
 				throw new ParameterException("Testing instances require features and there was a problem loading features for all instances: " + e.getMessage());
 			} else
 			{
-				ilws = ProblemInstanceHelper.getInstances(instanceFile,experimentDirectory, null, checkInstanceFilesExist, seed, deterministic);
+				ilws = ProblemInstanceHelper.getInstances(testInstanceFile,experimentDirectory, null, checkInstanceFilesExist, seed, deterministic);
 			}
 			
 			
