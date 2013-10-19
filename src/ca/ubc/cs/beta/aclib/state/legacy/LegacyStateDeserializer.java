@@ -364,7 +364,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 				{
 					
 					
-					i++;
+					
 					try {
 						//The magic constants here are basically from LegacyStateSerializer
 						//Perhaps that should be refactored as this is fragile
@@ -375,7 +375,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 						
 						
 						if(runHistoryLine[0].trim().equals(LegacyStateFactory.RUN_NUMBER_HEADING)) continue;
-						
+						i++;
 						
 						
 						int thetaIdx = Integer.valueOf(runHistoryLine[1]);
