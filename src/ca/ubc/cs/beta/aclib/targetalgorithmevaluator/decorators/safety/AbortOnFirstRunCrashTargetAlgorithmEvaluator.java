@@ -31,10 +31,9 @@ public class AbortOnFirstRunCrashTargetAlgorithmEvaluator extends
 	
 	@Override
 	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
-		return validate(super.evaluateRun(runConfigs, null));
+		return validate(super.evaluateRun(runConfigs, obs));
 	}
 	
-
 	private final AtomicBoolean firstRunChecked = new AtomicBoolean(false);
 	
 	private List<AlgorithmRun> validate(List<AlgorithmRun> runs)
