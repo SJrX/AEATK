@@ -16,7 +16,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbstractForEachR
  * 
  * This class generally increases the time after a single warning, so as not to be spammy.
  * 
- * @author Steve Ramage 
+ * @author Steve Ramage<seramage@cs.ubc.ca>
  *
  */
 @ThreadSafe
@@ -34,10 +34,10 @@ public class TimingCheckerTargetAlgorithmEvaluator extends	AbstractForEachRunTar
 	
 	private static Logger log = LoggerFactory.getLogger(TimingCheckerTargetAlgorithmEvaluator.class);
 	
-	public TimingCheckerTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig, TargetAlgorithmEvaluator tae) {
+	public TimingCheckerTargetAlgorithmEvaluator( TargetAlgorithmEvaluator tae) {
 		super(tae);
 		
-		wallClockDeltaToRequireLogging = Math.min(1.5*execConfig.getAlgorithmCutoffTime(), 10);
+		wallClockDeltaToRequireLogging = 10;
 		
 
 	}
@@ -90,7 +90,9 @@ public class TimingCheckerTargetAlgorithmEvaluator extends	AbstractForEachRunTar
 		totalWalltime += Math.max(run.getWallclockExecutionTime(), 0);
 		totalWallClockOverhead += Math.max(wallClockOverhead, 0);
 		
-		if(wallClockOverhead > wallClockDeltaToRequireLogging)
+		
+		
+		if(wallClockOverhead > Math.min(1.5*run.getRunConfig().getAlgorithmExecutionConfig().getAlgorithmCutoffTime(), wallClockDeltaToRequireLogging))
 		{
 			wallClockDeltaToRequireLogging = wallClockOverhead + 1;
 			Object[] args = {run.getWallclockExecutionTime(), run.getRunConfig().getCutoffTime(), wallClockOverhead, wallClockDeltaToRequireLogging};

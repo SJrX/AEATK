@@ -37,7 +37,7 @@ public class AlgorithmExecutionConfig implements Serializable {
 	
 	public AlgorithmExecutionConfig(String algorithmExecutable, String algorithmExecutionDirectory,
 			ParamConfigurationSpace paramFile, boolean executeOnCluster, boolean deterministicAlgorithm, double cutoffTime) {
-		this(algorithmExecutionDirectory, algorithmExecutionDirectory, paramFile, deterministicAlgorithm, deterministicAlgorithm, cutoffTime, Collections.EMPTY_MAP);
+		this(algorithmExecutable, algorithmExecutionDirectory, paramFile,executeOnCluster, deterministicAlgorithm, cutoffTime, Collections.EMPTY_MAP);
 		
 	}
 	

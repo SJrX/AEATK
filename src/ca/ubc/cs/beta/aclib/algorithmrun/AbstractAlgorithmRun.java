@@ -287,14 +287,14 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 
 	@Override
 	public final synchronized boolean isRunResultWellFormed() {
-		if(!isResultSet()) throw new IllegalStateException("Run has not yet completed: " + this.toString());
+		if(!isResultSet()) throw new IllegalStateException("Run has not yet completed"+ this.getRunConfig());
 		return runResultWellFormed;
 	}
 	
 	@Override
 	public final String rawResultLine()
 	{
-		if(!isResultSet()) throw new IllegalStateException("Run has not yet completed: " + this.toString());
+		if(!isResultSet()) throw new IllegalStateException("Run has not yet completed:" + this.getRunConfig());
 		
 		if(saveRawResultLine())
 		{

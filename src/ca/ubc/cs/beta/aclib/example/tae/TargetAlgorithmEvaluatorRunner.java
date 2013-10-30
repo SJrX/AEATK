@@ -98,7 +98,7 @@ public class TargetAlgorithmEvaluatorRunner
 			TargetAlgorithmEvaluator tae = null;
 			try {
 				//Retrieve the target algorithm evaluator with the necessary options
-				tae = mainOptions.scenOptions.algoExecOptions.taeOpts.getTargetAlgorithmEvaluator(execConfig, taeOptions);
+				tae = mainOptions.scenOptions.algoExecOptions.taeOpts.getTargetAlgorithmEvaluator( taeOptions);
 				
 				
 				//Create a new problem instance to run (IMMUTABLE)

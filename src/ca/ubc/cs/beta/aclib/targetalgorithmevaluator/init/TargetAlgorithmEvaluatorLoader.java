@@ -35,7 +35,7 @@ public class TargetAlgorithmEvaluatorLoader {
 	 * @param taeOptions						The abstract options associated with this target algorithm evaluator
 	 * @return a configured <code>Target Algorithm Evaluator</code>
 	 */
-	public static TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig, String name, Map<String, AbstractOptions> taeOptions)
+	public static TargetAlgorithmEvaluator getTargetAlgorithmEvaluator( String name, Map<String, AbstractOptions> taeOptions)
 	{
 		Logger log = LoggerFactory.getLogger(TargetAlgorithmEvaluatorLoader.class);
 		ClassLoader loader = SPIClassLoaderHelper.getClassLoader();

@@ -206,9 +206,9 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	 * @param numRun		number of our run (used for TAEs that output files as a suffix generally)
 	 * @return
 	 */
-	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig,  Map<String, AbstractOptions> taeOptionsMap, String outputDir, int numRun)
+	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator( Map<String, AbstractOptions> taeOptionsMap, String outputDir, int numRun)
 	{
-		return TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(this, execConfig, true, false, taeOptionsMap, null, new File(outputDir), numRun);
+		return TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(this,  true, false, taeOptionsMap, null, new File(outputDir), numRun);
 	}
 	
 	
@@ -223,9 +223,9 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	 * @param numRun				number of our run (used for TAEs that output files as a suffix generally)
 	 * @return
 	 */
-	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig, boolean hashVerifiersAllowed, boolean ignoreBound,  Map<String, AbstractOptions> taeOptionsMap, String outputDir, int numRun)
+	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator( boolean hashVerifiersAllowed, boolean ignoreBound,  Map<String, AbstractOptions> taeOptionsMap, String outputDir, int numRun)
 	{
-		return TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(this, execConfig, hashVerifiersAllowed, ignoreBound, taeOptionsMap, null,new File(outputDir), numRun);
+		return TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(this,  hashVerifiersAllowed, ignoreBound, taeOptionsMap, null,new File(outputDir), numRun);
 	}
 	
 	/**
@@ -237,9 +237,9 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	 * @param numRun		number of our run (used for TAEs that output files as a suffix generally)
 	 * @return
 	 */
-	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig,  Map<String, AbstractOptions> taeOptionsMap, File outputDir, int numRun)
+	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(  Map<String, AbstractOptions> taeOptionsMap, File outputDir, int numRun)
 	{
-		return TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(this, execConfig, true, false, taeOptionsMap, null, outputDir, numRun);
+		return TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(this, true, false, taeOptionsMap, null, outputDir, numRun);
 	}
 	
 	
@@ -254,9 +254,9 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	 * @param numRun				number of our run (used for TAEs that output files as a suffix generally)
 	 * @return
 	 */
-	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig, boolean hashVerifiersAllowed, boolean ignoreBound,  Map<String, AbstractOptions> taeOptionsMap, File outputDir, int numRun)
+	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator( boolean hashVerifiersAllowed, boolean ignoreBound,  Map<String, AbstractOptions> taeOptionsMap, File outputDir, int numRun)
 	{
-		return TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(this, execConfig, hashVerifiersAllowed, ignoreBound, taeOptionsMap, null, outputDir, numRun);
+		return TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(this,  hashVerifiersAllowed, ignoreBound, taeOptionsMap, null, outputDir, numRun);
 	}
 
 	/**
@@ -265,9 +265,9 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	 * @param taeOptions	options for all available TAEs
 	 * @return
 	 */
-	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig,Map<String, AbstractOptions> taeOptions) 
+	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(Map<String, AbstractOptions> taeOptions) 
 	{
-		return getTargetAlgorithmEvaluator(execConfig, taeOptions, new File(".").getAbsolutePath(), 0);
+		return getTargetAlgorithmEvaluator( taeOptions, new File(".").getAbsolutePath(), 0);
 	}
 
 	/**

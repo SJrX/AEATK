@@ -242,7 +242,7 @@ public class TAETestSet {
 		}
 		
 		System.out.println("Performing " + runConfigs.size() + " runs");
-		TargetAlgorithmEvaluator tae = new TimingCheckerTargetAlgorithmEvaluator(execConfig, TAETestSet.tae);
+		TargetAlgorithmEvaluator tae = new TimingCheckerTargetAlgorithmEvaluator( TAETestSet.tae);
 		
 		ByteArrayOutputStream bout = new ByteArrayOutputStream();
 		
@@ -1549,7 +1549,7 @@ public class TAETestSet {
 		opts.boundRuns = false;
 		
 		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).preloadedResponses="[TIMEOUT=4],[CRASHED=2],[TIMEOUT=3],[CRASHED=1],[SAT=1],[SAT=2],[UNSAT=2],[UNSAT=3],[TIMEOUT=4],[CRASHED=2],[TIMEOUT=3],[CRASHED=1],[SAT=1],[SAT=2],[UNSAT=2],[UNSAT=3]";
-		TargetAlgorithmEvaluator tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts, execConfig, false, taeOptionsMap);
+		TargetAlgorithmEvaluator tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts,  false, taeOptionsMap);
 		
 		ProblemInstance satPi = new ProblemInstance("SATInstance");
 		ProblemInstance unsatPi = new ProblemInstance("UNSATInstance");
@@ -1614,7 +1614,7 @@ public class TAETestSet {
 		
 		opts.checkSATConsistencyException = true;
 		
-		tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts, execConfig, false, taeOptionsMap);
+		tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts,  false, taeOptionsMap);
 		rcs = Arrays.asList(satPiOneRC, satPiTwoRC, unSatPiOneRC, unSatPiTwoRC, satPiThreeRC,  unSatPiThreeRC, satPiFourRC, unSatPiFourRC);
 		boolean exception = false;
 		try {
@@ -1663,7 +1663,7 @@ public class TAETestSet {
 		System.setOut(pw);
 		TargetAlgorithmEvaluator tae;
 		try {
-			 tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts, execConfig, false, taeOptionsMap);
+			 tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts,  false, taeOptionsMap);
 		} finally
 		{
 		   System.setOut(oldOut);
@@ -1701,7 +1701,7 @@ public class TAETestSet {
 		System.setOut(pw);
 	
 		try {
-			 tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts, execConfig, false, taeOptionsMap);
+			 tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts,  false, taeOptionsMap);
 		} finally
 		{
 		   System.setOut(oldOut);
@@ -1743,7 +1743,7 @@ public class TAETestSet {
 		boolean exceptionOccurred = true;
 		try {
 			try {
-				 tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts, execConfig, false, taeOptionsMap);
+				 tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts,  false, taeOptionsMap);
 			} finally
 			{
 			   System.setOut(oldOut);
@@ -1783,7 +1783,7 @@ public class TAETestSet {
 		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).quality = 0.0;
 		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).runLength = 0.0;
 		
-		TargetAlgorithmEvaluator tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts, execConfig, false, taeOptionsMap);
+		TargetAlgorithmEvaluator tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts,  false, taeOptionsMap);
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < 1; i++)
@@ -1818,7 +1818,7 @@ public class TAETestSet {
 		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).runLength = 0.0;
 		
 		tae.notifyShutdown();
-		tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts, execConfig, false, taeOptionsMap);
+		tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts,  false, taeOptionsMap);
 		
 		
 		System.out.println("Performing " + runConfigs.size() + " runs");
@@ -1837,7 +1837,7 @@ public class TAETestSet {
 		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).runLength = -2;
 		
 		tae.notifyShutdown();
-		tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts, execConfig, false, taeOptionsMap);
+		tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts,  false, taeOptionsMap);
 		
 		
 		System.out.println("Performing " + runConfigs.size() + " runs");
@@ -1856,7 +1856,7 @@ public class TAETestSet {
 		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).quality = 0;
 		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).runLength = Double.NaN;
 		
-		tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts, execConfig, false, taeOptionsMap);
+		tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts,  false, taeOptionsMap);
 		
 		
 		System.out.println("Performing " + runConfigs.size() + " runs");
@@ -1880,7 +1880,7 @@ public class TAETestSet {
 		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).quality = 0;
 		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).runLength = -1;
 		
-		tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts, execConfig, false, taeOptionsMap);
+		tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts,  false, taeOptionsMap);
 		
 		
 		System.out.println("Performing " + runConfigs.size() + " runs");
@@ -1900,7 +1900,7 @@ public class TAETestSet {
 		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).quality = 0;
 		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).runLength = -1;
 
-		tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts, execConfig, false, taeOptionsMap);
+		tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts,  false, taeOptionsMap);
 		
 		
 		System.out.println("Performing " + runConfigs.size() + " runs");
