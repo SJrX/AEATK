@@ -36,18 +36,15 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractSyncTargetAlgor
 	 * @param execConfig 			execution configuration of the target algorithm
 	 * @param options	<code>true</code> if we should execute algorithms concurrently, <code>false</code> otherwise
 	 */
-	CommandLineTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig, CommandLineTargetAlgorithmEvaluatorOptions options)
+	CommandLineTargetAlgorithmEvaluator(CommandLineTargetAlgorithmEvaluatorOptions options)
 	{
-		super(execConfig);
+		
 		this.observerFrequency = options.observerFrequency;
-		log.debug("Initalized with the following Execution Configuration {} " , execConfig);
 		this.concurrentExecution = options.concurrentExecution;
 		if(observerFrequency < 50) throw new ParameterException("Observer Frequency can't be less than 50 ms");
 		log.debug("Concurrent Execution {}", options.concurrentExecution);
 		this.options = options;
-		File execDir = new File(execConfig.getAlgorithmExecutionDirectory());
-		if(!execDir.exists()) throw new ParameterException("The Algorithm Execution Directory does not exist (" + execConfig.getAlgorithmExecutionDirectory() + ")");
-		if(!execDir.isDirectory()) throw new ParameterException("The Algorithm Execution Directory is NOT a directory (" + execConfig.getAlgorithmExecutionDirectory() + ")");
+		
 	}
 	
 
@@ -92,12 +89,12 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractSyncTargetAlgor
 		if(concurrentExecution && options.cores > 1)
 		{
 			log.debug("Using concurrent algorithm runner");
-			return AutomaticConfiguratorFactory.getConcurrentAlgorithmRunner(execConfig,runConfigs,obs, options);
+			return AutomaticConfiguratorFactory.getConcurrentAlgorithmRunner(runConfigs,obs, options);
 			
 		} else
 		{
 			log.debug("Using single-threaded algorithm runner");
-			return AutomaticConfiguratorFactory.getSingleThreadedAlgorithmRunner(execConfig,runConfigs,obs, options);
+			return AutomaticConfiguratorFactory.getSingleThreadedAlgorithmRunner(runConfigs,obs, options);
 		}
 	}
 

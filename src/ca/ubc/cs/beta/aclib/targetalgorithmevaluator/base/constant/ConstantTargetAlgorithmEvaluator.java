@@ -14,12 +14,8 @@ public class ConstantTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorith
 
 	private final ConstantTargetAlgorithmEvaluatorOptions options;
 	
-	public ConstantTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig, ConstantTargetAlgorithmEvaluatorOptions options) {
-		super(execConfig);
+	public ConstantTargetAlgorithmEvaluator( ConstantTargetAlgorithmEvaluatorOptions options) {
 		this.options = options;
-		
-		
-		
 	}
 
 	@Override
@@ -56,7 +52,7 @@ public class ConstantTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorith
 				addlRunData = "," + options.additionalRunData;
 			}
 			
-			runs.add(new ExistingAlgorithmRun(execConfig, rc, options.runResult + "," + options.runtime + "," + options.runlength + "," + options.quality + "," + rc.getProblemInstanceSeedPair().getSeed() + addlRunData));
+			runs.add(new ExistingAlgorithmRun( rc, options.runResult , options.runtime , options.runlength , options.quality , rc.getProblemInstanceSeedPair().getSeed() , addlRunData));
 		}
 		
 		return runs;

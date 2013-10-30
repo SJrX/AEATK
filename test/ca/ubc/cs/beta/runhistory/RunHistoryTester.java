@@ -100,7 +100,7 @@ public class RunHistoryTester {
 		ParamConfiguration defaultConfig = configSpace.getDefaultConfiguration();
 		ProblemInstanceSeedPair pisp = RunHistoryHelper.getRandomInstanceSeedWithFewestRunsFor(r, insc, defaultConfig, ilws.getInstances(), rand, false);
 		
-		RunConfig runConfig = new RunConfig(pisp, 1, defaultConfig,true);
+		RunConfig runConfig = new RunConfig(pisp, 1, defaultConfig,execConfig);
 		
 		
 		
@@ -113,7 +113,7 @@ public class RunHistoryTester {
 		try {
 			r.append(run);
 
-			runConfig = new RunConfig(pisp, 2, defaultConfig,true);
+			runConfig = new RunConfig(pisp, 2, defaultConfig,execConfig);
 			
 			assertEquals(1.0,r.getEmpiricalCost(defaultConfig, r.getInstancesRan(defaultConfig), 500),0.01);
 			
@@ -150,7 +150,9 @@ public class RunHistoryTester {
 		ParamConfiguration otherConfig = space.getConfigurationFromString("-a '1' -b '1'", StringFormat.NODB_OR_STATEFILE_SYNTAX);
 		
 		ProblemInstanceSeedPair pisp = new ProblemInstanceSeedPair(ilws.getInstances().get(0), insc.getNextSeed(ilws.getInstances().get(0)));
-		RunConfig rc = new RunConfig(pisp, execConfig.getAlgorithmCutoffTime(), defaultConfig);
+		AlgorithmExecutionConfig execConfig = new AlgorithmExecutionConfig("boo", "foo", space, false, false, 500);
+		
+		RunConfig rc = new RunConfig(pisp, defaultConfig,execConfig);
 		try {
 			runHistory.append(new ExistingAlgorithmRun(execConfig, rc, RunResult.SAT, 0, 0, 0, pisp.getSeed()));
 		} catch (DuplicateRunException e) {
@@ -200,10 +202,10 @@ public class RunHistoryTester {
 		ParamConfigurationSpace space = ParamFileHelper.getParamFileFromString("a [0,9] [0]\nb [0,9] [0]\n");
 				
 				
-		RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(ilws.getInstances().get(0), insc.getNextSeed(ilws.getInstances().get(0))), execConfig.getAlgorithmCutoffTime(), space.getDefaultConfiguration()); 
+		RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(ilws.getInstances().get(0), insc.getNextSeed(ilws.getInstances().get(0))), execConfig.getAlgorithmCutoffTime(), space.getDefaultConfiguration(), execConfig); 
 	
 		try {
-			runHistory.append(new RunningAlgorithmRun(execConfig, rc, 0, 0, 0, 0, 0, new KillHandler() {
+			runHistory.append(new RunningAlgorithmRun( rc, 0, 0, 0, 0, 0, new KillHandler() {
 
 				@Override
 				public void kill() {
@@ -270,11 +272,11 @@ public class RunHistoryTester {
 		ParamConfiguration incumbent = configSpace.getDefaultConfiguration();
 		
 		
-		
+		 AlgorithmExecutionConfig execConfig = new AlgorithmExecutionConfig("boo", "foo", configSpace, false, false, 500);
 		
 		InstanceSeedGenerator inscgen = new RandomInstanceSeedGenerator(pis, 0);
 		pis.add(new ProblemInstance("Test1",1));
-		appendRun(new ExistingAlgorithmRun(execConfig, new RunConfig(new ProblemInstanceSeedPair(pis.get(0), 0), cutoffTime, incumbent), RunResult.SAT, 5, 0, 0, 0));
+		appendRun(new ExistingAlgorithmRun(execConfig, new RunConfig(new ProblemInstanceSeedPair(pis.get(0), 0), cutoffTime, incumbent,execConfig), RunResult.SAT, 5, 0, 0, 0));
 		
 		
 		
@@ -382,7 +384,7 @@ public class RunHistoryTester {
 				
 				ProblemInstanceSeedPair pisp = RunHistoryHelper.getRandomInstanceSeedWithFewestRunsFor(r,insc,defaultConfig, ilws.getInstances(), rand, false);
 				
-				RunConfig runConfig = new RunConfig(pisp, 1, defaultConfig,true);
+				RunConfig runConfig = new RunConfig(pisp, 1, defaultConfig,execConfig);
 				AlgorithmRun run = new ExistingAlgorithmRun(execConfig, runConfig, "0, 1 , 0 , 0, " + pisp.getSeed());
 				
 				
@@ -421,7 +423,7 @@ public class RunHistoryTester {
 				
 				ProblemInstanceSeedPair pisp = RunHistoryHelper.getRandomInstanceSeedWithFewestRunsFor(r, insc,defaultConfig, ilws.getInstances(), rand, false);
 				
-				RunConfig runConfig = new RunConfig(pisp, 1, defaultConfig,true);
+				RunConfig runConfig = new RunConfig(pisp, 1, defaultConfig,execConfig);
 				AlgorithmRun run = new ExistingAlgorithmRun(execConfig, runConfig, "0, 1 , 0 , 0, " + pisp.getSeed());
 				
 				

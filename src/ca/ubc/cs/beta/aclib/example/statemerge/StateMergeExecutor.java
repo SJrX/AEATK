@@ -421,7 +421,7 @@ outerLoop:
 				}
 				
 				ProblemInstanceSeedPair newPisp = new ProblemInstanceSeedPair(repairedPi, run.getRunConfig().getProblemInstanceSeedPair().getSeed());
-				RunConfig rc = new RunConfig(newPisp, run.getRunConfig().getCutoffTime(), run.getRunConfig().getParamConfiguration());
+				RunConfig rc = new RunConfig(newPisp, run.getRunConfig().getCutoffTime(), run.getRunConfig().getParamConfiguration(), run.getRunConfig().getAlgorithmExecutionConfig());
 				
 				ExistingAlgorithmRun repairedRun = new ExistingAlgorithmRun(run.getExecutionConfig(), rc, run.getRunResult(), run.getRuntime(), run.getRunLength(), run.getQuality(), run.getResultSeed(), run.getAdditionalRunData(), run.getWallclockExecutionTime());
 

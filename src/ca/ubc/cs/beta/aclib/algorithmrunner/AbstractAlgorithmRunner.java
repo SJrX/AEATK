@@ -31,10 +31,6 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli.CommandLineTargetA
  */
 abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 
-	/**
-	 * Stores the target algorithm execution configuration
-	 */
-	protected final AlgorithmExecutionConfig execConfig;
 	
 	/**
 	 * Stores the run configurations of the target algorithm
@@ -61,14 +57,14 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 	 * @param runConfigs	run configurations of the target algorithm
 	 * @param obs 
 	 */
-	public AbstractAlgorithmRunner(AlgorithmExecutionConfig execConfig,final List<RunConfig> runConfigs, final TargetAlgorithmEvaluatorRunObserver obs, final CommandLineTargetAlgorithmEvaluatorOptions options)
+	public AbstractAlgorithmRunner(final List<RunConfig> runConfigs, final TargetAlgorithmEvaluatorRunObserver obs, final CommandLineTargetAlgorithmEvaluatorOptions options)
 	{
-		if(execConfig == null || runConfigs == null)
+		if(runConfigs == null)
 		{
 			throw new IllegalArgumentException("Arguments cannot be null");
 		}
 
-		this.execConfig = execConfig;
+
 		this.runConfigs = runConfigs;
 		List<AlgorithmRun> runs = new ArrayList<AlgorithmRun>(runConfigs.size());
 		
@@ -82,7 +78,7 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 			KillHandler killH = new StatusVariableKillHandler();
 			listIndex.put(rc, i);
 			
-			runStatus.put(rc, new RunningAlgorithmRun(execConfig, rc, "RUNNING,0.0,0,0," + rc.getProblemInstanceSeedPair().getSeed(), killH));
+			runStatus.put(rc, new RunningAlgorithmRun( rc, 0,0,0,  rc.getProblemInstanceSeedPair().getSeed(), 0, killH));
 			
 			TargetAlgorithmEvaluatorRunObserver individualRunObserver = new TargetAlgorithmEvaluatorRunObserver()
 			{
@@ -100,7 +96,7 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 			};
 		
 			
-			final AlgorithmRun run = new CommandLineAlgorithmRun(execConfig, rc,individualRunObserver, killH, options); 
+			final AlgorithmRun run = new CommandLineAlgorithmRun( rc,individualRunObserver, killH, options); 
 			runs.add(run);
 			i++;
 		}

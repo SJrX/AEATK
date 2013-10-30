@@ -36,9 +36,9 @@ class ConcurrentAlgorithmRunner extends AbstractAlgorithmRunner {
 	 * @param numberOfConcurrentExecutions	number of concurrent executions allowed
 	 * @param obs 
 	 */
-	public ConcurrentAlgorithmRunner(AlgorithmExecutionConfig execConfig,
+	public ConcurrentAlgorithmRunner(
 			List<RunConfig> runConfigs, int numberOfConcurrentExecutions, TargetAlgorithmEvaluatorRunObserver obs, CommandLineTargetAlgorithmEvaluatorOptions options) {
-		super(execConfig, runConfigs, obs, options);
+		super( runConfigs, obs, options);
 		this.numberOfConcurrentExecutions = numberOfConcurrentExecutions;
 	}
 

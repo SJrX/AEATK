@@ -60,7 +60,7 @@ public class TargetAlgorithmEvaluatorLoader {
 				}
 				if(tae.getName().trim().equals(name.trim()))
 				{					
-					return tae.getTargetAlgorithmEvaluator(execConfig, taeOptions);
+					return tae.getTargetAlgorithmEvaluator( taeOptions);
 				}
 			
 			} catch(ServiceConfigurationError e)

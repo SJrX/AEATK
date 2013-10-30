@@ -21,10 +21,6 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.functionality.Ou
  */
 @ThreadSafe
 public abstract class AbstractTargetAlgorithmEvaluator implements TargetAlgorithmEvaluator {
-	 /*
-	 * Execution configuration of the target algorithm
-	 */
-	protected final AlgorithmExecutionConfig execConfig;
 	
 	protected final AtomicInteger runCount = new AtomicInteger(0);
 
@@ -32,9 +28,9 @@ public abstract class AbstractTargetAlgorithmEvaluator implements TargetAlgorith
 	 * Default Constructor
 	 * @param execConfig	execution configuration of the target algorithm
 	 */
-	public AbstractTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig)
+	public AbstractTargetAlgorithmEvaluator()
 	{
-		this.execConfig = execConfig;
+	
 	}
 	
 	/**
@@ -114,6 +110,7 @@ public abstract class AbstractTargetAlgorithmEvaluator implements TargetAlgorith
 	@Override
 	public String getManualCallString(RunConfig runConfig) {
 		
+		AlgorithmExecutionConfig execConfig = runConfig.getAlgorithmExecutionConfig();
 		StringBuilder sb = new StringBuilder();
 		
 		
@@ -131,7 +128,7 @@ public abstract class AbstractTargetAlgorithmEvaluator implements TargetAlgorith
 			sb.append("cd ").append(execConfig.getAlgorithmExecutionDirectory()).append(commandSeparator + " ");
 		}
 		
-		sb.append(CommandLineAlgorithmRun.getTargetAlgorithmExecutionCommandAsString(execConfig, runConfig));
+		sb.append(CommandLineAlgorithmRun.getTargetAlgorithmExecutionCommandAsString(runConfig));
 		sb.append("");
 		
 		return sb.toString();

@@ -4,6 +4,7 @@ import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
+import java.util.Map;
 
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpaceOptions;
 import ca.ubc.cs.beta.aclib.misc.jcommander.converter.BinaryDigitBooleanConverter;
@@ -47,6 +48,10 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names={"--algo-cutoff-length","--cutoffLength","--cutoff_length"}, description="cap limit for an individual run [not implemented currently]", converter=StringToDoubleConverterWithMax.class, hidden=true)
 	public double cutoffLength = -1.0;
+	
+	
+	@Parameter(names="-T", description="additional context needed for target algorithm execution (see TAE documentation for possible values, generally rare)", variableArity = true)
+	public Map<String, String> additionalContext;
 	
 	@ParametersDelegate
 	public TargetAlgorithmEvaluatorOptions taeOpts = new TargetAlgorithmEvaluatorOptions();
@@ -128,6 +133,6 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 			dirToSearch.add(execDir.getAbsolutePath());
 		}
 		
-		return new AlgorithmExecutionConfig(algoExec, execDir.getAbsolutePath(), paramFileDelegate.getParamConfigurationSpace(dirToSearch), false, deterministic, this.cutoffTime);
+		return new AlgorithmExecutionConfig(algoExec, execDir.getAbsolutePath(), paramFileDelegate.getParamConfigurationSpace(dirToSearch), false, deterministic, this.cutoffTime,this.additionalContext );
 	}
 }

@@ -160,7 +160,7 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 			{
 				timeToSleep = Math.max(timeToSleep, Math.max(run.getRuntime(), run.getWallclockExecutionTime()));
 				runConfigToKillHandlerMap.put(run.getRunConfig(), new StatusVariableKillHandler() );
-				runConfigToAlgorithmRunMap.put(run.getRunConfig(), new RunningAlgorithmRun(run.getExecutionConfig(), run.getRunConfig(), 0,0,0, run.getRunConfig().getProblemInstanceSeedPair().getSeed(),0, null));
+				runConfigToAlgorithmRunMap.put(run.getRunConfig(), new RunningAlgorithmRun( run.getRunConfig(), 0,0,0, run.getRunConfig().getProblemInstanceSeedPair().getSeed(),0, null));
 				
 			}
 			
@@ -276,11 +276,11 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 			} else if(killHandlers.get(rc).isKilled())
 			{
 				//We should kill this run
-				runConfigToAlgorithmRunMap.put(rc, new ExistingAlgorithmRun(run.getExecutionConfig(), rc, RunResult.KILLED, currentRuntime, 0, 0, rc.getProblemInstanceSeedPair().getSeed(),currentRuntime));
+				runConfigToAlgorithmRunMap.put(rc, new ExistingAlgorithmRun( rc, RunResult.KILLED, currentRuntime, 0, 0, rc.getProblemInstanceSeedPair().getSeed(),currentRuntime));
 			} else
 			{
 				//Update the run
-				runConfigToAlgorithmRunMap.put(rc, new RunningAlgorithmRun(run.getExecutionConfig(), run.getRunConfig(), currentRuntime,0,0, run.getRunConfig().getProblemInstanceSeedPair().getSeed(), currentRuntime, killHandlers.get(rc)));
+				runConfigToAlgorithmRunMap.put(rc, new RunningAlgorithmRun( run.getRunConfig(), currentRuntime,0,0, run.getRunConfig().getProblemInstanceSeedPair().getSeed(), currentRuntime, killHandlers.get(rc)));
 			}
 			
 			AlgorithmRun currentRun = runConfigToAlgorithmRunMap.get(rc);

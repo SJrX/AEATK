@@ -28,6 +28,7 @@ import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.exceptions.DuplicateRunException;
 import ca.ubc.cs.beta.aclib.exceptions.OutOfTimeException;
+import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.initialization.InitializationProcedure;
 import ca.ubc.cs.beta.aclib.misc.MapList;
 import ca.ubc.cs.beta.aclib.objectives.ObjectiveHelper;
@@ -66,8 +67,9 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 	private final int numberOfRunsPerChallenger;
 	
 	private final ObjectiveHelper objHelp;
+	private final AlgorithmExecutionConfig execConfig;
 
-	public DoublingCappingInitializationProcedure(ThreadSafeRunHistory runHistory, ParamConfiguration initialIncumbent, TargetAlgorithmEvaluator tae, DoublingCappingInitializationProcedureOptions opts, InstanceSeedGenerator insc, List<ProblemInstance> instances,  int maxIncumbentRuns , TerminationCondition termCond, double cutoffTime, SeedableRandomPool pool, boolean deterministicInstanceOrdering, ObjectiveHelper objHelp)
+	public DoublingCappingInitializationProcedure(ThreadSafeRunHistory runHistory, ParamConfiguration initialIncumbent, TargetAlgorithmEvaluator tae, DoublingCappingInitializationProcedureOptions opts, InstanceSeedGenerator insc, List<ProblemInstance> instances,  int maxIncumbentRuns , TerminationCondition termCond, double cutoffTime, SeedableRandomPool pool, boolean deterministicInstanceOrdering, ObjectiveHelper objHelp, AlgorithmExecutionConfig execConfig)
 	{
 		this.runHistory =runHistory;
 		this.initialIncumbent = initialIncumbent;
@@ -86,6 +88,8 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 		this.numberOfChallengers = opts.numberOfChallengers;
 		this.numberOfRunsPerChallenger = opts.numberOfRunsPerChallenger;
 		this.objHelp = objHelp;
+		this.execConfig = execConfig;
+		
 		
 	}
 	
@@ -201,7 +205,7 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 					config = configsQueue.poll();
 				}
 				
-				RunConfig rc = new RunConfig(pispsQueue.poll(), kappa, config, kappa < cutoffTime);
+				RunConfig rc = new RunConfig(pispsQueue.poll(), kappa, config, execConfig);
 				runsToDo.add(rc);
 			}
 		}
@@ -345,7 +349,7 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
  			for(int j=0; j < Math.min(this.numberOfRunsPerChallenger, phaseTwoPisps.size()); j++)
  			{
  				ProblemInstanceSeedPair pisp = pispsToIterate.get(j);
- 				runsForConfig.add(new RunConfig(pisp, this.cutoffTime, config));
+ 				runsForConfig.add(new RunConfig(pisp, this.cutoffTime, config, execConfig));
  			}
  			log.debug("Scheduling {} runs for config {}", runsForConfig.size(), config);
 			phaseTwoTaeQueue.evaluateRunAsync(runsForConfig, phaseTwoObs);

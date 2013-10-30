@@ -70,7 +70,7 @@ private static TargetAlgorithmEvaluator tae;
 	@Before
 	public void beforeTest()
 	{
-		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
+		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE();
 	
 	}
 	
@@ -89,7 +89,7 @@ private static TargetAlgorithmEvaluator tae;
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved","TIMEOUT");
 			config.put("runtime", String.valueOf(runtime));
-			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), kappaMax, config);
+			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), kappaMax, config, execConfig);
 			runConfigs.add(rc);
 		}
 		
@@ -119,7 +119,7 @@ private static TargetAlgorithmEvaluator tae;
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved","TIMEOUT");
 			config.put("runtime", String.valueOf(runtime));
-			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), runtime, config, true);
+			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), runtime, config,  execConfig);
 			runConfigs.add(rc);
 		}
 		
@@ -151,7 +151,7 @@ private static TargetAlgorithmEvaluator tae;
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved","CRASHED");
 			config.put("runtime", String.valueOf(runtime));
-			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), kappaMax, config);
+			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), kappaMax, config, execConfig);
 			runConfigs.add(rc);
 		}
 		
@@ -182,7 +182,7 @@ private static TargetAlgorithmEvaluator tae;
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved","SAT");
 			config.put("runtime", String.valueOf(runtime));
-			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), kappaMax, config);
+			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), kappaMax,config, execConfig);
 			runConfigs.add(rc);
 		}
 		
@@ -217,7 +217,7 @@ private static TargetAlgorithmEvaluator tae;
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved","TIMEOUT");
 			config.put("runtime", "0.1");
-			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))),capTimeRequest, config,true);
+			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))),capTimeRequest, config, execConfig);
 			runConfigs.add(rc);
 		}
 		
@@ -244,9 +244,18 @@ private static TargetAlgorithmEvaluator tae;
 		o.minResponse = 5;
 		o.maxResponse = 10;
 		
-		TargetAlgorithmEvaluator tae = rfact.getTargetAlgorithmEvaluator(execConfig, o);
+		TargetAlgorithmEvaluator tae = rfact.getTargetAlgorithmEvaluator( o);
 
-		RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("pi"), 1), 20, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration());
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(ParamEchoExecutor.class.getCanonicalName());
+		
+		
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), ParamConfigurationSpace.getSingletonConfigurationSpace(), false, false, kappaMax);
+		
+		RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("pi"), 1), 20, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(), execConfig);
 		
 		
 		List<AlgorithmRun> runs = tae.evaluateRun(Collections.singletonList(rc), new TargetAlgorithmEvaluatorRunObserver()

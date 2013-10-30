@@ -10,10 +10,6 @@ public abstract class AbstractAsyncTargetAlgorithmEvaluator extends
 
 
 
-	public AbstractAsyncTargetAlgorithmEvaluator(
-			AlgorithmExecutionConfig execConfig) {
-		super(execConfig);
-	}
 
 
 	@Override

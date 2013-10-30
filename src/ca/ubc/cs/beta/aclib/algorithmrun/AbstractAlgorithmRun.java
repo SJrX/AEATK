@@ -20,7 +20,7 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 	private static final long serialVersionUID = -1860615761848618478L;
 	
 	protected final RunConfig runConfig;
-	protected final AlgorithmExecutionConfig execConfig;
+	//protected final AlgorithmExecutionConfig execConfig;
 	
 	/*
 	 * Values reported by the target algorithm
@@ -181,15 +181,15 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 	 * @param execConfig		execution configuration of the object
 	 * @param runConfig			run configuration we are executing
 	 */
-	public AbstractAlgorithmRun(AlgorithmExecutionConfig execConfig, RunConfig runConfig)
+	public AbstractAlgorithmRun( RunConfig runConfig)
 	{
-		if(execConfig == null || runConfig == null)
+		if(runConfig == null)
 		{
 			throw new IllegalArgumentException("Arguments cannot be null");
 		}
 		
 		this.runConfig = runConfig;
-		this.execConfig = execConfig;
+
 	}
 	
 	@Override
@@ -213,7 +213,7 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 	@Override
 	public final AlgorithmExecutionConfig getExecutionConfig()
 	{
-		return execConfig;
+		return runConfig.getAlgorithmExecutionConfig();
 	}
 	
 	@Override
@@ -326,7 +326,7 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 		if(o instanceof AlgorithmRun)
 		{
 			AlgorithmRun aro = (AlgorithmRun) o;
-			return aro.getExecutionConfig().equals(execConfig) && aro.getRunConfig().equals(runConfig);
+			return aro.getRunConfig().equals(runConfig);
 		} 
 		return false;
 	}

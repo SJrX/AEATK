@@ -36,9 +36,9 @@ public class AutomaticConfiguratorFactory {
 	 * @param runConfigs		run configurations to execute
 	 * @return	algorithmrunner which will run it
 	 */
-	public static AlgorithmRunner getSingleThreadedAlgorithmRunner(AlgorithmExecutionConfig execConfig, List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs, CommandLineTargetAlgorithmEvaluatorOptions options)
+	public static AlgorithmRunner getSingleThreadedAlgorithmRunner( List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs, CommandLineTargetAlgorithmEvaluatorOptions options)
 	{
-		return new SingleThreadedAlgorithmRunner(execConfig, runConfigs,obs, options);
+		return new SingleThreadedAlgorithmRunner( runConfigs,obs, options);
 	}
 	
 	/**
@@ -47,11 +47,11 @@ public class AutomaticConfiguratorFactory {
 	 * @param runConfigs		run configurations to execute
 	 * @return	algorithmrunner which will run it
 	 */	
-	public static AlgorithmRunner getConcurrentAlgorithmRunner(AlgorithmExecutionConfig execConfig, List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs, CommandLineTargetAlgorithmEvaluatorOptions options)
+	public static AlgorithmRunner getConcurrentAlgorithmRunner( List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs, CommandLineTargetAlgorithmEvaluatorOptions options)
 	{
 		if(runConfigs.size() == 1)
 		{
-			return getSingleThreadedAlgorithmRunner(execConfig, runConfigs,obs, options);
+			return getSingleThreadedAlgorithmRunner( runConfigs,obs, options);
 		}
 		
 		if(options.cores > maxThreads)
@@ -59,7 +59,7 @@ public class AutomaticConfiguratorFactory {
 			log.warn("Number of cores requested is seemingly greater than the number of available cores. This may affect runtime measurements");
 		}
 		
-		return getConcurrentAlgorithmRunner(execConfig, runConfigs, options.cores, obs, options);
+		return getConcurrentAlgorithmRunner( runConfigs, options.cores, obs, options);
 	}
 	
 	/**
@@ -69,10 +69,10 @@ public class AutomaticConfiguratorFactory {
 	 * @param nThreads			number of concurrent executions to allow
 	 * @return	algorithmrunner which will run it
 	 */
-	public static AlgorithmRunner getConcurrentAlgorithmRunner(AlgorithmExecutionConfig execConfig, List<RunConfig> runConfigs, int nThreads, TargetAlgorithmEvaluatorRunObserver obs, CommandLineTargetAlgorithmEvaluatorOptions options)
+	public static AlgorithmRunner getConcurrentAlgorithmRunner( List<RunConfig> runConfigs, int nThreads, TargetAlgorithmEvaluatorRunObserver obs, CommandLineTargetAlgorithmEvaluatorOptions options)
 	{
 		log.debug("Concurrent Algorithm Runner created allowing {} threads", nThreads);
-		return new ConcurrentAlgorithmRunner(execConfig, runConfigs, nThreads, obs, options);
+		return new ConcurrentAlgorithmRunner( runConfigs, nThreads, obs, options);
 	}
 
 }

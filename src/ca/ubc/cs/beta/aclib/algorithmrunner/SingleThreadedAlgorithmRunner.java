@@ -19,9 +19,8 @@ class SingleThreadedAlgorithmRunner extends AbstractAlgorithmRunner
 	 * @param runConfigs	run configurations to execute
 	 * @param obs 
 	 */
-	public SingleThreadedAlgorithmRunner(AlgorithmExecutionConfig execConfig,
-			List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs, CommandLineTargetAlgorithmEvaluatorOptions options) {
-		super(execConfig, runConfigs,obs, options);
+	public SingleThreadedAlgorithmRunner(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs, CommandLineTargetAlgorithmEvaluatorOptions options) {
+		super( runConfigs,obs, options);
 		
 	}
 

@@ -17,6 +17,7 @@ import java.util.Random;
 import java.util.Set;
 
 import org.junit.AfterClass;
+import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
 
@@ -76,7 +77,15 @@ public class LegacyStateDeserializerTester {
 	
 	}
 	
-	
+	@Before
+	public void before()
+	{
+			configSpace = new ParamConfigurationSpace(TestHelper.getTestFile("paramFiles/simpleParam.txt"));
+		
+			execConfig = new AlgorithmExecutionConfig("foo", "bar", configSpace, false, false, 300);
+		
+		
+	}
 	@AfterClass
 	public static void afterClass()
 	{
@@ -157,7 +166,7 @@ public class LegacyStateDeserializerTester {
 			ParamConfiguration config = configSpace.getRandomConfiguration(rand);
 			
 			ProblemInstance pi = new ProblemInstance("test");
-			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(pi,1), 0, config);
+			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(pi,1), 0, config,execConfig);
 			AlgorithmRun run = new ExistingAlgorithmRun(execConfig, rc,RunResult.SAT, 0,0,0,1);
 			//(InstanceSeedGenerator instanceSeedGenerator, OverallObjective intraInstanceObjective,  OverallObjective interInstanceObjective, RunObjective runObj)
 			
@@ -326,7 +335,7 @@ public class LegacyStateDeserializerTester {
 		List<RunConfig> runConfigs = getValidRunConfigurations(pis, r, isg, configSpace);
 		
 	
-		TargetAlgorithmEvaluator tae = new EchoTargetAlgorithmEvaluator( execConfig);
+		TargetAlgorithmEvaluator tae = new EchoTargetAlgorithmEvaluator();
 		
 		RunHistory runHistory = new NewRunHistory(OverallObjective.MEAN10, OverallObjective.MEAN, RunObjective.RUNTIME);
 		for(int i=0; i < 10; i++)
@@ -426,7 +435,7 @@ public class LegacyStateDeserializerTester {
 
 		List<RunConfig> runConfigs = getValidRunConfigurations(pis, r, isg, configSpace);
 		
-		TargetAlgorithmEvaluator tae = new EchoTargetAlgorithmEvaluator( execConfig);
+		TargetAlgorithmEvaluator tae = new EchoTargetAlgorithmEvaluator();
 		RunHistory runHistory = new NewRunHistory( OverallObjective.MEAN10, OverallObjective.MEAN, RunObjective.RUNTIME);
 				
 		System.out.println("Performing " + runConfigs.size() + " runs");
@@ -524,7 +533,7 @@ public class LegacyStateDeserializerTester {
 			throw new IllegalStateException("Couldn't create directory");
 		}
 		
-		TargetAlgorithmEvaluator tae =  new EchoTargetAlgorithmEvaluator( execConfig);
+		TargetAlgorithmEvaluator tae =  new EchoTargetAlgorithmEvaluator();
 		
 		RunHistory runHistory = new NewRunHistory(OverallObjective.MEAN10, OverallObjective.MEAN, RunObjective.RUNTIME);
 		
@@ -630,7 +639,7 @@ public class LegacyStateDeserializerTester {
 				ProblemInstance pi = pis.get(r.nextInt(pis.size()));
 				
 				ProblemInstanceSeedPair pisp = new ProblemInstanceSeedPair(pi, isg.getNextSeed(pi));
-				RunConfig rc = new RunConfig(pisp, 1001, config);
+				RunConfig rc = new RunConfig(pisp, 1001, config, execConfig);
 				runConfigs.add(rc);
 			}
 		}
@@ -763,7 +772,7 @@ public class LegacyStateDeserializerTester {
 		
 	
 		
-		TargetAlgorithmEvaluator tae = new EchoTargetAlgorithmEvaluator( execConfig);
+		TargetAlgorithmEvaluator tae = new EchoTargetAlgorithmEvaluator();
 		
 		RunHistory runHistory = new NewRunHistory( OverallObjective.MEAN10, OverallObjective.MEAN, RunObjective.RUNTIME);
 		for(int i=0; i < 10; i++)

@@ -66,10 +66,6 @@ public class BoundedTargetAlgorithmEvaluator extends
 	 */
 	private final FairMultiPermitSemaphore availableRuns;
 
-	/**
-	 * The Execution Config we are executing for
-	 */
-	private final AlgorithmExecutionConfig execConfig;
 	
 	private final static Logger log = LoggerFactory.getLogger(BoundedTargetAlgorithmEvaluator.class);
 
@@ -77,12 +73,11 @@ public class BoundedTargetAlgorithmEvaluator extends
 	private final ExecutorService execService = Executors.newCachedThreadPool(new SequentiallyNamedThreadFactory("Bounded Target Algorithm Evaluator Callback Thread"));
 	
 	private final int NUMBER_OF_CONCURRENT_RUNS;
-	public BoundedTargetAlgorithmEvaluator(TargetAlgorithmEvaluator tae, int numberOfConcurrentRuns, AlgorithmExecutionConfig execConfig) {
+	public BoundedTargetAlgorithmEvaluator(TargetAlgorithmEvaluator tae, int numberOfConcurrentRuns) {
 		super(tae);
 		if(numberOfConcurrentRuns <= 0) throw new IllegalArgumentException("Must be able to schedule at least one run");
 		this.availableRuns = new FairMultiPermitSemaphore(numberOfConcurrentRuns);
 		this.NUMBER_OF_CONCURRENT_RUNS = numberOfConcurrentRuns;
-		this.execConfig = execConfig;
 	}
 
 
@@ -130,7 +125,7 @@ public class BoundedTargetAlgorithmEvaluator extends
 				orderOfRuns.put(rc, i);
 				KillHandler kh  = new StatusVariableKillHandler();
 				killHandlers.put(rc, kh);
-				outstandingRuns.put(runConfigs.get(i),new RunningAlgorithmRun(execConfig, rc, 0,0,0,rc.getProblemInstanceSeedPair().getSeed() ,0, kh));
+				outstandingRuns.put(runConfigs.get(i),new RunningAlgorithmRun( rc, 0,0,0,rc.getProblemInstanceSeedPair().getSeed() ,0, kh));
 			}
 			
 			//Observer maps

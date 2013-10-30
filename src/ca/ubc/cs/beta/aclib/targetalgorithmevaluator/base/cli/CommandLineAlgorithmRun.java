@@ -3,7 +3,6 @@ package ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
-
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.DatagramPacket;
@@ -30,6 +29,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 
+import com.beust.jcommander.ParameterException;
 import com.google.common.util.concurrent.AtomicDouble;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.AbstractAlgorithmRun;
@@ -127,9 +127,9 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	 * @param execConfig		execution configuration of the object
 	 * @param runConfig			run configuration we are executing
 	 */
-	public CommandLineAlgorithmRun(AlgorithmExecutionConfig execConfig, RunConfig runConfig, TargetAlgorithmEvaluatorRunObserver obs, KillHandler handler, CommandLineTargetAlgorithmEvaluatorOptions options) 
+	public CommandLineAlgorithmRun(RunConfig runConfig, TargetAlgorithmEvaluatorRunObserver obs, KillHandler handler, CommandLineTargetAlgorithmEvaluatorOptions options) 
 	{
-		super(execConfig, runConfig);
+		super( runConfig);
 		//TODO Test
 		if(runConfig.getCutoffTime() <= 0 || handler.isKilled())
 		{
@@ -150,6 +150,10 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 		}
 		
 		this.options = options;
+		
+		
+		
+		
 	}
 	
 	private static final int MAX_LINES_TO_SAVE = 1000;
@@ -175,6 +179,16 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 		
 		final Process proc;
 		
+		File execDir = new File(runConfig.getAlgorithmExecutionConfig().getAlgorithmExecutionDirectory());
+		if(!execDir.exists()) 
+		{
+			throw new TargetAlgorithmAbortException("Algorithm Execution Directory: " + runConfig.getAlgorithmExecutionConfig().getAlgorithmExecutionDirectory() + " does not exist");
+		}
+		
+		if(!execDir.isDirectory()) 
+		{
+			throw new TargetAlgorithmAbortException("Algorithm Execution Directory: " + runConfig.getAlgorithmExecutionConfig().getAlgorithmExecutionDirectory() + " is not a directory");
+		}
 		
 		try {
 			
@@ -345,7 +359,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 					
 						double currentTime = getCurrentWallClockTime() / 1000.0;
 						
-						runObserver.currentStatus(Collections.singletonList((KillableAlgorithmRun) new RunningAlgorithmRun(execConfig, getRunConfig(),  Math.max(0,currentRuntime.get()),  0,0, getRunConfig().getProblemInstanceSeedPair().getSeed(), currentTime, killHandler)));
+						runObserver.currentStatus(Collections.singletonList((KillableAlgorithmRun) new RunningAlgorithmRun(getRunConfig(),  Math.max(0,currentRuntime.get()),  0,0, getRunConfig().getProblemInstanceSeedPair().getSeed(), currentTime, killHandler)));
 						try {
 							
 							
@@ -411,7 +425,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 			case CRASHED:
 				
 			
-					log.error( "Failed Run Detected Call: cd \"{}\" " + commandSeparator + "  {} ",new File(execConfig.getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommandAsString(execConfig, runConfig));
+					log.error( "Failed Run Detected Call: cd \"{}\" " + commandSeparator + "  {} ",new File(runConfig.getAlgorithmExecutionConfig().getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommandAsString(runConfig));
 				
 					log.error("Failed Run Detected output last {} lines", outputQueue.size());
 					
@@ -449,7 +463,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 			log.debug("Run {} is completed", this);
 		} catch (IOException e1) {
 			//String execCmd = getTargetAlgorithmExecutionCommandAsString(execConfig,runConfig);
-			log.error( "Failed Run Detected (IOException) Call: cd \"{}\" " + commandSeparator + "  {} ",new File(execConfig.getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommandAsString(execConfig, runConfig));
+			log.error( "Failed Run Detected (IOException) Call: cd \"{}\" " + commandSeparator + "  {} ",new File(runConfig.getAlgorithmExecutionConfig().getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommandAsString( runConfig));
 			throw new TargetAlgorithmAbortException(e1);
 			//throw new IllegalStateException(e1);
 		}
@@ -552,12 +566,12 @@ outerloop:
 	 */
 	private  Process runProcess(int port) throws IOException
 	{
-		String[] execCmdArray = getTargetAlgorithmExecutionCommand(execConfig, runConfig);
+		String[] execCmdArray = getTargetAlgorithmExecutionCommand(runConfig);
 		
 		
 		if(options.logAllCallStrings)
 		{
-			log.info( "Call: cd \"{}\" " + commandSeparator + "  {} ", new File(execConfig.getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommandAsString(execConfig, runConfig));
+			log.info( "Call: cd \"{}\" " + commandSeparator + "  {} ", new File(runConfig.getAlgorithmExecutionConfig().getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommandAsString( runConfig));
 		}
 		
 		
@@ -573,7 +587,7 @@ outerloop:
 			envpList.add(FREQUENCY_ENVIRONMENT_VARIABLE + "=" + (this.observerFrequency / 2000.0));
 		}
 		String[] envp = envpList.toArray(new String[0]);
-		Process proc = Runtime.getRuntime().exec(execCmdArray,envp, new File(execConfig.getAlgorithmExecutionDirectory()));
+		Process proc = Runtime.getRuntime().exec(execCmdArray,envp, new File(runConfig.getAlgorithmExecutionConfig().getAlgorithmExecutionDirectory()));
 		return proc;
 	}
 	
@@ -583,9 +597,10 @@ outerloop:
 	 * Gets the execution command string
 	 * @return string containing command
 	 */
-	private static String[] getTargetAlgorithmExecutionCommand(AlgorithmExecutionConfig execConfig, RunConfig runConfig)
+	private static String[] getTargetAlgorithmExecutionCommand( RunConfig runConfig)
 	{
 
+		AlgorithmExecutionConfig execConfig = runConfig.getAlgorithmExecutionConfig();
 				
 		String cmd = execConfig.getAlgorithmExecutable();
 		cmd = cmd.replace(AlgorithmExecutionConfig.MAGIC_VALUE_ALGORITHM_EXECUTABLE_PREFIX,"");
@@ -625,10 +640,11 @@ outerloop:
 	 * Gets the execution command string
 	 * @return string containing command
 	 */
-	public static String getTargetAlgorithmExecutionCommandAsString(AlgorithmExecutionConfig execConfig, RunConfig runConfig)
+	public static String getTargetAlgorithmExecutionCommandAsString( RunConfig runConfig)
 	{
 
 				
+		AlgorithmExecutionConfig execConfig = runConfig.getAlgorithmExecutionConfig();
 		String cmd = execConfig.getAlgorithmExecutable();
 		cmd = cmd.replace(AlgorithmExecutionConfig.MAGIC_VALUE_ALGORITHM_EXECUTABLE_PREFIX,"");
 		
@@ -750,7 +766,7 @@ outerloop:
 			} catch(NumberFormatException e)
 			{	 //Numeric value is probably at fault
 				this.setCrashResult("Output:" + fullLine + "\n Exception Message: " + e.getMessage() + "\n Name:" + e.getClass().getCanonicalName());
-				Object[] args = { getTargetAlgorithmExecutionCommandAsString(execConfig, runConfig), fullLine};
+				Object[] args = { getTargetAlgorithmExecutionCommandAsString( runConfig), fullLine};
 				log.error("Target Algorithm Call failed:{}\nResponse:{}\nComment: Most likely one of the values of runLength, runtime, quality could not be parsed as a Double, or the seed could not be parsed as a valid long", args);
 				log.error("Exception that occured trying to parse result was: ", e);
 				log.error("Run will be counted as {}", RunResult.CRASHED);
@@ -774,7 +790,7 @@ outerloop:
 				String[] validArgs = validValues.toArray(new String[0]);
 				
 				
-				Object[] args = { getTargetAlgorithmExecutionCommandAsString(execConfig, runConfig), fullLine, Arrays.toString(validArgs)};
+				Object[] args = { getTargetAlgorithmExecutionCommandAsString( runConfig), fullLine, Arrays.toString(validArgs)};
 				log.error("Target Algorithm Call failed:{}\nResponse:{}\nComment: Most likely the Algorithm did not report a result string as one of: {}", args);
 				log.error("Exception that occured trying to parse result was: ", e);
 				log.error("Run will be counted as {}", RunResult.CRASHED);
@@ -782,7 +798,7 @@ outerloop:
 			} catch(ArrayIndexOutOfBoundsException e)
 			{	//There aren't enough commas in the output
 				this.setCrashResult("Output:" + fullLine + "\n Exception Message: " + e.getMessage() + "\n Name:" + e.getClass().getCanonicalName());
-				Object[] args = { getTargetAlgorithmExecutionCommandAsString(execConfig, runConfig), fullLine};
+				Object[] args = { getTargetAlgorithmExecutionCommandAsString(runConfig), fullLine};
 				log.error("Target Algorithm Call failed:{}\nResponse:{}\nComment: Most likely the algorithm did not specify all of the required outputs that is <solved>,<runtime>,<runlength>,<quality>,<seed>", args);
 				log.error("Exception that occured trying to parse result was: ", e);
 				log.error("Run will be counted as {}", RunResult.CRASHED);

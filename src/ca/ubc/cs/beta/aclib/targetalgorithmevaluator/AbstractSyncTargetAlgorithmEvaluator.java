@@ -24,9 +24,8 @@ public abstract class AbstractSyncTargetAlgorithmEvaluator extends
 
 	ExecutorService execService = Executors.newCachedThreadPool(new SequentiallyNamedThreadFactory("Abstract Blocking TAE Async Processing Thread"));
 	private final Logger log = LoggerFactory.getLogger(getClass());
-	public AbstractSyncTargetAlgorithmEvaluator(
-			AlgorithmExecutionConfig execConfig) {
-		super(execConfig);
+	public AbstractSyncTargetAlgorithmEvaluator() {
+		super();
 	}
 
 	@Override

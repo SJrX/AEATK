@@ -36,7 +36,7 @@ public interface TargetAlgorithmEvaluatorFactory {
 	 * @param   options		  Options 
 	 * @return	the target algorithm evaluator
 	 */
-	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig, AbstractOptions options);
+	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(AbstractOptions options);
 	
 	/**
 	 * Retrieves a Target Algorithm Evaluator
@@ -44,7 +44,7 @@ public interface TargetAlgorithmEvaluatorFactory {
 	 * @param   optionsMap	  Options for all available Target Algorithm Evaluators (the following entry is guaranteed to exist in the map: <getName(), getOptionObject()>)
 	 * @return	the target algorithm evaluator
 	 */
-	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig, Map<String,AbstractOptions> optionsMap);
+	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(Map<String,AbstractOptions> optionsMap);
 	
 	
 	/**

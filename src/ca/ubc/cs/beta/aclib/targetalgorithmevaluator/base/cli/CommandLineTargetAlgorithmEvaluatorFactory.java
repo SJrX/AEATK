@@ -17,13 +17,12 @@ public class CommandLineTargetAlgorithmEvaluatorFactory extends AbstractTargetAl
 	}
 
 	@Override
-	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(
-			AlgorithmExecutionConfig config, AbstractOptions options) {
+	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator( AbstractOptions options) {
 
 		CommandLineTargetAlgorithmEvaluatorOptions cliOpts = (CommandLineTargetAlgorithmEvaluatorOptions) options;
 		//CLI TAE doesn't bound properly accross runs and the workaround, until we rewrite the
 		//the AutomaticConfiguratorRunner crap is to simply bound it (See Issue #1811 for more info)
-		return new BoundedTargetAlgorithmEvaluator(new CommandLineTargetAlgorithmEvaluator(config, cliOpts ), cliOpts.cores, config);
+		return new BoundedTargetAlgorithmEvaluator(new CommandLineTargetAlgorithmEvaluator( cliOpts ), cliOpts.cores);
 	}
 
 	@Override
@@ -32,21 +31,22 @@ public class CommandLineTargetAlgorithmEvaluatorFactory extends AbstractTargetAl
 		return new CommandLineTargetAlgorithmEvaluatorOptions();
 	}
 	
-	public static TargetAlgorithmEvaluator getCLITAE(AlgorithmExecutionConfig config)
+
+	public static TargetAlgorithmEvaluator getCLITAE()
 	{
 		
 		CommandLineTargetAlgorithmEvaluatorOptions opts = new CommandLineTargetAlgorithmEvaluatorOptions();
 		opts.logAllCallStrings = true;
 		opts.logAllProcessOutput = true;
-		return new CommandLineTargetAlgorithmEvaluator(config, opts );
+		return new CommandLineTargetAlgorithmEvaluator( opts );
 	}
 
-	public static TargetAlgorithmEvaluator getCLITAE(AlgorithmExecutionConfig config, int observerFrequency)
+	public static TargetAlgorithmEvaluator getCLITAE(int observerFrequency)
 	{
 		CommandLineTargetAlgorithmEvaluatorOptions options = new CommandLineTargetAlgorithmEvaluatorOptions();
 		options.observerFrequency = observerFrequency;
 		options.logAllProcessOutput = true;
-		return new CommandLineTargetAlgorithmEvaluator(config,options);
+		return new CommandLineTargetAlgorithmEvaluator(options);
 	}
 	
 }

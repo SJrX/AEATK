@@ -17,10 +17,9 @@ public class BlackHoleTargetAlgorithmEvaluatorFactory extends AbstractTargetAlgo
 	}
 
 	@Override
-	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(
-			AlgorithmExecutionConfig execConfig, AbstractOptions options) {
+	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(AbstractOptions options) {
 
-		return new BlackHoleTargetAlgorithmEvaluator(execConfig, (BlackHoleTargetAlgorithmEvaluatorOptions) options);
+		return new BlackHoleTargetAlgorithmEvaluator( (BlackHoleTargetAlgorithmEvaluatorOptions) options);
 	}
 
 	@Override

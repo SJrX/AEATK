@@ -48,9 +48,7 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 	
 	private static final Logger log = LoggerFactory.getLogger(RandomResponseTargetAlgorithmEvaluator.class);
 			
-	public RandomResponseTargetAlgorithmEvaluator (
-			AlgorithmExecutionConfig execConfig, RandomResponseTargetAlgorithmEvaluatorOptions options) {
-		super(execConfig);
+	public RandomResponseTargetAlgorithmEvaluator (RandomResponseTargetAlgorithmEvaluatorOptions options) {
 		
 		
 		if(options.maxResponse - options.minResponse < 0)
@@ -81,10 +79,10 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 			
 			if(time >= rc.getCutoffTime())
 			{
-				ar.add(new ExistingAlgorithmRun(execConfig, rc, RunResult.TIMEOUT,  rc.getCutoffTime() ,-1,0, rc.getProblemInstanceSeedPair().getSeed(), this.additionalRunData));
+				ar.add(new ExistingAlgorithmRun(rc, RunResult.TIMEOUT,  rc.getCutoffTime() ,-1,0, rc.getProblemInstanceSeedPair().getSeed(), this.additionalRunData));
 			} else
 			{
-				ar.add(new ExistingAlgorithmRun(execConfig, rc, RunResult.SAT,  time ,-1,0, rc.getProblemInstanceSeedPair().getSeed(), this.additionalRunData));
+				ar.add(new ExistingAlgorithmRun(rc, RunResult.SAT,  time ,-1,0, rc.getProblemInstanceSeedPair().getSeed(), this.additionalRunData));
 			}
 			this.runCount.incrementAndGet();
 		}

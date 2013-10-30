@@ -15,9 +15,8 @@ public abstract class AbstractTargetAlgorithmEvaluatorFactory implements
 
 	@Override
 	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(
-			AlgorithmExecutionConfig execConfig,
 			Map<String, AbstractOptions> optionsMap) {
-		return this.getTargetAlgorithmEvaluator(execConfig, optionsMap.get(this.getName()));
+		return this.getTargetAlgorithmEvaluator( optionsMap.get(this.getName()));
 	}
 
 	

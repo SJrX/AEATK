@@ -1,6 +1,10 @@
 package ca.ubc.cs.beta.aclib.execconfig;
 
 import java.io.Serializable;
+import java.util.Collections;
+import java.util.Map;
+import java.util.TreeMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -28,10 +32,17 @@ public class AlgorithmExecutionConfig implements Serializable {
 	private final double cutoffTime; 
 
 	private final Logger log = LoggerFactory.getLogger(getClass());
-	
+
+	private final Map<String, String> taeContext;
 	
 	public AlgorithmExecutionConfig(String algorithmExecutable, String algorithmExecutionDirectory,
 			ParamConfigurationSpace paramFile, boolean executeOnCluster, boolean deterministicAlgorithm, double cutoffTime) {
+		this(algorithmExecutionDirectory, algorithmExecutionDirectory, paramFile, deterministicAlgorithm, deterministicAlgorithm, cutoffTime, Collections.EMPTY_MAP);
+		
+	}
+	
+
+	public AlgorithmExecutionConfig(String algorithmExecutable, String algorithmExecutionDirectory,	ParamConfigurationSpace paramFile, boolean executeOnCluster, boolean deterministicAlgorithm, double cutoffTime, Map<String, String> taeContext) {
 		this.algorithmExecutable = algorithmExecutable;
 		this.algorithmExecutionDirectory = algorithmExecutionDirectory;
 		this.paramFile = paramFile;
@@ -48,7 +59,7 @@ public class AlgorithmExecutionConfig implements Serializable {
 		}
 		this.cutoffTime = cutoffTime;
 		
-
+		this.taeContext = new TreeMap<String, String>(taeContext);
 	}
 
 	public String getAlgorithmExecutable() {
@@ -76,6 +87,14 @@ public class AlgorithmExecutionConfig implements Serializable {
 		return deterministicAlgorithm;
 	}
 	
+	/**
+	 * Additional context information necessary to execute runs, this is TAE dependent.
+	 * @return
+	 */
+	public Map<String, String> getTargetAlgorithmExecutionContext()
+	{
+		return Collections.unmodifiableMap(this.taeContext);
+	}
 	
 	public int hashCode()
 	{
@@ -84,7 +103,7 @@ public class AlgorithmExecutionConfig implements Serializable {
 	
 	public String toString()
 	{
-		return "algoExec:" + algorithmExecutable + "\nAlgorithmExecutionDirectory:" + algorithmExecutionDirectory + "\n"+paramFile + "\n Cluster:"+executeOnCluster+ "\nDetermininstic:" + deterministicAlgorithm;
+		return "algoExec:" + algorithmExecutable + "\nAlgorithmExecutionDirectory:" + algorithmExecutionDirectory + "\n"+paramFile + "\n Cluster:"+executeOnCluster+ "\nDetermininstic:" + deterministicAlgorithm + "\nID:" + myID;
 	}
 	
 	public boolean equals(Object o)
@@ -108,4 +127,36 @@ public class AlgorithmExecutionConfig implements Serializable {
 	
 	
 	public final static String MAGIC_VALUE_ALGORITHM_EXECUTABLE_PREFIX = "Who am I, Alan Turing?...also from X-Men?";
+	
+	
+	
+	private static final AtomicInteger idPool = new AtomicInteger(0);
+	private int myID = idPool.incrementAndGet();	
+	
+	/**
+	 * Friendly IDs are just unique numbers that identify this configuration for logging purposes
+	 * you should <b>NEVER</b> rely on this for programatic purposes.
+	 * 
+	 * @return unique id for this object
+	 */
+	public int getFriendlyID() {
+		return myID;
+	}
+
+	public String getFriendlyIDHex()
+	{
+		String hex = Integer.toHexString(getFriendlyID());
+		
+		StringBuilder sb = new StringBuilder("0x");
+		while(hex.length() + sb.length() < 6)
+		{
+			sb.append("0");
+		}
+		sb.append(hex.toUpperCase());
+		return sb.toString();
+	}
+	
+	
+	
+	
 }

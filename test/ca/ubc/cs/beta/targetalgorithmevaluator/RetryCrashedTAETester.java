@@ -61,7 +61,7 @@ private static TargetAlgorithmEvaluator tae;
 	@Before
 	public void beforeTest()
 	{
-		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
+		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE();
 	}
 	
 	
@@ -86,7 +86,7 @@ private static TargetAlgorithmEvaluator tae;
 				continue;
 			} else
 			{
-				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 				runConfigs.add(rc);
 			}
 		}
@@ -146,7 +146,7 @@ private static TargetAlgorithmEvaluator tae;
 			} else
 			{
 				config.put("runlength", String.valueOf(i));
-				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config);
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 				runConfigs.add(rc);
 			}
 		}

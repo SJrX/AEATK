@@ -574,7 +574,9 @@ topOfLoop:
 						{
 							absolutePathList.add(pi.getInstanceName());
 							continue topOfLoop;
-						}		
+						}	
+						
+						//System.out.println(pi.getInstanceName() + " " + instance.replaceAll("//", "/")  + " " + pi.getInstanceName().endsWith(instance.replaceAll("//", "/")));
 					}
 				}
 				

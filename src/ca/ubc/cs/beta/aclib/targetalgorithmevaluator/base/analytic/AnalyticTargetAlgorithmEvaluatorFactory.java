@@ -20,12 +20,11 @@ public class AnalyticTargetAlgorithmEvaluatorFactory extends AbstractTargetAlgor
 	}
 
 	@Override
-	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(
-			AlgorithmExecutionConfig execConfig, AbstractOptions options) {
+	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator( AbstractOptions options) {
 		
 		AnalyticTargetAlgorithmEvaluatorOptions analyticOptions = (AnalyticTargetAlgorithmEvaluatorOptions) options;
 		
-		TargetAlgorithmEvaluator tae = new AnalyticTargetAlgorithmEvaluator(execConfig, analyticOptions.func);
+		TargetAlgorithmEvaluator tae = new AnalyticTargetAlgorithmEvaluator(analyticOptions.func);
 		
 		if(analyticOptions.simulateDelay)
 		{
@@ -34,7 +33,7 @@ public class AnalyticTargetAlgorithmEvaluatorFactory extends AbstractTargetAlgor
 		
 		if(analyticOptions.cores > 0)
 		{
-			tae = new BoundedTargetAlgorithmEvaluator(tae, analyticOptions.cores, execConfig);
+			tae = new BoundedTargetAlgorithmEvaluator(tae, analyticOptions.cores);
 		}
 		
 		return tae;

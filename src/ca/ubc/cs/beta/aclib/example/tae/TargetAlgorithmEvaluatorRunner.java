@@ -163,7 +163,7 @@ public class TargetAlgorithmEvaluatorRunner
 				
 				//A RunConfig object stores the information needed to actually request (compare the objects here to the information passed to the wrapper as listed in the Manual)
 				//It is also IMMUTABLE
-				RunConfig runConfig = new RunConfig(pisp, execConfig.getAlgorithmCutoffTime(), config);
+				RunConfig runConfig = new RunConfig(pisp, execConfig.getAlgorithmCutoffTime(), config,execConfig);
 				
 				processRunConfig(runConfig, tae, mainOptions.killTime);
 				

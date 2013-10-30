@@ -18,10 +18,9 @@ public class RunningAlgorithmRun extends ExistingAlgorithmRun implements Killabl
 	private static final long serialVersionUID = -5427091882882378946L;
 	private final KillHandler handler;
 
-
-	public RunningAlgorithmRun(AlgorithmExecutionConfig execConfig,
+	public RunningAlgorithmRun(
 			RunConfig runConfig, double runtime, double runlength, double quality, long seed, double walltime, KillHandler handler) {
-		super(execConfig, runConfig, RunResult.RUNNING, runtime, runlength, quality, seed, walltime);
+		super( runConfig, RunResult.RUNNING, runtime, runlength, quality, seed, walltime);
 		this.handler = handler;
 	}
 

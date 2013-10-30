@@ -22,8 +22,7 @@ public class PreloadedResponseTargetAlgorithmEvaluatorFactory extends AbstractTa
 	}
 
 	@Override
-	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(
-			AlgorithmExecutionConfig execConfig,AbstractOptions obs) {
+	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(AbstractOptions obs) {
 		
 		
 		Queue<AssociatedValue<RunResult, Double>> myQueue = new LinkedList<AssociatedValue<RunResult, Double>>();
@@ -53,7 +52,7 @@ public class PreloadedResponseTargetAlgorithmEvaluatorFactory extends AbstractTa
 		
 		
 		
-		return new PreloadedResponseTargetAlgorithmEvaluator(execConfig, myQueue, opts);
+		return new PreloadedResponseTargetAlgorithmEvaluator( myQueue, opts);
 	}
 
 

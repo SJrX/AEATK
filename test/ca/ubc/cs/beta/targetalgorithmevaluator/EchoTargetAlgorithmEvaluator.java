@@ -26,13 +26,12 @@ public class EchoTargetAlgorithmEvaluator  extends AbstractSyncTargetAlgorithmEv
 
 	private final boolean quickEval;
 	
-	public EchoTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig)
+	public EchoTargetAlgorithmEvaluator()
 	{
-		this(execConfig, new EchoTargetAlgorithmEvaluatorOptions());
+		this( new EchoTargetAlgorithmEvaluatorOptions());
 	}
 	
-	public EchoTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig, EchoTargetAlgorithmEvaluatorOptions options) {
-		super(execConfig);
+	public EchoTargetAlgorithmEvaluator( EchoTargetAlgorithmEvaluatorOptions options) {
 		this.quickEval = options.quickEval;		
 	}
     
@@ -79,7 +78,7 @@ public class EchoTargetAlgorithmEvaluator  extends AbstractSyncTargetAlgorithmEv
 				
 			}
 			
-			results.add(new ExistingAlgorithmRun(execConfig, rc, sb.toString(),wallClockTime));
+			results.add(new ExistingAlgorithmRun( rc, sb.toString(),wallClockTime));
 			
 			if(RunResult.valueOf(config.get("solved")).equals(RunResult.ABORT))
 			{

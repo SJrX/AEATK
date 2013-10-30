@@ -20,11 +20,10 @@ public class RandomResponseTargetAlgorithmEvaluatorFactory extends AbstractTarge
 	}
 
 	@Override
-	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(
-			AlgorithmExecutionConfig execConfig, AbstractOptions options) {
+	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(AbstractOptions options) {
 		RandomResponseTargetAlgorithmEvaluatorOptions randomOptions = (RandomResponseTargetAlgorithmEvaluatorOptions) options;
 		
-		TargetAlgorithmEvaluator tae =  new RandomResponseTargetAlgorithmEvaluator(execConfig,randomOptions);
+		TargetAlgorithmEvaluator tae =  new RandomResponseTargetAlgorithmEvaluator(randomOptions);
 		
 		if(randomOptions.simulateDelay)
 		{
@@ -33,7 +32,7 @@ public class RandomResponseTargetAlgorithmEvaluatorFactory extends AbstractTarge
 		
 		if(randomOptions.cores > 0)
 		{
-			tae = new BoundedTargetAlgorithmEvaluator(tae, randomOptions.cores, execConfig);
+			tae = new BoundedTargetAlgorithmEvaluator(tae, randomOptions.cores);
 		}
 		
 		return tae;

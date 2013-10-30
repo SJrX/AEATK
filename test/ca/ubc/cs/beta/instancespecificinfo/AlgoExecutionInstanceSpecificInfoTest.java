@@ -46,7 +46,7 @@ public class AlgoExecutionInstanceSpecificInfoTest {
 		
 		AlgorithmExecutionConfig execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, true, 500);
 		
-		TargetAlgorithmEvaluator tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
+		TargetAlgorithmEvaluator tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE();
 		
 		InstanceListWithSeeds ilws = ProblemInstanceHelperTester.getInstanceListWithSeeds("classicFormatInstanceSeedSpecificValid.txt", false);
 		
@@ -60,7 +60,7 @@ public class AlgoExecutionInstanceSpecificInfoTest {
 			
 			while(inst.hasNextSeed(pi))
 			{
-				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(pi, inst.getNextSeed(pi)), 300, defaultConfig);
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(pi, inst.getNextSeed(pi)), 300, defaultConfig,execConfig);
 				AlgorithmRun run = tae.evaluateRun(rc).get(0);
 				
 				try {
@@ -98,7 +98,7 @@ public class AlgoExecutionInstanceSpecificInfoTest {
 		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(paramFile);
 		
 		AlgorithmExecutionConfig execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, true, 500);
-		TargetAlgorithmEvaluator tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
+		TargetAlgorithmEvaluator tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE();
 		
 		InstanceListWithSeeds ilws = ProblemInstanceHelperTester.getInstanceListWithSeeds("manju.txt", false);
 		
@@ -112,7 +112,7 @@ public class AlgoExecutionInstanceSpecificInfoTest {
 			
 			while(inst.hasNextSeed(pi))
 			{
-				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(pi, inst.getNextSeed(pi)), 300, defaultConfig);
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(pi, inst.getNextSeed(pi)), 300, defaultConfig,execConfig);
 				AlgorithmRun run = tae.evaluateRun(rc).get(0);
 				
 				try {

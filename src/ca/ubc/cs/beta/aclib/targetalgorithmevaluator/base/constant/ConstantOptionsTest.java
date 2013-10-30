@@ -39,11 +39,11 @@ public class ConstantOptionsTest {
 		try {
 			jcom.parse(args);
 			
-			TargetAlgorithmEvaluator tae = fact.getTargetAlgorithmEvaluator(AlgorithmExecutionConfigHelper.getSingletonExecConfig(), consOpts);
+			TargetAlgorithmEvaluator tae = fact.getTargetAlgorithmEvaluator(consOpts);
 			
 			for(int i=0; i < 1000; i++)
 			{
-				AlgorithmRun run = tae.evaluateRun(Collections.singletonList(RunConfigHelper.getRandomSingletonRunConfig())).get(0);
+				AlgorithmRun run = tae.evaluateRun(Collections.singletonList(RunConfigHelper.getRandomSingletonRunConfig(AlgorithmExecutionConfigHelper.getSingletonExecConfig()))).get(0);
 				System.out.println("Result for ParamILS: " + run.getRunResult() + ", " + run.getRuntime() + ", " + run.getRunLength() + ", " + run.getQuality() + ", " +run.getResultSeed());
 			}
 			

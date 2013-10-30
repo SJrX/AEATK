@@ -90,7 +90,7 @@ public class DynamicCappingTestSet {
 		b.append(ParamEchoExecutor.class.getCanonicalName());
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 		
-		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
+		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE();
 		
 		this.r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		
@@ -134,7 +134,7 @@ public class DynamicCappingTestSet {
 		b.append(TrueSleepyParamEchoExecutor.class.getCanonicalName());
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
 		
-		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
+		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE();
 		tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
 		
 		assertTrue(tae.areRunsObservable());
@@ -152,7 +152,7 @@ public class DynamicCappingTestSet {
 				continue;
 			} else
 			{
-				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config);
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config,execConfig);
 				runConfigs.add(rc);
 			}
 		}
@@ -239,7 +239,7 @@ public class DynamicCappingTestSet {
 	
 
 	/**
-	 * Tests whether warnings are generated for Algorithms exceeding there runtime
+	 * Generates a bunch of runs for the RunConfig object 
 	 */
 	@Test
 	public void testDynamicAdaptiveCappingMultiRunSingleCore()
@@ -252,7 +252,7 @@ public class DynamicCappingTestSet {
 		b.append(TrueSleepyParamEchoExecutor.class.getCanonicalName());
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
 		
-		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);	
+		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE();	
 		tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
 		
 		assertTrue(tae.areRunsObservable());
@@ -270,7 +270,7 @@ public class DynamicCappingTestSet {
 				continue;
 			} else
 			{
-				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config);
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config,execConfig);
 				runConfigs.add(rc);
 			}
 		}
@@ -356,7 +356,7 @@ public class DynamicCappingTestSet {
 		
 		tae.notifyShutdown();
 		
-		assertTrue("Should have taken less than five seconds to run, it took " + (endTime - startTime)/1000.0 + " seconds", (endTime - startTime) < (long) 6000);
+		assertTrue("Should have taken less than ten seconds to run, it took " + (endTime - startTime)/1000.0 + " seconds", (endTime - startTime) < (long) 10000);
 	}
 	
 
@@ -378,7 +378,7 @@ public class DynamicCappingTestSet {
 		
 		CommandLineTargetAlgorithmEvaluatorOptions opt = fact.getOptionObject();
 		opt.cores = 4;
-		tae = fact.getTargetAlgorithmEvaluator(execConfig, opt);
+		tae = fact.getTargetAlgorithmEvaluator( opt);
 		
 		tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
 		
@@ -397,7 +397,7 @@ public class DynamicCappingTestSet {
 				continue;
 			} else
 			{
-				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config);
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config,execConfig);
 				runConfigs.add(rc);
 			}
 		}
@@ -510,7 +510,7 @@ public class DynamicCappingTestSet {
 			b.append(TrueSleepyParamEchoExecutor.class.getCanonicalName());
 			execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
 			
-			tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig, 50);	
+			tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(50);	
 			tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
 			
 			assertTrue(tae.areRunsObservable());
@@ -528,7 +528,7 @@ public class DynamicCappingTestSet {
 					continue;
 				} else
 				{
-					RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config);
+					RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config,execConfig);
 					runConfigs.add(rc);
 				}
 			}
@@ -600,7 +600,7 @@ public class DynamicCappingTestSet {
 			CommandLineTargetAlgorithmEvaluatorOptions opt = fact.getOptionObject();
 			opt.cores = 1;
 			opt.observerFrequency = 50;
-			tae = fact.getTargetAlgorithmEvaluator(execConfig, opt);
+			tae = fact.getTargetAlgorithmEvaluator( opt);
 			
 				
 			tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
@@ -620,7 +620,7 @@ public class DynamicCappingTestSet {
 					continue;
 				} else
 				{
-					RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config);
+					RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config,execConfig);
 					runConfigs.add(rc);
 				}
 			}

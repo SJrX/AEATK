@@ -19,10 +19,11 @@ public interface AlgorithmRun extends Runnable, Serializable,  Callable<Object> 
 
 	/**
 	 * Returns the AlgorithmExecutionConfig of the run
-	 * 
+	 * @deprecated It is now accessible via {@link #getRunConfig()}
 	 * @return AlgorithmExecutionConfig of the run
 	 * 
 	 */
+	@Deprecated
 	public AlgorithmExecutionConfig getExecutionConfig();
 
 	/**

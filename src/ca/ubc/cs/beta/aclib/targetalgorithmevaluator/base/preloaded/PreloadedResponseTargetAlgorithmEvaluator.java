@@ -21,9 +21,8 @@ public class PreloadedResponseTargetAlgorithmEvaluator extends AbstractSyncTarge
 	private final PreloadedResponseTargetAlgorithmEvaluatorOptions opts;
 	
 	
-	public PreloadedResponseTargetAlgorithmEvaluator(
-			AlgorithmExecutionConfig execConfig, Queue<AssociatedValue<RunResult, Double>> myQueue, PreloadedResponseTargetAlgorithmEvaluatorOptions opts) {
-		super(execConfig);
+	public PreloadedResponseTargetAlgorithmEvaluator(Queue<AssociatedValue<RunResult, Double>> myQueue, PreloadedResponseTargetAlgorithmEvaluatorOptions opts) {
+		
 		this.myQueue = 	myQueue;
 		this.opts = opts;
 		
@@ -60,7 +59,7 @@ public class PreloadedResponseTargetAlgorithmEvaluator extends AbstractSyncTarge
 	
 			AssociatedValue<RunResult, Double> v = myQueue.poll();
 			if(v == null) throw new IllegalStateException("Error out of existing runs");
-			runs.add(new ExistingAlgorithmRun(execConfig, rc, v.getAssociatedValue() , v.getValue() , opts.runLength ,opts.quality, rc.getProblemInstanceSeedPair().getSeed(), opts.additionalRunData));
+			runs.add(new ExistingAlgorithmRun(rc, v.getAssociatedValue() , v.getValue() , opts.runLength ,opts.quality, rc.getProblemInstanceSeedPair().getSeed(), opts.additionalRunData));
 			
 			
 		}

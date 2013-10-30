@@ -12,6 +12,7 @@ import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
  * @author Steve Ramage <sjr@sjrx.net>
  *
  */
+@Deprecated
 public class SurrogateAlgorithmRun extends AbstractAlgorithmRun {
 	/**
 	 * 
@@ -25,9 +26,10 @@ public class SurrogateAlgorithmRun extends AbstractAlgorithmRun {
 	 * @param runConfig			run configuration we are executing
 	 * @param response			response value to use
 	 */
+	@Deprecated
 	public SurrogateAlgorithmRun(AlgorithmExecutionConfig execConfig,RunConfig runConfig, double response  )
 	{
-		super(execConfig, runConfig);
+		super( runConfig);
 		this.setResult(RunResult.SAT, response, 0, 0, seedValues++, "No Real Line, just response used","");
 	}
 

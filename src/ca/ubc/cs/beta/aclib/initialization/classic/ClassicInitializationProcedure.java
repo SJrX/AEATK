@@ -10,6 +10,7 @@ import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.exceptions.DuplicateRunException;
 import ca.ubc.cs.beta.aclib.exceptions.OutOfTimeException;
+import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.initialization.InitializationProcedure;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
@@ -36,9 +37,10 @@ public class ClassicInitializationProcedure implements InitializationProcedure {
 	private final double cutoffTime;
 	private final SeedableRandomPool pool;
 	private boolean deterministicInstanceOrdering;
+	private final AlgorithmExecutionConfig algorithmExecutionConfig;
 	
 
-	public ClassicInitializationProcedure(ThreadSafeRunHistory runHistory, ParamConfiguration initialIncumbent, TargetAlgorithmEvaluator tae, ClassicInitializationProcedureOptions opts, InstanceSeedGenerator insc, List<ProblemInstance> instances,  int maxIncumbentRuns , TerminationCondition termCond, double cutoffTime, SeedableRandomPool pool, boolean deterministicInstanceOrdering)
+	public ClassicInitializationProcedure(ThreadSafeRunHistory runHistory, ParamConfiguration initialIncumbent, TargetAlgorithmEvaluator tae, ClassicInitializationProcedureOptions opts, InstanceSeedGenerator insc, List<ProblemInstance> instances,  int maxIncumbentRuns , TerminationCondition termCond, double cutoffTime, SeedableRandomPool pool, boolean deterministicInstanceOrdering, AlgorithmExecutionConfig execConfig)
 	{
 		this.runHistory =runHistory;
 		this.initialIncumbent = initialIncumbent;
@@ -52,6 +54,7 @@ public class ClassicInitializationProcedure implements InitializationProcedure {
 		this.cutoffTime = cutoffTime;
 		this.pool = pool;
 		this.deterministicInstanceOrdering = deterministicInstanceOrdering;
+		this.algorithmExecutionConfig = execConfig;
 		
 		
 	}
@@ -79,7 +82,7 @@ public class ClassicInitializationProcedure implements InitializationProcedure {
 			
 			ProblemInstanceSeedPair pisp = RunHistoryHelper.getRandomInstanceSeedWithFewestRunsFor(runHistory, insc, incumbent, instances, pool.getRandom("CLASSIC_INITIALIZATION"),deterministicInstanceOrdering);
 			log.trace("New Problem Instance Seed Pair generated {}", pisp);
-			RunConfig incumbentRunConfig = new RunConfig(pisp, cutoffTime,incumbent);
+			RunConfig incumbentRunConfig = new RunConfig(pisp, cutoffTime,incumbent, algorithmExecutionConfig);
 			//Create initial row
 
 			try { 

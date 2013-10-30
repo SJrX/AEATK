@@ -73,7 +73,7 @@ public class ReindexSeedRunHistoryDecorator extends AbstractRunHistoryDecorator 
 		
 		if(pispTransform.get(pisp) != null)
 		{
-			RunConfig newRc = new RunConfig(pispTransform.get(pisp), run.getRunConfig().getCutoffTime(), run.getRunConfig().getParamConfiguration(), run.getRunConfig().hasCutoffLessThanMax());
+			RunConfig newRc = new RunConfig(pispTransform.get(pisp), run.getRunConfig().getCutoffTime(), run.getRunConfig().getParamConfiguration(), run.getExecutionConfig());
 			
 			ExistingAlgorithmRun er = new ExistingAlgorithmRun(run.getExecutionConfig(), newRc, run.getRunResult(), run.getRuntime(), run.getRunLength(), run.getQuality(),pispTransform.get(pisp).getSeed(), run.getAdditionalRunData(), run.getWallclockExecutionTime());
 
@@ -92,7 +92,7 @@ public class ReindexSeedRunHistoryDecorator extends AbstractRunHistoryDecorator 
 			Collections.shuffle(possiblePisps, rand);
 			for(ProblemInstanceSeedPair newPisp : possiblePisps)
 			{
-				RunConfig newRc = new RunConfig(newPisp, run.getRunConfig().getCutoffTime(), run.getRunConfig().getParamConfiguration(), run.getRunConfig().hasCutoffLessThanMax());
+				RunConfig newRc = new RunConfig(newPisp, run.getRunConfig().getCutoffTime(), run.getRunConfig().getParamConfiguration(), run.getRunConfig().getAlgorithmExecutionConfig());
 				
 				ExistingAlgorithmRun er = new ExistingAlgorithmRun(run.getExecutionConfig(), newRc, run.getRunResult(), run.getRuntime(), run.getRunLength(), run.getQuality(),newPisp.getSeed(), run.getAdditionalRunData(), run.getWallclockExecutionTime());
 
@@ -111,7 +111,7 @@ public class ReindexSeedRunHistoryDecorator extends AbstractRunHistoryDecorator 
 			ProblemInstanceSeedPair newPisp = new ProblemInstanceSeedPair(pisp.getInstance(), nextSeed.incrementAndGet()); 
 			
 			
-			RunConfig newRc = new RunConfig(newPisp, run.getRunConfig().getCutoffTime(), run.getRunConfig().getParamConfiguration(), run.getRunConfig().hasCutoffLessThanMax());
+			RunConfig newRc = new RunConfig(newPisp, run.getRunConfig().getCutoffTime(), run.getRunConfig().getParamConfiguration(), run.getRunConfig().getAlgorithmExecutionConfig());
 			
 			ExistingAlgorithmRun er = new ExistingAlgorithmRun(run.getExecutionConfig(), newRc, run.getRunResult(), run.getRuntime(), run.getRunLength(), run.getQuality(),newPisp.getSeed(), run.getAdditionalRunData(), run.getWallclockExecutionTime());
 

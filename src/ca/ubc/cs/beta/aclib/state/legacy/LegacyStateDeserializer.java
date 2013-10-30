@@ -504,9 +504,9 @@ public class LegacyStateDeserializer implements StateDeserializer {
 						
 					
 						ProblemInstanceSeedPair pisp = new ProblemInstanceSeedPair(pi, seed); 
-						RunConfig runConfig = new RunConfig(pisp, cutOffTime, configMap.get(thetaIdx),isCensored);
+						RunConfig runConfig = new RunConfig(pisp, cutOffTime, configMap.get(thetaIdx),execConfig);
 												
-						AlgorithmRun run = new ExistingAlgorithmRun(execConfig, runConfig, runResult, runtime, runLength, quality, seed, additionalRunData, wallClockTime);
+						AlgorithmRun run = new ExistingAlgorithmRun(runConfig, runResult, runtime, runLength, quality, seed, additionalRunData, wallClockTime);
 						
 						log.trace("Appending new run to runHistory: ", run);
 						try {
@@ -524,7 +524,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 								seed = newSeeds++;
 								
 
-								run = new ExistingAlgorithmRun(execConfig, runConfig, runResult, runtime, runLength, quality, seed, wallClockTime);
+								run = new ExistingAlgorithmRun( runConfig, runResult, runtime, runLength, quality, seed, wallClockTime);
 								
 								log.trace("Appending new run to runHistory: ", run);
 								try {

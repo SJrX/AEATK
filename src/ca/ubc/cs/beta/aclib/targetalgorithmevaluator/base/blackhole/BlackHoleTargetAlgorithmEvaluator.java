@@ -31,8 +31,7 @@ public class BlackHoleTargetAlgorithmEvaluator extends AbstractAsyncTargetAlgori
 	
 	private final BlackHoleTargetAlgorithmEvaluatorOptions options;
 	
-	public BlackHoleTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig, BlackHoleTargetAlgorithmEvaluatorOptions options) {
-		super(execConfig);
+	public BlackHoleTargetAlgorithmEvaluator(BlackHoleTargetAlgorithmEvaluatorOptions options) {
 		this.options = options;
 		if(options.warnings)
 		{

@@ -22,6 +22,81 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 	
 	/**
 	 * 
+	 * @param runConfig			run configuration we are executing
+	 * @param runResult			The RunResult to report
+	 * @param runtime 			The Run Time
+	 * @param runLength			The Run Length
+	 * @param quality			The Run Quality
+	 * @param resultSeed 		The Reported seed
+	 * @param additionalRunData	The Additional Run Data
+	 * @param wallclockTime		Wallclock time to report
+	 */
+	public ExistingAlgorithmRun(RunConfig runConfig, RunResult runResult, double runtime, double runLength, double quality, long resultSeed, String additionalRunData, double wallclockTime)
+	{
+		super( runConfig);
+		this.setResult(runResult, runtime, runLength, quality, resultSeed, "<Existing Run>", additionalRunData);
+		this.setWallclockExecutionTime(wallclockTime);
+	}
+	
+	/**
+	 * 
+	 * @param runConfig			run configuration we are executing
+	 * @param runResult			The RunResult to report
+	 * @param runtime 			The Run Time
+	 * @param runLength			The Run Length
+	 * @param quality			The Run Quality
+	 * @param resultSeed 		The Reported seed
+	 * @param wallclockTime		Wallclock time to report
+	 */
+
+	public ExistingAlgorithmRun( RunConfig runConfig, RunResult runResult, double runtime, double runLength, double quality, long resultSeed,  double wallclockTime)
+	{
+		super( runConfig);
+		this.setResult(runResult, runtime, runLength, quality, resultSeed, "<Existing Run>", "");
+		this.setWallclockExecutionTime(wallclockTime);
+	}
+	
+	
+	
+
+	/**
+	 * 
+	 * @param runConfig			run configuration we are executing
+	 * @param runResult			The RunResult to report
+	 * @param runtime 			The Run Time
+	 * @param runlength			The Run Length
+	 * @param quality			The Run Quality
+	 * @param seed 				The Reported seed
+	 * @param additionalRunData	The Additional Run Data
+	 */
+
+	public ExistingAlgorithmRun( RunConfig runConfig, RunResult runResult, double runtime, double runlength, double quality, long seed, String additionalRunData)
+	{
+		this( runConfig, runResult, runtime,runlength, quality, seed, additionalRunData, 0.0);
+	}
+	
+
+	/**
+	 * 
+	 * @param runConfig			run configuration we are executing
+	 * @param runResult			The RunResult to report
+	 * @param runtime 			The Run Time
+	 * @param runlength			The Run Length
+	 * @param quality			The Run Quality
+	 * @param seed 				The Reported seed
+	 */
+	@Deprecated
+	public ExistingAlgorithmRun( RunConfig runConfig, RunResult runResult, double runtime, double runlength, double quality, long seed)
+	{
+		this( runConfig, runResult, runtime,runlength, quality, seed, "", 0.0);
+	}
+	
+	
+	
+	
+	
+	/**
+	 * 
 	 * @param execConfig		execution configuration of the object
 	 * @param runConfig			run configuration we are executing
 	 * @param runResult			The RunResult to report
@@ -32,9 +107,10 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 	 * @param additionalRunData	The Additional Run Data
 	 * @param wallclockTime		Wallclock time to report
 	 */
+	@Deprecated
 	public ExistingAlgorithmRun(AlgorithmExecutionConfig execConfig, RunConfig runConfig, RunResult runResult, double runtime, double runLength, double quality, long resultSeed, String additionalRunData, double wallclockTime)
 	{
-		super(execConfig, runConfig);
+		super( runConfig);
 		this.setResult(runResult, runtime, runLength, quality, resultSeed, "<Existing Run>", additionalRunData);
 		this.setWallclockExecutionTime(wallclockTime);
 	}
@@ -50,9 +126,10 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 	 * @param resultSeed 		The Reported seed
 	 * @param wallclockTime		Wallclock time to report
 	 */
+	@Deprecated
 	public ExistingAlgorithmRun(AlgorithmExecutionConfig execConfig, RunConfig runConfig, RunResult runResult, double runtime, double runLength, double quality, long resultSeed,  double wallclockTime)
 	{
-		super(execConfig, runConfig);
+		super( runConfig);
 		this.setResult(runResult, runtime, runLength, quality, resultSeed, "<Existing Run>", "");
 		this.setWallclockExecutionTime(wallclockTime);
 	}
@@ -71,6 +148,7 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 	 * @param seed 				The Reported seed
 	 * @param additionalRunData	The Additional Run Data
 	 */
+	@Deprecated
 	public ExistingAlgorithmRun(AlgorithmExecutionConfig execConfig, RunConfig runConfig, RunResult runResult, double runtime, double runlength, double quality, long seed, String additionalRunData)
 	{
 		this(execConfig, runConfig, runResult, runtime,runlength, quality, seed, additionalRunData, 0.0);
@@ -87,6 +165,7 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 	 * @param quality			The Run Quality
 	 * @param seed 				The Reported seed
 	 */
+	@Deprecated
 	public ExistingAlgorithmRun(AlgorithmExecutionConfig execConfig, RunConfig runConfig, RunResult runResult, double runtime, double runlength, double quality, long seed)
 	{
 		this(execConfig, runConfig, runResult, runtime,runlength, quality, seed, "", 0.0);
@@ -104,7 +183,7 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 	@Deprecated
 	public ExistingAlgorithmRun(AlgorithmExecutionConfig execConfig, RunConfig runConfig, String result)
 	{
-		this(execConfig, runConfig, result, 0.0);
+		this( runConfig, result, 0.0);
 	}
 	
 	/**
@@ -115,8 +194,8 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 	 * @deprecated  the constructor that doesn't take a result string is preferred. 
 	 */
 	@Deprecated
-	public ExistingAlgorithmRun(AlgorithmExecutionConfig execConfig, RunConfig runConfig, String result, double wallClockTime) {
-		super(execConfig, runConfig);
+	public ExistingAlgorithmRun( RunConfig runConfig, String result, double wallClockTime) {
+		super( runConfig);
 		//this.rawResultLine = resultLine;
 		//this.runCompleted = true;
 		String[] resultLine = result.split(",");
@@ -148,17 +227,17 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 			
 		} catch(ArrayIndexOutOfBoundsException e)
 		{ 
-			Object[] args = { execConfig, runConfig, result} ;
+			Object[] args = { runConfig, result} ;
 			
-			log.info("Malformed Run Result for Execution (ArrayIndexOutOfBoundsException): {}, Instance: {}, Result: {}", args);
+			log.info("Malformed Run Result for Execution (ArrayIndexOutOfBoundsException), Instance: {}, Result: {}", args);
 			log.info("Exception:",e);
 			this.setAbortResult(e.getMessage());
 		}catch(NumberFormatException e)
 		{
 			//There was a problem with the output, we just set this flag
 
-			Object[] args = { execConfig, runConfig, result} ;
-			log.info("Malformed Run Result for Execution (NumberFormatException): {}, Instance: {}, Result: {}", args);
+			Object[] args = {  runConfig, result} ;
+			log.info("Malformed Run Result for Execution (NumberFormatException):  Instance: {}, Result: {}", args);
 			log.info("Exception:",e);
 			this.setAbortResult( e.getMessage());
 			

@@ -17,9 +17,8 @@ public class ConstantTargetAlgorithmEvaluatorFactory extends AbstractTargetAlgor
 	}
 
 	@Override
-	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(
-			AlgorithmExecutionConfig execConfig, AbstractOptions options) {
-		return new ConstantTargetAlgorithmEvaluator(execConfig, (ConstantTargetAlgorithmEvaluatorOptions) options);
+	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator( AbstractOptions options) {
+		return new ConstantTargetAlgorithmEvaluator( (ConstantTargetAlgorithmEvaluatorOptions) options);
 	}
 
 	@Override

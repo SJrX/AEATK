@@ -17,9 +17,8 @@ public class EchoTargetAlgorithmEvaluatorFactory extends AbstractTargetAlgorithm
 	}
 
 	@Override
-	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(
-			AlgorithmExecutionConfig execConfig, AbstractOptions options) {
-		return new EchoTargetAlgorithmEvaluator(execConfig, (EchoTargetAlgorithmEvaluatorOptions) options);
+	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(AbstractOptions options) {
+		return new EchoTargetAlgorithmEvaluator( (EchoTargetAlgorithmEvaluatorOptions) options);
 	}
 
 	@Override

@@ -26,8 +26,8 @@ public class AnalyticTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorith
 	private final AnalyticFunctions func;
 
 	private final Logger log = LoggerFactory.getLogger(getClass());
-	public AnalyticTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig, AnalyticFunctions func) {
-		super(execConfig);
+	public AnalyticTargetAlgorithmEvaluator( AnalyticFunctions func) {
+		super();
 		this.func = func;
 	}
 
@@ -97,10 +97,10 @@ public class AnalyticTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorith
 								
 				if(time >= rc.getCutoffTime())
 				{
-					ar.add(new ExistingAlgorithmRun(execConfig, rc, RunResult.TIMEOUT,  rc.getCutoffTime() ,-1,0, rc.getProblemInstanceSeedPair().getSeed()));
+					ar.add(new ExistingAlgorithmRun(rc, RunResult.TIMEOUT,  rc.getCutoffTime() ,-1,0, rc.getProblemInstanceSeedPair().getSeed()));
 				} else
 				{
-					ar.add(new ExistingAlgorithmRun(execConfig, rc, RunResult.SAT,  time ,-1,0, rc.getProblemInstanceSeedPair().getSeed()));
+					ar.add(new ExistingAlgorithmRun(rc, RunResult.SAT,  time ,-1,0, rc.getProblemInstanceSeedPair().getSeed()));
 				}
 				this.runCount.incrementAndGet();
 			}

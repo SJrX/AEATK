@@ -193,7 +193,7 @@ public class TargetAlgorithmEvaluatorBuilder {
 		if(!ignoreBound && options.boundRuns)
 		{
 			log.debug("[TAE] Bounding the number of concurrent target algorithm evaluations to {} ", options.maxConcurrentAlgoExecs);
-			tae = new BoundedTargetAlgorithmEvaluator(tae, options.maxConcurrentAlgoExecs, execConfig);
+			tae = new BoundedTargetAlgorithmEvaluator(tae, options.maxConcurrentAlgoExecs);
 			
 			if(options.trackRunsScheduled)
 			{
