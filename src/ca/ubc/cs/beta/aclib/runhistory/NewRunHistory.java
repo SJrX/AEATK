@@ -14,6 +14,7 @@ import java.util.Set;
 import java.util.Map.Entry;
 
 import net.jcip.annotations.NotThreadSafe;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -21,6 +22,7 @@ import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.exceptions.DuplicateRunException;
+import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.objectives.OverallObjective;
 import ca.ubc.cs.beta.aclib.objectives.RunObjective;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
@@ -123,10 +125,25 @@ public class NewRunHistory implements RunHistory {
 	
 	}
 	
+	
+	private volatile AlgorithmExecutionConfig firstExecConfig;
+	
 	@Override
 	public void append(AlgorithmRun run) throws DuplicateRunException{
 
 		log.trace("Appending Run {}",run);
+		
+		
+		if(firstExecConfig == null)
+		{
+			this.firstExecConfig = run.getRunConfig().getAlgorithmExecutionConfig();
+		} else
+		{
+			if(!this.firstExecConfig.equals(run.getRunConfig().getAlgorithmExecutionConfig()))
+			{
+				throw new IllegalArgumentException("RunHistory object cannot store runs for different exec configs first was: " + firstExecConfig + " current run was : " + run.getRunConfig().getAlgorithmExecutionConfig());
+			}
+		}
 		
 		if(run.getRunResult().equals(RunResult.RUNNING))
 		{

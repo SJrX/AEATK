@@ -85,7 +85,6 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 	 * @param quality			The Run Quality
 	 * @param seed 				The Reported seed
 	 */
-	@Deprecated
 	public ExistingAlgorithmRun( RunConfig runConfig, RunResult runResult, double runtime, double runlength, double quality, long seed)
 	{
 		this( runConfig, runResult, runtime,runlength, quality, seed, "", 0.0);

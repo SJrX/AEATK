@@ -154,7 +154,7 @@ public class RunHistoryTester {
 		
 		RunConfig rc = new RunConfig(pisp, defaultConfig,execConfig);
 		try {
-			runHistory.append(new ExistingAlgorithmRun(execConfig, rc, RunResult.SAT, 0, 0, 0, pisp.getSeed()));
+			runHistory.append(new ExistingAlgorithmRun( rc, RunResult.SAT, 0, 0, 0, pisp.getSeed(),0));
 		} catch (DuplicateRunException e) {
 			e.printStackTrace();
 			fail("Unexpected duplicated run exception");
@@ -162,7 +162,7 @@ public class RunHistoryTester {
 		
 		//Get a duplicate
 		try {
-			runHistory.append(new ExistingAlgorithmRun(execConfig, rc, RunResult.SAT, 0, 0, 0, pisp.getSeed()));
+			runHistory.append(new ExistingAlgorithmRun( rc, RunResult.SAT, 0, 0, 0, pisp.getSeed()));
 			fail("Expected duplicate run exception");
 		} catch (DuplicateRunException e) {
 			
@@ -171,7 +171,7 @@ public class RunHistoryTester {
 		
 		//Duplicates should be thrown for the same runconfig even with different results
 		try {
-			runHistory.append(new ExistingAlgorithmRun(execConfig, rc, RunResult.UNSAT, 1, 1, 1, pisp.getSeed()));
+			runHistory.append(new ExistingAlgorithmRun( rc, RunResult.UNSAT, 1, 1, 1, pisp.getSeed()));
 			fail("Expected duplicate run exception");
 		} catch (DuplicateRunException e) {
 			
@@ -187,6 +187,54 @@ public class RunHistoryTester {
 		
 		
 	}
+	
+	
+
+	@Test
+	public void testExecConfigDetection()
+	{
+	
+		InstanceListWithSeeds ilws = ProblemInstanceHelperTester.getInstanceListWithSeeds("classicFormatValid.txt", false);
+		
+		InstanceSeedGenerator insc = ilws.getSeedGen();
+		RunHistory runHistory = new NewRunHistory( OverallObjective.MEAN, OverallObjective.MEAN, RunObjective.RUNTIME);
+	
+	
+		ParamConfigurationSpace space = ParamFileHelper.getParamFileFromString("a [0,9] [0]\nb [0,9] [0]\n");
+				
+		ParamConfiguration defaultConfig = space.getDefaultConfiguration();		
+		
+		ParamConfiguration otherConfig = space.getConfigurationFromString("-a '1' -b '1'", StringFormat.NODB_OR_STATEFILE_SYNTAX);
+		
+		ProblemInstanceSeedPair pisp = new ProblemInstanceSeedPair(ilws.getInstances().get(0), insc.getNextSeed(ilws.getInstances().get(0)));
+		AlgorithmExecutionConfig execConfig = new AlgorithmExecutionConfig("boo", "foo", space, false, false, 500);
+		
+		RunConfig rc = new RunConfig(pisp, defaultConfig,execConfig);
+		try {
+			runHistory.append(new ExistingAlgorithmRun( rc, RunResult.SAT, 0, 0, 0, pisp.getSeed(),0));
+		} catch (DuplicateRunException e) {
+			e.printStackTrace();
+			fail("Unexpected duplicated run exception");
+		}
+		
+		 execConfig = new AlgorithmExecutionConfig("boo2", "foo2", space, false, false, 500);
+		 rc = new RunConfig(pisp, defaultConfig,execConfig);
+		//Get a duplicate
+		try {
+			runHistory.append(new ExistingAlgorithmRun( rc, RunResult.SAT, 0, 0, 0, pisp.getSeed()));
+			fail("Expected error exception for handling different exec configurations");
+		} catch (IllegalArgumentException e) {
+			
+			
+		} catch (DuplicateRunException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+			throw new IllegalStateException(e);
+		}
+
+	}
+	
+	
 	
 	
 	/**
