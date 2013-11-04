@@ -12,7 +12,7 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterFile;
 
 
-@UsageTextField(title="Command Line Target Algorithm Evaluator Options")
+@UsageTextField(title="Command Line Target Algorithm Evaluator Options", description="This Target Algorithm Evaluator executes commands via the command line and the standard wrapper interface. ")
 public class CommandLineTargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	
 
