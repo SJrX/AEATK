@@ -2095,7 +2095,7 @@ public class TAETestSet {
 		
 		options.concurrentExecution = true;
 		options.cores = 100;
-		
+		options.logAllCallStrings = true;
 		tae = fact.getTargetAlgorithmEvaluator(execConfig, options);
 		
 		tae = new BoundedTargetAlgorithmEvaluator(tae,100, execConfig);

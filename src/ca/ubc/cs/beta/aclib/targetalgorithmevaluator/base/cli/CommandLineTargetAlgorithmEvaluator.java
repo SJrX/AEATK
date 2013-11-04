@@ -3,6 +3,9 @@ package ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli;
 import java.io.File;
 import java.util.Collections;
 import java.util.List;
+import java.util.concurrent.ArrayBlockingQueue;
+import java.util.concurrent.BlockingQueue;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -31,6 +34,10 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractSyncTargetAlgor
 	
 	private final CommandLineTargetAlgorithmEvaluatorOptions options;
 	
+	private final BlockingQueue<Integer> executionIDs; 
+	
+	
+	
 	/**
 	 * Constructs CommandLineTargetAlgorithmEvaluator
 	 * @param execConfig 			execution configuration of the target algorithm
@@ -45,9 +52,18 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractSyncTargetAlgor
 		if(observerFrequency < 50) throw new ParameterException("Observer Frequency can't be less than 50 ms");
 		log.debug("Concurrent Execution {}", options.concurrentExecution);
 		this.options = options;
+		
 		File execDir = new File(execConfig.getAlgorithmExecutionDirectory());
 		if(!execDir.exists()) throw new ParameterException("The Algorithm Execution Directory does not exist (" + execConfig.getAlgorithmExecutionDirectory() + ")");
 		if(!execDir.isDirectory()) throw new ParameterException("The Algorithm Execution Directory is NOT a directory (" + execConfig.getAlgorithmExecutionDirectory() + ")");
+		
+		executionIDs = new ArrayBlockingQueue<Integer>(options.cores);
+		
+		for(int i = 0; i < options.cores ; i++)
+		{
+			executionIDs.add(Integer.valueOf(i));
+		}
+		
 	}
 	
 
@@ -92,12 +108,12 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractSyncTargetAlgor
 		if(concurrentExecution && options.cores > 1)
 		{
 			log.debug("Using concurrent algorithm runner");
-			return AutomaticConfiguratorFactory.getConcurrentAlgorithmRunner(execConfig,runConfigs,obs, options);
+			return AutomaticConfiguratorFactory.getConcurrentAlgorithmRunner(execConfig,runConfigs,obs, options,executionIDs);
 			
 		} else
 		{
 			log.debug("Using single-threaded algorithm runner");
-			return AutomaticConfiguratorFactory.getSingleThreadedAlgorithmRunner(execConfig,runConfigs,obs, options);
+			return AutomaticConfiguratorFactory.getSingleThreadedAlgorithmRunner(execConfig,runConfigs,obs, options,executionIDs);
 		}
 	}
 

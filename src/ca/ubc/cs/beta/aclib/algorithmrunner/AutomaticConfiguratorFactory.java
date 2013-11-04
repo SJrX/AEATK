@@ -1,6 +1,7 @@
 package ca.ubc.cs.beta.aclib.algorithmrunner;
 
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -36,9 +37,9 @@ public class AutomaticConfiguratorFactory {
 	 * @param runConfigs		run configurations to execute
 	 * @return	algorithmrunner which will run it
 	 */
-	public static AlgorithmRunner getSingleThreadedAlgorithmRunner(AlgorithmExecutionConfig execConfig, List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs, CommandLineTargetAlgorithmEvaluatorOptions options)
+	public static AlgorithmRunner getSingleThreadedAlgorithmRunner(AlgorithmExecutionConfig execConfig, List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs, CommandLineTargetAlgorithmEvaluatorOptions options, BlockingQueue<Integer> executionIDs)
 	{
-		return new SingleThreadedAlgorithmRunner(execConfig, runConfigs,obs, options);
+		return new SingleThreadedAlgorithmRunner(execConfig, runConfigs,obs, options,executionIDs);
 	}
 	
 	/**
@@ -47,11 +48,11 @@ public class AutomaticConfiguratorFactory {
 	 * @param runConfigs		run configurations to execute
 	 * @return	algorithmrunner which will run it
 	 */	
-	public static AlgorithmRunner getConcurrentAlgorithmRunner(AlgorithmExecutionConfig execConfig, List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs, CommandLineTargetAlgorithmEvaluatorOptions options)
+	public static AlgorithmRunner getConcurrentAlgorithmRunner(AlgorithmExecutionConfig execConfig, List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs, CommandLineTargetAlgorithmEvaluatorOptions options, BlockingQueue<Integer> executionIDs)
 	{
 		if(runConfigs.size() == 1)
 		{
-			return getSingleThreadedAlgorithmRunner(execConfig, runConfigs,obs, options);
+			return getSingleThreadedAlgorithmRunner(execConfig, runConfigs,obs, options,executionIDs);
 		}
 		
 		if(options.cores > maxThreads)
@@ -59,7 +60,7 @@ public class AutomaticConfiguratorFactory {
 			log.warn("Number of cores requested is seemingly greater than the number of available cores. This may affect runtime measurements");
 		}
 		
-		return getConcurrentAlgorithmRunner(execConfig, runConfigs, options.cores, obs, options);
+		return getConcurrentAlgorithmRunner(execConfig, runConfigs, options.cores, obs, options,executionIDs);
 	}
 	
 	/**
@@ -69,10 +70,10 @@ public class AutomaticConfiguratorFactory {
 	 * @param nThreads			number of concurrent executions to allow
 	 * @return	algorithmrunner which will run it
 	 */
-	public static AlgorithmRunner getConcurrentAlgorithmRunner(AlgorithmExecutionConfig execConfig, List<RunConfig> runConfigs, int nThreads, TargetAlgorithmEvaluatorRunObserver obs, CommandLineTargetAlgorithmEvaluatorOptions options)
+	public static AlgorithmRunner getConcurrentAlgorithmRunner(AlgorithmExecutionConfig execConfig, List<RunConfig> runConfigs, int nThreads, TargetAlgorithmEvaluatorRunObserver obs, CommandLineTargetAlgorithmEvaluatorOptions options, BlockingQueue<Integer> executionIDs)
 	{
 		log.debug("Concurrent Algorithm Runner created allowing {} threads", nThreads);
-		return new ConcurrentAlgorithmRunner(execConfig, runConfigs, nThreads, obs, options);
+		return new ConcurrentAlgorithmRunner(execConfig, runConfigs, nThreads, obs, options,executionIDs);
 	}
 
 }

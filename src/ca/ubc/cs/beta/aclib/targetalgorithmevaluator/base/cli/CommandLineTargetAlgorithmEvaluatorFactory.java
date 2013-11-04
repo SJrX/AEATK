@@ -1,5 +1,7 @@
 package ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli;
 
+import java.util.concurrent.ArrayBlockingQueue;
+
 import org.mangosdk.spi.ProviderFor;
 
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
@@ -11,6 +13,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.resource.Bounded
 @ProviderFor(TargetAlgorithmEvaluatorFactory.class)
 public class CommandLineTargetAlgorithmEvaluatorFactory extends AbstractTargetAlgorithmEvaluatorFactory  {
 
+	
 	@Override
 	public String getName() {
 		return "CLI";
@@ -21,9 +24,9 @@ public class CommandLineTargetAlgorithmEvaluatorFactory extends AbstractTargetAl
 			AlgorithmExecutionConfig config, AbstractOptions options) {
 
 		CommandLineTargetAlgorithmEvaluatorOptions cliOpts = (CommandLineTargetAlgorithmEvaluatorOptions) options;
-		//CLI TAE doesn't bound properly accross runs and the workaround, until we rewrite the
-		//the AutomaticConfiguratorRunner crap is to simply bound it (See Issue #1811 for more info)
-		return new BoundedTargetAlgorithmEvaluator(new CommandLineTargetAlgorithmEvaluator(config, cliOpts ), cliOpts.cores, config);
+
+		
+		return new CommandLineTargetAlgorithmEvaluator(config, cliOpts );
 	}
 
 	@Override

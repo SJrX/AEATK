@@ -4,6 +4,7 @@ import ca.ubc.cs.beta.TestHelper;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration.StringFormat;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli.CommandLineAlgorithmRun;
 
 public class ParamEchoExecutor {
 
@@ -41,6 +42,16 @@ public class ParamEchoExecutor {
 			
 			/*long returnCutOffLength = instanceName.hashCode() + 37*instanceSpecificInfo.hashCode();*/
 
+			
+			
+			try {
+				//Paranoid check to ensure the environment variable is set.
+				Integer.valueOf(System.getenv(CommandLineAlgorithmRun.CONCURRENT_TASK_ID));
+			} catch(RuntimeException e)
+			{
+				System.out.println("Result for ParamILS: CRASHED, 0.000, 0, 0," + args[4] + ", No Task ID Detected\n");
+				return;
+			}
 			
 			Double runtimeSeconds = Double.valueOf(runtime);
 

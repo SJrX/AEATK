@@ -3,7 +3,6 @@ package ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli;
 import java.io.BufferedReader;
 import java.io.File;
 import java.io.InputStreamReader;
-
 import java.io.IOException;
 import java.lang.reflect.Field;
 import java.net.DatagramPacket;
@@ -16,6 +15,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map.Entry;
 import java.util.Queue;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
@@ -87,6 +87,8 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 
 	public static final String PORT_ENVIRONMENT_VARIABLE = "ACLIB_PORT";
 	public static final String FREQUENCY_ENVIRONMENT_VARIABLE = "ACLIB_CPU_TIME_FREQUENCY";
+	public static final String CONCURRENT_TASK_ID = "ACLIB_CONCURRENT_TASK_ID";
+	
 	/**
 	 * Marker for logging
 	 */
@@ -114,6 +116,9 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	
 	private AtomicBoolean processEnded = new AtomicBoolean(false);
 	
+	private transient final BlockingQueue<Integer> executionIDs;
+	
+	
 	/**
 	 * This field is transient because we can't save this object when we serialize.
 	 * 
@@ -126,8 +131,9 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	 * Default Constructor
 	 * @param execConfig		execution configuration of the object
 	 * @param runConfig			run configuration we are executing
+	 * @param executionIDs 
 	 */
-	public CommandLineAlgorithmRun(AlgorithmExecutionConfig execConfig, RunConfig runConfig, TargetAlgorithmEvaluatorRunObserver obs, KillHandler handler, CommandLineTargetAlgorithmEvaluatorOptions options) 
+	public CommandLineAlgorithmRun(AlgorithmExecutionConfig execConfig, RunConfig runConfig, TargetAlgorithmEvaluatorRunObserver obs, KillHandler handler, CommandLineTargetAlgorithmEvaluatorOptions options, BlockingQueue<Integer> executionIDs) 
 	{
 		super(execConfig, runConfig);
 		//TODO Test
@@ -150,6 +156,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 		}
 		
 		this.options = options;
+		this.executionIDs = executionIDs;
 	}
 	
 	private static final int MAX_LINES_TO_SAVE = 1000;
@@ -176,277 +183,307 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 		final Process proc;
 		
 		
-		try {
-			
-			
-			
-			
-			final AtomicInteger pid = new AtomicInteger(-1);
-			int port = 0;
-			final DatagramSocket serverSocket;
-			if(options.listenForUpdates)
+		
+		try 
+		{
+			Integer token;
+			try {
+				 token = executionIDs.take();
+			} catch(InterruptedException e)
 			{
-				serverSocket = new DatagramSocket();
-				port = serverSocket.getLocalPort();
-			} else
-			{
-				serverSocket = null;
+				Thread.currentThread().interrupt();
+				this.setResult(RunResult.ABORT, 0, 0, 0, 0, "", "Target CLI Thread was Interrupted");
+				return;
 			}
+			 
 			
-			final AtomicDouble currentRuntime = new AtomicDouble(0);
-			
-			Runnable socketThread = new Runnable()
+			try 
 			{
-				@Override
-				public void run()
+			
+				
+				
+				
+				
+				
+				final AtomicInteger pid = new AtomicInteger(-1);
+				int port = 0;
+				final DatagramSocket serverSocket;
+				if(options.listenForUpdates)
 				{
-					
-					byte[] receiveData = new byte[1024];
-					
-					while(true)
+					serverSocket = new DatagramSocket();
+					port = serverSocket.getLocalPort();
+				} else
+				{
+					serverSocket = null;
+				}
+				
+				final AtomicDouble currentRuntime = new AtomicDouble(0);
+				
+				Runnable socketThread = new Runnable()
+				{
+					@Override
+					public void run()
 					{
-						try 
+						
+						byte[] receiveData = new byte[1024];
+						
+						while(true)
 						{
-							DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
-							
-							
-							serverSocket.receive(receivePacket);
-							
-							InetAddress IPAddress = receivePacket.getAddress();
-				               
-							if (!InetAddress.getByName("localhost").equals(IPAddress))
+							try 
 							{
-								log.warn("Received Request from Non-localhost, ignoring request from: {}", IPAddress.getHostAddress());
-								continue;
+								DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+								
+								
+								serverSocket.receive(receivePacket);
+								
+								InetAddress IPAddress = receivePacket.getAddress();
+					               
+								if (!InetAddress.getByName("localhost").equals(IPAddress))
+								{
+									log.warn("Received Request from Non-localhost, ignoring request from: {}", IPAddress.getHostAddress());
+									continue;
+								}
+				               
+				               Double runtime = Double.valueOf(new String(receivePacket.getData()));
+				               
+				               currentRuntime.set(runtime);
+				               
+							} catch(RuntimeException e)
+							{
+								log.debug("Got some runtime exception while processing data packet", e);
+							} catch(SocketException e)
+							{
+								log.trace("SocketException occurred which we expected when we shutdown probably", e);
+								return;
+							} catch (IOException e) {
+								log.warn("Unknown IOException occurred ", e);
 							}
-			               
-			               Double runtime = Double.valueOf(new String(receivePacket.getData()));
-			               
-			               currentRuntime.set(runtime);
-			               
-						} catch(RuntimeException e)
+							
+						}
+					}
+					
+					
+				};
+				
+				this.startWallclockTimer();
+				proc = runProcess(port, token);
+			
+				
+				
+				
+				final Process innerProcess = proc; 
+				
+				final Semaphore stdErrorDone = new Semaphore(0);
+			
+				Runnable standardErrorReader = new Runnable()
+				{
+	
+					@Override
+					public void run() {
+						
+						Thread.currentThread().setName("Command Line Target Algorithm Evaluator Thread (Standard Error Processor)" + getRunConfig() );
+						try {
+							try { 
+								BufferedReader procIn = new BufferedReader(new InputStreamReader(innerProcess.getErrorStream()));
+								
+							
+								do{
+									
+									String line;
+									boolean read = false;
+									while(procIn.ready())
+									{
+										read = true;
+										line = procIn.readLine();
+										
+										if(line == null)
+										{
+											
+											return;
+										}
+										log.warn("[PROCESS-ERR]  {}", line);
+										
+									}
+								
+									
+									if(!read)
+									{
+										Thread.sleep(50);
+									}
+									
+								} while(!processEnded.get());
+								
+								
+								StringBuilder sb = new StringBuilder();
+								
+								//In case something else has come in
+								if(procIn.ready())
+								{
+									//Probably not the most efficient way to read
+									char[] input = new char[10000];
+									procIn.read(input);
+									sb.append(String.valueOf(input));
+									
+								}
+								
+								if(sb.toString().trim().length() > 0)
+								{
+									log.warn("[PROCESS-ERR] {}", sb.toString().trim());
+								}
+							
+								procIn.close();
+							} finally
+							{
+								
+								stdErrorDone.release();
+								log.debug("Standard Error Done");
+							}
+						} catch(InterruptedException e)
 						{
-							log.debug("Got some runtime exception while processing data packet", e);
-						} catch(SocketException e)
-						{
-							log.trace("SocketException occurred which we expected when we shutdown probably", e);
+							Thread.currentThread().interrupt();
 							return;
-						} catch (IOException e) {
-							log.warn("Unknown IOException occurred ", e);
+						} catch(IOException e)
+						{
+							log.warn("Unexpected IOException occurred {}",e);
 						}
 						
+						
+					}
+					
+				};
+				
+				
+				
+				
+			
+				
+				Runnable observerThread = new Runnable()
+				{
+	
+					@Override
+					public void run() {
+						Thread.currentThread().setName("Command Line Target Algorithm Evaluator Thread (Observer)" + getRunConfig());
+	
+						while(true)
+						{
+						
+							double currentTime = getCurrentWallClockTime() / 1000.0;
+							
+							runObserver.currentStatus(Collections.singletonList((KillableAlgorithmRun) new RunningAlgorithmRun(execConfig, getRunConfig(),  Math.max(0,currentRuntime.get()),  0,0, getRunConfig().getProblemInstanceSeedPair().getSeed(), currentTime, killHandler)));
+							try {
+								
+								
+								
+								//Sleep here so that maybe anything that wanted us dead will have gotten to the killHandler
+								Thread.sleep(25);
+								if(killHandler.isKilled())
+								{
+									wasKilled = true;
+									log.debug("Trying to kill");
+									killProcess(proc);
+									//log.debug("Process destroy() called now waiting for completion");
+									
+									//log.debug("Process has exited with code {}", proc.waitFor());
+									return;
+								}
+								Thread.sleep(observerFrequency - 25);
+							} catch (InterruptedException e) {
+								Thread.currentThread().interrupt();
+								break;
+							}
+							
+						}
+						
+						
+					}
+					
+				};
+				
+				
+				if(options.listenForUpdates)
+				{
+					threadPoolExecutor.execute(socketThread);
+				}
+				threadPoolExecutor.execute(observerThread);
+				threadPoolExecutor.execute(standardErrorReader);
+				BufferedReader read = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+				
+				//Scanner procIn = new Scanner(proc.getInputStream());
+			
+				processRunLoop(read,proc);
+				
+				killProcess(proc);
+				
+				if(!this.isRunCompleted())
+				{
+					if(wasKilled)
+					{
+						double currentTime = Math.max(0,currentRuntime.get());
+						this.setResult(RunResult.KILLED, currentTime, 0,0, getRunConfig().getProblemInstanceSeedPair().getSeed(), "Killed Manually", "" );
+						
+					} else {
+						this.setCrashResult("Wrapper did not output anything that matched our regex please see the manual for more information. Please try executing the wrapper directly and ensuring that some line starts with: \"Results for ParamILS:\" (case sensitive). In more gorey detail it needs to match the following Regular Expression: " + AUTOMATIC_CONFIGURATOR_RESULT_REGEX );
 					}
 				}
 				
 				
-			};
-			
-			this.startWallclockTimer();
-			proc = runProcess(port);
-		
-			
-			
-			
-			final Process innerProcess = proc; 
-			
-			final Semaphore stdErrorDone = new Semaphore(0);
-		
-			Runnable standardErrorReader = new Runnable()
-			{
-
-				@Override
-				public void run() {
+				switch(this.getRunResult())
+				{
+				
+				
+				case ABORT:
+				case CRASHED:
 					
-					Thread.currentThread().setName("Command Line Target Algorithm Evaluator Thread (Standard Error Processor)" + getRunConfig() );
-					try {
-						try { 
-							BufferedReader procIn = new BufferedReader(new InputStreamReader(innerProcess.getErrorStream()));
-							
+				
+						log.error( "Failed Run Detected Call: cd \"{}\" " + commandSeparator + "  {} ",new File(execConfig.getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommandAsString(execConfig, runConfig));
+					
+						log.error("Failed Run Detected output last {} lines", outputQueue.size());
 						
-							do{
-								
-								String line;
-								boolean read = false;
-								while(procIn.ready())
-								{
-									read = true;
-									line = procIn.readLine();
-									
-									if(line == null)
-									{
-										
-										return;
-									}
-									log.warn("[PROCESS-ERR]  {}", line);
-									
-								}
-							
-								
-								if(!read)
-								{
-									Thread.sleep(50);
-								}
-								
-							} while(!processEnded.get());
-							
-							
-							StringBuilder sb = new StringBuilder();
-							
-							//In case something else has come in
-							if(procIn.ready())
-							{
-								//Probably not the most efficient way to read
-								char[] input = new char[10000];
-								procIn.read(input);
-								sb.append(String.valueOf(input));
-								
-							}
-							
-							if(sb.toString().trim().length() > 0)
-							{
-								log.warn("[PROCESS-ERR] {}", sb.toString().trim());
-							}
-						
-							procIn.close();
-						} finally
+						for(String s : outputQueue)
 						{
-							
-							stdErrorDone.release();
-							log.debug("Standard Error Done");
+							log.error("> "+s);
 						}
-					} catch(InterruptedException e)
-					{
+						log.error("Output complete");
+						
+					
+				default:
+					
+				}
+				
+				outputQueue.clear();
+				
+				
+				read.close();
+			
+				
+				
+				
+				stdErrorDone.acquireUninterruptibly();
+				
+				threadPoolExecutor.shutdownNow();
+				//Close the listening socket
+				serverSocket.close();
+				try {
+					threadPoolExecutor.awaitTermination(24, TimeUnit.HOURS);
+				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
+				}
+	
+				runObserver.currentStatus(Collections.singletonList(new KillableWrappedAlgorithmRun(this)));
+				log.debug("Run {} is completed", this);
+			} finally
+			{
+				if(!executionIDs.offer(token))
+				{
+					log.error("Developer Error: Couldn't offer run token back to pool, which violates an invariant. We will essentially block until it is accepted.");
+					try {
+						executionIDs.put(token);
+					} catch (InterruptedException e) {
 						Thread.currentThread().interrupt();
 						return;
-					} catch(IOException e)
-					{
-						log.warn("Unexpected IOException occurred {}",e);
 					}
-					
-					
-				}
-				
-			};
-			
-			
-			
-			
-		
-			
-			Runnable observerThread = new Runnable()
-			{
-
-				@Override
-				public void run() {
-					Thread.currentThread().setName("Command Line Target Algorithm Evaluator Thread (Observer)" + getRunConfig());
-
-					while(true)
-					{
-					
-						double currentTime = getCurrentWallClockTime() / 1000.0;
-						
-						runObserver.currentStatus(Collections.singletonList((KillableAlgorithmRun) new RunningAlgorithmRun(execConfig, getRunConfig(),  Math.max(0,currentRuntime.get()),  0,0, getRunConfig().getProblemInstanceSeedPair().getSeed(), currentTime, killHandler)));
-						try {
-							
-							
-							
-							//Sleep here so that maybe anything that wanted us dead will have gotten to the killHandler
-							Thread.sleep(25);
-							if(killHandler.isKilled())
-							{
-								wasKilled = true;
-								log.debug("Trying to kill");
-								killProcess(proc);
-								//log.debug("Process destroy() called now waiting for completion");
-								
-								//log.debug("Process has exited with code {}", proc.waitFor());
-								return;
-							}
-							Thread.sleep(observerFrequency - 25);
-						} catch (InterruptedException e) {
-							Thread.currentThread().interrupt();
-							break;
-						}
-						
-					}
-					
-					
-				}
-				
-			};
-			
-			
-			if(options.listenForUpdates)
-			{
-				threadPoolExecutor.execute(socketThread);
-			}
-			threadPoolExecutor.execute(observerThread);
-			threadPoolExecutor.execute(standardErrorReader);
-			BufferedReader read = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-			
-			//Scanner procIn = new Scanner(proc.getInputStream());
-		
-			processRunLoop(read,proc);
-			
-			killProcess(proc);
-			
-			if(!this.isRunCompleted())
-			{
-				if(wasKilled)
-				{
-					double currentTime = Math.max(0,currentRuntime.get());
-					this.setResult(RunResult.KILLED, currentTime, 0,0, getRunConfig().getProblemInstanceSeedPair().getSeed(), "Killed Manually", "" );
-					
-				} else {
-					this.setCrashResult("Wrapper did not output anything that matched our regex please see the manual for more information. Please try executing the wrapper directly and ensuring that some line starts with: \"Results for ParamILS:\" (case sensitive). In more gorey detail it needs to match the following Regular Expression: " + AUTOMATIC_CONFIGURATOR_RESULT_REGEX );
 				}
 			}
-			
-			
-			switch(this.getRunResult())
-			{
-			
-			
-			case ABORT:
-			case CRASHED:
-				
-			
-					log.error( "Failed Run Detected Call: cd \"{}\" " + commandSeparator + "  {} ",new File(execConfig.getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommandAsString(execConfig, runConfig));
-				
-					log.error("Failed Run Detected output last {} lines", outputQueue.size());
-					
-					for(String s : outputQueue)
-					{
-						log.error("> "+s);
-					}
-					log.error("Output complete");
-					
-				
-			default:
-				
-			}
-			
-			outputQueue.clear();
-			
-			
-			read.close();
-		
-			
-			
-			
-			stdErrorDone.acquireUninterruptibly();
-			
-			threadPoolExecutor.shutdownNow();
-			//Close the listening socket
-			serverSocket.close();
-			try {
-				threadPoolExecutor.awaitTermination(24, TimeUnit.HOURS);
-			} catch (InterruptedException e) {
-				Thread.currentThread().interrupt();
-			}
-
-			runObserver.currentStatus(Collections.singletonList(new KillableWrappedAlgorithmRun(this)));
-			log.debug("Run {} is completed", this);
 		} catch (IOException e1) {
 			//String execCmd = getTargetAlgorithmExecutionCommandAsString(execConfig,runConfig);
 			log.error( "Failed Run Detected (IOException) Call: cd \"{}\" " + commandSeparator + "  {} ",new File(execConfig.getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommandAsString(execConfig, runConfig));
@@ -547,17 +584,18 @@ outerloop:
 
 	/**
 	 * Starts the target algorithm
+	 * @param token 
 	 * @return Process reference to the executiong process
 	 * @throws IOException
 	 */
-	private  Process runProcess(int port) throws IOException
+	private  Process runProcess(int port, Integer token) throws IOException
 	{
 		String[] execCmdArray = getTargetAlgorithmExecutionCommand(execConfig, runConfig);
 		
 		
 		if(options.logAllCallStrings)
 		{
-			log.info( "Call: cd \"{}\" " + commandSeparator + "  {} ", new File(execConfig.getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommandAsString(execConfig, runConfig));
+			log.info( "Call (with token {}) : cd \"{}\" " + commandSeparator + "  {} ", token, new File(execConfig.getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommandAsString(execConfig, runConfig));
 		}
 		
 		
@@ -566,12 +604,16 @@ outerloop:
 		{
 			envpList.add(ent.getKey() + "=" + ent.getValue());
 		}
-
+		
 		if(options.listenForUpdates)
 		{
 			envpList.add(PORT_ENVIRONMENT_VARIABLE  + "=" + port);
 			envpList.add(FREQUENCY_ENVIRONMENT_VARIABLE + "=" + (this.observerFrequency / 2000.0));
+			
 		}
+		
+		envpList.add(CONCURRENT_TASK_ID + "=" + token);
+		
 		String[] envp = envpList.toArray(new String[0]);
 		Process proc = Runtime.getRuntime().exec(execCmdArray,envp, new File(execConfig.getAlgorithmExecutionDirectory()));
 		return proc;
