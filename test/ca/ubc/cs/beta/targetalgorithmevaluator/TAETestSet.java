@@ -69,6 +69,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbstractTargetAl
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.debug.CheckForDuplicateRunConfigDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.debug.EqualTargetAlgorithmEvaluatorTester;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.functionality.OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.functionality.OutstandingEvaluationsWithAccessorTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.functionality.SimulatedDelayTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.functionality.TerminateAllRunsOnFileDeleteTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.KillCaptimeExceedingRunsRunsTargetAlgorithmEvaluatorDecorator;
@@ -2304,6 +2305,88 @@ public class TAETestSet {
 		tae.evaluateRun(runConfigs);
 		System.out.println(watch2.stop());
 		assertTrue("Expected time for Bounded to be less than 5 seconds", watch2.time() < 5000 );
+		
+	}
+	
+	
+	@Test
+	/**
+	 * Schedules 4 runs with 2 seconds each on 2 cores. The CLI TAE should internally ensure that only two are executed at any given time, if it takes more than 5 seconds (suggesting only one core), 
+	 * or less than 4 seconds suggesting more than 2, then we fail.
+	 */
+	public void testCLIInternallyBoundsRuns()
+	{
+		//Check that a submission of run 10 runs on a bound of <5 take 5,1,1,1,1, 5,1,1,1,1 takes 6 seconds and not 10.
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(TrueSleepyParamEchoExecutor.class.getCanonicalName());
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
+		
+		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
+		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
+		
+		options.logAllCallStrings = true;
+		options.logAllProcessOutput = true;
+		options.concurrentExecution = true;
+		options.observerFrequency = 2000;
+		options.cores = 2;
+		
+		tae = new OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator( fact.getTargetAlgorithmEvaluator(execConfig, options));	
+		TargetAlgorithmEvaluator cliTAE = tae;
+		//tae = new BoundedTargetAlgorithmEvaluator(tae,2,execConfig);
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(4);
+		for(int i=0; i < 4; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			
+			config.put("runtime","2");
+			
+
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config);
+				runConfigs.add(rc);
+			}
+		}
+		
+		
+		
+		StopWatch watch = new AutoStartStopWatch();
+		for(int i=0; i < 4; i++)
+		{
+			cliTAE.evaluateRunsAsync(runConfigs.subList(i,i+1), new TargetAlgorithmEvaluatorCallback()
+			{
+
+				@Override
+				public void onSuccess(List<AlgorithmRun> runs) {
+					// TODO Auto-generated method stub
+					
+				}
+
+				@Override
+				public void onFailure(RuntimeException e) {
+					e.printStackTrace();
+					
+				}
+				
+			});
+		}
+		//cliTAE.evaluateRun(runConfigs);
+		cliTAE.waitForOutstandingEvaluations();
+		
+		System.out.println(watch.stop());
+		assertTrue("Expected time for CLI Direct to be greater than 3 seconds", watch.time() > 4000 );
+		
+		assertTrue("Expected time for CLI Direct to be less than 5 seconds", watch.time() < 5000 );
+		
 		
 	}
 	

@@ -83,8 +83,6 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	 */
 	private transient KillHandler killHandler;
 	
-	
-
 	public static final String PORT_ENVIRONMENT_VARIABLE = "ACLIB_PORT";
 	public static final String FREQUENCY_ENVIRONMENT_VARIABLE = "ACLIB_CPU_TIME_FREQUENCY";
 	public static final String CONCURRENT_TASK_ID = "ACLIB_CONCURRENT_TASK_ID";
