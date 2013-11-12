@@ -34,7 +34,17 @@ public class CommandLineTargetAlgorithmEvaluatorFactory extends AbstractTargetAl
 	{
 		return new CommandLineTargetAlgorithmEvaluatorOptions();
 	}
+
 	
+	public static CommandLineTargetAlgorithmEvaluatorOptions getCLIOPT()
+	{
+		return new CommandLineTargetAlgorithmEvaluatorOptions();
+	}
+	public static TargetAlgorithmEvaluator getCLITAE(AlgorithmExecutionConfig config, CommandLineTargetAlgorithmEvaluatorOptions opts)
+	{
+		return new CommandLineTargetAlgorithmEvaluator(config, opts );
+	}
+
 	public static TargetAlgorithmEvaluator getCLITAE(AlgorithmExecutionConfig config)
 	{
 		
@@ -43,7 +53,7 @@ public class CommandLineTargetAlgorithmEvaluatorFactory extends AbstractTargetAl
 		opts.logAllProcessOutput = true;
 		return new CommandLineTargetAlgorithmEvaluator(config, opts );
 	}
-
+	
 	public static TargetAlgorithmEvaluator getCLITAE(AlgorithmExecutionConfig config, int observerFrequency)
 	{
 		CommandLineTargetAlgorithmEvaluatorOptions options = new CommandLineTargetAlgorithmEvaluatorOptions();
