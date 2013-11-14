@@ -281,7 +281,7 @@ public class OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator extends Abst
 		try {
 			FileWriter writer = new FileWriter(f);
 			
-			writer.write("Time, Started, Ending, Number of " + this.nameOfRuns+  "  Runs, Approximate Start Based on CPU Time, Approximate Start Based on Walltime, Number of Running By CPU Time, Number of Running By Walltime\n");
+			writer.write("Time (Zero is " + ZERO_TIME +"), Started, Ending, Number of " + this.nameOfRuns+  "  Runs, Approximate Start Based on CPU Time, Approximate Start Based on Walltime, Number of Running By CPU Time, Number of Running By Walltime\n");
 			
 			
 			int outstanding = 0;
