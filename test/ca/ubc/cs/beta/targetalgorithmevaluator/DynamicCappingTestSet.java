@@ -377,6 +377,7 @@ public class DynamicCappingTestSet {
 		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
 		
 		CommandLineTargetAlgorithmEvaluatorOptions opt = fact.getOptionObject();
+		opt.logAllCallStrings = true;
 		opt.cores = 4;
 		tae = fact.getTargetAlgorithmEvaluator( opt);
 		

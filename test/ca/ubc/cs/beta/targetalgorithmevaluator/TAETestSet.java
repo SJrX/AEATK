@@ -5,6 +5,8 @@ import static org.junit.Assert.*;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.File;
+import java.io.FileNotFoundException;
+import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
@@ -69,9 +71,11 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbstractTargetAl
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.debug.CheckForDuplicateRunConfigDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.debug.EqualTargetAlgorithmEvaluatorTester;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.functionality.OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.functionality.OutstandingEvaluationsWithAccessorTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.functionality.SimulatedDelayTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.functionality.TerminateAllRunsOnFileDeleteTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.KillCaptimeExceedingRunsRunsTargetAlgorithmEvaluatorDecorator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.prepostcommand.PrePostCommandErrorException;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.resource.BoundedTargetAlgorithmEvaluator;
@@ -89,6 +93,7 @@ import ca.ubc.cs.beta.targetalgorithmevaluator.targetalgos.CapitalForParamEchoEx
 import ca.ubc.cs.beta.targetalgorithmevaluator.targetalgos.DummyExecutor;
 import ca.ubc.cs.beta.targetalgorithmevaluator.targetalgos.EnvironmentVariableEchoer;
 import ca.ubc.cs.beta.targetalgorithmevaluator.targetalgos.FiveSecondSleepingParamEchoExecutor;
+import ca.ubc.cs.beta.targetalgorithmevaluator.targetalgos.ParamEchoWalltimeExecutor;
 
 @SuppressWarnings("unused")
 public class TAETestSet {
@@ -279,9 +284,162 @@ public class TAETestSet {
 	}
 	
 	
+
+	/**
+	 * Tests that none of the values in the CSV are zero.
+	 * This test could be made more advanced by looking that the runs dispatched never exceeds known bounds, but for now this will be good enough
+	 */
+	@Test
 	
+	public void testRunLoggingTAEDecorator()
+	{
+		
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(ParamEchoWalltimeExecutor.class.getCanonicalName());
+		
+		File paramFile = TestHelper.getTestFile("paramFiles/paramEchoParamFileWalltime.txt");
+		configSpace = new ParamConfigurationSpace(paramFile);
+		
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
+		
+		CommandLineTargetAlgorithmEvaluatorOptions cliOpts = CommandLineTargetAlgorithmEvaluatorFactory.getCLIOPT();
+		
+		cliOpts.concurrentExecution = true;
+		cliOpts.cores = 10;
+		cliOpts.logAllCallStrings = true;
+		cliOpts.logAllProcessOutput = true;
+		TargetAlgorithmEvaluator tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(cliOpts);
+		
+		
+		
+		
+		
+		
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		for(int i=0; i < 100; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			config.put("runtime", (1 + Math.random()) + "" );
+			config.put("walltime", (2 + Math.random()) + "");
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				RunConfig rc = new RunConfig( new ProblemInstanceSeedPair(new ProblemInstance("TestInstance","SLEEP"), Long.valueOf(config.get("seed"))), 0.01, config, execConfig);
+				runConfigs.add(rc);
+			}
+		}
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		
+		File f1;
+		File f2;
+		try {
+			long s =  System.currentTimeMillis();
+			f1 = File.createTempFile("junit_runlogging_" + s +"-", "dispatched.csv");
+			f2 = File.createTempFile("junit_runlogging_" + s +"-", "outstanding.csv");
+		} catch (IOException e) {
+			throw new IllegalStateException("Argh");
+		}
+		
+		tae = new OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator(tae, f1.getAbsolutePath() , 0.01, "Dispatched");
+		
+		
+		tae = new BoundedTargetAlgorithmEvaluator(tae,15);
+		
+		tae = new OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator(tae, f2.getAbsolutePath(), 0.01, "Outstanding");
+		
+		tae = new OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator(tae);
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		
+		//PrintStream out = System.out;
+		//System.setOut(new PrintStream(bout));
+		
+		for(int i=0; i < 10; i++)
+		{
+			
+			System.err.println("Starting runs: " + 10);
+			tae.evaluateRunsAsync(runConfigs.subList(10*i, 10*(i+1)), new TargetAlgorithmEvaluatorCallback() {
+
+				@Override
+				public void onSuccess(List<AlgorithmRun> runs) {
+					// TODO Auto-generated method stub
+					
+				}
+
+				@Override
+				public void onFailure(RuntimeException e) {
+					e.printStackTrace();
+					
+				}
+				
+			});
+		}
+		tae.waitForOutstandingEvaluations();
+		//System.setOut(out);
+		//System.out.println(bout.toString());
+		
+		tae.notifyShutdown();
+		
+		verifyRunPerformanceCSV(f1);
+		verifyRunPerformanceCSV(f2);
+		
+		
+		
+		
+		System.out.println("Files deleted");
+		f1.delete();
+		f2.delete();
+	}
 	
-	
+	private void verifyRunPerformanceCSV(File f)
+	{
+		System.out.println( "CSV File is in : " + f.getAbsolutePath());
+		try {
+			BufferedReader fread = new BufferedReader(new FileReader(f));
+			
+			try {
+				while(fread.ready())
+				{
+					String line = fread.readLine();
+					
+					
+					String[] cells = line.split(",");
+					
+					for(String s : cells)
+					{
+						try {
+							double d = Double.valueOf(s);
+							
+							
+							if(d < 0)
+							{
+								fail("Line contains negative values this shouldn't happen");
+							}
+						} catch(NumberFormatException e)
+						{
+							//This is okay we are only concerned that there are no negative numbers
+						}
+					}
+				}
+			} catch (IOException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+			}
+		} catch (FileNotFoundException e) {
+
+			throw new IllegalStateException("This shouldn't happen");
+		}
+		return;
+	}
 	/**
 	 * This just tests to see if EchoTargetAlgorithmEvaluator matches the CLI Version
 	 */
@@ -2096,9 +2254,9 @@ public class TAETestSet {
 		
 		options.concurrentExecution = true;
 		options.cores = 100;
+		options.logAllCallStrings = true;
 		
-		tae = fact.getTargetAlgorithmEvaluator( options);
-		
+		tae = fact.getTargetAlgorithmEvaluator( options);		
 		tae = new BoundedTargetAlgorithmEvaluator(tae,100);
 		
 		
@@ -2305,6 +2463,88 @@ public class TAETestSet {
 		tae.evaluateRun(runConfigs);
 		System.out.println(watch2.stop());
 		assertTrue("Expected time for Bounded to be less than 5 seconds", watch2.time() < 5000 );
+		
+	}
+	
+	
+	@Test
+	/**
+	 * Schedules 4 runs with 2 seconds each on 2 cores. The CLI TAE should internally ensure that only two are executed at any given time, if it takes more than 5 seconds (suggesting only one core), 
+	 * or less than 4 seconds suggesting more than 2, then we fail.
+	 */
+	public void testCLIInternallyBoundsRuns()
+	{
+		//Check that a submission of run 10 runs on a bound of <5 take 5,1,1,1,1, 5,1,1,1,1 takes 6 seconds and not 10.
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(TrueSleepyParamEchoExecutor.class.getCanonicalName());
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
+		
+		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
+		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
+		
+		options.logAllCallStrings = true;
+		options.logAllProcessOutput = true;
+		options.concurrentExecution = true;
+		options.observerFrequency = 2000;
+		options.cores = 2;
+		
+		tae = new OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator( fact.getTargetAlgorithmEvaluator( options));	
+		TargetAlgorithmEvaluator cliTAE = tae;
+		//tae = new BoundedTargetAlgorithmEvaluator(tae,2,execConfig);
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(4);
+		for(int i=0; i < 4; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			
+			config.put("runtime","2");
+			
+
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config,execConfig);
+				runConfigs.add(rc);
+			}
+		}
+		
+		
+		
+		StopWatch watch = new AutoStartStopWatch();
+		for(int i=0; i < 4; i++)
+		{
+			cliTAE.evaluateRunsAsync(runConfigs.subList(i,i+1), new TargetAlgorithmEvaluatorCallback()
+			{
+
+				@Override
+				public void onSuccess(List<AlgorithmRun> runs) {
+					// TODO Auto-generated method stub
+					
+				}
+
+				@Override
+				public void onFailure(RuntimeException e) {
+					e.printStackTrace();
+					
+				}
+				
+			});
+		}
+		//cliTAE.evaluateRun(runConfigs);
+		cliTAE.waitForOutstandingEvaluations();
+		
+		System.out.println(watch.stop());
+		assertTrue("Expected time for CLI Direct to be greater than 3 seconds", watch.time() > 4000 );
+		
+		assertTrue("Expected time for CLI Direct to be less than 5 seconds", watch.time() < 5000 );
+		
 		
 	}
 	

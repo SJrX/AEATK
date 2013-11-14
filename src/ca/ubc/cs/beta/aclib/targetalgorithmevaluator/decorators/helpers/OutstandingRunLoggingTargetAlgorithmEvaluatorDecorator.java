@@ -4,8 +4,10 @@ import java.io.File;
 import java.io.FileWriter;
 import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 
@@ -13,7 +15,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import net.jcip.annotations.ThreadSafe;
-
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableAlgorithmRun;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
@@ -51,7 +52,10 @@ public class OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator extends Abst
 
 			@Override
 			public void currentStatus(List<? extends KillableAlgorithmRun> runs) {
-				obs.currentStatus(runs);
+				if(obs != null)
+				{
+					obs.currentStatus(runs);
+				}
 				processRuns(runs);
 			}
 			
@@ -61,20 +65,24 @@ public class OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator extends Abst
 	}
 	
 	
-	private ConcurrentHashMap<RunConfig, Double> startTime = new ConcurrentHashMap<RunConfig, Double>();
-	private ConcurrentHashMap<AlgorithmRun, Double> endTime =  new ConcurrentHashMap<AlgorithmRun, Double>();
+	private final ConcurrentHashMap<RunConfig, Double> startTime = new ConcurrentHashMap<RunConfig, Double>();
+	private final ConcurrentHashMap<RunConfig, Double> endTime =  new ConcurrentHashMap<RunConfig, Double>();
+	private final ConcurrentHashMap<RunConfig, Double> startWalltime = new ConcurrentHashMap<RunConfig, Double>();
+	private final ConcurrentHashMap<RunConfig, Double> startCPUtime = new ConcurrentHashMap<RunConfig, Double>();
 	
+	
+	private final long bucketTime(long time)
+	{
+		 return (long) ((long) ( (long) (time / resolutionInMS)) * resolutionInMS);  
+	}
+	
+
 	/**
 	 * Template method that is invoked with each run that complete
 	 * 
 	 * @param run process the run
 	 * @return run that will replace it in the values returned to the client
 	 */
-	
-	private final long bucketTime(long time)
-	{
-		 return (long) ((long) ( (long) (time / resolutionInMS)) * resolutionInMS);  
-	}
 	protected <K extends AlgorithmRun> K processRun(K run)
 	{
 		
@@ -82,10 +90,31 @@ public class OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator extends Abst
 		{
 			synchronized(run.getRunConfig())
 			{
-				if(endTime.get(run) == null)
+				if(endTime.get(run.getRunConfig()) == null)
 				{
-					endTime.put(run, Math.max(0,(bucketTime(System.currentTimeMillis()) - ZERO_TIME) / 1000.0));
+					double endTimeX = (bucketTime(System.currentTimeMillis()) - ZERO_TIME) / 1000.0;
+					endTime.put(run.getRunConfig(), Math.max(0,endTimeX));
+				} else
+				{
+					//Return early because the other maps should be populated.
+					return run;
 				}
+				
+				if(startWalltime.get(run.getRunConfig()) == null)
+				{
+					double startTimeX = ( bucketTime(System.currentTimeMillis() -  (long) (run.getWallclockExecutionTime()*1000) ) - ZERO_TIME) / 1000.0;
+					
+					startWalltime.put(run.getRunConfig(), Math.max(0,startTimeX));
+				}
+				
+				if(startCPUtime.get(run.getRunConfig()) == null)
+				{
+					double startCPUTimeX = ( bucketTime(System.currentTimeMillis() - (long) ( run.getRuntime() * 1000 ) )  - ZERO_TIME) / 1000.0;
+					
+					startCPUtime.put(run.getRunConfig(), Math.max(0,startCPUTimeX));
+				}
+				
+					
 			}
 		}
 		
@@ -196,9 +225,9 @@ public class OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator extends Abst
 				log.error("At " + ent.getValue() + " : " + ent.getKey() + " started.");
 			}
 			
-			for(Entry<AlgorithmRun, Double> ent : this.endTime.entrySet())
+			for(Entry<RunConfig, Double> ent : this.endTime.entrySet())
 			{
-				log.error("At " + ent.getValue() + " : " + ent.getKey().getRunConfig() + " ended. ");
+				log.error("At " + ent.getValue() + " : " + ent.getKey() + " ended. ");
 			}
 			
 			throw new IllegalStateException("[BUG]: Determined that more algorithms ended " + this.endTime.size() + " than started " + this.startTime.size());
@@ -208,38 +237,43 @@ public class OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator extends Abst
 		ConcurrentSkipListMap<Double, StartEnd> startEndMap = new ConcurrentSkipListMap<Double, StartEnd>();
 		
 		
-		for(Double d : this.startTime.values())
+		Collection[] myDoubles = { this.startTime.values(), this.endTime.values(), this.startWalltime.values(), this.startCPUtime.values()  };
+		
+		
+		
+		for(Collection cod : myDoubles)
 		{
-			StartEnd e = startEndMap.get(d);
-			
-			if(e == null)
+			for(Double d : (Collection<Double>) cod)
 			{
-				startEndMap.put(d, new StartEnd());
+				StartEnd e = startEndMap.get(d);
+				
+				if(e == null)
+				{
+					startEndMap.put(d, new StartEnd());
+				}
+				
 			}
 		}
-		
-		for(Double d : this.endTime.values())
-		{
-			StartEnd e = startEndMap.get(d);
-			
-			if(e == null)
-			{
-				startEndMap.put(d, new StartEnd());
-			}
-		}
-		
-		
 		
 		for(Entry<RunConfig, Double> startTimes : this.startTime.entrySet())
 		{
-			startEndMap.get(startTimes.getValue()).start++;
+			startEndMap.get(startTimes.getValue()).startDispatch++;
 		}
 		
-		for(Entry<AlgorithmRun, Double> endTimes : this.endTime.entrySet())
+		for(Entry<RunConfig, Double> endTimes : this.endTime.entrySet())
 		{
-			startEndMap.get(endTimes.getValue()).end++;
+			startEndMap.get(endTimes.getValue()).endDispatch++;
 		}
 		
+		for(Entry<RunConfig, Double> startCPUTimes : this.startCPUtime.entrySet())
+		{
+			startEndMap.get(startCPUTimes.getValue()).startCPUtime++;
+		}
+		
+		for(Entry<RunConfig, Double> startWallTimes : this.startWalltime.entrySet())
+		{
+			startEndMap.get(startWallTimes.getValue()).startWalltime++;
+		}
 		
 		
 		
@@ -247,15 +281,20 @@ public class OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator extends Abst
 		try {
 			FileWriter writer = new FileWriter(f);
 			
-			writer.write("Time, Started, Ending, Number of " + this.nameOfRuns+  "  Runs\n");
+			writer.write("Time (Zero is " + ZERO_TIME +"), Started, Ending, Number of " + this.nameOfRuns+  "  Runs, Approximate Start Based on CPU Time, Approximate Start Based on Walltime, Number of Running By CPU Time, Number of Running By Walltime\n");
 			
 			
 			int outstanding = 0;
+			int outstandingCPU = 0;
+			int outstandingWall = 0;
 			for(Entry<Double, StartEnd> ent : startEndMap.entrySet())
 			{
-				outstanding += ent.getValue().start - ent.getValue().end;
+				outstanding += ent.getValue().startDispatch - ent.getValue().endDispatch;
 				
-				writer.write(ent.getKey() + "," +  ent.getValue().start + "," + ent.getValue().end + "," + outstanding + ",\n");
+				outstandingCPU += ent.getValue().startCPUtime - ent.getValue().endDispatch;
+				outstandingWall += ent.getValue().startWalltime - ent.getValue().endDispatch;
+				
+				writer.write(ent.getKey() + "," +  ent.getValue().startDispatch + "," + ent.getValue().endDispatch + "," + outstanding + "," + ent.getValue().startCPUtime + "," + ent.getValue().startWalltime + "," + outstandingCPU + "," + outstandingWall + "\n");
 			}
 			
 			writer.flush();
@@ -271,7 +310,10 @@ public class OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator extends Abst
 	
 	private static class StartEnd
 	{
-		public int start = 0;
-		public int end = 0;
+		public long startDispatch = 0;
+		public long endDispatch = 0;
+		public long startCPUtime = 0;
+		public long startWalltime = 0;
+		
 	}
 }

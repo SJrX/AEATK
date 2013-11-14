@@ -1,4 +1,4 @@
-package ca.ubc.cs.beta.targetalgorithmevaluator;
+package ca.ubc.cs.beta.targetalgorithmevaluator.targetalgos;
 
 import ca.ubc.cs.beta.TestHelper;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
@@ -6,7 +6,7 @@ import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration.StringFormat;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli.CommandLineAlgorithmRun;
 
-public class ParamEchoExecutor {
+public class ParamEchoWalltimeExecutor {
 
 	/**
 	 * 
@@ -29,7 +29,7 @@ public class ParamEchoExecutor {
 				sb.append(args[i]).append(" ");
 			}
 						
-			ParamConfigurationSpace configSpace = new ParamConfigurationSpace(TestHelper.getTestFile("paramFiles/paramEchoParamFile.txt"));
+			ParamConfigurationSpace configSpace = new ParamConfigurationSpace(TestHelper.getTestFile("paramFiles/paramEchoParamFileWalltime.txt"));
 
 			
 			ParamConfiguration config = configSpace.getConfigurationFromString(sb.toString(), StringFormat.NODB_SYNTAX);
@@ -38,7 +38,8 @@ public class ParamEchoExecutor {
 			String runtime = config.get("runtime");
 			String runlength = config.get("runlength");
 			String quality = config.get("quality");
-			String resultSeed = config.get("seed");			
+			String resultSeed = config.get("seed");	
+			String walltime = config.get("walltime");
 			
 			/*long returnCutOffLength = instanceName.hashCode() + 37*instanceSpecificInfo.hashCode();*/
 
@@ -53,13 +54,13 @@ public class ParamEchoExecutor {
 				return;
 			}
 			
-			Double runtimeSeconds = Double.valueOf(runtime);
+			Double walltimeSeconds = Double.valueOf(walltime);
 
 			if(args[1].trim().equals("SLEEP"))
 			{
 				
 				try {
-					Thread.sleep((long) (runtimeSeconds* 1000));
+					Thread.sleep((long) (walltimeSeconds* 1000) + 150);
 				} catch (InterruptedException e) {
 					Thread.currentThread().interrupt();
 				}

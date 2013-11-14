@@ -1,5 +1,7 @@
 package ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli;
 
+import java.util.concurrent.ArrayBlockingQueue;
+
 import org.mangosdk.spi.ProviderFor;
 
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
@@ -11,6 +13,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.resource.Bounded
 @ProviderFor(TargetAlgorithmEvaluatorFactory.class)
 public class CommandLineTargetAlgorithmEvaluatorFactory extends AbstractTargetAlgorithmEvaluatorFactory  {
 
+	
 	@Override
 	public String getName() {
 		return "CLI";
@@ -19,10 +22,8 @@ public class CommandLineTargetAlgorithmEvaluatorFactory extends AbstractTargetAl
 	@Override
 	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator( AbstractOptions options) {
 
-		CommandLineTargetAlgorithmEvaluatorOptions cliOpts = (CommandLineTargetAlgorithmEvaluatorOptions) options;
-		//CLI TAE doesn't bound properly accross runs and the workaround, until we rewrite the
-		//the AutomaticConfiguratorRunner crap is to simply bound it (See Issue #1811 for more info)
-		return new BoundedTargetAlgorithmEvaluator(new CommandLineTargetAlgorithmEvaluator( cliOpts ), cliOpts.cores);
+		CommandLineTargetAlgorithmEvaluatorOptions cliOpts = (CommandLineTargetAlgorithmEvaluatorOptions) options;		
+		return new CommandLineTargetAlgorithmEvaluator( cliOpts );
 	}
 
 	@Override
@@ -30,9 +31,14 @@ public class CommandLineTargetAlgorithmEvaluatorFactory extends AbstractTargetAl
 	{
 		return new CommandLineTargetAlgorithmEvaluatorOptions();
 	}
-	
+
+	public static CommandLineTargetAlgorithmEvaluatorOptions getCLIOPT()
+	{
+		return new CommandLineTargetAlgorithmEvaluatorOptions();
+	}
 
 	public static TargetAlgorithmEvaluator getCLITAE()
+
 	{
 		
 		CommandLineTargetAlgorithmEvaluatorOptions opts = new CommandLineTargetAlgorithmEvaluatorOptions();
@@ -41,6 +47,11 @@ public class CommandLineTargetAlgorithmEvaluatorFactory extends AbstractTargetAl
 		return new CommandLineTargetAlgorithmEvaluator( opts );
 	}
 
+	public static TargetAlgorithmEvaluator getCLITAE(CommandLineTargetAlgorithmEvaluatorOptions options)
+	{
+		return new CommandLineTargetAlgorithmEvaluator(options);
+	}
+	
 	public static TargetAlgorithmEvaluator getCLITAE(int observerFrequency)
 	{
 		CommandLineTargetAlgorithmEvaluatorOptions options = new CommandLineTargetAlgorithmEvaluatorOptions();

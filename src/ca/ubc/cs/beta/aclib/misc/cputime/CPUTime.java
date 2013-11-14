@@ -66,7 +66,7 @@ public class CPUTime {
 								{ //This JVM doesn't have CPU time enabled
 							      //We check every iteration because some threads (the current thread may give us something other than -1)
 									
-									log.debug("JVM didn't give us a measurement for thread ", threadID);
+									log.debug("JVM didn't give us a measurement for thread: {}", threadID);
 									continue;
 								} else
 								{
@@ -76,7 +76,7 @@ public class CPUTime {
 								long threadUserTime = b.getThreadUserTime(threadID);
 								if(threadUserTime == -1)
 								{
-									log.debug("JVM didn't give usa  measurement for usertime of thread ", threadID);
+									log.debug("JVM didn't give us a measurement for usertime of thread: {}", threadID);
 									continue;
 								} else
 								{

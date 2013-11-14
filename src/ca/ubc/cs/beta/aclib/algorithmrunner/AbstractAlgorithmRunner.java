@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -57,7 +58,7 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 	 * @param runConfigs	run configurations of the target algorithm
 	 * @param obs 
 	 */
-	public AbstractAlgorithmRunner(final List<RunConfig> runConfigs, final TargetAlgorithmEvaluatorRunObserver obs, final CommandLineTargetAlgorithmEvaluatorOptions options)
+	public AbstractAlgorithmRunner(final List<RunConfig> runConfigs, final TargetAlgorithmEvaluatorRunObserver obs, final CommandLineTargetAlgorithmEvaluatorOptions options, BlockingQueue<Integer> executionIDs)
 	{
 		if(runConfigs == null)
 		{
@@ -94,9 +95,8 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 					changes.release();
 				}
 			};
-		
-			
-			final AlgorithmRun run = new CommandLineAlgorithmRun( rc,individualRunObserver, killH, options); 
+
+			final AlgorithmRun run = new CommandLineAlgorithmRun( rc,individualRunObserver, killH, options, executionIDs); 
 			runs.add(run);
 			i++;
 		}

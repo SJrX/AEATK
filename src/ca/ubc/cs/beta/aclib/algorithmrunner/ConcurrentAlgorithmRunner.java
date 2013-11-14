@@ -1,12 +1,12 @@
 package ca.ubc.cs.beta.aclib.algorithmrunner;
 
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
-
 
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
@@ -35,10 +35,11 @@ class ConcurrentAlgorithmRunner extends AbstractAlgorithmRunner {
 	 * @param runConfigs	run configurations to execute
 	 * @param numberOfConcurrentExecutions	number of concurrent executions allowed
 	 * @param obs 
+	 * @param executionIDs 
 	 */
-	public ConcurrentAlgorithmRunner(
-			List<RunConfig> runConfigs, int numberOfConcurrentExecutions, TargetAlgorithmEvaluatorRunObserver obs, CommandLineTargetAlgorithmEvaluatorOptions options) {
-		super( runConfigs, obs, options);
+
+	public ConcurrentAlgorithmRunner(List<RunConfig> runConfigs, int numberOfConcurrentExecutions, TargetAlgorithmEvaluatorRunObserver obs, CommandLineTargetAlgorithmEvaluatorOptions options, BlockingQueue<Integer> executionIDs) {
+		super( runConfigs, obs, options,executionIDs);
 		this.numberOfConcurrentExecutions = numberOfConcurrentExecutions;
 	}
 

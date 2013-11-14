@@ -1,6 +1,7 @@
 package ca.ubc.cs.beta.aclib.algorithmrunner;
 
 import java.util.List;
+import java.util.concurrent.BlockingQueue;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
@@ -19,8 +20,8 @@ class SingleThreadedAlgorithmRunner extends AbstractAlgorithmRunner
 	 * @param runConfigs	run configurations to execute
 	 * @param obs 
 	 */
-	public SingleThreadedAlgorithmRunner(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs, CommandLineTargetAlgorithmEvaluatorOptions options) {
-		super( runConfigs,obs, options);
+	public SingleThreadedAlgorithmRunner(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs, CommandLineTargetAlgorithmEvaluatorOptions options, BlockingQueue<Integer> executionIDs) {
+		super( runConfigs,obs, options, executionIDs);
 		
 	}
 
