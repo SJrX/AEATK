@@ -2,12 +2,12 @@ package ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.functionality;
 
 import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import net.jcip.annotations.ThreadSafe;
-
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.concurrent.ReducableSemaphore;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
@@ -29,6 +29,8 @@ public class OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator extends
 
 	
 	private final ReducableSemaphore outstandingRunBlocks = new ReducableSemaphore(1);
+	
+	private final AtomicInteger outstandingRuns = new AtomicInteger(0);
 	
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
 	
@@ -57,6 +59,7 @@ public class OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator extends
 	private void logReduce(List<RunConfig> runConfigs)
 	{
 		outstandingRunBlocks.reducePermits();
+		outstandingRuns.addAndGet(runConfigs.size());
 		if(log.isTraceEnabled())
 		{
 			RunConfig rc = null;
@@ -71,6 +74,8 @@ public class OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator extends
 	private void logRelease(List<RunConfig> runConfigs)
 	{
 		outstandingRunBlocks.release();
+		outstandingRuns.addAndGet(-1*runConfigs.size());
+		
 		if(log.isTraceEnabled())
 		{
 			RunConfig rc = null;
@@ -162,7 +167,7 @@ public class OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator extends
 	
 	
 	/***
-	 * Additionally template methods
+	 * Additional template methods
 	 */
 	
 	protected void preRun(List<RunConfig> runConfigs)

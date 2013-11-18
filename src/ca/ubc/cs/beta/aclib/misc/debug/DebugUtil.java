@@ -3,11 +3,15 @@ package ca.ubc.cs.beta.aclib.misc.debug;
 public final class DebugUtil {
 	public static String getCurrentMethodName()
 	{
+		
 		Exception e = new Exception();
 		try {
-			return e.getStackTrace()[1].getMethodName();
+			String methodName =  e.getStackTrace()[1].getMethodName();
+			System.err.println("Method Name Returned:" + methodName);
+			return methodName;
 		} catch(RuntimeException e2)
 		{
+			
 			return "Unknown Method";
 		}
 	}

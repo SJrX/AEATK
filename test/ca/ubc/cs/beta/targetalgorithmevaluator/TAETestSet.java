@@ -109,8 +109,8 @@ public class TAETestSet {
 	@BeforeClass
 	public static void beforeClass()
 	{
-		File paramFile = TestHelper.getTestFile("paramFiles/paramEchoParamFile.txt");
-		configSpace = new ParamConfigurationSpace(paramFile);
+		//File paramFile = TestHelper.getTestFile("paramFiles/paramEchoParamFile.txt");
+		//configSpace = new ParamConfigurationSpace(paramFile);
 	}
 	
 	PrintStream old;
@@ -138,11 +138,16 @@ public class TAETestSet {
 	@Before
 	public void beforeTest()
 	{
+		System.out.flush();
+		System.err.flush();
 		StringBuilder b = new StringBuilder();
 		b.append("java -cp ");
 		b.append(System.getProperty("java.class.path"));
 		b.append(" ");
 		b.append(ParamEchoExecutor.class.getCanonicalName());
+		File paramFile = TestHelper.getTestFile("paramFiles/paramEchoParamFile.txt");
+		configSpace = new ParamConfigurationSpace(paramFile);
+		
 		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 		
 		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE();
@@ -2284,7 +2289,7 @@ public class TAETestSet {
 		
 			//This 45 second sleep is probably incredibly sensitive.
 
-		for(int i=0; i < 45; i++)
+		for(int i=0; i < 60; i++)
 		{
 			try {
 				Thread.sleep(1000);
@@ -2555,6 +2560,7 @@ public class TAETestSet {
 	 */
 	public void testBoundedTAEOrderOfCallsObserverPreserved()
 	{
+		
 	
 		//Check that a submission of run 10 runs on a bound of <5 take 5,1,1,1,1, 5,1,1,1,1 takes 6 seconds and not 10.
 		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
@@ -2659,7 +2665,7 @@ public class TAETestSet {
 		System.out.println(watch.stop());
 		if(output.contains("ERROR"))
 		{
-			fail("Output contained some error this is unexpected");
+			fail("Output contained some error this is unexpected: " + output );
 		}
 		//assertTrue("Expected time for CLI Direct to be less than 5 seconds", watch.time() < 5000 );
 		

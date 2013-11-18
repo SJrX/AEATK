@@ -173,6 +173,9 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 			return;
 		}
 		
+		//Notify observer first to trigger kill handler
+		runObserver.currentStatus(Collections.singletonList((KillableAlgorithmRun) new RunningAlgorithmRun(getRunConfig(),  0,  0,0, getRunConfig().getProblemInstanceSeedPair().getSeed(), 0, killHandler)));
+		
 		if(killHandler.isKilled())
 		{
 			
@@ -180,6 +183,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 			String rawResultLine = "Killed Manually";
 			
 			this.setResult(RunResult.KILLED, 0, 0, 0, runConfig.getProblemInstanceSeedPair().getSeed(), rawResultLine,"");
+			return;
 		}
 		
 		final Process proc;
@@ -211,6 +215,19 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 			
 			try 
 			{
+
+				//Check kill handler again
+				if(killHandler.isKilled())
+				{
+					
+					log.debug("Run was killed", runConfig);
+					String rawResultLine = "Killed Manually";
+					
+					this.setResult(RunResult.KILLED, 0, 0, 0, runConfig.getProblemInstanceSeedPair().getSeed(), rawResultLine,"");
+					return;
+				}
+				
+
 				int port = 0;
 				final DatagramSocket serverSocket;
 				if(options.listenForUpdates)
@@ -943,23 +960,28 @@ outerloop:
 						}
 						
 					
-						if(exited(p))
-						{
-							return;
-						}
 						
 						
-						for(int i=0; i < 60; i++)
+						int totalSleepTime = 0;
+						int currSleepTime = 25;
+						while(true)
 						{
+							
 							if(exited(p))
 							{
 								return;
 							}
 							
-							Thread.sleep(50);
+							Thread.sleep(currSleepTime);
+							totalSleepTime += currSleepTime;
+							currSleepTime *=1.5;
+							if(totalSleepTime > 3000)
+							{
+								break;
+							}
 							
 						}
-						
+												
 						log.debug("Trying to send SIGKILL to process group id: {}", pid);
 						try {
 							Process p2 = Runtime.getRuntime().exec(SplitQuotedString.splitQuotedString(replacePid(options.pgForceKillCommand,pid)));
