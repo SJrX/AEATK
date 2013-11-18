@@ -30,7 +30,7 @@ public class TrueSleepyParamEchoExecutor {
 			
 			
 			
-			ParamConfigurationSpace configSpace = new ParamConfigurationSpace(TestHelper.getTestFile("paramFiles/paramEchoParamFile.txt"));
+			ParamConfigurationSpace configSpace = new ParamConfigurationSpace(TestHelper.getTestFile("paramFiles/paramEchoParamFileWalltime.txt"));
 			
 			
 			
@@ -59,6 +59,7 @@ public class TrueSleepyParamEchoExecutor {
 			
 		} catch(RuntimeException e)
 		{
+			e.printStackTrace();
 			System.out.println("Result for ParamILS: CRASHED, 0.000, 0, 0," + args[4] + "\n");
 		}
 		

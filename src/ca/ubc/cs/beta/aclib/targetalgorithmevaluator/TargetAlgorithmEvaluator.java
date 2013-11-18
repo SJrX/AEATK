@@ -13,7 +13,7 @@ import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
  * Clients should subtype this interface if they want to allow SMAC or other related projects to execute algorithms through
  * some other method. All implementations MUST have a constructor that takes a {@link ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig} object.
  * <p>
- * Additionally client implementations should probably not validate the output of AlgorithmRuns but rely on other wrappers to do this for them.
+ * Additionally client implementations should probably not validate the output of AlgorithmRuns but rely on other decorators to do this for them.
  * <p>
  * <p>
  * <b>NOTE:</b>Implementations MUST be thread safe, and ideally concurrent calls to evaluateRun() should all be serialized in such a way 
@@ -134,12 +134,39 @@ public interface TargetAlgorithmEvaluator {
 	
 	/**
 	 * Returns the total number of outstanding evaluations, that is the number of calls to evaluateRun or evaluateRunAsync to complete
+	 * <br/>
 	 * <b>NOTE:</b> This is NOT the number of runConfigs to be evaluated but the number of requests, and just because this returns zero doesn't mean it can't increase in the future.
+	 * <br/>
+	 * <b>IMPLEMENTATION NOTE:</b> You generally don't need to implement this method, but instead wrap your TAE with a {@link ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.functionality.OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator}
+	 * 
+	 * @deprecated This will be replaced by the method {{@link #getNumberOfOutstandingBatches()} at some point, it's the same thing with a clearer name.
+	 * @return number of outstanding evaluations
+	 * @throws UnsupportedOperationException - if the TAE does not support this operation 
+	 */
+	@Deprecated
+	public int getNumberOfOutstandingEvaluations();
+	
+	/**
+	 * Returns the total number of outstanding batches of runs, that is the number of calls to evaluateRun or evaluateRunAsync to complete
+	 * <br/>
+	 * <b>NOTE:</b> This is NOT the number of runConfigs to be evaluated but the number of requests, and just because this returns zero doesn't mean it can't increase in the future.
+	 * <br/>
+	 * <b>IMPLEMENTATION NOTE:</b> You generally don't need to implement this method, but instead wrap your TAE with a {@link ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.functionality.OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator}
 	 * 
 	 * @return number of outstanding evaluations
 	 * @throws UnsupportedOperationException - if the TAE does not support this operation 
 	 */
-	public int getNumberOfOutstandingEvaluations();
+	public int getNumberOfOutstandingBatches();
+
+	/**
+	 * Returns the total number of outstanding run, that is the number of calls to evaluateRun or evaluateRunAsync to complete
+	 * <br/>
+	 * <b>IMPLEMENTATION NOTE:</b> You generally don't need to implement this method, but instead wrap your TAE with a {@link ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.functionality.OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator}
+	 * 
+	 * @return number of outstanding evaluations
+	 * @throws UnsupportedOperationException - if the TAE does not support this operation 
+	 */
+	public int getNumberOfOutstandingRuns();
 	
 	
 	/**
@@ -154,6 +181,7 @@ public interface TargetAlgorithmEvaluator {
 	 *  
 	 * [i.e. A user seeing the same sequence of run codes, should be confident that the runs by the Automatic Configurator are 
 	 * identical]. Note: This method is optional and may just return zero. 
+	 * 
 	 * 
 	 * @return runHashCode computed
 	 * 
