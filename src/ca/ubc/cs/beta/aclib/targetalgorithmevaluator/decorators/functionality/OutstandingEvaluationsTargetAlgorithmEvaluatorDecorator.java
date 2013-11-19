@@ -33,6 +33,9 @@ public class OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator extends
 	private final AtomicInteger outstandingRuns = new AtomicInteger(0);
 	
 	private final Logger log = LoggerFactory.getLogger(this.getClass());
+
+	
+	private final Object lock = new Object();
 	
 	public OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator(
 			TargetAlgorithmEvaluator tae) {
@@ -143,9 +146,8 @@ public class OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator extends
 	 * <b>NOTE:</b> This isn't the same as waiting for a shutdown, this waits until the number of runs in progress is zero, it can later go higher again.
 	 */
 	@Override
-	public synchronized void waitForOutstandingEvaluations()
+	public void waitForOutstandingEvaluations()
 	{
-		
 		try {
 			outstandingRunBlocks.acquire();
 		} catch(InterruptedException e)
@@ -153,17 +155,28 @@ public class OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator extends
 			Thread.currentThread().interrupt();
 			return;
 		}
-	
-		outstandingRunBlocks.release();
 		
+		outstandingRunBlocks.release();
+	
 	}
 	
 	@Override
-	public synchronized int getNumberOfOutstandingEvaluations()
+	public int getNumberOfOutstandingEvaluations()
 	{
 		return 1 - outstandingRunBlocks.availablePermits();
 	}
 	
+	@Override 
+	public int getNumberOfOutstandingRuns()
+	{
+		return this.outstandingRuns.get();
+	}
+	
+	@Override
+	public int getNumberOfOutstandingBatches()
+	{
+		return 1 - outstandingRunBlocks.availablePermits();
+	}
 	
 	
 	/***

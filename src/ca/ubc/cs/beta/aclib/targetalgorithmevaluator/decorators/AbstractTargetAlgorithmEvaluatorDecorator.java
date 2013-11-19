@@ -72,7 +72,7 @@ public abstract class AbstractTargetAlgorithmEvaluatorDecorator implements	Targe
 	
 	public int getNumberOfOutstandingEvaluations()
 	{
-		return tae.getNumberOfOutstandingEvaluations();
+		return tae.getNumberOfOutstandingBatches();
 	}
 	
 	

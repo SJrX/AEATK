@@ -16,6 +16,7 @@ import ca.ubc.cs.beta.aclib.eventsystem.events.basic.AlgorithmRunCompletedEvent;
 import ca.ubc.cs.beta.aclib.eventsystem.events.state.StateRestoredEvent;
 import ca.ubc.cs.beta.aclib.misc.cputime.CPUTime;
 import ca.ubc.cs.beta.aclib.runhistory.ThreadSafeRunHistory;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.termination.TerminationCondition;
 import ca.ubc.cs.beta.aclib.termination.ValueMaxStatus;
 
@@ -55,19 +56,20 @@ public class LogRuntimeStatistics implements EventHandler<AutomaticConfiguratorE
 	private double sumOfWallclockTime = 0.0;
 	
 	private final AtomicBoolean noIceMessage = new AtomicBoolean(false);
-	public LogRuntimeStatistics(ThreadSafeRunHistory rh, TerminationCondition termCond, double cutoffTime)
+	private final TargetAlgorithmEvaluator tae;
+	public LogRuntimeStatistics(ThreadSafeRunHistory rh, TerminationCondition termCond, double cutoffTime, TargetAlgorithmEvaluator tae)
 	{
 		this.runHistory = rh;
 		this.termCond = termCond;
 		this.cutoffTime = cutoffTime;
 		this.msToWait = 0;
 		lastString.set("No Runtime Statistics Logged");
-		
+		this.tae = tae;
 		
 		
 	}
 	
-	public LogRuntimeStatistics(ThreadSafeRunHistory rh, TerminationCondition termCond, double cutoffTime , long msToWait)
+	public LogRuntimeStatistics(ThreadSafeRunHistory rh, TerminationCondition termCond, double cutoffTime , long msToWait, TargetAlgorithmEvaluator tae)
 	{
 		this.runHistory = rh;
 		this.termCond = termCond;
@@ -75,6 +77,7 @@ public class LogRuntimeStatistics implements EventHandler<AutomaticConfiguratorE
 		this.msToWait = msToWait;
 		lastString.set("No Runtime Statistics Logged");
 		
+		this.tae = tae;
 	
 	}
 
@@ -168,6 +171,8 @@ public class LogRuntimeStatistics implements EventHandler<AutomaticConfiguratorE
 						"Sum of Target Algorithm Execution Times (treating minimum value as 0.1): "+arr[12] +" s" + 
 						"\n CPU time of Configurator: "+arr[13]+" s" +
 						"\n User time of Configurator: "+arr[14]+" s" +
+						"\n Outstanding Runs on Target Algorithm Evaluator: " + tae.getNumberOfOutstandingRuns() +
+						"\n Outstanding Requests on TargetAlgorithmEvaluator: " + tae.getNumberOfOutstandingBatches() +  
 						"\n Total Reported Algorithm Runtime: " + arr[15] + " s" + 
 						"\n Sum of Measured Wallclock Runtime: " + arr[16] + " s" +
 						"\n Max Memory: "+arr[17]+" MB" +

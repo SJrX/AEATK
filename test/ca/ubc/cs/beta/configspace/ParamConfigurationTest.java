@@ -927,6 +927,50 @@ public class ParamConfigurationTest {
 	
 	
 	@Test
+	public void testNeighbourFunction()
+	{
+		ParamConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("a { 0,1,2,3,4,5,6,7,8,9 } [0] \n b { 0,1,2,3,4,5,6,7,8,9 } [0] \n c { 0,1,2,3,4,5,6,7,8,9 } [0] \n d { 0, 1} [0] \n d | c in { 0 } ");
+		
+		
+		ParamConfiguration defaultConfig = configSpace.getDefaultConfiguration();
+		
+		
+		assertFalse(defaultConfig.isNeighbour(defaultConfig));
+		
+		for(ParamConfiguration neighbour : defaultConfig.getNeighbourhood(rand, 4))
+		{
+			System.out.println(neighbour.getFormattedParamString(StringFormat.NODB_SYNTAX));
+			assertTrue("Neighbour and default should be neighbours ", defaultConfig.isNeighbour(neighbour));
+			assertTrue("Neighbour and default should be neighbours ", neighbour.isNeighbour(defaultConfig));
+		}
+	
+		ParamConfiguration newValue = new ParamConfiguration(defaultConfig);
+		
+		newValue.put("c", "1");
+		
+		assertTrue("Neighbour and new value be neighbours ", defaultConfig.isNeighbour(newValue));
+		assertTrue("Neighbour and new value be neighbours ", newValue.isNeighbour(defaultConfig));
+		
+		
+		newValue.put("d", "1");
+		
+		assertTrue("Neighbour and new value be neighbours ", defaultConfig.isNeighbour(newValue));
+		assertTrue("Neighbour and new value be neighbours ", newValue.isNeighbour(defaultConfig));
+		
+		newValue.put("b", "1");
+		
+		assertFalse("Neighbour and new value should not be neighbours ", defaultConfig.isNeighbour(newValue));
+		assertFalse("Neighbour and new value should not be neighbours ", newValue.isNeighbour(defaultConfig));
+		
+		
+		
+		
+		
+		
+		
+	}
+	
+	@Test
 	public void testSubspaceDeclaration()
 	{
 		StringReader sr = new StringReader("foo { a, b, c, d } [a]");
