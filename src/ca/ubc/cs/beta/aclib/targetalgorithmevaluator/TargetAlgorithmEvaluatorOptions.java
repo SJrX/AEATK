@@ -104,9 +104,9 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	@Parameter(names="--track-scheduled-runs", description="If true outputs a file in the output directory that outlines how many runs were being evaluated at any given time")
 	public boolean trackRunsScheduled; 
 
-	@UsageTextField(level=OptionLevel.DEVELOPER)
+	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names="--track-scheduled-runs-resolution", description="We will bucket changes into this size", validateWith=ZeroInfinityOpenInterval.class)
-	public double trackRunsScheduledResolution = 10; 
+	public double trackRunsScheduledResolution = 1; 
 	
 	@UsageTextField(level=OptionLevel.DEVELOPER)
 	@Parameter(names="--check-for-unclean-shutdown", description="If true, we will try and detect an unclean shutdown of the Target Algorithm Evaluator")

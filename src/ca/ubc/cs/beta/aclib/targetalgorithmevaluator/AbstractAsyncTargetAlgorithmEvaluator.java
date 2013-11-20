@@ -8,8 +8,6 @@ import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 public abstract class AbstractAsyncTargetAlgorithmEvaluator extends
 		AbstractTargetAlgorithmEvaluator implements TargetAlgorithmEvaluator{
 
-
-
 	public AbstractAsyncTargetAlgorithmEvaluator(
 			AlgorithmExecutionConfig execConfig) {
 		super(execConfig);
