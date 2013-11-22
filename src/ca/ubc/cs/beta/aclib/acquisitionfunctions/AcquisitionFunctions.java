@@ -6,7 +6,7 @@ import com.beust.jcommander.ParameterException;
  * @author sjr
  *
  */
-public enum AcquisitionFunctions {
+public enum AcquisitionFunctions implements AcquisitionFunction {
 	/**
 	 * The standard expected improvement function
 	 */
@@ -24,7 +24,14 @@ public enum AcquisitionFunctions {
 	 * Standard EI Improvement Function
 	 */
 	
-	EI(ExpectedImprovement.class);
+	EI(ExpectedImprovement.class),
+	
+	/**
+	 * 
+	 */
+	
+	LCBEIRR(LCBEIRoundRobin.class)
+	;
 	
 	/**
 	 * SPO Improvement Function (NOT IMPLEMENTED)
@@ -35,20 +42,13 @@ public enum AcquisitionFunctions {
 	 */
 	//EIh;
 	
-	Class<? extends AcquisitionFunction> c;
 	
+	
+	private AcquisitionFunction internal; 
+			
 	AcquisitionFunctions(Class<? extends AcquisitionFunction> c)
 	{
-		this.c=c;
-	}
-	
-	AcquisitionFunctions()
-	{
-		this.c = null;
-	}
-	
-	public AcquisitionFunction getFunction()
-	{
+		
 		if(c == null)
 		{
 			throw new IllegalArgumentException("This Expected Improvement Function is not implemented at the moment: " + this.toString());
@@ -56,11 +56,28 @@ public enum AcquisitionFunctions {
 		{
 			Class<?>[] args = {};
 			try {
-				return c.getConstructor(args).newInstance();
+				internal = c.getConstructor(args).newInstance();
 			} catch (Exception e) {
-				// TODO Auto-generated catch block
-				throw new ParameterException(e);
+				
+				throw new IllegalStateException("Expected improvement function doesn't have the correct constructor");
 			}
 		}
+		
+	}
+	
+	AcquisitionFunctions()
+	{
+		internal = null;
+	}
+	
+	public AcquisitionFunction getFunction()
+	{
+		return internal;
+	}
+
+	@Override
+	public double[] computeAcquisitionFunctionValue(double f_min_samples,
+			double[] predmean, double[] predvar) {
+		return internal.computeAcquisitionFunctionValue(f_min_samples, predmean, predvar);
 	}
 }

@@ -136,6 +136,7 @@ public class OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator extends Abst
 
 	}
 	
+	@SuppressWarnings("unchecked")
 	public void notifyShutdown()
 	{
 		tae.notifyShutdown();
@@ -168,13 +169,12 @@ public class OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator extends Abst
 		ConcurrentSkipListMap<Double, StartEnd> startEndMap = new ConcurrentSkipListMap<Double, StartEnd>();
 		
 		
-		Collection[] myDoubles = { this.startTime.values(), this.endTime.values(), this.startWalltime.values(), this.startCPUtime.values()  };
+		@SuppressWarnings("rawtypes")
+		Collection[] myDoubles = { this.startTime.values(), this.endTime.values(), this.startWalltime.values(), this.startCPUtime.values(), this.startBatchTime.values(), this.endBatchTime.values()  };
 		
-		
-		
-		for(Collection cod : myDoubles)
+		for(Collection<Double> cod : myDoubles)
 		{
-			for(Double d : (Collection<Double>) cod)
+			for(Double d :  cod)
 			{
 				StartEnd e = startEndMap.get(d);
 				
@@ -207,7 +207,6 @@ public class OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator extends Abst
 		}
 		
 		
-		
 		for(Entry<List<RunConfig>, Double> startCPUTimes : this.startBatchTime.entrySet())
 		{
 			startEndMap.get(startCPUTimes.getValue()).startBatchTime++;
@@ -217,9 +216,6 @@ public class OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator extends Abst
 		{
 			startEndMap.get(startWallTimes.getValue()).endBatchTime++;
 		}
-		
-		
-		
 		
 		
 		File f = new File(this.resultFile);

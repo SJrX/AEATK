@@ -2403,7 +2403,6 @@ public class TAETestSet {
 	}
 	
 	
-	
 	@Test
 	/**
 	 * Schedules a set of runs in the form of 3,1,3,1 on a bound of 2x, if the Bounding is done properly this should be doable in under 5 seconds,
@@ -2467,6 +2466,109 @@ public class TAETestSet {
 		tae.evaluateRun(runConfigs);
 		System.out.println(watch2.stop());
 		assertTrue("Expected time for Bounded to be less than 5 seconds", watch2.time() < 5000 );
+		
+	}
+	
+	
+	@Test
+	/**
+	 * Schedules a set of runs in the form of {8,1,1,1}, {5}  on a bound of 4x, if the Bounding is done properly this should be doable in under 10 seconds 
+	 * if not then it might take about 13 seconds.
+	 */
+	public void testBoundedTAESubmissionSpeedOnCompletion()
+	{
+		//Check that a submission of run 10 runs on a bound of <5 take 5,1,1,1,1, 5,1,1,1,1 takes 6 seconds and not 10.
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(TrueSleepyParamEchoExecutor.class.getCanonicalName());
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
+		
+		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
+		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
+		
+		options.logAllCallStrings = true;
+		options.logAllProcessOutput = true;
+		options.concurrentExecution = true;
+		options.observerFrequency = 2000;
+		options.cores = 4;
+		
+		tae = fact.getTargetAlgorithmEvaluator(execConfig, options);	
+		TargetAlgorithmEvaluator cliTAE = tae;
+		tae = new BoundedTargetAlgorithmEvaluator(tae,4,execConfig);
+		tae = new OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator(tae);
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(4);
+		for(int i=0; i < 5; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			if( i == 0)
+			{
+				config.put("runtime", "8");
+			} else if (i == 4)
+			{
+				config.put("runtime","5");
+			} else
+			{
+				config.put("runtime","1");
+			}
+
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config);
+				runConfigs.add(rc);
+			}
+		}
+		
+		
+		
+
+		StopWatch watch2 = new AutoStartStopWatch();
+		tae.evaluateRunsAsync(runConfigs.subList(0,4), new TargetAlgorithmEvaluatorCallback() {
+
+			@Override
+			public void onSuccess(List<AlgorithmRun> runs) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void onFailure(RuntimeException e) {
+				e.printStackTrace();
+				
+			}
+		
+		});
+		
+		tae.evaluateRunsAsync(runConfigs.subList(4,5), new TargetAlgorithmEvaluatorCallback() {
+
+			@Override
+			public void onSuccess(List<AlgorithmRun> runs) {
+				// TODO Auto-generated method stub
+				
+			}
+
+			@Override
+			public void onFailure(RuntimeException e) {
+				e.printStackTrace();
+				
+			}
+		
+		});
+		
+		
+		
+		
+		tae.waitForOutstandingEvaluations();
+		
+		System.out.println(watch2.stop());
+		assertTrue("Expected time for Bounded to be less than 10 seconds", watch2.time() < 10000 );
 		
 	}
 	

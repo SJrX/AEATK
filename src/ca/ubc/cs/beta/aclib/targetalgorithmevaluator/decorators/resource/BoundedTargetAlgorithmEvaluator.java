@@ -73,10 +73,10 @@ public class BoundedTargetAlgorithmEvaluator extends
 	
 	private final static Logger log = LoggerFactory.getLogger(BoundedTargetAlgorithmEvaluator.class);
 
-	
 	private final ExecutorService execService = Executors.newCachedThreadPool(new SequentiallyNamedThreadFactory("Bounded Target Algorithm Evaluator Callback Thread"));
 	
 	private final int NUMBER_OF_CONCURRENT_RUNS;
+	
 	public BoundedTargetAlgorithmEvaluator(TargetAlgorithmEvaluator tae, int numberOfConcurrentRuns, AlgorithmExecutionConfig execConfig) {
 		super(tae);
 		if(numberOfConcurrentRuns <= 0) throw new IllegalArgumentException("Must be able to schedule at least one run");
@@ -84,8 +84,6 @@ public class BoundedTargetAlgorithmEvaluator extends
 		this.NUMBER_OF_CONCURRENT_RUNS = numberOfConcurrentRuns;
 		this.execConfig = execConfig;
 	}
-
-
 
 	@Override
 	public void evaluateRunsAsync(final List<RunConfig> runConfigs, final TargetAlgorithmEvaluatorCallback handler, final TargetAlgorithmEvaluatorRunObserver obs) {
@@ -319,7 +317,6 @@ public class BoundedTargetAlgorithmEvaluator extends
 					throw e;
 					
 				} 
-				
 				
 				completedCount.set(completedRuns);
 				
