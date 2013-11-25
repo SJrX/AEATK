@@ -523,6 +523,7 @@ outerloop:
 					String line;
 					boolean read = false;
 					//TODO This ready call doesn't guarantee we can read a line
+					
 					while(procIn.ready())
 					{
 						read = true;
@@ -540,14 +541,32 @@ outerloop:
 							outputQueue.poll();
 						}
 						
+					
 						
+						if(wasKilled)
+						{
+							continue;
+						}
 						boolean matched = processLine(line);
 						
+						
+						if(matched && matchFound)
+						{
+							log.error("Second output of matching line detected, there is a problem with your wrapper. You can try turning with log all process output enabled to debug: {} ", line);
+							this.setAbortResult("duplicate lines matched");
+							continue;
+						}
 						matchFound = matchFound | matched; 
 						
 						
 								
 						
+					}
+					
+					
+					if(this.isRunCompleted() && wasKilled)
+					{
+						log.warn("Run was killed but we somehow completed this might be a race condition but our result is: {}. This is a warning just so that developers can see this having occurred and judge the correctness" , this.getResultLine());
 					}
 					
 					

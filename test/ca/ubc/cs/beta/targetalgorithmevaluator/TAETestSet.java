@@ -3512,6 +3512,213 @@ public class TAETestSet {
 		
 	}
 	
+	
+
+	@Test
+	public void testRaceConditionOfWrapper()
+	{
+		//Check that a submission of run 10 runs on a bound of <5 take 5,1,1,1,1, 5,1,1,1,1 takes 6 seconds and not 10.
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		StringBuilder b = new StringBuilder();
+		
+		b.append((new File("")).getAbsolutePath() + File.separator + "test-files"+File.separator + "rubywrapper" + File.separator + "rubywrapper.rb");
+		//b.append((new File("")).getAbsolutePath() + File.separator + "test-files"+File.separator + "runsolver" + File.separator + "system ");
+		
+		System.out.println(b);
+		
+		
+		
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 1500);
+		
+		
+		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
+		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
+		
+		options.cores = 10;
+		options.logAllCallStrings = true;
+		options.logAllProcessOutput = true;
+		options.concurrentExecution = true;
+		options.observerFrequency = 2000;
+		
+		
+		tae = fact.getTargetAlgorithmEvaluator(execConfig, options);	
+		TargetAlgorithmEvaluator cliTAE = tae;
+		tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
+		
+		
+		
+		
+		
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(4);
+		double runtime = 50;
+		for(int i=0; i < 20; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			
+			config.put("runtime",String.valueOf(runtime));
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 20, config);
+				runConfigs.add(rc);
+			}
+		}
+		
+		
+		
+		TargetAlgorithmEvaluatorRunObserver obs = new TargetAlgorithmEvaluatorRunObserver()
+		{
+
+			@Override
+			public void currentStatus(List<? extends KillableAlgorithmRun> runs) 
+			{
+				KillableAlgorithmRun run = runs.get(0);
+				
+					System.out.println("Runtime: " + run.getRuntime() + " walltime: " + run.getWallclockExecutionTime());
+					
+					if(run.getRuntime() > 4)
+					{
+						for(KillableAlgorithmRun krun : runs)
+						{
+							krun.kill();
+						}
+					}
+					
+					if(run.getWallclockExecutionTime() > 30)
+					{
+						System.err.println("This test has almost certainly failed and will never end");
+					}
+				
+			}
+			
+		};
+		
+		
+		
+		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs,obs);
+		
+		
+		
+		
+		for(AlgorithmRun run : runs)
+		{
+			System.out.println(run);
+			if(run.getRunResult().equals(RunResult.CRASHED))
+			{
+				fail("Run shouldn't be crashed");
+			}
+		}
+		
+		
+		
+		
+		
+	}
+	
+
+	@Test(expected=TargetAlgorithmAbortException.class)
+	public void testDoubleOutput()
+	{
+		//Check that a submission of run 10 runs on a bound of <5 take 5,1,1,1,1, 5,1,1,1,1 takes 6 seconds and not 10.
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		StringBuilder b = new StringBuilder();
+		
+		b.append((new File("")).getAbsolutePath() + File.separator + "test-files"+File.separator + "rubywrapper" + File.separator + "doublewrapper.rb");
+		//b.append((new File("")).getAbsolutePath() + File.separator + "test-files"+File.separator + "runsolver" + File.separator + "system ");
+		
+		System.out.println(b);
+		
+		
+		
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 1500);
+		
+		
+		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
+		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
+		
+		options.cores = 10;
+		options.logAllCallStrings = true;
+		options.logAllProcessOutput = true;
+		options.concurrentExecution = true;
+		options.observerFrequency = 2000;
+		
+		
+		tae = fact.getTargetAlgorithmEvaluator(execConfig, options);	
+		TargetAlgorithmEvaluator cliTAE = tae;
+		tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
+		
+		
+		
+		
+		
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(4);
+		double runtime = 50;
+		for(int i=0; i < 1; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			
+			config.put("runtime",String.valueOf(runtime));
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 20, config);
+				runConfigs.add(rc);
+			}
+		}
+		
+		
+		
+		TargetAlgorithmEvaluatorRunObserver obs = new TargetAlgorithmEvaluatorRunObserver()
+		{
+
+			@Override
+			public void currentStatus(List<? extends KillableAlgorithmRun> runs) 
+			{
+				KillableAlgorithmRun run = runs.get(0);
+				
+					System.out.println("Runtime: " + run.getRuntime() + " walltime: " + run.getWallclockExecutionTime());
+					
+					if(run.getRuntime() > 4)
+					{
+						for(KillableAlgorithmRun krun : runs)
+						{
+							krun.kill();
+						}
+					}
+					
+					if(run.getWallclockExecutionTime() > 30)
+					{
+						System.err.println("This test has almost certainly failed and will never end");
+					}
+				
+			}
+			
+		};		
+		
+		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs,obs);
+	
+		for(AlgorithmRun run : runs)
+		{
+			System.out.println(run);
+			if(run.getRunResult().equals(RunResult.CRASHED))
+			{
+				fail("Run shouldn't be crashed");
+			}
+		}
+		
+	}
+	
+	
+	
+	
 	@Test
 	public void testProcessGroupKilled()
 	{
