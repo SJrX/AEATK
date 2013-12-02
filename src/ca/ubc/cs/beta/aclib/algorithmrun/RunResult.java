@@ -19,12 +19,12 @@ public enum RunResult {
 	/**
 	 * Signifies that the algorithm ran out of time and had to be cutoff
 	 */
-	TIMEOUT(0, true, true),
+	TIMEOUT(false, 0, true, true),
 	
 	/**
 	 * Signifies that the algorithm completed successfully (and optionally found the result was SATISFIABLE) 
 	 */
-	SAT(1, true, false, "SAT","SATISFIABLE"),
+	SAT(true,1, true, false, "SAT","SATISFIABLE"),
 	
 	/**
 	 * Signifies that the algorithm completed successfully, and that the target algorithm result was UNSATISFIABLE.
@@ -32,13 +32,13 @@ public enum RunResult {
 	 * <b>NOTE:</b> SAT & UNSAT are hold overs from SAT solvers, neither of these are error conditions. If you are not running a SAT solver
 	 * you should almost certainly report SAT when completed. 
 	 */
-	UNSAT(2, true, false, "UNSAT", "UNSATISFIABLE"),
+	UNSAT(true, 2, true, false, "UNSAT", "UNSATISFIABLE"),
 	
 	
 	/**
 	 * Signifies that the algorithm did not complete and unexpectedly crashed or failed.
 	 */
-	CRASHED(-1, true, false),
+	CRASHED(false, -1, true, false),
 
 	
 	/**
@@ -46,7 +46,7 @@ public enum RunResult {
 	 * and that we should simply not continue with any attempts 
 	 *
 	 */
-	ABORT(-2, true, false),
+	ABORT(false, -2, true, false),
 	
 	
 	/**
@@ -56,7 +56,7 @@ public enum RunResult {
 	 * <br/>
 	 * <b>NOTE:</b> Wrappers are NOT permitted to output this run result
 	 */
-	RUNNING(Integer.MIN_VALUE, false, false),
+	RUNNING(false,Integer.MIN_VALUE, false, false),
 	
 	/**
 	 * Signifies that run ran out of time, but at our request
@@ -66,7 +66,12 @@ public enum RunResult {
 	 * <br/>
 	 * <b>NOTE:</b>Wrappers are NOT permitted to output this run result
 	 */
-	KILLED(-3, false, true);
+	KILLED(false,-3, false, true);
+	
+	/**
+	 * Stores whether the run should be considered as decided
+	 */
+	private final boolean decided;
 	
 	/**
 	 * Stores the numeric result code used in some serializations of run results
@@ -91,16 +96,18 @@ public enum RunResult {
 	private final Set<String> resultKey = new HashSet<String>();
 	
 	
-	private RunResult(int resultCode, boolean permittedByWrappers, boolean completeButCensored)
+	private RunResult(boolean decided, int resultCode, boolean permittedByWrappers, boolean completeButCensored)
 	{
+		this.decided = decided;
 		this.resultCode = resultCode;
 		this.resultKey.add(this.toString());
 		this.permittedByWrappers = permittedByWrappers;
 		this.successfulAndCensored = completeButCensored;
 	}
 	
-	private RunResult(int resultCode, boolean permittedByWrappers, boolean completeButCensored, String... keys)
+	private RunResult(boolean decided, int resultCode, boolean permittedByWrappers, boolean completeButCensored, String... keys)
 	{
+		this.decided = decided;
 		this.resultCode = resultCode;
 		this.resultKey.addAll(Arrays.asList(keys));
 		this.permittedByWrappers = permittedByWrappers;
@@ -165,6 +172,8 @@ public enum RunResult {
 	/**
 	 * Returns a boolean determining whether this run is Successful (see corresponding link for more information as to what this is for)
 	 * 
+	 * @deprecated doesn't seem to be used by anything (use {@link #isDecided()}) or == RunResult.SAT) 
+	 * 
 	 * @see ca.ubc.cs.beta.aclib.state.legacy.LegacyStateFactory
 	 * @return <code>true</code> if and only if this is a successful run, false otherwise
 	 */
@@ -172,7 +181,17 @@ public enum RunResult {
 	{
 		return this.resultCode == 1;
 	}
-
+	
+	/**
+	 * Returns a boolean determining whether this run was decided (that is it completed and gave us a useful answer about the instance)
+	 * 
+	 * 
+	 * @return <code>true</code> if and only if this run is SAT, UNSAT (or other runs that indicated it finished without incident or TIMEOUT). 
+	 */
+	public boolean isDecided()
+	{
+		return this.decided;
+	}
 	/**
 	 * Returns the aliases for this Run Result
 	 * @return a set containing all equivilant aliases for this result
