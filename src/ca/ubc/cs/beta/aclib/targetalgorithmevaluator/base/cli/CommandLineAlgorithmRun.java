@@ -491,6 +491,8 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 						return;
 					}
 				}
+				
+				
 			}
 		} catch (IOException e1) {
 			//String execCmd = getTargetAlgorithmExecutionCommandAsString(execConfig,runConfig);
