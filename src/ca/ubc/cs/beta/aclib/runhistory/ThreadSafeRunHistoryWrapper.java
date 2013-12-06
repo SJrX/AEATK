@@ -314,33 +314,7 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 		}
 	}
 
-	@Override
-	public double getEmpiricalPISPCost(ParamConfiguration config,
-			Set<ProblemInstanceSeedPair> instanceSet, double cutoffTime) {
-		lockRead();
-		try {
-			return runHistory.getEmpiricalPISPCost(config, instanceSet, cutoffTime);
-		} finally
-		{
-			unlockRead();
-	
-		}
-		
-	}
 
-	@Override
-	public double getEmpiricalPISPCost(ParamConfiguration config,
-			Set<ProblemInstanceSeedPair> instanceSet, double cutoffTime,
-			Map<ProblemInstance, Map<Long, Double>> hallucinatedValues) {
-		lockRead();
-		try {
-			return runHistory.getEmpiricalPISPCost(config, instanceSet, cutoffTime, hallucinatedValues);
-		} finally
-		{
-			unlockRead();
-	
-		}
-	}
 
 	@Override
 	public int getThetaIdx(ParamConfiguration configuration) {
@@ -449,6 +423,19 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 	private void unlockWrite()
 	{
 		this.rwltt.unlockWrite();
+		
+	}
+
+	@Override
+	public int getOrCreateThetaIdx(ParamConfiguration config) {
+		lockWrite();
+		try {
+			return this.runHistory.getOrCreateThetaIdx(config);
+		} finally
+		{
+			unlockWrite();
+		}
+	
 		
 	}
 

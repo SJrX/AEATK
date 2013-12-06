@@ -157,20 +157,6 @@ public abstract class AbstractRunHistoryDecorator implements RunHistory {
 	}
 
 	@Override
-	public double getEmpiricalPISPCost(ParamConfiguration config,
-			Set<ProblemInstanceSeedPair> instanceSet, double cutoffTime) {
-		return rh.getEmpiricalPISPCost(config, instanceSet, cutoffTime);
-	}
-
-	@Override
-	public double getEmpiricalPISPCost(ParamConfiguration config,
-			Set<ProblemInstanceSeedPair> instanceSet, double cutoffTime,
-			Map<ProblemInstance, Map<Long, Double>> hallucinatedValues) {
-		return rh.getEmpiricalPISPCost(config, instanceSet, cutoffTime,
-				hallucinatedValues);
-	}
-
-	@Override
 	public int getThetaIdx(ParamConfiguration configuration) {
 		return rh.getThetaIdx(configuration);
 	}

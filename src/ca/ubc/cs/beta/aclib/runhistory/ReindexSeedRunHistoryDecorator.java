@@ -14,6 +14,7 @@ import org.slf4j.LoggerFactory;
 import net.jcip.annotations.NotThreadSafe;
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.ExistingAlgorithmRun;
+import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.exceptions.DuplicateRunException;
 import ca.ubc.cs.beta.aclib.misc.MapList;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
@@ -135,6 +136,10 @@ public class ReindexSeedRunHistoryDecorator extends AbstractRunHistoryDecorator 
 		
 	
 	
+	}
+	@Override
+	public int getOrCreateThetaIdx(ParamConfiguration initialIncumbent) {
+		return this.rh.getOrCreateThetaIdx(initialIncumbent);
 	}
 	
 }

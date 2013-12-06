@@ -201,12 +201,6 @@ public interface RunHistory {
 	public Set<ProblemInstanceSeedPair> getCappedAlgorithmInstanceSeedPairs(ParamConfiguration config);
 
 	
-	double getEmpiricalPISPCost(ParamConfiguration config,
-			Set<ProblemInstanceSeedPair> instanceSet, double cutoffTime);
-
-	double getEmpiricalPISPCost(ParamConfiguration config,
-			Set<ProblemInstanceSeedPair> instanceSet, double cutoffTime,
-			Map<ProblemInstance, Map<Long, Double>> hallucinatedValues);
 
 	/**
 	 * Returns the Index into arrays represented by this configuration
@@ -243,6 +237,15 @@ public interface RunHistory {
 	 */
 	public List<Long> getSeedsUsedByInstance(ProblemInstance pi);
 
+
+	/**
+	 * Returns the Index into arrays represented by this configuration, if it doesn't already exist it is created
+	 * 
+	 * @param configuration 	Configuration to create idx for
+	 * @return index into the theta array for this configuration
+	 */
+	public int getOrCreateThetaIdx(ParamConfiguration config);
+	
 	
 	
 }

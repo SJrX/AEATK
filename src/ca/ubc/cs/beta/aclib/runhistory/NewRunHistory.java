@@ -109,6 +109,9 @@ public class NewRunHistory implements RunHistory {
 	
 	
 	private final HashMap<ParamConfiguration, List<AlgorithmRun>> configToRunMap = new HashMap<ParamConfiguration, List<AlgorithmRun>>();
+	
+	private static final DecimalFormat format = new DecimalFormat("#######.####");
+	
 	/**
 	 * Creates NewRunHistory object
 	 * @param intraInstanceObjective	intraInstanceObjective to use when calculating costs
@@ -265,7 +268,9 @@ public class NewRunHistory implements RunHistory {
 	
 		
 	}
-	private static final DecimalFormat format = new DecimalFormat("#######.####");
+
+	
+	
 	@Override
 	public double getEmpiricalCost(ParamConfiguration config,
 			Set<ProblemInstance> instanceSet, double cutoffTime)
@@ -335,96 +340,6 @@ public class NewRunHistory implements RunHistory {
 		}
 		return aggregateInstanceObjectiveFunction.aggregate(instanceCosts,cutoffTime);
 	}
-
-	@Override
-	public double getEmpiricalPISPCost(ParamConfiguration config, Set<ProblemInstanceSeedPair> instanceSet, double cutoffTime)
-	{
-		Map<ProblemInstance, Map<Long, Double>> foo = Collections.emptyMap();
-		return getEmpiricalPISPCost(config, instanceSet, cutoffTime, foo);
-	}
-	
-	@Override
-	public double getEmpiricalPISPCost(ParamConfiguration config, Set<ProblemInstanceSeedPair> instanceSet, double cutoffTime, Map<ProblemInstance, Map<Long,Double>> hallucinatedValues) {
-		if (!configToPerformanceMap.containsKey(config) && hallucinatedValues.isEmpty()){
-			return Double.MAX_VALUE;
-		}
-		ArrayList<Double> instanceCosts = new ArrayList<Double>();
-		
-		Map<ProblemInstance, LinkedHashMap<Long, Double>> instanceSeedToPerformanceMap = configToPerformanceMap.get(config);
-
-		if(instanceSeedToPerformanceMap == null) 
-		{
-			instanceSeedToPerformanceMap = new HashMap<ProblemInstance, LinkedHashMap<Long, Double>>();
-			
-		}
-		/*
-		 * Compute the Instances to use in the cost calculation
-		 * It's everything we ran out of everything we requested.
-		 */
-		Set<ProblemInstanceSeedPair> instancesToUse = new HashSet<ProblemInstanceSeedPair>();
-		instancesToUse.addAll(instanceSet);
-		
-		
-		
-		//Keep only the ones we have real values for
-
-		Set<ProblemInstanceSeedPair> instancesToKeep = new HashSet<ProblemInstanceSeedPair>();
-		for(Entry<ProblemInstance, LinkedHashMap<Long, Double>> realValue : instanceSeedToPerformanceMap.entrySet())
-		{
-			for(Long l : realValue.getValue().keySet())
-			{
-				instancesToKeep.add(new ProblemInstanceSeedPair(realValue.getKey(),l));
-			}
-		}
-		
-		
-		for(Entry<ProblemInstance, Map<Long,Double>> halVal : hallucinatedValues.entrySet())
-		{
-			for(Long l : halVal.getValue().keySet())
-			{
-				instancesToKeep.add(new ProblemInstanceSeedPair(halVal.getKey(),l));
-			}
-		}
-		
-
-		
-		instancesToUse.retainAll(instancesToKeep);
-		
-		Map<ProblemInstance, List<ProblemInstanceSeedPair>> organizedPispsToUse = new HashMap<ProblemInstance,List<ProblemInstanceSeedPair>>();
-		for(ProblemInstanceSeedPair pisp : instancesToUse)
-		{
-			if(organizedPispsToUse.get(pisp.getInstance()) == null)
-			{
-				organizedPispsToUse.put(pisp.getInstance(), new LinkedList<ProblemInstanceSeedPair>());
-			}
-			organizedPispsToUse.get(pisp.getInstance()).add(pisp);
-		}
-		
-		
-		for(Entry<ProblemInstance,List<ProblemInstanceSeedPair>> entry : organizedPispsToUse.entrySet())
-		{
-			ProblemInstance pi = entry.getKey();
-			Map<Long, Double> seedToPerformanceMap = new HashMap<Long, Double>();
-			if(instanceSeedToPerformanceMap.get(pi) != null) seedToPerformanceMap.putAll(instanceSeedToPerformanceMap.get(pi));
-			if(hallucinatedValues.get(pi) != null) seedToPerformanceMap.putAll(hallucinatedValues.get(pi));
-			
-			/*
-			 * Aggregate the cost over the instances
-			 */
-			ArrayList<Double> localCosts = new ArrayList<Double>();
-			for(Map.Entry<Long, Double> ent : seedToPerformanceMap.entrySet())
-			{
-				if(entry.getValue().contains(new ProblemInstanceSeedPair(pi,ent.getKey())))
-				{
-					localCosts.add( ent.getValue() );
-				}
-						
-			}
-			instanceCosts.add( perInstanceObjectiveFunction.aggregate(localCosts,cutoffTime)); 
-		}
-		return aggregateInstanceObjectiveFunction.aggregate(instanceCosts,cutoffTime);
-	}
-	
 
 	@Override
 	public RunObjective getRunObjective() {
@@ -611,8 +526,15 @@ public class NewRunHistory implements RunHistory {
 		{
 			return thetaIdx;
 		}
-		//return paramConfigurationList.getOrCreateKey(config);
+		
 	}
+	
+	@Override
+	public int getOrCreateThetaIdx(ParamConfiguration config) {
+		 return paramConfigurationList.getOrCreateKey(config);
+		
+	}
+	
 
 	@Override
 	public int getNumberOfUniqueProblemInstanceSeedPairsForConfiguration(ParamConfiguration config)
@@ -666,5 +588,7 @@ public class NewRunHistory implements RunHistory {
 		}
 		return Collections.unmodifiableList(seedsUsedByInstance.get(pi));
 	}
+
+
 
 }
