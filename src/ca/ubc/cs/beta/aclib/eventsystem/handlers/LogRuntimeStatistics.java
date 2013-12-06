@@ -111,9 +111,8 @@ public class LogRuntimeStatistics implements EventHandler<AutomaticConfiguratorE
 				this.sumOfWallclockTime += run.getWallclockExecutionTime();
 				this.sumOfRuntime += run.getRuntime();
 			}
-		}
+		} else
 		{
-			
 			try {
 				runHistory.readLock();
 				String myLastLogMessage;
