@@ -14,6 +14,8 @@ import ca.ubc.cs.beta.aclib.help.HelpOptions;
 import ca.ubc.cs.beta.aclib.initialization.InitializationMode;
 import ca.ubc.cs.beta.aclib.initialization.classic.ClassicInitializationProcedureOptions;
 import ca.ubc.cs.beta.aclib.initialization.doublingcapping.DoublingCappingInitializationProcedureOptions;
+import ca.ubc.cs.beta.aclib.initialization.table.UnbiasChallengerInitializationProcedure;
+import ca.ubc.cs.beta.aclib.initialization.table.UnbiasChallengerInitializationProcedureOptions;
 import ca.ubc.cs.beta.aclib.logging.ComplexLoggingOptions;
 import ca.ubc.cs.beta.aclib.misc.file.HomeFileUtils;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.*;
@@ -73,9 +75,14 @@ public class SMACOptions extends AbstractOptions {
 	
 	@ParametersDelegate
 	public DoublingCappingInitializationProcedureOptions dciModeOpts = new DoublingCappingInitializationProcedureOptions();
+	
+	@ParametersDelegate
+	public UnbiasChallengerInitializationProcedureOptions ucip = new UnbiasChallengerInitializationProcedureOptions();
+	
 	@UsageTextField(level=OptionLevel.INTERMEDIATE)
 	@Parameter(names={"--deterministic-instance-ordering","--deterministicInstanceOrdering"}, description="If true, instances will be selected from the instance list file in the specified order")
 	public boolean deterministicInstanceOrdering = false;
+	
 	
 	@CommandLineOnly
 	@UsageTextField(level=OptionLevel.BASIC)

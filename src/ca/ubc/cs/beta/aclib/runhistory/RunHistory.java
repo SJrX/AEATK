@@ -101,6 +101,15 @@ public interface RunHistory {
 			Map<ProblemInstance, Map<Long, Double>> hallucinatedValues,
 			double minimumResponseValue);
 
+	/**
+	 * Compute and return the empirical cost of a parameter configuration on the subset of provided instances we have runs for.
+	 * @param config 		ParamConfiguration to get Cost of
+	 * @param instanceSet   Instances to compute cost over
+	 * @param cutoffTime 	cutoff time for algorithm runs
+	 * @param minimumResponseValue  the minimum legal response value (all values lower than this are replaced)
+	 * @return cost (Double.MAX_VALUE) if we haven't seen the configuration, otherwise the cost
+	 */
+	double getEmpiricalCost(ParamConfiguration config,	Set<ProblemInstance> instanceSet, double cutoffTime, double minimumResponseValue);
 	
 
 	/**
@@ -210,9 +219,7 @@ public interface RunHistory {
 	 */
 	public int getThetaIdx(ParamConfiguration configuration);
 
-	double getEmpiricalCost(ParamConfiguration config,
-			Set<ProblemInstance> instanceSet, double cutoffTime,
-			double minimumResponseValue);
+	
 
 	/**
 	 * Returns the number of unique problem instance seed pairs run for this configuration 

@@ -25,7 +25,7 @@ public class CommandLineTargetAlgorithmEvaluatorOptions extends AbstractOptions 
 	public boolean concurrentExecution = true;
 	
 	@UsageTextField(level=OptionLevel.INTERMEDIATE)
-	@Parameter(names="--cli-cores", validateWith=FixedPositiveInteger.class)
+	@Parameter(names="--cli-cores", description="Number of cores to use to execute runs. In other words the number of requests to run at a given time.", validateWith=FixedPositiveInteger.class)
 	public int cores = 1;
 	
 	@UsageTextField(level=OptionLevel.INTERMEDIATE)
