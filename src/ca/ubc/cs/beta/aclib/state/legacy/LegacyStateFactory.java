@@ -85,7 +85,7 @@ public class LegacyStateFactory implements StateFactory{
 					throw new IllegalArgumentException("Could not create directory" + f.getAbsolutePath());
 				} else
 				{
-					log.info("Directory created for states: {}",  f.getAbsolutePath());
+					log.debug("Directory created for states: {}",  f.getAbsolutePath());
 				}
 				
 			} else
@@ -192,7 +192,7 @@ public class LegacyStateFactory implements StateFactory{
 			}
 			in.close();
 			out.close();
-			log.info("File copied to {} ", outputFile.getAbsolutePath());
+			log.debug("File copied to {} ", outputFile.getAbsolutePath());
 			
 		} catch(IOException e)
 		{
@@ -405,7 +405,7 @@ public class LegacyStateFactory implements StateFactory{
 		
 		Integer lastIteration = savedFilesPerIteration.lastKey();
 		
-		log.info("Deleting all saved state files except those applicable to iteration {} ", lastIteration);
+		log.debug("Deleting all saved state files except those applicable to iteration {} ", lastIteration);
 		
 		
 		if(log.isDebugEnabled())
