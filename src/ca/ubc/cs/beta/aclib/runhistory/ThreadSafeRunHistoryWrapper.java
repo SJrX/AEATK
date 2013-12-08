@@ -112,10 +112,10 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 	}
 
 	@Override
-	public Set<ProblemInstance> getInstancesRan(ParamConfiguration config) {
+	public Set<ProblemInstance> getProblemInstancesRan(ParamConfiguration config) {
 		lockRead();
 		try {
-			return runHistory.getInstancesRan(config);
+			return runHistory.getProblemInstancesRan(config);
 		} finally
 		{
 			unlockRead();
@@ -123,12 +123,12 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 	}
 
 	@Override
-	public Set<ProblemInstanceSeedPair> getAlgorithmInstanceSeedPairsRan(
+	public Set<ProblemInstanceSeedPair> getProblemInstanceSeedPairsRan(
 			ParamConfiguration config) {
 		
 		lockRead();
 		try {
-			return runHistory.getAlgorithmInstanceSeedPairsRan(config);
+			return runHistory.getProblemInstanceSeedPairsRan(config);
 		} finally
 		{
 			unlockRead();
@@ -242,10 +242,10 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 	}
 
 	@Override
-	public boolean[] getCensoredFlagForRuns() {
+	public boolean[] getCensoredEarlyFlagForRuns() {
 		lockRead();
 		try {
-			return runHistory.getCensoredFlagForRuns();
+			return runHistory.getCensoredEarlyFlagForRuns();
 		} finally
 		{
 			unlockRead();
@@ -302,11 +302,11 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 
 
 	@Override
-	public Set<ProblemInstanceSeedPair> getCappedAlgorithmInstanceSeedPairs(
+	public Set<ProblemInstanceSeedPair> getEarlyCensoredProblemInstanceSeedPairs(
 			ParamConfiguration config) {
 		lockRead();
 		try {
-			return runHistory.getCappedAlgorithmInstanceSeedPairs(config);
+			return runHistory.getEarlyCensoredProblemInstanceSeedPairs(config);
 		} finally
 		{
 			unlockRead();

@@ -203,7 +203,7 @@ public class fANOVATester {
 		
 
 		//=== Sanitize the data.
-		SanitizedModelData sanitizedData = new PCAModelDataSanitizer(instanceFeatureMatrix, thetaMatrix, 7, runResponseValues, usedInstanceIdxs, true, runHistory.getParameterConfigurationInstancesRanByIndex(), runHistory.getCensoredFlagForRuns(), configSpace);
+		SanitizedModelData sanitizedData = new PCAModelDataSanitizer(instanceFeatureMatrix, thetaMatrix, 7, runResponseValues, usedInstanceIdxs, true, runHistory.getParameterConfigurationInstancesRanByIndex(), runHistory.getCensoredEarlyFlagForRuns(), configSpace);
 		
 		
 		//=== Build the actual model.

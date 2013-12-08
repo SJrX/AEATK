@@ -129,7 +129,7 @@ public class LogRuntimeStatistics implements EventHandler<AutomaticConfiguratorE
 				Object[] arr = { logCount.get(),
 						runHistory.getThetaIdx(incumbent) + " (" + incumbent +")",
 						runHistory.getTotalNumRunsOfConfig(incumbent),
-						runHistory.getInstancesRan(incumbent).size(),
+						runHistory.getProblemInstancesRan(incumbent).size(),
 						runHistory.getUniqueParamConfigurations().size(),
 						runHistory.getEmpiricalCost(incumbent, runHistory.getUniqueInstancesRan(), this.cutoffTime),
 						runHistory.getAlgorithmRuns().size(), 

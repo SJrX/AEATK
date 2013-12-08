@@ -60,14 +60,14 @@ public interface RunHistory {
 	 * @param config configuration to get instances for
 	 * @return	set instances that were run
 	 */
-	public Set<ProblemInstance> getInstancesRan(ParamConfiguration config);
+	public Set<ProblemInstance> getProblemInstancesRan(ParamConfiguration config);
 
 	/**
 	 * Returns a copy of the set of instance seed pairs we have run a Param Configuration on.
 	 * @param config	configuration to get ProblemInstanceSeedPairs for
 	 * @return	set of ProblemInstanceSeedPairs
 	 */
-	public Set<ProblemInstanceSeedPair> getAlgorithmInstanceSeedPairsRan(ParamConfiguration config);
+	public Set<ProblemInstanceSeedPair> getProblemInstanceSeedPairsRan(ParamConfiguration config);
 	
 	
 	/**
@@ -157,7 +157,7 @@ public interface RunHistory {
 	 * 
 	 * @return boolean array signifying whether a run was capped
 	 */
-	public boolean[] getCensoredFlagForRuns();
+	public boolean[] getCensoredEarlyFlagForRuns();
 	
 	/**
 	 * Returns a list containing all param configurations that ran in order (i.e. in order of theta idx)
@@ -207,9 +207,7 @@ public interface RunHistory {
 	 * @param config	paramconfiguration to select
 	 * @return	set of instance seed pairs that are capped runs
 	 */
-	public Set<ProblemInstanceSeedPair> getCappedAlgorithmInstanceSeedPairs(ParamConfiguration config);
-
-	
+	public Set<ProblemInstanceSeedPair> getEarlyCensoredProblemInstanceSeedPairs(ParamConfiguration config);
 
 	/**
 	 * Returns the Index into arrays represented by this configuration
@@ -218,8 +216,6 @@ public interface RunHistory {
 	 * @return index into the theta array for this configuration
 	 */
 	public int getThetaIdx(ParamConfiguration configuration);
-
-	
 
 	/**
 	 * Returns the number of unique problem instance seed pairs run for this configuration 

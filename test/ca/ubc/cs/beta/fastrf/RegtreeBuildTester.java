@@ -203,7 +203,7 @@ public class RegtreeBuildTester {
 			
 
 					//=== Sanitize the data.
-					SanitizedModelData sanitizedData = new PCAModelDataSanitizer(instanceFeatureMatrix, thetaMatrix, 7, runResponseValues, usedInstanceIdxs, true, runHistory.getParameterConfigurationInstancesRanByIndex(), runHistory.getCensoredFlagForRuns(), configSpace);
+					SanitizedModelData sanitizedData = new PCAModelDataSanitizer(instanceFeatureMatrix, thetaMatrix, 7, runResponseValues, usedInstanceIdxs, true, runHistory.getParameterConfigurationInstancesRanByIndex(), runHistory.getCensoredEarlyFlagForRuns(), configSpace);
 					
 					
 					ModelBuilder mb = new AdaptiveCappingModelBuilder(sanitizedData, rfOptions, new MersenneTwister(0), 2, 5000, intraObjective.getPenaltyFactor());

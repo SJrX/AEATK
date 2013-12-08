@@ -110,7 +110,7 @@ public class UDPMechanism {
 		
 			clientSocket.close();
 
-			return ResponseParser.processLine(response, rc, execConfig, watch.time() / 1000);
+			return ResponseParser.processLine(response, rc, execConfig, watch.time() / 1000.0);
 			
 		} catch (SocketException e1) {
 			throw new TargetAlgorithmAbortException("TAE Aborted due to socket exception",e1);

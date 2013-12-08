@@ -672,7 +672,7 @@ public class LegacyStateDeserializerTester {
 			
 			ParamConfiguration config = run.getRunConfig().getParamConfiguration();
 			
-			assertEquals(runHistory.getCensoredFlagForRuns()[i],restoredRunHistory.getCensoredFlagForRuns()[i]);
+			assertEquals(runHistory.getCensoredEarlyFlagForRuns()[i],restoredRunHistory.getCensoredEarlyFlagForRuns()[i]);
 			double cost1 = runHistory.getEmpiricalCost(config, instanceSet, execConfig.getAlgorithmCutoffTime());
 			double cost2 = restoredRunHistory.getEmpiricalCost(config, instanceSet, execConfig.getAlgorithmCutoffTime()); 
 			assertDEquals(cost1,cost2,0.1);

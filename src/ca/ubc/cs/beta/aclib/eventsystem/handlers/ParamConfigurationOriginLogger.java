@@ -72,7 +72,7 @@ public class ParamConfigurationOriginLogger implements EventHandler<AutomaticCon
 				line.append("\"" + runHistory.getThetaIdx(config) + "\",");
 				line.append("\"" + configTracker.getGenerationCount(config) + "\",");
 				line.append("\"" + runHistory.getTotalNumRunsOfConfig(config) + "\",");
-				line.append("\"" + runHistory.getEmpiricalCost(config, runHistory.getInstancesRan(config), cutoffTime) + "\",");
+				line.append("\"" + runHistory.getEmpiricalCost(config, runHistory.getProblemInstancesRan(config), cutoffTime) + "\",");
 				
 				for(String header : originNames)
 				{

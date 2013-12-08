@@ -169,16 +169,16 @@ public class StateMergeExecutor {
 				int maxSetSize = 0;
 				for(ParamConfiguration config : configs)
 				{
-					log.info("Number of runs for configuration {} is {}", config, rhToFilter.getAlgorithmInstanceSeedPairsRan(config).size());
+					log.info("Number of runs for configuration {} is {}", config, rhToFilter.getProblemInstanceSeedPairsRan(config).size());
 					
-					allPisps.addAll(rhToFilter.getAlgorithmInstanceSeedPairsRan(config));
-					if(maxSetSize < rhToFilter.getAlgorithmInstanceSeedPairsRan(config).size())
+					allPisps.addAll(rhToFilter.getProblemInstanceSeedPairsRan(config));
+					if(maxSetSize < rhToFilter.getProblemInstanceSeedPairsRan(config).size())
 					{
 						maxConfigs.clear();
 						maxConfigs.add(config);
-						maxSetSize = rhToFilter.getAlgorithmInstanceSeedPairsRan(config).size();
+						maxSetSize = rhToFilter.getProblemInstanceSeedPairsRan(config).size();
 						
-					} else if(maxSetSize == rhToFilter.getAlgorithmInstanceSeedPairsRan(config).size())
+					} else if(maxSetSize == rhToFilter.getProblemInstanceSeedPairsRan(config).size())
 					{
 						maxConfigs.add(config);
 						//maxSetSize = rhToFilter.getAlgorithmInstanceSeedPairsRan(config).size();
@@ -243,7 +243,7 @@ public class StateMergeExecutor {
 				log.info("New incumbent selected from random forest prediction is {} with string \"{}\" ", newIncumbent, newIncumbent.getFormattedParamString(StringFormat.NODB_SYNTAX));
 				Set<ProblemInstanceSeedPair> maxSet = new HashSet<ProblemInstanceSeedPair>();
 				
-				maxSet.addAll(rhToFilter.getAlgorithmInstanceSeedPairsRan(newIncumbent));
+				maxSet.addAll(rhToFilter.getProblemInstanceSeedPairsRan(newIncumbent));
 				
 				rhToSaveToDisk = new ThreadSafeRunHistoryWrapper(new NewRunHistory(smo.scenOpts.intraInstanceObj, smo.scenOpts.interInstanceObj, smo.scenOpts.runObj));
 				

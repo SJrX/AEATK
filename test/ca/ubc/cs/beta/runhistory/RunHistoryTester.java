@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.junit.AfterClass;
@@ -115,14 +116,14 @@ public class RunHistoryTester {
 
 			runConfig = new RunConfig(pisp, 2, defaultConfig,true);
 			
-			assertEquals(1.0,r.getEmpiricalCost(defaultConfig, r.getInstancesRan(defaultConfig), 500),0.01);
+			assertEquals(1.0,r.getEmpiricalCost(defaultConfig, r.getProblemInstancesRan(defaultConfig), 500),0.01);
 			
 			
 			
 			run = new ExistingAlgorithmRun(execConfig, runConfig, "0, 2 , 0 , 0, " + pisp.getSeed());
 			r.append(run);
 			
-			assertEquals(2.0,r.getEmpiricalCost(defaultConfig, r.getInstancesRan(defaultConfig), 500),0.01);
+			assertEquals(2.0,r.getEmpiricalCost(defaultConfig, r.getProblemInstancesRan(defaultConfig), 500),0.01);
 			//System.out.println(r.getEmpiricalCost(defaultConfig, r.getInstancesRan(defaultConfig), 300));
 			
 		} catch (DuplicateRunException e) {
@@ -176,15 +177,13 @@ public class RunHistoryTester {
 			
 		}
 		
-		assertTrue("Should only see an the one configuration", runHistory.getAlgorithmInstanceSeedPairsRan(defaultConfig).equals(Collections.singleton(pisp)));
-		assertTrue("Should have no runs", runHistory.getAlgorithmInstanceSeedPairsRan(otherConfig).equals(Collections.EMPTY_SET));
-		
-		
-		
-		
-		
+		assertTrue("Should only see an the one configuration", runHistory.getProblemInstanceSeedPairsRan(defaultConfig).equals(Collections.singleton(pisp)));
+		assertTrue("Should have no runs", runHistory.getProblemInstanceSeedPairsRan(otherConfig).equals(Collections.EMPTY_SET));
 		
 	}
+
+	
+	
 	
 	
 	/**
@@ -436,5 +435,76 @@ public class RunHistoryTester {
 		
 	}
 	
+	
+	
+	@Test
+	public void testCensoredEarlyRun()
+	{
+	
+		InstanceListWithSeeds ilws = ProblemInstanceHelperTester.getInstanceListWithSeeds("classicFormatValid.txt", false);
+		
+		InstanceSeedGenerator insc = ilws.getSeedGen();
+		RunHistory runHistory = new NewRunHistory( OverallObjective.MEAN, OverallObjective.MEAN, RunObjective.RUNTIME);
+	
+	
+		ParamConfigurationSpace space = ParamFileHelper.getParamFileFromString("a [0,9] [0]\nb [0,9] [0]\n");
+				
+		ParamConfiguration defaultConfig = space.getDefaultConfiguration();		
+		
+		ParamConfiguration otherConfig = space.getConfigurationFromString("-a '1' -b '1'", StringFormat.NODB_OR_STATEFILE_SYNTAX);
+		
+		ProblemInstanceSeedPair pisp = new ProblemInstanceSeedPair(ilws.getInstances().get(0), insc.getNextSeed(ilws.getInstances().get(0)));
+		RunConfig rc = new RunConfig(pisp, 2, defaultConfig, true);
+		try {
+			runHistory.append(new ExistingAlgorithmRun(execConfig, rc, RunResult.TIMEOUT, 2, 0, 0, pisp.getSeed()));
+		} catch (DuplicateRunException e) {
+			e.printStackTrace();
+			fail("Unexpected duplicated run exception");
+		}
+		
+		Set<ProblemInstanceSeedPair> earlyCensored = runHistory.getEarlyCensoredProblemInstanceSeedPairs(defaultConfig);
+		
+		assertEquals("Expected censored early runs to be 1", 1, earlyCensored.size());
+		assertEquals("Expected cost to be ", runHistory.getEmpiricalCost(defaultConfig, Collections.singleton(ilws.getInstances().get(0)), execConfig.getAlgorithmCutoffTime()),2,0.01);
+		assertTrue("Should only see an the one configuration", runHistory.getProblemInstanceSeedPairsRan(defaultConfig).equals(Collections.singleton(pisp)));
+		
+		rc = new RunConfig(pisp, 4, defaultConfig, true);
+		try {
+			runHistory.append(new ExistingAlgorithmRun(execConfig, rc, RunResult.TIMEOUT, 4, 0, 0, pisp.getSeed()));
+		} catch (DuplicateRunException e) {
+			e.printStackTrace();
+			fail("Unexpected duplicated run exception");
+		}
+		
+		earlyCensored = runHistory.getEarlyCensoredProblemInstanceSeedPairs(defaultConfig);
+		
+		assertEquals("Expected censored early runs to be 1", 1, earlyCensored.size());
+		assertEquals("Expected cost to be ", runHistory.getEmpiricalCost(defaultConfig, Collections.singleton(ilws.getInstances().get(0)), execConfig.getAlgorithmCutoffTime()),4,0.01);
+		assertTrue("Should only see an the one configuration", runHistory.getProblemInstanceSeedPairsRan(defaultConfig).equals(Collections.singleton(pisp)));
+		
+		
+		rc = new RunConfig(pisp, 8, defaultConfig, true);
+		try {
+			runHistory.append(new ExistingAlgorithmRun(execConfig, rc, RunResult.SAT, 6, 0, 0, pisp.getSeed()));
+		} catch (DuplicateRunException e) {
+			e.printStackTrace();
+			fail("Unexpected duplicated run exception");
+		}
+		
+		earlyCensored = runHistory.getEarlyCensoredProblemInstanceSeedPairs(defaultConfig);
+		
+		
+		assertEquals("Expected censored early runs to be 0", 0, earlyCensored.size());
+		assertEquals("Expected cost to be ", runHistory.getEmpiricalCost(defaultConfig, Collections.singleton(ilws.getInstances().get(0)), execConfig.getAlgorithmCutoffTime()),6,0.01);
+		
+		
+		assertTrue("Should only see an the one configuration", runHistory.getProblemInstanceSeedPairsRan(defaultConfig).equals(Collections.singleton(pisp)));
+		assertTrue("Should have no runs", runHistory.getProblemInstanceSeedPairsRan(otherConfig).equals(Collections.EMPTY_SET));
+		assertEquals("Expect to see three runs", runHistory.getAlgorithmRunData(defaultConfig).size(), 3);
+		
+		
+		
+	
+	}
 	
 }

@@ -123,7 +123,7 @@ public class StateMergeModelBuilder {
 		}
 		
 		double[] runResponseValues = runHistory.getRunResponseValues();
-		boolean[] censored = runHistory.getCensoredFlagForRuns();
+		boolean[] censored = runHistory.getCensoredEarlyFlagForRuns();
 		
 		
 		if(mbOptions.maskCensoredDataAsKappaMax)
@@ -157,7 +157,7 @@ public class StateMergeModelBuilder {
 		
 		
 		
-		SanitizedModelData sanitizedData = new DefaultValueForConditionalsMDS(instanceFeatureMatrix, thetaMatrix, runResponseValues, usedInstanceIdxs, rfOptions.logModel,runHistory.getParameterConfigurationInstancesRanByIndex(), runHistory.getCensoredFlagForRuns(), configSpace);
+		SanitizedModelData sanitizedData = new DefaultValueForConditionalsMDS(instanceFeatureMatrix, thetaMatrix, runResponseValues, usedInstanceIdxs, rfOptions.logModel,runHistory.getParameterConfigurationInstancesRanByIndex(), runHistory.getCensoredEarlyFlagForRuns(), configSpace);
 		
 		if(mbOptions.maskCensoredDataAsUncensored)
 		{

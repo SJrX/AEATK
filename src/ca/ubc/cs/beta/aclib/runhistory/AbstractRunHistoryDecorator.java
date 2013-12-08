@@ -57,14 +57,14 @@ public abstract class AbstractRunHistoryDecorator implements RunHistory {
 	}
 
 	@Override
-	public Set<ProblemInstance> getInstancesRan(ParamConfiguration config) {
-		return rh.getInstancesRan(config);
+	public Set<ProblemInstance> getProblemInstancesRan(ParamConfiguration config) {
+		return rh.getProblemInstancesRan(config);
 	}
 
 	@Override
-	public Set<ProblemInstanceSeedPair> getAlgorithmInstanceSeedPairsRan(
+	public Set<ProblemInstanceSeedPair> getProblemInstanceSeedPairsRan(
 			ParamConfiguration config) {
-		return rh.getAlgorithmInstanceSeedPairsRan(config);
+		return rh.getProblemInstanceSeedPairsRan(config);
 	}
 
 	@Override
@@ -121,8 +121,8 @@ public abstract class AbstractRunHistoryDecorator implements RunHistory {
 	}
 
 	@Override
-	public boolean[] getCensoredFlagForRuns() {
-		return rh.getCensoredFlagForRuns();
+	public boolean[] getCensoredEarlyFlagForRuns() {
+		return rh.getCensoredEarlyFlagForRuns();
 	}
 
 	@Override
@@ -151,9 +151,9 @@ public abstract class AbstractRunHistoryDecorator implements RunHistory {
 	}
 
 	@Override
-	public Set<ProblemInstanceSeedPair> getCappedAlgorithmInstanceSeedPairs(
+	public Set<ProblemInstanceSeedPair> getEarlyCensoredProblemInstanceSeedPairs(
 			ParamConfiguration config) {
-		return rh.getCappedAlgorithmInstanceSeedPairs(config);
+		return rh.getEarlyCensoredProblemInstanceSeedPairs(config);
 	}
 
 	@Override

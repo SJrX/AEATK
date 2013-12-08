@@ -100,7 +100,7 @@ public class NewRunHistory implements RunHistory {
 	/**
 	 * Stores a list of Instance Seed Pairs whose runs were capped.
 	 */
-	private final HashMap<ParamConfiguration, Set<ProblemInstanceSeedPair>> cappedRuns = new HashMap<ParamConfiguration, Set<ProblemInstanceSeedPair>>(); 
+	private final HashMap<ParamConfiguration, Set<ProblemInstanceSeedPair>> censoredEarlyRuns = new HashMap<ParamConfiguration, Set<ProblemInstanceSeedPair>>(); 
 	
 	/**
 	 * Stores the set of instances we have run
@@ -178,20 +178,16 @@ public class NewRunHistory implements RunHistory {
 			//If the value already existed then either
 			//we have a duplicate run OR the previous run was capped
 			
-			Set<ProblemInstanceSeedPair> cappedRunsForConfig = cappedRuns.get(config);
+			Set<ProblemInstanceSeedPair> censoredEarlyRunsForConfig = censoredEarlyRuns.get(config);
 			
 			
 			
-			if((cappedRunsForConfig != null) && cappedRunsForConfig.contains(pisp))
+			if((censoredEarlyRunsForConfig != null) && censoredEarlyRunsForConfig.contains(pisp))
 			{
 				//We remove it now and will re-add it if this current run was capped
-				cappedRunsForConfig.remove(pisp); 
+				censoredEarlyRunsForConfig.remove(pisp); 
 			} else
 			{
-			
-			
-			
-				
 				AlgorithmRun matchingRun = null;
 				for(AlgorithmRun algoRun : this.getAlgorithmRunData(config))
 				{
@@ -252,12 +248,12 @@ public class NewRunHistory implements RunHistory {
 		 */
 		if(cappedRun)
 		{
-			if(!cappedRuns.containsKey(config))
+			if(!censoredEarlyRuns.containsKey(config))
 			{
-				cappedRuns.put(config, new LinkedHashSet<ProblemInstanceSeedPair>());
+				censoredEarlyRuns.put(config, new LinkedHashSet<ProblemInstanceSeedPair>());
 			}
 				
-			cappedRuns.get(config).add(pisp);
+			censoredEarlyRuns.get(config).add(pisp);
 		}
 		
 		Object[] args = {iteration, paramConfigurationList.getKey(config), pi.getInstanceID(), pisp.getSeed(), format.format(run.getRunConfig().getCutoffTime())};
@@ -364,7 +360,7 @@ public class NewRunHistory implements RunHistory {
 	}
 
 	@Override
-	public Set<ProblemInstance> getInstancesRan(ParamConfiguration config) {
+	public Set<ProblemInstance> getProblemInstancesRan(ParamConfiguration config) {
 		if (!configToPerformanceMap.containsKey(config)){
 			return new HashSet<ProblemInstance>();
 		}
@@ -372,8 +368,7 @@ public class NewRunHistory implements RunHistory {
 	}
 
 	@Override
-	public Set<ProblemInstanceSeedPair> getAlgorithmInstanceSeedPairsRan(
-			ParamConfiguration config) {
+	public Set<ProblemInstanceSeedPair> getProblemInstanceSeedPairsRan(ParamConfiguration config) {
 		if (!configToPerformanceMap.containsKey(config)){
 			return new HashSet<ProblemInstanceSeedPair>();
 		}
@@ -391,14 +386,14 @@ public class NewRunHistory implements RunHistory {
 	}
 
 	@Override
-	public Set<ProblemInstanceSeedPair> getCappedAlgorithmInstanceSeedPairs(ParamConfiguration config)
+	public Set<ProblemInstanceSeedPair> getEarlyCensoredProblemInstanceSeedPairs(ParamConfiguration config)
 	{
-		if(!cappedRuns.containsKey(config))
+		if(!censoredEarlyRuns.containsKey(config))
 		{
 			return Collections.emptySet();
 		}
 		
-		return Collections.unmodifiableSet(cappedRuns.get(config));
+		return Collections.unmodifiableSet(censoredEarlyRuns.get(config));
 	}
 
 	
@@ -433,7 +428,7 @@ public class NewRunHistory implements RunHistory {
 	}
 
 	@Override
-	public boolean[] getCensoredFlagForRuns() {
+	public boolean[] getCensoredEarlyFlagForRuns() {
 		boolean[] responseValues = new boolean[runHistoryList.size()];
 		int i=0;
 		for(RunData runData : runHistoryList)
