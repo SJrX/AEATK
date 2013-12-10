@@ -467,6 +467,81 @@ public class RunHistoryTester {
 		assertEquals("Expected censored early runs to be 1", 1, earlyCensored.size());
 		assertEquals("Expected cost to be ", runHistory.getEmpiricalCost(defaultConfig, Collections.singleton(ilws.getInstances().get(0)), execConfig.getAlgorithmCutoffTime()),2,0.01);
 		assertTrue("Should only see an the one configuration", runHistory.getProblemInstanceSeedPairsRan(defaultConfig).equals(Collections.singleton(pisp)));
+		assertEquals("Expected runtime sum to match hand calculation ", 2.0, runHistory.getTotalRunCost(), 0.01);
+		
+		rc = new RunConfig(pisp, 4, defaultConfig, true);
+		try {
+			runHistory.append(new ExistingAlgorithmRun(execConfig, rc, RunResult.TIMEOUT, 4, 0, 0, pisp.getSeed()));
+		} catch (DuplicateRunException e) {
+			e.printStackTrace();
+			fail("Unexpected duplicated run exception");
+		}
+		
+		earlyCensored = runHistory.getEarlyCensoredProblemInstanceSeedPairs(defaultConfig);
+		
+		assertEquals("Expected censored early runs to be 1", 1, earlyCensored.size());
+		assertEquals("Expected cost to be ", runHistory.getEmpiricalCost(defaultConfig, Collections.singleton(ilws.getInstances().get(0)), execConfig.getAlgorithmCutoffTime()),4,0.01);
+		assertTrue("Should only see an the one configuration", runHistory.getProblemInstanceSeedPairsRan(defaultConfig).equals(Collections.singleton(pisp)));
+		assertEquals("Expected runtime sum to match hand calculation ", 6.0, runHistory.getTotalRunCost(), 0.01);
+		
+		rc = new RunConfig(pisp, 8, defaultConfig, true);
+		try {
+			runHistory.append(new ExistingAlgorithmRun(execConfig, rc, RunResult.SAT, 6, 0, 0, pisp.getSeed()));
+		} catch (DuplicateRunException e) {
+			e.printStackTrace();
+			fail("Unexpected duplicated run exception");
+		}
+		
+		earlyCensored = runHistory.getEarlyCensoredProblemInstanceSeedPairs(defaultConfig);
+		
+		
+		assertEquals("Expected censored early runs to be 0", 0, earlyCensored.size());
+		assertEquals("Expected cost to be ", runHistory.getEmpiricalCost(defaultConfig, Collections.singleton(ilws.getInstances().get(0)), execConfig.getAlgorithmCutoffTime()),6,0.01);
+		assertEquals("Expected runtime sum to match hand calculation ", 12.0, runHistory.getTotalRunCost(), 0.01);
+		
+		assertTrue("Should only see an the one configuration", runHistory.getProblemInstanceSeedPairsRan(defaultConfig).equals(Collections.singleton(pisp)));
+		assertTrue("Should have no runs", runHistory.getProblemInstanceSeedPairsRan(otherConfig).equals(Collections.EMPTY_SET));
+		assertEquals("Expect to see three runs", runHistory.getAlgorithmRunData(defaultConfig).size(), 3);
+		
+		
+		
+	
+	}
+	
+	
+	
+	@Test
+	public void testCensoredEarlyRunWithLastBeingKilledAndLess()
+	{
+	
+		InstanceListWithSeeds ilws = ProblemInstanceHelperTester.getInstanceListWithSeeds("classicFormatValid.txt", false);
+		
+		InstanceSeedGenerator insc = ilws.getSeedGen();
+		RunHistory runHistory = new NewRunHistory( OverallObjective.MEAN, OverallObjective.MEAN, RunObjective.RUNTIME);
+	
+	
+		ParamConfigurationSpace space = ParamFileHelper.getParamFileFromString("a [0,9] [0]\nb [0,9] [0]\n");
+				
+		ParamConfiguration defaultConfig = space.getDefaultConfiguration();		
+		
+		ParamConfiguration otherConfig = space.getConfigurationFromString("-a '1' -b '1'", StringFormat.NODB_OR_STATEFILE_SYNTAX);
+		
+		ProblemInstanceSeedPair pisp = new ProblemInstanceSeedPair(ilws.getInstances().get(0), insc.getNextSeed(ilws.getInstances().get(0)));
+		RunConfig rc = new RunConfig(pisp, 2, defaultConfig, true);
+		try {
+			runHistory.append(new ExistingAlgorithmRun(execConfig, rc, RunResult.TIMEOUT, 2, 0, 0, pisp.getSeed()));
+		} catch (DuplicateRunException e) {
+			e.printStackTrace();
+			fail("Unexpected duplicated run exception");
+		}
+		
+		Set<ProblemInstanceSeedPair> earlyCensored = runHistory.getEarlyCensoredProblemInstanceSeedPairs(defaultConfig);
+		
+		assertEquals("Expected censored early runs to be 1", 1, earlyCensored.size());
+		assertEquals("Expected cost to be ", runHistory.getEmpiricalCost(defaultConfig, Collections.singleton(ilws.getInstances().get(0)), execConfig.getAlgorithmCutoffTime()),2,0.01);
+		assertTrue("Should only see an the one configuration", runHistory.getProblemInstanceSeedPairsRan(defaultConfig).equals(Collections.singleton(pisp)));
+		assertEquals("Expected runtime sum to match hand calculation ", 2.0, runHistory.getTotalRunCost(), 0.01);
+		
 		
 		rc = new RunConfig(pisp, 4, defaultConfig, true);
 		try {
@@ -482,10 +557,87 @@ public class RunHistoryTester {
 		assertEquals("Expected cost to be ", runHistory.getEmpiricalCost(defaultConfig, Collections.singleton(ilws.getInstances().get(0)), execConfig.getAlgorithmCutoffTime()),4,0.01);
 		assertTrue("Should only see an the one configuration", runHistory.getProblemInstanceSeedPairsRan(defaultConfig).equals(Collections.singleton(pisp)));
 		
+		assertEquals("Expected runtime sum to match hand calculation ", 6.0, runHistory.getTotalRunCost(), 0.01);
+		
 		
 		rc = new RunConfig(pisp, 8, defaultConfig, true);
 		try {
-			runHistory.append(new ExistingAlgorithmRun(execConfig, rc, RunResult.SAT, 6, 0, 0, pisp.getSeed()));
+			runHistory.append(new ExistingAlgorithmRun(execConfig, rc, RunResult.KILLED, 1, 0, 0, pisp.getSeed()));
+		} catch (DuplicateRunException e) {
+			e.printStackTrace();
+			fail("Unexpected duplicated run exception");
+		}
+		
+		earlyCensored = runHistory.getEarlyCensoredProblemInstanceSeedPairs(defaultConfig);
+		
+		
+		assertEquals("Expected censored early runs to be 1", 1, earlyCensored.size());
+		assertEquals("Expected cost to be ", runHistory.getEmpiricalCost(defaultConfig, Collections.singleton(ilws.getInstances().get(0)), execConfig.getAlgorithmCutoffTime()),4,0.01);
+		assertEquals("Expected runtime sum to match hand calculation ", 7.0, runHistory.getTotalRunCost(), 0.01);
+		
+		
+		assertTrue("Should only see an the one configuration", runHistory.getProblemInstanceSeedPairsRan(defaultConfig).equals(Collections.singleton(pisp)));
+		assertTrue("Should have no runs", runHistory.getProblemInstanceSeedPairsRan(otherConfig).equals(Collections.EMPTY_SET));
+		assertEquals("Expect to see three runs", runHistory.getAlgorithmRunData(defaultConfig).size(), 3);
+	}
+	
+	
+
+	@Test
+	/**
+	 * This situation can happen due to noise, although the numbers in this test are admittedly more than we would like :(.
+	 */
+	public void testCensoredEarlyRunWithFinalRunlessThanCensored()
+	{
+	
+		InstanceListWithSeeds ilws = ProblemInstanceHelperTester.getInstanceListWithSeeds("classicFormatValid.txt", false);
+		
+		InstanceSeedGenerator insc = ilws.getSeedGen();
+		RunHistory runHistory = new NewRunHistory( OverallObjective.MEAN, OverallObjective.MEAN, RunObjective.RUNTIME);
+	
+	
+		ParamConfigurationSpace space = ParamFileHelper.getParamFileFromString("a [0,9] [0]\nb [0,9] [0]\n");
+				
+		ParamConfiguration defaultConfig = space.getDefaultConfiguration();		
+		
+		ParamConfiguration otherConfig = space.getConfigurationFromString("-a '1' -b '1'", StringFormat.NODB_OR_STATEFILE_SYNTAX);
+		
+		ProblemInstanceSeedPair pisp = new ProblemInstanceSeedPair(ilws.getInstances().get(0), insc.getNextSeed(ilws.getInstances().get(0)));
+		RunConfig rc = new RunConfig(pisp, 2, defaultConfig, true);
+		try {
+			runHistory.append(new ExistingAlgorithmRun(execConfig, rc, RunResult.TIMEOUT, 2, 0, 0, pisp.getSeed()));
+		} catch (DuplicateRunException e) {
+			e.printStackTrace();
+			fail("Unexpected duplicated run exception");
+		}
+		
+		Set<ProblemInstanceSeedPair> earlyCensored = runHistory.getEarlyCensoredProblemInstanceSeedPairs(defaultConfig);
+		
+		assertEquals("Expected censored early runs to be 1", 1, earlyCensored.size());
+		assertEquals("Expected cost to be ", runHistory.getEmpiricalCost(defaultConfig, Collections.singleton(ilws.getInstances().get(0)), execConfig.getAlgorithmCutoffTime()),2,0.01);
+		assertTrue("Should only see an the one configuration", runHistory.getProblemInstanceSeedPairsRan(defaultConfig).equals(Collections.singleton(pisp)));
+		assertEquals("Expected runtime sum to match hand calculation ", 2.0, runHistory.getTotalRunCost(), 0.01);
+		
+		
+		rc = new RunConfig(pisp, 4, defaultConfig, true);
+		try {
+			runHistory.append(new ExistingAlgorithmRun(execConfig, rc, RunResult.TIMEOUT, 4, 0, 0, pisp.getSeed()));
+		} catch (DuplicateRunException e) {
+			e.printStackTrace();
+			fail("Unexpected duplicated run exception");
+		}
+		
+		earlyCensored = runHistory.getEarlyCensoredProblemInstanceSeedPairs(defaultConfig);
+		
+		assertEquals("Expected censored early runs to be 1", 1, earlyCensored.size());
+		assertEquals("Expected cost to be ", runHistory.getEmpiricalCost(defaultConfig, Collections.singleton(ilws.getInstances().get(0)), execConfig.getAlgorithmCutoffTime()),4,0.01);
+		assertTrue("Should only see an the one configuration", runHistory.getProblemInstanceSeedPairsRan(defaultConfig).equals(Collections.singleton(pisp)));
+		
+		assertEquals("Expected runtime sum to match hand calculation ", 6.0, runHistory.getTotalRunCost(), 0.01);
+		
+		rc = new RunConfig(pisp, 8, defaultConfig, true);
+		try {
+			runHistory.append(new ExistingAlgorithmRun(execConfig, rc, RunResult.SAT, 3, 0, 0, pisp.getSeed()));
 		} catch (DuplicateRunException e) {
 			e.printStackTrace();
 			fail("Unexpected duplicated run exception");
@@ -495,8 +647,8 @@ public class RunHistoryTester {
 		
 		
 		assertEquals("Expected censored early runs to be 0", 0, earlyCensored.size());
-		assertEquals("Expected cost to be ", runHistory.getEmpiricalCost(defaultConfig, Collections.singleton(ilws.getInstances().get(0)), execConfig.getAlgorithmCutoffTime()),6,0.01);
-		
+		assertEquals("Expected cost to be ", runHistory.getEmpiricalCost(defaultConfig, Collections.singleton(ilws.getInstances().get(0)), execConfig.getAlgorithmCutoffTime()),3,0.01);
+		assertEquals("Expected runtime sum to match hand calculation ", 9.0, runHistory.getTotalRunCost(), 0.01);
 		
 		assertTrue("Should only see an the one configuration", runHistory.getProblemInstanceSeedPairsRan(defaultConfig).equals(Collections.singleton(pisp)));
 		assertTrue("Should have no runs", runHistory.getProblemInstanceSeedPairsRan(otherConfig).equals(Collections.EMPTY_SET));
@@ -506,5 +658,8 @@ public class RunHistoryTester {
 		
 	
 	}
+	
+	
+	
 	
 }

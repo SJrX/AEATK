@@ -173,15 +173,16 @@ public class NewRunHistory implements RunHistory {
 		
 		Double dOldValue = seedToPerformanceMap.put(seed,runResult);
 		
+		RunResult result = run.getRunResult();
+		boolean censoredEarly = (result.equals(RunResult.TIMEOUT) && run.getRunConfig().hasCutoffLessThanMax() || result.equals(RunResult.KILLED));
+		
 		if(dOldValue != null)
 		{
 			//If the value already existed then either
 			//we have a duplicate run OR the previous run was capped
 			
 			Set<ProblemInstanceSeedPair> censoredEarlyRunsForConfig = censoredEarlyRuns.get(config);
-			
-			
-			
+
 			if((censoredEarlyRunsForConfig != null) && censoredEarlyRunsForConfig.contains(pisp))
 			{
 				//We remove it now and will re-add it if this current run was capped
@@ -196,15 +197,33 @@ public class NewRunHistory implements RunHistory {
 						matchingRun = algoRun;
 					}
 				}
+							
+				//Restores the state of the RunHistory object to essentially idential to when we found it.
+				seedToPerformanceMap.put(seed, dOldValue);
 				
-				Object[] args = {matchingRun, run, config, pi,dOldValue};
-				
+				Object[] args = {matchingRun, run, config, pi,dOldValue};				
 				
 				log.error("RunHistory already contains a run with identical config, instance and seed \n Original Run:{}\nRun:{}\nConfig:{}\nInstance:{}\nPrevious Performance:{}", args);
 				throw new DuplicateRunException("Duplicate Run Detected", run);
 			}
 			
+			
+			if(this.runObj != RunObjective.RUNTIME)
+			{
+				log.error("Not sure how to rectify early censored runs under different run objectives, current run seems to conflict with a previous one: {} " , run);
+				throw new IllegalStateException("Unable to handle capped runs for the RunObjective: " + runObj);
+			} else
+			{
+				//We know that both the previous and current result must be censored early, so we take the maximimum
+				if(censoredEarly)
+				{	
+					seedToPerformanceMap.put(seed, Math.max(dOldValue, runResult));
+				}
+			}
+
 		}
+		
+	
 		
 		if(this.configToRunMap.get(config) == null)
 		{
@@ -222,9 +241,9 @@ public class NewRunHistory implements RunHistory {
 	
 		
 		int instanceIdx = pi.getInstanceID();
-		RunResult result = run.getRunResult();
-		boolean cappedRun = (result.equals(RunResult.TIMEOUT) && run.getRunConfig().hasCutoffLessThanMax() || result.equals(RunResult.KILLED));
-		runHistoryList.add(new RunData(iteration, thetaIdx, instanceIdx, run,runResult, cappedRun));
+		
+	
+		runHistoryList.add(new RunData(iteration, thetaIdx, instanceIdx, run,runResult, censoredEarly));
 		
 		
 		/*
@@ -246,7 +265,7 @@ public class NewRunHistory implements RunHistory {
 		/*
 		 * Add to the capped runs set
 		 */
-		if(cappedRun)
+		if(censoredEarly)
 		{
 			if(!censoredEarlyRuns.containsKey(config))
 			{
