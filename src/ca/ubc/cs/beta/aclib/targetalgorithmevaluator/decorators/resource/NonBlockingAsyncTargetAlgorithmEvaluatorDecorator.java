@@ -29,7 +29,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.functionality.Ou
 public class NonBlockingAsyncTargetAlgorithmEvaluatorDecorator extends
 		AbstractTargetAlgorithmEvaluatorDecorator {
 
-	private final ExecutorService execService = Executors.newSingleThreadExecutor(new SequentiallyNamedThreadFactory(getClass() + " Processor", true));
+	private final ExecutorService execService = Executors.newSingleThreadExecutor(new SequentiallyNamedThreadFactory(getClass().getSimpleName() + " Processor", true));
 			
 	private final BlockingQueue<Triple> queue = new LinkedBlockingQueue<Triple>();
 	
