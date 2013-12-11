@@ -186,6 +186,19 @@ public abstract class AbstractRunHistoryDecorator implements RunHistory {
 	public List<Long> getSeedsUsedByInstance(ProblemInstance pi) {
 		return rh.getSeedsUsedByInstance(pi);
 	}
+	
+	@Override
+	public double getEmpiricalCostLowerBound(ParamConfiguration config,
+			Set<ProblemInstance> instanceSet, double cutoffTime) {
+		return rh.getEmpiricalCostLowerBound(config, instanceSet, cutoffTime);
+	}
+
+	@Override
+	public double getEmpiricalCostUpperBound(ParamConfiguration config,
+			Set<ProblemInstance> instanceSet, double cutoffTime) {
+		return rh.getEmpiricalCostUpperBound(config, instanceSet, cutoffTime);
+	}
+	
 
 	
 }

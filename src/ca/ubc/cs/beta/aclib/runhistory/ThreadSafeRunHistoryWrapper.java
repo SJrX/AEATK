@@ -439,6 +439,18 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 		
 	}
 
+	@Override
+	public double getEmpiricalCostLowerBound(ParamConfiguration config,
+			Set<ProblemInstance> instanceSet, double cutoffTime) {
+		return this.runHistory.getEmpiricalCostLowerBound(config, instanceSet, cutoffTime);
+	}
+
+	@Override
+	public double getEmpiricalCostUpperBound(ParamConfiguration config,
+			Set<ProblemInstance> instanceSet, double cutoffTime) {
+		return this.runHistory.getEmpiricalCostUpperBound(config, instanceSet, cutoffTime);
+	}
+
 
 	
 

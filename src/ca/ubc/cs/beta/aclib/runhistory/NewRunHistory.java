@@ -310,6 +310,86 @@ public class NewRunHistory implements RunHistory {
 	}
 	
 	@Override
+	public double getEmpiricalCostLowerBound(ParamConfiguration config,	Set<ProblemInstance> instanceSet, double cutoffTime) 
+	{
+		
+		return getEmpiricalCostBound(config, instanceSet, cutoffTime, 0.0, Bound.LOWER);
+		
+	}
+
+	@Override
+	public double getEmpiricalCostUpperBound(ParamConfiguration config,	Set<ProblemInstance> instanceSet, double cutoffTime) 
+	{	
+		return getEmpiricalCostBound(config, instanceSet, cutoffTime, cutoffTime, Bound.UPPER);
+
+	}
+	
+	private enum Bound{
+		UPPER,
+		LOWER
+	}
+	
+	private double getEmpiricalCostBound(ParamConfiguration config, Set<ProblemInstance> instanceSet, double cutoffTime, Double boundValue, Bound b)
+	{
+		Map<ProblemInstance, Map <Long,Double>> hallucinatedValues = new HashMap<ProblemInstance,Map<Long, Double>>();
+		
+		Set<ProblemInstanceSeedPair> earlyCensoredPISPs = this.getEarlyCensoredProblemInstanceSeedPairs(config);
+		
+		for(ProblemInstance pi : instanceSet)
+		{
+			Map<Long,Double> instPerformance =  new HashMap<Long, Double>(); 
+			hallucinatedValues.put(pi, instPerformance);
+			
+			//Pass one is to put the bound value in every necessary slot.
+			
+			if(seedsUsedByInstance.get(pi) == null)
+			{
+				seedsUsedByInstance.put(pi, new ArrayList<Long>());
+			}
+			for(Long l : seedsUsedByInstance.get(pi))
+			{
+				instPerformance.put(l, boundValue);
+			}
+
+			//Pass two puts the observed performance in the appropriate slot.
+			Map<Long, Double> actualPerformance = new HashMap<Long, Double>();
+
+			
+			if(this.configToPerformanceMap.get(config) != null)
+			{
+				instPerformance.putAll(this.configToPerformanceMap.get(config).get(pi));
+			}
+			
+			//Pass three rounds early censored values back up to the cuttoff time
+			if(b == Bound.UPPER)
+			{
+				for(Long l : seedsUsedByInstance.get(pi))
+				{
+					ProblemInstanceSeedPair pisp = new ProblemInstanceSeedPair(pi, l);
+					if(earlyCensoredPISPs.contains(pisp))
+					{
+						instPerformance.put(l, boundValue);
+					}
+				}
+				
+				
+			} 
+			
+			
+			if(instPerformance.size() == 0)
+			{
+				//== We insert a bound value  if we have nothing, because of the way getEmipricalCost is implemented.
+				instPerformance.put(Long.MIN_VALUE, boundValue);
+			}
+			 
+			
+			
+		}
+		
+		return getEmpiricalCost(config, instanceSet, cutoffTime, hallucinatedValues, 0);
+
+	}
+	@Override
 	public double getEmpiricalCost(ParamConfiguration config, Set<ProblemInstance> instanceSet, double cutoffTime, Map<ProblemInstance, Map<Long,Double>> hallucinatedValues, double minimumResponseValue)
 	{
 		if (!configToPerformanceMap.containsKey(config) && hallucinatedValues.isEmpty()){
@@ -602,6 +682,7 @@ public class NewRunHistory implements RunHistory {
 		}
 		return Collections.unmodifiableList(seedsUsedByInstance.get(pi));
 	}
+
 
 
 

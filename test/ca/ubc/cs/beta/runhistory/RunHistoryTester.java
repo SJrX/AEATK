@@ -3,8 +3,10 @@ package ca.ubc.cs.beta.runhistory;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
+import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
@@ -18,6 +20,8 @@ import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
+
+import com.google.common.collect.Sets;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.ExistingAlgorithmRun;
@@ -447,11 +451,20 @@ public class RunHistoryTester {
 		RunHistory runHistory = new NewRunHistory( OverallObjective.MEAN, OverallObjective.MEAN, RunObjective.RUNTIME);
 	
 	
+		Set<ProblemInstance> instanceSet = new HashSet<ProblemInstance>();
+		instanceSet.add(ilws.getInstances().get(0));
+		
+		double cutoffTime = execConfig.getAlgorithmCutoffTime();
+		
 		ParamConfigurationSpace space = ParamFileHelper.getParamFileFromString("a [0,9] [0]\nb [0,9] [0]\n");
 				
 		ParamConfiguration defaultConfig = space.getDefaultConfiguration();		
 		
 		ParamConfiguration otherConfig = space.getConfigurationFromString("-a '1' -b '1'", StringFormat.NODB_OR_STATEFILE_SYNTAX);
+		
+		
+		assertEquals("Configuration should have an upper bound of " + cutoffTime, cutoffTime, runHistory.getEmpiricalCostUpperBound(defaultConfig, instanceSet, cutoffTime), 0.01);
+		assertEquals("Configuration should have an lower bound of " + 0,0.0,runHistory.getEmpiricalCostLowerBound(defaultConfig, instanceSet, cutoffTime), 0.01);
 		
 		ProblemInstanceSeedPair pisp = new ProblemInstanceSeedPair(ilws.getInstances().get(0), insc.getNextSeed(ilws.getInstances().get(0)));
 		RunConfig rc = new RunConfig(pisp, 2, defaultConfig, true);
@@ -462,12 +475,17 @@ public class RunHistoryTester {
 			fail("Unexpected duplicated run exception");
 		}
 		
+		
 		Set<ProblemInstanceSeedPair> earlyCensored = runHistory.getEarlyCensoredProblemInstanceSeedPairs(defaultConfig);
 		
 		assertEquals("Expected censored early runs to be 1", 1, earlyCensored.size());
-		assertEquals("Expected cost to be ", runHistory.getEmpiricalCost(defaultConfig, Collections.singleton(ilws.getInstances().get(0)), execConfig.getAlgorithmCutoffTime()),2,0.01);
+		assertEquals("Expected cost to be ", runHistory.getEmpiricalCost(defaultConfig, Collections.singleton(ilws.getInstances().get(0)), cutoffTime),2,0.01);
 		assertTrue("Should only see an the one configuration", runHistory.getProblemInstanceSeedPairsRan(defaultConfig).equals(Collections.singleton(pisp)));
 		assertEquals("Expected runtime sum to match hand calculation ", 2.0, runHistory.getTotalRunCost(), 0.01);
+		
+		assertEquals("Configuration should have an upper bound of " + cutoffTime, cutoffTime, runHistory.getEmpiricalCostUpperBound(defaultConfig, instanceSet, cutoffTime), 0.01);
+		assertEquals("Configuration should have an lower bound of " + 2,2.0,runHistory.getEmpiricalCostLowerBound(defaultConfig, instanceSet, cutoffTime), 0.01);
+		
 		
 		rc = new RunConfig(pisp, 4, defaultConfig, true);
 		try {
@@ -480,9 +498,15 @@ public class RunHistoryTester {
 		earlyCensored = runHistory.getEarlyCensoredProblemInstanceSeedPairs(defaultConfig);
 		
 		assertEquals("Expected censored early runs to be 1", 1, earlyCensored.size());
-		assertEquals("Expected cost to be ", runHistory.getEmpiricalCost(defaultConfig, Collections.singleton(ilws.getInstances().get(0)), execConfig.getAlgorithmCutoffTime()),4,0.01);
+		assertEquals("Expected cost to be ", runHistory.getEmpiricalCost(defaultConfig, Collections.singleton(ilws.getInstances().get(0)), cutoffTime),4,0.01);
 		assertTrue("Should only see an the one configuration", runHistory.getProblemInstanceSeedPairsRan(defaultConfig).equals(Collections.singleton(pisp)));
 		assertEquals("Expected runtime sum to match hand calculation ", 6.0, runHistory.getTotalRunCost(), 0.01);
+		
+		
+		
+		assertEquals("Configuration should have an upper bound of " + cutoffTime, cutoffTime, runHistory.getEmpiricalCostUpperBound(defaultConfig, instanceSet, cutoffTime), 0.01);
+		assertEquals("Configuration should have an lower bound of " + 4,4.0,runHistory.getEmpiricalCostLowerBound(defaultConfig, instanceSet, cutoffTime), 0.01);
+		
 		
 		rc = new RunConfig(pisp, 8, defaultConfig, true);
 		try {
@@ -496,19 +520,18 @@ public class RunHistoryTester {
 		
 		
 		assertEquals("Expected censored early runs to be 0", 0, earlyCensored.size());
-		assertEquals("Expected cost to be ", runHistory.getEmpiricalCost(defaultConfig, Collections.singleton(ilws.getInstances().get(0)), execConfig.getAlgorithmCutoffTime()),6,0.01);
+		assertEquals("Expected cost to be ", runHistory.getEmpiricalCost(defaultConfig, Collections.singleton(ilws.getInstances().get(0)), cutoffTime),6,0.01);
 		assertEquals("Expected runtime sum to match hand calculation ", 12.0, runHistory.getTotalRunCost(), 0.01);
+		
+		assertEquals("Configuration should have an upper bound of " + cutoffTime, 6.0, runHistory.getEmpiricalCostUpperBound(defaultConfig, instanceSet, cutoffTime), 0.01);
+		assertEquals("Configuration should have an lower bound of " + 6, 6.0, runHistory.getEmpiricalCostLowerBound(defaultConfig, instanceSet, cutoffTime), 0.01);
 		
 		assertTrue("Should only see an the one configuration", runHistory.getProblemInstanceSeedPairsRan(defaultConfig).equals(Collections.singleton(pisp)));
 		assertTrue("Should have no runs", runHistory.getProblemInstanceSeedPairsRan(otherConfig).equals(Collections.EMPTY_SET));
 		assertEquals("Expect to see three runs", runHistory.getAlgorithmRunData(defaultConfig).size(), 3);
+
 		
-		
-		
-	
 	}
-	
-	
 	
 	@Test
 	public void testCensoredEarlyRunWithLastBeingKilledAndLess()
@@ -519,7 +542,11 @@ public class RunHistoryTester {
 		InstanceSeedGenerator insc = ilws.getSeedGen();
 		RunHistory runHistory = new NewRunHistory( OverallObjective.MEAN, OverallObjective.MEAN, RunObjective.RUNTIME);
 	
-	
+		Set<ProblemInstance> instanceSet = new HashSet<ProblemInstance>();
+		instanceSet.add(ilws.getInstances().get(0));
+		
+		double cutoffTime = execConfig.getAlgorithmCutoffTime();
+		
 		ParamConfigurationSpace space = ParamFileHelper.getParamFileFromString("a [0,9] [0]\nb [0,9] [0]\n");
 				
 		ParamConfiguration defaultConfig = space.getDefaultConfiguration();		
@@ -528,6 +555,12 @@ public class RunHistoryTester {
 		
 		ProblemInstanceSeedPair pisp = new ProblemInstanceSeedPair(ilws.getInstances().get(0), insc.getNextSeed(ilws.getInstances().get(0)));
 		RunConfig rc = new RunConfig(pisp, 2, defaultConfig, true);
+		
+
+		assertEquals("Configuration should have an upper bound of " + cutoffTime, cutoffTime, runHistory.getEmpiricalCostUpperBound(defaultConfig, instanceSet, cutoffTime), 0.01);
+		assertEquals("Configuration should have an lower bound of " + 0,0.0,runHistory.getEmpiricalCostLowerBound(defaultConfig, instanceSet, cutoffTime), 0.01);
+		
+		
 		try {
 			runHistory.append(new ExistingAlgorithmRun(execConfig, rc, RunResult.TIMEOUT, 2, 0, 0, pisp.getSeed()));
 		} catch (DuplicateRunException e) {
@@ -538,10 +571,13 @@ public class RunHistoryTester {
 		Set<ProblemInstanceSeedPair> earlyCensored = runHistory.getEarlyCensoredProblemInstanceSeedPairs(defaultConfig);
 		
 		assertEquals("Expected censored early runs to be 1", 1, earlyCensored.size());
-		assertEquals("Expected cost to be ", runHistory.getEmpiricalCost(defaultConfig, Collections.singleton(ilws.getInstances().get(0)), execConfig.getAlgorithmCutoffTime()),2,0.01);
+		assertEquals("Expected cost to be ", runHistory.getEmpiricalCost(defaultConfig, Collections.singleton(ilws.getInstances().get(0)), cutoffTime),2,0.01);
 		assertTrue("Should only see an the one configuration", runHistory.getProblemInstanceSeedPairsRan(defaultConfig).equals(Collections.singleton(pisp)));
 		assertEquals("Expected runtime sum to match hand calculation ", 2.0, runHistory.getTotalRunCost(), 0.01);
 		
+
+		assertEquals("Configuration should have an upper bound of " + cutoffTime, cutoffTime, runHistory.getEmpiricalCostUpperBound(defaultConfig, instanceSet, cutoffTime), 0.01);
+		assertEquals("Configuration should have an lower bound of " + 0,2.0,runHistory.getEmpiricalCostLowerBound(defaultConfig, instanceSet, cutoffTime), 0.01);
 		
 		rc = new RunConfig(pisp, 4, defaultConfig, true);
 		try {
@@ -554,11 +590,14 @@ public class RunHistoryTester {
 		earlyCensored = runHistory.getEarlyCensoredProblemInstanceSeedPairs(defaultConfig);
 		
 		assertEquals("Expected censored early runs to be 1", 1, earlyCensored.size());
-		assertEquals("Expected cost to be ", runHistory.getEmpiricalCost(defaultConfig, Collections.singleton(ilws.getInstances().get(0)), execConfig.getAlgorithmCutoffTime()),4,0.01);
+		assertEquals("Expected cost to be ", runHistory.getEmpiricalCost(defaultConfig, Collections.singleton(ilws.getInstances().get(0)), cutoffTime),4,0.01);
 		assertTrue("Should only see an the one configuration", runHistory.getProblemInstanceSeedPairsRan(defaultConfig).equals(Collections.singleton(pisp)));
 		
 		assertEquals("Expected runtime sum to match hand calculation ", 6.0, runHistory.getTotalRunCost(), 0.01);
 		
+
+		assertEquals("Configuration should have an upper bound of " + cutoffTime, cutoffTime, runHistory.getEmpiricalCostUpperBound(defaultConfig, instanceSet, cutoffTime), 0.01);
+		assertEquals("Configuration should have an lower bound of " + 0,4.0,runHistory.getEmpiricalCostLowerBound(defaultConfig, instanceSet, cutoffTime), 0.01);
 		
 		rc = new RunConfig(pisp, 8, defaultConfig, true);
 		try {
@@ -572,8 +611,12 @@ public class RunHistoryTester {
 		
 		
 		assertEquals("Expected censored early runs to be 1", 1, earlyCensored.size());
-		assertEquals("Expected cost to be ", runHistory.getEmpiricalCost(defaultConfig, Collections.singleton(ilws.getInstances().get(0)), execConfig.getAlgorithmCutoffTime()),4,0.01);
+		assertEquals("Expected cost to be ", runHistory.getEmpiricalCost(defaultConfig, Collections.singleton(ilws.getInstances().get(0)), cutoffTime),4,0.01);
 		assertEquals("Expected runtime sum to match hand calculation ", 7.0, runHistory.getTotalRunCost(), 0.01);
+		
+
+		assertEquals("Configuration should have an upper bound of " + cutoffTime, cutoffTime, runHistory.getEmpiricalCostUpperBound(defaultConfig, instanceSet, cutoffTime), 0.01);
+		assertEquals("Configuration should have an lower bound of " + 0,4.0,runHistory.getEmpiricalCostLowerBound(defaultConfig, instanceSet, cutoffTime), 0.01);
 		
 		
 		assertTrue("Should only see an the one configuration", runHistory.getProblemInstanceSeedPairsRan(defaultConfig).equals(Collections.singleton(pisp)));
@@ -596,11 +639,21 @@ public class RunHistoryTester {
 		RunHistory runHistory = new NewRunHistory( OverallObjective.MEAN, OverallObjective.MEAN, RunObjective.RUNTIME);
 	
 	
+		Set<ProblemInstance> instanceSet = new HashSet<ProblemInstance>();
+		instanceSet.add(ilws.getInstances().get(0));
+		
+		double cutoffTime = execConfig.getAlgorithmCutoffTime();
+		
+		
 		ParamConfigurationSpace space = ParamFileHelper.getParamFileFromString("a [0,9] [0]\nb [0,9] [0]\n");
 				
 		ParamConfiguration defaultConfig = space.getDefaultConfiguration();		
 		
 		ParamConfiguration otherConfig = space.getConfigurationFromString("-a '1' -b '1'", StringFormat.NODB_OR_STATEFILE_SYNTAX);
+		
+
+		assertEquals("Configuration should have an upper bound of " + cutoffTime, cutoffTime, runHistory.getEmpiricalCostUpperBound(defaultConfig, instanceSet, cutoffTime), 0.01);
+		assertEquals("Configuration should have an lower bound of " + 0,0.0,runHistory.getEmpiricalCostLowerBound(defaultConfig, instanceSet, cutoffTime), 0.01);
 		
 		ProblemInstanceSeedPair pisp = new ProblemInstanceSeedPair(ilws.getInstances().get(0), insc.getNextSeed(ilws.getInstances().get(0)));
 		RunConfig rc = new RunConfig(pisp, 2, defaultConfig, true);
@@ -614,10 +667,13 @@ public class RunHistoryTester {
 		Set<ProblemInstanceSeedPair> earlyCensored = runHistory.getEarlyCensoredProblemInstanceSeedPairs(defaultConfig);
 		
 		assertEquals("Expected censored early runs to be 1", 1, earlyCensored.size());
-		assertEquals("Expected cost to be ", runHistory.getEmpiricalCost(defaultConfig, Collections.singleton(ilws.getInstances().get(0)), execConfig.getAlgorithmCutoffTime()),2,0.01);
+		assertEquals("Expected cost to be ", runHistory.getEmpiricalCost(defaultConfig, Collections.singleton(ilws.getInstances().get(0)), cutoffTime),2,0.01);
 		assertTrue("Should only see an the one configuration", runHistory.getProblemInstanceSeedPairsRan(defaultConfig).equals(Collections.singleton(pisp)));
 		assertEquals("Expected runtime sum to match hand calculation ", 2.0, runHistory.getTotalRunCost(), 0.01);
 		
+
+		assertEquals("Configuration should have an upper bound of " + cutoffTime, cutoffTime, runHistory.getEmpiricalCostUpperBound(defaultConfig, instanceSet, cutoffTime), 0.01);
+		assertEquals("Configuration should have an lower bound of " + 0,2.0,runHistory.getEmpiricalCostLowerBound(defaultConfig, instanceSet, cutoffTime), 0.01);
 		
 		rc = new RunConfig(pisp, 4, defaultConfig, true);
 		try {
@@ -630,10 +686,15 @@ public class RunHistoryTester {
 		earlyCensored = runHistory.getEarlyCensoredProblemInstanceSeedPairs(defaultConfig);
 		
 		assertEquals("Expected censored early runs to be 1", 1, earlyCensored.size());
-		assertEquals("Expected cost to be ", runHistory.getEmpiricalCost(defaultConfig, Collections.singleton(ilws.getInstances().get(0)), execConfig.getAlgorithmCutoffTime()),4,0.01);
+		assertEquals("Expected cost to be ", runHistory.getEmpiricalCost(defaultConfig, Collections.singleton(ilws.getInstances().get(0)), cutoffTime),4,0.01);
 		assertTrue("Should only see an the one configuration", runHistory.getProblemInstanceSeedPairsRan(defaultConfig).equals(Collections.singleton(pisp)));
 		
 		assertEquals("Expected runtime sum to match hand calculation ", 6.0, runHistory.getTotalRunCost(), 0.01);
+		
+
+		assertEquals("Configuration should have an upper bound of " + cutoffTime, cutoffTime, runHistory.getEmpiricalCostUpperBound(defaultConfig, instanceSet, cutoffTime), 0.01);
+		assertEquals("Configuration should have an lower bound of " + 0,4.0,runHistory.getEmpiricalCostLowerBound(defaultConfig, instanceSet, cutoffTime), 0.01);
+		
 		
 		rc = new RunConfig(pisp, 8, defaultConfig, true);
 		try {
@@ -647,15 +708,95 @@ public class RunHistoryTester {
 		
 		
 		assertEquals("Expected censored early runs to be 0", 0, earlyCensored.size());
-		assertEquals("Expected cost to be ", runHistory.getEmpiricalCost(defaultConfig, Collections.singleton(ilws.getInstances().get(0)), execConfig.getAlgorithmCutoffTime()),3,0.01);
+		assertEquals("Expected cost to be ", runHistory.getEmpiricalCost(defaultConfig, Collections.singleton(ilws.getInstances().get(0)), cutoffTime),3,0.01);
 		assertEquals("Expected runtime sum to match hand calculation ", 9.0, runHistory.getTotalRunCost(), 0.01);
+		
+
+		assertEquals("Configuration should have an upper bound of " + 3.0, 3, runHistory.getEmpiricalCostUpperBound(defaultConfig, instanceSet, cutoffTime), 0.01);
+		assertEquals("Configuration should have an lower bound of " + 3,3.0,runHistory.getEmpiricalCostLowerBound(defaultConfig, instanceSet, cutoffTime), 0.01);
+		
 		
 		assertTrue("Should only see an the one configuration", runHistory.getProblemInstanceSeedPairsRan(defaultConfig).equals(Collections.singleton(pisp)));
 		assertTrue("Should have no runs", runHistory.getProblemInstanceSeedPairsRan(otherConfig).equals(Collections.EMPTY_SET));
 		assertEquals("Expect to see three runs", runHistory.getAlgorithmRunData(defaultConfig).size(), 3);
+
+	}
+	@Test
+	/**
+	 * This situation can happen due to noise, although the numbers in this test are admittedly more than we would like :(.
+	 */
+	
+	public void testUpperAndLowerBound()
+	{
+		//fail("Interface buggy at this point, test is well defined but the interface causes the results to break");
+		try 
+		{
+			InstanceListWithSeeds ilws = ProblemInstanceHelperTester.getInstanceListWithSeeds("classicFormatValid.txt", false);
+			
+			InstanceSeedGenerator insc = ilws.getSeedGen();
+			RunHistory runHistory = new NewRunHistory( OverallObjective.MEAN, OverallObjective.MEAN, RunObjective.RUNTIME);
 		
 		
+			Set<ProblemInstance> instanceSet = new HashSet<ProblemInstance>();
+			instanceSet.add(ilws.getInstances().get(0));
+			
+			double cutoffTime = execConfig.getAlgorithmCutoffTime();
+			
+			
+			ParamConfigurationSpace space = ParamFileHelper.getParamFileFromString("a [0,9] [0]\nb [0,9] [0]\n");
+					
+			ParamConfiguration defaultConfig = space.getDefaultConfiguration();		
+			
+			ParamConfiguration otherConfig = space.getConfigurationFromString("-a '1' -b '1'", StringFormat.NODB_OR_STATEFILE_SYNTAX);
+
+			ProblemInstance pi1 = ilws.getInstances().get(0);
+			ProblemInstanceSeedPair pisp = new ProblemInstanceSeedPair(pi1, insc.getNextSeed(pi1));
+			RunConfig rc = new RunConfig(pisp, 2, defaultConfig, true);
+			runHistory.append(new ExistingAlgorithmRun(execConfig, rc, RunResult.TIMEOUT, 2, 0, 0, pisp.getSeed()));
+			
+			ProblemInstance pi2 = ilws.getInstances().get(1);
+			pisp = new ProblemInstanceSeedPair(pi2, insc.getNextSeed(pi2));
+			rc = new RunConfig(pisp, cutoffTime, defaultConfig, false);
+			runHistory.append(new ExistingAlgorithmRun(execConfig, rc, RunResult.SAT, 10, 0, 0, pisp.getSeed()));
+			
+			pisp = new ProblemInstanceSeedPair(pi2, insc.getNextSeed(pi2));
+			rc = new RunConfig(pisp, 40, defaultConfig, true);
+			runHistory.append(new ExistingAlgorithmRun(execConfig, rc, RunResult.SAT, 20, 0, 0, pisp.getSeed()));
+
+			ProblemInstance pi3 = ilws.getInstances().get(2);
+			pisp = new ProblemInstanceSeedPair(pi3, insc.getNextSeed(pi3));
+			rc = new RunConfig(pisp, 10, defaultConfig, true);
+			runHistory.append(new ExistingAlgorithmRun(execConfig, rc, RunResult.KILLED, 5, 0, 0, pisp.getSeed()));
+
 		
+			pisp = new ProblemInstanceSeedPair(pi3, insc.getNextSeed(pi3));
+			rc = new RunConfig(pisp, 10, defaultConfig, true);
+			runHistory.append(new ExistingAlgorithmRun(execConfig, rc, RunResult.TIMEOUT, 10, 0, 0, pisp.getSeed()));
+
+			Set<ProblemInstance> pi12 = Sets.newHashSet(pi1,pi2);
+			
+			assertEquals("Configuration should match upper bound ",257.50, runHistory.getEmpiricalCostUpperBound(defaultConfig, pi12, cutoffTime), 0.01);
+			assertEquals("Configuration should have an lower bound ",8.5,runHistory.getEmpiricalCostLowerBound(defaultConfig, pi12, cutoffTime), 0.01);
+			
+			Set<ProblemInstance> pi23 = Sets.newHashSet(pi2,pi3);
+			
+			assertEquals("Configuration should match upper bound ",257.50, runHistory.getEmpiricalCostUpperBound(defaultConfig, pi23, cutoffTime), 0.01);
+			assertEquals("Configuration should have an lower bound ",11.25,runHistory.getEmpiricalCostLowerBound(defaultConfig, pi23, cutoffTime), 0.01);
+			
+			Set<ProblemInstance> pi13 = Sets.newHashSet(pi1,pi3);
+			
+			assertEquals("Configuration should match upper bound ",500, runHistory.getEmpiricalCostUpperBound(defaultConfig, pi13, cutoffTime), 0.01);
+			assertEquals("Configuration should have an lower bound ",4.75,runHistory.getEmpiricalCostLowerBound(defaultConfig, pi13, cutoffTime), 0.01);
+		
+			Set<ProblemInstance> pi123 = Sets.newHashSet(pi1,pi2,pi3);
+			
+			assertEquals("Configuration should match upper bound ",338.333333, runHistory.getEmpiricalCostUpperBound(defaultConfig, pi123, cutoffTime), 0.01);
+			assertEquals("Configuration should have an lower bound ",8.16666666, runHistory.getEmpiricalCostLowerBound(defaultConfig, pi123, cutoffTime), 0.01);
+			
+		} catch (DuplicateRunException e) {
+			e.printStackTrace();
+			fail("Unexpected duplicated run exception");
+		}
 	
 	}
 	

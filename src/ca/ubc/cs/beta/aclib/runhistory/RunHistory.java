@@ -75,6 +75,26 @@ public interface RunHistory {
 	 * @param config  		 ParamConfiguration to get Cost of
 	 * @param instanceSet 	 instances to compute cost over
 	 * @param cutoffTime 	 cutoff time for algorithm runs
+	 * @deprecated Not implemented currently as there is a bug in the interface and will need to be refactored at a later point in time. Essentially it will erroneusly include other seeds and throw off the bound.
+	 * @return cost (Double.MAX_VALUE) if we haven't seen the configuration, otherwise the cost 
+	 */
+	public double getEmpiricalCostLowerBound(ParamConfiguration config, Set<ProblemInstance> instanceSet, double cutoffTime);
+	
+	/**
+	 * Compute and return the empirical cost of a parameter configuration on the subset of provided instances we have runs for
+	 * @param config  		 ParamConfiguration to get Cost of
+	 * @param instanceSet 	 instances to compute cost over
+	 * @param cutoffTime 	 cutoff time for algorithm runs
+	 * @deprecated Not implemented currently as there is a bug in the interface and will need to be refactored at a later point in time. Essentially it will erroneusly include other seeds and throw off the bound.
+	 * @return cost (Double.MAX_VALUE) if we haven't seen the configuration, otherwise the cost 
+	 */
+	public double getEmpiricalCostUpperBound(ParamConfiguration config, Set<ProblemInstance> instanceSet, double cutoffTime);
+	
+	/**
+	 * Compute and return the empirical cost of a parameter configuration on the subset of provided instances we have runs for
+	 * @param config  		 ParamConfiguration to get Cost of
+	 * @param instanceSet 	 instances to compute cost over
+	 * @param cutoffTime 	 cutoff time for algorithm runs
 	 * @return cost (Double.MAX_VALUE) if we haven't seen the configuration, otherwise the cost 
 	 */
 	public double getEmpiricalCost(ParamConfiguration config, Set<ProblemInstance> instanceSet, double cutoffTime);
