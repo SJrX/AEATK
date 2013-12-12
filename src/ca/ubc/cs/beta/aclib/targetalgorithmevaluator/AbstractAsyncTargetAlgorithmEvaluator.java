@@ -9,9 +9,6 @@ public abstract class AbstractAsyncTargetAlgorithmEvaluator extends
 		AbstractTargetAlgorithmEvaluator implements TargetAlgorithmEvaluator{
 
 
-
-
-
 	@Override
 	public final List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
 		 return TargetAlgorithmEvaluatorHelper.evaluateRunSyncToAsync(runConfigs,this,obs);

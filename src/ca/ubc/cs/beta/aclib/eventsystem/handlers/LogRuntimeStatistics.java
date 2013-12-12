@@ -1,5 +1,8 @@
 package ca.ubc.cs.beta.aclib.eventsystem.handlers;
 
+import java.util.Collections;
+import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
@@ -11,11 +14,14 @@ import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.eventsystem.EventHandler;
 import ca.ubc.cs.beta.aclib.eventsystem.events.AutomaticConfiguratorEvent;
+import ca.ubc.cs.beta.aclib.eventsystem.events.ac.ChallengeEndEvent;
+import ca.ubc.cs.beta.aclib.eventsystem.events.ac.ChallengeStartEvent;
 import ca.ubc.cs.beta.aclib.eventsystem.events.ac.IncumbentPerformanceChangeEvent;
 import ca.ubc.cs.beta.aclib.eventsystem.events.basic.AlgorithmRunCompletedEvent;
 import ca.ubc.cs.beta.aclib.eventsystem.events.state.StateRestoredEvent;
 import ca.ubc.cs.beta.aclib.misc.cputime.CPUTime;
 import ca.ubc.cs.beta.aclib.runhistory.ThreadSafeRunHistory;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.termination.TerminationCondition;
 import ca.ubc.cs.beta.aclib.termination.ValueMaxStatus;
 
@@ -55,19 +61,27 @@ public class LogRuntimeStatistics implements EventHandler<AutomaticConfiguratorE
 	private double sumOfWallclockTime = 0.0;
 	
 	private final AtomicBoolean noIceMessage = new AtomicBoolean(false);
-	public LogRuntimeStatistics(ThreadSafeRunHistory rh, TerminationCondition termCond, double cutoffTime)
+	private final TargetAlgorithmEvaluator tae;
+	
+	
+	private final AtomicInteger challengesStarted = new AtomicInteger(0);
+	private final AtomicInteger challengesEnded = new AtomicInteger(0);
+	
+	private final boolean showChallenges;
+	public LogRuntimeStatistics(ThreadSafeRunHistory rh, TerminationCondition termCond, double cutoffTime, TargetAlgorithmEvaluator tae, boolean showChallenges)
 	{
 		this.runHistory = rh;
 		this.termCond = termCond;
 		this.cutoffTime = cutoffTime;
 		this.msToWait = 0;
 		lastString.set("No Runtime Statistics Logged");
-		
+		this.tae = tae;
+		this.showChallenges = showChallenges;
 		
 		
 	}
 	
-	public LogRuntimeStatistics(ThreadSafeRunHistory rh, TerminationCondition termCond, double cutoffTime , long msToWait)
+	public LogRuntimeStatistics(ThreadSafeRunHistory rh, TerminationCondition termCond, double cutoffTime , long msToWait, TargetAlgorithmEvaluator tae, boolean showChallenges)
 	{
 		this.runHistory = rh;
 		this.termCond = termCond;
@@ -75,7 +89,9 @@ public class LogRuntimeStatistics implements EventHandler<AutomaticConfiguratorE
 		this.msToWait = msToWait;
 		lastString.set("No Runtime Statistics Logged");
 		
-	
+		this.tae = tae;
+		this.showChallenges = showChallenges;
+		
 	}
 
 	
@@ -103,14 +119,19 @@ public class LogRuntimeStatistics implements EventHandler<AutomaticConfiguratorE
 		{
 			this.logCount.set(((StateRestoredEvent) event).getModelsBuilt());
 			
-			for(AlgorithmRun run : ((StateRestoredEvent) event).getRunHistory().getAlgorithmRuns())
+			for(AlgorithmRun run : ((StateRestoredEvent) event).getRunHistory().getAlgorithmRunsIncludingRedundant())
 			{
 				this.sumOfWallclockTime += run.getWallclockExecutionTime();
 				this.sumOfRuntime += run.getRuntime();
 			}
-		}
+		} else if(event instanceof ChallengeStartEvent)
 		{
-			
+			this.challengesStarted.incrementAndGet();
+		} else if(event instanceof ChallengeEndEvent)
+		{
+			this.challengesEnded.incrementAndGet();
+		}else
+		{
 			try {
 				runHistory.readLock();
 				String myLastLogMessage;
@@ -126,11 +147,11 @@ public class LogRuntimeStatistics implements EventHandler<AutomaticConfiguratorE
 				
 				Object[] arr = { logCount.get(),
 						runHistory.getThetaIdx(incumbent) + " (" + incumbent +")",
-						runHistory.getTotalNumRunsOfConfig(incumbent),
-						runHistory.getInstancesRan(incumbent).size(),
+						runHistory.getTotalNumRunsOfConfigExcludingRedundant(incumbent),
+						runHistory.getProblemInstancesRan(incumbent).size(),
 						runHistory.getUniqueParamConfigurations().size(),
 						runHistory.getEmpiricalCost(incumbent, runHistory.getUniqueInstancesRan(), this.cutoffTime),
-						runHistory.getAlgorithmRuns().size(), 
+						//runHistory.getAlgorithmRuns().size(), 
 						"N/A",
 						"N/A" ,
 						"N/A", //options.runtimeLimit - wallTime 
@@ -151,13 +172,27 @@ public class LogRuntimeStatistics implements EventHandler<AutomaticConfiguratorE
 					sb.append(vms.getStatus());
 				}
 				
+				int challengersStarted = this.challengesStarted.get();
+				
+				//== It's incredibly unlikely but another challenge could start, and end in the interim, so we will just 'massage' it here, so that users aren't confused.
+				int challengersEnded = Math.min(this.challengesEnded.get(), challengersStarted);
+				
+				
+				String challenges = "";
+				if(showChallenges)
+				{
+					challenges = "\n Number of Challenges Started: " + challengesStarted + 
+					"\n Number of Challenges Oustanding:" + (challengersStarted - challengersEnded);  
+				}
+				
 				myLastLogMessage = "*****Runtime Statistics*****" +
 						"\n Count: " + arr[0]+
 						"\n Incumbent ID: "+ arr[1]+
-						"\n Number of Runs for Incumbent: " + arr[2] +
+						"\n Number of PISPs for Incumbent: " + arr[2] +
 						"\n Number of Instances for Incumbent: " + arr[3]+
 						"\n Number of Configurations Run: " + arr[4]+ 
 						"\n Performance of the Incumbent: " + arr[5]+
+						challenges+
 						//"\n Total Number of runs performed: " + arr[6]+ 
 						//"\n Last Iteration with a successful run: " + arr[7] + "\n" +
 						"\n" + sb.toString().replaceAll("\n","\n ") + 
@@ -168,11 +203,13 @@ public class LogRuntimeStatistics implements EventHandler<AutomaticConfiguratorE
 						"Sum of Target Algorithm Execution Times (treating minimum value as 0.1): "+arr[12] +" s" + 
 						"\n CPU time of Configurator: "+arr[13]+" s" +
 						"\n User time of Configurator: "+arr[14]+" s" +
+						"\n Outstanding Runs on Target Algorithm Evaluator: " + tae.getNumberOfOutstandingRuns() +
+						"\n Outstanding Requests on TargetAlgorithmEvaluator: " + tae.getNumberOfOutstandingBatches() +  
 						"\n Total Reported Algorithm Runtime: " + arr[15] + " s" + 
 						"\n Sum of Measured Wallclock Runtime: " + arr[16] + " s" +
 						"\n Max Memory: "+arr[17]+" MB" +
 						"\n Total Java Memory: "+arr[18]+" MB" +
-						"\n Free Java Memory: "+arr[19]+" MB";
+						"\n Free Java Memory: "+arr[19]+" MB" + "\n * PISP count is roughly the number of runs, but doesn't included redundant runs on the same problem instance & seed";
 				
 			lastString.set(myLastLogMessage);
 			} finally

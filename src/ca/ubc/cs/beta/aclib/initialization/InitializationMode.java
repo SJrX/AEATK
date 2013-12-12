@@ -11,6 +11,7 @@ package ca.ubc.cs.beta.aclib.initialization;
 @Deprecated
 public enum InitializationMode {
 	CLASSIC,
-	ITERATIVE_CAPPING
+	ITERATIVE_CAPPING,
+	UNBIASED_TABLE
 	
 }

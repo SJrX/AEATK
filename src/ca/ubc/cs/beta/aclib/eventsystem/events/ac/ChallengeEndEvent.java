@@ -8,21 +8,27 @@ public class ChallengeEndEvent extends AbstractTimeEvent {
 
 	
 	private final ParamConfiguration challenger;
-	private boolean newIncumbent; 
+	private final boolean newIncumbent;
+	private final int numberOfRuns; 
 	
-	public ChallengeEndEvent( TerminationCondition cond, ParamConfiguration challenger, boolean newIncumbent) {
+	public ChallengeEndEvent( TerminationCondition cond, ParamConfiguration challenger, boolean newIncumbent, int numberOfRuns) {
 
 		super(cond);
 		this.challenger = challenger;
 		this.newIncumbent = newIncumbent;
+		this.numberOfRuns = numberOfRuns;
 	}
 	
-	public ChallengeEndEvent(TerminationCondition cond, ParamConfiguration challenger) 
-	{
-		super(cond);
-		this.challenger = challenger;
-	}
+	
+	public ChallengeEndEvent( double tunerTime, double wallTime, ParamConfiguration challenger, boolean newIncumbent, int numberOfRuns) {
 
+		super(tunerTime, wallTime);
+		this.challenger = challenger;
+		this.newIncumbent = newIncumbent;
+		this.numberOfRuns = numberOfRuns;
+	}
+	
+	
 	public ParamConfiguration getChallenger()
 	{
 		return challenger;
@@ -33,6 +39,10 @@ public class ChallengeEndEvent extends AbstractTimeEvent {
 		return newIncumbent;
 	}
 	
+	public int getNumberOfRuns()
+	{
+		return numberOfRuns;
+	}
 
 	
 	

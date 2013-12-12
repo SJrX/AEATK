@@ -743,6 +743,41 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	}
 	
 	/**
+	 * Returns <code>true</code> if the parameters differ in exactly 1 place (only considers active parameters)
+	 * 
+	 * @param oConfig 	the other configuration to check
+	 * @return
+	 */
+	public boolean isNeighbour(ParamConfiguration oConfig)
+	{
+		
+		if(!oConfig.getConfigurationSpace().equals(getConfigurationSpace()))
+		{
+			return false;
+		}
+		
+		if(isDirty) cleanUp();		
+		if(oConfig.isDirty) oConfig.cleanUp();
+		
+		
+		int differences = 0;
+		for(int i=0; i < this.activeParams.length; i++)
+		{
+			if(this.activeParams[i] && oConfig.activeParams[i])
+			{
+				
+				if(this.valueArrayForComparsion[i] != oConfig.valueArrayForComparsion[i])
+				{
+					differences++;
+				}
+			}
+		}
+		
+		return (differences == 1) ? true : false;
+	}
+	
+	
+	/**
 	 * Returns the number of neighbours for this configuration
 	 * @return number of neighbours that this configuration has
 	 */
@@ -1014,6 +1049,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 		return configSpace;
 	}
 
+	
 
 	private static final double EPSILON = Math.pow(10, -14);
 

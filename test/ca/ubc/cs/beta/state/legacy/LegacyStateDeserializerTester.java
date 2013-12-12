@@ -40,6 +40,7 @@ import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.runhistory.NewRunHistory;
 import ca.ubc.cs.beta.aclib.runhistory.RunData;
 import ca.ubc.cs.beta.aclib.runhistory.RunHistory;
+import ca.ubc.cs.beta.aclib.runhistory.RunHistoryHelper;
 import ca.ubc.cs.beta.aclib.seedgenerator.InstanceSeedGenerator;
 import ca.ubc.cs.beta.aclib.seedgenerator.RandomInstanceSeedGenerator;
 import ca.ubc.cs.beta.aclib.state.StateDeserializer;
@@ -180,7 +181,7 @@ public class LegacyStateDeserializerTester {
 			
 			StateDeserializer sd = sf.getStateDeserializer("it",1, configSpace, Collections.singletonList(pi), execConfig,new NewRunHistory( OverallObjective.MEAN10,OverallObjective.MEAN, RunObjective.RUNTIME));
 			System.out.println(Arrays.toString(config.toValueArray()));
-			ParamConfiguration restoredConfig = sd.getRunHistory().getAlgorithmRuns().get(0).getRunConfig().getParamConfiguration();
+			ParamConfiguration restoredConfig = sd.getRunHistory().getAlgorithmRunsExcludingRedundant().get(0).getRunConfig().getParamConfiguration();
 			System.out.println(Arrays.toString(restoredConfig.toValueArray()));
 			assertTrue("Testing for equality ",config.equals(restoredConfig));
 			assertTrue("Testing for Array equality", Arrays.equals(config.toValueArray(), restoredConfig.toValueArray()));
@@ -587,7 +588,9 @@ public class LegacyStateDeserializerTester {
 		{
 			StateDeserializer stateD =  sf.getStateDeserializer("deleteMe-unitTest", 10+i, configSpace, pis, execConfig,new NewRunHistory( OverallObjective.MEAN10,OverallObjective.MEAN, RunObjective.RUNTIME));
 			assertEquals(stateD.getIteration(),(10+i));
-			assertEquals(stateD.getRunHistory().getAlgorithmRuns().size() , 200*(i+1));	
+			assertEquals(stateD.getRunHistory().getAlgorithmRunsIncludingRedundant().size() , 200*(i+1));
+			
+			
 		}
 	
 		sf.purgePreviousStates();
@@ -596,7 +599,7 @@ public class LegacyStateDeserializerTester {
 		{
 			StateDeserializer stateD =  sf.getStateDeserializer("deleteMe-unitTest", 10+i, configSpace, pis, execConfig,new NewRunHistory( OverallObjective.MEAN10,OverallObjective.MEAN, RunObjective.RUNTIME));
 			assertEquals(stateD.getIteration(),(10+i));
-			assertEquals(stateD.getRunHistory().getAlgorithmRuns().size() , 200*(i+1));	
+			assertEquals(stateD.getRunHistory().getAlgorithmRunsIncludingRedundant().size() , 200*(i+1));	
 		}
 	
 	
@@ -654,15 +657,17 @@ public class LegacyStateDeserializerTester {
 		Set<ProblemInstance> instanceSet = new HashSet<ProblemInstance>();
 		instances.addAll(pis);
 		
+		boolean[] originalCensored = RunHistoryHelper.getCensoredEarlyFlagForRuns(runHistory.getAlgorithmRunsExcludingRedundant());
+		boolean[] restoredCensored = RunHistoryHelper.getCensoredEarlyFlagForRuns(restoredRunHistory.getAlgorithmRunsExcludingRedundant());
 		
 		for(int i=0; i < runsSize; i++)
 		{
 			//==== We check equality on each member directly
 			//==== So we can easily debug cases where it's broken
 			
-			AlgorithmRun run = runHistory.getAlgorithmRuns().get(i);
+			AlgorithmRun run = runHistory.getAlgorithmRunsExcludingRedundant().get(i);
 			
-			AlgorithmRun restoredRun = restoredRunHistory.getAlgorithmRuns().get(i);
+			AlgorithmRun restoredRun = restoredRunHistory.getAlgorithmRunsExcludingRedundant().get(i);
 			
 			assertDEquals(run.getQuality(), restoredRun.getQuality(),0.01);
 			assertDEquals(run.getRuntime(),restoredRun.getRuntime(),0.01);
@@ -681,7 +686,8 @@ public class LegacyStateDeserializerTester {
 			
 			ParamConfiguration config = run.getRunConfig().getParamConfiguration();
 			
-			assertEquals(runHistory.getCensoredFlagForRuns()[i],restoredRunHistory.getCensoredFlagForRuns()[i]);
+		
+			assertEquals(originalCensored[i],restoredCensored[i]);
 			double cost1 = runHistory.getEmpiricalCost(config, instanceSet, execConfig.getAlgorithmCutoffTime());
 			double cost2 = restoredRunHistory.getEmpiricalCost(config, instanceSet, execConfig.getAlgorithmCutoffTime()); 
 			assertDEquals(cost1,cost2,0.1);

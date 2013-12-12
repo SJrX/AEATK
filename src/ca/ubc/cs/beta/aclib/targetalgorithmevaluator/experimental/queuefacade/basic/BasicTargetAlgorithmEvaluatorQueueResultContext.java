@@ -2,15 +2,17 @@ package ca.ubc.cs.beta.aclib.targetalgorithmevaluator.experimental.queuefacade.b
 
 import java.util.List;
 
+import net.jcip.annotations.ThreadSafe;
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.experimental.queuefacade.general.TargetAlgorithmEvaluatorQueueResultContext;
 
+@ThreadSafe
 public class BasicTargetAlgorithmEvaluatorQueueResultContext implements TargetAlgorithmEvaluatorQueueResultContext {
 
-	private RuntimeException runtimeException;
-	private List<RunConfig> runConfigs;
-	private List<AlgorithmRun> runs;
+	private volatile RuntimeException runtimeException;
+	private volatile List<RunConfig> runConfigs;
+	private volatile List<AlgorithmRun> runs;
 
 	@Override
 	public List<AlgorithmRun> getAlgorithmRuns() {

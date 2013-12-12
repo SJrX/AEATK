@@ -125,15 +125,17 @@ public interface TargetAlgorithmEvaluator {
 	
 
 	/**
-	 * Blocks waiting for all runs that have been invoked via evaluateRun or evaluateRunAsync to complete
-	 * <b>NOTE:</b> This is NOT the same as waiting for the TAE to shutdown or be ready to shutdown, just that this TAE has no outstanding runs
+	 * Blocks waiting for the number of incomplete or outstanding evaluations to be zero. Complete is defined as all {@link #evaluateRun(List)} methods have returned to the caller and all the callbacks to {@link #evaluateRunsAsync(List, TargetAlgorithmEvaluatorCallback)} having returned.
 	 * 
+	 * <b>NOTE:</b> This is NOT the same as waiting for the TAE to shutdown or be ready to shutdown, just that this TAE has no outstanding runs
+	 * <br/>
+	 * <b>IMPLEMENTATION NOTE:</b> You generally don't need to implement this method, but instead wrap your TAE with a {@link ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.functionality.OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator}
 	 * @throws UnsupportedOperationException - if the TAE does not support this operation 
 	 */
 	public void waitForOutstandingEvaluations();
 	
 	/**
-	 * Returns the total number of outstanding evaluations, that is the number of calls to evaluateRun or evaluateRunAsync to complete
+	 * Returns the total number of incomplete or outstanding evaluations. Completion is defined as all {@link #evaluateRun(List)} methods have returned to the caller and all the callbacks to {@link #evaluateRunsAsync(List, TargetAlgorithmEvaluatorCallback)} having returned.
 	 * <br/>
 	 * <b>NOTE:</b> This is NOT the number of runConfigs to be evaluated but the number of requests, and just because this returns zero doesn't mean it can't increase in the future.
 	 * <br/>
@@ -147,7 +149,7 @@ public interface TargetAlgorithmEvaluator {
 	public int getNumberOfOutstandingEvaluations();
 	
 	/**
-	 * Returns the total number of outstanding batches of runs, that is the number of calls to evaluateRun or evaluateRunAsync to complete
+	 * Returns the total number of incomplete or outstanding batches. Completion is defined as all {@link #evaluateRun(List)} methods have returned to the caller and all the callbacks to {@link #evaluateRunsAsync(List, TargetAlgorithmEvaluatorCallback)} having returned.
 	 * <br/>
 	 * <b>NOTE:</b> This is NOT the number of runConfigs to be evaluated but the number of requests, and just because this returns zero doesn't mean it can't increase in the future.
 	 * <br/>
@@ -159,7 +161,7 @@ public interface TargetAlgorithmEvaluator {
 	public int getNumberOfOutstandingBatches();
 
 	/**
-	 * Returns the total number of outstanding run, that is the number of calls to evaluateRun or evaluateRunAsync to complete
+	 * Returns the total number of incomplete or outstanding batches. Complete is defined as all {@link #evaluateRun(List)} methods have returned to the caller and all the callbacks to {@link #evaluateRunsAsync(List, TargetAlgorithmEvaluatorCallback)} having returned.
 	 * <br/>
 	 * <b>IMPLEMENTATION NOTE:</b> You generally don't need to implement this method, but instead wrap your TAE with a {@link ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.functionality.OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator}
 	 * 

@@ -364,6 +364,11 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 		return additionalRunData;
 	}
 	
+	@Override
+	public boolean isCensoredEarly()
+	{
+		return ((getRunResult().equals(RunResult.TIMEOUT) && getRunConfig().hasCutoffLessThanMax()) ||  getRunResult().equals(RunResult.KILLED));
+	}
 	protected boolean isResultSet()
 	{
 		return resultSet;
@@ -373,6 +378,6 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 	{
 		return false;
 	}
-	
+
 	
 }

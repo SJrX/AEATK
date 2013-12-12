@@ -38,7 +38,7 @@ public class ParamConfigurationIncumbentChangerOriginTracker implements	EventHan
 			{
 				runHistory.readLock();
 				try {
-				this.configTracker.addConfiguration(lastIncumbent, "Displaced Incumbent", "Performance=" + runHistory.getEmpiricalCost(lastIncumbent, runHistory.getInstancesRan(lastIncumbent), cutoffTime),"Runs=" + runHistory.getTotalNumRunsOfConfig(lastIncumbent));
+				this.configTracker.addConfiguration(lastIncumbent, "Displaced Incumbent", "Performance=" + runHistory.getEmpiricalCost(lastIncumbent, runHistory.getProblemInstancesRan(lastIncumbent), cutoffTime),"Runs=" + runHistory.getTotalNumRunsOfConfigExcludingRedundant(lastIncumbent));
 				} finally
 				{
 					runHistory.releaseReadLock();

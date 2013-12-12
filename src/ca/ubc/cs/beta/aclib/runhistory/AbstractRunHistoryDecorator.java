@@ -57,14 +57,14 @@ public abstract class AbstractRunHistoryDecorator implements RunHistory {
 	}
 
 	@Override
-	public Set<ProblemInstance> getInstancesRan(ParamConfiguration config) {
-		return rh.getInstancesRan(config);
+	public Set<ProblemInstance> getProblemInstancesRan(ParamConfiguration config) {
+		return rh.getProblemInstancesRan(config);
 	}
 
 	@Override
-	public Set<ProblemInstanceSeedPair> getAlgorithmInstanceSeedPairsRan(
+	public Set<ProblemInstanceSeedPair> getProblemInstanceSeedPairsRan(
 			ParamConfiguration config) {
-		return rh.getAlgorithmInstanceSeedPairsRan(config);
+		return rh.getProblemInstanceSeedPairsRan(config);
 	}
 
 	@Override
@@ -90,21 +90,12 @@ public abstract class AbstractRunHistoryDecorator implements RunHistory {
 				hallucinatedValues, minimumResponseValue);
 	}
 
-	@Override
-	public int getTotalNumRunsOfConfig(ParamConfiguration config) {
-		return rh.getTotalNumRunsOfConfig(config);
-	}
-
+	
 	@Override
 	public double getTotalRunCost() {
 		return rh.getTotalRunCost();
 	}
-
-	@Override
-	public double[] getRunResponseValues() {
-		return rh.getRunResponseValues();
-	}
-
+	
 	@Override
 	public Set<ProblemInstance> getUniqueInstancesRan() {
 		return rh.getUniqueInstancesRan();
@@ -121,11 +112,6 @@ public abstract class AbstractRunHistoryDecorator implements RunHistory {
 	}
 
 	@Override
-	public boolean[] getCensoredFlagForRuns() {
-		return rh.getCensoredFlagForRuns();
-	}
-
-	@Override
 	public List<ParamConfiguration> getAllParameterConfigurationsRan() {
 		return rh.getAllParameterConfigurationsRan();
 	}
@@ -135,10 +121,7 @@ public abstract class AbstractRunHistoryDecorator implements RunHistory {
 		return rh.getAllConfigurationsRanInValueArrayForm();
 	}
 
-	@Override
-	public List<AlgorithmRun> getAlgorithmRuns() {
-		return rh.getAlgorithmRuns();
-	}
+	
 
 	@Override
 	public List<RunData> getAlgorithmRunData() {
@@ -146,28 +129,39 @@ public abstract class AbstractRunHistoryDecorator implements RunHistory {
 	}
 
 	@Override
-	public List<AlgorithmRun> getAlgorithmRunData(ParamConfiguration config) {
-		return rh.getAlgorithmRunData(config);
+	public List<AlgorithmRun> getAlgorithmRunsExcludingRedundant() {
+		return rh.getAlgorithmRunsExcludingRedundant();
+	}
+	
+	@Override
+	public List<AlgorithmRun> getAlgorithmRunsExcludingRedundant(ParamConfiguration config) {
+		return rh.getAlgorithmRunsExcludingRedundant(config);
 	}
 
 	@Override
-	public Set<ProblemInstanceSeedPair> getCappedAlgorithmInstanceSeedPairs(
+	public int getTotalNumRunsOfConfigExcludingRedundant(ParamConfiguration config) {
+		return rh.getTotalNumRunsOfConfigExcludingRedundant(config);
+	}
+
+	@Override
+	public List<AlgorithmRun> getAlgorithmRunsIncludingRedundant() {
+		return rh.getAlgorithmRunsIncludingRedundant();
+	}
+	
+	@Override
+	public List<AlgorithmRun> getAlgorithmRunsIncludingRedundant(ParamConfiguration config) {
+		return rh.getAlgorithmRunsIncludingRedundant(config);
+	}
+
+	@Override
+	public int getTotalNumRunsOfConfigIncludingRedundant(ParamConfiguration config) {
+		return rh.getTotalNumRunsOfConfigIncludingRedundant(config);
+	}
+	
+	@Override
+	public Set<ProblemInstanceSeedPair> getEarlyCensoredProblemInstanceSeedPairs(
 			ParamConfiguration config) {
-		return rh.getCappedAlgorithmInstanceSeedPairs(config);
-	}
-
-	@Override
-	public double getEmpiricalPISPCost(ParamConfiguration config,
-			Set<ProblemInstanceSeedPair> instanceSet, double cutoffTime) {
-		return rh.getEmpiricalPISPCost(config, instanceSet, cutoffTime);
-	}
-
-	@Override
-	public double getEmpiricalPISPCost(ParamConfiguration config,
-			Set<ProblemInstanceSeedPair> instanceSet, double cutoffTime,
-			Map<ProblemInstance, Map<Long, Double>> hallucinatedValues) {
-		return rh.getEmpiricalPISPCost(config, instanceSet, cutoffTime,
-				hallucinatedValues);
+		return rh.getEarlyCensoredProblemInstanceSeedPairs(config);
 	}
 
 	@Override
@@ -200,6 +194,19 @@ public abstract class AbstractRunHistoryDecorator implements RunHistory {
 	public List<Long> getSeedsUsedByInstance(ProblemInstance pi) {
 		return rh.getSeedsUsedByInstance(pi);
 	}
+	
+	@Override
+	public double getEmpiricalCostLowerBound(ParamConfiguration config,
+			Set<ProblemInstance> instanceSet, double cutoffTime) {
+		return rh.getEmpiricalCostLowerBound(config, instanceSet, cutoffTime);
+	}
+
+	@Override
+	public double getEmpiricalCostUpperBound(ParamConfiguration config,
+			Set<ProblemInstance> instanceSet, double cutoffTime) {
+		return rh.getEmpiricalCostUpperBound(config, instanceSet, cutoffTime);
+	}
+	
 
 	
 }

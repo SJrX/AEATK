@@ -1,7 +1,9 @@
 package ca.ubc.cs.beta.aclib.runhistory;
 
 import java.util.Collection;
+
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.exceptions.DuplicateRunException;
 
 /**
@@ -35,6 +37,8 @@ public interface ThreadSafeRunHistory extends RunHistory {
 	 * Releases a read lock on the data structure
 	 */
 	public void releaseReadLock();
+
+	
 
 	
 	

@@ -4,6 +4,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.exceptions.DuplicateRunException;
 
 
@@ -33,6 +34,17 @@ public class TeeRunHistory extends AbstractRunHistoryDecorator{
 		} catch(DuplicateRunException e)
 		{
 			log.debug("Branch RunHistory object detected duplicate run: {}", run);
+		}
+	}
+
+	@Override
+	public int getOrCreateThetaIdx(ParamConfiguration initialIncumbent) {
+		
+		try {
+		return this.rh.getOrCreateThetaIdx(initialIncumbent);
+		} finally
+		{
+			this.branch.getOrCreateThetaIdx(initialIncumbent);
 		}
 	}
 	

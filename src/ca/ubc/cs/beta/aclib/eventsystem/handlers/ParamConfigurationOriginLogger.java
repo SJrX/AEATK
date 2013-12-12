@@ -45,7 +45,7 @@ public class ParamConfigurationOriginLogger implements EventHandler<AutomaticCon
 			File saveFile = new File(outputDir + File.separator + "configuration-generation.csv");
 			FileWriter writer = new FileWriter(saveFile); 
 			StringBuilder sb = new StringBuilder();
-			sb.append("\"Wall Time\",\"Configuration ID\",\"Run History ID\",\"Generation Count\",\"Run Count\",\"Final Performance\",");
+			sb.append("\"Wall Time\",\"Configuration ID\",\"Run History ID\",\"Generation Count\",\"PISP Count\",\"Final Performance\",");
 			
 			ArrayList<String> originNames = new ArrayList<String>(configTracker.getOriginNames());
 			Collections.sort(originNames);
@@ -61,7 +61,7 @@ public class ParamConfigurationOriginLogger implements EventHandler<AutomaticCon
 		
 			for(ParamConfiguration config : configTracker)
 			{
-				if(runHistory.getTotalNumRunsOfConfig(config) == 0)
+				if(runHistory.getTotalNumRunsOfConfigExcludingRedundant(config) == 0)
 				{
 					continue;
 				}
@@ -71,8 +71,8 @@ public class ParamConfigurationOriginLogger implements EventHandler<AutomaticCon
 				line.append("\"" + config.getFriendlyIDHex() + "\",");
 				line.append("\"" + runHistory.getThetaIdx(config) + "\",");
 				line.append("\"" + configTracker.getGenerationCount(config) + "\",");
-				line.append("\"" + runHistory.getTotalNumRunsOfConfig(config) + "\",");
-				line.append("\"" + runHistory.getEmpiricalCost(config, runHistory.getInstancesRan(config), cutoffTime) + "\",");
+				line.append("\"" + runHistory.getTotalNumRunsOfConfigExcludingRedundant(config) + "\",");
+				line.append("\"" + runHistory.getEmpiricalCost(config, runHistory.getProblemInstancesRan(config), cutoffTime) + "\",");
 				
 				for(String header : originNames)
 				{

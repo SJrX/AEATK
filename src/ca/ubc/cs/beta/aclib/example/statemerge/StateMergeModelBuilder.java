@@ -10,6 +10,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.model.ModelBuildingOptions;
@@ -25,6 +26,7 @@ import ca.ubc.cs.beta.aclib.options.scenario.ScenarioOptions;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aclib.random.SeedableRandomPool;
 import ca.ubc.cs.beta.aclib.runhistory.RunHistory;
+import ca.ubc.cs.beta.aclib.runhistory.RunHistoryHelper;
 import ca.ubc.cs.beta.models.fastrf.RandomForest;
 
 /**
@@ -122,8 +124,13 @@ public class StateMergeModelBuilder {
 			usedInstanceIdxs[j] = runInstancesIdx.get(j);
 		}
 		
-		double[] runResponseValues = runHistory.getRunResponseValues();
-		boolean[] censored = runHistory.getCensoredFlagForRuns();
+		
+		
+		List<AlgorithmRun> runs = runHistory.getAlgorithmRunsExcludingRedundant();
+		
+		double[] runResponseValues = RunHistoryHelper.getRunResponseValues(runs, runHistory.getRunObjective());
+		
+		boolean[] censored = RunHistoryHelper.getCensoredEarlyFlagForRuns(runs);
 		
 		
 		if(mbOptions.maskCensoredDataAsKappaMax)
@@ -153,11 +160,7 @@ public class StateMergeModelBuilder {
 		//=== Sanitize the data.
 		//sanitizedData = new PCAModelDataSanitizer(instanceFeatureMatrix, thetaMatrix, numPCA, runResponseValues, usedInstanceIdxs, logModel, runHistory.getParameterConfigurationInstancesRanByIndex(), runHistory.getCensoredFlagForRuns(), configSpace);
 		
-		
-		
-		
-		
-		SanitizedModelData sanitizedData = new DefaultValueForConditionalsMDS(instanceFeatureMatrix, thetaMatrix, runResponseValues, usedInstanceIdxs, rfOptions.logModel,runHistory.getParameterConfigurationInstancesRanByIndex(), runHistory.getCensoredFlagForRuns(), configSpace);
+		SanitizedModelData sanitizedData = new DefaultValueForConditionalsMDS(instanceFeatureMatrix, thetaMatrix, runResponseValues, usedInstanceIdxs, rfOptions.logModel,runHistory.getParameterConfigurationInstancesRanByIndex(), censored, configSpace);
 		
 		if(mbOptions.maskCensoredDataAsUncensored)
 		{

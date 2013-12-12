@@ -15,5 +15,12 @@ public enum ExecutionMode {
 	/**
 	 * ROAR only mode (no model, use random configurations)
 	 */
-	ROAR
+	ROAR,
+	
+	
+	/**
+	 * Point Selector Mode
+	 */
+	PSEL
+	
 }

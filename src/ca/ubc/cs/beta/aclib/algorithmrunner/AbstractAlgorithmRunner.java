@@ -20,6 +20,7 @@ import ca.ubc.cs.beta.aclib.algorithmrun.RunningAlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillHandler;
 import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableAlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.kill.StatusVariableKillHandler;
+import ca.ubc.cs.beta.aclib.concurrent.threadfactory.SequentiallyNamedThreadFactory;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
@@ -40,13 +41,12 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 
 	protected final List<AlgorithmRun> runs;
 	
-	private final ExecutorService execService = Executors.newCachedThreadPool();
+	private final ExecutorService execService = Executors.newCachedThreadPool(new SequentiallyNamedThreadFactory("Command Line Algorithm Runner (not run) Thread"));
 	
 	private static final Logger log = LoggerFactory.getLogger(AbstractAlgorithmRunner.class); 
 	
 	//Set to true if we should terminate the observers
 	private final AtomicBoolean shutdownThreads = new AtomicBoolean(false);
-	
 	
 	private final Semaphore shutdownComplete = new Semaphore(0);
 	private final Semaphore changes = new Semaphore(0);

@@ -112,10 +112,10 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 	}
 
 	@Override
-	public Set<ProblemInstance> getInstancesRan(ParamConfiguration config) {
+	public Set<ProblemInstance> getProblemInstancesRan(ParamConfiguration config) {
 		lockRead();
 		try {
-			return runHistory.getInstancesRan(config);
+			return runHistory.getProblemInstancesRan(config);
 		} finally
 		{
 			unlockRead();
@@ -123,12 +123,12 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 	}
 
 	@Override
-	public Set<ProblemInstanceSeedPair> getAlgorithmInstanceSeedPairsRan(
+	public Set<ProblemInstanceSeedPair> getProblemInstanceSeedPairsRan(
 			ParamConfiguration config) {
 		
 		lockRead();
 		try {
-			return runHistory.getAlgorithmInstanceSeedPairsRan(config);
+			return runHistory.getProblemInstanceSeedPairsRan(config);
 		} finally
 		{
 			unlockRead();
@@ -175,16 +175,7 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 	}
 
 
-	@Override
-	public int getTotalNumRunsOfConfig(ParamConfiguration config) {
-		lockRead();
-		try {
-			return runHistory.getTotalNumRunsOfConfig(config);
-		} finally
-		{
-			unlockRead();
-		}
-	}
+
 
 	@Override
 	public double getTotalRunCost() {
@@ -196,18 +187,7 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 			unlockRead();
 		}
 	}
-
-	@Override
-	public double[] getRunResponseValues() {
-		lockRead();
-		try {
-			return runHistory.getRunResponseValues();
-		} finally
-		{
-			unlockRead();
-		}
-	}
-
+	
 	@Override
 	public Set<ProblemInstance> getUniqueInstancesRan() {
 		lockRead();
@@ -241,17 +221,8 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 		}
 	}
 
-	@Override
-	public boolean[] getCensoredFlagForRuns() {
-		lockRead();
-		try {
-			return runHistory.getCensoredFlagForRuns();
-		} finally
-		{
-			unlockRead();
-		}
-	}
 
+	
 	@Override
 	public List<ParamConfiguration> getAllParameterConfigurationsRan() {
 		lockRead();
@@ -274,16 +245,6 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 		}
 	}
 
-	@Override
-	public List<AlgorithmRun> getAlgorithmRuns() {
-		lockRead();
-		try {
-			return runHistory.getAlgorithmRuns();
-		} finally
-		{
-			unlockRead();
-		}
-	}
 
 	@Override
 	public List<RunData> getAlgorithmRunData() {
@@ -302,11 +263,11 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 
 
 	@Override
-	public Set<ProblemInstanceSeedPair> getCappedAlgorithmInstanceSeedPairs(
+	public Set<ProblemInstanceSeedPair> getEarlyCensoredProblemInstanceSeedPairs(
 			ParamConfiguration config) {
 		lockRead();
 		try {
-			return runHistory.getCappedAlgorithmInstanceSeedPairs(config);
+			return runHistory.getEarlyCensoredProblemInstanceSeedPairs(config);
 		} finally
 		{
 			unlockRead();
@@ -314,33 +275,7 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 		}
 	}
 
-	@Override
-	public double getEmpiricalPISPCost(ParamConfiguration config,
-			Set<ProblemInstanceSeedPair> instanceSet, double cutoffTime) {
-		lockRead();
-		try {
-			return runHistory.getEmpiricalPISPCost(config, instanceSet, cutoffTime);
-		} finally
-		{
-			unlockRead();
-	
-		}
-		
-	}
 
-	@Override
-	public double getEmpiricalPISPCost(ParamConfiguration config,
-			Set<ProblemInstanceSeedPair> instanceSet, double cutoffTime,
-			Map<ProblemInstance, Map<Long, Double>> hallucinatedValues) {
-		lockRead();
-		try {
-			return runHistory.getEmpiricalPISPCost(config, instanceSet, cutoffTime, hallucinatedValues);
-		} finally
-		{
-			unlockRead();
-	
-		}
-	}
 
 	@Override
 	public int getThetaIdx(ParamConfiguration configuration) {
@@ -395,16 +330,76 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 	}
 
 	@Override
-	public List<AlgorithmRun> getAlgorithmRunData(ParamConfiguration config) {
+	public List<AlgorithmRun> getAlgorithmRunsExcludingRedundant(ParamConfiguration config) {
 		lockRead();
 		try {
-			return runHistory.getAlgorithmRunData(config);
+			return runHistory.getAlgorithmRunsExcludingRedundant(config);
 		} finally
 		{
 			unlockRead();
 	
 		}
 	}
+	
+
+	@Override
+	public int getTotalNumRunsOfConfigExcludingRedundant(ParamConfiguration config) {
+		lockRead();
+		try {
+			return runHistory.getTotalNumRunsOfConfigExcludingRedundant(config);
+		} finally
+		{
+			unlockRead();
+		}
+	}
+	
+	@Override
+	public List<AlgorithmRun> getAlgorithmRunsExcludingRedundant() {
+		lockRead();
+		try {
+			return runHistory.getAlgorithmRunsExcludingRedundant();
+		} finally
+		{
+			unlockRead();
+		}
+	}
+	
+	@Override
+	public List<AlgorithmRun> getAlgorithmRunsIncludingRedundant(ParamConfiguration config) {
+		lockRead();
+		try {
+			return runHistory.getAlgorithmRunsIncludingRedundant(config);
+		} finally
+		{
+			unlockRead();
+	
+		}
+	}
+	
+
+	@Override
+	public int getTotalNumRunsOfConfigIncludingRedundant(ParamConfiguration config) {
+		lockRead();
+		try {
+			return runHistory.getTotalNumRunsOfConfigIncludingRedundant(config);
+		} finally
+		{
+			unlockRead();
+		}
+	}
+	
+	@Override
+	public List<AlgorithmRun> getAlgorithmRunsIncludingRedundant() {
+		lockRead();
+		try {
+			return runHistory.getAlgorithmRunsIncludingRedundant();
+		} finally
+		{
+			unlockRead();
+		}
+	}
+	
+	
 
 	@Override
 	public Map<ProblemInstance, LinkedHashMap<Long, Double>> getPerformanceForConfig(
@@ -450,6 +445,31 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 	{
 		this.rwltt.unlockWrite();
 		
+	}
+
+	@Override
+	public int getOrCreateThetaIdx(ParamConfiguration config) {
+		lockWrite();
+		try {
+			return this.runHistory.getOrCreateThetaIdx(config);
+		} finally
+		{
+			unlockWrite();
+		}
+	
+		
+	}
+
+	@Override
+	public double getEmpiricalCostLowerBound(ParamConfiguration config,
+			Set<ProblemInstance> instanceSet, double cutoffTime) {
+		return this.runHistory.getEmpiricalCostLowerBound(config, instanceSet, cutoffTime);
+	}
+
+	@Override
+	public double getEmpiricalCostUpperBound(ParamConfiguration config,
+			Set<ProblemInstance> instanceSet, double cutoffTime) {
+		return this.runHistory.getEmpiricalCostUpperBound(config, instanceSet, cutoffTime);
 	}
 
 

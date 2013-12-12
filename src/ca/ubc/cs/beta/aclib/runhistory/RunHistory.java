@@ -60,15 +60,35 @@ public interface RunHistory {
 	 * @param config configuration to get instances for
 	 * @return	set instances that were run
 	 */
-	public Set<ProblemInstance> getInstancesRan(ParamConfiguration config);
+	public Set<ProblemInstance> getProblemInstancesRan(ParamConfiguration config);
 
 	/**
 	 * Returns a copy of the set of instance seed pairs we have run a Param Configuration on.
 	 * @param config	configuration to get ProblemInstanceSeedPairs for
 	 * @return	set of ProblemInstanceSeedPairs
 	 */
-	public Set<ProblemInstanceSeedPair> getAlgorithmInstanceSeedPairsRan(ParamConfiguration config);
+	public Set<ProblemInstanceSeedPair> getProblemInstanceSeedPairsRan(ParamConfiguration config);
 	
+	
+	/**
+	 * Compute and return the empirical cost of a parameter configuration on the subset of provided instances we have runs for
+	 * @param config  		 ParamConfiguration to get Cost of
+	 * @param instanceSet 	 instances to compute cost over
+	 * @param cutoffTime 	 cutoff time for algorithm runs
+	 * @deprecated Not implemented currently as there is a bug in the interface and will need to be refactored at a later point in time. Essentially it will erroneusly include other seeds and throw off the bound.
+	 * @return cost (Double.MAX_VALUE) if we haven't seen the configuration, otherwise the cost 
+	 */
+	public double getEmpiricalCostLowerBound(ParamConfiguration config, Set<ProblemInstance> instanceSet, double cutoffTime);
+	
+	/**
+	 * Compute and return the empirical cost of a parameter configuration on the subset of provided instances we have runs for
+	 * @param config  		 ParamConfiguration to get Cost of
+	 * @param instanceSet 	 instances to compute cost over
+	 * @param cutoffTime 	 cutoff time for algorithm runs
+	 * @deprecated Not implemented currently as there is a bug in the interface and will need to be refactored at a later point in time. Essentially it will erroneusly include other seeds and throw off the bound.
+	 * @return cost (Double.MAX_VALUE) if we haven't seen the configuration, otherwise the cost 
+	 */
+	public double getEmpiricalCostUpperBound(ParamConfiguration config, Set<ProblemInstance> instanceSet, double cutoffTime);
 	
 	/**
 	 * Compute and return the empirical cost of a parameter configuration on the subset of provided instances we have runs for
@@ -101,27 +121,26 @@ public interface RunHistory {
 			Map<ProblemInstance, Map<Long, Double>> hallucinatedValues,
 			double minimumResponseValue);
 
+	/**
+	 * Compute and return the empirical cost of a parameter configuration on the subset of provided instances we have runs for.
+	 * @param config 		ParamConfiguration to get Cost of
+	 * @param instanceSet   Instances to compute cost over
+	 * @param cutoffTime 	cutoff time for algorithm runs
+	 * @param minimumResponseValue  the minimum legal response value (all values lower than this are replaced)
+	 * @return cost (Double.MAX_VALUE) if we haven't seen the configuration, otherwise the cost
+	 */
+	double getEmpiricalCost(ParamConfiguration config,	Set<ProblemInstance> instanceSet, double cutoffTime, double minimumResponseValue);
 	
 
-	/**
-	 * Returns the total number of runs for a configuration
-	 * @param config ParamConfiguration
-	 * @return number of runs
-	 */
-	public int getTotalNumRunsOfConfig(ParamConfiguration config);
+	
+	
+	
 	
 	/**
 	 * Returns the total cost of the all the runs used.
 	 * @return total run cost (sum of all run times)
 	 */
 	public double getTotalRunCost();
-	
-	/**
-	 * Returns a breakdown of each individual run cost
-	 * @return double[] reporting the response value for every run, under the run objective
-	 */
-	public double[] getRunResponseValues();
-
 
 	/**
 	 * Get the set of Unique instances ran
@@ -143,13 +162,7 @@ public interface RunHistory {
 	 */
 	public int[][] getParameterConfigurationInstancesRanByIndex();
 	
-	/**
-	 * Returns an array containing a boolean for each run that tells us whether this run was capped or not.
-	 * 
-	 * @return boolean array signifying whether a run was capped
-	 */
-	public boolean[] getCensoredFlagForRuns();
-	
+
 	/**
 	 * Returns a list containing all param configurations that ran in order (i.e. in order of theta idx)
 	 * 
@@ -167,6 +180,15 @@ public interface RunHistory {
 	 */
 	public double[][] getAllConfigurationsRanInValueArrayForm();
 	
+	
+	
+	/**
+	 * Returns a list of all the Run Data
+	 * 
+	 * @return	list of run data
+	 */
+	public List<RunData> getAlgorithmRunData();
+	
 	/**
 	 * Returns a new list containing all the runs we have done.
 	 * <p>
@@ -175,21 +197,45 @@ public interface RunHistory {
 	 * 
 	 * @return list of runs that we have recorded 
 	 */
-	public List<AlgorithmRun> getAlgorithmRuns();
+	public List<AlgorithmRun> getAlgorithmRunsExcludingRedundant();
 	
 	/**
-	 * Returns a list of all the Run Data
+	 * Returns a new list containing all the runs we have done.
+	 * <p>
+	 * <b>Implementation Note:</b>Implementors must return a list that clients can modify directly without
+	 * corrupting internal state.
 	 * 
-	 * @return	list of run data
+	 * @return list of runs that we have recorded 
 	 */
-	public List<RunData> getAlgorithmRunData();
-
+	public List<AlgorithmRun> getAlgorithmRunsIncludingRedundant();
+	
 	/**
-	 * Returns an unmodifiable list of run data for challenger 
+	 * Returns the total number of runs for a configuration, ignoring early capped runs that have been replaced with better capped data.
+	 * @param config ParamConfiguration
+	 * @return number of runs
+	 */
+	public int getTotalNumRunsOfConfigExcludingRedundant(ParamConfiguration config);
+	
+	/**
+	 * Returns the total number of runs for a configuration, , containing early capped runs.
+	 * @param config ParamConfiguration
+	 * @return number of runs
+	 */
+	public int getTotalNumRunsOfConfigIncludingRedundant(ParamConfiguration config);
+	
+	/**
+	 * Returns an unmodifiable list of run data for challenger, ignoring early capped runs that have been replaced with better capped data.
 	 * @param config
 	 * @return 	list of algorithms for the configuration
 	 */
-	public List<AlgorithmRun> getAlgorithmRunData(ParamConfiguration config);
+	public List<AlgorithmRun> getAlgorithmRunsExcludingRedundant(ParamConfiguration config);
+
+	/**
+	 * Returns an unmodifiable list of run data for challenger, containing early capped runs.
+	 * @param config
+	 * @return 	list of algorithms for the configuration
+	 */
+	public List<AlgorithmRun> getAlgorithmRunsIncludingRedundant(ParamConfiguration config);
 	
 
 	/**
@@ -198,15 +244,7 @@ public interface RunHistory {
 	 * @param config	paramconfiguration to select
 	 * @return	set of instance seed pairs that are capped runs
 	 */
-	public Set<ProblemInstanceSeedPair> getCappedAlgorithmInstanceSeedPairs(ParamConfiguration config);
-
-	
-	double getEmpiricalPISPCost(ParamConfiguration config,
-			Set<ProblemInstanceSeedPair> instanceSet, double cutoffTime);
-
-	double getEmpiricalPISPCost(ParamConfiguration config,
-			Set<ProblemInstanceSeedPair> instanceSet, double cutoffTime,
-			Map<ProblemInstance, Map<Long, Double>> hallucinatedValues);
+	public Set<ProblemInstanceSeedPair> getEarlyCensoredProblemInstanceSeedPairs(ParamConfiguration config);
 
 	/**
 	 * Returns the Index into arrays represented by this configuration
@@ -215,10 +253,6 @@ public interface RunHistory {
 	 * @return index into the theta array for this configuration
 	 */
 	public int getThetaIdx(ParamConfiguration configuration);
-
-	double getEmpiricalCost(ParamConfiguration config,
-			Set<ProblemInstance> instanceSet, double cutoffTime,
-			double minimumResponseValue);
 
 	/**
 	 * Returns the number of unique problem instance seed pairs run for this configuration 
@@ -243,6 +277,16 @@ public interface RunHistory {
 	 */
 	public List<Long> getSeedsUsedByInstance(ProblemInstance pi);
 
+
+	/**
+	 * Returns the Index into arrays represented by this configuration, if it doesn't already exist it is created
+	 * 
+	 * @param configuration 	Configuration to create idx for
+	 * @return index into the theta array for this configuration
+	 */
+	public int getOrCreateThetaIdx(ParamConfiguration config);
+
+	
 	
 	
 }
