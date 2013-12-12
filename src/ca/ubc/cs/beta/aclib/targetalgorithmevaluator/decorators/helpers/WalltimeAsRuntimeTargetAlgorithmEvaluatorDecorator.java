@@ -249,7 +249,12 @@ public class WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator extends
 		public double getWallclockExecutionTime() {
 			return wrappedRun.getWallclockExecutionTime();
 		}
-
+		
+		@Override
+		public boolean isCensoredEarly() {
+			return wrappedRun.isCensoredEarly();
+		}
+		
 		@Override
 		public void kill() {
 			if(wrappedKillableRun != null)

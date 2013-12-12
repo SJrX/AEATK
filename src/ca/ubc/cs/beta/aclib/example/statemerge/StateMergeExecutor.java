@@ -454,7 +454,7 @@ outerLoop:
 		ThreadSafeRunHistory rh = new ThreadSafeRunHistoryWrapper(new NewRunHistory(smo.scenOpts.intraInstanceObj, smo.scenOpts.interInstanceObj, smo.scenOpts.runObj));
 		restoreState(dir, smo.scenOpts, pis, execConfig, rh, smo.restoreScenarioArguments);
 		
-		log.debug("Restored state of {} has {} runs for default configuration ", dir, rh.getAlgorithmRunData(execConfig.getParamFile().getDefaultConfiguration()).size());
+		log.debug("Restored state of {} has {} runs for default configuration ", dir, rh.getTotalNumRunsOfConfigExcludingRedundant(execConfig.getParamFile().getDefaultConfiguration()));
 		double restoredRuntime = 0.0;
 		for(RunData rd : rh.getAlgorithmRunData())
 		{

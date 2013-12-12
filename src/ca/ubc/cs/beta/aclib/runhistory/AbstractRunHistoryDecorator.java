@@ -90,21 +90,12 @@ public abstract class AbstractRunHistoryDecorator implements RunHistory {
 				hallucinatedValues, minimumResponseValue);
 	}
 
-	@Override
-	public int getTotalNumRunsOfConfig(ParamConfiguration config) {
-		return rh.getTotalNumRunsOfConfig(config);
-	}
-
+	
 	@Override
 	public double getTotalRunCost() {
 		return rh.getTotalRunCost();
 	}
-
-	@Override
-	public double[] getRunResponseValues() {
-		return rh.getRunResponseValues();
-	}
-
+	
 	@Override
 	public Set<ProblemInstance> getUniqueInstancesRan() {
 		return rh.getUniqueInstancesRan();
@@ -121,11 +112,6 @@ public abstract class AbstractRunHistoryDecorator implements RunHistory {
 	}
 
 	@Override
-	public boolean[] getCensoredEarlyFlagForRuns() {
-		return rh.getCensoredEarlyFlagForRuns();
-	}
-
-	@Override
 	public List<ParamConfiguration> getAllParameterConfigurationsRan() {
 		return rh.getAllParameterConfigurationsRan();
 	}
@@ -135,10 +121,7 @@ public abstract class AbstractRunHistoryDecorator implements RunHistory {
 		return rh.getAllConfigurationsRanInValueArrayForm();
 	}
 
-	@Override
-	public List<AlgorithmRun> getAlgorithmRuns() {
-		return rh.getAlgorithmRuns();
-	}
+	
 
 	@Override
 	public List<RunData> getAlgorithmRunData() {
@@ -146,10 +129,35 @@ public abstract class AbstractRunHistoryDecorator implements RunHistory {
 	}
 
 	@Override
-	public List<AlgorithmRun> getAlgorithmRunData(ParamConfiguration config) {
-		return rh.getAlgorithmRunData(config);
+	public List<AlgorithmRun> getAlgorithmRunsExcludingRedundant() {
+		return rh.getAlgorithmRunsExcludingRedundant();
+	}
+	
+	@Override
+	public List<AlgorithmRun> getAlgorithmRunsExcludingRedundant(ParamConfiguration config) {
+		return rh.getAlgorithmRunsExcludingRedundant(config);
 	}
 
+	@Override
+	public int getTotalNumRunsOfConfigExcludingRedundant(ParamConfiguration config) {
+		return rh.getTotalNumRunsOfConfigExcludingRedundant(config);
+	}
+
+	@Override
+	public List<AlgorithmRun> getAlgorithmRunsIncludingRedundant() {
+		return rh.getAlgorithmRunsIncludingRedundant();
+	}
+	
+	@Override
+	public List<AlgorithmRun> getAlgorithmRunsIncludingRedundant(ParamConfiguration config) {
+		return rh.getAlgorithmRunsIncludingRedundant(config);
+	}
+
+	@Override
+	public int getTotalNumRunsOfConfigIncludingRedundant(ParamConfiguration config) {
+		return rh.getTotalNumRunsOfConfigIncludingRedundant(config);
+	}
+	
 	@Override
 	public Set<ProblemInstanceSeedPair> getEarlyCensoredProblemInstanceSeedPairs(
 			ParamConfiguration config) {

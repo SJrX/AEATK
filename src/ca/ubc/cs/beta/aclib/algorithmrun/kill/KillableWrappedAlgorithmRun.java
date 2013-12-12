@@ -102,6 +102,11 @@ public class KillableWrappedAlgorithmRun implements KillableAlgorithmRun {
 		return run.hashCode();
 	}
 	
+	@Override
+	public boolean isCensoredEarly() {
+		return run.isCensoredEarly();
+	}
+	
 	/**
 	 * Two AlgorithmRuns are considered equal if they have same runConfig and execConfig
 	 */

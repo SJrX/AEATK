@@ -119,7 +119,7 @@ public class LogRuntimeStatistics implements EventHandler<AutomaticConfiguratorE
 		{
 			this.logCount.set(((StateRestoredEvent) event).getModelsBuilt());
 			
-			for(AlgorithmRun run : ((StateRestoredEvent) event).getRunHistory().getAlgorithmRuns())
+			for(AlgorithmRun run : ((StateRestoredEvent) event).getRunHistory().getAlgorithmRunsIncludingRedundant())
 			{
 				this.sumOfWallclockTime += run.getWallclockExecutionTime();
 				this.sumOfRuntime += run.getRuntime();
@@ -147,11 +147,11 @@ public class LogRuntimeStatistics implements EventHandler<AutomaticConfiguratorE
 				
 				Object[] arr = { logCount.get(),
 						runHistory.getThetaIdx(incumbent) + " (" + incumbent +")",
-						runHistory.getTotalNumRunsOfConfig(incumbent),
+						runHistory.getTotalNumRunsOfConfigExcludingRedundant(incumbent),
 						runHistory.getProblemInstancesRan(incumbent).size(),
 						runHistory.getUniqueParamConfigurations().size(),
 						runHistory.getEmpiricalCost(incumbent, runHistory.getUniqueInstancesRan(), this.cutoffTime),
-						runHistory.getAlgorithmRuns().size(), 
+						//runHistory.getAlgorithmRuns().size(), 
 						"N/A",
 						"N/A" ,
 						"N/A", //options.runtimeLimit - wallTime 
@@ -188,7 +188,7 @@ public class LogRuntimeStatistics implements EventHandler<AutomaticConfiguratorE
 				myLastLogMessage = "*****Runtime Statistics*****" +
 						"\n Count: " + arr[0]+
 						"\n Incumbent ID: "+ arr[1]+
-						"\n Number of Runs for Incumbent: " + arr[2] +
+						"\n Number of PISPs for Incumbent: " + arr[2] +
 						"\n Number of Instances for Incumbent: " + arr[3]+
 						"\n Number of Configurations Run: " + arr[4]+ 
 						"\n Performance of the Incumbent: " + arr[5]+
@@ -209,7 +209,7 @@ public class LogRuntimeStatistics implements EventHandler<AutomaticConfiguratorE
 						"\n Sum of Measured Wallclock Runtime: " + arr[16] + " s" +
 						"\n Max Memory: "+arr[17]+" MB" +
 						"\n Total Java Memory: "+arr[18]+" MB" +
-						"\n Free Java Memory: "+arr[19]+" MB";
+						"\n Free Java Memory: "+arr[19]+" MB" + "\n * PISP count is roughly the number of runs, but doesn't included redundant runs on the same problem instance & seed";
 				
 			lastString.set(myLastLogMessage);
 			} finally

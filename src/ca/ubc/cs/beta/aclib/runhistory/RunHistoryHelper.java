@@ -12,7 +12,10 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
+import ca.ubc.cs.beta.aclib.objectives.RunObjective;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aclib.random.RandomUtil;
@@ -232,8 +235,40 @@ public class RunHistoryHelper{
 	public static ProblemInstanceSeedPair getRandomInstanceSeedWithFewestRunsFor( RunHistory rh, InstanceSeedGenerator instanceSeedGenerator, ParamConfiguration config, List<ProblemInstance> instanceList, Random rand, boolean deterministic) {
 		return getRandomInstanceSeedWithFewestRunsFor(rh, instanceSeedGenerator, config, instanceList, rand, deterministic,1).get(0);
 	}
-	
-	
 
+	/**
+	 * Returns a breakdown of each individual run cost
+	 * @return double[] reporting the response value for every run, under the run objective
+	 */
+	public static double[] getRunResponseValues(List<AlgorithmRun> runs, RunObjective runObj)
+	{
+
+		double[] responseValues = new double[runs.size()];
+		int i=0;
+		for(AlgorithmRun run : runs)
+		{
+			responseValues[i] = runObj.getObjective(run);
+			i++;
+		}
+		return responseValues;
+	}
+	
+	/**
+	 * Returns an array containing a boolean for each run that tells us whether this run was capped or not.
+	 * 
+	 * @return boolean array signifying whether a run was capped
+	 */
+	public final static boolean[] getCensoredEarlyFlagForRuns(List<AlgorithmRun> runs)
+	{
+		boolean[] censored = new boolean[runs.size()];
+		int i = 0;
+		for(AlgorithmRun run : runs)
+		{
+			censored[i] = run.isCensoredEarly(); 
+			i++;
+		}
+		return censored;
+		
+	}	
 	
 }

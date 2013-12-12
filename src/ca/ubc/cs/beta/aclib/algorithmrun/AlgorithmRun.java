@@ -169,5 +169,11 @@ public interface AlgorithmRun extends Runnable, Serializable,  Callable<Object> 
 	public double getWallclockExecutionTime();
 	
 	
+	/**
+	 * Returns <code>true</code> iff the run is a lower bound on performance
+	 */
+	
+	public boolean isCensoredEarly();
+	
 
 }

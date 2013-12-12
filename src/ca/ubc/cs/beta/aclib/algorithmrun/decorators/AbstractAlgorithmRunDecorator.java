@@ -107,6 +107,11 @@ public class AbstractAlgorithmRunDecorator implements AlgorithmRun {
 
 		return wrappedRun.getAdditionalRunData();
 	}
+
+	@Override
+	public boolean isCensoredEarly() {
+		return wrappedRun.isCensoredEarly();
+	}
 	
 
 	

@@ -28,8 +28,10 @@ import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aclib.seedgenerator.InstanceSeedGenerator;
 
 /**
+ * Stores a list of runs that have been completed in multiple ways
+ * that make it easier to query for certain kinds of information / comparsions.
  * 
- * @author seramage
+ * @author Steve Ramage <seramage@cs.ubc.ca>
  *
  */
 @SuppressWarnings("unused")
@@ -96,6 +98,10 @@ public class NewRunHistory implements RunHistory {
 	 */
 	private final LinkedHashMap<ParamConfiguration, Integer> configToNumRunsMap = new LinkedHashMap<ParamConfiguration, Integer>();
 	
+	/**
+	 * Stores the number of times a config has been run
+	 */
+	private final LinkedHashMap<ParamConfiguration, Integer> configToNumRunsIgnoringRedundantMap = new LinkedHashMap<ParamConfiguration, Integer>();
 	
 	/**
 	 * Stores a list of Instance Seed Pairs whose runs were capped.
@@ -107,8 +113,12 @@ public class NewRunHistory implements RunHistory {
 	 */
 	private Set<ProblemInstance> instancesRanSet = new HashSet<ProblemInstance>();
 	
-	
 	private final HashMap<ParamConfiguration, List<AlgorithmRun>> configToRunMap = new HashMap<ParamConfiguration, List<AlgorithmRun>>();
+	
+	/**
+	 * Stores for each run the best known value at a given time. We use a linked hash map because order is important.
+	 */
+	private final LinkedHashMap<ParamConfiguration, LinkedHashMap<ProblemInstanceSeedPair,AlgorithmRun>> configToRunIgnoreRedundantMap = new LinkedHashMap<ParamConfiguration, LinkedHashMap<ProblemInstanceSeedPair,AlgorithmRun>>();
 	
 	private static final DecimalFormat format = new DecimalFormat("#######.####");
 	
@@ -142,8 +152,6 @@ public class NewRunHistory implements RunHistory {
 		
 		Double runResult = runObj.getObjective(run);
 		
-		
-		
 		/**
 		 * Add run data to the list of seeds used by Instance
 		 */
@@ -154,9 +162,7 @@ public class NewRunHistory implements RunHistory {
 			seedsUsedByInstance.put(pi,instanceSeedList);
 		}
 		instanceSeedList.add(seed);
-		
-		
-	
+
 		Map<ProblemInstance, LinkedHashMap<Long, Double>> instanceToPerformanceMap = configToPerformanceMap.get(config);
 		if(instanceToPerformanceMap == null)
 		{ //Initialize Map if non-existant
@@ -174,7 +180,15 @@ public class NewRunHistory implements RunHistory {
 		Double dOldValue = seedToPerformanceMap.put(seed,runResult);
 		
 		RunResult result = run.getRunResult();
-		boolean censoredEarly = (result.equals(RunResult.TIMEOUT) && run.getRunConfig().hasCutoffLessThanMax() || result.equals(RunResult.KILLED));
+		
+		boolean censoredEarly = run.isCensoredEarly();
+		
+		if(configToRunIgnoreRedundantMap.get(config) == null)
+		{
+			configToRunIgnoreRedundantMap.put(config, new LinkedHashMap<ProblemInstanceSeedPair, AlgorithmRun>());
+		}
+		
+		
 		
 		if(dOldValue != null)
 		{
@@ -190,7 +204,7 @@ public class NewRunHistory implements RunHistory {
 			} else
 			{
 				AlgorithmRun matchingRun = null;
-				for(AlgorithmRun algoRun : this.getAlgorithmRunData(config))
+				for(AlgorithmRun algoRun : this.getAlgorithmRunsExcludingRedundant(config))
 				{
 					if(algoRun.getRunConfig().getProblemInstanceSeedPair().equals(run.getRunConfig().getProblemInstanceSeedPair()))
 					{
@@ -217,10 +231,29 @@ public class NewRunHistory implements RunHistory {
 				//We know that both the previous and current result must be censored early, so we take the maximimum
 				if(censoredEarly)
 				{	
+					
 					seedToPerformanceMap.put(seed, Math.max(dOldValue, runResult));
+					
+					if(dOldValue < runResult)
+					{
+						this.configToRunIgnoreRedundantMap.get(config).put(pisp, run);
+					}
 				}
 			}
 
+		} else
+		{ 
+			//Haven't seen this run before, so we have new data
+			if(configToNumRunsIgnoringRedundantMap.get(config) == null)
+			{
+				configToNumRunsIgnoringRedundantMap.put(config, Integer.valueOf(1));
+			} else
+			{
+				configToNumRunsIgnoringRedundantMap.put(config, configToNumRunsIgnoringRedundantMap.get(config) +1);
+			}
+			
+			this.configToRunIgnoreRedundantMap.get(config).put(pisp, run);
+			
 		}
 		
 	
@@ -496,47 +529,13 @@ public class NewRunHistory implements RunHistory {
 	}
 
 	
-	@Override
-	public int getTotalNumRunsOfConfig(ParamConfiguration config) {
-		Integer value = configToNumRunsMap.get(config);
-		if( value != null)
-		{
-			return value;
-		} else
-		{
-			return 0;
-		}
-	}
 
 	@Override
 	public double getTotalRunCost() {
 		return totalRuntimeSum;
 	}
 
-	@Override
-	public double[] getRunResponseValues() {
-		
-		double[] responseValues = new double[runHistoryList.size()];
-		int i=0;
-		for(RunData runData : runHistoryList)
-		{
-			responseValues[i] = runData.getResponseValue();
-			i++;
-		}
-		return responseValues;
-	}
-
-	@Override
-	public boolean[] getCensoredEarlyFlagForRuns() {
-		boolean[] responseValues = new boolean[runHistoryList.size()];
-		int i=0;
-		for(RunData runData : runHistoryList)
-		{
-			responseValues[i] = (((runData.getRun().getRunResult().equals(RunResult.TIMEOUT) && runData.getRun().getRunConfig().hasCutoffLessThanMax())) || runData.getRun().getRunResult().equals(RunResult.KILLED));
-			i++;
-		}
-		return responseValues;
-	}
+	
 
 	@Override
 	public Set<ProblemInstance> getUniqueInstancesRan() {
@@ -585,24 +584,8 @@ public class NewRunHistory implements RunHistory {
 		return configs;
 	}
 
-	@Override
-	/**
-	 * Get a list of algorithm runs we have used
-	 * 
-	 * Slow O(n) method to generate a list of Algorithm Runs
-	 * We could speed this up but at this point we only do this for restoring state
-	 * @return list of algorithm runs we have recieved
-	 */
-	public List<AlgorithmRun> getAlgorithmRuns() 
-	{
-		
-		List<AlgorithmRun> runs = new ArrayList<AlgorithmRun>(this.runHistoryList.size());
-		for(RunData runData : getAlgorithmRunData() )
-		{
-			runs.add(runData.getRun());
-		}
-		return runs;
-	}
+	
+	
 
 	@Override
 	public List<RunData> getAlgorithmRunData() {
@@ -658,8 +641,65 @@ public class NewRunHistory implements RunHistory {
 		}
 	}
 	
+
 	@Override
-	public List<AlgorithmRun> getAlgorithmRunData(ParamConfiguration config) {
+	public int getTotalNumRunsOfConfigIncludingRedundant(ParamConfiguration config) {
+		Integer value = configToNumRunsMap.get(config);
+		if( value != null)
+		{
+			return value;
+		} else
+		{
+			return 0;
+		}
+	}
+	
+	@Override
+	public int getTotalNumRunsOfConfigExcludingRedundant(ParamConfiguration config) {
+		Integer value = configToNumRunsIgnoringRedundantMap.get(config);
+		if( value != null)
+		{
+			return value;
+		} else
+		{
+			return 0;
+		}
+		
+	}
+	
+	@Override
+	public List<AlgorithmRun> getAlgorithmRunsExcludingRedundant() {
+		
+		List<AlgorithmRun> list = new ArrayList<AlgorithmRun>();
+		for(LinkedHashMap<ProblemInstanceSeedPair, AlgorithmRun> lhm : this.configToRunIgnoreRedundantMap.values())
+		{
+			list.addAll(lhm.values());
+		}
+		
+		return list;
+	}
+	
+	@Override
+	/**
+	 * Get a list of algorithm runs we have used
+	 * 
+	 * Slow O(n) method to generate a list of Algorithm Runs
+	 * We could speed this up but at this point we only do this for restoring state
+	 * @return list of algorithm runs we have recieved
+	 */
+	public List<AlgorithmRun> getAlgorithmRunsIncludingRedundant() 
+	{
+		
+		List<AlgorithmRun> runs = new ArrayList<AlgorithmRun>(this.runHistoryList.size());
+		for(RunData runData : getAlgorithmRunData() )
+		{
+			runs.add(runData.getRun());
+		}
+		return runs;
+	}
+	
+	@Override
+	public List<AlgorithmRun> getAlgorithmRunsIncludingRedundant(ParamConfiguration config) {
 		
 		List<AlgorithmRun> runs = this.configToRunMap.get(config);
 		
@@ -671,6 +711,22 @@ public class NewRunHistory implements RunHistory {
 			return Collections.emptyList();
 		}
 	}
+	
+	@Override
+	public List<AlgorithmRun> getAlgorithmRunsExcludingRedundant(ParamConfiguration config)
+	{
+		Map<ProblemInstanceSeedPair, AlgorithmRun> runs = this.configToRunIgnoreRedundantMap.get(config);
+		
+		if(runs == null)
+		{
+			runs = Collections.emptyMap();
+		}
+		
+		return Collections.unmodifiableList(new ArrayList<AlgorithmRun>(runs.values()));
+	}
+	
+	
+	
 
 	@Override
 	public List<Long> getSeedsUsedByInstance(ProblemInstance pi) 
@@ -682,6 +738,10 @@ public class NewRunHistory implements RunHistory {
 		}
 		return Collections.unmodifiableList(seedsUsedByInstance.get(pi));
 	}
+
+	
+
+	
 
 
 

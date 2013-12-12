@@ -526,10 +526,19 @@ public class RunHistoryTester {
 		assertEquals("Configuration should have an upper bound of " + cutoffTime, 6.0, runHistory.getEmpiricalCostUpperBound(defaultConfig, instanceSet, cutoffTime), 0.01);
 		assertEquals("Configuration should have an lower bound of " + 6, 6.0, runHistory.getEmpiricalCostLowerBound(defaultConfig, instanceSet, cutoffTime), 0.01);
 		
+		assertEquals("RunData should be 1 ", runHistory.getAlgorithmRunsExcludingRedundant(defaultConfig).size() , 1);
+		assertEquals("RunData should be 1 ", runHistory.getTotalNumRunsOfConfigExcludingRedundant(defaultConfig) , 1);
+		
 		assertTrue("Should only see an the one configuration", runHistory.getProblemInstanceSeedPairsRan(defaultConfig).equals(Collections.singleton(pisp)));
 		assertTrue("Should have no runs", runHistory.getProblemInstanceSeedPairsRan(otherConfig).equals(Collections.EMPTY_SET));
-		assertEquals("Expect to see three runs", runHistory.getAlgorithmRunData(defaultConfig).size(), 3);
+		
+		assertEquals("Expect to see three runs", runHistory.getAlgorithmRunsIncludingRedundant(defaultConfig).size(), 3);
+		assertEquals("Expect to see one runs", runHistory.getAlgorithmRunsExcludingRedundant(defaultConfig).size(), 1);
+		
 
+		assertEquals("Expect to see three runs", runHistory.getAlgorithmRunsIncludingRedundant(defaultConfig).size(), 3);
+		assertEquals("Expect to see one runs", runHistory.getAlgorithmRunsExcludingRedundant(defaultConfig).size(), 1);
+		
 		
 	}
 	
@@ -621,7 +630,14 @@ public class RunHistoryTester {
 		
 		assertTrue("Should only see an the one configuration", runHistory.getProblemInstanceSeedPairsRan(defaultConfig).equals(Collections.singleton(pisp)));
 		assertTrue("Should have no runs", runHistory.getProblemInstanceSeedPairsRan(otherConfig).equals(Collections.EMPTY_SET));
-		assertEquals("Expect to see three runs", runHistory.getAlgorithmRunData(defaultConfig).size(), 3);
+		
+		assertEquals("Expect to see three runs", runHistory.getTotalNumRunsOfConfigIncludingRedundant(defaultConfig), 3);
+		assertEquals("Expect to see one runs", runHistory.getTotalNumRunsOfConfigExcludingRedundant(defaultConfig), 1);
+		
+		
+		assertEquals("Expect to see three runs", runHistory.getAlgorithmRunsIncludingRedundant(defaultConfig).size(), 3);
+		assertEquals("Expect to see one runs", runHistory.getAlgorithmRunsExcludingRedundant(defaultConfig).size(), 1);
+		
 	}
 	
 	
@@ -718,7 +734,15 @@ public class RunHistoryTester {
 		
 		assertTrue("Should only see an the one configuration", runHistory.getProblemInstanceSeedPairsRan(defaultConfig).equals(Collections.singleton(pisp)));
 		assertTrue("Should have no runs", runHistory.getProblemInstanceSeedPairsRan(otherConfig).equals(Collections.EMPTY_SET));
-		assertEquals("Expect to see three runs", runHistory.getAlgorithmRunData(defaultConfig).size(), 3);
+		
+		
+		assertEquals("Expect to see three runs", runHistory.getTotalNumRunsOfConfigIncludingRedundant(defaultConfig), 3);
+		assertEquals("Expect to see one runs", runHistory.getTotalNumRunsOfConfigExcludingRedundant(defaultConfig), 1);
+		
+		
+		assertEquals("Expect to see three runs", runHistory.getAlgorithmRunsIncludingRedundant(defaultConfig).size(), 3);
+		assertEquals("Expect to see one runs", runHistory.getAlgorithmRunsExcludingRedundant(defaultConfig).size(), 1);
+		
 
 	}
 	@Test

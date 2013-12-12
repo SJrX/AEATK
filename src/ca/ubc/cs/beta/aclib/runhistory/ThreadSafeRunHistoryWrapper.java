@@ -175,16 +175,7 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 	}
 
 
-	@Override
-	public int getTotalNumRunsOfConfig(ParamConfiguration config) {
-		lockRead();
-		try {
-			return runHistory.getTotalNumRunsOfConfig(config);
-		} finally
-		{
-			unlockRead();
-		}
-	}
+
 
 	@Override
 	public double getTotalRunCost() {
@@ -196,18 +187,7 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 			unlockRead();
 		}
 	}
-
-	@Override
-	public double[] getRunResponseValues() {
-		lockRead();
-		try {
-			return runHistory.getRunResponseValues();
-		} finally
-		{
-			unlockRead();
-		}
-	}
-
+	
 	@Override
 	public Set<ProblemInstance> getUniqueInstancesRan() {
 		lockRead();
@@ -241,17 +221,8 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 		}
 	}
 
-	@Override
-	public boolean[] getCensoredEarlyFlagForRuns() {
-		lockRead();
-		try {
-			return runHistory.getCensoredEarlyFlagForRuns();
-		} finally
-		{
-			unlockRead();
-		}
-	}
 
+	
 	@Override
 	public List<ParamConfiguration> getAllParameterConfigurationsRan() {
 		lockRead();
@@ -274,16 +245,6 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 		}
 	}
 
-	@Override
-	public List<AlgorithmRun> getAlgorithmRuns() {
-		lockRead();
-		try {
-			return runHistory.getAlgorithmRuns();
-		} finally
-		{
-			unlockRead();
-		}
-	}
 
 	@Override
 	public List<RunData> getAlgorithmRunData() {
@@ -369,16 +330,76 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 	}
 
 	@Override
-	public List<AlgorithmRun> getAlgorithmRunData(ParamConfiguration config) {
+	public List<AlgorithmRun> getAlgorithmRunsExcludingRedundant(ParamConfiguration config) {
 		lockRead();
 		try {
-			return runHistory.getAlgorithmRunData(config);
+			return runHistory.getAlgorithmRunsExcludingRedundant(config);
 		} finally
 		{
 			unlockRead();
 	
 		}
 	}
+	
+
+	@Override
+	public int getTotalNumRunsOfConfigExcludingRedundant(ParamConfiguration config) {
+		lockRead();
+		try {
+			return runHistory.getTotalNumRunsOfConfigExcludingRedundant(config);
+		} finally
+		{
+			unlockRead();
+		}
+	}
+	
+	@Override
+	public List<AlgorithmRun> getAlgorithmRunsExcludingRedundant() {
+		lockRead();
+		try {
+			return runHistory.getAlgorithmRunsExcludingRedundant();
+		} finally
+		{
+			unlockRead();
+		}
+	}
+	
+	@Override
+	public List<AlgorithmRun> getAlgorithmRunsIncludingRedundant(ParamConfiguration config) {
+		lockRead();
+		try {
+			return runHistory.getAlgorithmRunsIncludingRedundant(config);
+		} finally
+		{
+			unlockRead();
+	
+		}
+	}
+	
+
+	@Override
+	public int getTotalNumRunsOfConfigIncludingRedundant(ParamConfiguration config) {
+		lockRead();
+		try {
+			return runHistory.getTotalNumRunsOfConfigIncludingRedundant(config);
+		} finally
+		{
+			unlockRead();
+		}
+	}
+	
+	@Override
+	public List<AlgorithmRun> getAlgorithmRunsIncludingRedundant() {
+		lockRead();
+		try {
+			return runHistory.getAlgorithmRunsIncludingRedundant();
+		} finally
+		{
+			unlockRead();
+		}
+	}
+	
+	
 
 	@Override
 	public Map<ProblemInstance, LinkedHashMap<Long, Double>> getPerformanceForConfig(
