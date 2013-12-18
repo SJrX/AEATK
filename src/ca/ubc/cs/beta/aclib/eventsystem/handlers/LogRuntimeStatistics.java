@@ -151,7 +151,7 @@ public class LogRuntimeStatistics implements EventHandler<AutomaticConfiguratorE
 						runHistory.getProblemInstancesRan(incumbent).size(),
 						runHistory.getUniqueParamConfigurations().size(),
 						runHistory.getEmpiricalCost(incumbent, runHistory.getUniqueInstancesRan(), this.cutoffTime),
-						//runHistory.getAlgorithmRuns().size(), 
+						"N/A", 
 						"N/A",
 						"N/A" ,
 						"N/A", //options.runtimeLimit - wallTime 
