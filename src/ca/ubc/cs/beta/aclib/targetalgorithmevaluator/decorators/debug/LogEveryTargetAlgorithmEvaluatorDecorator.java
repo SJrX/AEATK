@@ -19,6 +19,11 @@ public class LogEveryTargetAlgorithmEvaluatorDecorator extends
 	private final boolean logRCOnly;
 	
 	
+	public LogEveryTargetAlgorithmEvaluatorDecorator(TargetAlgorithmEvaluator tae) {
+		this(tae, false);
+	}
+	
+	
 	public LogEveryTargetAlgorithmEvaluatorDecorator(TargetAlgorithmEvaluator tae, boolean logRequestResponsesRCOnly) {
 		super(tae);
 		this.logRCOnly = logRequestResponsesRCOnly;

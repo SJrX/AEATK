@@ -99,9 +99,9 @@ public class NonBlockingAsyncTargetAlgorithmEvaluatorDecorator extends
 	
 	private class Triple
 	{
-		List<RunConfig> runConfigs;
-		TargetAlgorithmEvaluatorCallback callback;
-		TargetAlgorithmEvaluatorRunObserver observer;
+		final List<RunConfig> runConfigs;
+		final TargetAlgorithmEvaluatorCallback callback;
+		final TargetAlgorithmEvaluatorRunObserver observer;
 		
 		public Triple(List<RunConfig> runConfigs2,
 				TargetAlgorithmEvaluatorCallback callback2,
