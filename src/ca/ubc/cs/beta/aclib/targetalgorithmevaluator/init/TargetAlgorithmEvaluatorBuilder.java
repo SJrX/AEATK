@@ -37,6 +37,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.safety.ResultOrd
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.safety.SATConsistencyTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.safety.TimingCheckerTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.safety.VerifySATTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.safety.WarnOnNoWallOrRuntimeTargetAlgorithmEvaluatorDecorator;
 
 
 public class TargetAlgorithmEvaluatorBuilder {
@@ -292,6 +293,12 @@ public class TargetAlgorithmEvaluatorBuilder {
 		{
 			log.debug("[TAE] Killing runs if {} is deleted", options.fileToWatch);
 			tae = new TerminateAllRunsOnFileDeleteTargetAlgorithmEvaluatorDecorator(tae, new File(options.fileToWatch));
+		}
+		
+		if(options.warnIfNoResponseFromTAE > 0)
+		{
+			log.debug("[TAE] Warning if no response after {} seconds", options.warnIfNoResponseFromTAE);
+			tae = new WarnOnNoWallOrRuntimeTargetAlgorithmEvaluatorDecorator(tae, options.warnIfNoResponseFromTAE);
 		}
 		
 		if(options.synchronousObserver)
