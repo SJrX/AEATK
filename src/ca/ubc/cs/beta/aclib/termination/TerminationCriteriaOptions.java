@@ -6,6 +6,7 @@ import java.util.List;
 
 import com.beust.jcommander.Parameter;
 
+import ca.ubc.cs.beta.aclib.misc.cputime.CPUTime;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.FixedPositiveInteger;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.FixedPositiveLong;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.NonNegativeInteger;
@@ -51,11 +52,11 @@ public class TerminationCriteriaOptions extends AbstractOptions {
 	public String fileToWatch = null;
 	
 	
-	public CompositeTerminationCondition getTerminationConditions()
+	public CompositeTerminationCondition getTerminationConditions(CPUTime cpuTime)
 	{
 		List<TerminationCondition> termConds = new ArrayList<TerminationCondition>();
 		
-		termConds.add(new CPULimitCondition(tunerTimeout, countSMACTimeAsTunerTime));
+		termConds.add(new CPULimitCondition(tunerTimeout, countSMACTimeAsTunerTime, cpuTime));
 		termConds.add(new WallClockLimitCondition(System.currentTimeMillis(),runtimeLimit));
 		termConds.add(new AlgorithmRunLimitCondition(totalNumRunsLimit));
 		termConds.add(new ModelIterationTerminationCondition(this.numIterations));

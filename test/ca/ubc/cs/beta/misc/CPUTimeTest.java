@@ -15,7 +15,11 @@ public class CPUTimeTest {
 	@Test
 	public void testCPUTimeDoesntDecrease() throws InterruptedException
 	{
-		System.out.println(CPUTime.getCPUTime());
+		
+		
+		CPUTime cpuTime = new CPUTime();
+		
+		System.out.println(cpuTime.getCPUTime());
 		
 		Thread t = new Thread(new Runnable()
 		{
@@ -84,31 +88,31 @@ public class CPUTimeTest {
 		
 		t.start();
 		
-		double cpuTime = CPUTime.getCPUTime();
+		double cpuTimeObs = cpuTime.getCPUTime();
 		Thread.sleep(2000);
-		double newCPUTime = CPUTime.getCPUTime(); 
+		double newCPUTime = cpuTime.getCPUTime(); 
 		
-		if(newCPUTime - cpuTime < 1.7)
+		if(newCPUTime - cpuTimeObs < 1.7)
 		{
-			fail("Expected cpuTime used to be greater than 5 seconds, not "  + (newCPUTime - cpuTime));
+			fail("Expected cpuTime used to be greater than 5 seconds, not "  + (newCPUTime - cpuTimeObs));
 		} else
 		{
-			System.out.println("Time was :" + (newCPUTime - cpuTime));
+			System.out.println("Time was :" + (newCPUTime - cpuTimeObs));
 		}
 		
 		Thread.sleep(500);
 		t.interrupt();
 		Thread.sleep(500);
 		
-		double newCPUTime2 = CPUTime.getCPUTime(); 
+		double newCPUTime2 = cpuTime.getCPUTime(); 
 		
 		
-		if(newCPUTime2 - cpuTime <  newCPUTime - cpuTime)
+		if(newCPUTime2 - cpuTimeObs <  newCPUTime - cpuTimeObs)
 		{
-			fail("Expected cpuTime used to be greater than "+(newCPUTime - cpuTime)+ "5 seconds, not "  + (newCPUTime2 - cpuTime));
+			fail("Expected cpuTime used to be greater than "+(newCPUTime - cpuTimeObs)+ "5 seconds, not "  + (newCPUTime2 - cpuTimeObs));
 		} else
 		{
-			System.out.println("Time was :" + (newCPUTime2 - cpuTime));
+			System.out.println("Time was :" + (newCPUTime2 - cpuTimeObs));
 		}
 
 	}
@@ -122,7 +126,8 @@ public class CPUTimeTest {
 	 */
 	public void testUserTimeDoesntDecrease() throws InterruptedException
 	{
-		System.out.println("CPU Time :" +  CPUTime.getCPUTime() + " User Time: "+ CPUTime.getUserTime());
+		CPUTime cpuTime = new CPUTime();
+		System.out.println("CPU Time :" +  cpuTime.getCPUTime() + " User Time: "+ cpuTime.getUserTime());
 		
 		Thread t = new Thread(new Runnable()
 		{
@@ -179,11 +184,11 @@ public class CPUTimeTest {
 		
 		t.start();
 		
-		double userTime = CPUTime.getUserTime();
-		System.out.println("CPU Time :" +  CPUTime.getCPUTime() + " User Time: "+ CPUTime.getUserTime());
+		double userTime = cpuTime.getUserTime();
+		System.out.println("CPU Time :" +  cpuTime.getCPUTime() + " User Time: "+ cpuTime.getUserTime());
 		Thread.sleep(2000);
-		double newUserTime = CPUTime.getUserTime(); 
-		System.out.println("CPU Time :" +  CPUTime.getCPUTime() + " User Time: "+ CPUTime.getUserTime());
+		double newUserTime = cpuTime.getUserTime(); 
+		System.out.println("CPU Time :" +  cpuTime.getCPUTime() + " User Time: "+ cpuTime.getUserTime());
 		
 		if(newUserTime - userTime < 1.7)
 		{
@@ -194,14 +199,14 @@ public class CPUTimeTest {
 			System.out.println("Time was :" + (newUserTime - userTime));
 		}
 		
-		System.out.println("CPU Time :" +  CPUTime.getCPUTime() + " User Time: "+ CPUTime.getUserTime());
+		System.out.println("CPU Time :" +  cpuTime.getCPUTime() + " User Time: "+ cpuTime.getUserTime());
 		Thread.sleep(500);
 		t.interrupt();
 		Thread.sleep(500);
-		System.out.println("CPU Time :" +  CPUTime.getCPUTime() + " User Time: "+ CPUTime.getUserTime());
+		System.out.println("CPU Time :" +  cpuTime.getCPUTime() + " User Time: "+ cpuTime.getUserTime());
 		
 		
-		double newUserTime2 = CPUTime.getUserTime(); 
+		double newUserTime2 = cpuTime.getUserTime(); 
 		
 		
 		if(newUserTime2 - userTime <  newUserTime - userTime)

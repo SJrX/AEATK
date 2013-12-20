@@ -68,7 +68,9 @@ public class LogRuntimeStatistics implements EventHandler<AutomaticConfiguratorE
 	private final AtomicInteger challengesEnded = new AtomicInteger(0);
 	
 	private final boolean showChallenges;
-	public LogRuntimeStatistics(ThreadSafeRunHistory rh, TerminationCondition termCond, double cutoffTime, TargetAlgorithmEvaluator tae, boolean showChallenges)
+	
+	private final CPUTime cpuTime;
+	public LogRuntimeStatistics(ThreadSafeRunHistory rh, TerminationCondition termCond, double cutoffTime, TargetAlgorithmEvaluator tae, boolean showChallenges, CPUTime cpuTime)
 	{
 		this.runHistory = rh;
 		this.termCond = termCond;
@@ -77,11 +79,11 @@ public class LogRuntimeStatistics implements EventHandler<AutomaticConfiguratorE
 		lastString.set("No Runtime Statistics Logged");
 		this.tae = tae;
 		this.showChallenges = showChallenges;
-		
+		this.cpuTime = cpuTime;
 		
 	}
 	
-	public LogRuntimeStatistics(ThreadSafeRunHistory rh, TerminationCondition termCond, double cutoffTime , long msToWait, TargetAlgorithmEvaluator tae, boolean showChallenges)
+	public LogRuntimeStatistics(ThreadSafeRunHistory rh, TerminationCondition termCond, double cutoffTime , long msToWait, TargetAlgorithmEvaluator tae, boolean showChallenges,CPUTime cpuTime)
 	{
 		this.runHistory = rh;
 		this.termCond = termCond;
@@ -91,6 +93,7 @@ public class LogRuntimeStatistics implements EventHandler<AutomaticConfiguratorE
 		
 		this.tae = tae;
 		this.showChallenges = showChallenges;
+		this.cpuTime = cpuTime;
 		
 	}
 
@@ -158,8 +161,8 @@ public class LogRuntimeStatistics implements EventHandler<AutomaticConfiguratorE
 						termCond.getTunerTime(),
 						"N/A", //options.scenarioConfig.tunerTimeout - tunerTime,
 						runHistory.getTotalRunCost(),
-						CPUTime.getCPUTime(),
-						CPUTime.getUserTime() ,
+						cpuTime.getCPUTime(),
+						cpuTime.getUserTime() ,
 						this.sumOfRuntime,
 						this.sumOfWallclockTime,
 						Runtime.getRuntime().maxMemory() / 1024.0 / 1024,
@@ -204,7 +207,7 @@ public class LogRuntimeStatistics implements EventHandler<AutomaticConfiguratorE
 						"\n CPU time of Configurator: "+arr[13]+" s" +
 						"\n User time of Configurator: "+arr[14]+" s" +
 						"\n Outstanding Runs on Target Algorithm Evaluator: " + tae.getNumberOfOutstandingRuns() +
-						"\n Outstanding Requests on TargetAlgorithmEvaluator: " + tae.getNumberOfOutstandingBatches() +  
+						"\n Outstanding Requests on Target Algorithm Evaluator: " + tae.getNumberOfOutstandingBatches() +  
 						"\n Total Reported Algorithm Runtime: " + arr[15] + " s" + 
 						"\n Sum of Measured Wallclock Runtime: " + arr[16] + " s" +
 						"\n Max Memory: "+arr[17]+" MB" +
