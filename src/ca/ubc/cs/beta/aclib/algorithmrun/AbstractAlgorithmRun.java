@@ -1,5 +1,8 @@
 package ca.ubc.cs.beta.aclib.algorithmrun;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
 import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableAlgorithmRun;
 import ca.ubc.cs.beta.aclib.exceptions.IllegalWrapperOutputException;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
@@ -12,8 +15,9 @@ import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
  * @author seramage
  *
  */
-public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
-
+public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun
+{
+	
 	/**
 	 * 
 	 */
@@ -63,6 +67,9 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 	 * Stores additional run data
 	 */
 	private String additionalRunData = "";
+	
+	
+	private static final Logger log = LoggerFactory.getLogger(AbstractAlgorithmRun.class);
 	
 	/**
 	 * Sets the values for this Algorithm Run
@@ -157,11 +164,16 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun{
 		
 		this.runResultWellFormed = runResultWellFormed;
 
-		this.additionalRunData = additionalRunData;
+	
+		
 		if(this.additionalRunData == null)
 		{
 			throw new IllegalArgumentException("Additional Run Data cannot be NULL");
+		} else
+		{
+			this.additionalRunData = additionalRunData.replace("\n","\\n").replace(',', ';');
 		}
+		
 		this.resultSet = true;
 		if(!(this instanceof KillableAlgorithmRun))
 		{
