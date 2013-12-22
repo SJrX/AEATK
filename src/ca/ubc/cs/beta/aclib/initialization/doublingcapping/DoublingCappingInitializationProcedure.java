@@ -367,7 +367,7 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 					
 					bestPerformance.set(myPerformance);
 					newIncumbent = currentResults.get(0).getRunConfig().getParamConfiguration();
-					log.debug("New Incumbent set to {} with performance {} previous best was {} ", newIncumbent, myPerformance, previousBest);
+					log.debug("New Incumbent set to {} with performance {} previous best was {}. Other challenges will continue until this bound is reached ", newIncumbent, myPerformance, previousBest);
 				}
 				try {
 					for(AlgorithmRun run : currentResults)
@@ -388,7 +388,7 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
  		
  		
  		
- 		log.info("Initialization Procedure Completed. Selected incumbent {} ({}) incumbent has performance: {} ", this.runHistory.getThetaIdx(incumbent), incumbent, bestPerformance.get());
+ 		log.info("Initialization Procedure Completed. Selected incumbent {} ({}) incumbent has performance: {} ", this.runHistory.getThetaIdx(newIncumbent), newIncumbent, bestPerformance.get());
  		this.incumbent = newIncumbent;
  		
 	}

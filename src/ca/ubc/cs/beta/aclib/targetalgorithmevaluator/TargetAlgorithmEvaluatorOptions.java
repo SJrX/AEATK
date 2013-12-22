@@ -161,7 +161,6 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	@Parameter(names={"--tae-warn-if-no-response-from-tae"}, description="If greater than 0, it is the number of seconds to wait for the TAE to respond before issuing a warning", validateWith=NonNegativeInteger.class)
 	public int warnIfNoResponseFromTAE = 120;
 	
-	
 	/**
 	 * Checks if the problem instances are compatible with the verify sat option
 	 * @param instances 

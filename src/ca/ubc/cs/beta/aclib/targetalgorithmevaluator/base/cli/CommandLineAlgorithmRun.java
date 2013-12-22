@@ -583,9 +583,9 @@ outerloop:
 					
 					if(!read)
 					{
-						if(++i % 200 == 0)
+						if(++i % 12000 == 0)
 						{
-							log.debug("Slept for 5 second waiting for pid {}  && {} " ,getPID(p), matchFound);
+							log.debug("Slept for 5 minutes waiting for pid {}  &&  (matching line found?: {} ) " ,getPID(p), matchFound);
 						}
 						Thread.sleep(25);
 					}
@@ -915,6 +915,7 @@ outerloop:
 	{
 		return input.replaceAll("%pid", String.valueOf(pid));
 	}
+	
 	private void killProcess(Process p)
 	{
 		

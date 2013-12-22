@@ -2405,6 +2405,115 @@ public class TAETestSet {
 	
 	@Test
 	/**
+	 * Schedules 1,000 runs against the TAE and very quick kills them it then measures how long it takes to submit.
+	 * 
+	 */
+	public void testBoundedTargetAlgorithmEvaluatorKillingSpeed()
+	{
+		//Check that a submission of run 10 runs on a bound of <5 take 5,1,1,1,1, 5,1,1,1,1 takes 6 seconds and not 10.
+		final Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(TrueSleepyParamEchoExecutor.class.getCanonicalName());
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
+		
+		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
+		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
+		
+		options.logAllCallStrings = true;
+		options.logAllProcessOutput = true;
+		options.concurrentExecution = true;
+		options.observerFrequency = 2000;
+		options.cores = 10;
+		
+		TargetAlgorithmEvaluator tae = fact.getTargetAlgorithmEvaluator(execConfig, options);	
+		TargetAlgorithmEvaluator cliTAE = tae;
+		tae = new BoundedTargetAlgorithmEvaluator(tae,10,execConfig);
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(100);
+		for(int i=0; i < 100; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			
+			config.put("runtime","2");
+			
+
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config);
+				runConfigs.add(rc);
+			}
+		}
+		
+		
+		
+		TargetAlgorithmEvaluatorRunObserver obs = new TargetAlgorithmEvaluatorRunObserver()
+		{
+
+			private boolean killedByDecorator = false;
+			@Override
+			public void currentStatus(List<? extends KillableAlgorithmRun> runs) 
+			{
+				
+				double sum = 0;
+			
+			
+				for(KillableAlgorithmRun run : runs)
+				{
+					if(run.getRunConfig().getProblemInstanceSeedPair().getSeed() % 100 % 11 != 0)
+					{
+						run.kill();
+					}
+					
+
+					if(run.getRunResult() == RunResult.KILLED && !killedByDecorator)
+					{
+						if(run.getAdditionalRunData().equals(BoundedTargetAlgorithmEvaluator.KILLED_BY_DECORATOR_ADDL_RUN_INFO))
+						{
+							System.err.println(run.getResultLine());
+							killedByDecorator = true;
+						}
+					}
+					
+				}
+				
+
+				
+			}
+			
+		};
+		
+		StopWatch watch2 = new AutoStartStopWatch();
+		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs, obs);
+		
+		int killedCount = 0;
+		for(AlgorithmRun run : runs)
+		{
+			
+			if(run.getRunResult().equals(RunResult.KILLED))
+			{
+				killedCount++;
+			}
+			
+			
+			//System.out.println(run);
+		}
+		System.out.println(watch2.stop());
+		
+		System.out.println(killedCount);
+		assertTrue("Expected time for Bounded to be less than 5 seconds", watch2.time() < 5000 );
+		
+	}
+	
+	
+	@Test
+	/**
 	 * Schedules a set of runs in the form of 3,1,3,1 on a bound of 2x, if the Bounding is done properly this should be doable in under 5 seconds,
 	 * if not then it might take about 8 seconds.
 	 */

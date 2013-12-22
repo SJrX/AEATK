@@ -237,7 +237,7 @@ public class TargetAlgorithmEvaluatorBuilder {
 			} else
 			{
 				log.info("[TAE] Algorithm Execution will NOT verify run Hash Codes");
-				tae = new RunHashCodeVerifyingAlgorithmEvalutor(tae);
+				//tae = new RunHashCodeVerifyingAlgorithmEvalutor(tae);
 			}
 
 		}
