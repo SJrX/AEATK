@@ -5,7 +5,7 @@ import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration.StringFormat;
 
-public class ParamEchoExecutorNineTenthChanceAbort {
+public class ParamEchoExecutorThreeFifthChanceAbort {
 
 	/**
 	 * 
@@ -54,7 +54,7 @@ public class ParamEchoExecutorNineTenthChanceAbort {
 				}
 			}
 			
-			if(Math.random() < 0.9)
+			if(Math.random() < 0.6)
 			{
 				result = "ABORT";
 			}
