@@ -32,6 +32,13 @@ import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceOptions.TrainTestInst
 public class VerifyScenarioExecutor {
 
 	private static Logger log = null;
+	
+	
+	private final static String SCENARIO_FILE_NAME = "scenario.txt";
+	
+	
+	private static Set<String> instancesFromCWD = new HashSet<String>();
+	
 	/**
 	 * @param args
 	 */
@@ -76,11 +83,28 @@ public class VerifyScenarioExecutor {
 			{
 				File f = new File(s);
 				String name = f.getName();
+//				System.out.println(name);
+				
+				if(name.trim().equals(SCENARIO_FILE_NAME))
+				{
+					name = f.getParentFile().getName() + File.separator + f.getName();
+				}
+				
 				maxLength = Math.max(maxLength, name.trim().length());
 			}
+			
+			
 			for(String s : opts.scenarios)
 			{
 				verifyScenario(s,new ArrayList<String>(searchDirectories), opts.checkInstances, opts.details,maxLength, opts.restoreScenarioArguments);
+			}
+			
+			
+			if(instancesFromCWD.size() > 0)
+			{
+				log.info("Some scenarios ({} out of {}) have instances that were read from the current working directory and NOT from the execution directory, wrappers may not actually execute correctly. Enable debugging for more detailed information", instancesFromCWD.size(), opts.scenarios.size());
+				
+				log.debug("Scenarios with instances only accessibly from current working directory: ",instancesFromCWD);
 			}
 			
 			
@@ -99,7 +123,14 @@ public class VerifyScenarioExecutor {
 		
 		
 		File f = new File(s);
-		String name = String.format("%-"+maxLength + "s",f.getName().trim());
+		
+		String name = f.getName();
+		if(name.trim().equals(SCENARIO_FILE_NAME))
+		{
+			name = f.getParentFile().getName() + File.separator + f.getName();
+		}
+		
+		name = String.format("%-"+maxLength + "s",name);
 		log.debug("Attempting to verify scenario file : {}", name);
 		
 		ScenarioOptions scenOpts;
@@ -205,7 +236,7 @@ public class VerifyScenarioExecutor {
 		
 		int features = -1;
 		boolean noFeatures = false;
-		
+
 		try {
 			TrainTestInstances tti = scenOpts.getTrainingAndTestProblemInstances(searchDirectories.get(0), 0, 0, true, false, false, false);
 			instances = tti.getTrainingInstances().getInstances().size();
@@ -232,10 +263,18 @@ public class VerifyScenarioExecutor {
 						}
 					} else
 					{
-						if(!(new File(execDir.getAbsolutePath() + File.separator + pi.getInstanceName()).canRead()))
+						
+						boolean readFromExecDir =(new File(execDir.getAbsolutePath() + File.separator + pi.getInstanceName()).canRead()); 
+						boolean readFromCurrentDir = (new File(pi.getInstanceName())).canRead();
+						
+						if(!(readFromExecDir || readFromCurrentDir))
 						{
 							failedInstances++;
 							log.error("Scenario {} verification can't find or read the following instance on disk: {}", name, pi.getInstanceName());
+						} else if(readFromCurrentDir && !readFromExecDir)
+						{
+							instancesFromCWD.add(name);
+							log.debug("Scenario {} has instances that are only accessible from the current working directory, and not the execDir");
 						}
 						
 					}
