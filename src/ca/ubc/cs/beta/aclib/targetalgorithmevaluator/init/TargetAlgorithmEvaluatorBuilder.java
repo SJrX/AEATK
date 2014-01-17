@@ -215,6 +215,13 @@ public class TargetAlgorithmEvaluatorBuilder {
 			log.debug("[TAE] Checking that TAE honours the ordering requirement of runs");
 			tae = new ResultOrderCorrectCheckerTargetAlgorithmEvaluatorDecorator(tae);
 		}
+		
+		if(options.observeWalltimeIfNoRuntime)
+		{
+			log.info("[TAE] Using walltime as observer runtime if no runtime is reported, scale {} , delay {} (secs)", options.observeWalltimeScale, options.observeWalltimeDelay);
+			tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae, options.observeWalltimeScale, options.observeWalltimeDelay);
+		}
+		
 		//==== Run Hash Code Verification should generally be one of the last
 		// things we add since it is very sensitive to the actual runs being run. (i.e. a retried run or a change in the run may change a hashCode in a way the logs don't reveal
 		if(hashVerifiersAllowed)
@@ -242,6 +249,17 @@ public class TargetAlgorithmEvaluatorBuilder {
 
 		}
 		
+		/***
+		 * !!!DO NOT ADD ANY DECORATORS THAT CAN CHANGE OR ALTER OBSERVED BEHAIVORS AFTER THIS POINT!!!
+		 * !!!DO NOT ADD ANY DECORATORS THAT CAN CHANGE OR ALTER OBSERVED BEHAIVORS AFTER THIS POINT!!!
+		 * !!!DO NOT ADD ANY DECORATORS THAT CAN CHANGE OR ALTER OBSERVED BEHAIVORS AFTER THIS POINT!!!
+		 * 
+		 * See for instance Issue #1945, #1944
+		 * 
+		 * It can mess up log messages and confuse users...
+		 * 
+		 */
+		
 		//==== Doesn't change anything and so is safe after the RunHashCode
 		tae = new TimingCheckerTargetAlgorithmEvaluator(execConfig, tae);
 		
@@ -260,14 +278,6 @@ public class TargetAlgorithmEvaluatorBuilder {
 			log.info("[TAE] Waiting / Monitoring outstanding target algorithm evaluations will not be supported");
 		}
 		
-		//==== Doesn't change anything and so is safe after RunHashCode
-		if(options.logRequestResponses)
-		{
-			log.info("[TAE] Logging every request and response");
-			tae = new LogEveryTargetAlgorithmEvaluatorDecorator(tae,options.logRequestResponsesRCOnly);
-		}
-		
-		
 		if(options.checkRunConfigsUnique)
 		{
 			log.info("[TAE] Checking that every request in a batch is unique");
@@ -275,12 +285,6 @@ public class TargetAlgorithmEvaluatorBuilder {
 		} else
 		{
 			log.warn("[TAE] Not Checking that every request to the TAE is unique, this may cause weird errors");
-		}
-		
-		if(options.observeWalltimeIfNoRuntime)
-		{
-			log.info("[TAE] Using walltime as observer runtime if no runtime is reported, scale {} , delay {} (secs)", options.observeWalltimeScale, options.observeWalltimeDelay);
-			tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae, options.observeWalltimeScale, options.observeWalltimeDelay);
 		}
 		
 		if(options.killCaptimeExceedingRun)
@@ -308,6 +312,14 @@ public class TargetAlgorithmEvaluatorBuilder {
 		{
 			log.debug("[TAE] Skipping synchronization of observers, this may cause weird threading issues");
 		}
+		
+		//==== Doesn't change anything and so is safe after RunHashCode
+		if(options.logRequestResponses)
+		{
+					log.info("[TAE] Logging every request and response");
+					tae = new LogEveryTargetAlgorithmEvaluatorDecorator(tae,options.logRequestResponsesRCOnly);
+		}
+		
 		log.debug("Final Target Algorithm Built is {}", tae);
 		return tae;
 	}
