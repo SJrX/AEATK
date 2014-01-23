@@ -645,6 +645,8 @@ outerloop:
 		
 		String[] envp = envpList.toArray(new String[0]);
 		Process proc = Runtime.getRuntime().exec(execCmdArray,envp, new File(execConfig.getAlgorithmExecutionDirectory()));
+		
+		log.debug("Process for {} started with pid: {}", this.runConfig, getPID(proc));
 		return proc;
 	}
 	
@@ -934,9 +936,6 @@ outerloop:
 					
 					if(pid > 0)
 					{
-						
-						
-						
 						String command = replacePid(options.pgNiceKillCommand,pid);
 						log.debug("Trying to send SIGTERM to process group id: {} with command \"{}\"", pid,command);
 						try {
