@@ -57,7 +57,7 @@ public class TimingCheckerTargetAlgorithmEvaluator extends	AbstractForEachRunTar
 	
 	
 
-	public void notifyShutdown()
+	public void postDecorateeNotifyShutdown()
 	{
 		synchronized(this)
 		{
@@ -65,7 +65,6 @@ public class TimingCheckerTargetAlgorithmEvaluator extends	AbstractForEachRunTar
 			log.info("Total Walltime: {} (s), Total of Sum Max(walltime - cutoff, 0): {} (s)", totalWalltime, totalWallClockOverhead);
 			log.info("Total Difference between Walltime and Runtime (Sum of the amount of wallclock time - sum of the amount of reported CPU time) : {} seconds", this.totalWallClockVersusRuntimeDifference);
 		}
-		tae.notifyShutdown();
 	}
 
 	@Override

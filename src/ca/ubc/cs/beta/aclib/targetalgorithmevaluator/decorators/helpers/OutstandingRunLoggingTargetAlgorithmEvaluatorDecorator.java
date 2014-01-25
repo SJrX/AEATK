@@ -137,10 +137,9 @@ public class OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator extends Abst
 	}
 	
 	@SuppressWarnings("unchecked")
-	public void notifyShutdown()
+	public void postDecorateeNotifyShutdown()
 	{
-		tae.notifyShutdown();
-		
+			
 		log.debug("Processing detailed run statistics to {} ", this.resultFile);
 		
 		

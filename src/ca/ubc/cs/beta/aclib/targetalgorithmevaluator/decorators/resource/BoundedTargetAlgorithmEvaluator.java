@@ -279,10 +279,9 @@ public class BoundedTargetAlgorithmEvaluator extends
 	}
 	
 	@Override
-	public void notifyShutdown()
+	protected void postDecorateeNotifyShutdown()
 	{
 		this.execService.shutdown();
-		tae.notifyShutdown();
 		
 		try {
 			this.execService.awaitTermination(365, TimeUnit.DAYS);

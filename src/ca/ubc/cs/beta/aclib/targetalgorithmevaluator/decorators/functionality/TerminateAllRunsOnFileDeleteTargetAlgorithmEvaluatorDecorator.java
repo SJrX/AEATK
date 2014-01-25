@@ -128,4 +128,17 @@ public class TerminateAllRunsOnFileDeleteTargetAlgorithmEvaluatorDecorator exten
 	}
 	
 
+	@Override
+	protected void postDecorateeNotifyShutdown() {
+		execService.shutdownNow();
+		try 
+		{
+			execService.awaitTermination(24, TimeUnit.HOURS);
+		} catch(InterruptedException e)
+		{
+			Thread.currentThread().interrupt();
+			return;
+		}
+		
+	}
 }

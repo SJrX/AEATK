@@ -175,14 +175,9 @@ public class WarnOnNoWallOrRuntimeTargetAlgorithmEvaluatorDecorator extends Abst
 	}
 	
 	@Override
-	public final void notifyShutdown()
+	public final void postDecorateeNotifyShutdown()
 	{
-		try {
-			tae.notifyShutdown();
-		} finally
-		{
-			this.execService.shutdownNow();
-		}
+		this.execService.shutdownNow();
 	}
 	
 	private final synchronized void markObserved()

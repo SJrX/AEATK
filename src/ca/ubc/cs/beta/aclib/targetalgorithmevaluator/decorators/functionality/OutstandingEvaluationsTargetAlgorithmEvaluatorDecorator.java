@@ -185,13 +185,17 @@ public class OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator extends
 	
 	protected void preRun(List<RunConfig> runConfigs)
 	{
-		
+		//Template Method
 	}
 	
 	protected void postRun(List<RunConfig> runConfigs)
 	{
-		
+		//Template Method
 	}
 	
+	@Override
+	protected void postDecorateeNotifyShutdown() {
+		//No cleanup necessary
+	}
 	
 }

@@ -137,9 +137,9 @@ public class PrePostCommandTargetAlgorithmEvaluator extends	AbstractTargetAlgori
 	}
 	
 	@Override
-	public void notifyShutdown()
+	public void postDecorateeNotifyShutdown()
 	{
-		tae.notifyShutdown();
+		
 		runCommand(options.postCommand);
 	}
 	

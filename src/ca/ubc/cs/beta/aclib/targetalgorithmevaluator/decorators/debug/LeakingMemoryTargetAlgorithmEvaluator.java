@@ -63,6 +63,11 @@ public class LeakingMemoryTargetAlgorithmEvaluator extends AbstractTargetAlgorit
 	}
 	
 
+	@Override
+	protected void postDecorateeNotifyShutdown() {
+		leakedMemory.clear();
+		totalLeaked = 0;
+	}
 	
 	
 }

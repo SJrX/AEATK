@@ -22,4 +22,8 @@ public class SolQualSetTargetAlgorithmEvaluatorDecorator extends
 		
 	}
 
+	@Override
+	protected void postDecorateeNotifyShutdown() {
+		//No cleanup necessary
+	}
 }

@@ -23,8 +23,8 @@ public class WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator extends
 	
 	private final double wallclockMultScaleFactor;
 	private final double startAt;
-	public WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(
-			TargetAlgorithmEvaluator tae) {
+	
+	public WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(TargetAlgorithmEvaluator tae) {
 		super(tae);
 		wallclockMultScaleFactor = 0.95;
 		startAt = 0.05;
@@ -271,4 +271,8 @@ public class WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator extends
 		
 	}
 
+	@Override
+	protected void postDecorateeNotifyShutdown() {
+		//No cleanup necessary
+	}
 }

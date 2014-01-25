@@ -87,4 +87,8 @@ public class RunHashCodeVerifyingAlgorithmEvalutor extends AbstractForEachRunTar
 		return run;
 	}
 
+	@Override
+	protected void postDecorateeNotifyShutdown() {
+		//No cleanup necessary
+	}
 }

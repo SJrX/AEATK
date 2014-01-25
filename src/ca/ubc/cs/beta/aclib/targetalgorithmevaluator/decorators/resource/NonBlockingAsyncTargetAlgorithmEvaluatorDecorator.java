@@ -63,12 +63,9 @@ public class NonBlockingAsyncTargetAlgorithmEvaluatorDecorator extends
 	}
 
 	@Override
-	public void notifyShutdown()
+	public void postDecorateeNotifyShutdown()
 	{
-		
-		tae.notifyShutdown();
 		execService.shutdownNow();
-		
 	}
 
 	@Override

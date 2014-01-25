@@ -4,13 +4,13 @@ import java.util.Collections;
 import java.util.List;
 import java.util.Set;
 import java.util.WeakHashMap;
+
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.beust.jcommander.ParameterException;
 
 import net.jcip.annotations.ThreadSafe;
-
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableAlgorithmRun;
@@ -109,6 +109,11 @@ public class KillCaptimeExceedingRunsRunsTargetAlgorithmEvaluatorDecorator exten
 		}
 		
 		}
+	}
+	
+	@Override
+	protected void postDecorateeNotifyShutdown() {
+		//No cleanup necessary
 	}
 }
 

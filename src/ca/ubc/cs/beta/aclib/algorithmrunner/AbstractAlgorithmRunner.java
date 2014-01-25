@@ -136,11 +136,9 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 			@Override
 			public void run() {
 				
-				while(true)
-				{
-					try {
-						
-					
+				try {
+					while(true)
+					{
 						try {
 							
 							
@@ -197,13 +195,11 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 						{
 							Thread.currentThread().interrupt();
 						}
-					} finally
-					{
-						shutdownRunnerCompleted.release();
 					}
+				} finally
+				{
+					shutdownRunnerCompleted.release();
 				}
-				
-			
 			}
 			
 		};

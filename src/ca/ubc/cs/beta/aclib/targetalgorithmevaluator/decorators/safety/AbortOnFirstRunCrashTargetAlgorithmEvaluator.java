@@ -4,7 +4,6 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import net.jcip.annotations.ThreadSafe;
-
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
@@ -88,5 +87,10 @@ public class AbortOnFirstRunCrashTargetAlgorithmEvaluator extends
 		};
 		
 		tae.evaluateRunsAsync(runConfigs, myHandler, obs);
+	}
+	
+	@Override
+	protected void postDecorateeNotifyShutdown() {
+		//No cleanup necessary
 	}
 }

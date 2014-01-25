@@ -15,7 +15,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.exceptions.TargetAlgorithmA
 
 /**
  * Modifies Target Algorithm Evaluators to treat CRASHES as aborts
- * @author Steve Ramage 
+ * @author Steve Ramage <seramage@cs.ubc.ca> 
  *
  */
 @ThreadSafe
@@ -78,6 +78,13 @@ public class AbortOnCrashTargetAlgorithmEvaluator extends
 		};
 		
 		tae.evaluateRunsAsync(runConfigs, myHandler, obs);
+	}
+
+
+
+	@Override
+	protected void postDecorateeNotifyShutdown() {
+		//No cleanup necessary
 	}
 
 }

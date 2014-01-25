@@ -662,6 +662,7 @@ public class DynamicCappingTestSet {
 
 				@Override
 				public void onSuccess(List<AlgorithmRun> runs) {
+					System.out.println("Done");
 					evaluateDone.set(true);
 				}
 

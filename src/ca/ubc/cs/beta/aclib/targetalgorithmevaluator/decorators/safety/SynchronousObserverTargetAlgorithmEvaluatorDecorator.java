@@ -67,4 +67,9 @@ public class SynchronousObserverTargetAlgorithmEvaluatorDecorator extends
 		
 		
 	}
+	
+	@Override
+	protected void postDecorateeNotifyShutdown() {
+		//No cleanup necessary
+	}
 }

@@ -47,4 +47,8 @@ public class LogEveryTargetAlgorithmEvaluatorDecorator extends
 		return rc;
 	}
 
+	@Override
+	protected void postDecorateeNotifyShutdown() {
+		//No cleanup necessary
+	}
 }

@@ -10,7 +10,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import net.jcip.annotations.ThreadSafe;
-
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
@@ -28,7 +27,7 @@ public class CheckForDuplicateRunConfigDecorator extends
 		AbstractTargetAlgorithmEvaluatorDecorator {
 
 	Logger log = LoggerFactory.getLogger(getClass());
-	private boolean throwException;
+	private final boolean throwException;
 	
 	
 	public CheckForDuplicateRunConfigDecorator(
@@ -102,6 +101,9 @@ public class CheckForDuplicateRunConfigDecorator extends
 	  return setToReturn;
 	}
 
-	
+	@Override
+	protected void postDecorateeNotifyShutdown() {
+		//No cleanup necessary
+	}
 	
 }
