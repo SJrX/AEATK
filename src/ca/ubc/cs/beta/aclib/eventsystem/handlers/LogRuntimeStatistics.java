@@ -247,10 +247,7 @@ public class LogRuntimeStatistics implements EventHandler<AutomaticConfiguratorE
 			}
 			
 			
-		} else
-		{
-			System.err.println(event.getClass() + " isn't in " + this.logOnEvents);
-		}
+		} 
 		
 		
 	}

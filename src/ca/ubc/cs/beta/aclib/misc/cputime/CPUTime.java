@@ -59,4 +59,9 @@ public final class CPUTime {
 	{
 		return CPUTimeCalculator._getUserTime();
 	}
+	
+	public String toString()
+	{
+		return "CPUTime: " + getCPUTime() + " User:" + getUserTime(); 
+	}
 }

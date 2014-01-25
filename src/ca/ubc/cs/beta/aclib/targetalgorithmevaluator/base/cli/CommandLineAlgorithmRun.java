@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map.Entry;
 import java.util.Queue;
+import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -87,15 +88,42 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	public static final String FREQUENCY_ENVIRONMENT_VARIABLE = "ACLIB_CPU_TIME_FREQUENCY";
 	public static final String CONCURRENT_TASK_ID = "ACLIB_CONCURRENT_TASK_ID";
 	
+	
+	/**
+	 * This variable is public only for unit test purposes,
+	 * this is not guaranteed to be the actual environment variable of child processes
+	 */
+	public static final String EXECUTION_UUID_ENVIRONMENT_VARIABLE_DEFAULT = "ACLIB_EXECUTION_UUID"; 
+	
+	
+	/**
+	 * Stores a unique UUID for the run, used in environment variables.
+	 */
+	private final UUID uuid = UUID.randomUUID();
+	
+	static 
+	{
+		if(!System.getenv().containsKey(EXECUTION_UUID_ENVIRONMENT_VARIABLE_DEFAULT))
+		{
+			envVariableForChildren = EXECUTION_UUID_ENVIRONMENT_VARIABLE_DEFAULT;
+		} else
+		{
+			int i=0;
+			while( System.getenv().containsKey(EXECUTION_UUID_ENVIRONMENT_VARIABLE_DEFAULT + "_SUB_" + (i++)));
+			envVariableForChildren = EXECUTION_UUID_ENVIRONMENT_VARIABLE_DEFAULT + "_SUB_" + (i++);
+		}
+	}
+	
+	private static final String envVariableForChildren;
+	
+	
 	/**
 	 * Marker for logging
 	 */
 	private static transient Marker fullProcessOutputMarker = MarkerFactory.getMarker(LoggingMarker.FULL_PROCESS_OUTPUT.name());
 	
 	private static String commandSeparator = ";";
-	
-	
-	
+
 	static {
 		log.warn("This version of SMAC hardcodes run length for calls to the target algorithm to {}.", Integer.MAX_VALUE);
 		
@@ -105,8 +133,6 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 		}
 		
 	}
-	
-	private static final double WALLCLOCK_TIMING_SLACK = 0.001;
 	
 	private transient ExecutorService threadPoolExecutor = Executors.newCachedThreadPool(new SequentiallyNamedThreadFactory("Command Line Target Algorithm Evaluator Thread ")); 
 	
@@ -131,6 +157,13 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	 * @param runConfig			run configuration we are executing
 	 * @param executionIDs 
 	 */
+	
+	
+	
+	
+	
+	
+	
 	public CommandLineAlgorithmRun(AlgorithmExecutionConfig execConfig, RunConfig runConfig, TargetAlgorithmEvaluatorRunObserver obs, KillHandler handler, CommandLineTargetAlgorithmEvaluatorOptions options, BlockingQueue<Integer> executionIDs) 
 	{
 		super(execConfig, runConfig);
@@ -155,6 +188,9 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 		
 		this.options = options;
 		this.executionIDs = executionIDs;
+		
+	
+		
 	}
 	
 	private static final int MAX_LINES_TO_SAVE = 1000;
@@ -213,7 +249,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 				}
 				
 				
-				final AtomicInteger pid = new AtomicInteger(-1);
+				
 				int port = 0;
 				final DatagramSocket serverSocket;
 				if(options.listenForUpdates)
@@ -422,6 +458,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 				
 				killProcess(proc);
 				
+				
 				if(!this.isRunCompleted())
 				{
 					if(wasKilled)
@@ -470,7 +507,11 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 				
 				threadPoolExecutor.shutdownNow();
 				//Close the listening socket
-				serverSocket.close();
+				if(serverSocket != null)
+				{
+					serverSocket.close();
+				}
+				
 				try {
 					threadPoolExecutor.awaitTermination(24, TimeUnit.HOURS);
 				} catch (InterruptedException e) {
@@ -642,11 +683,11 @@ outerloop:
 		}
 		
 		envpList.add(CONCURRENT_TASK_ID + "=" + token);
-		
+		envpList.add(envVariableForChildren + "=" + uuid.toString());  
 		String[] envp = envpList.toArray(new String[0]);
 		Process proc = Runtime.getRuntime().exec(execCmdArray,envp, new File(execConfig.getAlgorithmExecutionDirectory()));
 		
-		log.debug("Process for {} started with pid: {}", this.runConfig, getPID(proc));
+		log.debug("Process for {} started with pid: {} (Environment Variable: {})", this.runConfig, getPID(proc), uuid);
 		return proc;
 	}
 	
@@ -920,9 +961,46 @@ outerloop:
 	
 	private void killProcess(Process p)
 	{
-		
+	
 		try 
 		{
+			
+			if(options.pgEnvKillCommand != null)
+			{
+				try {
+					
+					String killEnvCmd = options.pgEnvKillCommand + " " + envVariableForChildren + " " + uuid.toString();
+					Process p2 = Runtime.getRuntime().exec(SplitQuotedString.splitQuotedString(killEnvCmd));
+					
+					BufferedReader read = new BufferedReader(new InputStreamReader(p2.getErrorStream()));
+					String line = null;
+					
+					while((line = read.readLine()) != null)
+					{
+						log.debug("Kill environment error> {}", line);
+					}
+					read.close();
+					read = new BufferedReader(new InputStreamReader(p2.getInputStream()));
+					line = null;
+					
+					while((line = read.readLine()) != null)
+					{
+						log.debug("Kill environment output> {}", line);
+					}
+					
+					read.close();
+					
+					
+					p2.destroy();
+				} catch(IOException e)
+				{
+					
+					log.error("Error while executing {} execute Kill Environment Command",e);
+					
+				}
+			}
+			
+			
 			if(exited(p))
 			{
 				return;
@@ -942,6 +1020,7 @@ outerloop:
 							
 							Process p2 = Runtime.getRuntime().exec(SplitQuotedString.splitQuotedString(command));
 							
+							
 							BufferedReader read = new BufferedReader(new InputStreamReader(p2.getErrorStream()));
 							String line = null;
 							
@@ -949,6 +1028,7 @@ outerloop:
 							{
 								log.debug("Kill error output> {}", line);
 							}
+							read.close();
 							read = new BufferedReader(new InputStreamReader(p2.getInputStream()));
 							line = null;
 							
@@ -958,7 +1038,7 @@ outerloop:
 								log.debug("Kill output Input> {}", line);
 							}
 							
-							
+							read.close();
 							int retValPGroup = p2.waitFor();
 							
 							if(retValPGroup > 0)
@@ -967,6 +1047,7 @@ outerloop:
 								Process p3 = Runtime.getRuntime().exec(SplitQuotedString.splitQuotedString(replacePid(options.procNiceKillCommand,pid)));
 								int retVal = p3.waitFor();
 								
+								p3.destroy();
 								if(retVal > 0)
 								{
 									Object[] args = {  pid,retVal};
@@ -977,10 +1058,12 @@ outerloop:
 								}
 									
 								
+								
 							} else
 							{
 								log.debug("SIGTERM delivered successfully to process group id: {} ", pid);
 							}
+							p2.destroy();
 						} catch (IOException e) {
 							log.error("Couldn't SIGTERM process or process group ", e);
 						}
@@ -1029,11 +1112,12 @@ outerloop:
 									log.debug("SIGKILL delivered successfully to process id: {}", pid, pid);
 								}
 								
-								
+								p3.destroy();
 							} else
 							{
 								log.debug("SIGKILL delivered successfully to pid: {} ", pid);
 							}
+							p2.destroy();
 						} catch (IOException e) {
 							log.error("Couldn't SIGKILL process or process group ", e);
 							

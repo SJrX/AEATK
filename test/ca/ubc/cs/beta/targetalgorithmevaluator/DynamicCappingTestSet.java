@@ -414,6 +414,7 @@ public class DynamicCappingTestSet {
 		TargetAlgorithmEvaluatorRunObserver obs = new TargetAlgorithmEvaluatorRunObserver()
 		{
 			
+			private final AtomicBoolean shown = new AtomicBoolean(false);
 			@Override
 			public void currentStatus(List<? extends KillableAlgorithmRun> runs) {
 				
@@ -431,9 +432,12 @@ public class DynamicCappingTestSet {
 				
 				if(runtimeSum > 8)
 				{
-					for(KillableAlgorithmRun run : runs)
+					if(!shown.getAndSet(true))
 					{
-				//		System.out.println(run.toString());
+						for(KillableAlgorithmRun run : runs)
+						{
+							System.out.println(run.toString());
+						}
 					}
 					for(KillableAlgorithmRun run : runs)
 					{

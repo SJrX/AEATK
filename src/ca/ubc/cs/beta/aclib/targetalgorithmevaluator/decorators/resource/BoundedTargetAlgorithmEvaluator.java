@@ -552,7 +552,7 @@ public class BoundedTargetAlgorithmEvaluator extends
 				if(failureOccured.get())
 				{
 					this.completionCallbackFired.set(true);
-					log.debug("Failure occured, silently discarding runs");
+					log.debug("Failure occured, silently discarding runs: {}", runs);
 					return;
 				} 
 					
