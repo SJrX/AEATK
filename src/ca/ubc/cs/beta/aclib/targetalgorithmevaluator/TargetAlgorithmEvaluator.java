@@ -10,17 +10,15 @@ import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
  * <p>
  * <b>Implementation Details</b>
  * <p>
- * Clients should subtype this interface if they want to allow SMAC or other related projects to execute algorithms through
+ * Clients should subtype this interface if they want to allow programs to execute algorithms through
  * some other method. All implementations MUST have a constructor that takes a {@link ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig} object.
  * <p>
  * Additionally client implementations should probably not validate the output of AlgorithmRuns but rely on other decorators to do this for them.
- * <p>
  * <p>
  * <b>NOTE:</b>Implementations MUST be thread safe, and ideally concurrent calls to evaluateRun() should all be serialized in such a way 
  * that honours the concurrency requirements of the evaluator (in other words, if concurrency is limited to N processors, then 
  * regardless of how many times evaluateRun is called concurrently only N actual runs of the target algorithm should be running at any given time)
  * <p>
- * <b>Related Exceptions:</b> 
  * 
 
  * @see ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorFactory
@@ -36,6 +34,10 @@ public interface TargetAlgorithmEvaluator {
 	 * Evaluate a run configuration
 	 * <br/>
 	 * <b>Implementation Note:</b> Any implementation of this method MUST be the same as calling {@link TargetAlgorithmEvaluator#evaluateRun(List, TargetAlgorithmEvaluatorRunObserver)} with that same run in the list.
+	 * <br>
+	 * <br>
+	 * <b>Thread Interruption Handling:</b>All implementations must ensure that if the thread is interrupted, the interrupt status is restored, not swallowed (See JCIP §5.4). Implementations may or may not
+	 * support interruption of requests, and it is entirely <font color="red"><i>UNDEFINED</i></font> whether the runs are still processed or not. Consequently you are recommended to use the observer to terminate runs.
 	 * 
 	 * @param runConfig RunConfig to evaluate
 	 * @return	list containing the <code>AlgorithmRun<code>
@@ -48,6 +50,11 @@ public interface TargetAlgorithmEvaluator {
 	 * Evaluate a list of run configurations
 	 * <br/>
 	 * <b>Implementation Note:</b> Any implementation of this method MUST be the same as calling {@link TargetAlgorithmEvaluator#evaluateRun(List, TargetAlgorithmEvaluatorRunObserver)} with that same run in the list.
+	 * <br>
+	 * <br>
+	 * <b>Thread Interruption Handling:</b>All implementations must ensure that if the thread is interrupted, the interrupt status is restored, not swallowed (See JCIP §5.4). Implementations may or may not
+	 * support interruption of requests, and it is entirely <font color="red"><i>UNDEFINED</i></font> whether the runs are still processed or not. Consequently you are recommended to use the observer to terminate runs.
+	 * 
 	 * 
 	 * @param runConfigs a list containing zero or more unique run configurations to evaluate
 	 * @return	list of the exact same size as input containing the <code>AlgorithmRun</code> objects in the same order as runConfigs
@@ -58,6 +65,10 @@ public interface TargetAlgorithmEvaluator {
 
 	/**
 	 * Evaluate a list of run configurations
+	 * <br>
+	 * <br>
+	 * <b>Thread Interruption Handling:</b>All implementations must ensure that if the thread is interrupted, the interrupt status is restored, not swallowed (See JCIP §5.4). Implementations may or may not
+	 * support interruption of requests, and it is entirely <font color="red"><i>UNDEFINED</i></font> whether the runs are still processed or not. Consequently you are recommended to use the observer to terminate runs.
 	 * 
 	 * @param runConfigs	a list containing zero or more unique run configurations to evaluate
 	 * @param observer 	 	observer that will be notified of the current run status
@@ -81,6 +92,10 @@ public interface TargetAlgorithmEvaluator {
 	 * <b>Usage Note:</b> The callback should expect to see the following exceptions {@link ca.ubc.cs.beta.aclib.targetalgorithmevaluator.exceptions.TargetAlgorithmAbortException} and {@link ca.ubc.cs.beta.aclib.targetalgorithmevaluator.exceptions.TargetAlgorithmEvaluatorShutdownException}
 	 * <p>
 	 * <b>Implementation Note:</b> Any implementation of this method MUST be the same as calling {@link TargetAlgorithmEvaluator#evaluateRunsAsync(List, TargetAlgorithmEvaluatorCallback, TargetAlgorithmEvaluatorRunObserver)} with that same run in the list.
+	 * <br>
+	 * <br>
+	 * <b>Thread Interruption Handling:</b>All implementations must ensure that if the thread is interrupted, the interrupt status is restored, not swallowed (See JCIP §5.4). Implementations may or may not
+	 * support interruption of requests, and it is entirely <font color="red"><i>UNDEFINED</i></font> whether the runs are still processed or not. Consequently you are recommended to use the observer to terminate runs.
 	 * 
 	 * 
 	 * @param runConfig  run configuration to evaluate
@@ -100,6 +115,10 @@ public interface TargetAlgorithmEvaluator {
 	 * <b>Usage Note:</b> The callback should expect to see the following exceptions {@link ca.ubc.cs.beta.aclib.targetalgorithmevaluator.exceptions.TargetAlgorithmAbortException} and {@link ca.ubc.cs.beta.aclib.targetalgorithmevaluator.exceptions.TargetAlgorithmEvaluatorShutdownException}
 	 * <p>
 	 * <b>Implementation Note:</b> Any implementation of this method MUST be the same as calling {@link TargetAlgorithmEvaluator#evaluateRunsAsync(List, TargetAlgorithmEvaluatorCallback, TargetAlgorithmEvaluatorRunObserver)} with that same run in the list.
+	 * <br>
+	 * <br>
+	 * <b>Thread Interruption Handling:</b>All implementations must ensure that if the thread is interrupted, the interrupt status is restored, not swallowed (See JCIP §5.4). Implementations may or may not
+	 * support interruption of requests, and it is entirely <font color="red"><i>UNDEFINED</i></font> whether the runs are still processed or not. Consequently you are recommended to use the observer to terminate runs.
 	 * 
 	 * @param runConfigs list of zero or more unique run configuration to evaluate
 	 * @param callback   handler to invoke on completion or failure
@@ -116,6 +135,10 @@ public interface TargetAlgorithmEvaluator {
 	 * normally (that is you can do a normal shutdown, and the onSuccess method should fire)
 	 * <p>
 	 * <b>Usage Note:</b> The callback should expect to see the following exceptions {@link ca.ubc.cs.beta.aclib.targetalgorithmevaluator.exceptions.TargetAlgorithmAbortException} {@link ca.ubc.cs.beta.aclib.targetalgorithmevaluator.exceptions.TargetAlgorithmEvaluatorShutdownException}
+	 * <br>
+	 * <br>
+	 * <b>Thread Interruption Handling:</b>All implementations must ensure that if the thread is interrupted, the interrupt status is restored, not swallowed (See JCIP §5.4). Implementations may or may not
+	 * support interruption of requests, and it is entirely <font color="red"><i>UNDEFINED</i></font> whether the runs are still processed or not. Consequently you are recommended to use the observer to terminate runs.
 	 * 
 	 * @param runConfigs list of zero or more unique run configuration to evaluate
 	 * @param callback   handler to invoke on completion or failure
