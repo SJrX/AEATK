@@ -25,14 +25,14 @@ import ca.ubc.cs.beta.aclib.termination.standard.WallClockLimitCondition;
 public class TerminationCriteriaOptions extends AbstractOptions {
 
 	@Semantics(name="MAX_CPUTIME", domain="SCENARIO")
-	@Parameter(names={"--tunertime-limit","--tuner-timeout","--tunerTimeout"}, description="limits the total cpu time allowed between SMAC and the target algorithm runs during the automatic configuration phase", validateWith=NonNegativeInteger.class)
+	@Parameter(names={"--cputime-limit","--cputime_limit","--tunertime-limit","--tuner-timeout","--tunerTimeout"}, description="limits the total cpu time allowed between SMAC and the target algorithm runs during the automatic configuration phase", validateWith=NonNegativeInteger.class)
 	public int tunerTimeout = Integer.MAX_VALUE;
 	
 	@UsageTextField(level=OptionLevel.INTERMEDIATE)
 	@Parameter(names={"--iteration-limit","--numIterations","--numberOfIterations"}, description = "limits the number of iterations allowed during automatic configuration phase", validateWith=FixedPositiveInteger.class)
 	public int numIterations = Integer.MAX_VALUE;
 	
-	@Parameter(names={"--wallclock-limit","--runtime-limit","--runtimeLimit", "--wallClockLimit"}, description = "limits the total wall-clock time allowed during the automatic configuration phase", validateWith=FixedPositiveInteger.class)
+	@Parameter(names={"--wallclock-limit","--wallclock_limit","--runtime-limit","--runtimeLimit", "--wallClockLimit"}, description = "limits the total wall-clock time allowed during the automatic configuration phase", validateWith=FixedPositiveInteger.class)
 	public int runtimeLimit = Integer.MAX_VALUE;
 	
 	@UsageTextField(level=OptionLevel.INTERMEDIATE)

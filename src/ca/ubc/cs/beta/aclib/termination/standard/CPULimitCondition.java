@@ -15,7 +15,7 @@ import ca.ubc.cs.beta.aclib.termination.ValueMaxStatus;
 public class CPULimitCondition extends AbstractTerminationCondition 
 {
 
-	private final double tunerTimeLimit;
+	private final double cpuTimeLimit;
 	private AtomicDouble currentTime;
 	
 	private final String NAME = "CPUTIME";
@@ -24,9 +24,9 @@ public class CPULimitCondition extends AbstractTerminationCondition
 	private final CPUTime cpuTime;
 	
 	//private final AtomicBoolean haveToStop = new AtomicBoolean(false);
-	public CPULimitCondition(double tunerTimeLimit, boolean countACTime, CPUTime cpuTime)
+	public CPULimitCondition(double totalCPUTimeLimit, boolean countACTime, CPUTime cpuTime)
 	{
-		this.tunerTimeLimit = tunerTimeLimit;
+		this.cpuTimeLimit = totalCPUTimeLimit;
 		this.currentTime = new AtomicDouble(0);
 		this.countACTime = countACTime;
 		this.cpuTime = cpuTime;
@@ -41,14 +41,14 @@ public class CPULimitCondition extends AbstractTerminationCondition
 	
 	@Override
 	public boolean haveToStop() {
-		return (tunerTimeLimit <= getTunerTime());
+		return (cpuTimeLimit <= getTunerTime());
 	}
 
 	@Override
 	public Collection<ValueMaxStatus> currentStatus() {
 		double tunerTime = getTunerTime();
 		
-		return Collections.singleton(new ValueMaxStatus(ConditionType.TUNERTIME, tunerTime, tunerTimeLimit, NAME, "Configuration Time Budget", "s"));
+		return Collections.singleton(new ValueMaxStatus(ConditionType.TUNERTIME, tunerTime, cpuTimeLimit, NAME, "Configuration Time Budget", "s"));
 	}
 
 	@Override
@@ -66,7 +66,7 @@ public class CPULimitCondition extends AbstractTerminationCondition
 	public String getTerminationReason() {
 		if(haveToStop())
 		{
-			return "Tuner Time Limit (" +  tunerTimeLimit +  " s) has been reached";
+			return "Total CPU Time Limit (" +  cpuTimeLimit +  " s) has been reached";
 		} else
 		{
 			return "";
