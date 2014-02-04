@@ -696,7 +696,7 @@ outerloop:
 	 * Gets the execution command string
 	 * @return string containing command
 	 */
-	private static String[] getTargetAlgorithmExecutionCommand(AlgorithmExecutionConfig execConfig, RunConfig runConfig)
+	private String[] getTargetAlgorithmExecutionCommand(AlgorithmExecutionConfig execConfig, RunConfig runConfig)
 	{
 
 				
@@ -715,6 +715,8 @@ outerloop:
 		
 		StringFormat f = StringFormat.NODB_SYNTAX;
 		
+		final String valueDelimiter = (options.paramArgumentsContainQuotes) ?  f.getValueDelimeter() : "";
+		
 		for(String key : runConfig.getParamConfiguration().getActiveParameters() )
 		{
 			
@@ -724,7 +726,9 @@ outerloop:
 				throw new IllegalStateException("Key Value seperator or glue is not a space, and this means the way we handle this logic won't work currently");
 			}
 			list.add(f.getPreKey() + key);
-			list.add(f.getValueDelimeter() + runConfig.getParamConfiguration().get(key)  + f.getValueDelimeter());	
+			
+			
+			list.add(valueDelimiter + runConfig.getParamConfiguration().get(key)  + valueDelimiter);	
 			
 		}
 		

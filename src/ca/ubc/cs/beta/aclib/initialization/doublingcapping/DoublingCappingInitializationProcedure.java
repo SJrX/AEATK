@@ -383,8 +383,9 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 				Thread.currentThread().interrupt();
 				throw new IllegalStateException("Interrupted Exception occurred during start up, cannot continue, every invariant I am designed to hold true can not be assured.");
 			}
- 			
  		}
+ 		
+ 		
  		
  		
  		
