@@ -18,7 +18,7 @@ public class CommandLineTargetAlgorithmEvaluatorOptions extends AbstractOptions 
 
 	@UsageTextField(level=OptionLevel.DEVELOPER)
 	@Parameter(names="--cli-observer-frequency", description="How often to notify observer of updates (in milli-seconds)", validateWith=FixedPositiveInteger.class)
-	public int observerFrequency = 750;
+	public int observerFrequency = 500;
 
 	@UsageTextField(level=OptionLevel.INTERMEDIATE)
 	@Parameter(names="--cli-concurrent-execution", description="Whether to allow concurrent execution ")

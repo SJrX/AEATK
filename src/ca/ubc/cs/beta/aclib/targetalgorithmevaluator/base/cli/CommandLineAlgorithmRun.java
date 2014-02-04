@@ -15,8 +15,10 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.Map.Entry;
 import java.util.Queue;
+import java.util.Set;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
@@ -42,6 +44,7 @@ import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableWrappedAlgorithmRun;
 import ca.ubc.cs.beta.aclib.concurrent.threadfactory.SequentiallyNamedThreadFactory;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration.StringFormat;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aclib.misc.associatedvalue.Pair;
 import ca.ubc.cs.beta.aclib.misc.logback.MarkerFilter;
 import ca.ubc.cs.beta.aclib.misc.logging.LoggingMarker;
 import ca.ubc.cs.beta.aclib.misc.string.SplitQuotedString;
@@ -134,7 +137,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 		
 	}
 	
-	private transient ExecutorService threadPoolExecutor = Executors.newCachedThreadPool(new SequentiallyNamedThreadFactory("Command Line Target Algorithm Evaluator Thread ")); 
+	//private transient
 	
 	private final int observerFrequency;
 	
@@ -159,7 +162,31 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	 */
 	
 	
+	private static transient final AtomicBoolean jvmShutdownDetected = new AtomicBoolean(false);
 	
+	private static final Set<Pair<CommandLineAlgorithmRun, Process>> outstandingRuns  = Collections.newSetFromMap(new ConcurrentHashMap<Pair<CommandLineAlgorithmRun, Process>,Boolean>());
+	static
+	{
+		Thread shutdownThread = new Thread(new Runnable()
+		{
+
+			@Override
+			public void run() {
+				Thread.currentThread().setName("CLI Shutdown Thread");
+				jvmShutdownDetected.set(true);
+				log.debug("Terminating approximately {} outstanding algorithm runs", outstandingRuns.size());
+				log.debug("Further runs will be instantly terminated");
+				for(Pair<CommandLineAlgorithmRun, Process> p : outstandingRuns)
+				{
+					p.getFirst().killProcess(p.getSecond());
+				}
+			}
+			
+		});
+		
+		log.debug("Shutdown hook to terminate all outstanding runs enabled");
+		Runtime.getRuntime().addShutdownHook(shutdownThread);
+	}
 	
 	
 	
@@ -167,7 +194,6 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	public CommandLineAlgorithmRun(AlgorithmExecutionConfig execConfig, RunConfig runConfig, TargetAlgorithmEvaluatorRunObserver obs, KillHandler handler, CommandLineTargetAlgorithmEvaluatorOptions options, BlockingQueue<Integer> executionIDs) 
 	{
 		super(execConfig, runConfig);
-		//TODO Test
 		if(runConfig.getCutoffTime() <= 0 || handler.isKilled())
 		{
 			
@@ -208,13 +234,26 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 		//Notify observer first to trigger kill handler
 		runObserver.currentStatus(Collections.singletonList((KillableAlgorithmRun) new RunningAlgorithmRun(execConfig, getRunConfig(),  0,  0,0, getRunConfig().getProblemInstanceSeedPair().getSeed(), 0, killHandler)));
 		
+		
+		if(jvmShutdownDetected.get())
+		{
+			
+			//log.debug("JVM Shutdown detected, run treated as killed", runConfig);
+			String rawResultLine = "JVM Shutdown Detected";
+			
+			this.setResult(RunResult.KILLED, 0, 0, 0, runConfig.getProblemInstanceSeedPair().getSeed(), rawResultLine,"JVM Shutdown Detected, algorithm not executed");
+			runObserver.currentStatus(Collections.singletonList(new KillableWrappedAlgorithmRun(this)));
+			return;
+		}
+		
 		if(killHandler.isKilled())
 		{
 			
 			log.debug("Run was killed", runConfig);
-			String rawResultLine = "Killed Manually";
+			String rawResultLine = "Kill detected before target algorithm invoked";
 			
-			this.setResult(RunResult.KILLED, 0, 0, 0, runConfig.getProblemInstanceSeedPair().getSeed(), rawResultLine,"");
+			this.setResult(RunResult.KILLED, 0, 0, 0, runConfig.getProblemInstanceSeedPair().getSeed(), rawResultLine,"Kill detected before target algorithm invoked");
+			runObserver.currentStatus(Collections.singletonList(new KillableWrappedAlgorithmRun(this)));
 			return;
 		}
 		
@@ -240,11 +279,11 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 				//Check kill handler again
 				if(killHandler.isKilled())
 				{
-					
 					log.debug("Run was killed", runConfig);
-					String rawResultLine = "Killed Manually";
+					String rawResultLine = "Kill detected before target algorithm invoked";
 					
-					this.setResult(RunResult.KILLED, 0, 0, 0, runConfig.getProblemInstanceSeedPair().getSeed(), rawResultLine,"");
+					this.setResult(RunResult.KILLED, 0, 0, 0, runConfig.getProblemInstanceSeedPair().getSeed(), rawResultLine,"Kill detected before target algorithm invoked");
+					runObserver.currentStatus(Collections.singletonList(new KillableWrappedAlgorithmRun(this)));;
 					return;
 				}
 				
@@ -311,14 +350,18 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 				
 				this.startWallclockTimer();
 				proc = runProcess(port, token);
-			
+				outstandingRuns.add(new Pair<CommandLineAlgorithmRun, Process>(this, proc));
+				
+				
 				
 				
 				
 				final Process innerProcess = proc; 
 				
+				
 				final Semaphore stdErrorDone = new Semaphore(0);
-			
+	
+				
 				Runnable standardErrorReader = new Runnable()
 				{
 	
@@ -443,80 +486,96 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 					
 				};
 				
-				
-				if(options.listenForUpdates)
+				ExecutorService threadPoolExecutor = Executors.newCachedThreadPool(new SequentiallyNamedThreadFactory("Command Line Target Algorithm Evaluator Thread "));
+				try 
 				{
-					threadPoolExecutor.execute(socketThread);
-				}
-				threadPoolExecutor.execute(observerThread);
-				threadPoolExecutor.execute(standardErrorReader);
-				BufferedReader read = new BufferedReader(new InputStreamReader(proc.getInputStream()));
-				
-				//Scanner procIn = new Scanner(proc.getInputStream());
-			
-				processRunLoop(read,proc);
-				
-				killProcess(proc);
-				
-				
-				if(!this.isRunCompleted())
-				{
-					if(wasKilled)
+					if(options.listenForUpdates)
 					{
-						double currentTime = Math.max(0,currentRuntime.get());
-						this.setResult(RunResult.KILLED, currentTime, 0,0, getRunConfig().getProblemInstanceSeedPair().getSeed(), "Killed Manually", "" );
+						threadPoolExecutor.execute(socketThread);
+					}
+					threadPoolExecutor.execute(observerThread);
+					threadPoolExecutor.execute(standardErrorReader);
+					BufferedReader read = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+					
+					//Scanner procIn = new Scanner(proc.getInputStream());
+					
+					
+					 
+					if(jvmShutdownDetected.get())
+					{ //Possible that this run started after the shutdown call was flagged, but before we put it in the map.
+					
+						killProcess(proc);
+					}
+					try
+					{
+						processRunLoop(read,proc);
+					} finally
+					{
+						killProcess(proc);
+					}
+					
+					if(!this.isRunCompleted())
+					{
+						if(wasKilled)
+						{
+							double currentTime = Math.max(0,currentRuntime.get());
+							this.setResult(RunResult.KILLED, currentTime, 0,0, getRunConfig().getProblemInstanceSeedPair().getSeed(), "Killed Manually", "" );
+							
+						} else if(jvmShutdownDetected.get())
+						{
+							double currentTime = Math.max(0,currentRuntime.get());
+							this.setResult(RunResult.KILLED, currentTime, 0,0, getRunConfig().getProblemInstanceSeedPair().getSeed(), "JVM Shutdown Detected", "" );							
+						} else
+						{
+							this.setCrashResult("Wrapper did not output anything that matched our regex please see the manual for more information. Please try executing the wrapper directly and ensuring that some line starts with: \"Results for ParamILS:\" (case sensitive). In more gorey detail it needs to match the following Regular Expression: " + AUTOMATIC_CONFIGURATOR_RESULT_REGEX );
+						}
+				}
+					
+					
+					switch(this.getRunResult())
+					{
+						case ABORT:
+						case CRASHED:
+							
 						
-					} else {
-						this.setCrashResult("Wrapper did not output anything that matched our regex please see the manual for more information. Please try executing the wrapper directly and ensuring that some line starts with: \"Results for ParamILS:\" (case sensitive). In more gorey detail it needs to match the following Regular Expression: " + AUTOMATIC_CONFIGURATOR_RESULT_REGEX );
+								log.error( "Failed Run Detected Call: cd \"{}\" " + commandSeparator + "  {} ",new File(execConfig.getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommandAsString(execConfig, runConfig));
+							
+								log.error("Failed Run Detected output last {} lines", outputQueue.size());
+								
+								for(String s : outputQueue)
+								{
+									log.error("> "+s);
+								}
+								log.error("Output complete");
+								
+							
+						default:
+						
+					}
+					
+					outputQueue.clear();
+
+					read.close();
+
+					stdErrorDone.acquireUninterruptibly();
+				} finally
+				{
+					//Close the listening socket
+					if(serverSocket != null)
+					{
+						serverSocket.close();
+					}
+					threadPoolExecutor.shutdownNow();
+					try {
+						threadPoolExecutor.awaitTermination(24, TimeUnit.HOURS);
+					} catch (InterruptedException e) {
+						Thread.currentThread().interrupt();
 					}
 				}
-				
-				
-				switch(this.getRunResult())
-				{
-				
-				
-				case ABORT:
-				case CRASHED:
-					
-				
-						log.error( "Failed Run Detected Call: cd \"{}\" " + commandSeparator + "  {} ",new File(execConfig.getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommandAsString(execConfig, runConfig));
-					
-						log.error("Failed Run Detected output last {} lines", outputQueue.size());
-						
-						for(String s : outputQueue)
-						{
-							log.error("> "+s);
-						}
-						log.error("Output complete");
-						
-					
-				default:
-					
-				}
-				
-				outputQueue.clear();
-				
-				
-				read.close();
 			
 				
 				
 				
-				stdErrorDone.acquireUninterruptibly();
-				
-				threadPoolExecutor.shutdownNow();
-				//Close the listening socket
-				if(serverSocket != null)
-				{
-					serverSocket.close();
-				}
-				
-				try {
-					threadPoolExecutor.awaitTermination(24, TimeUnit.HOURS);
-				} catch (InterruptedException e) {
-					Thread.currentThread().interrupt();
-				}
 	
 				runObserver.currentStatus(Collections.singletonList(new KillableWrappedAlgorithmRun(this)));
 				log.debug("Run {} is completed", this);
@@ -547,6 +606,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 		
 	}
 	
+		
 	/**
 	 * Processes all the output of the target algorithm
 	 * 
@@ -719,8 +779,6 @@ outerloop:
 		
 		for(String key : runConfig.getParamConfiguration().getActiveParameters() )
 		{
-			
-			
 			if(!f.getKeyValueSeperator().equals(" ") || !f.getGlue().equals(" "))
 			{
 				throw new IllegalStateException("Key Value seperator or glue is not a space, and this means the way we handle this logic won't work currently");
@@ -963,9 +1021,20 @@ outerloop:
 		return input.replaceAll("%pid", String.valueOf(pid));
 	}
 	
+	
+	AtomicBoolean killPreviouslyCalled = new AtomicBoolean(false);
 	private void killProcess(Process p)
 	{
 	
+		if(killPreviouslyCalled.getAndSet(true))
+		{
+			return;
+		} else
+		{
+			outstandingRuns.remove(new Pair<CommandLineAlgorithmRun, Process>(this,p));
+		}
+		
+		
 		try 
 		{
 			
@@ -981,7 +1050,7 @@ outerloop:
 					
 					while((line = read.readLine()) != null)
 					{
-						log.debug("Kill environment error> {}", line);
+						log.debug("Kill environment {} error> {}", uuid.toString(), line);
 					}
 					read.close();
 					read = new BufferedReader(new InputStreamReader(p2.getInputStream()));
@@ -989,7 +1058,7 @@ outerloop:
 					
 					while((line = read.readLine()) != null)
 					{
-						log.debug("Kill environment output> {}", line);
+						log.debug("Kill environment {}  output> {}", uuid.toString(), line);
 					}
 					
 					read.close();
