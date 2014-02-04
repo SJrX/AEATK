@@ -12,6 +12,8 @@ import com.beust.jcommander.ParametersDelegate;
 
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.help.HelpOptions;
+import ca.ubc.cs.beta.aclib.logging.ConsoleOnlyLoggingOptions;
+import ca.ubc.cs.beta.aclib.logging.LoggingOptions;
 import ca.ubc.cs.beta.aclib.misc.file.HomeFileUtils;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.LongGreaterThanNegativeTwoValidator;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
@@ -45,9 +47,17 @@ public class TargetAlgorithmEvaluatorRunnerOptions extends AbstractOptions {
 	public File smacDefaults = HomeFileUtils.getHomeFile(".aclib" + File.separator  + "taerunner.opt");
 	
 	
+	/**
+	 * Delegate that allows this application to read scenario options
+	 */
 	@ParametersDelegate
 	public ScenarioOptions scenOptions = new ScenarioOptions();
 	
+	/**
+	 * Delegate that controls logging
+	 */
+	@ParametersDelegate
+	public LoggingOptions logOpts = new ConsoleOnlyLoggingOptions();
 	
 	/**
 	 * THis parameter is not required (but if set to true, would be)

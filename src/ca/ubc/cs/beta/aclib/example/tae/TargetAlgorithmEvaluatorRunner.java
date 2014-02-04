@@ -62,15 +62,16 @@ public class TargetAlgorithmEvaluatorRunner
 			//Parses the options given in the args array and sets the values
 			JCommander jcom;
 			try {
-			//This will check for help and version arguments 
-			jcom = JCommanderHelper.parseCheckingForHelpAndVersion(args, mainOptions,taeOptions);
-			
+				//This will check for help and version arguments 
+				jcom = JCommanderHelper.parseCheckingForHelpAndVersion(args, mainOptions,taeOptions);
+				
+				//Does any setup work necessary to setup logger.
+				mainOptions.logOpts.initializeLogging();
 			} finally
 			{
 				//Initialize the logger *AFTER* the JCommander objects have been parsed
 				//So that options that take effect
-				//See also the LoggingOption object for something a bit nicer
-				initializeLogger();
+				log = LoggerFactory.getLogger(TargetAlgorithmEvaluatorRunner.class);
 			}
 		
 			//Displays version information
@@ -192,11 +193,7 @@ public class TargetAlgorithmEvaluatorRunner
 	}
 	
 
-	public static void initializeLogger()
-	{
-		log = LoggerFactory.getLogger(TargetAlgorithmEvaluatorRunner.class);
-		
-	}
+	
 	
 	/**
 	 * Encapsulated method for evaluating a run

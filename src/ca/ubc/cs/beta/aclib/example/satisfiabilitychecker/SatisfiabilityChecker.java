@@ -22,6 +22,7 @@ import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableAlgorithmRun;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration.StringFormat;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
+import ca.ubc.cs.beta.aclib.example.tae.TargetAlgorithmEvaluatorRunner;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.misc.jcommander.JCommanderHelper;
 import ca.ubc.cs.beta.aclib.misc.version.VersionTracker;
@@ -74,13 +75,13 @@ public class SatisfiabilityChecker
 			try {
 			//This will check for help and version arguments 
 			jcom = JCommanderHelper.parseCheckingForHelpAndVersion(args, mainOptions,taeOptions);
-			
+			//Does any setup work necessary to setup logger.
+				mainOptions.logOpts.initializeLogging();
 			} finally
 			{
 				//Initialize the logger *AFTER* the JCommander objects have been parsed
 				//So that options that take effect
-				//See also the LoggingOption object for something a bit nicer
-				initializeLogger();
+				log = LoggerFactory.getLogger(SatisfiabilityChecker.class);
 			}
 		
 			//Displays version information
@@ -318,11 +319,6 @@ public class SatisfiabilityChecker
 	}
 	
 
-	public static void initializeLogger()
-	{
-		log = LoggerFactory.getLogger(SatisfiabilityChecker.class);
-		
-	}
 
 
 			
