@@ -136,7 +136,9 @@ public class LegacyStateDeserializer implements StateDeserializer {
 				log.info("Auto detecting iteration for directory {}" , restoreFromPath);
 				
 				File restoreDirectory = new File(restoreFromPath);
-				File[] files = restoreDirectory.listFiles();
+				
+				/*
+				 * File[] files = restoreDirectory.listFiles();
 				Arrays.sort(files);
 				for(File f : files)
 				{
@@ -150,7 +152,10 @@ public class LegacyStateDeserializer implements StateDeserializer {
 						iteration = Math.max(thisIteration, iteration);
 					}
 				}
+				*/
 				
+ 				iteration = getMaxIterationInDirectory(restoreDirectory, "it");
+				/*
 				if(iteration == 0)
 				{
 					log.debug("Auto-detected iteration 0 on first pass trying by filename, doing another pass");
@@ -176,12 +181,13 @@ public class LegacyStateDeserializer implements StateDeserializer {
 						
 					}
 				}
+				*/
 				log.info("Iteration restoring to {} ", iteration);
 			}
 			
 			
-			Object[] args = { iteration, id, restoreFromPath };
-			log.info("Trying to restore iteration: {} id: {} from path: {}", args );
+			
+			log.info("Trying to restore iteration: {} id: {} from path: {}", iteration, id, restoreFromPath );
 			try {
 				
 				
@@ -614,7 +620,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 		}
 		
 		
-		log.info("Successfully restored iteration: {} id: {} from path: {}", args );
+		log.info("Successfully restored iteration: {} id: {} from path: {}", iteration, id, restoreFromPath );
 			
 	}
 
@@ -773,12 +779,31 @@ public class LegacyStateDeserializer implements StateDeserializer {
 		return f;
 		
 	}
+	
 	private int getMaxIterationInDirectory(File restoreDirectory, String id) {
+		
+		
+		int bestByRunResults = getMaxIterationInDirectoryWithFileName(restoreDirectory, id, LegacyStateFactory.RUNS_AND_RESULTS_FILENAME);
+		int bestByParamConfig = getMaxIterationInDirectoryWithFileName(restoreDirectory, id, LegacyStateFactory.PARAMSTRINGS_FILENAME);
+		int bestByUnique = getMaxIterationInDirectoryWithFileName(restoreDirectory, id, LegacyStateFactory.UNIQ_CONFIGURATIONS_FILENAME);
+		
+		int min = Math.min(Math.min(bestByRunResults, bestByParamConfig), bestByUnique);
+		int max = Math.max(Math.max(bestByRunResults, bestByParamConfig), bestByUnique);
+		
+		if(min != max)
+		{
+			log.warn("Corruption detected when trying to auto-detect iteration in folder {} (some files are probably missing)", restoreDirectory);
+		}
+		return min;
+		
+	}
+
+	private int getMaxIterationInDirectoryWithFileName(File restoreDirectory, String id, String fileName) {
 		
 		String[] subfiles = restoreDirectory.list();
 		
 		
-		Pattern p = Pattern.compile(Pattern.quote(id)+"(\\d+)\\z");
+		Pattern p = Pattern.compile(fileName+"-" + Pattern.quote(id)+"(\\d+)\\z");
 		
 		 int maxIteration = 0;
 		 
