@@ -563,11 +563,31 @@ public class ProblemInstanceHelper {
 				 * We have to repair the instance order list necessary for SetInstanceSeedGenerator
 				 */
 				
+				
+				/**
+				 * Dev Note: Feb 2014 - I have no idea what this code is suppose to do, something with absolute path names
+				 * probably very awful :(
+				 */
 				List<String> absolutePathList = new ArrayList<String>(instanceList.size());
+				
+				
+				Map<String, String> instanceNameToRelPathFixMap = new HashMap<String, String>();
+				
+				for(ProblemInstance pi : instances)
+				{
+					instanceNameToRelPathFixMap.put(pi.getInstanceName(), pi.getInstanceName());
+				}
 				
 topOfLoop:
 				for(String instance : instanceList)
 				{
+					
+					if(instanceNameToRelPathFixMap.get(instance.replaceAll("//", "/")) != null)
+					{
+						absolutePathList.add(instanceNameToRelPathFixMap.get(instance.replaceAll("//", "/")));
+						continue topOfLoop;
+					}
+					
 					for(ProblemInstance pi : instances)
 					{
 						if(pi.getInstanceName().endsWith(instance.replaceAll("//", "/")))
