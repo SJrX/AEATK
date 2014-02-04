@@ -67,4 +67,9 @@ public class SATConsistencyTargetAlgorithmEvaluator extends AbstractForEachRunTa
 		
 		return run;
 	}
+	
+	@Override
+	protected void postDecorateeNotifyShutdown() {
+		//No cleanup necessary
+	}
 }

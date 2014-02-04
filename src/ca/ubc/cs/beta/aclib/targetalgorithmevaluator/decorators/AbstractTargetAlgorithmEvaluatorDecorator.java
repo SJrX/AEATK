@@ -3,6 +3,8 @@ package ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators;
 import java.util.Collections;
 import java.util.List;
 
+import org.slf4j.LoggerFactory;
+
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
@@ -97,11 +99,61 @@ public abstract class AbstractTargetAlgorithmEvaluatorDecorator implements	Targe
 		return tae.getManualCallString(runConfig);
 	}
 	
-	@Override
-	public void notifyShutdown()
+	
+	/**
+	 * Generally this method shouldn't be used, as you should wait for the parent to shutdown.
+	 */
+	protected void preDecorateeNotifyShutdown()
 	{
-		tae.notifyShutdown();
+		//Template method
 	}
+	
+	@Override
+	public final void notifyShutdown()
+	{
+		
+		
+		try {
+			preDecorateeNotifyShutdown();
+		} catch(RuntimeException e)
+		{
+			//Don't bother doing anything with the pre shutdown error, for no reason other than I'm lazy
+			//Feel free to fix this logic.
+			LoggerFactory.getLogger(getClass()).error("Error occured while shutting down", e);
+		}
+		
+		
+		//We assume the first exception has priority 
+		//because maybe some other crashes have caused the problem
+		RuntimeException first = null;
+		
+		try {
+			tae.notifyShutdown();
+		} catch(RuntimeException e)
+		{
+			first = e;
+		}
+		
+		try {
+			postDecorateeNotifyShutdown();
+		} catch(RuntimeException e)
+		{
+			if(first != null)
+			{
+				LoggerFactory.getLogger(getClass()).error("Error occured while shutting down", e);
+				throw first;
+			} else
+			{
+				throw e;
+			}
+		}
+		
+	}
+	
+	protected abstract void postDecorateeNotifyShutdown();
+
+	
+	
 	
 	@Override
 	public boolean isRunFinal()

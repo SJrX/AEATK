@@ -124,5 +124,8 @@ public class RetryCrashedRunsTargetAlgorithmEvaluator extends
 		tae.evaluateRunsAsync(runConfigs, handler, obs);
 	}
 	
-
+	@Override
+	protected void postDecorateeNotifyShutdown() {
+		//No cleanup necessary
+	}
 }

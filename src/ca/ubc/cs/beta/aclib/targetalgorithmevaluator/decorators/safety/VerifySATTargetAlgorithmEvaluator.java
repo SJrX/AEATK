@@ -78,5 +78,9 @@ public class VerifySATTargetAlgorithmEvaluator extends
 		return run;
 	}
 
+	@Override
+	protected void postDecorateeNotifyShutdown() {
+		//No cleanup necessary
+	}
 	
 }

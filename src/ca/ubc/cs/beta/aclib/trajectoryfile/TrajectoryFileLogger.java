@@ -36,14 +36,17 @@ public class TrajectoryFileLogger implements EventHandler<AutomaticConfiguratorE
 	
 	private static final Logger log = LoggerFactory.getLogger(TrajectoryFileLogger.class);
 	
+	private final CPUTime cpuTime;
+	
 	boolean closed = false;
 	
-	public TrajectoryFileLogger(RunHistory runHistory, TerminationCondition terminationCondition, String fileNamePrefix, ParamConfiguration initialIncumbent)
+	public TrajectoryFileLogger(RunHistory runHistory, TerminationCondition terminationCondition, String fileNamePrefix, ParamConfiguration initialIncumbent, CPUTime cpuTime)
 	{
 		this.fileNamePrefix = fileNamePrefix;
 		
 		this.runHistory = runHistory;
 		this.terminationCondition = terminationCondition;
+		this.cpuTime = cpuTime;
 		try {
 			trajectoryFileWriter = new FileWriter(fileNamePrefix + ".txt");
 			trajectoryFileWriterCSV = new FileWriter(fileNamePrefix + ".csv");
@@ -76,7 +79,7 @@ public class TrajectoryFileLogger implements EventHandler<AutomaticConfiguratorE
 			
 			if(lastIevent != null)
 			{ //Can't write this guy because the other threads have probably terminated
-				writeIncumbent( terminationCondition.getTunerTime() , lastIevent.getEmpiricalPerformance(), terminationCondition.getWallTime(), lastIevent.getIncumbent(), CPUTime.getCPUTime());
+				writeIncumbent( terminationCondition.getTunerTime() , lastIevent.getEmpiricalPerformance(), terminationCondition.getWallTime(), lastIevent.getIncumbent(), cpuTime.getCPUTime());
 			}
 			try {
 				trajectoryFileWriter.close();

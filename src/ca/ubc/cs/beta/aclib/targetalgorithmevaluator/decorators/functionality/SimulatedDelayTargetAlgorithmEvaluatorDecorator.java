@@ -115,9 +115,8 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 	
 	
 	@Override
-	public void notifyShutdown()
+	public void postDecorateeNotifyShutdown()
 	{
-		tae.notifyShutdown();
 		this.execService.shutdown();
 	}
 	

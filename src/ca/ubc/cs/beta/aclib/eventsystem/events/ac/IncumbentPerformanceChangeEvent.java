@@ -15,25 +15,23 @@ public class IncumbentPerformanceChangeEvent extends AbstractTimeEvent {
 	private final ParamConfiguration oldIncumbent;
 	private final long runCount;
 	
-	public IncumbentPerformanceChangeEvent(double cpuTime, double walltime, double empiricalPerformance, ParamConfiguration incumbent , long runCount, ParamConfiguration oldIncumbent) 
+	public IncumbentPerformanceChangeEvent(double tunerTime, double walltime, double empiricalPerformance, ParamConfiguration incumbent , long runCount, ParamConfiguration oldIncumbent,CPUTime cpuTime) 
 	{
-		super(cpuTime, walltime);
+		super(tunerTime, walltime);
 		this.empiricalPerformance = empiricalPerformance;
-		
 		this.incumbent = incumbent;
-		this.acTime = CPUTime.getCPUTime();
+		this.acTime = cpuTime.getCPUTime();
 		this.oldIncumbent = oldIncumbent;
 		this.runCount = runCount;
 		
 	}
 
-	public IncumbentPerformanceChangeEvent(TerminationCondition termCond, double empiricalPerformance, ParamConfiguration incumbent, long runCount, ParamConfiguration oldIncumbent ) 
+	public IncumbentPerformanceChangeEvent(TerminationCondition termCond, double empiricalPerformance, ParamConfiguration incumbent, long runCount, ParamConfiguration oldIncumbent, CPUTime cpuTime ) 
 	{
 		super(termCond);
 		this.empiricalPerformance = empiricalPerformance;
-		
 		this.incumbent = incumbent;
-		this.acTime = CPUTime.getCPUTime();
+		this.acTime = cpuTime.getCPUTime();
 		this.oldIncumbent = oldIncumbent;
 		this.runCount = runCount;
 	}

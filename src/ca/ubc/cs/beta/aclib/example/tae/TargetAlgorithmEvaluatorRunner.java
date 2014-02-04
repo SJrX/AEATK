@@ -62,15 +62,16 @@ public class TargetAlgorithmEvaluatorRunner
 			//Parses the options given in the args array and sets the values
 			JCommander jcom;
 			try {
-			//This will check for help and version arguments 
-			jcom = JCommanderHelper.parseCheckingForHelpAndVersion(args, mainOptions,taeOptions);
-			
+				//This will check for help and version arguments 
+				jcom = JCommanderHelper.parseCheckingForHelpAndVersion(args, mainOptions,taeOptions);
+				
+				//Does any setup work necessary to setup logger.
+				mainOptions.logOpts.initializeLogging();
 			} finally
 			{
 				//Initialize the logger *AFTER* the JCommander objects have been parsed
 				//So that options that take effect
-				//See also the LoggingOption object for something a bit nicer
-				initializeLogger();
+				log = LoggerFactory.getLogger(TargetAlgorithmEvaluatorRunner.class);
 			}
 		
 			//Displays version information
@@ -107,12 +108,27 @@ public class TargetAlgorithmEvaluatorRunner
 				ProblemInstance pi;
 				if(mainOptions.instanceName == null)
 				{
+					
 					List<ProblemInstance> instances = mainOptions.getTrainingAndTestProblemInstances().getTrainingInstances().getInstances();
 					if(instances == null || instances.size() == 0)
 					{
 						throw new ParameterException("No instances available, please specify one manually via --instance argument");
 					}
-					pi = instances.get(0);
+					
+					switch(mainOptions.instanceSelection)
+					{
+						case RANDOM:
+							Random r = new MersenneTwister();
+							pi = instances.get(r.nextInt(instances.size()));
+							break;
+						case FIRST:
+							pi = instances.get(0);
+							break;
+						default:
+							//Should always handle the default case and throw an exception if unsure
+							throw new IllegalArgumentException("Unknown value for option : " + mainOptions.instanceSelection);
+					}
+					
 				} else
 				{
 					pi = new ProblemInstance(mainOptions.instanceName);
@@ -192,11 +208,7 @@ public class TargetAlgorithmEvaluatorRunner
 	}
 	
 
-	public static void initializeLogger()
-	{
-		log = LoggerFactory.getLogger(TargetAlgorithmEvaluatorRunner.class);
-		
-	}
+	
 	
 	/**
 	 * Encapsulated method for evaluating a run

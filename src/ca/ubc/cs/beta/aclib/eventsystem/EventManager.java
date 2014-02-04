@@ -130,7 +130,7 @@ public class EventManager {
 				public void run()
 				{
 					try { 
-						log.debug("Dispatching event {} to handler: {}", event2.getClass().getSimpleName() + " (0x" + Integer.toHexString(System.identityHashCode(event2)) +")", handler2.getClass().getSimpleName());
+						log.trace("Dispatching event {} to handler: {}", event2.getClass().getSimpleName() + " (0x" + Integer.toHexString(System.identityHashCode(event2)) +")", handler2.getClass().getSimpleName());
 						handler2.handleEvent(event2);
 					} catch(RuntimeException t)
 					{

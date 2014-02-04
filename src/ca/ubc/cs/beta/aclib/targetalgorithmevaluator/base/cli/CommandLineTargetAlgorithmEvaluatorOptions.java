@@ -18,7 +18,7 @@ public class CommandLineTargetAlgorithmEvaluatorOptions extends AbstractOptions 
 
 	@UsageTextField(level=OptionLevel.DEVELOPER)
 	@Parameter(names="--cli-observer-frequency", description="How often to notify observer of updates (in milli-seconds)", validateWith=FixedPositiveInteger.class)
-	public int observerFrequency = 750;
+	public int observerFrequency = 500;
 
 	@UsageTextField(level=OptionLevel.INTERMEDIATE)
 	@Parameter(names="--cli-concurrent-execution", description="Whether to allow concurrent execution ")
@@ -39,6 +39,14 @@ public class CommandLineTargetAlgorithmEvaluatorOptions extends AbstractOptions 
 	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names={"--cli-listen-for-updates"}, description="If true will create a socket and set environment variables so that we can have updates of CPU time")
 	public boolean listenForUpdates = true;
+	
+	@UsageTextField(level=OptionLevel.ADVANCED)
+	@Parameter(names={"--cli-call-params-with-quotes"}, description="If true calls to the target algorithm will have parameters that are quoted \"'3'\" instead of \"3\". Older versions of the code passed arguments with '. This has been removed and will be deprecated in the future ")
+	public boolean paramArgumentsContainQuotes = false;
+	
+	@UsageTextField(level=OptionLevel.ADVANCED)
+	@Parameter(names={"--cli-kill-by-environment-cmd"}, description="If not null, this script will be executed with two arguments, the first a key, the second a value. They represent environment name and value, and the script should find every process with that name and value set and terminate it. Do not assume that the key is static as it may change based on existing environment variables. Example scripts may be available in example_scripts/env_kill/")
+	public String pgEnvKillCommand = null;
 	
 	
 	@UsageTextField(level=OptionLevel.ADVANCED)
@@ -63,6 +71,9 @@ public class CommandLineTargetAlgorithmEvaluatorOptions extends AbstractOptions 
 	@Parameter(names={"--cli-default-file"}, description="file that contains default settings for CLI Target Algorithm Evaluator (it is recommended that you use this file to set the kill commands)")
 	@ParameterFile(ignoreFileNotExists = true) 
 	public File smacDefaults = HomeFileUtils.getHomeFile(".aclib" + File.separator  + "cli-tae.opt");
+	
+	
+	
 	
 	
 	

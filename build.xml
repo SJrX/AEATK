@@ -197,6 +197,18 @@ dirty: ${git.dirty}</echo>
 			<fileset refid="fastrf"/>	
 		</copy>
 		
+		<copy todir="dist/" force="true">
+			<fileset dir="deployables">
+				<include name="**/*"/>
+			</fileset>
+		</copy>
+		
+		<chmod perm="755">
+			<fileset dir="dist/example_scripts/">
+				<include name="**/*"/>
+			</fileset>
+		</chmod>
+		
 		<echo file="dist/git-hashes.txt" append="true">${ant.project.name} ${git.commit} ${git.dirty}${line.separator}</echo>
 		<echo file="dist/git-hashes.tex" append="true">${ant.project.name} &amp; ${version.string} &amp; ${git.commit} &amp; ${git.dirty} \\${line.separator}\hline${line.separator}</echo>
 		
@@ -224,7 +236,7 @@ dirty: ${git.dirty}</echo>
 		
 		<copy todir="${deploy.dir}-${git.branch}" force="true">
 			<fileset dir="dist/">
-				<include name="*"/>
+				<include name="**/*"/>
 			</fileset>
 		</copy>
 		<chmod perm="444">
@@ -234,7 +246,7 @@ dirty: ${git.dirty}</echo>
 		</chmod>
 		<chmod perm="555">
 				<fileset dir="${deploy.dir}-${git.branch}">
-						<include name="*.sh"/>
+						<include name="**/*.sh"/>
 				</fileset>
 		</chmod>
 		

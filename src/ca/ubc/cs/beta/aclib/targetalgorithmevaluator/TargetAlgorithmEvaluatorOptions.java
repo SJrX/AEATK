@@ -9,6 +9,7 @@ import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.misc.file.HomeFileUtils;
+import ca.ubc.cs.beta.aclib.misc.jcommander.validator.FixedPositiveInteger;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.NonNegativeInteger;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.OneInfinityOpenInterval;
 import ca.ubc.cs.beta.aclib.misc.jcommander.validator.ReadableFileConverter;
@@ -156,6 +157,9 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	@Parameter(names={"--kill-runs-on-file-delete"}, description="All runs will be forcibly killed if the file is deleted. This option may cause the application to enter an infinite loop if the file is deleted, so care is needed. As a rule, you need to set this and some other option to point to the same file, if there is another option, then the application will probably shutdown nicely, if not, then it will probably infinite loop." )
 	public String fileToWatch = null;
 	
+	@UsageTextField(level=OptionLevel.DEVELOPER)
+	@Parameter(names={"--tae-warn-if-no-response-from-tae"}, description="If greater than 0, it is the number of seconds to wait for the TAE to respond before issuing a warning", validateWith=NonNegativeInteger.class)
+	public int warnIfNoResponseFromTAE = 120;
 	
 	/**
 	 * Checks if the problem instances are compatible with the verify sat option

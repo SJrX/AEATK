@@ -49,7 +49,7 @@ class ConcurrentAlgorithmRunner extends AbstractAlgorithmRunner {
 		
 		log.debug("Creating Thread Pool Supporting " + numberOfConcurrentExecutions);
 		
-		ExecutorService p = Executors.newFixedThreadPool(numberOfConcurrentExecutions, new SequentiallyNamedThreadFactory("Command Line Target Algorithm Evaluator"));
+		ExecutorService p = Executors.newFixedThreadPool(numberOfConcurrentExecutions, new SequentiallyNamedThreadFactory("Command Line Target Algorithm Evaluator (ConcurrentRunner)"));
 		/*
 		 * Runs all algorithms in the thread pool
 		 * Tells it to shutdown

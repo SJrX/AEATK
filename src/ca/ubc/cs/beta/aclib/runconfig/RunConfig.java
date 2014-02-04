@@ -71,7 +71,7 @@ public class RunConfig implements Serializable{
 	 * Default Constructor
 	 * @param pisp 					problem instance and seed that we will run against
 	 * @param config 				paramconfiguration of the target algorithm
-	 * @param cutoffLessThanMax    boolean representing whether the cutoffTime is less than the maximum possible (in other words whether this run was capped)
+	 * @param execConfig			execution configuration 
 	 */
 	
 	public RunConfig(ProblemInstanceSeedPair pisp, ParamConfiguration config, AlgorithmExecutionConfig execConfig)

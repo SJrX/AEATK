@@ -39,6 +39,10 @@ public class LegacyStateFactory implements StateFactory{
 	
 	
 
+	public static final String RUNS_AND_RESULTS_FILENAME = "runs_and_results";
+	public static final String PARAMSTRINGS_FILENAME = "paramstrings";
+	public static final String UNIQ_CONFIGURATIONS_FILENAME = "uniq_configurations";
+	
 	static final String OBJECT_MAP_KEY = "OBJECT_MAP_KEY";
 	static final String ITERATION_KEY = "ITERATION_KEY";
 	static final String INCUMBENT_TEXT_KEY = "INCUMBENT_TEXT_KEY";
@@ -53,6 +57,9 @@ public class LegacyStateFactory implements StateFactory{
 	private final String saveStatePath;
 	private final String restoreFromPath;
 	private final Logger log = LoggerFactory.getLogger(getClass());
+	
+	
+	
 	
 	/**
 	 * Stores for each iteration a set of files written
@@ -227,10 +234,10 @@ public class LegacyStateFactory implements StateFactory{
 	{
 		if(path.equals(""))
 		{
-			return "uniq_configurations" + dash + id + iteration + ".csv";
+			return UNIQ_CONFIGURATIONS_FILENAME + dash + id + iteration + ".csv";
 		} else
 		{
-			return path + File.separator + "uniq_configurations" + dash + id + iteration + ".csv";
+			return path + File.separator + UNIQ_CONFIGURATIONS_FILENAME + dash + id + iteration + ".csv";
 		}
 	}
 	
@@ -258,10 +265,10 @@ public class LegacyStateFactory implements StateFactory{
 		
 		if(path.equals(""))
 		{ 
-			return "paramstrings" + dash + id + iteration + ".txt";
+			return PARAMSTRINGS_FILENAME + dash + id + iteration + ".txt";
 		} else
 		{
-			return path + File.separator + "paramstrings" + dash + id + iteration + ".txt";
+			return path + File.separator + PARAMSTRINGS_FILENAME + dash + id + iteration + ".txt";
 		}
 			
 	}
@@ -305,10 +312,10 @@ public class LegacyStateFactory implements StateFactory{
 		
 		if(!path.equals(""))
 		{
-			return path + File.separator + "runs_and_results" + dash + id + iteration + ".csv";
+			return path + File.separator + RUNS_AND_RESULTS_FILENAME + dash + id + iteration + ".csv";
 		} else
 		{
-			return  "runs_and_results"+dash + id + iteration + ".csv";
+			return  RUNS_AND_RESULTS_FILENAME+dash + id + iteration + ".csv";
 		}
 		
 	}

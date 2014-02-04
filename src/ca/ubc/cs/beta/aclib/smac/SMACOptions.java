@@ -205,6 +205,14 @@ public class SMACOptions extends AbstractOptions {
 	@Parameter(names={"--save-runs-every-iteration"}, description="if true will save the runs and results file to disk every iteration. Useful if your runs are expensive and your cluster unreliable, not recommended if your runs are short as this may add an unacceptable amount of overhead")
 	public boolean saveRunsEveryIteration = false;
 	
+	@UsageTextField(level=OptionLevel.ADVANCED)
+	@Parameter(names="--quick-saves", description="determines whether to make quick saves or not")
+	public boolean stateQuickSaves = true;
+	
+	@UsageTextField(level=OptionLevel.ADVANCED)
+	@Parameter(names="--intermediary-saves", description="determines whether to make any intermediary-saves or not (if false, no quick saves will be made either). The state will still be saved at the end of the run however")
+	public boolean intermediarySaves = true;
+	
 	
 	/**
 	 * Checks if the verify sat option is compatible with this set of probelm instances

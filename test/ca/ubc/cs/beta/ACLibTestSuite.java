@@ -3,6 +3,7 @@ package ca.ubc.cs.beta;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
+import ca.ubc.cs.beta.aclib.algorithmrun.TestExistingAlgorithmRun;
 import ca.ubc.cs.beta.acquisitionfunction.AcquisitionFunctionTester;
 import ca.ubc.cs.beta.configspace.ParamConfigurationTest;
 import ca.ubc.cs.beta.configspace.RandomConfigurationTest;
@@ -20,6 +21,7 @@ import ca.ubc.cs.beta.instancespecificinfo.*;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
+	TestExistingAlgorithmRun.class,
 	AcquisitionFunctionTester.class,
 	EventManagerTester.class,
 	DynamicCappingTestSet.class,

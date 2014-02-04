@@ -29,6 +29,7 @@ import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableAlgorithmRun;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.exceptions.DuplicateRunException;
+import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.initialization.InitializationProcedure;
 import ca.ubc.cs.beta.aclib.initialization.doublingcapping.DoublingCappingInitializationProcedure;
 import ca.ubc.cs.beta.aclib.initialization.doublingcapping.DoublingCappingInitializationProcedureOptions;
@@ -74,15 +75,16 @@ public class UnbiasChallengerInitializationProcedure implements InitializationPr
 	
 	private final ObjectiveHelper objHelp;
 	private final double cpuTimeLimit ;
+	private final AlgorithmExecutionConfig execConfig;
 
-	public UnbiasChallengerInitializationProcedure(ThreadSafeRunHistory runHistory, ParamConfiguration initialIncumbent, TargetAlgorithmEvaluator tae, UnbiasChallengerInitializationProcedureOptions opts, InstanceSeedGenerator insc, List<ProblemInstance> instances,  int maxIncumbentRuns , TerminationCondition termCond, double cutoffTime, SeedableRandomPool pool, boolean deterministicInstanceOrdering, ObjectiveHelper objHelp)
+	public UnbiasChallengerInitializationProcedure(ThreadSafeRunHistory runHistory, ParamConfiguration initialIncumbent, TargetAlgorithmEvaluator tae, AlgorithmExecutionConfig execConfig, UnbiasChallengerInitializationProcedureOptions opts, InstanceSeedGenerator insc, List<ProblemInstance> instances,  int maxIncumbentRuns , TerminationCondition termCond, double cutoffTime, SeedableRandomPool pool, boolean deterministicInstanceOrdering, ObjectiveHelper objHelp)
 	{
 		this.runHistory =runHistory;
 		this.initialIncumbent = initialIncumbent;
 		this.tae = tae;
 		this.opts = opts;
 		this.instances = instances;
-		
+		this.execConfig = execConfig;
 		this.insc = insc;
 		this.incumbent = initialIncumbent;
 		//termCond;
@@ -204,7 +206,7 @@ public class UnbiasChallengerInitializationProcedure implements InitializationPr
 				List<RunConfig> rcs = new ArrayList<RunConfig>();
 				for(ProblemInstanceSeedPair pisp : pispsToRun)
 				{
-					rcs.add(new RunConfig(pisp, this.cutoffTime, bestConfiguration, false));
+					rcs.add(new RunConfig( pisp, this.cutoffTime, bestConfiguration,execConfig));
 				}
 				
 				log.info("Solved runs {} ", runHistory.getAlgorithmRunsExcludingRedundant(bestConfiguration));
@@ -422,7 +424,7 @@ outOfInitialization:
 				}
 				
 				nextCutoffTime.put(pair, kappa);
-				tae.evaluateRunsAsync(Collections.singletonList(new RunConfig(pair.getFirst(), kappa, pair.getSecond(), kappa < cutoffTime)), taeCallback, killAtTimeoutObserver);
+				tae.evaluateRunsAsync(Collections.singletonList(new RunConfig(pair.getFirst(), kappa, pair.getSecond(), execConfig)), taeCallback, killAtTimeoutObserver);
 			
 				
 			}
@@ -473,7 +475,7 @@ outOfInitialization:
 		
 		for(ProblemInstanceSeedPair pisp : selectedPisps)
 		{
-			rcs.add(new RunConfig(pisp, cutoffTime, initialIncumbent));
+			rcs.add(new RunConfig(pisp, cutoffTime, initialIncumbent,execConfig));
 		}
 		
 		runHistory.getOrCreateThetaIdx(initialIncumbent);

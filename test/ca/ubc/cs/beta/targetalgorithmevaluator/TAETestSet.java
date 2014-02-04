@@ -2406,6 +2406,114 @@ public class TAETestSet {
 	
 	@Test
 	/**
+	 * Schedules 100 runs against the TAE and very quick kills them it then measures how long it takes to submit.
+	 * 
+	 */
+	public void testBoundedTargetAlgorithmEvaluatorKillingSpeed()
+	{
+		final Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(TrueSleepyParamEchoExecutor.class.getCanonicalName());
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 3000);
+		
+		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
+		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
+		
+		options.logAllCallStrings = true;
+		options.logAllProcessOutput = true;
+		options.concurrentExecution = true;
+		options.observerFrequency = 100;
+		options.cores = 2;
+		
+		TargetAlgorithmEvaluator tae = fact.getTargetAlgorithmEvaluator( options);	
+		TargetAlgorithmEvaluator cliTAE = tae;
+		tae = new BoundedTargetAlgorithmEvaluator(tae,10);
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(100);
+		for(int i=0; i < 20; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			
+			config.put("runtime","2");
+			
+
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))),  config,execConfig);
+				runConfigs.add(rc);
+			}
+		}
+		
+		
+		
+		TargetAlgorithmEvaluatorRunObserver obs = new TargetAlgorithmEvaluatorRunObserver()
+		{
+
+			private boolean killedByDecorator = false;
+			@Override
+			public void currentStatus(List<? extends KillableAlgorithmRun> runs) 
+			{
+				
+				double sum = 0;
+			
+			
+				for(KillableAlgorithmRun run : runs)
+				{
+					if(run.getRunConfig().getProblemInstanceSeedPair().getSeed() % 100 % 19 != 0)
+					{
+						run.kill();
+					}
+					
+
+					if(run.getRunResult() == RunResult.KILLED && !killedByDecorator)
+					{
+						if(run.getAdditionalRunData().equals(BoundedTargetAlgorithmEvaluator.KILLED_BY_DECORATOR_ADDL_RUN_INFO))
+						{
+							System.err.println(run.getResultLine());
+							killedByDecorator = true;
+						}
+					}
+					
+				}
+				
+
+				
+			}
+			
+		};
+		
+		StopWatch watch2 = new AutoStartStopWatch();
+		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs, obs);
+		
+		int killedCount = 0;
+		for(AlgorithmRun run : runs)
+		{
+			
+			if(run.getRunResult().equals(RunResult.KILLED))
+			{
+				killedCount++;
+			}
+			
+			
+			//System.out.println(run);
+		}
+		System.out.println(watch2.stop());
+		
+		System.out.println(killedCount);
+		assertTrue("Expected time for Bounded to be less than 5 seconds", watch2.time() < 5000 );
+		
+	}
+	
+	
+	@Test
+	/**
 	 * Schedules a set of runs in the form of 3,1,3,1 on a bound of 2x, if the Bounding is done properly this should be doable in under 5 seconds,
 	 * if not then it might take about 8 seconds.
 	 */
@@ -2769,11 +2877,7 @@ public class TAETestSet {
 		{
 			fail("Output contained some error this is unexpected: " + output );
 		}
-		//assertTrue("Expected time for CLI Direct to be less than 5 seconds", watch.time() < 5000 );
-		
-		
-		//assertTrue("Expected time for Bounded to be less than 5 seconds", watch2.time() < 5000 );
-		
+	
 	}
 	
 	
@@ -3947,6 +4051,239 @@ public class TAETestSet {
 		
 	}
 	
+	
+	@Test
+	public void testProcessEnviromnentKilled()
+	{
+		
+		/**
+		 * This tests to see if a wrapper (that sets the process group) => chained shutsdown correctly
+		 */
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		StringBuilder b = new StringBuilder();
+		
+		b.append((new File("")).getAbsolutePath() + File.separator + "test-files"+File.separator + "testExecutionEnvironment" + File.separator + "execTree.py");
+		
+		System.out.println(b);
+		
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 1500);
+		
+		
+		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
+		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
+		
+		options.cores = 2;
+		options.logAllCallStrings = true;
+		options.logAllProcessOutput = true;
+		options.concurrentExecution = true;
+		options.observerFrequency = 2000;
+		options.pgEnvKillCommand = (new File("")).getAbsolutePath() + File.separator + "test-files"+File.separator + "testExecutionEnvironment" + File.separator + "killenv.sh";
+		
+		tae = fact.getTargetAlgorithmEvaluator( options);	
+		
+		tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
+		
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(4);
+		double runtime = 50;
+		for(int i=0; i < 1; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			
+			config.put("runtime",String.valueOf(runtime));
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 20, config,execConfig);
+				runConfigs.add(rc);
+			}
+		}
+		
+		
+		
+		TargetAlgorithmEvaluatorRunObserver obs = new TargetAlgorithmEvaluatorRunObserver()
+		{
+
+			@Override
+			public void currentStatus(List<? extends KillableAlgorithmRun> runs) 
+			{
+				for(KillableAlgorithmRun run : runs)
+				{
+					System.out.println("Runtime: " + run.getRuntime() + " walltime: " + run.getWallclockExecutionTime());
+					
+					if(run.getRuntime() > 1)
+					{
+						run.kill();
+					}
+					
+					if(run.getWallclockExecutionTime() > 30)
+					{
+						System.err.println("This test has almost certainly failed and will never end");
+					}
+				}
+			}
+			
+		};
+		
+		
+		
+		tae.evaluateRun(runConfigs,obs);
+		
+		try {
+			
+			//This checks to see how many matching processes there are 
+			//It outputs a line from the wc command and we expect all zeros.
+			//If this test fails, then it may be because a previous run failed,
+			//so check that shell script for the exact line and maybe killall the other processes
+			Process proc = Runtime.getRuntime().exec((new File("")).getAbsolutePath() + File.separator + "test-files"+File.separator + "testExecutionEnvironment" + File.separator + "countenv.sh " + CommandLineAlgorithmRun.EXECUTION_UUID_ENVIRONMENT_VARIABLE_DEFAULT);
+			
+			BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
+			
+			String line = reader.readLine();
+			System.out.println(line);
+			assertTrue("Expected that there would be zero matching process", line.matches("^\\s*0\\s*$"));
+		} catch (IOException e) {
+
+			e.printStackTrace();
+			fail("Um what?");
+		}
+		
+		
+	}
+	
+	@Test
+	/**
+	 * Checks if a deadlock occurs with notifyShutdown()
+	 * 
+	 * See Issue #1949
+	 */
+	public void testDeadlockOnShutdownWithInterruption()
+	{
+		//Check that a submission of run 10 runs on a bound of <5 take 5,1,1,1,1, 5,1,1,1,1 takes 6 seconds and not 10.
+		final Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(TrueSleepyParamEchoExecutor.class.getCanonicalName());
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false,3000);
+		
+		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
+		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
+		
+		options.logAllCallStrings = true;
+		options.logAllProcessOutput = true;
+		options.concurrentExecution = true;
+		options.observerFrequency = 2000;
+		options.cores = 10;
+		
+		TargetAlgorithmEvaluator tae = fact.getTargetAlgorithmEvaluator( options);	
+		TargetAlgorithmEvaluator cliTAE = tae;
+		tae = new BoundedTargetAlgorithmEvaluator(tae,10);
+		
+		OutstandingEvaluationsWithAccessorTargetAlgorithmEvaluator aTAE = new OutstandingEvaluationsWithAccessorTargetAlgorithmEvaluator(tae);
+		
+		tae = aTAE;
+		List<RunConfig> runConfigs = new ArrayList<RunConfig>(100);
+		for(int i=0; i < 100; i++)
+		{
+			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			
+			config.put("runtime","2");
+			
+
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), config,execConfig);
+				runConfigs.add(rc);
+			}
+		}
+		
+		
+		
+		TargetAlgorithmEvaluatorRunObserver obs = new TargetAlgorithmEvaluatorRunObserver()
+		{
+
+			private boolean killedByDecorator = false;
+			@Override
+			public void currentStatus(List<? extends KillableAlgorithmRun> runs) 
+			{
+				
+				double sum = 0;
+			
+			
+				for(KillableAlgorithmRun run : runs)
+				{
+					if(run.getRunConfig().getProblemInstanceSeedPair().getSeed() % 100 % 11 != 0)
+					{
+						run.kill();
+					}
+					
+
+					if(run.getRunResult() == RunResult.KILLED && !killedByDecorator)
+					{
+						if(run.getAdditionalRunData().equals(BoundedTargetAlgorithmEvaluator.KILLED_BY_DECORATOR_ADDL_RUN_INFO))
+						{
+							System.err.println(run.getResultLine());
+							killedByDecorator = true;
+						}
+					}
+					
+				}
+				
+
+				
+			}
+			
+		};
+		
+		
+		tae.evaluateRunsAsync(runConfigs, new TargetAlgorithmEvaluatorCallback() {
+			
+			@Override
+			public void onSuccess(List<AlgorithmRun> runs) {
+				System.out.println("Completed: " + runs);
+				
+			}
+			
+			@Override
+			public void onFailure(RuntimeException e) {
+				e.printStackTrace();
+				
+			}
+		}, obs);
+		
+		try {
+			System.out.println("Outstanding: " + aTAE.getOutstandingRunConfigs());
+			
+			Thread.sleep(1000);
+			System.out.println("Outstanding: " + aTAE.getOutstandingRunConfigs());
+			
+		} catch (InterruptedException e1) {
+			Thread.currentThread().interrupt();
+			return;
+		}
+		
+		tae.notifyShutdown();
+		System.out.println("Outstanding: " + aTAE.getOutstandingRunConfigs());
+		
+		
+		
+		int killedCount = 0;
+	
+		
+		
+		//assertTrue("Expected time for Bounded to be less than 5 seconds", watch2.time() < 5000 );
+		
+	}
 	
 	
 	

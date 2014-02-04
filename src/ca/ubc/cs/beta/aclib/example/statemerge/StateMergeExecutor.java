@@ -112,7 +112,7 @@ public class StateMergeExecutor {
 			
 			
 			
-			MapList<Integer, AlgorithmRun> repairedRuns = repairProblemInstances(runsPerIteration, fixedPi);
+			MapList<Integer, AlgorithmRun> repairedRuns = repairProblemInstances(runsPerIteration, fixedPi,pis);
 			
 			
 			Random r = new MersenneTwister(smo.seed);
@@ -325,7 +325,9 @@ public class StateMergeExecutor {
 	 */
 	private static MapList<Integer, AlgorithmRun> repairProblemInstances(
 			MapList<Integer, AlgorithmRun> runsPerIteration,
-			Map<String, ProblemInstance> fixedPi) {
+			Map<String, ProblemInstance> fixedPi, List<ProblemInstance> pis) {
+		
+	
 		
 		MapList<Integer, AlgorithmRun> repairedRuns = new MapList<Integer, AlgorithmRun>(new HashMap<Integer, List<AlgorithmRun>>());
 		int instanceId = 1;
@@ -333,14 +335,14 @@ public class StateMergeExecutor {
 		ProblemInstance firstPi = null;
 		
 		
-		
+		Map<Integer, String> piIDMap = new HashMap<Integer, String>();
 		boolean idcollision = false;
 outerLoop:
 		for(Entry<Integer, List<AlgorithmRun>> runsForIt: runsPerIteration.entrySet())
 		{
 
-			int maxIDFound = -1;
-			Map<Integer, String> piIDMap = new HashMap<Integer, String>();
+			
+			
 			for(AlgorithmRun run : runsForIt.getValue())
 			{
 				ProblemInstance pi = run.getRunConfig().getProblemInstanceSeedPair().getInstance();
@@ -370,6 +372,19 @@ outerLoop:
 		if(!idcollision)
 		{
 			log.info("Problem IDs seem to come from one distribution, this state-merge file should be compatible with warm-starts.");
+			
+			
+			if(piIDMap.size() != pis.size())
+			{
+				for(ProblemInstance pi : pis)
+				{
+					if(!piIDMap.containsKey(pi.getInstanceID()))
+					{
+						fixedPi.put(pi.getInstanceName(), pi);
+					}
+				}
+			}
+		
 		}
 		
 		for(Entry<Integer,List<AlgorithmRun>> runsForIt : runsPerIteration.entrySet())

@@ -41,7 +41,7 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 	public boolean deterministic;
 
 	@Semantics(name="MAX_SUBRUN_CPUTIME", domain="OPT")
-	@Parameter(names={"--algo-cutoff-time","--cutoff-time","--cutoffTime","--cutoff_time"}, description="CPU time limit for an individual target algorithm run", required=true, validateWith=ZeroInfinityOpenInterval.class)
+	@Parameter(names={"--algo-cutoff-time","--target-run-cputime-limit","--target_run_cputime_limit","--cutoff-time","--cutoffTime","--cutoff_time"}, description="CPU time limit for an individual target algorithm run", required=true, validateWith=ZeroInfinityOpenInterval.class)
 	public double cutoffTime;
 	
 	@Semantics(name="MAX_SUBRUN_RUNLENGTH", domain="OPT")

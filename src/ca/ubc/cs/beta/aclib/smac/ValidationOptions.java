@@ -28,12 +28,12 @@ public class ValidationOptions extends AbstractOptions{
 	public double multFactor = 2;
 	
 	
-	@UsageTextField(level=OptionLevel.ADVANCED)
-	@Parameter(names={"--num-test-instances","--numTestInstances","--numberOfTestInstances"}, description = "number of instances to test against (will execute min of this, and number of instances in test instance file). To disable validation in SMAC see the --doValidation option", validateWith=FixedPositiveInteger.class)
+	@UsageTextField(level=OptionLevel.DEVELOPER)
+	@Parameter(names={"--num-test-instances","--numTestInstances","--numberOfTestInstances"}, description = "Deprecated/Broken: Check results carefully: number of instances to test against (will execute min of this, and number of instances in test instance file). To disable validation in SMAC see the --doValidation option", validateWith=FixedPositiveInteger.class)
 	public int numberOfTestInstances = Integer.MAX_VALUE;
 
-	@UsageTextField(level=OptionLevel.ADVANCED)
-	@Parameter(names={"--num-seeds-per-test-instance","--numSeedsPerTestInstance","--numberOfSeedsPerTestInstance"}, description="number of test seeds to use per instance during validation", validateWith=FixedPositiveInteger.class)
+	@UsageTextField(level=OptionLevel.DEVELOPER)
+	@Parameter(names={"--num-seeds-per-test-instance","--numSeedsPerTestInstance","--numberOfSeedsPerTestInstance"}, description="Deprecated/Broken: number of test seeds to use per instance during validation", validateWith=FixedPositiveInteger.class)
 	public int numberOfTestSeedsPerInstance = 1000;
 	
 	@UsageTextField(level=OptionLevel.INTERMEDIATE)

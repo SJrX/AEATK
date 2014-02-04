@@ -37,6 +37,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.safety.ResultOrd
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.safety.SATConsistencyTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.safety.TimingCheckerTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.safety.VerifySATTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.safety.WarnOnNoWallOrRuntimeTargetAlgorithmEvaluatorDecorator;
 
 
 public class TargetAlgorithmEvaluatorBuilder {
@@ -210,6 +211,13 @@ public class TargetAlgorithmEvaluatorBuilder {
 			log.debug("[TAE] Checking that TAE honours the ordering requirement of runs");
 			tae = new ResultOrderCorrectCheckerTargetAlgorithmEvaluatorDecorator(tae);
 		}
+		
+		if(options.observeWalltimeIfNoRuntime)
+		{
+			log.info("[TAE] Using walltime as observer runtime if no runtime is reported, scale {} , delay {} (secs)", options.observeWalltimeScale, options.observeWalltimeDelay);
+			tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae, options.observeWalltimeScale, options.observeWalltimeDelay);
+		}
+		
 		//==== Run Hash Code Verification should generally be one of the last
 		// things we add since it is very sensitive to the actual runs being run. (i.e. a retried run or a change in the run may change a hashCode in a way the logs don't reveal
 		if(hashVerifiersAllowed)
@@ -232,10 +240,21 @@ public class TargetAlgorithmEvaluatorBuilder {
 			} else
 			{
 				log.info("[TAE] Algorithm Execution will NOT verify run Hash Codes");
-				tae = new RunHashCodeVerifyingAlgorithmEvalutor(tae);
+				//tae = new RunHashCodeVerifyingAlgorithmEvalutor(tae);
 			}
 
 		}
+		
+		/***
+		 * !!!DO NOT ADD ANY DECORATORS THAT CAN CHANGE OR ALTER OBSERVED BEHAIVORS AFTER THIS POINT!!!
+		 * !!!DO NOT ADD ANY DECORATORS THAT CAN CHANGE OR ALTER OBSERVED BEHAIVORS AFTER THIS POINT!!!
+		 * !!!DO NOT ADD ANY DECORATORS THAT CAN CHANGE OR ALTER OBSERVED BEHAIVORS AFTER THIS POINT!!!
+		 * 
+		 * See for instance Issue #1945, #1944
+		 * 
+		 * It can mess up log messages and confuse users...
+		 * 
+		 */
 		
 		//==== Doesn't change anything and so is safe after the RunHashCode
 		tae = new TimingCheckerTargetAlgorithmEvaluator( tae);		
@@ -254,14 +273,6 @@ public class TargetAlgorithmEvaluatorBuilder {
 			log.info("[TAE] Waiting / Monitoring outstanding target algorithm evaluations will not be supported");
 		}
 		
-		//==== Doesn't change anything and so is safe after RunHashCode
-		if(options.logRequestResponses)
-		{
-			log.info("[TAE] Logging every request and response");
-			tae = new LogEveryTargetAlgorithmEvaluatorDecorator(tae,options.logRequestResponsesRCOnly);
-		}
-		
-		
 		if(options.checkRunConfigsUnique)
 		{
 			log.info("[TAE] Checking that every request in a batch is unique");
@@ -269,12 +280,6 @@ public class TargetAlgorithmEvaluatorBuilder {
 		} else
 		{
 			log.warn("[TAE] Not Checking that every request to the TAE is unique, this may cause weird errors");
-		}
-		
-		if(options.observeWalltimeIfNoRuntime)
-		{
-			log.info("[TAE] Using walltime as observer runtime if no runtime is reported, scale {} , delay {} (secs)", options.observeWalltimeScale, options.observeWalltimeDelay);
-			tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae, options.observeWalltimeScale, options.observeWalltimeDelay);
 		}
 		
 		if(options.killCaptimeExceedingRun)
@@ -289,6 +294,12 @@ public class TargetAlgorithmEvaluatorBuilder {
 			tae = new TerminateAllRunsOnFileDeleteTargetAlgorithmEvaluatorDecorator(tae, new File(options.fileToWatch));
 		}
 		
+		if(options.warnIfNoResponseFromTAE > 0)
+		{
+			log.debug("[TAE] Warning if no response after {} seconds", options.warnIfNoResponseFromTAE);
+			tae = new WarnOnNoWallOrRuntimeTargetAlgorithmEvaluatorDecorator(tae, options.warnIfNoResponseFromTAE);
+		}
+		
 		if(options.synchronousObserver)
 		{
 			log.info("[TAE] Synchronizing notifications to the observer");
@@ -296,6 +307,14 @@ public class TargetAlgorithmEvaluatorBuilder {
 		{
 			log.debug("[TAE] Skipping synchronization of observers, this may cause weird threading issues");
 		}
+		
+		//==== Doesn't change anything and so is safe after RunHashCode
+		if(options.logRequestResponses)
+		{
+					log.info("[TAE] Logging every request and response");
+					tae = new LogEveryTargetAlgorithmEvaluatorDecorator(tae,options.logRequestResponsesRCOnly);
+		}
+		
 		log.debug("Final Target Algorithm Built is {}", tae);
 		return tae;
 	}

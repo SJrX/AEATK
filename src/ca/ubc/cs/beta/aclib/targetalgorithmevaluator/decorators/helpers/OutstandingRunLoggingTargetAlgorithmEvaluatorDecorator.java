@@ -76,7 +76,7 @@ public class OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator extends Abst
 		};
 		
 		try {
-		return processRuns(tae.evaluateRun(processRunConfigs(runConfigs), wrappedObs));
+			return processRuns(tae.evaluateRun(processRunConfigs(runConfigs), wrappedObs));
 		} finally
 		{
 			endBatchTime.put(runConfigs, Math.max(0,(bucketTime(System.currentTimeMillis()) - ZERO_TIME) / 1000.0));
@@ -137,10 +137,9 @@ public class OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator extends Abst
 	}
 	
 	@SuppressWarnings("unchecked")
-	public void notifyShutdown()
+	public void postDecorateeNotifyShutdown()
 	{
-		tae.notifyShutdown();
-		
+			
 		log.debug("Processing detailed run statistics to {} ", this.resultFile);
 		
 		
@@ -264,30 +263,31 @@ public class OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator extends Abst
 		
 		if(run.isRunCompleted())
 		{
-			synchronized(run.getRunConfig())
+			RunConfig rc = run.getRunConfig();
+			synchronized(rc)
 			{
-				if(endTime.get(run.getRunConfig()) == null)
+				if(endTime.get(rc) == null)
 				{
 					double endTimeX = (bucketTime(System.currentTimeMillis()) - ZERO_TIME) / 1000.0;
-					endTime.put(run.getRunConfig(), Math.max(0,endTimeX));
+					endTime.put(rc, Math.max(0,endTimeX));
 				} else
 				{
 					//Return early because the other maps should be populated.
 					return run;
 				}
 				
-				if(startWalltime.get(run.getRunConfig()) == null)
+				if(startWalltime.get(rc) == null)
 				{
 					double startTimeX = ( bucketTime(System.currentTimeMillis() -  (long) (run.getWallclockExecutionTime()*1000) ) - ZERO_TIME) / 1000.0;
 					
-					startWalltime.put(run.getRunConfig(), Math.max(0,startTimeX));
+					startWalltime.put(rc, Math.max(0,startTimeX));
 				}
 				
-				if(startCPUtime.get(run.getRunConfig()) == null)
+				if(startCPUtime.get(rc) == null)
 				{
 					double startCPUTimeX = ( bucketTime(System.currentTimeMillis() - (long) ( run.getRuntime() * 1000 ) )  - ZERO_TIME) / 1000.0;
 					
-					startCPUtime.put(run.getRunConfig(), Math.max(0,startCPUTimeX));
+					startCPUtime.put(rc, Math.max(0,startCPUTimeX));
 				}
 				
 					

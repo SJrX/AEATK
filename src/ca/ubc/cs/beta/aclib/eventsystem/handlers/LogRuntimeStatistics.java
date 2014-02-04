@@ -1,6 +1,8 @@
 package ca.ubc.cs.beta.aclib.eventsystem.handlers;
 
+import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -68,7 +70,17 @@ public class LogRuntimeStatistics implements EventHandler<AutomaticConfiguratorE
 	private final AtomicInteger challengesEnded = new AtomicInteger(0);
 	
 	private final boolean showChallenges;
-	public LogRuntimeStatistics(ThreadSafeRunHistory rh, TerminationCondition termCond, double cutoffTime, TargetAlgorithmEvaluator tae, boolean showChallenges)
+	
+	private final CPUTime cpuTime;
+	
+	//== The logOnEvents argument to the constructor is annoying to get right for clients 
+	//as most ways of automatically creating Collections, such as Arrays.asList() won't infer the correct type and result in annoying syntax.
+	//It doesn't matter since we only call contains on this anyway.
+	@SuppressWarnings("rawtypes")
+	private final Set<Class> logOnEvents;
+	
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public LogRuntimeStatistics(ThreadSafeRunHistory rh, TerminationCondition termCond, double cutoffTime, TargetAlgorithmEvaluator tae, boolean showChallenges, CPUTime cpuTime, Collection<?> logOnEvents)
 	{
 		this.runHistory = rh;
 		this.termCond = termCond;
@@ -77,11 +89,13 @@ public class LogRuntimeStatistics implements EventHandler<AutomaticConfiguratorE
 		lastString.set("No Runtime Statistics Logged");
 		this.tae = tae;
 		this.showChallenges = showChallenges;
+		this.cpuTime = cpuTime;
 		
-		
+		this.logOnEvents = new HashSet(logOnEvents);
 	}
 	
-	public LogRuntimeStatistics(ThreadSafeRunHistory rh, TerminationCondition termCond, double cutoffTime , long msToWait, TargetAlgorithmEvaluator tae, boolean showChallenges)
+	@SuppressWarnings({ "rawtypes", "unchecked" })
+	public LogRuntimeStatistics(ThreadSafeRunHistory rh, TerminationCondition termCond, double cutoffTime , long msToWait, TargetAlgorithmEvaluator tae, boolean showChallenges,CPUTime cpuTime, Collection<?> logOnEvents)
 	{
 		this.runHistory = rh;
 		this.termCond = termCond;
@@ -91,7 +105,9 @@ public class LogRuntimeStatistics implements EventHandler<AutomaticConfiguratorE
 		
 		this.tae = tae;
 		this.showChallenges = showChallenges;
+		this.cpuTime = cpuTime;
 		
+		this.logOnEvents = new HashSet(logOnEvents);
 	}
 
 	
@@ -109,7 +125,6 @@ public class LogRuntimeStatistics implements EventHandler<AutomaticConfiguratorE
 				lastICE.set(ice);
 				
 			}
-			return;
 		} else if( event instanceof AlgorithmRunCompletedEvent )
 		{
 			this.sumOfWallclockTime += ((AlgorithmRunCompletedEvent) event).getRun().getWallclockExecutionTime();
@@ -130,7 +145,9 @@ public class LogRuntimeStatistics implements EventHandler<AutomaticConfiguratorE
 		} else if(event instanceof ChallengeEndEvent)
 		{
 			this.challengesEnded.incrementAndGet();
-		}else
+		}
+		
+		if(logOnEvents.contains(event.getClass()))
 		{
 			try {
 				runHistory.readLock();
@@ -158,8 +175,8 @@ public class LogRuntimeStatistics implements EventHandler<AutomaticConfiguratorE
 						termCond.getTunerTime(),
 						"N/A", //options.scenarioConfig.tunerTimeout - tunerTime,
 						runHistory.getTotalRunCost(),
-						CPUTime.getCPUTime(),
-						CPUTime.getUserTime() ,
+						cpuTime.getCPUTime(),
+						cpuTime.getUserTime() ,
 						this.sumOfRuntime,
 						this.sumOfWallclockTime,
 						Runtime.getRuntime().maxMemory() / 1024.0 / 1024,
@@ -204,7 +221,7 @@ public class LogRuntimeStatistics implements EventHandler<AutomaticConfiguratorE
 						"\n CPU time of Configurator: "+arr[13]+" s" +
 						"\n User time of Configurator: "+arr[14]+" s" +
 						"\n Outstanding Runs on Target Algorithm Evaluator: " + tae.getNumberOfOutstandingRuns() +
-						"\n Outstanding Requests on TargetAlgorithmEvaluator: " + tae.getNumberOfOutstandingBatches() +  
+						"\n Outstanding Requests on Target Algorithm Evaluator: " + tae.getNumberOfOutstandingBatches() +  
 						"\n Total Reported Algorithm Runtime: " + arr[15] + " s" + 
 						"\n Sum of Measured Wallclock Runtime: " + arr[16] + " s" +
 						"\n Max Memory: "+arr[17]+" MB" +
@@ -230,7 +247,7 @@ public class LogRuntimeStatistics implements EventHandler<AutomaticConfiguratorE
 			}
 			
 			
-		}
+		} 
 		
 		
 	}

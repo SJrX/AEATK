@@ -58,9 +58,8 @@ public class OutstandingEvaluationsWithAccessorTargetAlgorithmEvaluator extends	
 	}
 	
 	@Override
-	public void notifyShutdown()
+	protected void postDecorateeNotifyShutdown()
 	{
-		super.notifyShutdown();
 		this.outstandingRuns.clear();
 	}
 }

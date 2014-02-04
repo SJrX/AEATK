@@ -178,4 +178,9 @@ public class TransformTargetAlgorithmEvaluatorDecorator extends AbstractForEachR
 		}
 	}
 	
+	
+	@Override
+	protected void postDecorateeNotifyShutdown() {
+		//No cleanup necessary
+	}
 }

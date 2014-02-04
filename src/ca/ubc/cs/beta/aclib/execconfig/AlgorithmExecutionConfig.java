@@ -55,7 +55,7 @@ public class AlgorithmExecutionConfig implements Serializable {
 		
 		if(cutoffTime == 0)
 		{
-			log.warn("Cutoff time is greater than zero");
+			log.warn("Cutoff time should be greater than zero");
 		}
 		this.cutoffTime = cutoffTime;
 		

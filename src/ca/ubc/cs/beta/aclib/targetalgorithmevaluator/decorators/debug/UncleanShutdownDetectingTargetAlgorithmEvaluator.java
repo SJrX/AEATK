@@ -108,9 +108,14 @@ public class UncleanShutdownDetectingTargetAlgorithmEvaluator extends
 	}
 
 	@Override
-	public void notifyShutdown()
+	public void postDecorateeNotifyShutdown()
+	{
+		//NOOP
+	}
+	
+	@Override
+	public void preDecorateeNotifyShutdown()
 	{
 		notifyShutdownInvoked.incrementAndGet();
-		tae.notifyShutdown();
 	}
 }

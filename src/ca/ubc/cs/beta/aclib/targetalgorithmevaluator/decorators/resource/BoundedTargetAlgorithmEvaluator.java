@@ -21,9 +21,12 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aclib.algorithmrun.ExistingAlgorithmRun;
+import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aclib.algorithmrun.RunningAlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillHandler;
 import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableAlgorithmRun;
+import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableWrappedAlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.kill.StatusVariableKillHandler;
 import ca.ubc.cs.beta.aclib.concurrent.FairMultiPermitSemaphore;
 import ca.ubc.cs.beta.aclib.concurrent.threadfactory.SequentiallyNamedThreadFactory;
@@ -40,7 +43,11 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.exceptions.TargetAlgorithmE
  * Ensures that a Target Algorithm Evaluator gets no more than a certain number of runs issued simultaneously.
  * <p>
  * <b>Implementation Details:</b> This class is particularly tricky with regards to it's synchronization.
- * Effectively we hand the wrapped TargetAlgorithmEvaluator slices of the List<RunConfig> we want evaluated, and change the handlers and the observer to update objects here.
+ * Effectively we hand the wrapped TargetAlgorithmEvaluator slices of the List&gt;RunConfig&lt; we want evaluated, along with new observers and callbacks. 
+ * The observers and callbacks update a shared global data structure and then asynchronously invoke another Runnable to update the clients.
+ * 
+ * Care must be taken to ensure that we don't notify the client with out of order data. We also don't use the same callback thread to notify the client
+ * because it can create deadlocks (if the callback causes more runs to submit, it can get trapped here).
  * <p>
  * In the case of updating the observer, we update the shared data structure of ALL the runs and then notify the client's observer.
  * <p>
@@ -73,7 +80,10 @@ public class BoundedTargetAlgorithmEvaluator extends
 	
 	private final int NUMBER_OF_CONCURRENT_RUNS;
 
-	public BoundedTargetAlgorithmEvaluator(TargetAlgorithmEvaluator tae, int numberOfConcurrentRuns) {
+	public static final String KILLED_BY_DECORATOR_ADDL_RUN_INFO = "Kill intercepted by decorator before dispatch to TAE";
+
+	public BoundedTargetAlgorithmEvaluator(TargetAlgorithmEvaluator tae, int numberOfConcurrentRuns) 
+	{
 		super(tae);
 		if(numberOfConcurrentRuns <= 0) throw new IllegalArgumentException("Must be able to schedule at least one run");
 		this.availableRuns = new FairMultiPermitSemaphore(numberOfConcurrentRuns);
@@ -159,13 +169,63 @@ public class BoundedTargetAlgorithmEvaluator extends
 					Thread.currentThread().interrupt();
 					return;
 				}
-				final int numRunConfigToRun = oNumRunConfigToRun;
+				int numRunConfigToRun = oNumRunConfigToRun;
 	
+				log.debug("Asked for permission to run {} things, got permission to run {} things, total completed for this batch {}  config id of first: ({})" , runConfigs.size()-numberOfDispatchedRuns, numRunConfigToRun,numberOfDispatchedRuns, runConfigs.get(0).getParamConfiguration().getFriendlyIDHex() );
 				
-				Object[] logMsg = {runConfigs.size()-numberOfDispatchedRuns, numRunConfigToRun,numberOfDispatchedRuns, runConfigs.get(0).getParamConfiguration().getFriendlyIDHex()};
-				log.debug("Asked for permission to run {} things, got permission to run {} things, total completed for this batch {}  config id of first: ({})" , logMsg );
+				List<RunConfig> runsToDo = new ArrayList<RunConfig>(numRunConfigToRun);
 				
-				List<RunConfig> subList = runConfigs.subList(numberOfDispatchedRuns, numberOfDispatchedRuns+numRunConfigToRun);
+				
+				int killInterceptedCount = 0;
+				
+				//==== We need to get numRunConfigToRun runs to do
+				//=== We will skip runs that have been killed as it can be incredibly slow for the TAE to actually check this when we serialize these to the TAE.
+				int numberOfRunToSelect=0; 
+				while(runsToDo.size() < numRunConfigToRun)
+				{
+					int index =  numberOfDispatchedRuns + numberOfRunToSelect +  killInterceptedCount;
+					
+					if(index >= runConfigs.size())
+					{
+						break;
+					}
+					
+					RunConfig possibleRC = runConfigs.get(index);
+
+					//CAUTION: We actually don't do this check for the last run, the reason being that if we kill everything at this point, we have to manually interact with the callbacks, and observers
+					//But by always submitting the last run to the TAE and then waiting for the slower killing mechanism, we can get almost all of the speed up for free
+					if( index < (runConfigs.size() - 1))
+					{
+						if(killHandlers.get(possibleRC).isKilled())
+						{
+							log.debug("Run {} was killed already not dispatching, marking killed", possibleRC);
+							killInterceptedCount++;
+						
+							AlgorithmRun completedRun = new ExistingAlgorithmRun(possibleRC,RunResult.KILLED, 0,0,0,possibleRC.getProblemInstanceSeedPair().getSeed(),KILLED_BY_DECORATOR_ADDL_RUN_INFO,0);
+							outstandingRuns.put(possibleRC, new KillableWrappedAlgorithmRun(completedRun));
+							completedRuns.add(completedRun);
+							
+							continue;
+						}
+					} 
+					
+					runsToDo.add(possibleRC);
+					
+					numberOfRunToSelect++;
+				}
+
+				numRunConfigToRun = runsToDo.size();
+				
+				if(oNumRunConfigToRun != numRunConfigToRun)
+				{
+					log.debug("Runs have been killed preemptively total {} permits immediately available are {}", oNumRunConfigToRun - numRunConfigToRun, this.availableRuns.availablePermits());
+					this.availableRuns.releasePermits(oNumRunConfigToRun - numRunConfigToRun);
+				}
+				
+				if(runsToDo.size() == 0)
+				{
+					throw new IllegalStateException("Runs to do size is now zero, this is a bug and this state is irrecoverable, sorry.");
+				}
 				
 				final AtomicInteger completedCount = new AtomicInteger(0);
 				final AtomicInteger releaseCount = new AtomicInteger(0);
@@ -173,9 +233,13 @@ public class BoundedTargetAlgorithmEvaluator extends
 				TargetAlgorithmEvaluatorCallback callBack = new SubListTargetAlgorithmEvaluatorCallback(availableRuns, numRunConfigToRun, runConfigs, handler, failureOccured, totalRunsNeeded, completedRuns, orderOfRuns, completionCallbackFired, execService, completedCount, releaseCount);
 				TargetAlgorithmEvaluatorRunObserver updateMapObserver = new BoundedTargetAlgorithmEvaluatorMapUpdateObserver(availableRuns, numRunConfigToRun, runConfigs, obs, outstandingRuns, orderOfRuns, killHandlers, completionCallbackFired,execService, completedCount, releaseCount, lastUpdate);
 				
-				tae.evaluateRunsAsync(subList, callBack, updateMapObserver);
+				tae.evaluateRunsAsync(runsToDo, callBack, updateMapObserver);
 			
 				numberOfDispatchedRuns+=numRunConfigToRun;
+				numberOfDispatchedRuns+=killInterceptedCount;
+				
+				
+				
 			}
 		} finally {
 			enqueueLock.unlock();
@@ -211,10 +275,9 @@ public class BoundedTargetAlgorithmEvaluator extends
 	}
 	
 	@Override
-	public void notifyShutdown()
+	protected void postDecorateeNotifyShutdown()
 	{
 		this.execService.shutdown();
-		tae.notifyShutdown();
 		
 		try {
 			this.execService.awaitTermination(365, TimeUnit.DAYS);
@@ -413,7 +476,7 @@ public class BoundedTargetAlgorithmEvaluator extends
 	static class SubListTargetAlgorithmEvaluatorCallback implements TargetAlgorithmEvaluatorCallback
 	{
 		
-		private final FairMultiPermitSemaphore availableRuns;
+		private final FairMultiPermitSemaphore availableRunsSemaphore;
 		private final int numRunConfigToRun;
 		private final List<RunConfig> runConfigs;
 		private final TargetAlgorithmEvaluatorCallback calleeCallback;
@@ -424,13 +487,13 @@ public class BoundedTargetAlgorithmEvaluator extends
 		private final AtomicBoolean completionCallbackFired;
 		private final ExecutorService execService;
 		private final AtomicInteger completedCount;
-		private final AtomicInteger releaseCount;
+		private final AtomicInteger runPermitsReleased;
 		
 		
 
-		public SubListTargetAlgorithmEvaluatorCallback(FairMultiPermitSemaphore availableRuns, int numRunConfigToRun, List<RunConfig> runConfigs, TargetAlgorithmEvaluatorCallback calleeCallback, AtomicBoolean failureOccured, int totalRunsNeeded, Set<AlgorithmRun> completedRuns, Map<RunConfig, Integer> orderOfRuns, AtomicBoolean onSuccessFired, ExecutorService execService, AtomicInteger completedCount, AtomicInteger releaseCount)
+		public SubListTargetAlgorithmEvaluatorCallback(FairMultiPermitSemaphore availableRunsSemaphore, int numRunConfigToRun, List<RunConfig> runConfigs, TargetAlgorithmEvaluatorCallback calleeCallback, AtomicBoolean failureOccured, int totalRunsNeeded, Set<AlgorithmRun> completedRuns, Map<RunConfig, Integer> orderOfRuns, AtomicBoolean onSuccessFired, ExecutorService execService, AtomicInteger completedCount, AtomicInteger releaseCount)
 		{
-			this.availableRuns = availableRuns;
+			this.availableRunsSemaphore = availableRunsSemaphore;
 			this.numRunConfigToRun = numRunConfigToRun;
 			this.runConfigs = runConfigs;
 			this.calleeCallback = calleeCallback;
@@ -441,7 +504,7 @@ public class BoundedTargetAlgorithmEvaluator extends
 			this.completionCallbackFired = onSuccessFired;
 			this.execService = execService;
 			this.completedCount = completedCount;
-			this.releaseCount = releaseCount;
+			this.runPermitsReleased = releaseCount;
 			
 			
 		}
@@ -458,15 +521,15 @@ public class BoundedTargetAlgorithmEvaluator extends
 				
 				completedCount.set(completedSize);
 				
-				int releasesNeeded = completedCount.get() - releaseCount.get();
+				int releasesNeeded = completedCount.get() - runPermitsReleased.get();
 				
 				if(releasesNeeded < 0)
 				{
-					throw new IllegalStateException("Somehow I have gotten to a state where I need to take back some releases completed:" + completedCount.get() + " releaseCount: " + releaseCount.get());
+					throw new IllegalStateException("Somehow I have gotten to a state where I need to take back some releases completed:" + completedCount.get() + " releaseCount: " + runPermitsReleased.get());
 				}
 				
-				this.releaseCount.addAndGet(releasesNeeded);
-				this.availableRuns.releasePermits(releasesNeeded);
+				this.runPermitsReleased.addAndGet(releasesNeeded);
+				this.availableRunsSemaphore.releasePermits(releasesNeeded);
 			}
 		}
 		
@@ -484,7 +547,7 @@ public class BoundedTargetAlgorithmEvaluator extends
 				if(failureOccured.get())
 				{
 					this.completionCallbackFired.set(true);
-					log.debug("Failure occured, silently discarding runs");
+					log.debug("Failure occured, silently discarding runs: {}", runs);
 					return;
 				} 
 					

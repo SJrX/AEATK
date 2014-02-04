@@ -29,7 +29,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli.CommandLineTargetA
 
 /**
  * Used to Actually Run the Target Algorithm
- * @author sjr
+ * @author Steve Ramage <seramage@cs.ubc.ca>
  */
 abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 
@@ -46,10 +46,10 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 	private static final Logger log = LoggerFactory.getLogger(AbstractAlgorithmRunner.class); 
 	
 	//Set to true if we should terminate the observers
-	private final AtomicBoolean shutdownThreads = new AtomicBoolean(false);
+	private final AtomicBoolean shutdownRunnerRequested = new AtomicBoolean(false);
 	
-	private final Semaphore shutdownComplete = new Semaphore(0);
-	private final Semaphore changes = new Semaphore(0);
+	private final Semaphore shutdownRunnerCompleted = new Semaphore(0);
+	private final Semaphore updatedRunMapSemaphore = new Semaphore(0);
 	
 	/**
 	 * Standard Constructor
@@ -69,30 +69,50 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 		this.runConfigs = runConfigs;
 		List<AlgorithmRun> runs = new ArrayList<AlgorithmRun>(runConfigs.size());
 		
-		final ConcurrentHashMap<RunConfig,KillableAlgorithmRun> runStatus = new ConcurrentHashMap<RunConfig,KillableAlgorithmRun>(runConfigs.size());
-		final ConcurrentHashMap<RunConfig, Integer> listIndex = new ConcurrentHashMap<RunConfig,Integer>(runConfigs.size());
+		//maps the run configs to the most recent update we have
+		final ConcurrentHashMap<RunConfig,KillableAlgorithmRun> runConfigToLatestUpdatedRunMap = new ConcurrentHashMap<RunConfig,KillableAlgorithmRun>(runConfigs.size());
 		
-		final Semaphore changeProcess = new Semaphore(0);
+		//Maps runconfigs to the index in the supplied list
+		final ConcurrentHashMap<RunConfig, Integer> runConfigToPositionInListMap = new ConcurrentHashMap<RunConfig,Integer>(runConfigs.size());
+		
 		int i=0; 
+		
+		
+		//Initializes data structures for observation
 		for(final RunConfig rc: runConfigs)
 		{
 			KillHandler killH = new StatusVariableKillHandler();
-			listIndex.put(rc, i);
 			
-			runStatus.put(rc, new RunningAlgorithmRun( rc, 0,0,0,  rc.getProblemInstanceSeedPair().getSeed(), 0, killH));
+
+			runConfigToPositionInListMap.put(rc, i);
+			runConfigToLatestUpdatedRunMap.put(rc, new RunningAlgorithmRun( rc, 0,0,0, rc.getProblemInstanceSeedPair().getSeed(), 0, killH));
 			
 			TargetAlgorithmEvaluatorRunObserver individualRunObserver = new TargetAlgorithmEvaluatorRunObserver()
 			{
 				@Override
 				public void currentStatus(List<? extends KillableAlgorithmRun> runs) {
-					if(runStatus.get(runs.get(0).getRunConfig()).isRunCompleted() && !runs.get(0).isRunCompleted())
+					
+					/**
+					 * If the map already contains something for our runConfig that is completed, but
+					 * we are not completed then there is some bug or other race condition.
+					 * 
+					 * TAEs should not notify us of an incompleted run after it has been marked completed..
+					 */
+					if(runConfigToLatestUpdatedRunMap.get(runs.get(0).getRunConfig()).isRunCompleted() && !runs.get(0).isRunCompleted())
 					{
 						StringBuilder sb = new StringBuilder("Current Run Status being notified: " + runs.get(0).getRunConfig());
-						sb.append("\n Current status in table").append(runStatus.get(runs.get(0).getRunConfig()).getRunConfig());
-						throw new IllegalStateException("RACE CONDITION: " + sb.toString());
+						sb.append("\n Current status in table").append(runConfigToLatestUpdatedRunMap.get(runs.get(0).getRunConfig()).getRunConfig());
+						IllegalStateException e = new IllegalStateException("RACE CONDITION: " + sb.toString());
+						
+						//We are logging this here because this may cause a dead lock somewhere else ( since the runs will never finish ), and the exception never handled.
+						log.error("Some kind of race condition has occurred", e);
+						e.printStackTrace();
+						throw e;
 					}
-					runStatus.put(runs.get(0).getRunConfig(), runs.get(0));
-					changes.release();
+					
+					runConfigToLatestUpdatedRunMap.put(runs.get(0).getRunConfig(), runs.get(0));
+					
+					updatedRunMapSemaphore.release();
 				}
 			};
 
@@ -112,70 +132,70 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 			@Override
 			public void run() {
 				
-				while(true)
-				{
-					
-					try {
-						
-						changes.acquire();
-						
-						changes.drainPermits();
-						
-						if(shutdownThreads.get())
-						{
-							//System.err.println("Would have deadlocked");
-							shutdownComplete.release();
-							break;
-						}
-						
-						KillableAlgorithmRun[] runs = new KillableAlgorithmRun[runConfigs.size()];
-						//We will quit if all runs are done
-						boolean outstandingRuns = false;
-						
-						for(Entry<RunConfig,KillableAlgorithmRun> entries : runStatus.entrySet())
-						{
-							KillableAlgorithmRun run = entries.getValue();
-							if(run.getRunResult().equals(RunResult.RUNNING))
-							{
-								outstandingRuns = true;
-							}
-							runs[listIndex.get(entries.getKey())]=run;
-						}
-						
-
-						try {
-							List<KillableAlgorithmRun> runList = Arrays.asList(runs);
-							if(obs != null)
-							{
-								obs.currentStatus(runList);
-							}
-						} catch(RuntimeException e)
-						{
-							log.error("Error occured while notifying observer ", e);
-							throw e;
-						}
-						
-						if(!outstandingRuns)
-						{
-							shutdownComplete.release();
-							break;
-						}
-						//Thread.sleep(100);
-						changeProcess.release(runs.length);
-						
-						if(execService.isShutdown()) 
-						{
-							shutdownComplete.release();
-							break;
-						}
-					} catch (InterruptedException e) 
+				try {
+					while(true)
 					{
-						Thread.currentThread().interrupt();
+						try {
+							
+							
+							//This will release either because some run updated
+							//or because we are done
+							updatedRunMapSemaphore.acquire();
+							
+							updatedRunMapSemaphore.drainPermits();
+							
+							if(shutdownRunnerRequested.get())
+							{
+								break;
+							}
+							
+							KillableAlgorithmRun[] runs = new KillableAlgorithmRun[runConfigs.size()];
+							
+							//We will quit if all runs are done
+							boolean outstandingRuns = false;
+							
+							for(Entry<RunConfig,KillableAlgorithmRun> entries : runConfigToLatestUpdatedRunMap.entrySet())
+							{
+								KillableAlgorithmRun run = entries.getValue();
+								if(run.getRunResult().equals(RunResult.RUNNING))
+								{
+									outstandingRuns = true;
+								}
+								runs[runConfigToPositionInListMap.get(entries.getKey())]=run;
+							}
+							
+	
+							try {
+								List<KillableAlgorithmRun> runList = Arrays.asList(runs);
+								if(obs != null)
+								{
+									obs.currentStatus(runList);
+								}
+							} catch(RuntimeException e)
+							{
+								log.error("Error occured while notifying observer ", e);
+								throw e;
+							}
+							
+							if(!outstandingRuns)
+							{
+								
+								break;
+							}
+							
+							if(execService.isShutdown()) 
+							{
+								break;
+							}
+						} catch (InterruptedException e) 
+						{
+							Thread.currentThread().interrupt();
+						}
 					}
-					
+				} finally
+				{
+					shutdownRunnerCompleted.release();
 				}
-				
-			
 			}
 			
 		};
@@ -194,11 +214,11 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 		this.execService.shutdown();
 		try {
 			//Want to force that the observer is done
-			shutdownThreads.set(true);
-			changes.release();
+			shutdownRunnerRequested.set(true);
+			updatedRunMapSemaphore.release();
 			
 			//Wait for it to finish 
-			shutdownComplete.acquire();
+			shutdownRunnerCompleted.acquire();
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
 		}
