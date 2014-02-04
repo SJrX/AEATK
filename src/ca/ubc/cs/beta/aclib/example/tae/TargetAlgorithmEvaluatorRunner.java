@@ -108,12 +108,27 @@ public class TargetAlgorithmEvaluatorRunner
 				ProblemInstance pi;
 				if(mainOptions.instanceName == null)
 				{
+					
 					List<ProblemInstance> instances = mainOptions.getTrainingAndTestProblemInstances().getTrainingInstances().getInstances();
 					if(instances == null || instances.size() == 0)
 					{
 						throw new ParameterException("No instances available, please specify one manually via --instance argument");
 					}
-					pi = instances.get(0);
+					
+					switch(mainOptions.instanceSelection)
+					{
+						case RANDOM:
+							Random r = new MersenneTwister();
+							pi = instances.get(r.nextInt(instances.size()));
+							break;
+						case FIRST:
+							pi = instances.get(0);
+							break;
+						default:
+							//Should always handle the default case and throw an exception if unsure
+							throw new IllegalArgumentException("Unknown value for option : " + mainOptions.instanceSelection);
+					}
+					
 				} else
 				{
 					pi = new ProblemInstance(mainOptions.instanceName);

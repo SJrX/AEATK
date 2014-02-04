@@ -65,7 +65,18 @@ public class TargetAlgorithmEvaluatorRunnerOptions extends AbstractOptions {
 	@Parameter(names="--instance", description="Instance name to test", required=false)
 	public String instanceName = null; 
 	
+	enum InstanceSelection
+	{
+		FIRST,
+		RANDOM
+	}
 
+	/**
+	 * Controls how we select the instance from the instance list
+	 */
+	@Parameter(names="--instance-selection", description="Determines how we select instances from the instance file")
+	public InstanceSelection instanceSelection = InstanceSelection.RANDOM;
+	
 	/**
 	 * This parameter has a validator that enforces certain values
 	 */
