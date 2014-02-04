@@ -2405,12 +2405,11 @@ public class TAETestSet {
 	
 	@Test
 	/**
-	 * Schedules 1,000 runs against the TAE and very quick kills them it then measures how long it takes to submit.
+	 * Schedules 100 runs against the TAE and very quick kills them it then measures how long it takes to submit.
 	 * 
 	 */
 	public void testBoundedTargetAlgorithmEvaluatorKillingSpeed()
 	{
-		//Check that a submission of run 10 runs on a bound of <5 take 5,1,1,1,1, 5,1,1,1,1 takes 6 seconds and not 10.
 		final Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		StringBuilder b = new StringBuilder();
 		b.append("java -cp ");
@@ -2425,14 +2424,14 @@ public class TAETestSet {
 		options.logAllCallStrings = true;
 		options.logAllProcessOutput = true;
 		options.concurrentExecution = true;
-		options.observerFrequency = 2000;
-		options.cores = 10;
+		options.observerFrequency = 100;
+		options.cores = 2;
 		
 		TargetAlgorithmEvaluator tae = fact.getTargetAlgorithmEvaluator(execConfig, options);	
 		TargetAlgorithmEvaluator cliTAE = tae;
 		tae = new BoundedTargetAlgorithmEvaluator(tae,10,execConfig);
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(100);
-		for(int i=0; i < 100; i++)
+		for(int i=0; i < 20; i++)
 		{
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			
@@ -2466,7 +2465,7 @@ public class TAETestSet {
 			
 				for(KillableAlgorithmRun run : runs)
 				{
-					if(run.getRunConfig().getProblemInstanceSeedPair().getSeed() % 100 % 11 != 0)
+					if(run.getRunConfig().getProblemInstanceSeedPair().getSeed() % 100 % 19 != 0)
 					{
 						run.kill();
 					}
@@ -2877,11 +2876,7 @@ public class TAETestSet {
 		{
 			fail("Output contained some error this is unexpected: " + output );
 		}
-		//assertTrue("Expected time for CLI Direct to be less than 5 seconds", watch.time() < 5000 );
-		
-		
-		//assertTrue("Expected time for Bounded to be less than 5 seconds", watch2.time() < 5000 );
-		
+	
 	}
 	
 	

@@ -787,7 +787,10 @@ public class LegacyStateDeserializer implements StateDeserializer {
 		int bestByParamConfig = getMaxIterationInDirectoryWithFileName(restoreDirectory, id, LegacyStateFactory.PARAMSTRINGS_FILENAME);
 		int bestByUnique = getMaxIterationInDirectoryWithFileName(restoreDirectory, id, LegacyStateFactory.UNIQ_CONFIGURATIONS_FILENAME);
 		
-		int min = Math.min(Math.min(bestByRunResults, bestByParamConfig), bestByUnique);
+		
+		
+		int configsToRestore = Math.max(bestByParamConfig, bestByUnique);
+		int min = Math.min(bestByRunResults, configsToRestore);
 		int max = Math.max(Math.max(bestByRunResults, bestByParamConfig), bestByUnique);
 		
 		if(min != max)
