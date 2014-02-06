@@ -29,7 +29,7 @@ public class RandomResponseTargetAlgorithmEvaluatorOptions extends AbstractOptio
 	public double minResponse = 0.0;
 	
 	@Parameter(names="--random-observer-frequency", description="How often to notify observer of updates (in milli-seconds)", validateWith=FixedPositiveInteger.class)
-	public int observerFrequency = 100;
+	public int observerFrequency = 500;
 	
 	
 	
