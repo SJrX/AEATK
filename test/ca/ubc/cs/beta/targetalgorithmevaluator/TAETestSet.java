@@ -18,16 +18,21 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
 import java.util.HashMap;
+import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
+import java.util.Set;
 import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.Executor;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.output.NullOutputStream;
+import org.apache.commons.math3.distribution.ExponentialDistribution;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -79,6 +84,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.Outstand
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.prepostcommand.PrePostCommandErrorException;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.resource.BoundedTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.resource.caching.CachingTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.safety.AbortOnCrashTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.safety.AbortOnFirstRunCrashTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.safety.ResultOrderCorrectCheckerTargetAlgorithmEvaluatorDecorator;
@@ -4285,6 +4291,188 @@ public class TAETestSet {
 		
 	}
 	
+	@Test
+	public void cachingTAETester()
+	{
+		nestingTestLevels(1);
+		
+	}
+
+	@Test
+	public void nestingCachingTAETester()
+	{
+		for(int j=0; j < 10; j++)
+		{
+			for(int i=1; i < 10; i++)
+			{
+				PrintStream out = System.out;
+				System.setOut(new PrintStream(new NullOutputStream()));
+				StopWatch watch;
+				try {
+				
+					watch = new AutoStartStopWatch();
+					nestingTestLevels(i);
+				} finally
+				{
+					System.setOut(out);
+				}
+				System.out.println("Time taken was "+i+ ":"  + (watch.stop() / 1000.0));
+			}
+		}
+	}
+	public void nestingTestLevels(int levels)
+	{
+		final Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(TrueSleepyParamEchoExecutor.class.getCanonicalName());
+		
+		ParamConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("a [0,100] [0]i\nb [0,9][0]i \n");
+		
+		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false,3000);
+		
+		
+		RandomResponseTargetAlgorithmEvaluatorFactory rfact = new RandomResponseTargetAlgorithmEvaluatorFactory();
+		
+		
+		
+		
+		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
+		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
+		
+		options.logAllCallStrings = true;
+		options.logAllProcessOutput = true;
+		options.concurrentExecution = true;
+		options.observerFrequency = 2000;
+		options.cores = 10;
+		
+		TargetAlgorithmEvaluator tae = fact.getTargetAlgorithmEvaluator( options);	
+		TargetAlgorithmEvaluator cliTAE = tae;
+		
+		RandomResponseTargetAlgorithmEvaluatorOptions opts = rfact.getOptionObject();
+		opts.cores = 10240;
+		opts.simulateDelay = true;
+		
+		opts.maxResponse = 4;
+		tae = rfact.getTargetAlgorithmEvaluator(opts);
+		
+		
+		tae = new OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator(tae);
+		final TargetAlgorithmEvaluator insideTAE = tae;
+		
+		for(int i=0; i < levels; i++)
+		{
+			tae = new CachingTargetAlgorithmEvaluatorDecorator(tae);
+		}
+		
+		tae = new OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator(tae);
+		ExponentialDistribution dist = new ExponentialDistribution(30);
+		
+		
+		List<ProblemInstance> pis = new ArrayList<ProblemInstance>(4);
+		
+		for(int i=0; i < 4; i++)
+		{
+			pis.add(new ProblemInstance("inst" + i));
+		}
+		
+		
+		final AtomicInteger failures = new AtomicInteger(0);
+		
+		final TargetAlgorithmEvaluator fTAE = tae;
+		Executor execService = Executors.newFixedThreadPool(64);
+		
+		final AtomicInteger submits = new AtomicInteger(0);
+		final AtomicInteger passes = new AtomicInteger(0);
+		for(int i=0; i < 8000; i++)
+		{
+			int numberOfValuesToSubmit = (int) dist.inverseCumulativeProbability(r.nextDouble());
+			
+			final Set<RunConfig> rcs = new LinkedHashSet<RunConfig>();
+			for(int j=0; j < numberOfValuesToSubmit; j++)
+			{
+				rcs.add(new RunConfig(new ProblemInstanceSeedPair(pis.get(r.nextInt(4)),r.nextInt(2)), configSpace.getRandomConfiguration(r),execConfig));
+			}
+			
+			final List<RunConfig> submitList = new ArrayList<RunConfig>(rcs);
+			submits.incrementAndGet();
+			Runnable runner = new Runnable()
+			{
+				@Override
+				public void run()
+				{
+					/*
+					try {
+						Thread.sleep((long) (r.nextDouble() * 10));
+					} catch (InterruptedException e1) {
+						Thread.currentThread().interrupt();
+						return;
+					}
+					*/
+					if(r.nextBoolean())
+					{
+						Thread.yield();
+					}
+					fTAE.evaluateRunsAsync(submitList, new TargetAlgorithmEvaluatorCallback(){
+
+						AtomicBoolean bool = new AtomicBoolean();
+						@Override
+						public void onSuccess(List<AlgorithmRun> runs) {
+				
+							if(!bool.compareAndSet(false, true))
+							{
+								throw new IllegalStateException("Callback was called twice: " + this);
+							}
+							
+							
+							
+							if(rcs.size() != runs.size())
+							{
+								throw new IllegalStateException("Expected that the number of submitted run configs: " + rcs.size() + " would equal runs completed " + runs.size());
+							}
+							int i=0;
+							for(RunConfig rc : submitList)
+							{
+								if(!rc.equals(runs.get(i).getRunConfig()))
+								{
+									throw new IllegalStateException("Runs are coming back out of order: " + rcs + " runs: " + runs);
+								}
+								i++;
+							}
+							
+							passes.incrementAndGet();
+						}
+
+						@Override
+						public void onFailure(RuntimeException e) {
+							e.printStackTrace();
+							failures.incrementAndGet();					
+						}
+						
+					});
+				}
+				
+			};
+			execService.execute(runner);
+			
+			//RunConfig rc = new RunConfig(pis.get(index));
+		
+			
+		}
+		
+		tae.waitForOutstandingEvaluations();
+		
+		tae.notifyShutdown();
+		System.out.println(insideTAE.getRunCount());
+	
+		System.out.println("Configuration space size: [" +  configSpace.getLowerBoundOnSize() + "," + configSpace.getUpperBoundOnSize() + "] * " + pis.size() + " * 2");
+		assertEquals("Expected no failures to be detected", 0, failures.get());
+		assertEquals("Expected passes to be equal to submits", passes.get(), submits.get());
+		
+		
+	}
 	
 	
 }

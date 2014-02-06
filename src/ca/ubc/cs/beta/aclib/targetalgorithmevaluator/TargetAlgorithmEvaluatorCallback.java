@@ -6,10 +6,14 @@ import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 
 /**
  * Handler interface for Deferred Target Algorithm Evaluator runs
- * <p>
- * <b>Client Note:</b> If the onSuccess() method throws an exception, you should call the onFailure() method,
+ * <br>
+ * <b>TAE Implementor Note:</b> If the onSuccess() method throws an exception, you should call the onFailure() method,
  * this primarily simplifies the implementations of decorators.
+ * <br>
+ * <b>Client Note:</b> Objects that implement this should NOT override equals() or hashCode(), it may mess up internal
+ * data structures {@link ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.resource.caching.CachingTargetAlgorithmEvaluatorDecorator} in particular
  * 
+ *
  *
  * @author Steve Ramage <seramage@cs.ubc.ca>
  *
