@@ -10,6 +10,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import net.jcip.annotations.ThreadSafe;
@@ -118,6 +119,11 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 	public void postDecorateeNotifyShutdown()
 	{
 		this.execService.shutdown();
+		try {
+			this.execService.awaitTermination(24, TimeUnit.DAYS);
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
 	}
 	
 	
