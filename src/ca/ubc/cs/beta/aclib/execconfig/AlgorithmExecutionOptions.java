@@ -3,6 +3,7 @@ package ca.ubc.cs.beta.aclib.execconfig;
 import java.io.File;
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
@@ -51,7 +52,7 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 	
 	
 	@Parameter(names="-T", description="additional context needed for target algorithm execution (see TAE documentation for possible values, generally rare)", variableArity = true)
-	public Map<String, String> additionalContext;
+	public Map<String, String> additionalContext = new HashMap<String, String>();
 	
 	@ParametersDelegate
 	public TargetAlgorithmEvaluatorOptions taeOpts = new TargetAlgorithmEvaluatorOptions();

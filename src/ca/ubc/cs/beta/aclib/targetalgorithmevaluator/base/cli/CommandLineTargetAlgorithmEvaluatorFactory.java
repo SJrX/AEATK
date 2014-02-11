@@ -9,6 +9,7 @@ import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.AbstractTargetAlgorithmEvaluatorFactory;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorFactory;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.debug.LogEveryTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.resource.BoundedTargetAlgorithmEvaluator;
 @ProviderFor(TargetAlgorithmEvaluatorFactory.class)
 public class CommandLineTargetAlgorithmEvaluatorFactory extends AbstractTargetAlgorithmEvaluatorFactory  {
@@ -23,7 +24,9 @@ public class CommandLineTargetAlgorithmEvaluatorFactory extends AbstractTargetAl
 	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator( AbstractOptions options) {
 
 		CommandLineTargetAlgorithmEvaluatorOptions cliOpts = (CommandLineTargetAlgorithmEvaluatorOptions) options;		
-		return new CommandLineTargetAlgorithmEvaluator( cliOpts );
+		TargetAlgorithmEvaluator tae =  new CommandLineTargetAlgorithmEvaluator( cliOpts );
+		
+		return tae;
 	}
 
 	@Override

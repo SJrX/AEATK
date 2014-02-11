@@ -39,9 +39,11 @@ public enum RunObjective {
 					case ABORT:
 					case CRASHED:
 						return r.getExecutionConfig().getAlgorithmCutoffTime();
+					default:
+						throw new IllegalStateException("Unsure how to compute the " + this + " RunOjective for a run with result type " + r.getRunResult() );
 				}
 				
-				throw new IllegalStateException("Unsure how to compute the " + this + " RunOjective for a run with result type " + r.getRunResult() );		
+						
 			case QUALITY:
 				return r.getQuality();
 		}

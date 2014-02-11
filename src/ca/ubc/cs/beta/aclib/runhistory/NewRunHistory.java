@@ -234,7 +234,7 @@ public class NewRunHistory implements RunHistory {
 				
 				Object[] args = {matchingRun, run, config, pi,dOldValue};				
 				
-				log.error("RunHistory already contains a run with identical config, instance and seed \n Original Run:{}\nRun:{}\nConfig:{}\nInstance:{}\nPrevious Performance:{}", args);
+				//log.error("RunHistory already contains a run with identical config, instance and seed \n Original Run:{}\nRun:{}\nConfig:{}\nInstance:{}\nPrevious Performance:{}", args);
 				throw new DuplicateRunException("Duplicate Run Detected", run);
 			}
 			

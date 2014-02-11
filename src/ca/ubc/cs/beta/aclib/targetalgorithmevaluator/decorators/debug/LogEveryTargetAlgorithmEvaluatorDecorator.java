@@ -18,32 +18,43 @@ public class LogEveryTargetAlgorithmEvaluatorDecorator extends
 	
 	private final boolean logRCOnly;
 	
+	private final String context;
 	
 	public LogEveryTargetAlgorithmEvaluatorDecorator(TargetAlgorithmEvaluator tae) {
 		this(tae, false);
 	}
-	
+	public LogEveryTargetAlgorithmEvaluatorDecorator(TargetAlgorithmEvaluator tae, String context) {
+		this(tae, context, false);
+	}
 	
 	public LogEveryTargetAlgorithmEvaluatorDecorator(TargetAlgorithmEvaluator tae, boolean logRequestResponsesRCOnly) {
 		super(tae);
+		this.context = "";
 		this.logRCOnly = logRequestResponsesRCOnly;
 	}
 
+	public LogEveryTargetAlgorithmEvaluatorDecorator(TargetAlgorithmEvaluator tae, String context, boolean logRequestResponsesRCOnly) {
+		super(tae);
+		this.logRCOnly = logRequestResponsesRCOnly;
+		this.context = (context != null) ? "(" +context+")" : "";
+	}
+
+	
 	protected synchronized AlgorithmRun processRun(AlgorithmRun run)
 	{
 		if(logRCOnly)
 		{
-			log.debug("Run Completed: {} ", run.getRunConfig());
+			log.debug("Run {} Completed: {} ", context, run.getRunConfig());
 		} else
 		{
-			log.debug("Run Completed: {} ", run);
+			log.debug("Run {} Completed: {} : {} ", context, run, run.getAdditionalRunData());
 		}
 		return run;
 	}
 	
 	protected RunConfig processRun(RunConfig rc)
 	{
-		log.debug("Run Scheduled: {} ", rc);
+		log.debug("Run {} Scheduled: {} ", context, rc);
 		return rc;
 	}
 

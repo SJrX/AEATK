@@ -41,18 +41,35 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbstractTargetAl
 /**
  * This Target Algorithm Evaluator Decorator can be used as a cache of runs, it is designed to be high performance and work well in multi-threaded environments.
  * 
- * 
- * 
  * Specifically it can be used to simplify algorithms or processes that may make repeated
  * sets of run requests. We need to be very careful that the target algorithm evaluator 
  * only sees one request regardless of how many times the request comes in, and regardless
  * of thread interleavings.
  * 
  * Finally it also should be safe with respect to Interruption, that is
- * a thread that is interupted with respect to the client shouldn't be able to negatively affect other
- * threads / requests. 
+ * a thread that is interupted with respect to the client shouldn't be able to negatively affect other threads / requests. 
  * 
+ * <br/>
+ * <b>Client Usage Notes:</b>
+ * <br/>
+ * 1) You may have issues with runs being submitted that are killed and the observer seeing some weird effects, like runs that are killed and have a lower response value.
+ * You should use the {@link ca.ubc.cs.beta.aclib.targetalgorithmevaulator.decorators.helpers.StrictlyIncreasingRuntimesTargetAlgorithmEvaluatorDecorator} to correct this
+ * <br/>
+ * 2) You can get a higher cache hit rate if you use {@link ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.ExclusivelyTargetAlgorithmEvaluatorDecorator}
+ * to ensure that runs map to the same RunConfig
+ * <br/>
  * 
+ * <br>
+ * <b>KNOWN ISSUES</b>:<br>
+ * 1) All runs here are final, if a run is CRASHED you cannot rerun it (the rerun decorator should be applied underneath this one)
+ * <br>
+ * 2) If an exception or error occurs, callbacks are not notified as fast as possible. 
+ * <br>
+ * 3) If interrupted the thread may not have it's objects cleaned up properly this is unfortunate,
+ * as it will leak. If this is actually affecting you then it may be fixed, but I suspect no one will
+ * ever notice.
+ * <br>
+ * <b>Implementation Details</b>
  * Care must be taken to ensure that we don't notify the client with out of order data. We also don't use the same callback thread to notify the client
  * because it can create deadlocks (if the callback causes more runs to submit, it can get trapped here). 
  * <p>
@@ -71,15 +88,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbstractTargetAl
  * The last commit handled killing.
  * 
  * 
- * <br>
- * <b>KNOWN ISSUES</b>:<br>
- * 1) All runs here are final, if a run is CRASHED you cannot rerun it (the rerun decorator should be applied underneath this one)
- * <br>
- * 2) If an exception or error occurs, callbacks are not notified as fast as possible. 
- * <br>
- * 3) If interrupted the thread may not have it's objects cleaned up properly this is unfortunate,
- * as it will leak. If this is actually affecting you then it may be fixed, but I suspect no one will
- * ever notice.
+ * 
  * @author Steve Ramage <seramage@cs.ubc.ca>
  *
  */
@@ -90,6 +99,9 @@ public class CachingTargetAlgorithmEvaluatorDecorator extends AbstractTargetAlgo
 	
 	private final AtomicInteger cacheRequests = new AtomicInteger(0);
 	private final AtomicInteger cacheRequestMisses = new AtomicInteger(0);
+	
+	//This will be greater than cache misses because of killed runs
+	private final AtomicInteger submittedToDecoratee = new AtomicInteger(0);
 	
 	
 	private static final int AVAILABLE_PROCESSORS = Runtime.getRuntime().availableProcessors();
@@ -336,8 +348,6 @@ public class CachingTargetAlgorithmEvaluatorDecorator extends AbstractTargetAlgo
 		
 		try 
 		{
-			
-			
 			if(shutdownOnError && errorDetected.get())
 			{
 				//log.info("Target Algorithm Evaluator has detected error and is unavailable");
@@ -349,6 +359,12 @@ public class CachingTargetAlgorithmEvaluatorDecorator extends AbstractTargetAlgo
 			{
 				callback.onSuccess(Collections.<AlgorithmRun> emptyList());
 				return;
+			}
+			
+			
+			if(new HashSet<RunConfig>(rcs).size() != rcs.size())
+			{
+				throw new IllegalArgumentException("Run Configurations list has duplicates in it, this isn't legal");
 			}
 			final List<RunConfig> runConfigs = Collections.unmodifiableList(rcs);
 			
@@ -436,11 +452,20 @@ public class CachingTargetAlgorithmEvaluatorDecorator extends AbstractTargetAlgo
 			NumberFormat nf = NumberFormat.getPercentInstance();
 			
 			log.trace("Cache Local misses: {}, Local request: {},  Global misses {}, Global Requests {}, Hit Rate {} ", runConfigsCurrentThreadSubmits.size(), runConfigs.size(),  misses, requests, nf.format( ((double) requests - misses) / requests)  );
+			
+			
+			
+			
 			if(runConfigsCurrentThreadSubmits.size() > 0)
 			{
 				submissionQueue.add(runConfigsCurrentThreadSubmits);
 			}
 			
+			//notifyObserverOfToken(evalToken);
+			
+			
+			
+			log.trace("Token {} submitted with outstanding runs: {} map size {}: {}", evalToken, outstandingRunsCountForTokenMap.get(evalToken).get(),this.outstandingRunsForTokenMap.get(evalToken).size(),this.outstandingRunsForTokenMap.get(evalToken));
 			/**
 			 * Wait until everything is submitted
 			 */
@@ -454,6 +479,9 @@ public class CachingTargetAlgorithmEvaluatorDecorator extends AbstractTargetAlgo
 					return;
 				}
 			}
+			
+			
+			log.trace("Token {} has completed submission: {} map size{} :{}", evalToken, outstandingRunsCountForTokenMap.get(evalToken).get(),this.outstandingRunsForTokenMap.get(evalToken).size(),this.outstandingRunsForTokenMap.get(evalToken));
 			
 			for(RunConfig rc : runConfigs)
 			{
@@ -498,8 +526,9 @@ public class CachingTargetAlgorithmEvaluatorDecorator extends AbstractTargetAlgo
 		NumberFormat nf = NumberFormat.getPercentInstance();
 		int misses = cacheRequestMisses.get();
 		int requests =  cacheRequests.get();
+		int submittedToNextTAE = this.submittedToDecoratee.get();
 		
-		log.info("Cache misses {}, Cache requests {}, Hit Rate {} ", misses, requests, nf.format( ((double) requests - misses) / requests)  );
+		log.info("Cache misses {}, Submitted to Decoratee: {}, Cache requests {}, Hit Rate {} ", misses, submittedToNextTAE, requests, nf.format( ((double) requests - misses) / requests)  );
 		
 		debugThread.interrupt();
 		
@@ -522,13 +551,19 @@ public class CachingTargetAlgorithmEvaluatorDecorator extends AbstractTargetAlgo
 			return false;
 		}
 		
-		log.trace("Token {} called for {} ", token, rc);
+		
 		Set<RunConfig> outstandingRunsForCallback = outstandingRunsForTokenMap.get(token);
 		
 		if(outstandingRunsForCallback == null)
 		{
 			return false;
 		}
+		
+		log.trace("Token {} called for {} , map has {} elements {} ", token, rc, outstandingRunsForCallback.size(), outstandingRunsForCallback);
+		
+		
+		
+		log.trace("Token {} called for {} still running ", token, rc);
 		
 		boolean rcRemoved = outstandingRunsForCallback.remove(rc);
 		
@@ -557,20 +592,14 @@ public class CachingTargetAlgorithmEvaluatorDecorator extends AbstractTargetAlgo
 
 					
 				} else
-				{
-
-					
+				{					
 					//System.err.println("Removed " + token + "==>" + rc + " (remaining) " + (outstandingRunsCountForTokenMap.get(token).get()-1) + " " + outstandingRunsForCallback + " " + runIsMarkedCompleted + "," + tokensKilledRunsContainRC + "KILLED RUNS ELSE");
 					//Run killed without our permission, it must be resubmitted
-					
-					
+
 					ReducableSemaphore semi = runConfigsSubmittedToWrappedDecoratorMap.get(rc);
 					
 					//If we acquire the permit then we are responsible for submitting the run
 					boolean shouldResubmit = semi.tryAcquire();
-					
-					
-					
 					
 					outstandingRunsForCallback.add(rc);
 					if(shouldResubmit)
@@ -624,6 +653,9 @@ public class CachingTargetAlgorithmEvaluatorDecorator extends AbstractTargetAlgo
 					}
 				}
 			}
+		} else
+		{
+			log.trace("Token {} called for {} was spurious ", token, rc);
 		}
 		
 		return false;
@@ -682,7 +714,7 @@ public class CachingTargetAlgorithmEvaluatorDecorator extends AbstractTargetAlgo
 					}
 					tae.evaluateRunsAsync(rcs, new SubmissionOnCompleteHandler(rcs), tObs);
 					
-					
+					submittedToDecoratee.addAndGet(rcs.size());
 					//Release anyone who is waiting for this to be submitted.
 					log.trace("Runs have been successfully submitted to TAE: {}", rcs);
 					for(RunConfig rc : rcs)
@@ -762,6 +794,8 @@ public class CachingTargetAlgorithmEvaluatorDecorator extends AbstractTargetAlgo
 					
 					if(run.getRunResult().equals(RunResult.KILLED))
 					{
+						log.debug("Inserting killed run: {}", run);
+						
 						killedRunsMap.put(rc, run);
 						
 					} else
@@ -898,9 +932,8 @@ public class CachingTargetAlgorithmEvaluatorDecorator extends AbstractTargetAlgo
 				for(KillableAlgorithmRun run : runs)
 				{
 					RunConfig rc = run.getRunConfig();
+										
 					runConfigToLiveLatestStatusMap.put(rc, new RunningAlgorithmRun(rc, run.getRuntime(), run.getRunLength(), run.getQuality(), run.getResultSeed(), run.getWallclockExecutionTime(), new NullKillHandler()));
-					
-					
 					
 					for(EvaluationRequestToken token : runConfigToTokenMap.get(rc))
 					{
@@ -955,7 +988,6 @@ public class CachingTargetAlgorithmEvaluatorDecorator extends AbstractTargetAlgo
 	{
 		public void run()
 		{
-topOfLoop:
 			while(true)
 			{
 				EvaluationRequestToken token;
@@ -973,102 +1005,109 @@ topOfLoop:
 					return;
 				}
 				
-					TargetAlgorithmEvaluatorRunObserver obs = evalRequestToObserverMap.get(token);
-					
-					if(obs == null)
-					{	//Probably doesn't matter but just in case
-						continue;
-					}
+				notifyObserverOfToken(token);
 				
-					boolean lockAcquired = token.tryLock();
+				
 					
-					if(lockAcquired)
+			}
+		}
+	}
+	
+	
+	private void notifyObserverOfToken(EvaluationRequestToken token)
+	{
+		TargetAlgorithmEvaluatorRunObserver obs = evalRequestToObserverMap.get(token);
+		
+		if(obs == null)
+		{	//Probably doesn't matter but just in case
+			return;
+		}
+	
+		boolean lockAcquired = token.tryLock();
+		
+		if(lockAcquired)
+		{
+			try 
+			{
+				//Observer can only fire before the callback
+				//callback sets this before acquiring lock, we have the lock so 
+				//callback will wait for us.
+				if(token.callbackFired())
+				{
+					return;
+				}
+				
+				//Token controls last time stamp we notified, so that we don't send duplicate updates
+				if(!token.shouldNotify())
+				{
+					return;
+				}
+				
+				try 
+				{
+					
+					List<RunConfig> rcs = allRunConfigsForTokenMap.get(token);
+					
+					List<KillableAlgorithmRun> runs = new ArrayList<KillableAlgorithmRun>(rcs.size());
+					
+					for(RunConfig rc : rcs)
 					{
-						try 
+						
+						KillableAlgorithmRun krun;
+						
+						boolean rcCompleted = completedRunConfigs.contains(rc);
+						if(!rcCompleted)
 						{
-							//Observer can only fire before the callback
-							//callback sets this before acquiring lock, we have the lock so 
-							//callback will wait for us.
-							if(token.callbackFired())
+							//We should use the live version
+							KillableAlgorithmRun liveRun = runConfigToLiveLatestStatusMap.get(rc);
+							
+							
+							if(liveRun == null)
 							{
-								continue;
+								//Exception has probably occurred
+								return;
 							}
 							
-							//Token controls last time stamp we notified, so that we don't send duplicate updates
-							if(!token.shouldNotify())
+							krun = new RunningAlgorithmRun(liveRun.getRunConfig(), liveRun.getRuntime(), liveRun.getRunLength(), liveRun.getQuality(), liveRun.getResultSeed(), liveRun.getWallclockExecutionTime(), new ExternalCallerKillHandler(token, rc));
+						} else
+						{
+							
+							
+							
+							AlgorithmRun run = completedRunsMap.get(rc);
+							
+							if(run != null)
 							{
-								continue;
+								krun = new KillableWrappedAlgorithmRun(run);
+							} else
+							{
+								if(!completedExceptionMap.containsKey(rc))
+								{
+									System.err.println("No exception handy?");
+								}
+								
+								return;
 							}
 							
-							try 
-							{
-								
-								List<RunConfig> rcs = allRunConfigsForTokenMap.get(token);
-								
-								List<KillableAlgorithmRun> runs = new ArrayList<KillableAlgorithmRun>(rcs.size());
-								
-								for(RunConfig rc : rcs)
-								{
-									
-									KillableAlgorithmRun krun;
-									
-									boolean rcCompleted = completedRunConfigs.contains(rc);
-									if(!rcCompleted)
-									{
-										//We should use the live version
-										KillableAlgorithmRun liveRun = runConfigToLiveLatestStatusMap.get(rc);
-										
-										
-										if(liveRun == null)
-										{
-											//Exception has probably occurred
-											continue topOfLoop;
-										}
-										
-										krun = new RunningAlgorithmRun(liveRun.getRunConfig(), liveRun.getRuntime(), liveRun.getRunLength(), liveRun.getQuality(), liveRun.getResultSeed(), liveRun.getWallclockExecutionTime(), new ExternalCallerKillHandler(token, rc));
-									} else
-									{
-										
-										
-										
-										AlgorithmRun run = completedRunsMap.get(rc);
-										
-										if(run != null)
-										{
-											krun = new KillableWrappedAlgorithmRun(run);
-										} else
-										{
-											if(!completedExceptionMap.containsKey(rc))
-											{
-												System.err.println("No exception handy?");
-											}
-											
-											continue topOfLoop;
-										}
-										
-									}
-									
-									runs.add(krun); 
-								}
-								
-								obs.currentStatus(runs);
-								
-							} catch(RuntimeException e)
-							{
-								if(errorDetected.compareAndSet(false, true))
-								{
-									storedException.set(e);
-									e.printStackTrace();
-								}
-								throw e;
-							}
-						} finally
-						{
-							token.unlock();
 						}
+						
+						runs.add(krun); 
 					}
 					
+					obs.currentStatus(runs);
 					
+				} catch(RuntimeException e)
+				{
+					if(errorDetected.compareAndSet(false, true))
+					{
+						storedException.set(e);
+						e.printStackTrace();
+					}
+					throw e;
+				}
+			} finally
+			{
+				token.unlock();
 			}
 		}
 	}

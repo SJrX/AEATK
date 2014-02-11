@@ -336,7 +336,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 								}
 				               
 				               Double runtime = Double.valueOf(new String(receivePacket.getData()));
-				               
+				              
 				               currentRuntime.set(runtime);
 				               
 							} catch(RuntimeException e)
@@ -467,7 +467,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 								if(killHandler.isKilled())
 								{
 									wasKilled = true;
-									log.debug("Trying to kill");
+									log.debug("Trying to kill run: {} latest time: {} " , getRunConfig(), currentRuntime.get());
 									killProcess(proc);
 									//log.debug("Process destroy() called now waiting for completion");
 									

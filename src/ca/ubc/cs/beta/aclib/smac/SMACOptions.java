@@ -212,6 +212,8 @@ public class SMACOptions extends AbstractOptions {
 	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names="--intermediary-saves", description="determines whether to make any intermediary-saves or not (if false, no quick saves will be made either). The state will still be saved at the end of the run however")
 	public boolean intermediarySaves = true;
+
+	public boolean shutdownTAEWhenDone = true;
 	
 	
 	/**

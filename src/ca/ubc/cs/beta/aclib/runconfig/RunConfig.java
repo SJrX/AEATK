@@ -26,7 +26,7 @@ public class RunConfig implements Serializable{
 	private final AlgorithmExecutionConfig algorithmExecutionConfiguration;
 
 	/**
-	 * 
+	 * Creates a RunConfig object with the following attributes
 	 * @param pisp 			problem instance and seed that we will run against
 	 * @param cutoffTime 	double representing the amount of time to execute for (in seconds)
 	 * @param config 		paramconfiguration of the target algorithm
@@ -68,12 +68,11 @@ public class RunConfig implements Serializable{
 	}
 	
 	/**
-	 * Default Constructor
+	 * Creates a RunConfig object which uses the execution configuration cutoff time
 	 * @param pisp 					problem instance and seed that we will run against
 	 * @param config 				paramconfiguration of the target algorithm
 	 * @param execConfig			execution configuration 
 	 */
-	
 	public RunConfig(ProblemInstanceSeedPair pisp, ParamConfiguration config, AlgorithmExecutionConfig execConfig)
 	{
 		this(pisp,execConfig.getAlgorithmCutoffTime(), config, execConfig);
@@ -82,7 +81,7 @@ public class RunConfig implements Serializable{
 
 	/**
 	 * 
-	 * @return probleminstanceseedpair for the run
+	 * @return ProblemInstanceSeedPair of the run
 	 */
 	public ProblemInstanceSeedPair getProblemInstanceSeedPair()
 	{
@@ -91,7 +90,7 @@ public class RunConfig implements Serializable{
 
 	/**
 	 * 
-	 * @return cuttoff time of the run
+	 * @return cutoffTime of the run
 	 */
 	public double getCutoffTime() {
 		return cutoffTime;
@@ -143,16 +142,7 @@ public class RunConfig implements Serializable{
 	
 		return (int) ( (pisp.hashCode())^ params.hashCode() + 37*this.algorithmExecutionConfiguration.hashCode()) ;
 	}
-	
-	
-	
-	private String getLastWord(String s)
-	{
-		
-		//TODO: Fully determine a good string
-		return s;
-	}
-	
+
 	
 	@Override
 	public String toString()
