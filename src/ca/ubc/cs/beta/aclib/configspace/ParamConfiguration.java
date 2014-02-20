@@ -6,7 +6,9 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
@@ -19,10 +21,10 @@ import net.jcip.annotations.ThreadSafe;
 
 
 /**
- * This class represents an element in the associated {@link ParamConfigurationSpace} and provides a natural {@link Map} like interface for accessing it's members 
+ * This class represents an element in the associated {@link ParamConfigurationSpace} and provides a natural {@link java.util.Map} like interface for accessing it's members 
  * but also uses an effective and fast storage mechanism for this. 
  * <p>
- * <b>WARNING:</b>This is neither a general purpose <code>Map</code> implementation, nor a complete one. 
+ * <b>WARNING:</b>This is not a general purpose <code>Map</code> implementation. Many map operations, like entry set provide unmodifiable views.
  * <p>
  * Differences between this and <code>Map</code>:
  * <p>
@@ -167,12 +169,9 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	}
 
 
-	/**
-	 * This method is not implemented
-	 * @throws UnsupportedOperationException
-	 */
+
 	public boolean containsValue(Object value) {
-		throw new UnsupportedOperationException();
+		return getRealMap().containsValue(value);
 	}
 
 	
@@ -233,14 +232,19 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	 */
 	public String put(String key, String newValue) 
 	{
-	
+		//Now th
+		isDirty = true;
+		
+		builtMap = null;
+		
+		
+		
 		/* We find the index into the valueArray from paramKeyIndexMap,
 		 * then we find the new value to set from it's position in the getValuesMap() for the key. 
 		 * NOTE: i = 1 since the valueArray numbers elements from 1
 		 */
 		
-		isDirty = true;
-
+		
 		Integer index = paramKeyToValueArrayIndexMap.get(key);
 		if(index == null)
 		{
@@ -361,21 +365,41 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	}
 
 
-	/**
-	 * This method is not implemented
-	 * @throws UnsupportedOperationException
-	 */
+
 	public Collection<String> values() {
-		throw new UnsupportedOperationException();
+		return getRealMap().values();
 	}
 
 
 	/**
-	 * This method is not implemented
-	 * @throws UnsupportedOperationException
+	 * A real map view of this configuration, it is nulled out when the map is made dirty.
 	 */
+	private volatile Map<String, String> builtMap = null;
+	
+	/**
+	 * Retrieves a real map view (one that has all methods supported) 
+	 * @return
+	 */
+	private Map<String, String> getRealMap()
+	{
+		
+		if(builtMap == null)
+		{
+			Map<String, String> myMap = new LinkedHashMap<String, String>();
+			for(String name : this.configSpace.getParameterNamesInAuthorativeOrder())
+			{
+				myMap.put(name, this.get(name));
+			}
+			builtMap = Collections.unmodifiableMap(myMap);
+		}
+		
+		
+		return builtMap;
+	}
+
+	
 	public Set<java.util.Map.Entry<String, String>> entrySet() {
-		throw new UnsupportedOperationException();
+		return getRealMap().entrySet();
 	}
 	
 	/**
