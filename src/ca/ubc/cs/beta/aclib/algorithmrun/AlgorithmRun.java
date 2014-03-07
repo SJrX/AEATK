@@ -3,7 +3,12 @@ package ca.ubc.cs.beta.aclib.algorithmrun;
 import java.io.Serializable;
 import java.util.concurrent.Callable;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+//import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aclib.json.serializers.AlgorithmRunJson;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 
 /**
@@ -13,8 +18,10 @@ import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
  * 
  * NOTE: The following invariants exist, and implementations that don't follow this may have unexpected results
  * 
- * @author sjr
+ * @author Steve Ramage <seramage@cs.ubc.ca>
  */
+@JsonSerialize(using=AlgorithmRunJson.AlgorithmRunSerializer.class)
+@JsonDeserialize(using=AlgorithmRunJson.AlgorithmRunDeserializer.class)
 public interface AlgorithmRun extends Runnable, Serializable,  Callable<Object> {
 
 	/**

@@ -16,6 +16,13 @@ import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import ca.ubc.cs.beta.aclib.json.serializers.ParamConfigurationJson;
+
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import net.jcip.annotations.NotThreadSafe;
 import net.jcip.annotations.ThreadSafe;
 
@@ -41,6 +48,8 @@ import net.jcip.annotations.ThreadSafe;
  *
  */
 @NotThreadSafe
+@JsonDeserialize
+@JsonSerialize(using=ParamConfigurationJson.ParamConfigurationSerializer.class)
 public class ParamConfiguration implements Map<String, String>, Serializable {
 
 	/**

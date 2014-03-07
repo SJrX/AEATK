@@ -3,9 +3,13 @@ package ca.ubc.cs.beta.aclib.algorithmrun;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableAlgorithmRun;
 import ca.ubc.cs.beta.aclib.exceptions.IllegalWrapperOutputException;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aclib.json.serializers.AlgorithmRunJson;
+import ca.ubc.cs.beta.aclib.json.serializers.ProblemInstanceJson;
 import ca.ubc.cs.beta.aclib.misc.watch.StopWatch;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 
@@ -15,6 +19,7 @@ import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
  * @author seramage
  *
  */
+@JsonSerialize(using=AlgorithmRunJson.AlgorithmRunSerializer.class)
 public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun
 {
 	

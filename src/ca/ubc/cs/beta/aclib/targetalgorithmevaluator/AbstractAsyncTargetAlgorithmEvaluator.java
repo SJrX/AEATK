@@ -5,8 +5,7 @@ import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 
-public abstract class AbstractAsyncTargetAlgorithmEvaluator extends
-		AbstractTargetAlgorithmEvaluator implements TargetAlgorithmEvaluator{
+public abstract class AbstractAsyncTargetAlgorithmEvaluator extends AbstractTargetAlgorithmEvaluator implements TargetAlgorithmEvaluator{
 
 
 	@Override

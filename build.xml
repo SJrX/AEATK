@@ -81,7 +81,7 @@ dirty: ${git.dirty}</echo>
 	</target>
 	
 	<target name="compile" depends="init" description="Compiles the source">
-		<javac srcdir="src" destdir="build/classes" debug="true" includeantruntime="false" >
+		<javac srcdir="src" destdir="build/classes" debug="true" includeantruntime="false" target="1.7" source="1.7" >
 		<classpath refid="compile.classpath"/>
 		</javac>		
 	</target>	
@@ -101,10 +101,9 @@ dirty: ${git.dirty}</echo>
 	            <pathelement path="build/classes/"/>
 	        </path>
 				
-	 	<javac srcdir="test" destdir="build/testclasses" debug="true" verbose="true" target="1.6">
-					
-	            <classpath refid="test.compile.classpath" />
-			</javac>
+	 	<javac srcdir="test" destdir="build/testclasses" debug="true" verbose="true" target="1.7" source="1.7">
+	       <classpath refid="test.compile.classpath" />
+		</javac>
 	 </target>
 	
 	<target name="javadoc" depends="setjavaprop,doc, init" description="Make Javadoc"/>

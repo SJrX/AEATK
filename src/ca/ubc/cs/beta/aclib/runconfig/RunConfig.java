@@ -3,15 +3,21 @@ package ca.ubc.cs.beta.aclib.runconfig;
 import java.io.File;
 import java.io.Serializable;
 
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aclib.json.serializers.ProblemInstanceJson;
+import ca.ubc.cs.beta.aclib.json.serializers.RunConfigJson;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
-
 /**
  * Immutable class that contains all the information necessary for a target algorithm run.
  *
  * @author Steve Ramage <seramage@cs.ubc.ca>
  */
+@JsonSerialize(using=RunConfigJson.RunConfigSerializer.class)
 public class RunConfig implements Serializable{
 	
 	
@@ -36,12 +42,12 @@ public class RunConfig implements Serializable{
 	{
 		if(pisp == null)
 		{
-			throw new IllegalArgumentException("AlgorithmInstanceSeedPair cannot be null");
+			throw new IllegalArgumentException("ProblemInstanceSeedPair cannot be null");
 		}
 		
 		if(config == null)
 		{
-			throw new IllegalArgumentException("Params cannot be null");
+			throw new IllegalArgumentException("ParamConfiguration cannot be null");
 		}
 		
 		if(cutoffTime  < 0)

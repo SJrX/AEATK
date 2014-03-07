@@ -5,10 +5,18 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
 
+import ca.ubc.cs.beta.aclib.json.serializers.ParamConfigurationJson;
+import ca.ubc.cs.beta.aclib.json.serializers.ProblemInstanceJson;
+
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 /**
  * Immutable Class that represents a Problem Instance of a target algorithm
  * @author Steve Ramage <seramage@cs.ubc.ca>
  */
+@JsonSerialize(using=ProblemInstanceJson.ProblemInstanceSerializer.class)
 public class ProblemInstance implements Serializable{
 
 	/**
@@ -176,6 +184,45 @@ public class ProblemInstance implements Serializable{
 		
 		
 	}
+	
+	/**
+	 * Constructor supporting features  
+	 * 
+	 * NOTE: In general when supply features & instanceSpecificInformation it is an error to give two instances the same name but different features, this may result in unexpected behaivour
+	 * 
+	 * @param instanceName					unique name for this instance
+	 * @param id							numeric id for this instance (will be removed)
+	 * @param features						map for this instance containing string value pairs
+	 * @param instanceSpecificInformation	string containing additional information about this instance
+	 */
+	public ProblemInstance(String instanceName, Map<String, Double> features, String instanceSpecificInformation)
+	{
+		if (instanceName == null)
+		{
+			throw new IllegalArgumentException("Instance cannot be null");
+		}
+		this.instanceName = instanceName;
+		this.instanceId = 0;
+		
+		this.featuresMap = features;
+		this.featuresDouble = new double[features.size()];
+	
+		int i=0;
+		for(Entry<String, Double> ent : features.entrySet())
+		{
+			featuresDouble[i++] = ent.getValue();
+		}
+		if(instanceSpecificInformation == null)
+		{
+			this.instanceSpecificInformation = "0";
+		} else
+		{
+			this.instanceSpecificInformation = instanceSpecificInformation;
+		}
+		
+		
+	}
+	
 	/**
 	 * Gets the Instance Name of the object
 	 * @return unique instance name

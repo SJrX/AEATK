@@ -9,13 +9,18 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
+import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
+import ca.ubc.cs.beta.aclib.json.serializers.AlgorithmExecutionConfigJson;
 /**
  * Immutable Object contains all the information related to executing a target algorithm run
  * @author seramage
  *
  */
+@JsonSerialize(using=AlgorithmExecutionConfigJson.AlgorithmExecutionConfigSerializer.class)
 public class AlgorithmExecutionConfig implements Serializable {
 
 	/**

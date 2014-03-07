@@ -81,8 +81,6 @@ runs with large overheads that aren't accounted for.}.
 than the requested \textbf{cutoff\_time } when reporting \textbf{SAT
 }or \textbf{UNSAT}. The runtime must be strictly greater than zero (and not NaN).
 
-If an algorithm reports \textbf{TIMEOUT} or \textbf{CRASHED} the algorithm can report the actual CPU time used, and EALib will treat it correctly as a timeout for optimization purposes, but count the actual time for \textbf{-$\!~$-tunertime-limit} purposes.
-
 \item [{runlength}] A domain specific measure of how far the algorithm
 progressed. This value must be from the set: ${-1} \cup [0,+\infty]$.
 

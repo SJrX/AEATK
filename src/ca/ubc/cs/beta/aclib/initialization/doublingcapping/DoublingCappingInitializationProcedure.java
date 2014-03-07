@@ -41,6 +41,8 @@ import ca.ubc.cs.beta.aclib.seedgenerator.InstanceSeedGenerator;
 import ca.ubc.cs.beta.aclib.seedgenerator.SetInstanceSeedGenerator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.StrictlyIncreasingRuntimesTargetAlgorithmEvaluatorDecorator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.resource.caching.CachingTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.experimental.queuefacade.basic.BasicTargetAlgorithmEvaluatorQueue;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.experimental.queuefacade.basic.BasicTargetAlgorithmEvaluatorQueueResultContext;
 import ca.ubc.cs.beta.aclib.termination.TerminationCondition;
@@ -73,7 +75,7 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 	{
 		this.runHistory =runHistory;
 		this.initialIncumbent = initialIncumbent;
-		this.tae = tae;
+		
 		this.opts = opts;
 		this.instances = instances;
 		this.maxIncumbentRuns = maxIncumbentRuns;
@@ -89,6 +91,7 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 		this.numberOfRunsPerChallenger = opts.numberOfRunsPerChallenger;
 		this.objHelp = objHelp;
 		this.execConfig = execConfig;
+		this.tae = new StrictlyIncreasingRuntimesTargetAlgorithmEvaluatorDecorator(new CachingTargetAlgorithmEvaluatorDecorator(tae));
 		
 		
 	}
@@ -213,16 +216,7 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 		log.debug("Doubling capping has generated {} runs to do", runsToDo);
 
 		
-		
-		
-		
-		
-		
-		
-		
-	
-		
-		
+
 		MapList<RunResult, AlgorithmRun> runs = new MapList<RunResult,AlgorithmRun>(new EnumMap<RunResult,List<AlgorithmRun>>(RunResult.class));
 		
 		

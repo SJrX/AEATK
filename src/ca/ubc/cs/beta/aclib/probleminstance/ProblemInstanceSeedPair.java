@@ -2,33 +2,40 @@ package ca.ubc.cs.beta.aclib.probleminstance;
 
 import java.io.Serializable;
 
+import ca.ubc.cs.beta.aclib.json.serializers.ProblemInstanceJson;
+
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
+
 /**
  * Immutable Class that represents an Algorithm Instance and Seed Pair
  * @author seramage
  *
  */
+@JsonSerialize(using=ProblemInstanceJson.ProblemInstanceSeedPairSerializer.class)
 public class ProblemInstanceSeedPair implements Comparable<ProblemInstanceSeedPair>,Serializable {
 	
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 7686639875384341346L;
-	private final ProblemInstance ai;
+	private final ProblemInstance pi;
 	private final long seed;
 	
-	public ProblemInstanceSeedPair(ProblemInstance ai, long seed)
+	public ProblemInstanceSeedPair(ProblemInstance pi, long seed)
 	{
-		if(ai == null)
+		if(pi == null)
 		{
-			throw new IllegalArgumentException("Algorithm Instance cannot be null");
+			throw new IllegalArgumentException("ProblemInstance cannot be null");
 		}
-		this.ai = ai;
+		this.pi = pi;
 		this.seed = seed;
 	}
 	
 	public ProblemInstance getInstance()
 	{
-		return ai;
+		return pi;
 	}
 	 
 	public long getSeed()
@@ -42,7 +49,7 @@ public class ProblemInstanceSeedPair implements Comparable<ProblemInstanceSeedPa
 		if(o instanceof ProblemInstanceSeedPair)
 		{
 			ProblemInstanceSeedPair aisp = (ProblemInstanceSeedPair) o;
-			return ((aisp.seed == seed) && ai.equals(aisp.ai)); 
+			return ((aisp.seed == seed) && pi.equals(aisp.pi)); 
 		}
 		return false;
 	}
@@ -50,18 +57,17 @@ public class ProblemInstanceSeedPair implements Comparable<ProblemInstanceSeedPa
 	public int hashCode()
 	{
 		
-		return (int) ((seed >>> 32) ^ ((int) seed ) ^ ai.hashCode()); 
+		return (int) ((seed >>> 32) ^ ((int) seed ) ^ pi.hashCode()); 
 	}
 	
 	public String toString()
 	{
-		return "<Instance:" + ai.getInstanceID() + ", Seed:" + seed + ">";
-		//return ai.toString() + "\nSeed:" + seed;
+		return "<Instance:" + pi.getInstanceID() + ", Seed:" + seed + ">";
 	}
 
 	@Override
 	public int compareTo(ProblemInstanceSeedPair o) {
-		int idDiff = ai.getInstanceID() - o.ai.getInstanceID();
+		int idDiff = pi.getInstanceID() - o.pi.getInstanceID();
 		if(idDiff != 0)
 		{
 		       return idDiff;

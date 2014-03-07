@@ -31,6 +31,16 @@ public interface TargetAlgorithmEvaluatorFactory {
 	public String getName();
 	
 	/**
+	 * Retrieves a Target Algorithm Evaluator using the default options, if possible throwing an exception if not.
+	 * 
+	 * This method exists mainly for convienence of writing unit tests, there is no guarantee that a TAE be able to create itself without intervention from the user (by manipulating the options object)
+	 *  
+	 * @return the target algorithm evaluator
+	 * @throws RuntimeException if this operation cannot be completed.
+	 */
+	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator();
+	
+	/**
 	 * Retrieves a Target Algorithm Evaluator
 	 * @param 	execConfig    The Execution Configuration for the Target Algorithm
 	 * @param   options		  Options 
@@ -47,6 +57,7 @@ public interface TargetAlgorithmEvaluatorFactory {
 	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(Map<String,AbstractOptions> optionsMap);
 	
 	
+	
 	/**
 	 * Retrieves an object for use with configuration. It should be compatible with JCommander annotations. 
 	 * This object will be passed configured to the TargetAlgorithmEvaluator 
@@ -56,6 +67,8 @@ public interface TargetAlgorithmEvaluatorFactory {
 	 * @return object
 	 */
 	public AbstractOptions getOptionObject();
+
+
 	
 	
 }

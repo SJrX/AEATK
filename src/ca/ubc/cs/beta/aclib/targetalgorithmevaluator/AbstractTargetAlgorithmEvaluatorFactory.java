@@ -18,6 +18,12 @@ public abstract class AbstractTargetAlgorithmEvaluatorFactory implements
 			Map<String, AbstractOptions> optionsMap) {
 		return this.getTargetAlgorithmEvaluator( optionsMap.get(this.getName()));
 	}
+	
+
+	@Override
+	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator() {
+		return this.getTargetAlgorithmEvaluator(this.getOptionObject());
+	}
 
 	
 }

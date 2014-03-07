@@ -19,10 +19,16 @@ import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
+import java.util.TreeMap;
+
+import com.fasterxml.jackson.annotation.JsonIdentityInfo;
+import com.fasterxml.jackson.annotation.ObjectIdGenerators;
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
+import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import net.jcip.annotations.Immutable;
-
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration.StringFormat;
+import ca.ubc.cs.beta.aclib.json.serializers.ParamConfigurationJson;
 import ca.ubc.cs.beta.aclib.misc.java.io.FileReaderNoException.FileReaderNoExceptionThrown;
 import ec.util.MersenneTwisterFast;
 
@@ -51,6 +57,9 @@ enum LineType
  * @author seramage
  */
 @Immutable
+@JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class)
+@JsonSerialize(using=ParamConfigurationJson.ParamConfigurationSpaceSerializer.class)
+@JsonDeserialize(using=ParamConfigurationJson.ParamConfigurationSpaceDeserializer.class)
 public class ParamConfigurationSpace implements Serializable {
 	
 	/**
@@ -178,6 +187,10 @@ public class ParamConfigurationSpace implements Serializable {
 	 */
 	private final NormalizedRange[] normalizedRangesByIndex;
 
+	
+	private final String pcsFile;
+	
+	private final Map<String, String> searchSubspace;
 	/**
 	 * Creates a Param Configuration Space from the given file, no random object
 	 * @param filename string storing the filename to parse
@@ -254,19 +267,20 @@ public class ParamConfigurationSpace implements Serializable {
 		try {
 			BufferedReader inputData = null;
 			
+			StringBuilder pcs = new  StringBuilder();
 			try{
-			
-			inputData = new BufferedReader(file);
-			String line;
-			while((line = inputData.readLine()) != null)
-			{ try {
-				parseLine(line);
-				} catch(RuntimeException e)
-				{
-					System.err.println("Error occured parsing: " + line);
-					throw e;
+				inputData = new BufferedReader(file);
+				String line;
+				while((line = inputData.readLine()) != null)
+				{ try {
+					pcs.append(line + "\n");
+					parseLine(line);
+					} catch(RuntimeException e)
+					{
+						System.err.println("Error occured parsing: " + line);
+						throw e;
+					}
 				}
-			}
 			} finally
 			{
 				Collections.sort(paramNames);
@@ -274,6 +288,7 @@ public class ParamConfigurationSpace implements Serializable {
 				{
 					inputData.close();
 				}
+				pcsFile = pcs.toString();
 			}
 			
 			
@@ -439,6 +454,7 @@ public class ParamConfigurationSpace implements Serializable {
 		this.searchSubspaceValues = new double[this.defaultConfigurationValueArray.length];
 		this.searchSubspaceActive = new boolean[this.defaultConfigurationValueArray.length];
 		
+		Map<String, String> searchSubspaceMap = new TreeMap<String, String>();
 		for(Entry<String, String> subspaceProfile : searchSubspace.entrySet())
 		{
 			String param = subspaceProfile.getKey();
@@ -447,8 +463,10 @@ public class ParamConfigurationSpace implements Serializable {
 			if(value.equals("<DEFAULT>"))
 			{
 				value = this.getDefaultConfiguration().get(param);
+				
 			}
 			
+			searchSubspaceMap.put(param, value);
 			int index = this.paramKeyIndexMap.get(param);
 			
 			
@@ -456,6 +474,7 @@ public class ParamConfigurationSpace implements Serializable {
 			this.searchSubspaceActive[index] = true;
 		}
 		
+		this.searchSubspace = Collections.unmodifiableMap(searchSubspaceMap);
 		
 		
 	}
@@ -1666,6 +1685,22 @@ public class ParamConfigurationSpace implements Serializable {
 	
 	}
 
+	/**
+	 * Returns the contents of the PCS File that created this object
+	 * @return
+	 */
+	public String getPCSFile() {
+		return this.pcsFile;
+	}
+
+	/**
+	 * Returns the search subspace of the PCS File
+	 * @return
+	 */
+	public Map<String, String> getSearchSubspace()
+	{
+		return this.searchSubspace;
+	}
 
 
 	
