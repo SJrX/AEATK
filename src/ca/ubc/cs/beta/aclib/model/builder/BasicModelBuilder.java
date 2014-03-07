@@ -75,6 +75,7 @@ public class BasicModelBuilder implements ModelBuilder{
 	
 		
 		log.info("Building Random Forest with {} data points ", responseValues.length);
+		/*
 		if(log.isTraceEnabled())
 		{
 			log.trace("Building Random Forest with Parameters: {}", buildParams);
@@ -101,7 +102,7 @@ public class BasicModelBuilder implements ModelBuilder{
 			
 			log.trace("Build  Information \n {}", sWriter.toString());
 		}	
-		
+		*/
 		
 		
 		//log.info("Next Int {}", SeedableRandomSingleton.getRandom().nextInt());

@@ -78,7 +78,6 @@ public class ClassicInitializationProcedure implements InitializationProcedure {
 			 */
 			
 			ProblemInstanceSeedPair pisp = RunHistoryHelper.getRandomInstanceSeedWithFewestRunsFor(runHistory, insc, incumbent, instances, pool.getRandom("CLASSIC_INITIALIZATION"),deterministicInstanceOrdering);
-			log.trace("New Problem Instance Seed Pair generated {}", pisp);
 			RunConfig incumbentRunConfig = new RunConfig(pisp, cutoffTime,incumbent);
 			//Create initial row
 

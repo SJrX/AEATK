@@ -48,26 +48,21 @@ public class ProblemInstanceHelper {
 	private static File getFileForPath(String context, String path)
 	{
 		File f;
-		logger.trace("Trying to find file with context {} and path {}", context, path);
+		
 		if(path.length() > 0 && path.substring(0, 1).equals(File.separator))
 		{
-			logger.trace("Absolute path given for path, checking {}", path);
+		
 			f = new File(path);
 		} else
 		{
 			Object[] args = { context, File.separator, path };
-			logger.trace("Relative path given for path, checking {}{}{}", args);
+		
 			f = new File(context + File.separator + path);
 		}
 		
 		if(!f.exists())
 		{
-			logger.trace("Could not find needed file:" + path + " Context:" + context);
-			
-			//TODO take a full path c/d/e and a context a/b/c and somehow get a/b/c/d/e 
-			logger.trace("Trying basename of path in context");
-			
-			
+			//TODO take a full path c/d/e and a context a/b/c and somehow get a/b/c/d/e 		
 			f = new File(context + File.separator + new File(path).getName());
 			if(!f.exists())
 			{
@@ -419,7 +414,7 @@ public class ProblemInstanceHelper {
 					{
 						if(firstTry)
 						{
-							logger.trace("Matched features for instance named {} in feature file ",possibleFile);
+							//NO OP
 						} else
 						{
 							logger.debug("Matched features for instance named {} in feature file ",possibleFile);
@@ -448,10 +443,7 @@ public class ProblemInstanceHelper {
 							logger.debug("Matched instance {} with this entry {}", instanceFile, e.getKey());
 							features = e.getValue();
 							break;
-						} else
-						{
-							logger.trace("Didn't match ({}) with ({})", instanceFile, e.getKey());
-						}
+						} 
 					}
 					
 				}
@@ -485,7 +477,7 @@ public class ProblemInstanceHelper {
 			if(cachedProblemInstances.containsKey(instanceFile))
 			{
 				
-				logger.trace("Instance file has already been loaded once this runtime, using cached instance of {}", instanceFile);
+				
 				ai = cachedProblemInstances.get(instanceFile);
 				
 				if(ai.getFeatures().size() > 0 && features.size() > 0)
@@ -696,21 +688,7 @@ topOfLoop:
 			gen = new RandomInstanceSeedGenerator(instances.size(),seed, maxSeedsPerConfig);
 		}
 		
-		/*
-		try
-		{
-			br = new BufferedReader(new FileReader(instanceListFile));
-			while((line = br.readLine()) != null)
-			{
-				logger.trace("Read in line from file \"{}\"",line);
-				instanceList.add(line);
-				
-			}
-		} finally
-		{
-			if(br != null) br.close();
-		}
-		*/
+		
 		instanceList.addAll(instances.keySet());
 		return new InstanceListWithSeeds(gen, null, instanceList, instanceSpecificInfo);
 	}

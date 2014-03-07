@@ -94,7 +94,7 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 		 *    }
 		 *    
 		 */
-	
+		/*
 		if(log.isTraceEnabled())
 		{
 			StringWriter sWriter = new StringWriter();
@@ -106,6 +106,7 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 			}
 			log.trace("Adaptive Capping Inputs:\n {} "+ sWriter.toString());
 		}
+		*/
 		//=== Get predictors, response values, and censoring indicators from RunHistory.
 		
 		//=== Change to 0-based indexing
@@ -451,7 +452,7 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 */
 		RegtreeBuildParams buildParams = SMACRandomForestHelper.getRandomForestBuildParams(rfOptions, features[0].length, categoricalSize, condParents, condParentVals, rand);
 		
-		log.trace("Building Random Forest with Parameters: {}", buildParams);
+		
 		RandomForest forest;
 		
 		log.debug("Building Random Forest with {} data points ", responseValues.length);
@@ -536,14 +537,14 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 */		
 		RegtreeBuildParams buildParams = SMACRandomForestHelper.getRandomForestBuildParams(rfOptions, features[0].length, categoricalSize, condParents, condParentVals, rand);
 		
-		log.trace("Building Random Forest with Parameters: {}", buildParams);
+	
 		log.debug("Building Random Forest with {} data points ", responseValues[0].length);
 		
 		RandomForest forest;
 		
 		StopWatch sw = new AutoStartStopWatch();
 		
-		
+		/*
 		if(log.isTraceEnabled())
 		{
 			StringWriter sWriter = new StringWriter();
@@ -581,7 +582,7 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 			}
 			log.trace("Model Input Values:\n{} ", sWriter.toString());
 		}
-				
+		*/
 		
 		forest = RandomForest.learnModelImputedValues(numTrees, configs, features, theta_inst_idxs, responseValues, dataIdxs, buildParams);
 		

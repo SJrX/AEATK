@@ -194,25 +194,6 @@ public class LegacyStateDeserializer implements StateDeserializer {
 			FileLocations f = getLocations(restoreFromPath, id, iteration);
 			f.validate();
 			
-			log.trace("Run and Results File: {}", f.runHistoryFile.getAbsolutePath());
-			if(f.paramStringsFile != null)
-			{
-				log.trace("Param Strings File: {}", f.paramStringsFile.getAbsolutePath());
-			} 
-			
-			if(f.uniqConfigFile != null)
-			{
-				log.trace("Param Strings File: {}", f.uniqConfigFile.getAbsolutePath());
-			}
-				
-			if(f.javaObjDumpFile != null)
-			{
-				log.trace("Java Objective Dump File: {}",f.javaObjDumpFile.getAbsolutePath());
-			} else
-			{
-				log.trace("Java Objective Dump File: null");
-			}
-			
 			if(f.javaObjDumpFile != null)
 			{
 				incompleteSavedState = false;
@@ -294,7 +275,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 					
 						while( (line = reader.readLine()) != null)
 						{
-							log.trace("Parsing config line: {}", line);
+
 							String[] lineResults = line.split(",",2);
 							
 							if(lineResults.length != 2) throw new IllegalArgumentException("Configuration Param Strings File is corrupted, no comma detected on line: \"" + line + "\"");
@@ -317,7 +298,6 @@ public class LegacyStateDeserializer implements StateDeserializer {
 					
 						while( (line = reader.readLine()) != null)
 						{
-							log.trace("Parsing config line: {}", line);
 							String[] lineResults = line.split(":",2);
 							
 							if(lineResults.length != 2) throw new IllegalArgumentException("Configuration Param Strings File is corrupted, no colon detected on line: \"" + line + "\"");
@@ -514,7 +494,6 @@ public class LegacyStateDeserializer implements StateDeserializer {
 												
 						AlgorithmRun run = new ExistingAlgorithmRun(execConfig, runConfig, runResult, runtime, runLength, quality, seed, additionalRunData, wallClockTime);
 						
-						log.trace("Appending new run to runHistory: ", run);
 						try {
 							runHistory.append(run);
 						} catch (DuplicateRunException e) {
@@ -525,14 +504,11 @@ public class LegacyStateDeserializer implements StateDeserializer {
 							{
 								//This is for Model Building and is probably a bug for restoring state later
 								
-								log.trace("Seed is -1 which means it was deterministic, logging run with a new seed");
-								
 								seed = newSeeds++;
 								
 
 								run = new ExistingAlgorithmRun(execConfig, runConfig, runResult, runtime, runLength, quality, seed, wallClockTime);
 								
-								log.trace("Appending new run to runHistory: ", run);
 								try {
 									runHistory.append(run);
 								} catch(DuplicateRunException e2)

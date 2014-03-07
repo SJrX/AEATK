@@ -35,6 +35,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.safety.AbortOnCr
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.safety.AbortOnFirstRunCrashTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.safety.ResultOrderCorrectCheckerTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.safety.SATConsistencyTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.safety.SynchronousObserverTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.safety.TimingCheckerTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.safety.VerifySATTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.safety.WarnOnNoWallOrRuntimeTargetAlgorithmEvaluatorDecorator;
@@ -308,6 +309,7 @@ public class TargetAlgorithmEvaluatorBuilder {
 		if(options.synchronousObserver)
 		{
 			log.info("[TAE] Synchronizing notifications to the observer");
+			tae = new SynchronousObserverTargetAlgorithmEvaluatorDecorator(tae);
 		} else
 		{
 			log.debug("[TAE] Skipping synchronization of observers, this may cause weird threading issues");
@@ -353,10 +355,7 @@ public class TargetAlgorithmEvaluatorBuilder {
 						String lineSubStr = line.substring(colonIndex+1,spaceIndex);
 						runHashCodeQueue.add(Integer.valueOf(lineSubStr));
 						
-					} else
-					{
-						log.trace("No Hash Code found on line: {}", line );
-					}
+					} 
 					lineCount++;
 				}
 				if(hashCodeCount == 0)

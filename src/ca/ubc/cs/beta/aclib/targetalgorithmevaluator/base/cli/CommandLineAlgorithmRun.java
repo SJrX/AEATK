@@ -336,7 +336,9 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 								log.debug("Got some runtime exception while processing data packet", e);
 							} catch(SocketException e)
 							{
-								log.trace("SocketException occurred which we expected when we shutdown probably", e);
+								//Don't log this since this socket exception is what we
+								//we expect since most of the time we will be blocked on the socket
+								//when we are shutdown and interrupted.
 								return;
 							} catch (IOException e) {
 								log.warn("Unknown IOException occurred ", e);
