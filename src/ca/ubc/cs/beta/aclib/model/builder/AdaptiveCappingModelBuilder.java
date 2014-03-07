@@ -294,7 +294,6 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 				//=== Get the samples (but cap them at maxValue). 
 				
 				TruncatedNormalDistribution tNorm = new TruncatedNormalDistribution(prediction[j][0], prediction[j][1], responseValues[sampleIdxToUse],rand);
-				//log.debug("Constructing Truncated Normal Distribution took {} seconds" ,sw.stop() / 1000.0);
 				j++;
 				
 				double[] samples;
@@ -362,7 +361,7 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 		
 		if(rfOptions.preprocessMarginal)
 		{
-			log.debug("Preprocessing marginal for Random Forest");
+			log.trace("Preprocessing marginal for Random Forest");
 			preprocessedForest = RandomForest.preprocessForest(forest, mds.getPCAFeatures());
 		} else
 		{
@@ -455,7 +454,7 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 		
 		RandomForest forest;
 		
-		log.debug("Building Random Forest with {} data points ", responseValues.length);
+		log.trace("Building Random Forest with {} data points ", responseValues.length);
 		StopWatch sw = new StopWatch();
 		if(rfOptions.fullTreeBootstrap)
 		{
@@ -538,7 +537,7 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 		RegtreeBuildParams buildParams = SMACRandomForestHelper.getRandomForestBuildParams(rfOptions, features[0].length, categoricalSize, condParents, condParentVals, rand);
 		
 	
-		log.debug("Building Random Forest with {} data points ", responseValues[0].length);
+		log.trace("Building Random Forest with {} data points ", responseValues[0].length);
 		
 		RandomForest forest;
 		
@@ -586,7 +585,7 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 		
 		forest = RandomForest.learnModelImputedValues(numTrees, configs, features, theta_inst_idxs, responseValues, dataIdxs, buildParams);
 		
-		log.debug("Building Random Forest took {} seconds ", sw.stop() / 1000.0);
+		log.trace("Building Random Forest took {} seconds ", sw.stop() / 1000.0);
 
 		
 		return forest;

@@ -200,8 +200,15 @@ public class SeedableRandomPool implements Serializable {
 		map.putAll(this.randomSeedMap);
 		for(Entry<String, Integer> seedPair : map.entrySet())
 		{ 
-			Object[] args = {seedPair.getKey(), seedPair.getValue(), this.specifiedInitialSeeds.contains(seedPair.getKey()), this.usedNames.contains(seedPair.getKey())}; 
-			log.debug("Seed for {} was {}, Manually Set: {}  Used: {}",args);
+			Object[] args = {seedPair.getKey(), seedPair.getValue(), this.specifiedInitialSeeds.contains(seedPair.getKey()), this.usedNames.contains(seedPair.getKey())};
+			
+			if(this.specifiedInitialSeeds.contains(seedPair.getKey()))
+			{
+				log.debug("Seed for {} was {}, Manually Set: {}  Used: {}",args);
+			} else
+			{
+				log.trace("Seed for {} was {}, Manually Set: {}  Used: {}",args);
+			}
 		}
 	}
 	

@@ -92,7 +92,7 @@ public class SingleLogFileLoggingOptions  extends AbstractOptions implements Log
 		if(System.getProperty(ConsoleOnlyLoggingOptions.LOGBACK_CONFIGURATION_FILE_PROPERTY)!= null)
 		{
 			Logger log = LoggerFactory.getLogger(getClass());
-			log.debug("System property for logback.configurationFile has been found already set as {} , logging will follow this file", System.getProperty(ConsoleOnlyLoggingOptions.LOGBACK_CONFIGURATION_FILE_PROPERTY));
+			log.trace("System property for logback.configurationFile has been found already set as {} , logging will follow this file", System.getProperty(ConsoleOnlyLoggingOptions.LOGBACK_CONFIGURATION_FILE_PROPERTY));
 		} else
 		{
 			
@@ -103,9 +103,9 @@ public class SingleLogFileLoggingOptions  extends AbstractOptions implements Log
 			System.setProperty(ConsoleOnlyLoggingOptions.LOGBACK_CONFIGURATION_FILE_PROPERTY, newXML);
 			
 			Logger log = LoggerFactory.getLogger(getClass());
-			if(log.isDebugEnabled())
+			if(log.isTraceEnabled())
 			{
-				log.debug("Logging initialized to use file:" + newXML);
+				log.trace("Logging initialized to use file:" + newXML);
 			} else
 			{
 				log.info("Logging initialized");

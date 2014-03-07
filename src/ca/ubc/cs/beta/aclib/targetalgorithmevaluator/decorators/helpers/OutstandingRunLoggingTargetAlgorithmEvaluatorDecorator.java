@@ -140,7 +140,7 @@ public class OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator extends Abst
 	public void postDecorateeNotifyShutdown()
 	{
 			
-		log.debug("Processing detailed run statistics to {} ", this.resultFile);
+		log.trace("Processing detailed run statistics to {} ", this.resultFile);
 		
 		
 		if(this.startTime.size() > this.endTime.size())
@@ -248,7 +248,7 @@ public class OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator extends Abst
 			throw new IllegalStateException(e);
 		}
 		
-		log.debug("Processing complete");
+		log.trace("Processing complete");
 	}
 	
 

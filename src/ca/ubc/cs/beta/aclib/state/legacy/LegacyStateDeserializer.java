@@ -155,33 +155,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 				*/
 				
  				iteration = getMaxIterationInDirectory(restoreDirectory, "it");
-				/*
-				if(iteration == 0)
-				{
-					log.debug("Auto-detected iteration 0 on first pass trying by filename, doing another pass");
-					
-					for(File f : files)
-					{
-
-						if(f.getName().matches(LegacyStateFactory.getRunAndResultsFilename("", "it", "\\d+")))
-						{
-							
-							Matcher m = filePattern.matcher(f.getName());
-							
-							if(m.find())
-							{
-								String group = m.group(1);
-								log.debug("Found iteration {} from file {} ", group , f.getName());
-								iteration = Math.max(Integer.valueOf(group), iteration);
-							}
-							
-						}
-						
-						
-						
-					}
-				}
-				*/
+				
 				log.info("Iteration restoring to {} ", iteration);
 			}
 			
@@ -521,7 +495,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 							} else
 							{
 								duplicateRunsDropped++;
-								log.debug("Duplicate Run Detected dropped {} from line: {}",run, Arrays.toString(runHistoryLine));
+								log.trace("Duplicate Run Detected dropped {} from line: {}",run, Arrays.toString(runHistoryLine));
 								
 							}
 							

@@ -81,7 +81,7 @@ private static final Logger log = LoggerFactory.getLogger(CPUTime.class);
 								{ //This JVM doesn't have CPU time enabled
 							      //We check every iteration because some threads (the current thread may give us something other than -1)
 									
-									log.debug("JVM didn't give us a measurement for thread: {}", threadID);
+									log.trace("JVM didn't give us a measurement for thread: {}", threadID);
 									continue;
 								} else
 								{
@@ -91,7 +91,7 @@ private static final Logger log = LoggerFactory.getLogger(CPUTime.class);
 								long threadUserTime = b.getThreadUserTime(threadID);
 								if(threadUserTime == -1)
 								{
-									log.debug("JVM didn't give us a measurement for usertime of thread: {}", threadID);
+									log.trace("JVM didn't give us a measurement for usertime of thread: {}", threadID);
 									continue;
 								} else
 								{

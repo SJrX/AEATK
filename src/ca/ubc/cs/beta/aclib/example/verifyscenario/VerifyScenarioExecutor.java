@@ -131,7 +131,8 @@ public class VerifyScenarioExecutor {
 		}
 		
 		name = String.format("%-"+maxLength + "s",name);
-		log.debug("Attempting to verify scenario file : {}", name);
+		log.trace("Attempting to verify scenario file : {}", name);
+		
 		
 		ScenarioOptions scenOpts;
 		try {
@@ -168,7 +169,7 @@ public class VerifyScenarioExecutor {
 			return;
 		}
 		
-		log.debug("Verifying PCS File: {}", scenOpts.algoExecOptions.paramFileDelegate.paramFile);
+		log.trace("Verifying PCS File: {}", scenOpts.algoExecOptions.paramFileDelegate.paramFile);
 		double pcsLB;
 		double pcsUB;
 		try 
@@ -184,7 +185,7 @@ public class VerifyScenarioExecutor {
 			return;
 		}
 		
-		log.debug("Verifying Execution Directory: {}", scenOpts.algoExecOptions.algoExecDir);
+		log.trace("Verifying Execution Directory: {}", scenOpts.algoExecOptions.algoExecDir);
 		
 		File execDir = null;
 		try
@@ -230,7 +231,7 @@ public class VerifyScenarioExecutor {
 		}
 		
 		
-		log.debug("Verifying Problem Instances: {}", scenOpts.instanceOptions.instanceFile);
+		log.trace("Verifying Problem Instances: {}", scenOpts.instanceOptions.instanceFile);
 		
 		int instances;
 		

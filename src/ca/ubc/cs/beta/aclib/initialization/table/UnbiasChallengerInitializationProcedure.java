@@ -169,7 +169,7 @@ public class UnbiasChallengerInitializationProcedure implements InitializationPr
 			initializeRuns(pispConfigs);
 			
 			
-			log.debug("Waiting for all outstanding evaluations to complete");
+			log.trace("Waiting for all outstanding evaluations to complete");
 			tae.waitForOutstandingEvaluations();
 			log.info("All outstanding runs completed, inspecting best configuration");
 			
@@ -304,7 +304,7 @@ public class UnbiasChallengerInitializationProcedure implements InitializationPr
 					{
 						if(run.getRunResult() == RunResult.RUNNING)
 						{
-							log.debug("Killing run {} ", run);
+							log.trace("Killing run {} ", run);
 							run.kill();
 						}
 					}
@@ -359,7 +359,7 @@ outOfInitialization:
 					//Everything is solved so we are done
 					if(solvedPisps.size() == allPairsSize)
 					{
-						log.debug("All runs are considered done");
+						log.trace("All runs are considered done");
 						break outOfInitialization;
 					}
 					

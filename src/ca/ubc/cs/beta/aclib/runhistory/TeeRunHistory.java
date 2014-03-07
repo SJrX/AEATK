@@ -33,7 +33,7 @@ public class TeeRunHistory extends AbstractRunHistoryDecorator{
 			branch.append(run);
 		} catch(DuplicateRunException e)
 		{
-			log.debug("Branch RunHistory object detected duplicate run: {}", run);
+			log.trace("Branch RunHistory object detected duplicate run: {}", run);
 		}
 	}
 

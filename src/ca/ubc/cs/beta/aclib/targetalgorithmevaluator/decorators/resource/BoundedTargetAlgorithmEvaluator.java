@@ -160,7 +160,7 @@ public class BoundedTargetAlgorithmEvaluator extends
 					throw new IllegalStateException("Somehow I now have more permits than I should be limited to");
 				}
 				
-				log.debug("Asking for permission for {} things config id of first: ({})", runConfigs.size() - numberOfDispatchedRuns, runConfigs.get(0).getParamConfiguration().getFriendlyIDHex());
+				log.trace("Asking for permission for {} things config id of first: ({})", runConfigs.size() - numberOfDispatchedRuns, runConfigs.get(0).getParamConfiguration().getFriendlyIDHex());
 				int oNumRunConfigToRun;
 				try {
 					oNumRunConfigToRun = availableRuns.getUpToNPermits(runConfigs.size()-numberOfDispatchedRuns);
@@ -175,7 +175,7 @@ public class BoundedTargetAlgorithmEvaluator extends
 				}
 				int numRunConfigToRun = oNumRunConfigToRun;
 	
-				log.debug("Asked for permission to run {} things, got permission to run {} things, total completed for this batch {}  config id of first: ({})" , runConfigs.size()-numberOfDispatchedRuns, numRunConfigToRun,numberOfDispatchedRuns, runConfigs.get(0).getParamConfiguration().getFriendlyIDHex() );
+				log.trace("Asked for permission to run {} things, got permission to run {} things, total completed for this batch {}  config id of first: ({})" , runConfigs.size()-numberOfDispatchedRuns, numRunConfigToRun,numberOfDispatchedRuns, runConfigs.get(0).getParamConfiguration().getFriendlyIDHex() );
 				
 				List<RunConfig> runsToDo = new ArrayList<RunConfig>(numRunConfigToRun);
 				
@@ -202,7 +202,7 @@ public class BoundedTargetAlgorithmEvaluator extends
 					{
 						if(killHandlers.get(possibleRC).isKilled())
 						{
-							log.debug("Run {} was killed already not dispatching, marking killed", possibleRC);
+							log.trace("Run {} was killed already not dispatching, marking killed", possibleRC);
 							killInterceptedCount++;
 						
 							AlgorithmRun completedRun = new ExistingAlgorithmRun(execConfig, possibleRC,RunResult.KILLED, 0,0,0,possibleRC.getProblemInstanceSeedPair().getSeed(),KILLED_BY_DECORATOR_ADDL_RUN_INFO,0);
@@ -341,7 +341,6 @@ public class BoundedTargetAlgorithmEvaluator extends
 		public void currentStatus(List<? extends KillableAlgorithmRun> runs) {
 			
 			
-			//log.debug("Observer Fired {}", runs);
 			
 			if(runs.size() != numRunConfigToRun)
 			{
@@ -368,12 +367,10 @@ public class BoundedTargetAlgorithmEvaluator extends
 				}
 				
 				int previousCompletedCount = completedCount.get();
-				//log.debug("Setting completed runs to " + completedRuns + " on object " + System.identityHashCode(completedCount));
-
+				
 				
 				if(previousCompletedCount > completedRuns)
 				{
-					//log.debug("Setting completed runs to " + completedRuns + " on object " + System.identityHashCode(completedCount));
 					IllegalStateException e =  new IllegalStateException("Somehow I determined that there were " + completedRuns + " but previously we detected: " + previousCompletedCount );
 					
 					throw e;

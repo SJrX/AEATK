@@ -147,7 +147,7 @@ public class BasicModelBuilder implements ModelBuilder{
 		
 		if(rfConfig.preprocessMarginal)
 		{
-			log.debug("Preprocessing marginal for Random Forest");
+			log.trace("Preprocessing marginal for Random Forest");
 			preprocessedForest = RandomForest.preprocessForest(forest, features);
 			//RandomForest.save(preprocessedForest);
 

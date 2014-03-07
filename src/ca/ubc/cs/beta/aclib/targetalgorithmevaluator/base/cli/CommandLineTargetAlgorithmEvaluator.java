@@ -62,7 +62,7 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractAsyncTargetAlgo
 		log.debug("Initalized with the following Execution Configuration {} " , execConfig);
 		this.concurrentExecution = options.concurrentExecution;
 		if(observerFrequency < 50) throw new ParameterException("Observer Frequency can't be less than 50 ms");
-		log.debug("Concurrent Execution {}", options.concurrentExecution);
+		log.trace("Concurrent Execution {}", options.concurrentExecution);
 		this.options = options;
 		
 		File execDir = new File(execConfig.getAlgorithmExecutionDirectory());
@@ -187,12 +187,12 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractAsyncTargetAlgo
 		
 		if(concurrentExecution && options.cores > 1)
 		{
-			log.debug("Using concurrent algorithm runner");
+			log.trace("Using concurrent algorithm runner");
 			return AutomaticConfiguratorFactory.getConcurrentAlgorithmRunner(execConfig,runConfigs,obs, options,executionIDs);
 			
 		} else
 		{
-			log.debug("Using single-threaded algorithm runner");
+			log.trace("Using single-threaded algorithm runner");
 			return AutomaticConfiguratorFactory.getSingleThreadedAlgorithmRunner(execConfig,runConfigs,obs, options,executionIDs);
 		}
 	}

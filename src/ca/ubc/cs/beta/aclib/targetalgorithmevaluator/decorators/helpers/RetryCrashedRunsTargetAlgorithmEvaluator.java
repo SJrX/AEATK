@@ -76,11 +76,11 @@ public class RetryCrashedRunsTargetAlgorithmEvaluator extends
 			
 			if(!crashedRunsExist)
 			{
-				log.debug("No crashed runs to retry");
+				log.trace("No crashed runs to retry");
 				break;
 			} else
 			{
-				log.info("Retrying {} crashed runs (Attempt {})", crashedRuns.size(), i);
+				log.debug("Retrying {} crashed runs (Attempt {})", crashedRuns.size(), i);
 			}
 			
 			List<RunConfig> crashRCs = new ArrayList<RunConfig>(crashedRuns.keySet().size());

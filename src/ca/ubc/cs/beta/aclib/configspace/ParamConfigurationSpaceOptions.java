@@ -181,7 +181,7 @@ public class ParamConfigurationSpaceOptions extends AbstractOptions{
 				
 		
 				configSpace = ParamFileHelper.getParamFileParser(path);
-				log.debug("Configuration space found in " + path);
+				log.trace("Configuration space found in " + path);
 			} catch(IllegalStateException e)
 			{ 
 				if(e.getCause() instanceof FileNotFoundException)

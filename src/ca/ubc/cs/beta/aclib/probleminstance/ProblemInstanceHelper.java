@@ -231,7 +231,7 @@ public class ProblemInstanceHelper {
 		
 		
 		
-		logger.debug("Loading instances from file: {} and experiment dir {}", filename, experimentDir);
+		logger.trace("Loading instances from file: {} and experiment dir {}", filename, experimentDir);
 		
 		
 		List<ProblemInstance> instances = new ArrayList<ProblemInstance>();
@@ -257,7 +257,7 @@ public class ProblemInstanceHelper {
 		if(featureFileName != null)
 		{
 			//=======Parse Features=====
-			logger.debug("Feature File specified reading features from: {} ", new File(featureFileName).getAbsolutePath());
+			logger.trace("Feature File specified reading features from: {} ", new File(featureFileName).getAbsolutePath());
 			File featureFile = getFileForPath(experimentDir, featureFileName);
 			
 			if(!featureFile.exists())
@@ -290,7 +290,7 @@ public class ProblemInstanceHelper {
 				}
 				column++;
 			}
-			logger.debug("Feature File specifies: {} features for {} instances", numberOfFeatures, features.getNumberOfDataRows() );
+			logger.trace("Feature File specifies: {} features for {} instances", numberOfFeatures, features.getNumberOfDataRows() );
 			
 			
 			for(int i=0; i  < features.getNumberOfDataRows(); i++)
@@ -345,7 +345,7 @@ public class ProblemInstanceHelper {
 			}
 			File instanceListFile = getFileForPath(experimentDir, filename);
 			instanceFileAbsolutePath = instanceListFile.getAbsolutePath();
-			logger.debug("Reading instances from file {}", instanceFileAbsolutePath);
+			logger.trace("Reading instances from file {}", instanceFileAbsolutePath);
 			InstanceListWithSeeds insc = getListAndSeedGen(instanceListFile,seed, maxSeedsPerInstance);
 			instanceList = insc.getInstancesByName();
 			gen = insc.getSeedGen();
@@ -417,7 +417,7 @@ public class ProblemInstanceHelper {
 							//NO OP
 						} else
 						{
-							logger.debug("Matched features for instance named {} in feature file ",possibleFile);
+							logger.trace("Matched features for instance named {} in feature file ",possibleFile);
 						}
 						unMappedFeatureMapEntries.remove(possibleFile.trim());
 						
@@ -425,7 +425,7 @@ public class ProblemInstanceHelper {
 					} else
 					{
 						firstTry = false;
-						logger.debug("No match for instance named {} in feature file ",possibleFile);
+						logger.trace("No match for instance named {} in feature file ",possibleFile);
 					}
 					
 				}
@@ -440,7 +440,7 @@ public class ProblemInstanceHelper {
 					{
 						if(instanceFile.endsWith(e.getKey()))
 						{
-							logger.debug("Matched instance {} with this entry {}", instanceFile, e.getKey());
+							logger.trace("Matched instance {} with this entry {}", instanceFile, e.getKey());
 							features = e.getValue();
 							break;
 						} 
@@ -538,7 +538,7 @@ public class ProblemInstanceHelper {
 				logger.warn("Detected that seeds have been preloaded, yet the algorithm is listed as deterministic, generally this means we should use -1 as a seed");
 			} else
 			{
-				logger.debug("Deterministic algorithm, selecting hard coded instance seed generator");
+				logger.trace("Deterministic algorithm, selecting hard coded instance seed generator");
 				
 				LinkedHashMap<String, List<Long>> instanceSeedMap = new LinkedHashMap<String, List<Long>>(); 
 				
@@ -628,7 +628,7 @@ topOfLoop:
 		List<String> instanceList = new LinkedList<String>();
 		
 		
-		logger.debug("Reading instance file detecting format");
+		logger.trace("Reading instance file detecting format");
 		
 		LinkedHashMap<String, List<Long>> instances;
 		LinkedHashMap<String, String> instanceSpecificInfo;
@@ -735,7 +735,7 @@ topOfLoop:
 				if(possibleFormat == null)
 				{
 					possibleFormat = instanceOnly;
-					logger.debug("Line with only 1 entry found, trying {}", possibleFormat);
+					logger.trace("Line with only 1 entry found, trying {}", possibleFormat);
 				}
 				if(possibleFormat == instanceOnly)
 				{
@@ -743,7 +743,7 @@ topOfLoop:
 					instanceSeedMap.put(s[0], new LinkedList<Long>());
 				} else
 				{
-					logger.debug("Line with only 1 entry found, we are not {}",possibleFormat);
+					logger.trace("Line with only 1 entry found, we are not {}",possibleFormat);
 					throw new IllegalArgumentException();
 				}
 			} else if(s.length == 2)
@@ -753,13 +753,13 @@ topOfLoop:
 				{
 					try {
 						possibleFormat = seedPair;
-						logger.debug("Line with only 2 entries found, trying {}", possibleFormat);
+						logger.trace("Line with only 2 entries found, trying {}", possibleFormat);
 						Long.valueOf(s[0]);
 						possibleFormat = seedPair;
 					} catch(NumberFormatException e)
 					{
 						possibleFormat = instanceSpecific;
-						logger.debug("First entry on line 1 not a long value, trying {}", possibleFormat);
+						logger.trace("First entry on line 1 not a long value, trying {}", possibleFormat);
 					}
 					
 					
@@ -779,7 +779,7 @@ topOfLoop:
 					instanceSeedMap.get(instanceName).add(Long.valueOf(s[0]));
 					} catch(NumberFormatException e)
 					{
-						logger.debug("{} is not a valid long value", s[0]);
+						logger.trace("{} is not a valid long value", s[0]);
 						
 						throw new IllegalArgumentException();
 					}
@@ -794,7 +794,7 @@ topOfLoop:
 					instanceSeedMap.put(instanceName, new LinkedList<Long>());
 				} else
 				{
-					logger.debug("Line with 2 entries found, we are not {}",possibleFormat);
+					logger.trace("Line with 2 entries found, we are not {}",possibleFormat);
 					throw new IllegalArgumentException();
 				}
 			
@@ -811,7 +811,7 @@ topOfLoop:
 					String instanceName = s[1];
 					if(s[1].trim().length() == 0)
 					{
-						logger.debug("\"{}\" is not a valid instance name (All Whitespace)", s[1]);
+						logger.trace("\"{}\" is not a valid instance name (All Whitespace)", s[1]);
 						throw new IllegalArgumentException();
 					}
 					
@@ -822,11 +822,11 @@ topOfLoop:
 					
 					try
 					{
-					instanceSeedMap.get(instanceName).add(Long.valueOf(s[0]));
+						instanceSeedMap.get(instanceName).add(Long.valueOf(s[0]));
 					
 					} catch(NumberFormatException e)
 					{
-						logger.debug("{} is not a valid long value", s[0]);
+						logger.trace("{} is not a valid long value", s[0]);
 						
 						throw new IllegalArgumentException();
 					}
@@ -837,7 +837,7 @@ topOfLoop:
 						if(!s[2].equals(instanceSpecificInfoMap.get(instanceName)))
 						{
 							Object[] args = {instanceName, s[2], instanceSpecificInfoMap.get(instanceName)};
-							logger.debug("Discrepancy detected in instance specific information {} had {} vs. {}  (This is not permitted)", args );
+							logger.trace("Discrepancy detected in instance specific information {} had {} vs. {}  (This is not permitted)", args );
 							throw new IllegalArgumentException();
 						}
 					} else
@@ -849,13 +849,13 @@ topOfLoop:
 					
 				} else
 				{
-					logger.debug("Line with 3 entries found, we are not {}", possibleFormat);
+					logger.trace("Line with 3 entries found, we are not {}", possibleFormat);
 					throw new IllegalArgumentException();
 				}
 				
 			} else
 			{
-				logger.debug("Line with {} entries found unknown format", s.length);
+				logger.trace("Line with {} entries found unknown format", s.length);
 				possibleFormat = null;
 				throw new IllegalArgumentException();
 			}

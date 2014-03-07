@@ -34,7 +34,7 @@ public class FileDeletedTerminateCondition extends AbstractTerminationCondition 
 	
 		this.filename = fileToWatch.getAbsolutePath();
 		
-		log.debug("Terminating procedure if {} is deleted", fileToWatch);
+		log.info("Terminating procedure if {} is deleted", fileToWatch);
 		if(!fileToWatch.exists())
 		{
 			log.warn("File To Watch: {} does not exist, was it already deleted?", fileToWatch);

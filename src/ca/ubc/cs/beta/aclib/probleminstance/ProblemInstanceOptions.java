@@ -97,10 +97,10 @@ public class ProblemInstanceOptions extends AbstractOptions{
 		//instanceFileAbsolutePath = ilws.getInstanceFileAbsolutePath();
 		//instanceFeatureFileAbsolutePath = ilws.getInstanceFeatureFileAbsolutePath();
 	
-		log.debug("Training Instance Seed Generator reports {} seeds ",  ilws.getSeedGen().getInitialInstanceSeedCount());
+		log.trace("Training Instance Seed Generator reports {} seeds ",  ilws.getSeedGen().getInitialInstanceSeedCount());
 		if(ilws.getSeedGen().allInstancesHaveSameNumberOfSeeds())
 		{
-			log.debug("Training Instance Seed Generator reports that all instances have the same number of available seeds");
+			log.trace("Training Instance Seed Generator reports that all instances have the same number of available seeds");
 		} else
 		{
 			log.error("Training Instance Seed Generator reports that some instances have a different number of seeds than others");
@@ -162,13 +162,13 @@ public class ProblemInstanceOptions extends AbstractOptions{
 		//instanceFileAbsolutePath = ilws.getInstanceFileAbsolutePath();
 		//instanceFeatureFileAbsolutePath = ilws.getInstanceFeatureFileAbsolutePath();
 	
-		log.debug("Test Instance Seed Generator reports {} seeds ",  ilws.getSeedGen().getInitialInstanceSeedCount());
+		log.trace("Test Instance Seed Generator reports {} seeds ",  ilws.getSeedGen().getInitialInstanceSeedCount());
 		if(ilws.getSeedGen().allInstancesHaveSameNumberOfSeeds())
 		{
-			log.debug("Test Instance Seed Generator reports that all instances have the same number of available seeds");
+			log.trace("Test Instance Seed Generator reports that all instances have the same number of available seeds");
 		} else
 		{
-			log.debug("Test Instance Seed Generator reports that some instances have a different number of seeds than others");
+			log.trace("Test Instance Seed Generator reports that some instances have a different number of seeds than others");
 			throw new ParameterException("All Testing instances must have the same number of seeds in this version of SMAC");
 		}
 		
@@ -227,7 +227,7 @@ public class ProblemInstanceOptions extends AbstractOptions{
 			return new TrainTestInstances(training, testing);
 			} catch(ParameterException e)
 			{
-				log.debug("Ignore this exception for now: ", e);
+				log.trace("Ignore this exception for now: ", e);
 				exceptionMessages.put(dir,  e.getMessage());
 			}
 		}
