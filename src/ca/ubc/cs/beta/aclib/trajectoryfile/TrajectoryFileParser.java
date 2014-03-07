@@ -128,7 +128,7 @@ public class TrajectoryFileParser {
 			skipList = TrajectoryFileParser.parseSMACTrajectoryFile(configs, configSpace, useTunerTimeAsWallTime);
 		} catch(ArrayIndexOutOfBoundsException e )
 		{
-			log.info("Trajectory File is not in SMAC Format, falling back to ParamILS Format");
+			log.debug("Trajectory File is not in SMAC Format, falling back to ParamILS Format");
 			
 			skipList = TrajectoryFileParser.parseParamILSTrajectoryFile(configs, configSpace, useTunerTimeAsWallTime);
 		}

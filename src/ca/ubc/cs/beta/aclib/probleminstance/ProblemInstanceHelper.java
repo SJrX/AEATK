@@ -357,7 +357,7 @@ public class ProblemInstanceHelper {
 		{   
 			//====Just use Instances specified in Feature File====
 			instanceList.addAll(featuresMap.keySet());
-			logger.info("Reading instances from feature file");
+			logger.trace("Reading instances from feature file");
 			gen = new RandomInstanceSeedGenerator(instanceList.size(), seed, maxSeedsPerInstance);
 			
 		}

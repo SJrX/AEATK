@@ -57,24 +57,7 @@ public class StateMergeModelBuilder {
 	public void learnModel(List<ProblemInstance> instances, RunHistory runHistory, ParamConfigurationSpace configSpace, RandomForestOptions rfOptions, ModelBuildingOptions mbOptions, ScenarioOptions scenarioOptions, boolean adaptiveCapping, SeedableRandomPool pool) 
 	{
 		
-		/*
-		if(rfOptions.subsampleValuesWhenLowMemory)
-		{
-			
-			double freeMemory = freeMemoryAfterGC();
-			if(freeMemory < options.randomForestOptions.freeMemoryPercentageToSubsample)
-			{
-				subsamplePercentage *= options.randomForestOptions.subsamplePercentage;
-				Object[] args = { getIteration(), freeMemory, subsamplePercentage};
-				log.info("Iteration {} : Free memory too low ({}) subsample percentage now {} ", args);
-			}
 
-		} else
-		{
-			subsamplePercentage = 1;
-		}
-		*/
-		
 		
 		
 		
@@ -192,7 +175,7 @@ public class StateMergeModelBuilder {
 		forest = mb.getRandomForest();
 		preparedForest = mb.getPreparedRandomForest();
 	
-		log.info("Random Forest Built");
+		log.debug("Random Forest Built");
 	}
 	
 	

@@ -37,7 +37,7 @@ public class HashCodeVerifyingModelBuilder extends BasicModelBuilder {
 		super(mds, rfConfig, rand);
 		
 		int forestCode = forest.matlabHashCode();
-		log.info("Random Forest Built with Hash Code: {}", forestCode);
+		log.trace("Random Forest Built with Hash Code: {}", forestCode);
 		
 		
 		if(!modelHashes.isEmpty())
@@ -48,14 +48,14 @@ public class HashCodeVerifyingModelBuilder extends BasicModelBuilder {
 				throw new TrajectoryDivergenceException("Expected Random Forest To Be Built With Hash Code: "+expected+ " vs. " + forestCode);
 			} else
 			{
-				log.info("Random Forest Hash Code Matched");
+				log.trace("Random Forest Hash Code Matched");
 			}
 		}
 		
 		if(preprocessedForest != null)
 		{
 			int preprocessedCode = preprocessedForest.matlabHashCode();
-			log.info(runHash,"Preprocessed Forest Built with Hash Code: {}",preprocessedCode);
+			log.trace(runHash,"Preprocessed Forest Built with Hash Code: {}",preprocessedCode);
 			
 			if(!preprocessedHashes.isEmpty())
 			{
@@ -65,7 +65,7 @@ public class HashCodeVerifyingModelBuilder extends BasicModelBuilder {
 					throw new TrajectoryDivergenceException("Expected Preprocessed Random Forest To Be Built With Hash Code: "+expected+ " vs. " + preprocessedCode);
 				} else
 				{
-					log.info("Preprocessed Hash Code Matched");
+					log.trace("Preprocessed Hash Code Matched");
 				}
 
 			}

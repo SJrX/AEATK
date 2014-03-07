@@ -129,11 +129,11 @@ public class ValidationExecutorOptions extends AbstractOptions {
 			Logger log = LoggerFactory.getLogger(getClass());
 			if(this.validateTestInstances)
 			{
-				log.info("Validating using test instances");
+				log.debug("Validating using test instances");
 				return tti.getTestInstances();
 			} else
 			{
-				log.info("Validating using training instances");
+				log.debug("Validating using training instances");
 				return tti.getTrainingInstances();
 			}
 	}

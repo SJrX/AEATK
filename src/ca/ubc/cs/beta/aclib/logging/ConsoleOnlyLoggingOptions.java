@@ -62,7 +62,7 @@ public class ConsoleOnlyLoggingOptions extends AbstractOptions implements Loggin
 				log.trace("Logging initialized to use file:" + newXML);
 			} else
 			{
-				log.info("Logging initialized");
+				log.debug("Logging initialized");
 			}
 			
 		}

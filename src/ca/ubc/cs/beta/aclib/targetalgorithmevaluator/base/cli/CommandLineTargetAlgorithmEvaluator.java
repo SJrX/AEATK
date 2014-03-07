@@ -221,7 +221,7 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractAsyncTargetAlgo
 		try {
 			this.asyncExecService.shutdown();
 			
-			log.info("Awaiting Termination of existing command line algorithm runs");
+			log.debug("Awaiting Termination of existing command line algorithm runs");
 
 			boolean terminated = this.asyncExecService.awaitTermination(10, TimeUnit.SECONDS);
 			

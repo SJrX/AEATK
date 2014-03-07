@@ -146,7 +146,7 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 			}
 			
 			
-			log.info("Scheduling runs synchronously for configs {}", configIDs);
+			log.trace("Scheduling runs synchronously for configs {}", configIDs);
 			
 			final List<AlgorithmRun> runsFromWrappedTAE = Collections.unmodifiableList(tae.evaluateRun(runConfigs, null));
 			double timeToSleep = Double.NEGATIVE_INFINITY;

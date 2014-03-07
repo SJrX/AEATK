@@ -91,7 +91,7 @@ public class ParamConfigurationOriginLogger implements EventHandler<AutomaticCon
 			}
 			
 			writer.close();
-			log.info("Configuration Origins Saved in {}", saveFile.getAbsolutePath());
+			log.debug("Configuration Origins Saved in {}", saveFile.getAbsolutePath());
 		} catch (IOException e) {
 			log.error("Couldn't write Config Origin File {}",e);
 		}

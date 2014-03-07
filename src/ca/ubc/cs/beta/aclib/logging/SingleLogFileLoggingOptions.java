@@ -108,7 +108,7 @@ public class SingleLogFileLoggingOptions  extends AbstractOptions implements Log
 				log.trace("Logging initialized to use file:" + newXML);
 			} else
 			{
-				log.info("Logging initialized");
+				log.debug("Logging initialized");
 			}
 			
 		}

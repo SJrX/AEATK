@@ -75,7 +75,7 @@ public class TrajectoryFileLogger implements EventHandler<AutomaticConfiguratorE
 		} else if(event instanceof AutomaticConfigurationEnd)
 		{
 			
-			log.info("Writing trajectory file to {}",  (new File(fileNamePrefix)).getAbsolutePath());
+			log.debug("Writing trajectory file to {}",  (new File(fileNamePrefix)).getAbsolutePath());
 			
 			if(lastIevent != null)
 			{ //Can't write this guy because the other threads have probably terminated

@@ -200,7 +200,7 @@ public class TargetAlgorithmEvaluatorBuilder {
 			if(options.trackRunsScheduled)
 			{
 				String resultFile = outputDir.getAbsolutePath() + File.separator + "queued-runs-over-time-" + numRun + ".csv";
-				log.info("[TAE] Tracking all queued runs to file {} ", resultFile);
+				log.debug("[TAE] Tracking all queued runs to file {} ", resultFile);
 				tae = new OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator(tae, resultFile, options.trackRunsScheduledResolution, "Queued");
 			}
 			
@@ -276,7 +276,7 @@ public class TargetAlgorithmEvaluatorBuilder {
 			log.trace("[TAE] Waiting / Monitoring outstanding target algorithm evaluations is supported");
 		} else
 		{
-			log.info("[TAE] Waiting / Monitoring outstanding target algorithm evaluations will not be supported");
+			log.debug("[TAE] Waiting / Monitoring outstanding target algorithm evaluations will NOT be supported");
 		}
 		
 		if(options.checkRunConfigsUnique)
@@ -332,7 +332,7 @@ public class TargetAlgorithmEvaluatorBuilder {
 	
 	private static Queue<Integer> parseRunHashCodes(File runHashCodeFile) 
 	{
-		log.info("Run Hash Code File Passed {}", runHashCodeFile.getAbsolutePath());
+		log.debug("Run Hash Code File Path {}", runHashCodeFile.getAbsolutePath());
 		Queue<Integer> runHashCodeQueue = new LinkedList<Integer>();
 		BufferedReader bin = null;
 		try {

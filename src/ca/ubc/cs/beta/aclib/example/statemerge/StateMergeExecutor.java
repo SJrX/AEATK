@@ -78,12 +78,13 @@ public class StateMergeExecutor {
 			
 			for(String file : jcom.getParameterFilesToRead())
 			{
-				log.info("Reading options from default file {} " , file);
+				log.debug("Reading options from default file {} " , file);
 			}
 			
 			
 			
-			log.info("Determining Scenario Options");
+			log.info("Starting State Merge");
+			log.debug("Determining Scenario Options");
 			List<ProblemInstance> pis = smo.scenOpts.getTrainingAndTestProblemInstances(smo.experimentDir, 0, 0, true, false, false, false).getTrainingInstances().getInstances();;
 			AlgorithmExecutionConfig execConfig = smo.scenOpts.getAlgorithmExecutionConfigSkipExecDirCheck(smo.experimentDir);
 			MapList<Integer, AlgorithmRun> runsPerIteration = new MapList<Integer, AlgorithmRun>(new LinkedHashMap<Integer, List<AlgorithmRun>>());
@@ -95,7 +96,7 @@ public class StateMergeExecutor {
 			{
 				smo.replaceSeeds = true;
 			}
-			log.info("Scanning directories");
+			log.debug("Scanning directories");
 			Set<String> directoriesWithState = getAllRestoreDirectories(smo.directories);
 			
 			
@@ -117,7 +118,7 @@ public class StateMergeExecutor {
 			
 			Random r = new MersenneTwister(smo.seed);
 			
-			log.info("Processing Runs");
+			log.debug("Processing Runs");
 			RunHistory rh = new NewRunHistory(smo.scenOpts.intraInstanceObj, smo.scenOpts.interInstanceObj, smo.scenOpts.runObj);
 			if(smo.replaceSeeds)
 			{
@@ -148,7 +149,7 @@ public class StateMergeExecutor {
 				rdi++;
 				log.trace("Restored Data Iteration {} => {} ", rd.getIteration(), rd.getRun());
 			}
-			log.info("Restored Runs Count {} ", rdi);
+			log.debug("Restored Runs Count {} ", rdi);
 			
 			ThreadSafeRunHistory rhToSaveToDisk;
 			
@@ -169,7 +170,7 @@ public class StateMergeExecutor {
 				int maxSetSize = 0;
 				for(ParamConfiguration config : configs)
 				{
-					log.info("Number of runs for configuration {} is {}", config, rhToFilter.getProblemInstanceSeedPairsRan(config).size());
+					log.debug("Number of runs for configuration {} is {}", config, rhToFilter.getProblemInstanceSeedPairsRan(config).size());
 					
 					allPisps.addAll(rhToFilter.getProblemInstanceSeedPairsRan(config));
 					if(maxSetSize < rhToFilter.getProblemInstanceSeedPairsRan(config).size())
@@ -186,7 +187,7 @@ public class StateMergeExecutor {
 					
 				}
 				
-				log.info("Number of possible incumbents are {}", maxConfigs.size());
+				log.debug("Number of possible incumbents are {}", maxConfigs.size());
 				
 				StateMergeModelBuilder smmb = new StateMergeModelBuilder();
 				
@@ -194,7 +195,7 @@ public class StateMergeExecutor {
 				instances.addAll(fixedPi.values());
 				
 				 SeedableRandomPool srp = new SeedableRandomPool(1);
-				log.info("Building model");
+				log.debug("Building model");
 				
 				boolean adaptiveCapping = true;
 				if(smo.rfo.logModel == null)
@@ -283,7 +284,7 @@ public class StateMergeExecutor {
 			}
 			
 			
-			log.info("Restored Runs Count {} out of {} runs found  ", rdi, originalRestored );
+			log.debug("Restored Runs Count {} out of {} runs found  ", rdi, originalRestored );
 			
 			
 			
@@ -294,12 +295,13 @@ public class StateMergeExecutor {
 			List<ProblemInstance> pisToSave = new ArrayList<ProblemInstance>();
 			for(Entry<String, ProblemInstance> ent : fixedPi.entrySet())
 			{
-				log.info("Problem instance saving {}", ent.getValue());
+				log.debug("Problem instance saving {}", ent.getValue());
 				pisToSave.add(ent.getValue());
 			}
 		
 			saveState(smo.scenOpts.outputDirectory, rhToSaveToDisk, pisToSave, execConfig.getParamFile().getParamFileName(), execConfig, smo.scenOpts, newIncumbent);
-			
+			log.info("State Merge completed successfully");
+
 		} catch(ParameterException e)
 		{
 			
@@ -355,7 +357,7 @@ outerLoop:
 						continue;
 					}
 					idcollision = true;
-					log.info("Problem Instance ID collision detected, this generally means you are merging run history files over different instance distributions. This is OK but note that instance IDs need to be changed, and so you cannot use this runhistory file to warm start a SMAC run.");
+					log.debug("Problem Instance ID collision detected, this generally means you are merging run history files over different instance distributions. This is OK but note that instance IDs need to be changed, and so you cannot use this runhistory file to warm start a SMAC run.");
 					log.trace("Instance ID: {} previously mapped to: {} but now maps to: {}", pi.getInstanceID(),  piIDMap.get(pi.getInstanceID()), pi.getInstanceName());
 					fixedPi.clear();
 					break outerLoop;
@@ -371,7 +373,7 @@ outerLoop:
 		
 		if(!idcollision)
 		{
-			log.info("Problem IDs seem to come from one distribution, this state-merge file should be compatible with warm-starts.");
+			log.debug("Problem IDs seem to come from one distribution, this state-merge file should be compatible with warm-starts.");
 			
 			
 			if(piIDMap.size() != pis.size())
@@ -497,7 +499,7 @@ outerLoop:
 	 */
 	private static Set<String> getAllRestoreDirectories(List<String> directories) {
 		Set<String> directoriesWithState = new HashSet<String>();
-		log.info("Beginning Directory Scan");
+		log.debug("Beginning Directory Scan");
 		for(String dir: directories)
 		{
 			 directoriesWithState.addAll(scanDirectories(dir));

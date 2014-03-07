@@ -64,11 +64,10 @@ public class VerifyScenarioExecutor {
 			
 			log.warn("This tool is current a BETA version and has some limitations. One limitation is that scenario files that specify non-scenario options which are permitted in SMAC will not be allowed here. Please report other discrepancies.");
 			
-			
 			log.info("Found {} Scenarios to Validate", opts.scenarios.size());
 			if(opts.checkInstances)
 			{
-				log.info("Will verify existance of instances on disk");
+				log.debug("Will verify existance of instances on disk");
 			}
 			Set<String> searchDirectories = new LinkedHashSet<String>();
 			//First entry should be experiment directory 

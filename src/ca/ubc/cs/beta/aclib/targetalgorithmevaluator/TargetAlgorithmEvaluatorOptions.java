@@ -279,7 +279,7 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	 */
 	public void turnOffCrashes() {
 		Logger log = LoggerFactory.getLogger(getClass());
-		log.info("Abort on Crash,Abort on First Run Crash, Verify SAT, and use Walltime if no Runtime are DISABLED as these options may cause unwanted crashes");
+		log.debug("Abort on Crash,Abort on First Run Crash, Verify SAT, and use Walltime if no Runtime are DISABLED as these options may cause unwanted crashes");
 		abortOnCrash = false;
 		abortOnFirstRunCrash = false;
 		verifySAT = false;

@@ -91,7 +91,7 @@ public class SatisfiabilityChecker
 			
 			for(String name : jcom.getParameterFilesToRead())
 			{
-				log.info("Parsing (default) options from file: {} ", name);
+				log.debug("Parsing (default) options from file: {} ", name);
 			}
 			
 			
@@ -102,7 +102,7 @@ public class SatisfiabilityChecker
 			
 			
 			//Logs the options (since mainOptions implements AbstractOptions a 'nice-ish' printout is created).
-			log.info("==== Configuration====\n {} ", mainOptions);
+			log.debug("==== Configuration====\n {} ", mainOptions);
 			
 			
 			

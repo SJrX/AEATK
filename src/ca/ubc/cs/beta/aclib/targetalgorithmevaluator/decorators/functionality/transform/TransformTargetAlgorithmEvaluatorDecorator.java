@@ -57,7 +57,7 @@ public class TransformTargetAlgorithmEvaluatorDecorator extends AbstractForEachR
 		
 		super(tae);
 		
-		log.info("Results from the Target Algorithm Evaluator are being transformed");
+		log.debug("Results from the Target Algorithm Evaluator are being transformed");
 		//Get the necessary transforms from the options as calculable.
 		try
 		{

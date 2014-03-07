@@ -74,7 +74,7 @@ public class BasicModelBuilder implements ModelBuilder{
 		
 	
 		
-		log.info("Building Random Forest with {} data points ", responseValues.length);
+		log.trace("Building Random Forest with {} data points ", responseValues.length);
 		/*
 		if(log.isTraceEnabled())
 		{
@@ -104,9 +104,6 @@ public class BasicModelBuilder implements ModelBuilder{
 		}	
 		*/
 		
-		
-		//log.info("Next Int {}", SeedableRandomSingleton.getRandom().nextInt());
-		
 		StopWatch sw = new StopWatch();
 		if(rfConfig.fullTreeBootstrap)
 		{
@@ -125,7 +122,7 @@ public class BasicModelBuilder implements ModelBuilder{
 		} else if(subsamplePercentage < 1)
 		{
 				int N = (int) (subsamplePercentage * responseValues.length);
-				log.info("Subsampling {} points out of {} total", N, responseValues.length);
+				log.trace("Subsampling {} points out of {} total", N, responseValues.length);
 				int[][] dataIdxs = new int[numTrees][N];
 		        for (int i = 0; i < numTrees; i++) {
 		            for (int j = 0; j < N; j++) {

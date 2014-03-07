@@ -42,7 +42,7 @@ public class WarmStartOptions extends AbstractOptions {
 		
 		if(warmStartStateFrom != null)
 		{
-			log.info("Warm-starting from folder {} " ,warmStartStateFrom);
+			log.debug("Warm-starting from folder {} " ,warmStartStateFrom);
 			StateFactory sf = new LegacyStateFactory(null, warmStartStateFrom);
 			sf.getStateDeserializer("it", restoreIteration, configSpace, instances, execConfig, rhToPopulate);
 		}

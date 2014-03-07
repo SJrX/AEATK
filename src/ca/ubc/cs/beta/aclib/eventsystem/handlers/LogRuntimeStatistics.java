@@ -243,7 +243,7 @@ public class LogRuntimeStatistics implements EventHandler<AutomaticConfiguratorE
 			{
 				logCount.incrementAndGet();
 				lastMessage = System.currentTimeMillis();
-				log.info(lastString.get());
+				log.debug(lastString.get());
 			}
 			
 			

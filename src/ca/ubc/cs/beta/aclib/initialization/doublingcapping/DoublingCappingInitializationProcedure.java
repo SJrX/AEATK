@@ -101,9 +101,9 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 			throw new ParameterException("Number of Challengers must be greater than 1, use CLASSIC initialization ");
 		}
 		log.error("TAE Notify and Events need to be handled");
-		log.info("Using Doubling Capping Initialization");
+		log.debug("Using Doubling Capping Initialization");
 		ParamConfiguration incumbent = this.initialIncumbent;
-		log.info("Configuration Set as initial Incumbent: {}", incumbent);
+		log.trace("Configuration Set as initial Incumbent: {}", incumbent);
 
 		double startKappa=cutoffTime;
 		//Start kappa at the lowest value that is greater than 1, and perfectly divisible from kappaMax.
@@ -242,7 +242,7 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 		
 		if(phaseTwoRuns.size() <  numberOfChallengers )
 		{
-			log.info("Insufficient runs with SAT and UNSAT were found {} but needed {}, using some TIMEOUT runs for Phase 2 of initialization", phaseTwoRuns.size(), numberOfChallengers);
+			log.debug("Insufficient runs with SAT and UNSAT were found {} but needed {}, using some TIMEOUT runs for Phase 2 of initialization", phaseTwoRuns.size(), numberOfChallengers);
 			
 			int i=0; 
 			List<AlgorithmRun> timeouts = runs.getList(RunResult.TIMEOUT);
@@ -258,10 +258,10 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 		
 		if(phaseTwoRuns.size() < numberOfChallengers)
 		{
-			log.info("Phase one did not have enough completed runs ({}) to satisfy request of challengers: {}", phaseTwoRuns.size(), numberOfChallengers); 
+			log.debug("Phase one did not have enough completed runs ({}) to satisfy request of challengers: {}", phaseTwoRuns.size(), numberOfChallengers); 
 		} else
 		{
-			log.info("Beginning Phase 2 of initialization with {} completed runs", phaseTwoRuns.size());
+			log.debug("Beginning Phase 2 of initialization with {} completed runs", phaseTwoRuns.size());
 		}
 		
 		
@@ -389,7 +389,7 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
  		
  		
  		
- 		log.info("Initialization Procedure Completed. Selected incumbent {} ({}) incumbent has performance: {} ", this.runHistory.getThetaIdx(newIncumbent), newIncumbent, bestPerformance.get());
+ 		log.debug("Initialization Procedure Completed. Selected incumbent {} ({}) incumbent has performance: {} ", this.runHistory.getThetaIdx(newIncumbent), newIncumbent, bestPerformance.get());
  		this.incumbent = newIncumbent;
  		
 	}
@@ -442,7 +442,7 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 			
 		};
 		
-		log.info("Beginning Phase One Runs");
+		log.debug("Beginning Phase One Runs");
 		double lastKappa = 0;
 		BasicTargetAlgorithmEvaluatorQueue taeQueue = new BasicTargetAlgorithmEvaluatorQueue(tae, true);
 		
@@ -470,7 +470,7 @@ topOfLoop:
 					if(lastKappa != rc.getCutoffTime())
 					{
 						lastKappa = rc.getCutoffTime();
-						log.info("Beginning Phase One Runs with Cutoff time {} (s)", lastKappa);
+						log.debug("Beginning Phase One Runs with Cutoff time {} (s)", lastKappa);
 					}
 					taeQueue.evaluateRunAsync(Collections.singletonList(rc), obs);
 					
@@ -572,7 +572,7 @@ topOfLoop:
 		}
 		log.trace("Notifying existing Phase One runs to terminate");
 		allRunsCompleted.set(true);
-		log.info("Phase One Runs Complete");
+		log.debug("Phase One Runs Complete");
 	}
 
 	@Override

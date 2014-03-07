@@ -244,8 +244,8 @@ public class LegacyStateSerializer implements StateSerializer {
 			
 		
 		legacyStateFactory.addWrittenFilesForIteration(iteration, savedFiles);
-		log.info("State saved for iteration {} in {} ", iteration, path);
-		log.info("Saving state took {} ms", auto.stop());
+		log.debug("State saved for iteration {} in {} ", iteration, path);
+		log.debug("Saving state took {} ms", auto.stop());
 		
 	}
 
