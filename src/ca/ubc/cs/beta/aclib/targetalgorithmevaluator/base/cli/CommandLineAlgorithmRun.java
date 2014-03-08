@@ -128,7 +128,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	private static String commandSeparator = ";";
 
 	static {
-		log.warn("This version of SMAC hardcodes run length for calls to the target algorithm to {}.", Integer.MAX_VALUE);
+		log.debug("This version of SMAC hardcodes run length for calls to the target algorithm to {}.", Integer.MAX_VALUE);
 		
 		if(System.getProperty("os.name").toLowerCase().contains("win"))
 		{
