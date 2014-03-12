@@ -119,7 +119,7 @@ public class StateMergeExecutor {
 			Random r = new MersenneTwister(smo.seed);
 			
 			log.debug("Processing Runs");
-			RunHistory rh = new NewRunHistory(smo.scenOpts.intraInstanceObj, smo.scenOpts.interInstanceObj, smo.scenOpts.runObj);
+			RunHistory rh = new NewRunHistory(smo.scenOpts.getIntraInstanceObjective(), smo.scenOpts.interInstanceObj, smo.scenOpts.runObj);
 			if(smo.replaceSeeds)
 			{
 				rh = new ReindexSeedRunHistoryDecorator(rh,r );
@@ -246,7 +246,7 @@ public class StateMergeExecutor {
 				
 				maxSet.addAll(rhToFilter.getProblemInstanceSeedPairsRan(newIncumbent));
 				
-				rhToSaveToDisk = new ThreadSafeRunHistoryWrapper(new NewRunHistory(smo.scenOpts.intraInstanceObj, smo.scenOpts.interInstanceObj, smo.scenOpts.runObj));
+				rhToSaveToDisk = new ThreadSafeRunHistoryWrapper(new NewRunHistory(smo.scenOpts.getIntraInstanceObjective(), smo.scenOpts.interInstanceObj, smo.scenOpts.runObj));
 				
 				
 				for(RunData rd : rhToFilter.getAlgorithmRunData())
@@ -468,7 +468,7 @@ outerLoop:
 			List<ProblemInstance> pis, AlgorithmExecutionConfig execConfig,
 			MapList<Integer, AlgorithmRun> runsPerIteration, String dir)
 			throws IOException {
-		ThreadSafeRunHistory rh = new ThreadSafeRunHistoryWrapper(new NewRunHistory(smo.scenOpts.intraInstanceObj, smo.scenOpts.interInstanceObj, smo.scenOpts.runObj));
+		ThreadSafeRunHistory rh = new ThreadSafeRunHistoryWrapper(new NewRunHistory(smo.scenOpts.getIntraInstanceObjective(), smo.scenOpts.interInstanceObj, smo.scenOpts.runObj));
 		restoreState(dir, smo.scenOpts, pis, execConfig, rh, smo.restoreScenarioArguments);
 		
 		log.trace("Restored state of {} has {} runs for default configuration ", dir, rh.getTotalNumRunsOfConfigExcludingRedundant(execConfig.getParamFile().getDefaultConfiguration()));
@@ -533,7 +533,7 @@ outerLoop:
 		scen.append("deterministic=" + scenOpts.algoExecOptions.deterministic).append("\n");
 		scen.append("run_obj=" + scenOpts.runObj.toString().toLowerCase()).append("\n");
 		scen.append("#outdir = (Outdir is not recommended in a scenario file anymore)").append("\n");
-		scen.append("overall_obj=" + scenOpts.intraInstanceObj.toString().toLowerCase()).append("\n");
+		scen.append("overall_obj=" + scenOpts.getIntraInstanceObjective().toString().toLowerCase()).append("\n");
 		scen.append("cutoff_time=" + execConfig.getAlgorithmCutoffTime()).append("\n");
 		scen.append("tunerTimeout=" + scenOpts.limitOptions.tunerTimeout).append("\n");
 		scen.append("paramfile=" + LegacyStateFactory.PARAM_FILE).append("\n");

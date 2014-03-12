@@ -125,14 +125,17 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	 */
 	private static transient Marker fullProcessOutputMarker = MarkerFactory.getMarker(LoggingMarker.FULL_PROCESS_OUTPUT.name());
 	
-	private static String commandSeparator = ";";
+	public final static String COMMAND_SEPERATOR;
 
 	static {
-		log.debug("This version of SMAC hardcodes run length for calls to the target algorithm to {}.", Integer.MAX_VALUE);
+		log.trace("This version of SMAC hardcodes run length for calls to the target algorithm to {}.", Integer.MAX_VALUE);
 		
 		if(System.getProperty("os.name").toLowerCase().contains("win"))
 		{
-			commandSeparator = "&";
+			COMMAND_SEPERATOR = "&";
+		} else
+		{
+			COMMAND_SEPERATOR = ";";
 		}
 		
 	}
@@ -174,8 +177,11 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 			public void run() {
 				Thread.currentThread().setName("CLI Shutdown Thread");
 				jvmShutdownDetected.set(true);
-				log.debug("Terminating approximately {} outstanding algorithm runs", outstandingRuns.size());
-				log.debug("Further runs will be instantly terminated");
+				if(outstandingRuns.size() > 0)
+				{
+					log.debug("Terminating approximately {} outstanding algorithm runs", outstandingRuns.size());
+				}
+				log.trace("Further runs will be instantly terminated");
 				for(Pair<CommandLineAlgorithmRun, Process> p : outstandingRuns)
 				{
 					p.getFirst().killProcess(p.getSecond());
@@ -536,7 +542,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 						case CRASHED:
 							
 						
-								log.error( "Failed Run Detected Call: cd \"{}\" " + commandSeparator + "  {} ",new File(execConfig.getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommandAsString(execConfig, runConfig));
+								log.error( "Failed Run Detected Call: cd \"{}\" " + COMMAND_SEPERATOR + "  {} ",new File(execConfig.getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommandAsString(execConfig, runConfig));
 							
 								log.error("Failed Run Detected output last {} lines", outputQueue.size());
 								
@@ -594,7 +600,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 			}
 		} catch (IOException e1) {
 			//String execCmd = getTargetAlgorithmExecutionCommandAsString(execConfig,runConfig);
-			log.error( "Failed Run Detected (IOException) Call: cd \"{}\" " + commandSeparator + "  {} ",new File(execConfig.getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommandAsString(execConfig, runConfig));
+			log.error( "Failed Run Detected (IOException) Call: cd \"{}\" " + COMMAND_SEPERATOR + "  {} ",new File(execConfig.getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommandAsString(execConfig, runConfig));
 			throw new TargetAlgorithmAbortException(e1);
 			//throw new IllegalStateException(e1);
 		}
@@ -723,7 +729,7 @@ outerloop:
 		
 		if(options.logAllCallStrings)
 		{
-			log.info( "Call (with token {}) : cd \"{}\" " + commandSeparator + "  {} ", token, new File(execConfig.getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommandAsString(execConfig, runConfig));
+			log.info( "Call (with token {}) : cd \"{}\" " + COMMAND_SEPERATOR + "  {} ", token, new File(execConfig.getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommandAsString(execConfig, runConfig));
 		}
 		
 		

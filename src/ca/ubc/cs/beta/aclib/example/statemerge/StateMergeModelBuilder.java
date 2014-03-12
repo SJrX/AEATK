@@ -135,7 +135,7 @@ public class StateMergeModelBuilder {
 			// but matlab sure does
 			if(runResponseValues[j] >= scenarioOptions.algoExecOptions.cutoffTime)
 			{	
-				runResponseValues[j] = scenarioOptions.algoExecOptions.cutoffTime * scenarioOptions.intraInstanceObj.getPenaltyFactor();
+				runResponseValues[j] = scenarioOptions.algoExecOptions.cutoffTime * scenarioOptions.getIntraInstanceObjective().getPenaltyFactor();
 			}
 			
 		}
@@ -164,7 +164,7 @@ public class StateMergeModelBuilder {
 		preparedForest = null;
 		if(adaptiveCapping)
 		{
-			mb = new AdaptiveCappingModelBuilder(sanitizedData, rfOptions, pool.getRandom("RANDOM_FOREST_BUILDING_PRNG"), mbOptions.imputationIterations, scenarioOptions.algoExecOptions.cutoffTime, scenarioOptions.intraInstanceObj.getPenaltyFactor(), 1);
+			mb = new AdaptiveCappingModelBuilder(sanitizedData, rfOptions, pool.getRandom("RANDOM_FOREST_BUILDING_PRNG"), mbOptions.imputationIterations, scenarioOptions.algoExecOptions.cutoffTime, scenarioOptions.getIntraInstanceObjective().getPenaltyFactor(), 1);
 		} else
 		{
 			//mb = new HashCodeVerifyingModelBuilder(sanitizedData,smacConfig.randomForestOptions, runHistory);

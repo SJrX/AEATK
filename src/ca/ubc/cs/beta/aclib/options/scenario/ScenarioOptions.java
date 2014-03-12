@@ -5,11 +5,14 @@ import java.io.IOException;
 import java.util.ArrayList;
 import java.util.List;
 
+import org.slf4j.LoggerFactory;
+
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.ParameterFile;
 import com.beust.jcommander.ParametersDelegate;
 
+import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionOptions;
 import ca.ubc.cs.beta.aclib.misc.jcommander.converter.OverallObjectiveConverter;
@@ -39,7 +42,38 @@ public class ScenarioOptions extends AbstractOptions{
 	
 	@CommandLineOnly
 	@Parameter(names={"--intra-obj","--intra-instance-obj","--overall-obj","--intraInstanceObj","--overallObj", "--overall_obj","--intra_instance_obj"}, description="objective function used to aggregate multiple runs for a single instance", converter=OverallObjectiveConverter.class)
-	public OverallObjective intraInstanceObj = OverallObjective.MEAN10;
+	/**
+	 * This deprecated warning is only to flag a compile error, this field is not really deprecated per say.
+	 * @deprecated please use the getIntraInstanceObjective as it will resolve this if no option is specified 
+	 * 
+	 * 
+	 */
+	public OverallObjective intraInstanceObj = null;
+	
+	public OverallObjective getIntraInstanceObjective()
+	{
+		if(intraInstanceObj != null)
+		{
+			
+			if(runObj.equals(RunObjective.QUALITY) && !intraInstanceObj.equals(OverallObjective.MEAN))
+			{
+				LoggerFactory.getLogger(getClass()).warn("Using a run objective of {} and an overall of objective of {} may not work correctly. You should probably only use {}", runObj, intraInstanceObj, OverallObjective.MEAN);
+			}
+			return intraInstanceObj;
+		} else
+		{
+			switch(runObj)
+			{
+			case RUNTIME:
+				return OverallObjective.MEAN10;
+			case QUALITY:
+				return OverallObjective.MEAN;
+			default:
+				throw new IllegalStateException("Unknown run objective: " + runObj);
+			}
+		}
+		
+	}
 	
 	@CommandLineOnly
 	@UsageTextField(level=OptionLevel.ADVANCED)

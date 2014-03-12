@@ -36,7 +36,7 @@ public class TerminationCriteriaOptions extends AbstractOptions {
 	public int runtimeLimit = Integer.MAX_VALUE;
 	
 	@UsageTextField(level=OptionLevel.INTERMEDIATE)
-	@Parameter(names={"--runcount-limit","--totalNumRunsLimit","--numRunsLimit","--numberOfRunsLimit"} , description = "limits the total number of target algorithm runs allowed during the automatic configuration phase ", validateWith=FixedPositiveLong.class)
+	@Parameter(names={"--runcount-limit","runcount_limit","--totalNumRunsLimit","--numRunsLimit","--numberOfRunsLimit"} , description = "limits the total number of target algorithm runs allowed during the automatic configuration phase ", validateWith=FixedPositiveLong.class)
 	public long totalNumRunsLimit = Long.MAX_VALUE;
 
 	@UsageTextField(level=OptionLevel.ADVANCED)
