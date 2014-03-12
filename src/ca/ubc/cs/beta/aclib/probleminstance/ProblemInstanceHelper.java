@@ -297,7 +297,7 @@ public class ProblemInstanceHelper {
 			{
 				TreeMap<String, Double> instFeatMap = new TreeMap<String, Double>();
 				
-				featuresMap.put(features.getKeyForDataRow(i).replaceAll("//", "/"), Collections.unmodifiableMap(instFeatMap));
+				featuresMap.put(features.getKeyForDataRow(i), Collections.unmodifiableMap(instFeatMap));
 				
 				String lastValue = "";
 				try {
@@ -332,6 +332,7 @@ public class ProblemInstanceHelper {
 		 */
 		InstanceSeedGenerator gen;
 		
+		
 		/*
 		 * Map containing the instance names to instance specific information
 		 */
@@ -350,8 +351,6 @@ public class ProblemInstanceHelper {
 			instanceList = insc.getInstancesByName();
 			gen = insc.getSeedGen();
 			instanceSpecificInfo = insc.getInstanceSpecificInfo();
-			
-			
 			
 		} else
 		{   
@@ -400,56 +399,11 @@ public class ProblemInstanceHelper {
 			if(featureFileName != null)
 			{
 				
-				String[] possibleFiles = { instanceFile, instanceFile.replace(experimentDir, ""), instanceFile.replaceAll("//", "/"), instanceFile.replace(experimentDir, "").replaceAll("//","/")};
-				
-				features = null;
-				
-				boolean firstTry = true;
-				
-				for(String possibleFile : possibleFiles)
-				{
-					features = featuresMap.get(possibleFile.trim());
-					
-					if(features != null) 
-					{
-						if(firstTry)
-						{
-							//NO OP
-						} else
-						{
-							logger.trace("Matched features for instance named {} in feature file ",possibleFile);
-						}
-						unMappedFeatureMapEntries.remove(possibleFile.trim());
-						
-						break;
-					} else
-					{
-						firstTry = false;
-						logger.trace("No match for instance named {} in feature file ",possibleFile);
-					}
-					
-				}
-				
-				
+				features = featuresMap.get(instanceFile.trim());
 				
 				if(features == null)
 				{
-					logger.warn("Could not find features for instance {} trying more creative matching, may be error prone and slow [probably not really]", instanceFile);
-					//=== Iterates over the list, trying to find something to match this with (by suffix matching)
-					for(Entry<String, Map<String, Double>> e : featuresMap.entrySet())						
-					{
-						if(instanceFile.endsWith(e.getKey()))
-						{
-							logger.trace("Matched instance {} with this entry {}", instanceFile, e.getKey());
-							features = e.getValue();
-							break;
-						} 
-					}
-					
-				}
-				if(features == null)
-				{
-					throw new FeatureNotFoundException("Feature file : " + featureFileName + " does not contain feature data for instance: " + instanceFile);
+					throw new FeatureNotFoundException("Feature file : " + featureFileName + " does not contain feature data for instance: " + instanceFile + " previous versions were much more forgiving about this but please make sure the feature file has an entry that matches that exactly.");
 				}
 				
 				
@@ -491,15 +445,7 @@ public class ProblemInstanceHelper {
 				
 			} else
 			{
-				Map<String, String> fixedInstanceSpecificInfo = new HashMap<String, String>();
-				for(Entry<String, String> ent : instanceSpecificInfo.entrySet())
-				{
-					fixedInstanceSpecificInfo.put(ent.getKey().replaceAll("//", "/"), ent.getValue());
-				}
-				
-				
-				
-				ai = new ProblemInstance(instanceFile, instID++, features, fixedInstanceSpecificInfo.get(originalInstanceFilename));
+				ai = new ProblemInstance(instanceFile, instID++, features, instanceSpecificInfo.get(originalInstanceFilename));
 				cachedProblemInstances.put(instanceFile, ai);
 			}
 			
@@ -550,48 +496,7 @@ public class ProblemInstanceHelper {
 					instanceSeedMap.put(pi.getInstanceName(),l);
 				}
 				
-				/*
-				 * ===== THIS IS SUPER UGLY FIX FOR RELATIVE PATH NAMES
-				 * We have to repair the instance order list necessary for SetInstanceSeedGenerator
-				 */
-				
-				
-				/**
-				 * Dev Note: Feb 2014 - I have no idea what this code is suppose to do, something with absolute path names
-				 * probably very awful :(
-				 */
-				List<String> absolutePathList = new ArrayList<String>(instanceList.size());
-				
-				
-				Map<String, String> instanceNameToRelPathFixMap = new HashMap<String, String>();
-				
-				for(ProblemInstance pi : instances)
-				{
-					instanceNameToRelPathFixMap.put(pi.getInstanceName(), pi.getInstanceName());
-				}
-				
-topOfLoop:
-				for(String instance : instanceList)
-				{
-					
-					if(instanceNameToRelPathFixMap.get(instance.replaceAll("//", "/")) != null)
-					{
-						absolutePathList.add(instanceNameToRelPathFixMap.get(instance.replaceAll("//", "/")));
-						continue topOfLoop;
-					}
-					
-					for(ProblemInstance pi : instances)
-					{
-						if(pi.getInstanceName().endsWith(instance.replaceAll("//", "/")))
-						{
-							absolutePathList.add(pi.getInstanceName());
-							continue topOfLoop;
-						}		
-					}
-				}
-				
-				if(instanceList.size() != absolutePathList.size()) throw new IllegalStateException("Mapping from Relative to Absolute Path names broke something");
-				gen = new SetInstanceSeedGenerator(instanceSeedMap,absolutePathList, 1);
+				gen = new SetInstanceSeedGenerator(instanceSeedMap,instanceList, 1);
 			}
 			
 		}
