@@ -29,7 +29,7 @@ import com.beust.jcommander.ParameterException;
 public class ParamConfigurationSpaceOptions extends AbstractOptions{
 	
 	
-	@Parameter(names={"--param-file","--pcs-file","-p", "--paramFile","--paramfile"}, description="File containing algorithm parameter space information in PCS format (see Algorithm Parameter File in the Manual). You can specify \"SINGLETON\" to get a singleton configuration space or \"NULL\" to get a null one.")
+	@Parameter(names={"--pcs-file","--param-file","-p", "--paramFile","--paramfile"}, description="File containing algorithm parameter space information in PCS format (see Algorithm Parameter File in the Manual). You can specify \"SINGLETON\" to get a singleton configuration space or \"NULL\" to get a null one.")
 	public String paramFile;
 
 	@UsageTextField(level=OptionLevel.DEVELOPER)
