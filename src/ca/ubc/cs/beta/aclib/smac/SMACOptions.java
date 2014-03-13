@@ -179,10 +179,10 @@ public class SMACOptions extends AbstractOptions {
 	@ParametersDelegate
 	public SeedOptions seedOptions = new SeedOptions();
 	
-	@UsageTextField(defaultValues="~/.aclib/smac.opt", level=OptionLevel.ADVANCED)
+	@UsageTextField(defaultValues="~/.aeatk/smac.opt", level=OptionLevel.ADVANCED)
 	@Parameter(names={"--smac-default-file","--smacDefaultsFile"}, description="file that contains default settings for SMAC")
 	@ParameterFile(ignoreFileNotExists = true) 
-	public File smacDefaults = HomeFileUtils.getHomeFile(".aclib" + File.separator  + "smac.opt");
+	public File smacDefaults = HomeFileUtils.getHomeFile(".aeatk" + File.separator  + "smac.opt");
 	
 	@ParametersDelegate
 	public StateFactoryOptions stateOpts = new StateFactoryOptions();

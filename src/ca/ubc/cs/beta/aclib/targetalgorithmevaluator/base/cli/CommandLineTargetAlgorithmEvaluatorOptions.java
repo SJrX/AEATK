@@ -67,10 +67,10 @@ public class CommandLineTargetAlgorithmEvaluatorOptions extends AbstractOptions 
 	public String procForceKillCommand = "kill -s KILL %pid";
 	
 	
-	@UsageTextField(defaultValues="~/.aclib/cli-tae.opt", level=OptionLevel.ADVANCED)
+	@UsageTextField(defaultValues="~/.aeatk/cli-tae.opt", level=OptionLevel.ADVANCED)
 	@Parameter(names={"--cli-default-file"}, description="file that contains default settings for CLI Target Algorithm Evaluator (it is recommended that you use this file to set the kill commands)")
 	@ParameterFile(ignoreFileNotExists = true) 
-	public File smacDefaults = HomeFileUtils.getHomeFile(".aclib" + File.separator  + "cli-tae.opt");
+	public File smacDefaults = HomeFileUtils.getHomeFile(".aeatk" + File.separator  + "cli-tae.opt");
 	
 	
 	

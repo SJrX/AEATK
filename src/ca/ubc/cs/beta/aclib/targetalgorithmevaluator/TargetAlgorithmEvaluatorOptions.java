@@ -145,10 +145,10 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	@Parameter(names="--synchronize-observers", description="Synchronize calls to the observer (this helps simplify memory visibility issues)", hidden=true)
 	public boolean synchronousObserver = true;
 
-	@UsageTextField(defaultValues="~/.aclib/tae.opt", level=OptionLevel.ADVANCED)
+	@UsageTextField(defaultValues="~/.aeatk/tae.opt", level=OptionLevel.ADVANCED)
 	@Parameter(names={"--tae-default-file"}, description="file that contains default settings for Target Algorithm Evaluators")
 	@ParameterFile(ignoreFileNotExists = true) 
-	public File taeDefaults = HomeFileUtils.getHomeFile(".aclib" + File.separator  + "tae.opt");
+	public File taeDefaults = HomeFileUtils.getHomeFile(".aeatk" + File.separator  + "tae.opt");
 	
 	@ParametersDelegate
 	public TransformTargetAlgorithmEvaluatorDecoratorOptions ttaedo = new TransformTargetAlgorithmEvaluatorDecoratorOptions();

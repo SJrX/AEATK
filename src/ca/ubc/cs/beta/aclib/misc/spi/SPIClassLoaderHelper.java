@@ -28,7 +28,7 @@ private static final String defaultSearchPath;
 		String pluginDirectory = System.getProperty("user.dir");
 		for(String location : classpath)
 		{
-			if(location.endsWith("aclib.jar"))
+			if(location.endsWith("aclib.jar") || location.endsWith("aeatk.jar"))
 			{
 				File f = new File(location);
 				

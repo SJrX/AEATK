@@ -41,10 +41,10 @@ public class SatisfiabilityCheckerOptions extends AbstractOptions {
 	 * config = RANDOM 
 	 * in the file.
 	 */
-	@UsageTextField(defaultValues="~/.aclib/taerunner.opt")
-	@Parameter(names="--taeRunnerDefaultsFile", description="file that contains default settings for TAE Runner")
+	@UsageTextField(defaultValues="~/.aeatk/satcheck.opt")
+	@Parameter(names="--taeRunnerDefaultsFile", description="file that contains default settings for Satisfiability Checker")
 	@ParameterFile(ignoreFileNotExists = true) 
-	public File smacDefaults = HomeFileUtils.getHomeFile(".aclib" + File.separator  + "taerunner.opt");
+	public File defaultsFile = HomeFileUtils.getHomeFile(".aeatk" + File.separator  + "satcheck.opt");
 	
 	/**
 	 * Delegate that allows this application to read scenario options

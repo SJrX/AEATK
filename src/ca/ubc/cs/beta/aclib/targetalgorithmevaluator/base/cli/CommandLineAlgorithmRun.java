@@ -87,16 +87,16 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	 */
 	private transient KillHandler killHandler;
 	
-	public static final String PORT_ENVIRONMENT_VARIABLE = "ACLIB_PORT";
-	public static final String FREQUENCY_ENVIRONMENT_VARIABLE = "ACLIB_CPU_TIME_FREQUENCY";
-	public static final String CONCURRENT_TASK_ID = "ACLIB_CONCURRENT_TASK_ID";
+	public static final String PORT_ENVIRONMENT_VARIABLE = "AEATK_PORT";
+	public static final String FREQUENCY_ENVIRONMENT_VARIABLE = "AEATK_CPU_TIME_FREQUENCY";
+	public static final String CONCURRENT_TASK_ID = "AEATK_CONCURRENT_TASK_ID";
 	
 	
 	/**
 	 * This variable is public only for unit test purposes,
 	 * this is not guaranteed to be the actual environment variable of child processes
 	 */
-	public static final String EXECUTION_UUID_ENVIRONMENT_VARIABLE_DEFAULT = "ACLIB_EXECUTION_UUID"; 
+	public static final String EXECUTION_UUID_ENVIRONMENT_VARIABLE_DEFAULT = "AEATK_EXECUTION_UUID"; 
 	
 	
 	/**
