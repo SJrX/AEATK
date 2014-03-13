@@ -49,14 +49,14 @@ public class ProblemInstanceHelper {
 	{
 		File f;
 		
-		if(path.length() > 0 && path.substring(0, 1).equals(File.separator))
+		File f2 = new File(path);
+		
+		if(path.length() > 0 && f2.isAbsolute())
 		{
 		
 			f = new File(path);
 		} else
 		{
-			Object[] args = { context, File.separator, path };
-		
 			f = new File(context + File.separator + path);
 		}
 		
