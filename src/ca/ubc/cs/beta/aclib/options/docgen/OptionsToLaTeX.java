@@ -124,7 +124,10 @@ public class OptionsToLaTeX {
 					String printedName = name.replaceAll("-", "-~\\$\\\\!\\$");
 					pw.append("\t\t\\item[").append(printedName).append("]");
 					String description = sec.getAttributeDescription(name);
+					
 					//== Escape some special characters
+					
+					description = description.replaceAll("\\$", Matcher.quoteReplacement("\\$"));
 					description = description.replaceAll("\\_", "\\\\_");
 					description = description.replaceAll(">=","\\$\\\\geq\\$");
 					description = description.replaceAll("<","\\$<\\$");
@@ -132,6 +135,7 @@ public class OptionsToLaTeX {
 					description = description.replaceAll("\\*", "\\$\\\\times\\$");
 					description = description.replaceAll("--", "-~\\$\\\\!\\$-");
 					description = description.replaceAll("&", "\\\\&");
+				
 					pw.append(" ").append(description).append("\n\n");
 					
 					

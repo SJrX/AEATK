@@ -24,7 +24,7 @@ public class ValidationOptions extends AbstractOptions{
 	public double minTimestamp = 0;
 
 	@UsageTextField(level=OptionLevel.ADVANCED)
-	@Parameter(names={"--mult-factor","--multFactor"}, description="base of the geometric progression of timestamps to validate (timestamps selected are: maxTime*multFactor$^{-n}$ where $n$ is $\\{1,2,3,4...\\}$ while timestamp >= minTimestamp )", validateWith=ZeroInfinityOpenInterval.class)
+	@Parameter(names={"--mult-factor","--multFactor"}, description="base of the geometric progression of timestamps to validate (for instance by default it is maxTimestamp, maxTimestamp/2, maxTimestamp/4,... whiletimestamp >= minTimestamp )", validateWith=ZeroInfinityOpenInterval.class)
 	public double multFactor = 2;
 	
 	

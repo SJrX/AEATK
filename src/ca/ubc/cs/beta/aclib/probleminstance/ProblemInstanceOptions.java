@@ -58,12 +58,12 @@ public class ProblemInstanceOptions extends AbstractOptions{
 	
 	@CommandLineOnly
 	@UsageTextField(level=OptionLevel.BASIC)
-	@Parameter(names={"--instance-suffix","--instance-regex"}, description="A suffix that all instances must match. You can optionally specify a (java) regular expression but be aware that it is suffix matched (internally we take this string and append a $ on it)")
+	@Parameter(names={"--instance-suffix","--instance-regex"}, description="A suffix that all instances must match when reading instances from a directory. You can optionally specify a (java) regular expression but be aware that it is suffix matched (internally we take this string and append a $ on it)")
 	public String instanceSuffix = null;
 	
 	@CommandLineOnly
 	@UsageTextField(level=OptionLevel.BASIC)
-	@Parameter(names={"--test-instance-suffix","--test-instance-regex"}, description="A suffix that all test instances must match. You can optionally specify a (java) regular expression but be aware that it is suffix matched (internally we take this string and append a $ on it)")
+	@Parameter(names={"--test-instance-suffix","--test-instance-regex"}, description="A suffix that all instances must match when reading instances from a directory. You can optionally specify a (java) regular expression but be aware that it is suffix matched (internally we take this string and append a $ on it)")
 	public String testInstanceSuffix = null;
 	
 	/**

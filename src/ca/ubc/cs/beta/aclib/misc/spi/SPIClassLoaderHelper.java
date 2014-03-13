@@ -33,6 +33,11 @@ private static final String defaultSearchPath;
 				File f = new File(location);
 				
 				pluginDirectory = f.getParentFile().getAbsolutePath();
+				
+				if(f.getParentFile().getName().equals("lib"))
+				{
+					pluginDirectory = f.getParentFile().getParentFile().getAbsolutePath();	
+				}
 				break;
 			}
 				
