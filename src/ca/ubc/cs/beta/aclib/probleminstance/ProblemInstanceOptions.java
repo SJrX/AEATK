@@ -407,8 +407,6 @@ public class ProblemInstanceOptions extends AbstractOptions{
 			Matcher match = p.matcher(file);
 			if(match.find())
 			{
-				
-				
 				foundInstances.add(instanceDirPrefix+file);
 			}
 		}
@@ -429,7 +427,7 @@ public class ProblemInstanceOptions extends AbstractOptions{
 			
 			for(String fString : foundInstances)
 			{
-				fWrite.append(fString + "\n");
+				fWrite.append(fString.replaceAll("\\\\",Matcher.quoteReplacement("\\\\")) + "\n");
 			}
 			fWrite.close();
 			instanceFile.deleteOnExit();
