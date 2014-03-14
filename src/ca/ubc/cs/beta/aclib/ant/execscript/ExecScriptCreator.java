@@ -178,7 +178,6 @@ exec java -Xmx"$SMACMEM"m -cp "$DIR/conf/:$jarconcat" $EXEC "$@"
 
 		 */
 		
-		
 		StringBuilder sb = new StringBuilder();
 		
 		sb.append("@echo off").append("\r\n");

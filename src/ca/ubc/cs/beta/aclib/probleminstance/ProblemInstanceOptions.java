@@ -425,9 +425,21 @@ public class ProblemInstanceOptions extends AbstractOptions{
 			FileWriter fWrite = new FileWriter(instanceFile);
 			
 			
+			
+			
+			StringBuilder sb = new StringBuilder();
+			
+			
 			for(String fString : foundInstances)
 			{
-				fWrite.append(fString.replaceAll("\\\\",Matcher.quoteReplacement("\\\\")) + "\n");
+				String line = fString.replaceAll("\\\\",Matcher.quoteReplacement("\\\\")) + "\n";
+				fWrite.append(line);
+				
+				if(log.isTraceEnabled())
+				{
+					sb.append(line);
+				}
+				
 			}
 			fWrite.close();
 			instanceFile.deleteOnExit();
@@ -442,6 +454,7 @@ public class ProblemInstanceOptions extends AbstractOptions{
 				log.info("Detected {} instances with suffix {} ",foundInstances.size(),instanceSuffix) ;
 			}
 			
+			log.trace("Auto generated instance file {} has content:\n{}", instanceFile.getAbsolutePath(), sb.toString());
 			
 			return instanceFile.getAbsolutePath();
 		} catch(IOException e)
