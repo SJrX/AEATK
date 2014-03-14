@@ -64,11 +64,10 @@ public class VerifyScenarioExecutor {
 			
 			log.warn("This tool is current a BETA version and has some limitations. One limitation is that scenario files that specify non-scenario options which are permitted in SMAC will not be allowed here. Please report other discrepancies.");
 			
-			
 			log.info("Found {} Scenarios to Validate", opts.scenarios.size());
 			if(opts.checkInstances)
 			{
-				log.info("Will verify existance of instances on disk");
+				log.debug("Will verify existance of instances on disk");
 			}
 			Set<String> searchDirectories = new LinkedHashSet<String>();
 			//First entry should be experiment directory 
@@ -131,7 +130,8 @@ public class VerifyScenarioExecutor {
 		}
 		
 		name = String.format("%-"+maxLength + "s",name);
-		log.debug("Attempting to verify scenario file : {}", name);
+		log.trace("Attempting to verify scenario file : {}", name);
+		
 		
 		ScenarioOptions scenOpts;
 		try {
@@ -168,7 +168,7 @@ public class VerifyScenarioExecutor {
 			return;
 		}
 		
-		log.debug("Verifying PCS File: {}", scenOpts.algoExecOptions.paramFileDelegate.paramFile);
+		log.trace("Verifying PCS File: {}", scenOpts.algoExecOptions.paramFileDelegate.paramFile);
 		double pcsLB;
 		double pcsUB;
 		try 
@@ -184,7 +184,7 @@ public class VerifyScenarioExecutor {
 			return;
 		}
 		
-		log.debug("Verifying Execution Directory: {}", scenOpts.algoExecOptions.algoExecDir);
+		log.trace("Verifying Execution Directory: {}", scenOpts.algoExecOptions.algoExecDir);
 		
 		File execDir = null;
 		try
@@ -230,7 +230,7 @@ public class VerifyScenarioExecutor {
 		}
 		
 		
-		log.debug("Verifying Problem Instances: {}", scenOpts.instanceOptions.instanceFile);
+		log.trace("Verifying Problem Instances: {}", scenOpts.instanceOptions.instanceFile);
 		
 		int instances;
 		

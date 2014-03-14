@@ -36,7 +36,7 @@ import ca.ubc.cs.beta.aclib.state.StateSerializer;
  * java_obj_dump.obj - A serialized list of objects containing the iteration, a Random objec,then the InstanceSeedGenerator
  * 
  * 
- * @author seramage
+ * @author Steve Ramage <seramage@cs.ubc.ca>
  *
  */
 public class LegacyStateSerializer implements StateSerializer {
@@ -90,19 +90,19 @@ public class LegacyStateSerializer implements StateSerializer {
 	{
 		boolean fullSave = true;
 		if(runHistory == null)  fullSave = false;
-		log.debug("State Serialization for iteration {} commencing", iteration);
+		log.trace("State Serialization for iteration {} commencing", iteration);
 		AutoStartStopWatch auto = new AutoStartStopWatch();
 		if(runHistory != null)
 		{
 			try {
 				File f= new File(LegacyStateFactory.getUniqConfigurationsFilename(path, id, iteration));
 				addFileToSet(f);
-				log.debug("Unique Configurations Saved in {}", f.getAbsolutePath());
+				log.trace("Unique Configurations Saved in {}", f.getAbsolutePath());
 				
 				FileWriter uniqConfigurations = new FileWriter(f);
 				
 				
-				log.debug("Parameter Strings Saved in {}", f.getAbsolutePath());
+				log.trace("Parameter Strings Saved in {}", f.getAbsolutePath());
 				f = new File(LegacyStateFactory.getParamStringsFilename(path, id, iteration));
 				addFileToSet(f);
 				FileWriter paramStrings = new FileWriter(f);
@@ -130,7 +130,7 @@ public class LegacyStateSerializer implements StateSerializer {
 				f = new File(LegacyStateFactory.getRunAndResultsFilename(path, id, iteration));
 				addFileToSet(f);
 				//writeStringBuffer(runResults, f);			
-				log.debug("Run Results Saved in {}", f.getAbsolutePath());
+				log.trace("Run Results Saved in {}", f.getAbsolutePath());
 				FileWriter runResults = new FileWriter(f);
 				
 				//StringBuilder runResults = new StringBuilder();
@@ -244,8 +244,8 @@ public class LegacyStateSerializer implements StateSerializer {
 			
 		
 		legacyStateFactory.addWrittenFilesForIteration(iteration, savedFiles);
-		log.info("State saved for iteration {} in {} ", iteration, path);
-		log.info("Saving state took {} ms", auto.stop());
+		log.debug("State saved for iteration {} in {} ", iteration, path);
+		log.debug("Saving state took {} ms", auto.stop());
 		
 	}
 
@@ -275,7 +275,7 @@ public class LegacyStateSerializer implements StateSerializer {
 		oWriter.writeObject(mapToWrite);
 		oWriter.close();
 	
-		log.debug("Java Object Dump Saved in {}", f.getAbsolutePath());
+		log.trace("Java Object Dump Saved in {}", f.getAbsolutePath());
 	}
 	/**
 	 * Converts ParamConfigurations to Strings

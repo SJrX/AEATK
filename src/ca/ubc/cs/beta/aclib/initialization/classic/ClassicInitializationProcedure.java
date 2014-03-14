@@ -61,9 +61,9 @@ public class ClassicInitializationProcedure implements InitializationProcedure {
 	
 	@Override
 	public void run() {
-		log.info("Using Classic Initialization");
+		log.debug("Using Classic Initialization");
 		ParamConfiguration incumbent = this.initialIncumbent;
-		log.info("Configuration Set as Incumbent: {}", incumbent);
+		log.trace("Configuration Set as Incumbent: {}", incumbent);
 		
 		//iteration = 0;
 		
@@ -81,8 +81,10 @@ public class ClassicInitializationProcedure implements InitializationProcedure {
 			 */
 			
 			ProblemInstanceSeedPair pisp = RunHistoryHelper.getRandomInstanceSeedWithFewestRunsFor(runHistory, insc, incumbent, instances, pool.getRandom("CLASSIC_INITIALIZATION"),deterministicInstanceOrdering);
-			log.trace("New Problem Instance Seed Pair generated {}", pisp);
+
 			RunConfig incumbentRunConfig = new RunConfig(pisp, cutoffTime,incumbent, algorithmExecutionConfig);
+
+
 			//Create initial row
 
 			try { 
@@ -118,11 +120,11 @@ public class ClassicInitializationProcedure implements InitializationProcedure {
 		{
 			throw new OutOfTimeException();
 		}
-		log.info("Initialization: Scheduling {} run(s):",  runConfigs.size());
+		log.debug("Initialization: Scheduling {} run(s):",  runConfigs.size());
 		for(RunConfig rc : runConfigs)
 		{
 			Object[] args = {  runHistory.getThetaIdx(rc.getParamConfiguration())!=-1?" "+runHistory.getThetaIdx(rc.getParamConfiguration()):"", rc.getParamConfiguration(), rc.getProblemInstanceSeedPair().getInstance().getInstanceID(),  rc.getProblemInstanceSeedPair().getSeed(), rc.getCutoffTime()};
-			log.info("Initialization: Scheduling run for config{} ({}) on instance {} with seed {} and captime {}", args);
+			log.debug("Initialization: Scheduling run for config{} ({}) on instance {} with seed {} and captime {}", args);
 		}
 		
 		List<AlgorithmRun> completedRuns = tae.evaluateRun(runConfigs);
@@ -131,7 +133,7 @@ public class ClassicInitializationProcedure implements InitializationProcedure {
 		{
 			RunConfig rc = run.getRunConfig();
 			Object[] args = {  runHistory.getThetaIdx(rc.getParamConfiguration())!=-1?" "+runHistory.getThetaIdx(rc.getParamConfiguration()):"", rc.getParamConfiguration(), rc.getProblemInstanceSeedPair().getInstance().getInstanceID(),  rc.getProblemInstanceSeedPair().getSeed(), rc.getCutoffTime(), run.getResultLine(),  run.getWallclockExecutionTime()};
-			log.info("Initialization: Completed run for config{} ({}) on instance {} with seed {} and captime {} => Result: {}, wallclock time: {} seconds", args);
+			log.debug("Initialization: Completed run for config{} ({}) on instance {} with seed {} and captime {} => Result: {}, wallclock time: {} seconds", args);
 		}
 		
 		

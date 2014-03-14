@@ -228,16 +228,17 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 		{ 
 			Object[] args = { runConfig, result} ;
 			
-			log.info("Malformed Run Result for Execution (ArrayIndexOutOfBoundsException), Instance: {}, Result: {}", args);
-			log.info("Exception:",e);
+
+			log.debug("Malformed Run Result for Execution (ArrayIndexOutOfBoundsException): {}, Instance: {}, Result: {}", args);
+			log.debug("Exception:",e);
+
 			this.setAbortResult(e.getMessage());
 		}catch(NumberFormatException e)
 		{
 			//There was a problem with the output, we just set this flag
+			log.debug("Malformed Run Result for Execution (NumberFormatException):  Instance: {}, Result: {}", runConfig, result);
+			log.debug("Exception:",e);
 
-			Object[] args = {  runConfig, result} ;
-			log.info("Malformed Run Result for Execution (NumberFormatException):  Instance: {}, Result: {}", args);
-			log.info("Exception:",e);
 			this.setAbortResult( e.getMessage());
 			
 			

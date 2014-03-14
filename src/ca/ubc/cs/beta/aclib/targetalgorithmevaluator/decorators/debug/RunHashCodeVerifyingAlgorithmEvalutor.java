@@ -41,7 +41,7 @@ public class RunHashCodeVerifyingAlgorithmEvalutor extends AbstractForEachRunTar
 		
 		this.runHashQueue = runHashes;
 		
-		log.debug("Created with {} hash codes to verify", runHashQueue.size());
+		log.trace("Created with {} hash codes to verify", runHashQueue.size());
 		if(runHashQueue.size() == 0)
 		{
 			outOfHashCodesDisplayed = true;
@@ -67,7 +67,7 @@ public class RunHashCodeVerifyingAlgorithmEvalutor extends AbstractForEachRunTar
 		hashCode =  (hashCode == Integer.MIN_VALUE) ? 0 : hashCode;  
 		
 		hashCodesOfRuns = (31*hashCodesOfRuns + Math.abs( hashCode)% 32452867) % 32452867 	; //Some prime around 2^25 (to prevent overflows in computation)
-		log.debug(runHash, "Run Hash Codes:{} After {} runs",hashCodesOfRuns, runNumber);
+		log.trace(runHash, "Run Hash Codes:{} After {} runs",hashCodesOfRuns, runNumber);
 		
 		Integer expectedHashCode = runHashQueue.poll();
 		if(expectedHashCode == null)
@@ -82,7 +82,7 @@ public class RunHashCodeVerifyingAlgorithmEvalutor extends AbstractForEachRunTar
 			throw new TrajectoryDivergenceException(expectedHashCode, hashCodesOfRuns, runNumber);
 		} else
 		{
-			log.debug("Hash Code {} matched {}", expectedHashCode, hashCodesOfRuns);
+			log.trace("Hash Code {} matched {}", expectedHashCode, hashCodesOfRuns);
 		}
 		return run;
 	}

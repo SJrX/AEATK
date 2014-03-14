@@ -78,12 +78,13 @@ public class StateMergeExecutor {
 			
 			for(String file : jcom.getParameterFilesToRead())
 			{
-				log.info("Reading options from default file {} " , file);
+				log.debug("Reading options from default file {} " , file);
 			}
 			
 			
 			
-			log.info("Determining Scenario Options");
+			log.info("Starting State Merge");
+			log.debug("Determining Scenario Options");
 			List<ProblemInstance> pis = smo.scenOpts.getTrainingAndTestProblemInstances(smo.experimentDir, 0, 0, true, false, false, false).getTrainingInstances().getInstances();;
 			AlgorithmExecutionConfig execConfig = smo.scenOpts.getAlgorithmExecutionConfigSkipExecDirCheck(smo.experimentDir);
 			MapList<Integer, AlgorithmRun> runsPerIteration = new MapList<Integer, AlgorithmRun>(new LinkedHashMap<Integer, List<AlgorithmRun>>());
@@ -95,7 +96,7 @@ public class StateMergeExecutor {
 			{
 				smo.replaceSeeds = true;
 			}
-			log.info("Scanning directories");
+			log.debug("Scanning directories");
 			Set<String> directoriesWithState = getAllRestoreDirectories(smo.directories);
 			
 			
@@ -117,8 +118,8 @@ public class StateMergeExecutor {
 			
 			Random r = new MersenneTwister(smo.seed);
 			
-			log.info("Processing Runs");
-			RunHistory rh = new NewRunHistory(smo.scenOpts.intraInstanceObj, smo.scenOpts.interInstanceObj, smo.scenOpts.runObj);
+			log.debug("Processing Runs");
+			RunHistory rh = new NewRunHistory(smo.scenOpts.getIntraInstanceObjective(), smo.scenOpts.interInstanceObj, smo.scenOpts.runObj);
 			if(smo.replaceSeeds)
 			{
 				rh = new ReindexSeedRunHistoryDecorator(rh,r );
@@ -146,9 +147,9 @@ public class StateMergeExecutor {
 			for(RunData rd : rhToFilter.getAlgorithmRunData())
 			{
 				rdi++;
-				log.debug("Restored Data Iteration {} => {} ", rd.getIteration(), rd.getRun());
+				log.trace("Restored Data Iteration {} => {} ", rd.getIteration(), rd.getRun());
 			}
-			log.info("Restored Runs Count {} ", rdi);
+			log.debug("Restored Runs Count {} ", rdi);
 			
 			ThreadSafeRunHistory rhToSaveToDisk;
 			
@@ -169,7 +170,7 @@ public class StateMergeExecutor {
 				int maxSetSize = 0;
 				for(ParamConfiguration config : configs)
 				{
-					log.info("Number of runs for configuration {} is {}", config, rhToFilter.getProblemInstanceSeedPairsRan(config).size());
+					log.debug("Number of runs for configuration {} is {}", config, rhToFilter.getProblemInstanceSeedPairsRan(config).size());
 					
 					allPisps.addAll(rhToFilter.getProblemInstanceSeedPairsRan(config));
 					if(maxSetSize < rhToFilter.getProblemInstanceSeedPairsRan(config).size())
@@ -186,7 +187,7 @@ public class StateMergeExecutor {
 					
 				}
 				
-				log.info("Number of possible incumbents are {}", maxConfigs.size());
+				log.debug("Number of possible incumbents are {}", maxConfigs.size());
 				
 				StateMergeModelBuilder smmb = new StateMergeModelBuilder();
 				
@@ -194,7 +195,7 @@ public class StateMergeExecutor {
 				instances.addAll(fixedPi.values());
 				
 				 SeedableRandomPool srp = new SeedableRandomPool(1);
-				log.info("Building model");
+				log.debug("Building model");
 				
 				boolean adaptiveCapping = true;
 				if(smo.rfo.logModel == null)
@@ -230,7 +231,7 @@ public class StateMergeExecutor {
 					
 					double[][] ypred = RandomForest.applyMarginal(rf, tree_indxs_used, Theta);
 					
-					log.debug("Incumbent {} has predicted mean {}", config, ypred[0]);
+					log.trace("Incumbent {} has predicted mean {}", config, ypred[0]);
 					if(ypred[0][0] < bestMean)
 					{
 						newIncumbent = config;
@@ -245,7 +246,7 @@ public class StateMergeExecutor {
 				
 				maxSet.addAll(rhToFilter.getProblemInstanceSeedPairsRan(newIncumbent));
 				
-				rhToSaveToDisk = new ThreadSafeRunHistoryWrapper(new NewRunHistory(smo.scenOpts.intraInstanceObj, smo.scenOpts.interInstanceObj, smo.scenOpts.runObj));
+				rhToSaveToDisk = new ThreadSafeRunHistoryWrapper(new NewRunHistory(smo.scenOpts.getIntraInstanceObjective(), smo.scenOpts.interInstanceObj, smo.scenOpts.runObj));
 				
 				
 				for(RunData rd : rhToFilter.getAlgorithmRunData())
@@ -265,7 +266,7 @@ public class StateMergeExecutor {
 						}
 					} else
 					{
-						log.debug("No match for pisp {}", rd.getRun().getRunConfig().getProblemInstanceSeedPair());
+						log.trace("No match for pisp {}", rd.getRun().getRunConfig().getProblemInstanceSeedPair());
 					}
 					
 				}
@@ -279,11 +280,11 @@ public class StateMergeExecutor {
 			for(RunData rd : rhToSaveToDisk.getAlgorithmRunData())
 			{
 				rdi++;
-				log.debug("Will Save Run Iteration {} => {} ", rd.getIteration(), rd.getRun());
+				log.trace("Will Save Run Iteration {} => {} ", rd.getIteration(), rd.getRun());
 			}
 			
 			
-			log.info("Restored Runs Count {} out of {} runs found  ", rdi, originalRestored );
+			log.debug("Restored Runs Count {} out of {} runs found  ", rdi, originalRestored );
 			
 			
 			
@@ -294,17 +295,18 @@ public class StateMergeExecutor {
 			List<ProblemInstance> pisToSave = new ArrayList<ProblemInstance>();
 			for(Entry<String, ProblemInstance> ent : fixedPi.entrySet())
 			{
-				log.info("Problem instance saving {}", ent.getValue());
+				log.debug("Problem instance saving {}", ent.getValue());
 				pisToSave.add(ent.getValue());
 			}
 		
 			saveState(smo.scenOpts.outputDirectory, rhToSaveToDisk, pisToSave, execConfig.getParamFile().getParamFileName(), execConfig, smo.scenOpts, newIncumbent);
-			
+			log.info("State Merge completed successfully");
+
 		} catch(ParameterException e)
 		{
 			
 			log.info("Error {}", e.getMessage());
-			log.debug("Exception ", e);
+			log.trace("Exception ", e);
 		} catch(RuntimeException e)
 		{
 			log.error("Unknown Runtime Exception ",e);
@@ -355,8 +357,8 @@ outerLoop:
 						continue;
 					}
 					idcollision = true;
-					log.info("Problem Instance ID collision detected, this generally means you are merging run history files over different instance distributions. This is OK but note that instance IDs need to be changed, and so you cannot use this runhistory file to warm start a SMAC run.");
-					log.debug("Instance ID: {} previously mapped to: {} but now maps to: {}", pi.getInstanceID(),  piIDMap.get(pi.getInstanceID()), pi.getInstanceName());
+					log.debug("Problem Instance ID collision detected, this generally means you are merging run history files over different instance distributions. This is OK but note that instance IDs need to be changed, and so you cannot use this runhistory file to warm start a SMAC run.");
+					log.trace("Instance ID: {} previously mapped to: {} but now maps to: {}", pi.getInstanceID(),  piIDMap.get(pi.getInstanceID()), pi.getInstanceName());
 					fixedPi.clear();
 					break outerLoop;
 				} else
@@ -371,7 +373,7 @@ outerLoop:
 		
 		if(!idcollision)
 		{
-			log.info("Problem IDs seem to come from one distribution, this state-merge file should be compatible with warm-starts.");
+			log.debug("Problem IDs seem to come from one distribution, this state-merge file should be compatible with warm-starts.");
 			
 			
 			if(piIDMap.size() != pis.size())
@@ -401,7 +403,7 @@ outerLoop:
 				} else
 				{
 					repairedPi = new ProblemInstance(pi.getInstanceName(), instanceId, pi.getFeatures(), pi.getInstanceSpecificInformation());
-					log.debug("Original problem instance {} has ID transformed from {} to {}", pi.getInstanceID(), instanceId);
+					log.trace("Original problem instance {} has ID transformed from {} to {}", pi.getInstanceID(), instanceId);
 					fixedPi.put(pi.getInstanceName(), repairedPi);
 					
 					if(featureKeys.isEmpty())
@@ -441,7 +443,7 @@ outerLoop:
 				ExistingAlgorithmRun repairedRun = new ExistingAlgorithmRun(run.getExecutionConfig(), rc, run.getRunResult(), run.getRuntime(), run.getRunLength(), run.getQuality(), run.getResultSeed(), run.getAdditionalRunData(), run.getWallclockExecutionTime());
 
 				Object[] args2 = { runsForIt.getKey(), run.getRunConfig().getProblemInstanceSeedPair().getInstance(), run, repairedPi, repairedRun };
-				log.debug("Run Restored on iteration {} : {} => {} repaired: {} => {}",args2);
+				log.trace("Run Restored on iteration {} : {} => {} repaired: {} => {}",args2);
 				repairedRuns.addToList(runsForIt.getKey(), repairedRun);
 				
 			}
@@ -466,10 +468,10 @@ outerLoop:
 			List<ProblemInstance> pis, AlgorithmExecutionConfig execConfig,
 			MapList<Integer, AlgorithmRun> runsPerIteration, String dir)
 			throws IOException {
-		ThreadSafeRunHistory rh = new ThreadSafeRunHistoryWrapper(new NewRunHistory(smo.scenOpts.intraInstanceObj, smo.scenOpts.interInstanceObj, smo.scenOpts.runObj));
+		ThreadSafeRunHistory rh = new ThreadSafeRunHistoryWrapper(new NewRunHistory(smo.scenOpts.getIntraInstanceObjective(), smo.scenOpts.interInstanceObj, smo.scenOpts.runObj));
 		restoreState(dir, smo.scenOpts, pis, execConfig, rh, smo.restoreScenarioArguments);
 		
-		log.debug("Restored state of {} has {} runs for default configuration ", dir, rh.getTotalNumRunsOfConfigExcludingRedundant(execConfig.getParamFile().getDefaultConfiguration()));
+		log.trace("Restored state of {} has {} runs for default configuration ", dir, rh.getTotalNumRunsOfConfigExcludingRedundant(execConfig.getParamFile().getDefaultConfiguration()));
 		double restoredRuntime = 0.0;
 		for(RunData rd : rh.getAlgorithmRunData())
 		{
@@ -497,7 +499,7 @@ outerLoop:
 	 */
 	private static Set<String> getAllRestoreDirectories(List<String> directories) {
 		Set<String> directoriesWithState = new HashSet<String>();
-		log.info("Beginning Directory Scan");
+		log.debug("Beginning Directory Scan");
 		for(String dir: directories)
 		{
 			 directoriesWithState.addAll(scanDirectories(dir));
@@ -511,7 +513,7 @@ outerLoop:
 		
 		//StateFactoryOptions sfo = new StateFactoryOptions();
 		
-		log.debug("Saving directory {}", dir);
+		log.trace("Saving directory {}", dir);
 		
 		LegacyStateFactory lsf = new LegacyStateFactory(dir,null);
 		
@@ -531,7 +533,7 @@ outerLoop:
 		scen.append("deterministic=" + scenOpts.algoExecOptions.deterministic).append("\n");
 		scen.append("run_obj=" + scenOpts.runObj.toString().toLowerCase()).append("\n");
 		scen.append("#outdir = (Outdir is not recommended in a scenario file anymore)").append("\n");
-		scen.append("overall_obj=" + scenOpts.intraInstanceObj.toString().toLowerCase()).append("\n");
+		scen.append("overall_obj=" + scenOpts.getIntraInstanceObjective().toString().toLowerCase()).append("\n");
 		scen.append("cutoff_time=" + execConfig.getAlgorithmCutoffTime()).append("\n");
 		scen.append("tunerTimeout=" + scenOpts.limitOptions.tunerTimeout).append("\n");
 		scen.append("paramfile=" + LegacyStateFactory.PARAM_FILE).append("\n");
@@ -587,7 +589,7 @@ outerLoop:
 		
 		StateFactoryOptions sfo = new StateFactoryOptions();
 		
-		log.debug("Restoring directory {}", dir);
+		log.trace("Restoring directory {}", dir);
 		
 		LegacyStateFactory lsf = new LegacyStateFactory(null, dir);
 		
@@ -596,7 +598,7 @@ outerLoop:
 		{
 			if(f.getName().equals(LegacyStateFactory.SCENARIO_FILE))
 			{
-				log.debug("Using built in scenario options for directory {}", dir);
+				log.trace("Using built in scenario options for directory {}", dir);
 				scenOpts = new ScenarioOptions();
 				
 				JCommander jcom = new JCommander(scenOpts);
@@ -640,7 +642,7 @@ outerLoop:
 	private static Set<String> scanDirectories(String dirStr) {
 		File dir = new File(dirStr).getAbsoluteFile();
 		
-		log.debug("Scanning directory {}", dir.getAbsolutePath());
+		log.trace("Scanning directory {}", dir.getAbsolutePath());
 		if (!dir.exists())
 		{
 			throw new ParameterException("Argument " + dir.getAbsolutePath()  + " does not exist");
@@ -685,7 +687,7 @@ outerLoop:
 			
 			if(s.matches(s2))
 			{
-				log.debug("Directory contains saved SMAC data {}", dir);
+				log.trace("Directory contains saved SMAC data {}", dir);
 				matchingDirectories.add(dir.getAbsolutePath());
 			} 	
 		}

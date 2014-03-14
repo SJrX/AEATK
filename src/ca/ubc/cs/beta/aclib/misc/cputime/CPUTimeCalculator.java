@@ -81,7 +81,7 @@ private static final Logger log = LoggerFactory.getLogger(CPUTime.class);
 								{ //This JVM doesn't have CPU time enabled
 							      //We check every iteration because some threads (the current thread may give us something other than -1)
 									
-									log.debug("JVM didn't give us a measurement for thread: {}", threadID);
+									log.trace("JVM didn't give us a measurement for thread: {}", threadID);
 									continue;
 								} else
 								{
@@ -91,7 +91,7 @@ private static final Logger log = LoggerFactory.getLogger(CPUTime.class);
 								long threadUserTime = b.getThreadUserTime(threadID);
 								if(threadUserTime == -1)
 								{
-									log.debug("JVM didn't give us a measurement for usertime of thread: {}", threadID);
+									log.trace("JVM didn't give us a measurement for usertime of thread: {}", threadID);
 									continue;
 								} else
 								{
@@ -106,7 +106,7 @@ private static final Logger log = LoggerFactory.getLogger(CPUTime.class);
 							{
 								currentCPUTime += values.getValue(); 
 							}
-							//log.info("Updating time to {} ", currentTime);
+
 							cpuTime.set(currentCPUTime);
 
 							long currentUserTime = 0;
@@ -115,7 +115,6 @@ private static final Logger log = LoggerFactory.getLogger(CPUTime.class);
 							{
 								currentUserTime += values.getValue(); 
 							}
-							//log.info("Updating time to {} ", currentTime);
 							userTime.set(currentUserTime);
 							
 						} catch(UnsupportedOperationException e)
@@ -150,9 +149,9 @@ private static final Logger log = LoggerFactory.getLogger(CPUTime.class);
 	{
 			CountDownLatch latch = new CountDownLatch(1);
 			boolean accepted = latches.offer(latch);
-			//log.info("Submitting");
+
 			execService.submit(threadUpdate);
-			//log.info("Waiting");
+
 			if(accepted)
 			{
 				try {
@@ -161,9 +160,9 @@ private static final Logger log = LoggerFactory.getLogger(CPUTime.class);
 					Thread.currentThread().interrupt();
 				}
 			}
-			//log.info("Got value");
+			
 			double value =  cpuTime.get() / 1000.0 / 1000.0 / 1000.0;
-			//log.info("Returning {} ", value);
+		
 			return value;
 	}
 	
@@ -176,9 +175,8 @@ private static final Logger log = LoggerFactory.getLogger(CPUTime.class);
 	{
 			CountDownLatch latch = new CountDownLatch(1);
 			boolean accepted = latches.offer(latch);
-			//log.info("Submitting");
+
 			execService.submit(threadUpdate);
-			//log.info("Waiting");
 			if(accepted)
 			{
 				try {
@@ -187,9 +185,7 @@ private static final Logger log = LoggerFactory.getLogger(CPUTime.class);
 					Thread.currentThread().interrupt();
 				}
 			}
-			//log.info("Got value");
 			double value =  userTime.get() / 1000.0 / 1000.0 / 1000.0;
-			//log.info("Returning {} ", value);
 			return value;
 	}
 	

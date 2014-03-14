@@ -108,9 +108,9 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 			throw new ParameterException("Number of Challengers must be greater than 1, use CLASSIC initialization ");
 		}
 		log.error("TAE Notify and Events need to be handled");
-		log.info("Using Doubling Capping Initialization");
+		log.debug("Using Doubling Capping Initialization");
 		ParamConfiguration incumbent = this.initialIncumbent;
-		log.info("Configuration Set as initial Incumbent: {}", incumbent);
+		log.trace("Configuration Set as initial Incumbent: {}", incumbent);
 
 		double startKappa=cutoffTime;
 		//Start kappa at the lowest value that is greater than 1, and perfectly divisible from kappaMax.
@@ -179,7 +179,7 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 		}
 		
 		
-		log.debug("Doubling capping has generated {} distinct configurations and {} problem instance seed pairs", randomConfigurations.size(), pisps.size());
+		log.trace("Doubling capping has generated {} distinct configurations and {} problem instance seed pairs", randomConfigurations.size(), pisps.size());
 		/**
 		 * Construct a giant queue of runConfigs to do essentially everything we will do in the first round
 		 * (That is over all configurations, all problem instance seed pairs, all cutofftimes)
@@ -213,7 +213,7 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 			}
 		}
 	
-		log.debug("Doubling capping has generated {} runs to do", runsToDo);
+		log.trace("Doubling capping has generated {} runs to do", runsToDo);
 
 		
 
@@ -240,7 +240,7 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 		
 		if(phaseTwoRuns.size() <  numberOfChallengers )
 		{
-			log.info("Insufficient runs with SAT and UNSAT were found {} but needed {}, using some TIMEOUT runs for Phase 2 of initialization", phaseTwoRuns.size(), numberOfChallengers);
+			log.debug("Insufficient runs with SAT and UNSAT were found {} but needed {}, using some TIMEOUT runs for Phase 2 of initialization", phaseTwoRuns.size(), numberOfChallengers);
 			
 			int i=0; 
 			List<AlgorithmRun> timeouts = runs.getList(RunResult.TIMEOUT);
@@ -256,10 +256,10 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 		
 		if(phaseTwoRuns.size() < numberOfChallengers)
 		{
-			log.info("Phase one did not have enough completed runs ({}) to satisfy request of challengers: {}", phaseTwoRuns.size(), numberOfChallengers); 
+			log.debug("Phase one did not have enough completed runs ({}) to satisfy request of challengers: {}", phaseTwoRuns.size(), numberOfChallengers); 
 		} else
 		{
-			log.info("Beginning Phase 2 of initialization with {} completed runs", phaseTwoRuns.size());
+			log.debug("Beginning Phase 2 of initialization with {} completed runs", phaseTwoRuns.size());
 		}
 		
 		
@@ -295,7 +295,7 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
  		Collections.shuffle(configToIterate, diShuffle);
  		if(!configs.contains(initialIncumbent))
  		{
- 			log.debug("Initial Incumbent did not pass first round, adding to set");
+ 			log.trace("Initial Incumbent did not pass first round, adding to set");
  			
  			configToIterate.add(configToIterate.get(0));
  			configToIterate.set(0, initialIncumbent);
@@ -345,7 +345,7 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
  				ProblemInstanceSeedPair pisp = pispsToIterate.get(j);
  				runsForConfig.add(new RunConfig(pisp, this.cutoffTime, config, execConfig));
  			}
- 			log.debug("Scheduling {} runs for config {}", runsForConfig.size(), config);
+ 			log.trace("Scheduling {} runs for config {}", runsForConfig.size(), config);
 			phaseTwoTaeQueue.evaluateRunAsync(runsForConfig, phaseTwoObs);
  		}
  		
@@ -365,7 +365,7 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 					
 					bestPerformance.set(myPerformance);
 					newIncumbent = currentResults.get(0).getRunConfig().getParamConfiguration();
-					log.debug("New Incumbent set to {} with performance {} previous best was {}. Other challenges will continue until this bound is reached ", newIncumbent, myPerformance, previousBest);
+					log.trace("New Incumbent set to {} with performance {} previous best was {}. Other challenges will continue until this bound is reached ", newIncumbent, myPerformance, previousBest);
 				}
 				try {
 					for(AlgorithmRun run : currentResults)
@@ -387,7 +387,7 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
  		
  		
  		
- 		log.info("Initialization Procedure Completed. Selected incumbent {} ({}) incumbent has performance: {} ", this.runHistory.getThetaIdx(newIncumbent), newIncumbent, bestPerformance.get());
+ 		log.debug("Initialization Procedure Completed. Selected incumbent {} ({}) incumbent has performance: {} ", this.runHistory.getThetaIdx(newIncumbent), newIncumbent, bestPerformance.get());
  		this.incumbent = newIncumbent;
  		
 	}
@@ -428,7 +428,7 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 			public void currentStatus(List<? extends KillableAlgorithmRun> runs) {
 				if(allRunsCompleted.get())
 				{
-					log.debug("Phase One completed killing in progress runs {}", runs);
+					log.trace("Phase One completed killing in progress runs {}", runs);
 					for(KillableAlgorithmRun run : runs)
 					{
 						run.kill();
@@ -440,7 +440,7 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 			
 		};
 		
-		log.info("Beginning Phase One Runs");
+		log.debug("Beginning Phase One Runs");
 		double lastKappa = 0;
 		BasicTargetAlgorithmEvaluatorQueue taeQueue = new BasicTargetAlgorithmEvaluatorQueue(tae, true);
 		
@@ -468,7 +468,7 @@ topOfLoop:
 					if(lastKappa != rc.getCutoffTime())
 					{
 						lastKappa = rc.getCutoffTime();
-						log.info("Beginning Phase One Runs with Cutoff time {} (s)", lastKappa);
+						log.debug("Beginning Phase One Runs with Cutoff time {} (s)", lastKappa);
 					}
 					taeQueue.evaluateRunAsync(Collections.singletonList(rc), obs);
 					
@@ -485,7 +485,7 @@ topOfLoop:
 				while(context != null)
 				{
 					AlgorithmRun run = context.getAlgorithmRuns().get(0);
-					log.debug("Run Returned: {}", run);
+					log.trace("Run Returned: {}", run);
 					
 					switch(run.getRunResult())
 					{
@@ -499,7 +499,7 @@ topOfLoop:
 								{
 									incumbentSolved.set(true);
 									completedRuns++;
-									log.debug("Run completed need {} more", numberOfChallengers - completedRuns);
+									log.trace("Run completed need {} more", numberOfChallengers - completedRuns);
 									runs.addToList(run.getRunResult(), run);
 								} else
 								{
@@ -508,7 +508,7 @@ topOfLoop:
 							} else
 							{
 								completedRuns++;
-								log.debug("Run completed need {} more", numberOfChallengers - completedRuns);
+								log.trace("Run completed need {} more", numberOfChallengers - completedRuns);
 								runs.addToList(run.getRunResult(), run);
 							}
 							break;
@@ -521,7 +521,7 @@ topOfLoop:
 									{
 										incumbentSolved.set(true);
 										completedRuns++;
-										log.debug("Run completed need {} more", numberOfChallengers - completedRuns);
+										log.trace("Run completed need {} more", numberOfChallengers - completedRuns);
 										runs.addToList(run.getRunResult(), run);
 									} else
 									{
@@ -531,13 +531,13 @@ topOfLoop:
 								} else
 								{
 									completedRuns++;
-									log.debug("Run completed need {} more", numberOfChallengers - completedRuns);
+									log.trace("Run completed need {} more", numberOfChallengers - completedRuns);
 									runs.addToList(run.getRunResult(), run);
 								}
 							}
 							break;
 						case KILLED:
-							  log.debug("Killed run detected in First round: {}", run);
+							  log.trace("Killed run detected in First round: {}", run);
 							break;
 							
 							
@@ -550,7 +550,7 @@ topOfLoop:
 									incumbentSolved.set(true);
 								}
 								completedRuns++;
-								log.debug("Run completed need {} more", numberOfChallengers - completedRuns);
+								log.trace("Run completed need {} more", numberOfChallengers - completedRuns);
 								runs.addToList(run.getRunResult(), run);
 							}
 							
@@ -568,9 +568,9 @@ topOfLoop:
 				
 			}
 		}
-		log.debug("Notifying existing Phase One runs to terminate");
+		log.trace("Notifying existing Phase One runs to terminate");
 		allRunsCompleted.set(true);
-		log.info("Phase One Runs Complete");
+		log.debug("Phase One Runs Complete");
 	}
 
 	@Override

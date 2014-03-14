@@ -57,24 +57,7 @@ public class StateMergeModelBuilder {
 	public void learnModel(List<ProblemInstance> instances, RunHistory runHistory, ParamConfigurationSpace configSpace, RandomForestOptions rfOptions, ModelBuildingOptions mbOptions, ScenarioOptions scenarioOptions, boolean adaptiveCapping, SeedableRandomPool pool) 
 	{
 		
-		/*
-		if(rfOptions.subsampleValuesWhenLowMemory)
-		{
-			
-			double freeMemory = freeMemoryAfterGC();
-			if(freeMemory < options.randomForestOptions.freeMemoryPercentageToSubsample)
-			{
-				subsamplePercentage *= options.randomForestOptions.subsamplePercentage;
-				Object[] args = { getIteration(), freeMemory, subsamplePercentage};
-				log.info("Iteration {} : Free memory too low ({}) subsample percentage now {} ", args);
-			}
 
-		} else
-		{
-			subsamplePercentage = 1;
-		}
-		*/
-		
 		
 		
 		
@@ -152,7 +135,7 @@ public class StateMergeModelBuilder {
 			// but matlab sure does
 			if(runResponseValues[j] >= scenarioOptions.algoExecOptions.cutoffTime)
 			{	
-				runResponseValues[j] = scenarioOptions.algoExecOptions.cutoffTime * scenarioOptions.intraInstanceObj.getPenaltyFactor();
+				runResponseValues[j] = scenarioOptions.algoExecOptions.cutoffTime * scenarioOptions.getIntraInstanceObjective().getPenaltyFactor();
 			}
 			
 		}
@@ -181,7 +164,7 @@ public class StateMergeModelBuilder {
 		preparedForest = null;
 		if(adaptiveCapping)
 		{
-			mb = new AdaptiveCappingModelBuilder(sanitizedData, rfOptions, pool.getRandom("RANDOM_FOREST_BUILDING_PRNG"), mbOptions.imputationIterations, scenarioOptions.algoExecOptions.cutoffTime, scenarioOptions.intraInstanceObj.getPenaltyFactor(), 1);
+			mb = new AdaptiveCappingModelBuilder(sanitizedData, rfOptions, pool.getRandom("RANDOM_FOREST_BUILDING_PRNG"), mbOptions.imputationIterations, scenarioOptions.algoExecOptions.cutoffTime, scenarioOptions.getIntraInstanceObjective().getPenaltyFactor(), 1);
 		} else
 		{
 			//mb = new HashCodeVerifyingModelBuilder(sanitizedData,smacConfig.randomForestOptions, runHistory);
@@ -192,7 +175,7 @@ public class StateMergeModelBuilder {
 		forest = mb.getRandomForest();
 		preparedForest = mb.getPreparedRandomForest();
 	
-		log.info("Random Forest Built");
+		log.debug("Random Forest Built");
 	}
 	
 	

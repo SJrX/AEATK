@@ -140,6 +140,10 @@ exec java -Xmx"$SMACMEM"m -cp "$DIR/conf/:$jarconcat" $EXEC "$@"
 	
 	sb.append("echo \"Starting ").append(nameOfProgram).append(" with $SMACMEM MB of RAM\"").append("\n"); 
 	sb.append("\n");
+	sb.append("for f in $DIR/lib/*.jar").append("\n");
+	sb.append("do").append("\n");
+	        sb.append("\tjarconcat=$jarconcat:$f").append("\n");
+	sb.append("done").append("\n");
 	sb.append("for f in $DIR/*.jar").append("\n");
 	sb.append("do").append("\n");
 	        sb.append("\tjarconcat=$jarconcat:$f").append("\n");
@@ -174,7 +178,6 @@ exec java -Xmx"$SMACMEM"m -cp "$DIR/conf/:$jarconcat" $EXEC "$@"
 
 		 */
 		
-		
 		StringBuilder sb = new StringBuilder();
 		
 		sb.append("@echo off").append("\r\n");
@@ -185,6 +188,7 @@ exec java -Xmx"$SMACMEM"m -cp "$DIR/conf/:$jarconcat" $EXEC "$@"
 		sb.append("set jarconcat=").append("\r\n");
 		sb.append("SETLOCAL ENABLEDELAYEDEXPANSION").append("\r\n");
 		sb.append("for /F \"delims=\" %%a IN ('dir /b /s \"%DIR%\\*.jar\"') do set jarconcat=%%a;!jarconcat!").append("\r\n");
+		sb.append("for /F \"delims=\" %%a IN ('dir /b /s \"%DIR%\\lib\\*.jar\"') do set jarconcat=%%a;!jarconcat!").append("\r\n");
 		sb.append("echo Starting "+ nameOfProgram + " with %SMACMEM% MB of RAM").append("\r\n");
 		//sb.append("@echo on").append("\n");
 		sb.append("java -Xmx%SMACMEM%m -cp \"%DIR%conf\\;%DIR%patches\\;%jarconcat%%DIR%patches\\ \" %EXEC% %*").append("\r\n");

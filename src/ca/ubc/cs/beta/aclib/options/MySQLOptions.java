@@ -15,10 +15,10 @@ import com.beust.jcommander.ParameterFile;
 @UsageTextField(title="MySQL Options", description="Options that control how to connect to the MySQL Server")
 public class MySQLOptions extends AbstractOptions {
 
-	@UsageTextField(defaultValues="~/.aclib/mysql.opt")
+	@UsageTextField(defaultValues="~/.aeatk/mysql.opt")
 	@Parameter(names={"--mysql-defaults-file","--mysqlDefaultsFile"}, description="file that contains default settings for MySQL")
 	@ParameterFile(ignoreFileNotExists = true) 
-	public File mysqlDefaults = HomeFileUtils.getHomeFile(".aclib" + File.separator  + "mysql.opt");
+	public File mysqlDefaults = HomeFileUtils.getHomeFile(".aeatk" + File.separator  + "mysql.opt");
 	
 	@Parameter(names={"--mysql-hostname","--mysql-host","--mysqlHostName"}, description="Hostname of database server" )
 	public String host;

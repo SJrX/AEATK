@@ -48,7 +48,7 @@ public class AnalyticTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorith
 
 	@Override
 	protected void subtypeShutdown() {
-		log.info("Global minima for {} function are near {}", func.name() ,  func.getMinima());
+		log.info("Global minima for Analytical Target Algorithm Evaluator Function: {} are near {}", func.name() ,  func.getMinima());
 	}
 
 	@Override

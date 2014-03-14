@@ -133,7 +133,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 			if (iteration == Integer.MAX_VALUE)
 			{
 				iteration = 0;
-				log.info("Auto detecting iteration for directory {}" , restoreFromPath);
+				log.debug("Auto detecting iteration for directory {}" , restoreFromPath);
 				
 				File restoreDirectory = new File(restoreFromPath);
 				
@@ -155,63 +155,18 @@ public class LegacyStateDeserializer implements StateDeserializer {
 				*/
 				
  				iteration = getMaxIterationInDirectory(restoreDirectory, "it");
-				/*
-				if(iteration == 0)
-				{
-					log.debug("Auto-detected iteration 0 on first pass trying by filename, doing another pass");
-					
-					for(File f : files)
-					{
-
-						if(f.getName().matches(LegacyStateFactory.getRunAndResultsFilename("", "it", "\\d+")))
-						{
-							
-							Matcher m = filePattern.matcher(f.getName());
-							
-							if(m.find())
-							{
-								String group = m.group(1);
-								log.debug("Found iteration {} from file {} ", group , f.getName());
-								iteration = Math.max(Integer.valueOf(group), iteration);
-							}
-							
-						}
-						
-						
-						
-					}
-				}
-				*/
-				log.info("Iteration restoring to {} ", iteration);
+				
+				log.debug("Iteration restoring to {} ", iteration);
 			}
 			
 			
 			
-			log.info("Trying to restore iteration: {} id: {} from path: {}", iteration, id, restoreFromPath );
+			log.debug("Trying to restore iteration: {} id: {} from path: {}", iteration, id, restoreFromPath );
 			try {
 				
 				
 			FileLocations f = getLocations(restoreFromPath, id, iteration);
 			f.validate();
-			
-			log.trace("Run and Results File: {}", f.runHistoryFile.getAbsolutePath());
-			if(f.paramStringsFile != null)
-			{
-				log.trace("Param Strings File: {}", f.paramStringsFile.getAbsolutePath());
-			} 
-			
-			if(f.uniqConfigFile != null)
-			{
-				log.trace("Param Strings File: {}", f.uniqConfigFile.getAbsolutePath());
-			}
-				
-			if(f.javaObjDumpFile != null)
-			{
-				log.trace("Java Objective Dump File: {}",f.javaObjDumpFile.getAbsolutePath());
-			} else
-			{
-				log.trace("Java Objective Dump File: null");
-			}
 			
 			if(f.javaObjDumpFile != null)
 			{
@@ -286,15 +241,15 @@ public class LegacyStateDeserializer implements StateDeserializer {
 				
 					if(f.uniqConfigFile != null)
 					{
-						log.info("Parsing Parameter Settings from: {}", f.uniqConfigFile.getAbsolutePath());
-						log.info("Parameter Settings specified in array format, which is less portable (but more accurate) than paramString format");
+						log.debug("Parsing Parameter Settings from: {}", f.uniqConfigFile.getAbsolutePath());
+						log.debug("Parameter Settings specified in array format, which is less portable (but more accurate) than paramString format");
 						reader =  new BufferedReader(new FileReader(f.uniqConfigFile));
 						
 						String line = null;
 					
 						while( (line = reader.readLine()) != null)
 						{
-							log.trace("Parsing config line: {}", line);
+
 							String[] lineResults = line.split(",",2);
 							
 							if(lineResults.length != 2) throw new IllegalArgumentException("Configuration Param Strings File is corrupted, no comma detected on line: \"" + line + "\"");
@@ -309,7 +264,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 						
 					} else if(f.paramStringsFile != null)
 					{
-						log.info("Parsing Parameter Settings from: {}",f.paramStringsFile.getAbsolutePath());
+						log.debug("Parsing Parameter Settings from: {}",f.paramStringsFile.getAbsolutePath());
 					
 						reader =  new BufferedReader(new FileReader(f.paramStringsFile));
 						
@@ -317,7 +272,6 @@ public class LegacyStateDeserializer implements StateDeserializer {
 					
 						while( (line = reader.readLine()) != null)
 						{
-							log.trace("Parsing config line: {}", line);
 							String[] lineResults = line.split(":",2);
 							
 							if(lineResults.length != 2) throw new IllegalArgumentException("Configuration Param Strings File is corrupted, no colon detected on line: \"" + line + "\"");
@@ -490,7 +444,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 							runtime = execConfig.getAlgorithmCutoffTime();
 							runResult = RunResult.TIMEOUT;
 							cutOffTime = runtime;
-							log.info("Cutoff time discrepancy detected while restoring state for line {}, marking run as TIMEOUT with runtime {}", Arrays.toString(runHistoryLine), runtime);
+							log.debug("Cutoff time discrepancy detected while restoring state for line {}, marking run as TIMEOUT with runtime {}", Arrays.toString(runHistoryLine), runtime);
 							
 							
 						} else if (runtime < execConfig.getAlgorithmCutoffTime())
@@ -498,7 +452,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 							if(runResult.equals(RunResult.TIMEOUT) && !isCensored)
 							{
 								
-								log.info("Cutoff time discrepancy detected while restoring state for line {}, marking run as TIMEOUT and Censored with runtime {}", Arrays.toString(runHistoryLine), runtime);
+								log.debug("Cutoff time discrepancy detected while restoring state for line {}, marking run as TIMEOUT and Censored with runtime {}", Arrays.toString(runHistoryLine), runtime);
 								isCensored = true;
 								
 								
@@ -514,7 +468,6 @@ public class LegacyStateDeserializer implements StateDeserializer {
 												
 						AlgorithmRun run = new ExistingAlgorithmRun(runConfig, runResult, runtime, runLength, quality, seed, additionalRunData, wallClockTime);
 						
-						log.trace("Appending new run to runHistory: ", run);
 						try {
 							runHistory.append(run);
 						} catch (DuplicateRunException e) {
@@ -525,19 +478,16 @@ public class LegacyStateDeserializer implements StateDeserializer {
 							{
 								//This is for Model Building and is probably a bug for restoring state later
 								
-								log.trace("Seed is -1 which means it was deterministic, logging run with a new seed");
-								
 								seed = newSeeds++;
 								
 
 								run = new ExistingAlgorithmRun( runConfig, runResult, runtime, runLength, quality, seed, wallClockTime);
 								
-								log.trace("Appending new run to runHistory: ", run);
 								try {
 									runHistory.append(run);
 								} catch(DuplicateRunException e2)
 								{
-									log.info("Could not restore run, duplicate run detected again for deterministic run: {} on line {} ", run, Arrays.toString(runHistoryLine));
+									log.trace("Could not restore run, duplicate run detected again for deterministic run: {} on line {} ", run, Arrays.toString(runHistoryLine));
 								}
 									
 								
@@ -545,7 +495,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 							} else
 							{
 								duplicateRunsDropped++;
-								log.debug("Duplicate Run Detected dropped {} from line: {}",run, Arrays.toString(runHistoryLine));
+								log.trace("Duplicate Run Detected dropped {} from line: {}",run, Arrays.toString(runHistoryLine));
 								
 							}
 							
@@ -560,10 +510,10 @@ public class LegacyStateDeserializer implements StateDeserializer {
 
 				}
 				
-				log.info("Restored {} runs, {} duplicates were dropped", i, duplicateRunsDropped);
+				log.debug("Restored {} runs, {} duplicates were dropped", i, duplicateRunsDropped);
 				if(this.incumbent == null)
 				{
-					log.info("No incumbent found in state files, doing our best to select the incumbent, may not be identical but should be indistinguishable");
+					log.debug("No incumbent found in state files, doing our best to select the incumbent, may not be identical but should be indistinguishable");
 					
 					RunHistory runHistory = getRunHistory();	
 					Set<ParamConfiguration> configs = runHistory.getUniqueParamConfigurations();
@@ -620,7 +570,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 		}
 		
 		
-		log.info("Successfully restored iteration: {} id: {} from path: {}", iteration, id, restoreFromPath );
+		log.debug("Successfully restored iteration: {} id: {} from path: {}", iteration, id, restoreFromPath );
 			
 	}
 
@@ -753,20 +703,20 @@ public class LegacyStateDeserializer implements StateDeserializer {
 		
 		if(!f.javaObjDumpFile.exists())
 		{
-			log.info("Could not find object dump file to restore from {}",f.javaObjDumpFile.getAbsolutePath());
+			log.trace("Could not find object dump file to restore from {}",f.javaObjDumpFile.getAbsolutePath());
 			f.javaObjDumpFile = new File(LegacyStateFactory.getJavaQuickBackObjectDumpFilename(path, id, iteration));
 			if(LegacyStateFactory.readIterationFromObjectFile(f.javaObjDumpFile) != iteration)
 			{
-				log.info("Could not find object dump file to restore from {}",f.javaObjDumpFile.getAbsolutePath());
+				log.trace("Could not find object dump file to restore from {}",f.javaObjDumpFile.getAbsolutePath());
 				f.javaObjDumpFile = new File(LegacyStateFactory.getJavaQuickObjectDumpFilename(path, id, iteration));
 				if(LegacyStateFactory.readIterationFromObjectFile(f.javaObjDumpFile) != iteration)
 				{
-					log.info("Could not find object dump file to restore from {}",f.javaObjDumpFile.getAbsolutePath());
+					log.trace("Could not find object dump file to restore from {}",f.javaObjDumpFile.getAbsolutePath());
 					f.javaObjDumpFile = new File(LegacyStateFactory.getJavaObjectDumpFilename(path, "CRASH", iteration));
 					if(LegacyStateFactory.readIterationFromObjectFile(f.javaObjDumpFile) != iteration)
 					{
 						
-						log.info("Could not find object dump file to restore from {}, No Java Object Dump will be loaded",f.javaObjDumpFile.getAbsolutePath());
+						log.trace("Could not find object dump file to restore from {}, No Java Object Dump will be loaded",f.javaObjDumpFile.getAbsolutePath());
 						f.javaObjDumpFile = null;
 						//throw new StateSerializationException("Java Object File does not exist " +  LegacyStateFactory.getJavaQuickObjectDumpFilename(path, id, iteration));
 					}

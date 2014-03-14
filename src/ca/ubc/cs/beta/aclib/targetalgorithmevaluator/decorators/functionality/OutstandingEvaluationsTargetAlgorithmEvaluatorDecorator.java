@@ -63,6 +63,7 @@ public class OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator extends
 	{
 		outstandingRunBlocks.reducePermits();
 		outstandingRuns.addAndGet(runConfigs.size());
+		/*
 		if(log.isTraceEnabled())
 		{
 			RunConfig rc = null;
@@ -72,6 +73,7 @@ public class OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator extends
 			}
 			log.trace("Reducing Permits by 1 now for {}, Dirty Read: {}", rc,  outstandingRunBlocks.availablePermits());	
 		}
+		*/
 	}
 	
 	private void logRelease(List<RunConfig> runConfigs)
@@ -79,6 +81,7 @@ public class OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator extends
 		outstandingRunBlocks.release();
 		outstandingRuns.addAndGet(-1*runConfigs.size());
 		
+		/*
 		if(log.isTraceEnabled())
 		{
 			RunConfig rc = null;
@@ -88,6 +91,7 @@ public class OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator extends
 			}
 			log.trace("Releasing Permits by 1 now for {}, Dirty Read: {}", rc,  outstandingRunBlocks.availablePermits());	
 		}
+		*/
 	}
 
 	@Override

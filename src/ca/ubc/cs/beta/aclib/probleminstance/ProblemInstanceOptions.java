@@ -3,11 +3,20 @@ package ca.ubc.cs.beta.aclib.probleminstance;
 
 
 import java.io.File;
+import java.io.FileWriter;
+import java.io.FilenameFilter;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
+import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.Set;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,7 +34,7 @@ import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 public class ProblemInstanceOptions extends AbstractOptions{
 
 	@CommandLineOnly
-	@Parameter(names={"--instance-file","--instanceFile","-i","--instance_file","--instance_seed_file"}, description="file containing a list of instances to use during the automatic configuration phase (see Instance File Format section of the manual)", required=false)
+	@Parameter(names={"--instances","--instance-file","--instance-dir","--instanceFile","-i","--instance_file","--instance_seed_file"}, description="File or directory containing the instances to use for the scenario. If it's a file it must coform a specific format (see Instance File Format section of the manual), if it's a directory it you must also use the --instance-suffix option to restrict the match (unless all files have the same extension), and the instance list will be in sorted order.", required=false)
 	public String instanceFile;
 
 	@CommandLineOnly
@@ -34,7 +43,7 @@ public class ProblemInstanceOptions extends AbstractOptions{
 	public String instanceFeatureFile;
 	
 	@CommandLineOnly
-	@Parameter(names={"--test-instance-file","--testInstanceFile","--test_instance_file","--test_instance_seed_file"}, description="file containing a list of instances to use during the validation phase (see Instance File Format section of the manual)", required=false)
+	@Parameter(names={"--test-instances","--test-instance-file","--test-instance-dir","--testInstanceFile","--test_instance_file","--test_instance_seed_file"}, description="File or directory containing the instances to use for the scenario. If it's a file it must coform a specific format (see Instance File Format section of the manual), if it's directory you must also use the --test-instance-suffix option to restrict the match (unless all files have the same extension), , and the instance list will be in sorted order", required=false)
 	public String testInstanceFile;
 
 	@CommandLineOnly
@@ -42,6 +51,20 @@ public class ProblemInstanceOptions extends AbstractOptions{
 	@Parameter(names={"--check-instances-exist","--checkInstanceFilesExist"}, description="check if instances files exist on disk")
 	public boolean checkInstanceFilesExist = false;
 	
+	@CommandLineOnly
+	@Parameter(names="--no-instances", description="If true skips reading the instances and just uses a dummy instance")
+	public boolean noInstances = false;
+	
+	
+	@CommandLineOnly
+	@UsageTextField(level=OptionLevel.BASIC)
+	@Parameter(names={"--instance-suffix","--instance-regex"}, description="A suffix that all instances must match when reading instances from a directory. You can optionally specify a (java) regular expression but be aware that it is suffix matched (internally we take this string and append a $ on it)")
+	public String instanceSuffix = null;
+	
+	@CommandLineOnly
+	@UsageTextField(level=OptionLevel.BASIC)
+	@Parameter(names={"--test-instance-suffix","--test-instance-regex"}, description="A suffix that all instances must match when reading instances from a directory. You can optionally specify a (java) regular expression but be aware that it is suffix matched (internally we take this string and append a $ on it)")
+	public String testInstanceSuffix = null;
 	
 	/**
 	 * Gets the training problem instances
@@ -54,24 +77,37 @@ public class ProblemInstanceOptions extends AbstractOptions{
 	{
 		
 		
-		
-		if(instanceFile == null)
+		String instancesString = this.instanceFile;
+
+		String instanceFeatureFile = this.instanceFeatureFile;
+		if(instancesString == null)
 		{
 			if(required)
 			{			
-				throw new ParameterException("The instance file option --instanceFile must be set");
+				throw new ParameterException("The instance file option --instances must be set");
 			} else
 			{
 				return null;
 			}
 		}
 	
+		if(this.noInstances)
+		{
+			instancesString = getNoInstanceFile();
+			instanceFeatureFile = null;
+		} 
+		
+		if(new File(instancesString).isDirectory())
+		{
+			instancesString = this.getInstanceDirectory(instancesString, this.instanceSuffix);
+		}
+		
 		InstanceListWithSeeds ilws;
 		
 		Logger log = LoggerFactory.getLogger(getClass());
 				
 		try {
-			ilws = ProblemInstanceHelper.getInstances(instanceFile,experimentDirectory, instanceFeatureFile, checkInstanceFilesExist, seed, deterministic);
+			ilws = ProblemInstanceHelper.getInstances(instancesString,experimentDirectory, instanceFeatureFile, checkInstanceFilesExist, seed, deterministic);
 			
 			
 		} catch(FeatureNotFoundException e)
@@ -82,7 +118,7 @@ public class ProblemInstanceOptions extends AbstractOptions{
 				throw new ParameterException("Training instances require features and there was a problem loading features for all instances: " + e.getMessage());
 			} else
 			{
-				ilws = ProblemInstanceHelper.getInstances(instanceFile,experimentDirectory, null, checkInstanceFilesExist, seed, deterministic);
+				ilws = ProblemInstanceHelper.getInstances(instancesString,experimentDirectory, null, checkInstanceFilesExist, seed, deterministic);
 			}
 			
 			
@@ -97,10 +133,10 @@ public class ProblemInstanceOptions extends AbstractOptions{
 		//instanceFileAbsolutePath = ilws.getInstanceFileAbsolutePath();
 		//instanceFeatureFileAbsolutePath = ilws.getInstanceFeatureFileAbsolutePath();
 	
-		log.debug("Training Instance Seed Generator reports {} seeds ",  ilws.getSeedGen().getInitialInstanceSeedCount());
+		log.trace("Training Instance Seed Generator reports {} seeds ",  ilws.getSeedGen().getInitialInstanceSeedCount());
 		if(ilws.getSeedGen().allInstancesHaveSameNumberOfSeeds())
 		{
-			log.debug("Training Instance Seed Generator reports that all instances have the same number of available seeds");
+			log.trace("Training Instance Seed Generator reports that all instances have the same number of available seeds");
 		} else
 		{
 			log.error("Training Instance Seed Generator reports that some instances have a different number of seeds than others");
@@ -123,22 +159,39 @@ public class ProblemInstanceOptions extends AbstractOptions{
 	{
 		
 
-		if(testInstanceFile == null)
+		String testInstancesString = this.testInstanceFile;
+		
+		
+		String instanceFeatureFile = this.instanceFeatureFile;
+		
+		if(testInstancesString == null)
 		{
 			if(required)
 			{			
-				throw new ParameterException("The instance file option --testInstanceFile must be set");
+				throw new ParameterException("The instance file option --test-instances must be set");
 			} else
 			{
 				return null;
 			}
 		}
+		
+		if(this.noInstances)
+		{
+			testInstancesString = getNoInstanceFile();
+			instanceFeatureFile = null;
+		} 
+		
+		if(new File(testInstancesString).isDirectory())
+		{
+			testInstancesString = this.getInstanceDirectory(testInstancesString, this.instanceSuffix);
+		}
+		
 	
 		InstanceListWithSeeds ilws;
 		
 		Logger log = LoggerFactory.getLogger(getClass());
 		try {
-			ilws = ProblemInstanceHelper.getInstances(testInstanceFile,experimentDirectory, instanceFeatureFile, checkInstanceFilesExist, seed, deterministic);
+			ilws = ProblemInstanceHelper.getInstances(testInstancesString,experimentDirectory, instanceFeatureFile, checkInstanceFilesExist, seed, deterministic);
 			
 			
 		} catch(FeatureNotFoundException e)
@@ -149,7 +202,7 @@ public class ProblemInstanceOptions extends AbstractOptions{
 				throw new ParameterException("Testing instances require features and there was a problem loading features for all instances: " + e.getMessage());
 			} else
 			{
-				ilws = ProblemInstanceHelper.getInstances(testInstanceFile,experimentDirectory, null, checkInstanceFilesExist, seed, deterministic);
+				ilws = ProblemInstanceHelper.getInstances(testInstancesString,experimentDirectory, null, checkInstanceFilesExist, seed, deterministic);
 			}
 			
 			
@@ -162,13 +215,13 @@ public class ProblemInstanceOptions extends AbstractOptions{
 		//instanceFileAbsolutePath = ilws.getInstanceFileAbsolutePath();
 		//instanceFeatureFileAbsolutePath = ilws.getInstanceFeatureFileAbsolutePath();
 	
-		log.debug("Test Instance Seed Generator reports {} seeds ",  ilws.getSeedGen().getInitialInstanceSeedCount());
+		log.trace("Test Instance Seed Generator reports {} seeds ",  ilws.getSeedGen().getInitialInstanceSeedCount());
 		if(ilws.getSeedGen().allInstancesHaveSameNumberOfSeeds())
 		{
-			log.debug("Test Instance Seed Generator reports that all instances have the same number of available seeds");
+			log.trace("Test Instance Seed Generator reports that all instances have the same number of available seeds");
 		} else
 		{
-			log.debug("Test Instance Seed Generator reports that some instances have a different number of seeds than others");
+			log.trace("Test Instance Seed Generator reports that some instances have a different number of seeds than others");
 			throw new ParameterException("All Testing instances must have the same number of seeds in this version of SMAC");
 		}
 		
@@ -218,16 +271,28 @@ public class ProblemInstanceOptions extends AbstractOptions{
 		
 		Map<String, String> exceptionMessages = new LinkedHashMap<String, String>();
 		Logger log = LoggerFactory.getLogger(getClass());
+		
+		Set<File> checkedDirectories = new HashSet<File>();
+		
 		for(String dir : directories)
 		{
 			try {
+				
+			if(checkedDirectories.contains(new File(dir).getCanonicalFile()))
+			{
+				continue;
+			} else
+			{
+				checkedDirectories.add(new File(dir).getCanonicalFile());
+			}
 			InstanceListWithSeeds training = getTrainingProblemInstances(dir, trainingSeed, deterministic, trainingRequired, trainingFeaturesRequired);
 			InstanceListWithSeeds testing = getTestingProblemInstances(dir, testingSeed, deterministic, testRequired, testingFeaturesRequired);
 	
+			
 			return new TrainTestInstances(training, testing);
 			} catch(ParameterException e)
 			{
-				log.debug("Ignore this exception for now: ", e);
+				log.trace("Ignore this exception for now: ", e);
 				exceptionMessages.put(dir,  e.getMessage());
 			}
 		}
@@ -260,6 +325,149 @@ public class ProblemInstanceOptions extends AbstractOptions{
 		public InstanceListWithSeeds getTestInstances() {
 			return testInstances;
 		}
+		
+	}
+	
+	
+	private String getNoInstanceFile()
+	{
+		
+		
+		try {
+			
+			
+			File instanceFile = File.createTempFile("aeatoolkit-no-instance-", ".txt");
+			FileWriter fWrite = new FileWriter(instanceFile);
+	
+			fWrite.append("no_instance\n");
+			fWrite.close();
+			instanceFile.deleteOnExit();
+			
+			
+	
+			
+			
+			return instanceFile.getAbsolutePath();
+		} catch(IOException e)
+		{
+			throw new IllegalStateException("Couldn't create an instance file ");
+		}
+		
+	}
+	
+	private String getInstanceDirectory(String instanceDirName, String instanceSuffix)
+	{
+		
+		File f = new File(instanceDirName);
+		
+		Logger log = LoggerFactory.getLogger(ProblemInstanceOptions.class);
+		if(!f.isDirectory())
+		{
+			throw new IllegalArgumentException("This function can only be called with a directory");
+		}
+		
+		Pattern p = Pattern.compile("\\.([^\\.]*)$");
+		
+
+		if(instanceSuffix == null)
+		{
+			String foundExtension = null;
+			for(String file : f.list())
+			{
+				Matcher match = p.matcher(file);
+				if(match.find())
+				{
+					if(foundExtension == null)
+					{
+						foundExtension = match.group(1);
+						log.trace("Using extension {} for instance directory", foundExtension );
+					} else if (!foundExtension.equals(match.group(1)))
+					{
+						throw new ParameterException("You must specify an instance suffix for directory unless all files have the same extension, detected extensions " + foundExtension + " and " + match.group(1));
+					}
+				}
+			}
+			
+			instanceSuffix = foundExtension;
+			
+		}
+		
+		
+		p = Pattern.compile(instanceSuffix + "$");
+		
+		List<String> foundInstances = new ArrayList<String>();
+		
+		String instanceDirPrefix = instanceDirName;
+		if(!instanceDirPrefix.endsWith(File.separator))
+		{
+			instanceDirPrefix += File.separator;
+		}
+		for(String file : f.list())
+		{
+			Matcher match = p.matcher(file);
+			if(match.find())
+			{
+				foundInstances.add(instanceDirPrefix+file);
+			}
+		}
+			
+	
+		if(foundInstances.size() == 0)
+		{
+			throw new ParameterException("Instance directory specified " + instanceDirPrefix +  " and suffix \"" + instanceSuffix + "\" do not match any instances");
+		}
+		Collections.sort(foundInstances);
+		
+		try {
+			
+			
+			File instanceFile = File.createTempFile("aeatoolkit-instances-", ".txt");
+			FileWriter fWrite = new FileWriter(instanceFile);
+			
+			
+			
+			
+			StringBuilder sb = new StringBuilder();
+			
+			
+			for(String fString : foundInstances)
+			{
+				String line = fString.replaceAll("\\\\",Matcher.quoteReplacement("\\\\")) + "\n";
+				fWrite.append(line);
+				
+				if(log.isTraceEnabled())
+				{
+					sb.append(line);
+				}
+				
+			}
+			fWrite.close();
+			instanceFile.deleteOnExit();
+			
+			
+			if(log.isDebugEnabled())
+			{
+				log.debug("Detected {} instances with suffix {}, file created and written to {} ",foundInstances.size(),instanceSuffix,  instanceFile.getAbsolutePath()) ;
+				
+			} else
+			{
+				log.info("Detected {} instances with suffix {} ",foundInstances.size(),instanceSuffix) ;
+			}
+			
+			log.trace("Auto generated instance file {} has content:\n{}", instanceFile.getAbsolutePath(), sb.toString());
+			
+			return instanceFile.getAbsolutePath();
+		} catch(IOException e)
+		{
+			throw new IllegalStateException("Couldn't create an instance file ");
+		}
+		
+		
+		
+	
+		
+		
+		
 		
 	}
 }

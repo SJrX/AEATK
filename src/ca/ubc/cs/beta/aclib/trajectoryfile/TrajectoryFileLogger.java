@@ -75,7 +75,7 @@ public class TrajectoryFileLogger implements EventHandler<AutomaticConfiguratorE
 		} else if(event instanceof AutomaticConfigurationEnd)
 		{
 			
-			log.info("Writing trajectory file to {}",  (new File(fileNamePrefix)).getAbsolutePath());
+			log.debug("Writing trajectory file to {}",  (new File(fileNamePrefix)).getAbsolutePath());
 			
 			if(lastIevent != null)
 			{ //Can't write this guy because the other threads have probably terminated
@@ -122,11 +122,11 @@ public class TrajectoryFileLogger implements EventHandler<AutomaticConfiguratorE
 		boolean outOfTime = terminationCondition.haveToStop();
 		if(incumbent.equals(lastIncumbent) && lastEmpericalPerformance == empiricalPerformance && !outOfTime)
 		{
-			log.debug("No change in performance");
+			log.trace("No change in performance");
 			return;
 		} else
 		{
-			log.debug("Incumbent Performance changed");
+			log.trace("Incumbent Performance changed");
 			lastEmpericalPerformance = empiricalPerformance;
 			lastIncumbent = incumbent;
 		}
@@ -144,7 +144,7 @@ public class TrajectoryFileLogger implements EventHandler<AutomaticConfiguratorE
 		
 		
 		String outLine = tunerTime + ", " + empiricalPerformance + ", " + wallClockTime/1000.0 + ", " + thetaIdxInc + ", " + acTime + ", " + paramString +"\n";
-		log.debug("Logging incumbent: (Runs {}): {}", ((this.lastIevent != null) ? this.lastIevent.getIncumbentRunCount() : "?"), outLine.trim());
+		log.trace("Logging incumbent: (Runs {}): {}", ((this.lastIevent != null) ? this.lastIevent.getIncumbentRunCount() : "?"), outLine.trim());
 		try 
 		{
 			trajectoryFileWriter.write(outLine);

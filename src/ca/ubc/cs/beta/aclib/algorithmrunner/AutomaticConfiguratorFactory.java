@@ -21,7 +21,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli.CommandLineTargetA
  * 
  * 
  * @see CommandLineTargetAlgorithmEvaluator
- * @author sjr
+ * @author Steve Ramage <seramage@cs.ubc.ca>
  *
  */
 public class AutomaticConfiguratorFactory {
@@ -74,7 +74,8 @@ public class AutomaticConfiguratorFactory {
 	 */
 	public static AlgorithmRunner getConcurrentAlgorithmRunner( List<RunConfig> runConfigs, int nThreads, TargetAlgorithmEvaluatorRunObserver obs, CommandLineTargetAlgorithmEvaluatorOptions options, BlockingQueue<Integer> executionIDs)
 	{
-		log.debug("Concurrent Algorithm Runner created allowing {} threads", nThreads);
+
+		log.trace("Concurrent Algorithm Runner created allowing {} threads", nThreads);
 		return new ConcurrentAlgorithmRunner(runConfigs, nThreads, obs, options,executionIDs);
 	}
 

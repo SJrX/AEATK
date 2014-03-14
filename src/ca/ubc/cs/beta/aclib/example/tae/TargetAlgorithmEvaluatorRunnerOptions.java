@@ -41,10 +41,10 @@ public class TargetAlgorithmEvaluatorRunnerOptions extends AbstractOptions {
 	 * config = RANDOM 
 	 * in the file.
 	 */
-	@UsageTextField(defaultValues="~/.aclib/taerunner.opt")
+	@UsageTextField(defaultValues="~/.aeatk/taerunner.opt")
 	@Parameter(names="--taeRunnerDefaultsFile", description="file that contains default settings for TAE Runner")
 	@ParameterFile(ignoreFileNotExists = true) 
-	public File smacDefaults = HomeFileUtils.getHomeFile(".aclib" + File.separator  + "taerunner.opt");
+	public File smacDefaults = HomeFileUtils.getHomeFile(".aeatk" + File.separator  + "taerunner.opt");
 	
 	
 	/**

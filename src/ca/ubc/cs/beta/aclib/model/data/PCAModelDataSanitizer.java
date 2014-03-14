@@ -197,7 +197,7 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 		
 		
 		
-		log.info("Discarding {} constant inputs of {} in total.", constFeatures.length, prePCAInstanceFeatures[0].length);
+		log.trace("Discarding {} constant inputs of {} in total.", constFeatures.length, prePCAInstanceFeatures[0].length);
 	/*
 		if(RoundingMode.ROUND_NUMBERS_FOR_MATLAB_SYNC)
 		{

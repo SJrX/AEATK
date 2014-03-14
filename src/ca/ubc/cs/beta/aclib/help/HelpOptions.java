@@ -42,9 +42,9 @@ public class HelpOptions extends AbstractOptions{
 	@Parameter(names={"-v","--version"}, description="print version and exit")
 	public boolean showVersion = false;
 
-	@UsageTextField(defaultValues="~/.aclib/help.opt", level=OptionLevel.ADVANCED)
+	@UsageTextField(defaultValues="~/.aeatk/help.opt", level=OptionLevel.ADVANCED)
 	@Parameter(names={"--help-default-file","--helpDefaultsFile"}, description="file that contains default settings for SMAC")
 	@ParameterFile(ignoreFileNotExists = true) 
-	public File helpDefaults = HomeFileUtils.getHomeFile(".aclib" + File.separator  + "help.opt");
+	public File helpDefaults = HomeFileUtils.getHomeFile(".aeatk" + File.separator  + "help.opt");
 	
 }

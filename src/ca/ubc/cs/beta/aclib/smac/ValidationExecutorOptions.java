@@ -40,10 +40,10 @@ public class ValidationExecutorOptions extends AbstractOptions {
 	@ParametersDelegate
 	public ScenarioOptions scenarioConfig = new ScenarioOptions();
 	
-	@UsageTextField(defaultValues="~/.aclib/smac-validate.opt")
+	@UsageTextField(defaultValues="~/.aeatk/smac-validate.opt")
 	@Parameter(names={"--validation-defaults-file","--validationDefaultsFile"}, description="file that contains default settings for SMAC-Validate")
 	@ParameterFile(ignoreFileNotExists = true) 
-	public File smacValidateDefaults = HomeFileUtils.getHomeFile(".aclib" + File.separator  + "smac-validate.opt");
+	public File smacValidateDefaults = HomeFileUtils.getHomeFile(".aeatk" + File.separator  + "smac-validate.opt");
 	
 	@Parameter(names={"--experiment-dir","--experimentDir","-e"}, description="Root Directory for Experiments Folder")
 	public String experimentDir = System.getProperty("user.dir") + File.separator + "";
@@ -129,11 +129,11 @@ public class ValidationExecutorOptions extends AbstractOptions {
 			Logger log = LoggerFactory.getLogger(getClass());
 			if(this.validateTestInstances)
 			{
-				log.info("Validating using test instances");
+				log.debug("Validating using test instances");
 				return tti.getTestInstances();
 			} else
 			{
-				log.info("Validating using training instances");
+				log.debug("Validating using training instances");
 				return tti.getTrainingInstances();
 			}
 	}

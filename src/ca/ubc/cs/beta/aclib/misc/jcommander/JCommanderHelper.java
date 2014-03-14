@@ -229,7 +229,7 @@ public final class JCommanderHelper
 			sb.append(o.toString()).append("\n");
 		}
 			
-		log.info("==========Configuration Options==========\n{}", sb.toString());
+		log.debug("==========Configuration Options==========\n{}", sb.toString());
 		
 	}
 	

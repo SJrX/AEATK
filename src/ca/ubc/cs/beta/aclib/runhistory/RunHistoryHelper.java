@@ -196,7 +196,6 @@ public class RunHistoryHelper{
 					seed = potentialSeeds.get(rand.nextInt(potentialSeeds.size()));
 				}
 				ProblemInstanceSeedPair pisp = new ProblemInstanceSeedPair(pi, seed);
-				log.trace("New Problem Instance Seed Pair Selected {}", pisp );
 				pisps.add(pisp);
 			}
 			return pisps;

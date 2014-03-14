@@ -61,7 +61,7 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 
 		this.trendCoefficient = options.trendCoefficient;
 
-		log.info("Target Algorithm Evaluator initialized with seed: {} ", options.seed);
+		log.debug("Target Algorithm Evaluator initialized with seed: {} ", options.seed);
 		this.rand = new MersenneTwister(options.seed);
 		this.shuffleRuns = options.shuffleResponses;
 		this.persistent = options.persistent;
@@ -106,7 +106,7 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 
 	@Override
 	protected void subtypeShutdown() {
-		
+		//No shutdown necessary
 	}
 
 	@Override

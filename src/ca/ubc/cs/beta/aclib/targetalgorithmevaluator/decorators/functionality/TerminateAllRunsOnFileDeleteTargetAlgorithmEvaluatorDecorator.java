@@ -37,7 +37,7 @@ public class TerminateAllRunsOnFileDeleteTargetAlgorithmEvaluatorDecorator exten
 		super(tae);
 		
 		
-		log.debug("Terminating all runs if {} is deleted", fileToWatch);
+		log.info("Terminating all runs if {} is deleted", fileToWatch);
 		if(!fileToWatch.exists())
 		{
 			log.warn("File To Watch: {} does not exist, was it already deleted?", fileToWatch);
@@ -108,8 +108,6 @@ public class TerminateAllRunsOnFileDeleteTargetAlgorithmEvaluatorDecorator exten
 			
 			if(TerminateAllRunsOnFileDeleteTargetAlgorithmEvaluatorDecorator.this.terminate.get())
 			{
-			
-				List<KillableAlgorithmRun> myRuns = new ArrayList<KillableAlgorithmRun>(runs.size());
 				
 				for(KillableAlgorithmRun run : runs)
 				{

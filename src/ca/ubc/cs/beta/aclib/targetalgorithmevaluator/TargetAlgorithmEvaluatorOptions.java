@@ -145,10 +145,10 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	@Parameter(names="--synchronize-observers", description="Synchronize calls to the observer (this helps simplify memory visibility issues)", hidden=true)
 	public boolean synchronousObserver = true;
 
-	@UsageTextField(defaultValues="~/.aclib/tae.opt", level=OptionLevel.ADVANCED)
+	@UsageTextField(defaultValues="~/.aeatk/tae.opt", level=OptionLevel.ADVANCED)
 	@Parameter(names={"--tae-default-file"}, description="file that contains default settings for Target Algorithm Evaluators")
 	@ParameterFile(ignoreFileNotExists = true) 
-	public File taeDefaults = HomeFileUtils.getHomeFile(".aclib" + File.separator  + "tae.opt");
+	public File taeDefaults = HomeFileUtils.getHomeFile(".aeatk" + File.separator  + "tae.opt");
 	
 	@ParametersDelegate
 	public TransformTargetAlgorithmEvaluatorDecoratorOptions ttaedo = new TransformTargetAlgorithmEvaluatorDecoratorOptions();
@@ -279,7 +279,7 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	 */
 	public void turnOffCrashes() {
 		Logger log = LoggerFactory.getLogger(getClass());
-		log.info("Abort on Crash,Abort on First Run Crash, Verify SAT, and use Walltime if no Runtime are DISABLED as these options may cause unwanted crashes");
+		log.debug("Abort on Crash,Abort on First Run Crash, Verify SAT, and use Walltime if no Runtime are DISABLED as these options may cause unwanted crashes");
 		abortOnCrash = false;
 		abortOnFirstRunCrash = false;
 		verifySAT = false;

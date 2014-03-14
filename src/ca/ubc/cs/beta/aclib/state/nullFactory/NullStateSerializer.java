@@ -15,7 +15,7 @@ public class NullStateSerializer implements StateSerializer{
 	
 	@Override
 	public void setRunHistory(RunHistory runHistory) {
-
+		//Null Interface
 		
 	}
 
@@ -27,14 +27,14 @@ public class NullStateSerializer implements StateSerializer{
 
 	@Override
 	public void setIncumbent(ParamConfiguration config) {
-		
+		//Null Interface
 	}
 
 
 
 	@Override
 	public void setObjectStateMap(Map<String, Serializable> objectState) {
-		
+		//Null Interface
 	}
 
 }

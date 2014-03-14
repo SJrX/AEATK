@@ -124,7 +124,7 @@ public class TargetAlgorithmEvaluatorBuilder {
 		
 		if(options.uncleanShutdownCheck)
 		{
-			log.debug("[TAE] Checking for unclean shutdown");
+			log.trace("[TAE] Checking for unclean shutdown");
 			tae = new UncleanShutdownDetectingTargetAlgorithmEvaluator(tae);
 		} else
 		{
@@ -141,7 +141,7 @@ public class TargetAlgorithmEvaluatorBuilder {
 		
 		if(options.abortOnCrash)
 		{
-			log.debug("[TAE] Treating all crashes as aborts");
+			log.trace("[TAE] Treating all crashes as aborts");
 			tae = new AbortOnCrashTargetAlgorithmEvaluator(tae);
 		}
 		
@@ -166,7 +166,7 @@ public class TargetAlgorithmEvaluatorBuilder {
 		{
 			if(options.verifySAT)
 			{
-				log.debug("[TAE] Verifying SAT Responses");
+				log.trace("[TAE] Verifying SAT Responses");
 				tae = new VerifySATTargetAlgorithmEvaluator(tae);
 				
 			}
@@ -174,7 +174,7 @@ public class TargetAlgorithmEvaluatorBuilder {
 		
 		if(options.checkSATConsistency)
 		{
-			log.debug("[TAE] Ensuring SAT Response consistency");
+			log.trace("[TAE] Ensuring SAT Response consistency");
 			tae = new SATConsistencyTargetAlgorithmEvaluator(tae, options.checkSATConsistencyException);
 		}
 		
@@ -182,7 +182,7 @@ public class TargetAlgorithmEvaluatorBuilder {
 		if(options.trackRunsScheduled)
 		{
 			String resultFile = outputDir.getAbsolutePath() + File.separator + "dispatched-runs-over-time-" + numRun + ".csv";
-			log.info("[TAE] Tracking all outstanding runs to file {} ", resultFile);
+			log.debug("[TAE] Tracking all outstanding runs to file {} ", resultFile);
 			tae = new OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator(tae, resultFile, options.trackRunsScheduledResolution, "Dispatched");
 			
 		}
@@ -190,32 +190,34 @@ public class TargetAlgorithmEvaluatorBuilder {
 		
 		if(!ignoreBound && options.boundRuns)
 		{
-			log.debug("[TAE] Bounding the number of concurrent target algorithm evaluations to {} ", options.maxConcurrentAlgoExecs);
+
+			log.trace("[TAE] Bounding the number of concurrent target algorithm evaluations to {} ", options.maxConcurrentAlgoExecs);
 			tae = new BoundedTargetAlgorithmEvaluator(tae, options.maxConcurrentAlgoExecs);
+
 			
 			if(options.trackRunsScheduled)
 			{
 				String resultFile = outputDir.getAbsolutePath() + File.separator + "queued-runs-over-time-" + numRun + ".csv";
-				log.info("[TAE] Tracking all queued runs to file {} ", resultFile);
+				log.debug("[TAE] Tracking all queued runs to file {} ", resultFile);
 				tae = new OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator(tae, resultFile, options.trackRunsScheduledResolution, "Queued");
 			}
 			
 			
 		}else if(ignoreBound)
 		{
-			log.debug("[TAE] Ignoring Bound");
+			log.trace("[TAE] Ignoring Bound");
 		}
 	
 
 		if(options.checkResultOrderConsistent)
 		{
-			log.debug("[TAE] Checking that TAE honours the ordering requirement of runs");
+			log.trace("[TAE] Checking that TAE honours the ordering requirement of runs");
 			tae = new ResultOrderCorrectCheckerTargetAlgorithmEvaluatorDecorator(tae);
 		}
 		
 		if(options.observeWalltimeIfNoRuntime)
 		{
-			log.info("[TAE] Using walltime as observer runtime if no runtime is reported, scale {} , delay {} (secs)", options.observeWalltimeScale, options.observeWalltimeDelay);
+			log.debug("[TAE] Using walltime as observer runtime if no runtime is reported, scale {} , delay {} (secs)", options.observeWalltimeScale, options.observeWalltimeDelay);
 			tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae, options.observeWalltimeScale, options.observeWalltimeDelay);
 		}
 		
@@ -234,14 +236,14 @@ public class TargetAlgorithmEvaluatorBuilder {
 			
 			if(options.runHashCodeFile != null)
 			{
-				log.info("[TAE] Algorithm Execution will verify run Hash Codes");
+				log.trace("[TAE] Algorithm Execution will verify run Hash Codes");
 				Queue<Integer> runHashCodes = parseRunHashCodes(options.runHashCodeFile);
 				tae = new RunHashCodeVerifyingAlgorithmEvalutor(tae, runHashCodes);
 				 
 			} else
 			{
-				log.info("[TAE] Algorithm Execution will NOT verify run Hash Codes");
-				//tae = new RunHashCodeVerifyingAlgorithmEvalutor(tae);
+				log.trace("[TAE] Algorithm Execution will NOT verify run Hash Codes");
+				
 			}
 
 		}
@@ -268,42 +270,42 @@ public class TargetAlgorithmEvaluatorBuilder {
 		{
 			//==== This class must be near the end as it is very sensitive to ordering of other TAEs, it does not change anything
 			tae = new OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator(tae);
-			log.debug("[TAE] Waiting / Monitoring outstanding target algorithm evaluations is supported");
+			log.trace("[TAE] Waiting / Monitoring outstanding target algorithm evaluations is supported");
 		} else
 		{
-			log.info("[TAE] Waiting / Monitoring outstanding target algorithm evaluations will not be supported");
+			log.debug("[TAE] Waiting / Monitoring outstanding target algorithm evaluations will NOT be supported");
 		}
 		
 		if(options.checkRunConfigsUnique)
 		{
-			log.info("[TAE] Checking that every request in a batch is unique");
+			log.trace("[TAE] Checking that every request in a batch is unique");
 			tae = new CheckForDuplicateRunConfigDecorator(tae, options.checkRunConfigsUniqueException);
 		} else
 		{
-			log.warn("[TAE] Not Checking that every request to the TAE is unique, this may cause weird errors");
+			log.debug("[TAE] Not Checking that every request to the TAE is unique, this may cause weird errors");
 		}
 		
 		if(options.killCaptimeExceedingRun)
 		{
-			log.debug("[TAE] Killing runs that exceed there captime by a factor of {} ", options.killCaptimeExceedingRunFactor);
+			log.trace("[TAE] Killing runs that exceed there captime by a factor of {} ", options.killCaptimeExceedingRunFactor);
 			tae = new KillCaptimeExceedingRunsRunsTargetAlgorithmEvaluatorDecorator(tae, options.killCaptimeExceedingRunFactor);
 		}
 		
 		if(options.fileToWatch != null)
 		{
-			log.debug("[TAE] Killing runs if {} is deleted", options.fileToWatch);
+			log.trace("[TAE] Killing runs if {} is deleted", options.fileToWatch);
 			tae = new TerminateAllRunsOnFileDeleteTargetAlgorithmEvaluatorDecorator(tae, new File(options.fileToWatch));
 		}
 		
 		if(options.warnIfNoResponseFromTAE > 0)
 		{
-			log.debug("[TAE] Warning if no response after {} seconds", options.warnIfNoResponseFromTAE);
+			log.trace("[TAE] Warning if no response after {} seconds", options.warnIfNoResponseFromTAE);
 			tae = new WarnOnNoWallOrRuntimeTargetAlgorithmEvaluatorDecorator(tae, options.warnIfNoResponseFromTAE);
 		}
 		
 		if(options.synchronousObserver)
 		{
-			log.info("[TAE] Synchronizing notifications to the observer");
+			log.trace("[TAE] Synchronizing notifications to the observer");
 			tae = new SynchronousObserverTargetAlgorithmEvaluatorDecorator(tae);
 		} else
 		{
@@ -313,8 +315,8 @@ public class TargetAlgorithmEvaluatorBuilder {
 		//==== Doesn't change anything and so is safe after RunHashCode
 		if(options.logRequestResponses)
 		{
-					log.info("[TAE] Logging every request and response");
-					tae = new LogEveryTargetAlgorithmEvaluatorDecorator(tae,options.logRequestResponsesRCOnly);
+			log.trace("[TAE] Logging every request and response");
+			tae = new LogEveryTargetAlgorithmEvaluatorDecorator(tae,options.logRequestResponsesRCOnly);
 		}
 		
 		log.debug("Final Target Algorithm Built is {}", tae);
@@ -327,7 +329,7 @@ public class TargetAlgorithmEvaluatorBuilder {
 	
 	private static Queue<Integer> parseRunHashCodes(File runHashCodeFile) 
 	{
-		log.info("Run Hash Code File Passed {}", runHashCodeFile.getAbsolutePath());
+		log.debug("Run Hash Code File Path {}", runHashCodeFile.getAbsolutePath());
 		Queue<Integer> runHashCodeQueue = new LinkedList<Integer>();
 		BufferedReader bin = null;
 		try {
@@ -350,10 +352,7 @@ public class TargetAlgorithmEvaluatorBuilder {
 						String lineSubStr = line.substring(colonIndex+1,spaceIndex);
 						runHashCodeQueue.add(Integer.valueOf(lineSubStr));
 						
-					} else
-					{
-						log.trace("No Hash Code found on line: {}", line );
-					}
+					} 
 					lineCount++;
 				}
 				if(hashCodeCount == 0)

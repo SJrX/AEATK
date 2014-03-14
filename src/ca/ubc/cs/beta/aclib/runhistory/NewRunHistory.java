@@ -144,7 +144,6 @@ public class NewRunHistory implements RunHistory {
 	@Override
 	public void append(AlgorithmRun run) throws DuplicateRunException{
 
-		log.trace("Appending Run {}",run);
 		
 		
 		if(firstExecConfig == null)

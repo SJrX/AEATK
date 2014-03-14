@@ -88,16 +88,16 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	 */
 	private transient KillHandler killHandler;
 	
-	public static final String PORT_ENVIRONMENT_VARIABLE = "ACLIB_PORT";
-	public static final String FREQUENCY_ENVIRONMENT_VARIABLE = "ACLIB_CPU_TIME_FREQUENCY";
-	public static final String CONCURRENT_TASK_ID = "ACLIB_CONCURRENT_TASK_ID";
+	public static final String PORT_ENVIRONMENT_VARIABLE = "AEATK_PORT";
+	public static final String FREQUENCY_ENVIRONMENT_VARIABLE = "AEATK_CPU_TIME_FREQUENCY";
+	public static final String CONCURRENT_TASK_ID = "AEATK_CONCURRENT_TASK_ID";
 	
 	
 	/**
 	 * This variable is public only for unit test purposes,
 	 * this is not guaranteed to be the actual environment variable of child processes
 	 */
-	public static final String EXECUTION_UUID_ENVIRONMENT_VARIABLE_DEFAULT = "ACLIB_EXECUTION_UUID"; 
+	public static final String EXECUTION_UUID_ENVIRONMENT_VARIABLE_DEFAULT = "AEATK_EXECUTION_UUID"; 
 	
 	
 	/**
@@ -126,14 +126,17 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	 */
 	private static transient Marker fullProcessOutputMarker = MarkerFactory.getMarker(LoggingMarker.FULL_PROCESS_OUTPUT.name());
 	
-	private static String commandSeparator = ";";
+	public final static String COMMAND_SEPERATOR;
 
 	static {
-		log.warn("This version of SMAC hardcodes run length for calls to the target algorithm to {}.", Integer.MAX_VALUE);
+		log.trace("This version of SMAC hardcodes run length for calls to the target algorithm to {}.", Integer.MAX_VALUE);
 		
 		if(System.getProperty("os.name").toLowerCase().contains("win"))
 		{
-			commandSeparator = "&";
+			COMMAND_SEPERATOR = "&";
+		} else
+		{
+			COMMAND_SEPERATOR = ";";
 		}
 		
 	}
@@ -168,8 +171,11 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 			public void run() {
 				Thread.currentThread().setName("CLI Shutdown Thread");
 				jvmShutdownDetected.set(true);
-				log.debug("Terminating approximately {} outstanding algorithm runs", outstandingRuns.size());
-				log.debug("Further runs will be instantly terminated");
+				if(outstandingRuns.size() > 0)
+				{
+					log.debug("Terminating approximately {} outstanding algorithm runs", outstandingRuns.size());
+				}
+				log.trace("Further runs will be instantly terminated");
 				for(Pair<CommandLineAlgorithmRun, Process> p : outstandingRuns)
 				{
 					p.getFirst().killProcess(p.getSecond());
@@ -178,7 +184,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 			
 		});
 		
-		log.debug("Shutdown hook to terminate all outstanding runs enabled");
+		log.trace("Shutdown hook to terminate all outstanding runs enabled");
 		Runtime.getRuntime().addShutdownHook(shutdownThread);
 	}
 	
@@ -198,7 +204,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 		if(runConfig.getCutoffTime() <= 0 || handler.isKilled())
 		{
 			
-			log.info("Cap time is less than or equal to zero for {} setting run as timeout", runConfig);
+			log.trace("Cap time is less than or equal to zero for {} setting run as timeout", runConfig);
 			String rawResultLine = "[DIDN'T BOTHER TO RUN ALGORITHM AS THE CAPTIME IS NOT POSITIVE]";
 			
 			this.setResult(RunResult.TIMEOUT, 0, 0, 0, runConfig.getProblemInstanceSeedPair().getSeed(), rawResultLine,"");
@@ -237,7 +243,6 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 		if(jvmShutdownDetected.get())
 		{
 			
-			//log.debug("JVM Shutdown detected, run treated as killed", runConfig);
 			String rawResultLine = "JVM Shutdown Detected";
 			
 			this.setResult(RunResult.KILLED, 0, 0, 0, runConfig.getProblemInstanceSeedPair().getSeed(), rawResultLine,"JVM Shutdown Detected, algorithm not executed");
@@ -248,7 +253,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 		if(killHandler.isKilled())
 		{
 			
-			log.debug("Run was killed", runConfig);
+			log.trace("Run was killed", runConfig);
 			String rawResultLine = "Kill detected before target algorithm invoked";
 			
 			this.setResult(RunResult.KILLED, 0, 0, 0, runConfig.getProblemInstanceSeedPair().getSeed(), rawResultLine,"Kill detected before target algorithm invoked");
@@ -289,7 +294,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 				//Check kill handler again
 				if(killHandler.isKilled())
 				{
-					log.debug("Run was killed", runConfig);
+					log.trace("Run was killed", runConfig);
 					String rawResultLine = "Kill detected before target algorithm invoked";
 					
 					this.setResult(RunResult.KILLED, 0, 0, 0, runConfig.getProblemInstanceSeedPair().getSeed(), rawResultLine,"Kill detected before target algorithm invoked");
@@ -341,10 +346,12 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 				               
 							} catch(RuntimeException e)
 							{
-								log.debug("Got some runtime exception while processing data packet", e);
+								log.trace("Got some runtime exception while processing data packet", e);
 							} catch(SocketException e)
 							{
-								log.trace("SocketException occurred which we expected when we shutdown probably", e);
+								//Don't log this since this socket exception is what we
+								//we expect since most of the time we will be blocked on the socket
+								//when we are shutdown and interrupted.
 								return;
 							} catch (IOException e) {
 								log.warn("Unknown IOException occurred ", e);
@@ -428,7 +435,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 							{
 								
 								stdErrorDone.release();
-								log.debug("Standard Error Done");
+								log.trace("Standard Error Done");
 							}
 						} catch(InterruptedException e)
 						{
@@ -467,11 +474,10 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 								if(killHandler.isKilled())
 								{
 									wasKilled = true;
-									log.debug("Trying to kill run: {} latest time: {} " , getRunConfig(), currentRuntime.get());
+									log.trace("Trying to kill run: {} latest time: {} " , getRunConfig(), currentRuntime.get());
+
+
 									killProcess(proc);
-									//log.debug("Process destroy() called now waiting for completion");
-									
-									//log.debug("Process has exited with code {}", proc.waitFor());
 									return;
 								}
 								Thread.sleep(observerFrequency - 25);
@@ -537,10 +543,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 					{
 						case ABORT:
 						case CRASHED:
-							
-						
-								log.error( "Failed Run Detected Call: cd \"{}\" " + commandSeparator + "  {} ",new File(runConfig.getAlgorithmExecutionConfig().getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommandAsString( runConfig));
-							
+								log.error( "Failed Run Detected Call: cd \"{}\" " + COMMAND_SEPERATOR  + "  {} ",new File(runConfig.getAlgorithmExecutionConfig().getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommandAsString( runConfig));
 								log.error("Failed Run Detected output last {} lines", outputQueue.size());
 								
 								for(String s : outputQueue)
@@ -595,8 +598,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 			}
 
 		} catch (IOException e1) {
-			//String execCmd = getTargetAlgorithmExecutionCommandAsString(execConfig,runConfig);
-			log.error( "Failed Run Detected (IOException) Call: cd \"{}\" " + commandSeparator + "  {} ",new File(runConfig.getAlgorithmExecutionConfig().getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommandAsString( runConfig));
+			log.error( "Failed Run Detected (IOException) Call: cd \"{}\" " + COMMAND_SEPERATOR + "  {} ",new File(runConfig.getAlgorithmExecutionConfig().getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommandAsString( runConfig));
 			throw new TargetAlgorithmAbortException(e1);
 			//throw new IllegalStateException(e1);
 		}
@@ -630,7 +632,7 @@ outerloop:
 						
 						if(line == null)
 						{
-							log.debug("Process has ended");
+							log.trace("Process has ended");
 							processEnded.set(true);
 							break outerloop;
 						}
@@ -677,7 +679,7 @@ outerloop:
 					{
 						if(++i % 12000 == 0)
 						{
-							log.debug("Slept for 5 minutes waiting for pid {}  &&  (matching line found?: {} ) " ,getPID(p), matchFound);
+							log.trace("Slept for 5 minutes waiting for pid {}  &&  (matching line found?: {} ) " ,getPID(p), matchFound);
 						}
 						Thread.sleep(25);
 					}
@@ -689,7 +691,7 @@ outerloop:
 				
 				if(!processEnded.get())
 				{
-					log.debug("IO Exception occurred while processing runs");
+					log.trace("IO Exception occurred while processing runs");
 				}
 				
 			} catch (InterruptedException e) {
@@ -716,7 +718,7 @@ outerloop:
 		
 		if(options.logAllCallStrings)
 		{
-			log.info( "Call: cd \"{}\" " + commandSeparator + "  {} ", new File(runConfig.getAlgorithmExecutionConfig().getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommandAsString( runConfig));
+			log.info( "Call (with token {}) : cd \"{}\" " + COMMAND_SEPERATOR + "  {} ", token, new File(runConfig.getAlgorithmExecutionConfig().getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommandAsString( runConfig));
 		}
 		
 		
@@ -1046,7 +1048,7 @@ outerloop:
 					
 					while((line = read.readLine()) != null)
 					{
-						log.debug("Kill environment {} error> {}", uuid.toString(), line);
+						log.trace("Kill environment {} error> {}", uuid.toString(), line);
 					}
 					read.close();
 					read = new BufferedReader(new InputStreamReader(p2.getInputStream()));
@@ -1054,7 +1056,7 @@ outerloop:
 					
 					while((line = read.readLine()) != null)
 					{
-						log.debug("Kill environment {}  output> {}", uuid.toString(), line);
+						log.trace("Kill environment {}  output> {}", uuid.toString(), line);
 					}
 					
 					read.close();
@@ -1084,7 +1086,7 @@ outerloop:
 					if(pid > 0)
 					{
 						String command = replacePid(options.pgNiceKillCommand,pid);
-						log.debug("Trying to send SIGTERM to process group id: {} with command \"{}\"", pid,command);
+						log.trace("Trying to send SIGTERM to process group id: {} with command \"{}\"", pid,command);
 						try {
 							
 							Process p2 = Runtime.getRuntime().exec(SplitQuotedString.splitQuotedString(command));
@@ -1095,7 +1097,7 @@ outerloop:
 							
 							while((line = read.readLine()) != null)
 							{
-								log.debug("Kill error output> {}", line);
+								log.trace("Kill error output> {}", line);
 							}
 							read.close();
 							read = new BufferedReader(new InputStreamReader(p2.getInputStream()));
@@ -1104,7 +1106,7 @@ outerloop:
 							
 							while((line = read.readLine()) != null)
 							{
-								log.debug("Kill output Input> {}", line);
+								log.trace("Kill output Input> {}", line);
 							}
 							
 							read.close();
@@ -1112,7 +1114,7 @@ outerloop:
 							
 							if(retValPGroup > 0)
 							{
-								log.debug("SIGTERM to process group failed with error code {}", retValPGroup);
+								log.trace("SIGTERM to process group failed with error code {}", retValPGroup);
 								Process p3 = Runtime.getRuntime().exec(SplitQuotedString.splitQuotedString(replacePid(options.procNiceKillCommand,pid)));
 								int retVal = p3.waitFor();
 								
@@ -1120,17 +1122,17 @@ outerloop:
 								if(retVal > 0)
 								{
 									Object[] args = {  pid,retVal};
-									log.debug("SIGTERM to process id: {} attempted failed with return code {}",args);
+									log.trace("SIGTERM to process id: {} attempted failed with return code {}",args);
 								} else
 								{
-									log.debug("SIGTERM delivered successfully to process id: {}", pid, pid);
+									log.trace("SIGTERM delivered successfully to process id: {}", pid, pid);
 								}
 									
 								
 								
 							} else
 							{
-								log.debug("SIGTERM delivered successfully to process group id: {} ", pid);
+								log.trace("SIGTERM delivered successfully to process group id: {} ", pid);
 							}
 							p2.destroy();
 						} catch (IOException e) {
@@ -1160,14 +1162,14 @@ outerloop:
 							
 						}
 												
-						log.debug("Trying to send SIGKILL to process group id: {}", pid);
+						log.trace("Trying to send SIGKILL to process group id: {}", pid);
 						try {
 							Process p2 = Runtime.getRuntime().exec(SplitQuotedString.splitQuotedString(replacePid(options.pgForceKillCommand,pid)));
 							int retVal = p2.waitFor();
 							
 							if(retVal > 0)
 							{
-								log.debug("SIGKILL to pid: {} attempted failed with return code {}",pid, retVal);
+								log.trace("SIGKILL to pid: {} attempted failed with return code {}",pid, retVal);
 								
 								Process p3 = Runtime.getRuntime().exec(SplitQuotedString.splitQuotedString(replacePid(options.procForceKillCommand,pid)));
 								int retVal3 = p3.waitFor();
@@ -1175,16 +1177,16 @@ outerloop:
 								if(retVal3 > 0)
 								{
 									Object[] args = {  pid,retVal};
-									log.debug("SIGKILL to process id: {} attempted failed with return code {}",args);
+									log.trace("SIGKILL to process id: {} attempted failed with return code {}",args);
 								} else
 								{
-									log.debug("SIGKILL delivered successfully to process id: {}", pid, pid);
+									log.trace("SIGKILL delivered successfully to process id: {}", pid, pid);
 								}
 								
 								p3.destroy();
 							} else
 							{
-								log.debug("SIGKILL delivered successfully to pid: {} ", pid);
+								log.trace("SIGKILL delivered successfully to pid: {} ", pid);
 							}
 							p2.destroy();
 						} catch (IOException e) {

@@ -48,26 +48,21 @@ public class ProblemInstanceHelper {
 	private static File getFileForPath(String context, String path)
 	{
 		File f;
-		logger.trace("Trying to find file with context {} and path {}", context, path);
-		if(path.length() > 0 && path.substring(0, 1).equals(File.separator))
+		
+		File f2 = new File(path);
+		
+		if(path.length() > 0 && f2.isAbsolute())
 		{
-			logger.trace("Absolute path given for path, checking {}", path);
+		
 			f = new File(path);
 		} else
 		{
-			Object[] args = { context, File.separator, path };
-			logger.trace("Relative path given for path, checking {}{}{}", args);
 			f = new File(context + File.separator + path);
 		}
 		
 		if(!f.exists())
 		{
-			logger.trace("Could not find needed file:" + path + " Context:" + context);
-			
-			//TODO take a full path c/d/e and a context a/b/c and somehow get a/b/c/d/e 
-			logger.trace("Trying basename of path in context");
-			
-			
+			//TODO take a full path c/d/e and a context a/b/c and somehow get a/b/c/d/e 		
 			f = new File(context + File.separator + new File(path).getName());
 			if(!f.exists())
 			{
@@ -236,7 +231,7 @@ public class ProblemInstanceHelper {
 		
 		
 		
-		logger.debug("Loading instances from file: {} and experiment dir {}", filename, experimentDir);
+		logger.trace("Loading instances from file: {} and experiment dir {}", filename, experimentDir);
 		
 		
 		List<ProblemInstance> instances = new ArrayList<ProblemInstance>();
@@ -262,7 +257,7 @@ public class ProblemInstanceHelper {
 		if(featureFileName != null)
 		{
 			//=======Parse Features=====
-			logger.debug("Feature File specified reading features from: {} ", new File(featureFileName).getAbsolutePath());
+			logger.trace("Feature File specified reading features from: {} ", new File(featureFileName).getAbsolutePath());
 			File featureFile = getFileForPath(experimentDir, featureFileName);
 			
 			if(!featureFile.exists())
@@ -295,14 +290,14 @@ public class ProblemInstanceHelper {
 				}
 				column++;
 			}
-			logger.debug("Feature File specifies: {} features for {} instances", numberOfFeatures, features.getNumberOfDataRows() );
+			logger.trace("Feature File specifies: {} features for {} instances", numberOfFeatures, features.getNumberOfDataRows() );
 			
 			
 			for(int i=0; i  < features.getNumberOfDataRows(); i++)
 			{
 				TreeMap<String, Double> instFeatMap = new TreeMap<String, Double>();
 				
-				featuresMap.put(features.getKeyForDataRow(i).replaceAll("//", "/"), Collections.unmodifiableMap(instFeatMap));
+				featuresMap.put(features.getKeyForDataRow(i), Collections.unmodifiableMap(instFeatMap));
 				
 				String lastValue = "";
 				try {
@@ -337,6 +332,7 @@ public class ProblemInstanceHelper {
 		 */
 		InstanceSeedGenerator gen;
 		
+		
 		/*
 		 * Map containing the instance names to instance specific information
 		 */
@@ -350,19 +346,17 @@ public class ProblemInstanceHelper {
 			}
 			File instanceListFile = getFileForPath(experimentDir, filename);
 			instanceFileAbsolutePath = instanceListFile.getAbsolutePath();
-			logger.debug("Reading instances from file {}", instanceFileAbsolutePath);
+			logger.trace("Reading instances from file {}", instanceFileAbsolutePath);
 			InstanceListWithSeeds insc = getListAndSeedGen(instanceListFile,seed, maxSeedsPerInstance);
 			instanceList = insc.getInstancesByName();
 			gen = insc.getSeedGen();
 			instanceSpecificInfo = insc.getInstanceSpecificInfo();
 			
-			
-			
 		} else
 		{   
 			//====Just use Instances specified in Feature File====
 			instanceList.addAll(featuresMap.keySet());
-			logger.info("Reading instances from feature file");
+			logger.trace("Reading instances from feature file");
 			gen = new RandomInstanceSeedGenerator(instanceList.size(), seed, maxSeedsPerInstance);
 			
 		}
@@ -405,59 +399,11 @@ public class ProblemInstanceHelper {
 			if(featureFileName != null)
 			{
 				
-				String[] possibleFiles = { instanceFile, instanceFile.replace(experimentDir, ""), instanceFile.replaceAll("//", "/"), instanceFile.replace(experimentDir, "").replaceAll("//","/")};
-				
-				features = null;
-				
-				boolean firstTry = true;
-				
-				for(String possibleFile : possibleFiles)
-				{
-					features = featuresMap.get(possibleFile.trim());
-					
-					if(features != null) 
-					{
-						if(firstTry)
-						{
-							logger.trace("Matched features for instance named {} in feature file ",possibleFile);
-						} else
-						{
-							logger.debug("Matched features for instance named {} in feature file ",possibleFile);
-						}
-						unMappedFeatureMapEntries.remove(possibleFile.trim());
-						
-						break;
-					} else
-					{
-						firstTry = false;
-						logger.debug("No match for instance named {} in feature file ",possibleFile);
-					}
-					
-				}
-				
-				
+				features = featuresMap.get(instanceFile.trim());
 				
 				if(features == null)
 				{
-					logger.warn("Could not find features for instance {} trying more creative matching, may be error prone and slow [probably not really]", instanceFile);
-					//=== Iterates over the list, trying to find something to match this with (by suffix matching)
-					for(Entry<String, Map<String, Double>> e : featuresMap.entrySet())						
-					{
-						if(instanceFile.endsWith(e.getKey()))
-						{
-							logger.debug("Matched instance {} with this entry {}", instanceFile, e.getKey());
-							features = e.getValue();
-							break;
-						} else
-						{
-							logger.trace("Didn't match ({}) with ({})", instanceFile, e.getKey());
-						}
-					}
-					
-				}
-				if(features == null)
-				{
-					throw new FeatureNotFoundException("Feature file : " + featureFileName + " does not contain feature data for instance: " + instanceFile);
+					throw new FeatureNotFoundException("Feature file : " + featureFileName + " does not contain feature data for instance: " + instanceFile + " previous versions were much more forgiving about this but please make sure the feature file has an entry that matches that exactly.");
 				}
 				
 				
@@ -485,7 +431,7 @@ public class ProblemInstanceHelper {
 			if(cachedProblemInstances.containsKey(instanceFile))
 			{
 				
-				logger.trace("Instance file has already been loaded once this runtime, using cached instance of {}", instanceFile);
+				
 				ai = cachedProblemInstances.get(instanceFile);
 				
 				if(ai.getFeatures().size() > 0 && features.size() > 0)
@@ -499,15 +445,7 @@ public class ProblemInstanceHelper {
 				
 			} else
 			{
-				Map<String, String> fixedInstanceSpecificInfo = new HashMap<String, String>();
-				for(Entry<String, String> ent : instanceSpecificInfo.entrySet())
-				{
-					fixedInstanceSpecificInfo.put(ent.getKey().replaceAll("//", "/"), ent.getValue());
-				}
-				
-				
-				
-				ai = new ProblemInstance(instanceFile, instID++, features, fixedInstanceSpecificInfo.get(originalInstanceFilename));
+				ai = new ProblemInstance(instanceFile, instID++, features, instanceSpecificInfo.get(originalInstanceFilename));
 				cachedProblemInstances.put(instanceFile, ai);
 			}
 			
@@ -546,7 +484,7 @@ public class ProblemInstanceHelper {
 				logger.warn("Detected that seeds have been preloaded, yet the algorithm is listed as deterministic, generally this means we should use -1 as a seed");
 			} else
 			{
-				logger.debug("Deterministic algorithm, selecting hard coded instance seed generator");
+				logger.trace("Deterministic algorithm, selecting hard coded instance seed generator");
 				
 				LinkedHashMap<String, List<Long>> instanceSeedMap = new LinkedHashMap<String, List<Long>>(); 
 				
@@ -558,50 +496,8 @@ public class ProblemInstanceHelper {
 					instanceSeedMap.put(pi.getInstanceName(),l);
 				}
 				
-				/*
-				 * ===== THIS IS SUPER UGLY FIX FOR RELATIVE PATH NAMES
-				 * We have to repair the instance order list necessary for SetInstanceSeedGenerator
-				 */
-				
-				
-				/**
-				 * Dev Note: Feb 2014 - I have no idea what this code is suppose to do, something with absolute path names
-				 * probably very awful :(
-				 */
-				List<String> absolutePathList = new ArrayList<String>(instanceList.size());
-				
-				
-				Map<String, String> instanceNameToRelPathFixMap = new HashMap<String, String>();
-				
-				for(ProblemInstance pi : instances)
-				{
-					instanceNameToRelPathFixMap.put(pi.getInstanceName(), pi.getInstanceName());
-				}
-				
-topOfLoop:
-				for(String instance : instanceList)
-				{
-					
-					if(instanceNameToRelPathFixMap.get(instance.replaceAll("//", "/")) != null)
-					{
-						absolutePathList.add(instanceNameToRelPathFixMap.get(instance.replaceAll("//", "/")));
-						continue topOfLoop;
-					}
-					
-					for(ProblemInstance pi : instances)
-					{
-						if(pi.getInstanceName().endsWith(instance.replaceAll("//", "/")))
-						{
-							absolutePathList.add(pi.getInstanceName());
-							continue topOfLoop;
-						}	
-						
-						//System.out.println(pi.getInstanceName() + " " + instance.replaceAll("//", "/")  + " " + pi.getInstanceName().endsWith(instance.replaceAll("//", "/")));
-					}
-				}
-				
-				if(instanceList.size() != absolutePathList.size()) throw new IllegalStateException("Mapping from Relative to Absolute Path names broke something");
-				gen = new SetInstanceSeedGenerator(instanceSeedMap,absolutePathList, 1);
+				gen = new SetInstanceSeedGenerator(instanceSeedMap,instanceList, 1);
+
 			}
 			
 		}
@@ -638,7 +534,7 @@ topOfLoop:
 		List<String> instanceList = new LinkedList<String>();
 		
 		
-		logger.debug("Reading instance file detecting format");
+		logger.trace("Reading instance file detecting format");
 		
 		LinkedHashMap<String, List<Long>> instances;
 		LinkedHashMap<String, String> instanceSpecificInfo;
@@ -698,21 +594,7 @@ topOfLoop:
 			gen = new RandomInstanceSeedGenerator(instances.size(),seed, maxSeedsPerConfig);
 		}
 		
-		/*
-		try
-		{
-			br = new BufferedReader(new FileReader(instanceListFile));
-			while((line = br.readLine()) != null)
-			{
-				logger.trace("Read in line from file \"{}\"",line);
-				instanceList.add(line);
-				
-			}
-		} finally
-		{
-			if(br != null) br.close();
-		}
-		*/
+		
 		instanceList.addAll(instances.keySet());
 		return new InstanceListWithSeeds(gen, null, instanceList, instanceSpecificInfo);
 	}
@@ -759,7 +641,7 @@ topOfLoop:
 				if(possibleFormat == null)
 				{
 					possibleFormat = instanceOnly;
-					logger.debug("Line with only 1 entry found, trying {}", possibleFormat);
+					logger.trace("Line with only 1 entry found, trying {}", possibleFormat);
 				}
 				if(possibleFormat == instanceOnly)
 				{
@@ -767,7 +649,7 @@ topOfLoop:
 					instanceSeedMap.put(s[0], new LinkedList<Long>());
 				} else
 				{
-					logger.debug("Line with only 1 entry found, we are not {}",possibleFormat);
+					logger.trace("Line with only 1 entry found, we are not {}",possibleFormat);
 					throw new IllegalArgumentException();
 				}
 			} else if(s.length == 2)
@@ -777,13 +659,13 @@ topOfLoop:
 				{
 					try {
 						possibleFormat = seedPair;
-						logger.debug("Line with only 2 entries found, trying {}", possibleFormat);
+						logger.trace("Line with only 2 entries found, trying {}", possibleFormat);
 						Long.valueOf(s[0]);
 						possibleFormat = seedPair;
 					} catch(NumberFormatException e)
 					{
 						possibleFormat = instanceSpecific;
-						logger.debug("First entry on line 1 not a long value, trying {}", possibleFormat);
+						logger.trace("First entry on line 1 not a long value, trying {}", possibleFormat);
 					}
 					
 					
@@ -803,7 +685,7 @@ topOfLoop:
 					instanceSeedMap.get(instanceName).add(Long.valueOf(s[0]));
 					} catch(NumberFormatException e)
 					{
-						logger.debug("{} is not a valid long value", s[0]);
+						logger.trace("{} is not a valid long value", s[0]);
 						
 						throw new IllegalArgumentException();
 					}
@@ -818,7 +700,7 @@ topOfLoop:
 					instanceSeedMap.put(instanceName, new LinkedList<Long>());
 				} else
 				{
-					logger.debug("Line with 2 entries found, we are not {}",possibleFormat);
+					logger.trace("Line with 2 entries found, we are not {}",possibleFormat);
 					throw new IllegalArgumentException();
 				}
 			
@@ -835,7 +717,7 @@ topOfLoop:
 					String instanceName = s[1];
 					if(s[1].trim().length() == 0)
 					{
-						logger.debug("\"{}\" is not a valid instance name (All Whitespace)", s[1]);
+						logger.trace("\"{}\" is not a valid instance name (All Whitespace)", s[1]);
 						throw new IllegalArgumentException();
 					}
 					
@@ -846,11 +728,11 @@ topOfLoop:
 					
 					try
 					{
-					instanceSeedMap.get(instanceName).add(Long.valueOf(s[0]));
+						instanceSeedMap.get(instanceName).add(Long.valueOf(s[0]));
 					
 					} catch(NumberFormatException e)
 					{
-						logger.debug("{} is not a valid long value", s[0]);
+						logger.trace("{} is not a valid long value", s[0]);
 						
 						throw new IllegalArgumentException();
 					}
@@ -861,7 +743,7 @@ topOfLoop:
 						if(!s[2].equals(instanceSpecificInfoMap.get(instanceName)))
 						{
 							Object[] args = {instanceName, s[2], instanceSpecificInfoMap.get(instanceName)};
-							logger.debug("Discrepancy detected in instance specific information {} had {} vs. {}  (This is not permitted)", args );
+							logger.trace("Discrepancy detected in instance specific information {} had {} vs. {}  (This is not permitted)", args );
 							throw new IllegalArgumentException();
 						}
 					} else
@@ -873,13 +755,13 @@ topOfLoop:
 					
 				} else
 				{
-					logger.debug("Line with 3 entries found, we are not {}", possibleFormat);
+					logger.trace("Line with 3 entries found, we are not {}", possibleFormat);
 					throw new IllegalArgumentException();
 				}
 				
 			} else
 			{
-				logger.debug("Line with {} entries found unknown format", s.length);
+				logger.trace("Line with {} entries found unknown format", s.length);
 				possibleFormat = null;
 				throw new IllegalArgumentException();
 			}

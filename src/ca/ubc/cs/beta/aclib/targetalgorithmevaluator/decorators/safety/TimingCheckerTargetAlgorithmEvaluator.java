@@ -61,9 +61,19 @@ public class TimingCheckerTargetAlgorithmEvaluator extends	AbstractForEachRunTar
 	{
 		synchronized(this)
 		{
-			log.info("Total Reported Runtime: {} (s), Total of Sum Max(runtime-cutoff,0): {} (s)", totalRuntime, totalRuntimeOverhead);
-			log.info("Total Walltime: {} (s), Total of Sum Max(walltime - cutoff, 0): {} (s)", totalWalltime, totalWallClockOverhead);
-			log.info("Total Difference between Walltime and Runtime (Sum of the amount of wallclock time - sum of the amount of reported CPU time) : {} seconds", this.totalWallClockVersusRuntimeDifference);
+			double maxOverhead = 0.0;
+			maxOverhead = Math.max( ((double) totalRuntimeOverhead) / totalRuntime, maxOverhead);
+			maxOverhead = Math.max(((double) totalWallClockOverhead) / totalWalltime, maxOverhead);
+			maxOverhead = Math.max(((double) totalWalltime) / totalRuntime, maxOverhead);
+			
+			
+			
+			if(log.isDebugEnabled() || maxOverhead > 0.1)
+			{
+				log.info("Total Reported Runtime: {} (s), Total of Sum Max(runtime-cutoff,0): {} (s)", totalRuntime, totalRuntimeOverhead);
+				log.info("Total Walltime: {} (s), Total of Sum Max(walltime - cutoff, 0): {} (s)", totalWalltime, totalWallClockOverhead);
+				log.info("Total Difference between Walltime and Runtime (Sum of the amount of wallclock time - sum of the amount of reported CPU time) : {} seconds", this.totalWallClockVersusRuntimeDifference);
+			}
 		}
 	}
 

@@ -152,7 +152,7 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 			}
 			
 			
-			log.info("Scheduling runs synchronously for configs {}", configIDs);
+			log.trace("Scheduling runs synchronously for configs {}", configIDs);
 			
 			final List<AlgorithmRun> runsFromWrappedTAE = Collections.unmodifiableList(tae.evaluateRun(runConfigs, null));
 			double timeToSleep = Double.NEGATIVE_INFINITY;
@@ -173,7 +173,7 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 			timeToSleep = timeToSleep / this.timeScalingFactor;
 			
 			Object[] args = {  oRigTimeToSleep, timeScalingFactor, timeToSleep,  configIDs, getNicelyFormattedWakeUpTime(timeToSleep), threadsWaiting.get()}; 
-			log.debug("Simulating {} elapsed with time scaling factor {} for a total of {} seconds of running for configs ({}) . Wake-up estimated in/at: {}  ( ~({}) threads currently waiting )", args);
+			log.trace("Simulating {} elapsed with time scaling factor {} for a total of {} seconds of running for configs ({}) . Wake-up estimated in/at: {}  ( ~({}) threads currently waiting )", args);
 			
 			sleepAndNotifyObservers(timeSim, startTimeInMS,  oRigTimeToSleep, obs, runsFromWrappedTAE, runConfigs, runConfigToKillHandlerMap, runConfigToAlgorithmRunMap);
 			

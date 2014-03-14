@@ -94,7 +94,7 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 		 *    }
 		 *    
 		 */
-	
+		/*
 		if(log.isTraceEnabled())
 		{
 			StringWriter sWriter = new StringWriter();
@@ -106,6 +106,7 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 			}
 			log.trace("Adaptive Capping Inputs:\n {} "+ sWriter.toString());
 		}
+		*/
 		//=== Get predictors, response values, and censoring indicators from RunHistory.
 		
 		//=== Change to 0-based indexing
@@ -140,7 +141,7 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 		int[][] non_cens_theta_inst_idxs = nonCensoredThetaInst.toArray(new int[0][]);
 		double[] non_cens_responses = convertToPrimitiveArray(nonCensoredResponses.toArray(new Double[0]));
 		
-		log.info("Building Random Forest with {} censored runs out of {} total ", censoredCount, censoringIndicators.length);
+		log.debug("Building Random Forest with {} censored runs out of {} total ", censoredCount, censoringIndicators.length);
 		
 		//=== Building random forest with non censored data.
 		RandomForest rf = buildRandomForest(mds,rfOptions,non_cens_theta_inst_idxs, non_cens_responses, false, subsamplePercentage, rand);
@@ -156,7 +157,7 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 			
 			numDataPointsInTree *= subsamplePercentage;
 			Object[] args = { numDataPointsInTree, responseValues.length, subsamplePercentage};
-			log.info("Subsampling number in points in imputed trees to {} out of {} ({} %)",args);
+			log.debug("Subsampling number in points in imputed trees to {} out of {} ({} %)",args);
 		}
 		
 		//=== Initialize map from censored response indices to Map from trees to their dataIdxs for that response (only for trees that actually have that data point).
@@ -293,7 +294,6 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 				//=== Get the samples (but cap them at maxValue). 
 				
 				TruncatedNormalDistribution tNorm = new TruncatedNormalDistribution(prediction[j][0], prediction[j][1], responseValues[sampleIdxToUse],rand);
-				//log.debug("Constructing Truncated Normal Distribution took {} seconds" ,sw.stop() / 1000.0);
 				j++;
 				
 				double[] samples;
@@ -344,16 +344,16 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 			differenceFromLastMean /= censoredSampleIdxs.size();			
 			
 			//=== Build a new random forest.
-			log.info("Building random forest with imputed values iteration {}", i);
+			log.debug("Building random forest with imputed values iteration {}", i);
 			rf = buildImputedRandomForest(mds,rfOptions,theta_inst_idxs, dataIdxs, yHallucinated, false, rand);
 			
 			if(differenceFromLastMean < Math.pow(10,-10) && i >= 1)
 			{
-				log.info("Means of imputed values stopped increasing in imputation iteration {} (increase {})",i,differenceFromLastMean);
+				log.trace("Means of imputed values stopped increasing in imputation iteration {} (increase {})",i,differenceFromLastMean);
 				break;
 			} else
 			{
-		    	log.info("Mean increase in imputed values in imputation iteration {} is {}", i, differenceFromLastMean);
+		    	log.trace("Mean increase in imputed values in imputation iteration {} is {}", i, differenceFromLastMean);
 	        }
 		}
 		
@@ -361,7 +361,7 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 		
 		if(rfOptions.preprocessMarginal)
 		{
-			log.debug("Preprocessing marginal for Random Forest");
+			log.trace("Preprocessing marginal for Random Forest");
 			preprocessedForest = RandomForest.preprocessForest(forest, mds.getPCAFeatures());
 		} else
 		{
@@ -451,10 +451,10 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 */
 		RegtreeBuildParams buildParams = SMACRandomForestHelper.getRandomForestBuildParams(rfOptions, features[0].length, categoricalSize, condParents, condParentVals, rand);
 		
-		log.trace("Building Random Forest with Parameters: {}", buildParams);
+		
 		RandomForest forest;
 		
-		log.debug("Building Random Forest with {} data points ", responseValues.length);
+		log.trace("Building Random Forest with {} data points ", responseValues.length);
 		StopWatch sw = new StopWatch();
 		if(rfOptions.fullTreeBootstrap)
 		{
@@ -473,7 +473,7 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 		} else if(subsamplePercentage < 1)
 		{
 				int N = (int) (subsamplePercentage * responseValues.length);
-				log.info("Subsampling {} points out of {} total for random forest construction", N, responseValues.length);
+				log.debug("Subsampling {} points out of {} total for random forest construction", N, responseValues.length);
 				int[][] dataIdxs = new int[numTrees][N];
 		        for (int i = 0; i < numTrees; i++) {
 		            for (int j = 0; j < N; j++) {
@@ -536,14 +536,14 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 */		
 		RegtreeBuildParams buildParams = SMACRandomForestHelper.getRandomForestBuildParams(rfOptions, features[0].length, categoricalSize, condParents, condParentVals, rand);
 		
-		log.trace("Building Random Forest with Parameters: {}", buildParams);
-		log.debug("Building Random Forest with {} data points ", responseValues[0].length);
+	
+		log.trace("Building Random Forest with {} data points ", responseValues[0].length);
 		
 		RandomForest forest;
 		
 		StopWatch sw = new AutoStartStopWatch();
 		
-		
+		/*
 		if(log.isTraceEnabled())
 		{
 			StringWriter sWriter = new StringWriter();
@@ -581,11 +581,11 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 			}
 			log.trace("Model Input Values:\n{} ", sWriter.toString());
 		}
-				
+		*/
 		
 		forest = RandomForest.learnModelImputedValues(numTrees, configs, features, theta_inst_idxs, responseValues, dataIdxs, buildParams);
 		
-		log.debug("Building Random Forest took {} seconds ", sw.stop() / 1000.0);
+		log.trace("Building Random Forest took {} seconds ", sw.stop() / 1000.0);
 
 		
 		return forest;

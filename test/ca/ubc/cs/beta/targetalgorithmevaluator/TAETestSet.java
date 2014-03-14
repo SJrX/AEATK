@@ -3543,7 +3543,7 @@ public class TAETestSet {
 		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		StringBuilder b = new StringBuilder();
 		
-		b.append((new File("")).getAbsolutePath() + File.separator + "test-files"+File.separator + "runsolver" + File.separator + "runsolver -C 4000 " + (new File("")).getAbsolutePath() + File.separator + "test-files"+File.separator + "runsolver" + File.separator + "/sleepy");
+		b.append((new File("")).getAbsolutePath() + File.separator + "test-files"+File.separator + "runsolver" + File.separator + "runsolver -C 4000 " + (new File("")).getAbsolutePath() + File.separator + "test-files"+File.separator + "runsolver" + File.separator + "/busy");
 		//b.append((new File("")).getAbsolutePath() + File.separator + "test-files"+File.separator + "runsolver" + File.separator + "system ");
 		
 		System.out.println(b);
@@ -3565,7 +3565,7 @@ public class TAETestSet {
 		
 		tae = fact.getTargetAlgorithmEvaluator( options);	
 		TargetAlgorithmEvaluator cliTAE = tae;
-		tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
+		//tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
 		
 		
 		

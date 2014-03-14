@@ -171,9 +171,9 @@ public class UnbiasChallengerInitializationProcedure implements InitializationPr
 			initializeRuns(pispConfigs);
 			
 			
-			log.debug("Waiting for all outstanding evaluations to complete");
+			log.trace("Waiting for all outstanding evaluations to complete");
 			tae.waitForOutstandingEvaluations();
-			log.info("All outstanding runs completed, inspecting best configuration");
+			log.debug("All outstanding runs completed, inspecting best configuration");
 			
 			
 			
@@ -197,7 +197,7 @@ public class UnbiasChallengerInitializationProcedure implements InitializationPr
 			
 			if(incCost > minCost)
 			{
-				log.info("Challenger {} ({}) looks better than initial incumbent {} ({}) scheduling censored runs ( {} vs. {} )", runHistory.getThetaIdx(bestConfiguration),bestConfiguration, runHistory.getThetaIdx(initialIncumbent) , initialIncumbent,  minCost, incCost);
+				log.debug("Challenger {} ({}) looks better than initial incumbent {} ({}) scheduling censored runs ( {} vs. {} )", runHistory.getThetaIdx(bestConfiguration),bestConfiguration, runHistory.getThetaIdx(initialIncumbent) , initialIncumbent,  minCost, incCost);
 
 				Set<ProblemInstanceSeedPair> pispsToRun = new HashSet<ProblemInstanceSeedPair>();
 				
@@ -209,9 +209,9 @@ public class UnbiasChallengerInitializationProcedure implements InitializationPr
 					rcs.add(new RunConfig( pisp, this.cutoffTime, bestConfiguration,execConfig));
 				}
 				
-				log.info("Solved runs {} ", runHistory.getAlgorithmRunsExcludingRedundant(bestConfiguration));
-				log.info("Unsolved {}",rcs);
-				log.info("Scheduling {} incomplete runs for {} ({}) ", rcs.size() , runHistory.getThetaIdx(bestConfiguration), bestConfiguration );
+				log.debug("Solved runs {} ", runHistory.getAlgorithmRunsExcludingRedundant(bestConfiguration));
+				log.debug("Unsolved {}",rcs);
+				log.debug("Scheduling {} incomplete runs for {} ({}) ", rcs.size() , runHistory.getThetaIdx(bestConfiguration), bestConfiguration );
 				
 				List<AlgorithmRun> completedRuns = tae.evaluateRun(rcs);
 				try {
@@ -225,17 +225,17 @@ public class UnbiasChallengerInitializationProcedure implements InitializationPr
 			
 			if(incCost > minCost)
 			{
-				log.info("Best challengers performance on set is {} versus initial incumbent {}, setting new incumbent", minCost, incCost);
+				log.debug("Best challengers performance on set is {} versus initial incumbent {}, setting new incumbent", minCost, incCost);
 				this.incumbent = bestConfiguration;
 				
 			} else
 			{
 				
-				log.info("Best challengers performance on set is {} versus initial incumbent {}, leaving incumbent alone", minCost, incCost);
+				log.debug("Best challengers performance on set is {} versus initial incumbent {}, leaving incumbent alone", minCost, incCost);
 				this.incumbent = initialIncumbent;
 			}
 			
-			log.info("Initialization procedure completed ({} total runs, total cpu time used {}), selected incumbent is {} ({})", this.runHistory.getAlgorithmRunData().size(), this.runHistory.getTotalRunCost(), this.runHistory.getThetaIdx(this.incumbent), this.incumbent.getFriendlyIDHex());
+			log.debug("Initialization procedure completed ({} total runs, total cpu time used {}), selected incumbent is {} ({})", this.runHistory.getAlgorithmRunData().size(), this.runHistory.getTotalRunCost(), this.runHistory.getThetaIdx(this.incumbent), this.incumbent.getFriendlyIDHex());
 			
 		} catch(InterruptedException e)
 		{
@@ -306,7 +306,7 @@ public class UnbiasChallengerInitializationProcedure implements InitializationPr
 					{
 						if(run.getRunResult() == RunResult.RUNNING)
 						{
-							log.debug("Killing run {} ", run);
+							log.trace("Killing run {} ", run);
 							run.kill();
 						}
 					}
@@ -361,7 +361,7 @@ outOfInitialization:
 					//Everything is solved so we are done
 					if(solvedPisps.size() == allPairsSize)
 					{
-						log.debug("All runs are considered done");
+						log.trace("All runs are considered done");
 						break outOfInitialization;
 					}
 					
@@ -386,7 +386,7 @@ outOfInitialization:
 						{
 							if(runs.get(0).getRunResult().isDecided())
 							{
-								log.info("Run completed successfully: {} " ,runs.get(0));
+								log.debug("Run completed successfully: {} " ,runs.get(0));
 							}
 							solvedPisps.add(pair);
 						} else
@@ -411,7 +411,7 @@ outOfInitialization:
 					
 					//=== Expressly log the date, in case the logger timestamps are behind.
 					SimpleDateFormat sdf = new SimpleDateFormat("hh:mm:ss.SSS");
-					log.info("Initialization procedure has used {}, time limit: {}, halting procedure at {}...", runHistory.getTotalRunCost(), this.cpuTimeLimit, sdf.format(new Date()));
+					log.debug("Initialization procedure has used {}, time limit: {}, halting procedure at {}...", runHistory.getTotalRunCost(), this.cpuTimeLimit, sdf.format(new Date()));
 					
 					killNow.set(true);
 					
@@ -479,12 +479,12 @@ outOfInitialization:
 		}
 		
 		runHistory.getOrCreateThetaIdx(initialIncumbent);
-		log.info("Scheduling {} runs for initial configuration", rcs.size());
+		log.debug("Scheduling {} runs for initial configuration", rcs.size());
 		tae.evaluateRunsAsync(rcs, new TargetAlgorithmEvaluatorCallback() {
 
 			@Override
 			public void onSuccess(List<AlgorithmRun> runs) {
-				log.info("Default configuration runs are done");
+				log.debug("Default configuration runs are done");
 				incumbentRuns.addAll(runs);
 			}
 
@@ -529,7 +529,7 @@ outOfInitialization:
 	 * @return
 	 */
 	private Set<ParamConfiguration> getParameterConfigurations(Random rand, Set<ParamConfiguration> excluded) {
-		log.info("Generating {} configurations for use in initialization", this.numberOfChallengers);
+		log.debug("Generating {} configurations for use in initialization", this.numberOfChallengers);
 		Set<ParamConfiguration> thetas = new HashSet<ParamConfiguration>(this.numberOfChallengers);
 		
 		thetas.addAll(excluded);
@@ -575,7 +575,7 @@ outOfInitialization:
 	private List<ProblemInstanceSeedPair> getProblemInstanceSeedPairs(Random rand) {
 		List<ProblemInstanceSeedPair> selectedPisps = new ArrayList<ProblemInstanceSeedPair>(); 
 		
-		log.info("Generating {} Problem Instance Seed Pairs for use in initialization", numberOfRunsPerChallenger);
+		log.debug("Generating {} Problem Instance Seed Pairs for use in initialization", numberOfRunsPerChallenger);
 		
 
 		List<ProblemInstance> shuffledPis = new ArrayList<ProblemInstance>(instances);
