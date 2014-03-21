@@ -371,7 +371,7 @@ public class TAETestSet {
 		tae = new OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator(tae, f2.getAbsolutePath(), 0.01, "Outstanding");
 		
 		tae = new OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator(tae);
-		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		
 		
 		//PrintStream out = System.out;
 		//System.setOut(new PrintStream(bout));

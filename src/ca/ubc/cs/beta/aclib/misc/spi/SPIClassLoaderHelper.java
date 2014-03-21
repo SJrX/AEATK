@@ -139,7 +139,7 @@ private static final String defaultSearchPath;
 	}
 	
 	
-	private static ClassLoader c = null;
+	private static volatile ClassLoader c = null;
 	/**
 	 * Retrieves a modified class loader to do dynamically search for jars
 	 * @return a class loader that will search the plugins directory as well

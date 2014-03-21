@@ -55,7 +55,7 @@ public class EventManager {
 	/**
 	 * Flag variable that changes to true, if we shutdown
 	 */
-	private boolean shutdown = false;
+	private volatile boolean  shutdown = false;
 	
 	
 	/**
