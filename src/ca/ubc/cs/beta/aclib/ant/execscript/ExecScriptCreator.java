@@ -50,7 +50,7 @@ public static void main(String[] args)
 					
 		}
 		
-		String script = getScript(opts.clazz,opts.nameOfProgram, opts.mem);
+		String script = getScript(opts.clazz,opts.nameOfProgram, opts.mem,opts.printMem);
 		
 			
 		System.out.println("Execution Script writing to: "  + f);
@@ -63,7 +63,7 @@ public static void main(String[] args)
 		if(opts.batFile)
 		{
 			
-			String batchFile = getBatch(opts.clazz, opts.nameOfProgram,opts.mem);
+			String batchFile = getBatch(opts.clazz, opts.nameOfProgram,opts.mem,opts.printMem);
 
 			File f2 = new File(opts.filename);
 			
@@ -108,7 +108,7 @@ public static void main(String[] args)
 	
 }
 
-public static String getScript(String javaClassName, String nameOfProgram, int ram)
+public static String getScript(String javaClassName, String nameOfProgram, int ram, boolean printMem)
 {
 	
 	/*
@@ -138,7 +138,9 @@ exec java -Xmx"$SMACMEM"m -cp "$DIR/conf/:$jarconcat" $EXEC "$@"
 	sb.append("EXEC=").append(javaClassName).append("\n"); 
 	sb.append("DIR=\"$( cd \"$( dirname \"${BASH_SOURCE[0]}\" )\" && pwd )\"").append("\n");
 	
-	sb.append("echo \"Starting ").append(nameOfProgram).append(" with $SMACMEM MB of RAM\"").append("\n"); 
+	if(printMem) {
+		sb.append("echo \"Starting ").append(nameOfProgram).append(" with $SMACMEM MB of RAM\"").append("\n"); 
+	}
 	sb.append("\n");
 	sb.append("for f in $DIR/lib/*.jar").append("\n");
 	sb.append("do").append("\n");
@@ -161,7 +163,7 @@ exec java -Xmx"$SMACMEM"m -cp "$DIR/conf/:$jarconcat" $EXEC "$@"
 	 * @param nameOfProgram
 	 * @return the batch file 
 	 */
-	public static String getBatch(String javaClassName, String nameOfProgram,int ram)
+	public static String getBatch(String javaClassName, String nameOfProgram,int ram, boolean printMem)
 	{
 		/* courtesy of Chris Thornton
 		  @echo off
@@ -189,7 +191,10 @@ exec java -Xmx"$SMACMEM"m -cp "$DIR/conf/:$jarconcat" $EXEC "$@"
 		sb.append("SETLOCAL ENABLEDELAYEDEXPANSION").append("\r\n");
 		sb.append("for /F \"delims=\" %%a IN ('dir /b /s \"%DIR%\\*.jar\"') do set jarconcat=%%a;!jarconcat!").append("\r\n");
 		sb.append("for /F \"delims=\" %%a IN ('dir /b /s \"%DIR%\\lib\\*.jar\"') do set jarconcat=%%a;!jarconcat!").append("\r\n");
-		sb.append("echo Starting "+ nameOfProgram + " with %SMACMEM% MB of RAM").append("\r\n");
+		if(printMem)
+		{
+			sb.append("echo Starting "+ nameOfProgram + " with %SMACMEM% MB of RAM").append("\r\n");
+		}
 		//sb.append("@echo on").append("\n");
 		sb.append("java -Xmx%SMACMEM%m -cp \"%DIR%conf\\;%DIR%patches\\;%jarconcat%%DIR%patches\\ \" %EXEC% %*").append("\r\n");
 

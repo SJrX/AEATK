@@ -26,4 +26,7 @@ public class ExecScriptCreatorOptions extends AbstractOptions {
 	
 	@Parameter(names="--default-mem", description="Default amount of RAM to reserve in MB", validateWith=FixedPositiveInteger.class)
 	public int mem = 128;
+	
+	@Parameter(names="--print-mem", description="Print the amount of RAM to reserve")
+	public boolean printMem = true;
 }
