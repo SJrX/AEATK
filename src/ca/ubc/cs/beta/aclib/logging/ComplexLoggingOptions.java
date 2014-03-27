@@ -83,7 +83,7 @@ public class ComplexLoggingOptions  extends AbstractOptions implements LoggingOp
 		System.setProperty("ERRLOG", getErrorLogLocation(completeOutputDir,numRun));
 		System.setProperty("WARNLOG", getWarnLogLocation(completeOutputDir,numRun));
 		
-		System.out.println("*****************************\nLogging to: " + logLocation +  "\n*****************************");
+		//System.out.println("*****************************\nLogging to: " + logLocation +  "\n*****************************");
 		
 		//Generally has the format: ${OUTPUTDIR}/${RUNGROUPDIR}/log-run${NUMRUN}.txt
 		Logger log = LoggerFactory.getLogger(ComplexLoggingOptions.class);
