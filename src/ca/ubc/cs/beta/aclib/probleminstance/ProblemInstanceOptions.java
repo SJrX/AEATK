@@ -383,7 +383,7 @@ public class ProblemInstanceOptions extends AbstractOptions{
 						log.trace("Using extension {} for instance directory", foundExtension );
 					} else if (!foundExtension.equals(match.group(1)))
 					{
-						throw new ParameterException("You must specify an instance suffix for directory unless all files have the same extension, detected extensions " + foundExtension + " and " + match.group(1));
+						throw new ParameterException("You must specify an instance suffix for directory (using --instance-suffix) unless all files have the same extension, detected extensions in the specified directory: ." + foundExtension + " and ." + match.group(1));
 					}
 				}
 			}
