@@ -143,7 +143,7 @@ public class TrajectoryFileLogger implements EventHandler<AutomaticConfiguratorE
 		String paramString = incumbent.getFormattedParamString(StringFormat.STATEFILE_SYNTAX);
 		
 		
-		String outLine = tunerTime + ", " + empiricalPerformance + ", " + wallClockTime/1000.0 + ", " + thetaIdxInc + ", " + acTime + ", " + paramString +"\n";
+		String outLine = tunerTime + ", " + empiricalPerformance + ", " + wallClockTime + ", " + thetaIdxInc + ", " + acTime + ", " + paramString +"\n";
 		log.trace("Logging incumbent: (Runs {}): {}", ((this.lastIevent != null) ? this.lastIevent.getIncumbentRunCount() : "?"), outLine.trim());
 		try 
 		{

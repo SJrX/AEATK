@@ -36,6 +36,7 @@ import ca.ubc.cs.beta.aclib.random.SeedableRandomPoolConstants;
 import ca.ubc.cs.beta.aclib.state.StateFactory;
 import ca.ubc.cs.beta.aclib.state.StateFactoryOptions;
 import ca.ubc.cs.beta.aclib.state.WarmStartOptions;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorOptions;
 
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterFile;
@@ -211,7 +212,11 @@ public class SMACOptions extends AbstractOptions {
 	
 	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names="--intermediary-saves", description="determines whether to make any intermediary-saves or not (if false, no quick saves will be made either). The state will still be saved at the end of the run however")
-	public boolean intermediarySaves = true;
+	public boolean intermediarySaves = true; 
+
+	@UsageTextField(defaultValues="Number of cores normally used")
+	@Parameter(names="--validation-cores", description="Number of cores to use when validating (only applicable when using local command line cores). Essentially this changes the value of --cli-cores and --cores after SMAC has run.", validateWith=FixedPositiveInteger.class)
+	public Integer validationCores = null;
 	
 	
 	/**
