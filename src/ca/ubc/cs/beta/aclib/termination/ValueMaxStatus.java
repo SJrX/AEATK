@@ -1,5 +1,7 @@
 package ca.ubc.cs.beta.aclib.termination;
 
+import java.text.DecimalFormat;
+
 /**
  * A tuple object that stores information about the current state 
  * @author Steve Ramage <seramage@cs.ubc.ca>
@@ -39,7 +41,31 @@ public class ValueMaxStatus {
 		this.current = current;
 		this.max = max;
 		this.name = name;
-		this.status = friendlyName + " used: " + current + " "+unit+ " (" + ((int)( current / max * 100)) + "%)\n" + friendlyName + " remaining: " + (max - current) + " " + unit + "\n";
+		
+		
+		
+		String remaining = "";
+		
+		DecimalFormat c;
+		
+		if(current > 1000000)
+		{
+			 c = new DecimalFormat("0.00E0");
+		} else
+		{
+			 c = new DecimalFormat("0.00");
+		}
+		DecimalFormat mc;
+		
+		if(max-current > 1000000)
+		{
+			 mc = new DecimalFormat("0.00E0");
+		} else
+		{
+			mc = new DecimalFormat("0.00");
+		}
+		
+		this.status = friendlyName + " used: " + c.format(current) + " "+unit+ " (" + ((int)( current / max * 100)) + "%)\n" + friendlyName + " remaining: " + mc.format(max-current) + " " + unit + "\n";
 		
 		//this.status = name + " is currently (" +current +  "). Max is ( " + max + " ) "; 
 	}

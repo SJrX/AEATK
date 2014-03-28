@@ -34,7 +34,7 @@ public class TargetAlgorithmAbortException extends RuntimeException {
 	}
 
 	public TargetAlgorithmAbortException(IOException e1) {
-		super("TargetAlgorithmEvaluator encounted an IOException ", e1);
+		super(e1.getMessage(), e1);
 	}
 
 	public AlgorithmRun getAlgorithmRun()

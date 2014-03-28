@@ -37,7 +37,7 @@ public class ScenarioOptions extends AbstractOptions{
 	
 	
 	@CommandLineOnly
-	@Parameter(names={"--run-obj","--runObj","--run_obj"}, description="per target algorithm run objective type that we are optimizing for", converter=RunObjectiveConverter.class)
+	@Parameter(names={"--run-obj","--runObj","--run_obj"}, description="per target algorithm run objective type that we are minimizing", converter=RunObjectiveConverter.class)
 	public RunObjective runObj = RunObjective.RUNTIME;
 	
 	@CommandLineOnly

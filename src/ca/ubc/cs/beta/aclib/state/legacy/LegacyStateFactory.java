@@ -99,9 +99,9 @@ public class LegacyStateFactory implements StateFactory{
 			{
 				if(f.isDirectory() && f.listFiles().length > 0)
 				{
-					File newFileName = new File(f.getParent() + File.separator + "/old-state-" + System.currentTimeMillis() + "/");
+					File newFileName = new File(f.getParent() + File.separator + "/" + "old-state-" + f.getName()+  "-" + System.currentTimeMillis() + "/");
 					f.renameTo(newFileName);
-					log.warn("Found previous state output, renamed to: {}", newFileName.getAbsolutePath());  
+					log.info("Found previous run data in state output folder: {} , renamed to: {}", newFileName.getParent() ,newFileName.getName());  
 					f = new File(this.saveStatePath);
 					f.mkdir();
 				}

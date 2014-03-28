@@ -29,7 +29,7 @@ public class WallClockLimitCondition extends AbstractTerminationCondition implem
 	@Override
 	public double getWallTime()
 	{
-		return System.currentTimeMillis() - applicationStartTime;
+		return (System.currentTimeMillis() - applicationStartTime) / 1000.0;
 	}
 	
 	@Override

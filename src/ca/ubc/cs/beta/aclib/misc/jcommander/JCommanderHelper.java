@@ -215,6 +215,38 @@ public final class JCommanderHelper
 	}
 
 
+	public static void logCallString(String[] args, String name) {
+		Logger log = LoggerFactory.getLogger(JCommanderHelper.class);
+		
+		StringBuilder sb = new StringBuilder(name);
+
+		if(System.getProperty("os.name").toLowerCase().contains("win"))
+		{
+			sb.append(".bat");
+		}
+		sb.append(" ");
+		
+		for(String arg : args)
+		{
+			boolean escape = false;
+			if(arg.contains(" "))
+			{
+				escape = true;
+				arg = arg.replaceAll(" ", "\\ ");
+			}
+			
+			
+			if(escape) sb.append("\"");
+			sb.append(arg);
+			if(escape) 	sb.append("\"");
+			sb.append(" ");
+		}
+		
+		log.info("Call String: {}", sb.toString());
+		
+	}
+
+	
 	public static JCommander getJCommander(AbstractOptions t) {
 		return getJCommander(t, Collections.<String, AbstractOptions> emptyMap());
 	}

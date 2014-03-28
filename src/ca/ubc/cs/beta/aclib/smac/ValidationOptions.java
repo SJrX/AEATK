@@ -38,7 +38,7 @@ public class ValidationOptions extends AbstractOptions{
 	
 	@UsageTextField(level=OptionLevel.INTERMEDIATE)
 	@Parameter(names={"--num-validation-runs","--numValidationRuns","--numberOfValidationRuns"}, description = "approximate number of validation runs to do", validateWith=NonNegativeInteger.class)
-	public int numberOfValidationRuns = 1000;
+	public int numberOfValidationRuns = 1;
 	
 	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names={"--output-file-suffix","--outputFileSuffix"}, description="Suffix to add to validation run files (for grouping)")
@@ -49,8 +49,8 @@ public class ValidationOptions extends AbstractOptions{
 	public boolean saveStateFile;
 
 	@UsageTextField(level=OptionLevel.INTERMEDIATE)
-	@Parameter(names={"--validate-by-wallclock-time","--validateByWallClockTime"}, description="Use wallclock times")
-	public boolean useWallClockTime;
+	@Parameter(names={"--validate-by-wallclock-time","--validateByWallClockTime"}, description="Validate runs by wall-clock time")
+	public boolean useWallClockTime = true;
 	
 	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names={"--validate-all","--validateAll"},description="Validate every entry in the trajectory file (overrides other validation options)")

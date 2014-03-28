@@ -15,9 +15,10 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.resource.Bounded
 public class CommandLineTargetAlgorithmEvaluatorFactory extends AbstractTargetAlgorithmEvaluatorFactory  {
 
 	
+	public static String NAME = "CLI";
 	@Override
 	public String getName() {
-		return "CLI";
+		return NAME;
 	}
 
 	@Override

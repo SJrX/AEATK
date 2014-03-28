@@ -1,5 +1,7 @@
 package ca.ubc.cs.beta.aclib.eventsystem.handlers;
 
+import java.text.DecimalFormat;
+import java.text.NumberFormat;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashSet;
@@ -162,26 +164,27 @@ public class LogRuntimeStatistics implements EventHandler<AutomaticConfiguratorE
 				}
 				ParamConfiguration incumbent = this.lastICE.get().getIncumbent();
 				
+				
 				Object[] arr = { logCount.get(),
-						runHistory.getThetaIdx(incumbent) + " (" + incumbent +")",
+						runHistory.getThetaIdx(incumbent) + " (internal ID:" + incumbent +")",
 						runHistory.getTotalNumRunsOfConfigExcludingRedundant(incumbent),
 						runHistory.getProblemInstancesRan(incumbent).size(),
 						runHistory.getUniqueParamConfigurations().size(),
-						runHistory.getEmpiricalCost(incumbent, runHistory.getUniqueInstancesRan(), this.cutoffTime),
+						format(runHistory.getEmpiricalCost(incumbent, runHistory.getUniqueInstancesRan(), this.cutoffTime)),
 						"N/A", 
 						"N/A",
 						"N/A" ,
 						"N/A", //options.runtimeLimit - wallTime 
-						termCond.getTunerTime(),
+						format(termCond.getTunerTime()),
 						"N/A", //options.scenarioConfig.tunerTimeout - tunerTime,
-						runHistory.getTotalRunCost(),
-						cpuTime.getCPUTime(),
-						cpuTime.getUserTime() ,
-						this.sumOfRuntime,
-						this.sumOfWallclockTime,
-						Runtime.getRuntime().maxMemory() / 1024.0 / 1024,
-						Runtime.getRuntime().totalMemory() / 1024.0 / 1024,
-						Runtime.getRuntime().freeMemory() / 1024.0 / 1024 };
+						format(runHistory.getTotalRunCost()),
+						format(cpuTime.getCPUTime()),
+						format(cpuTime.getUserTime()) ,
+						format(this.sumOfRuntime),
+						format(this.sumOfWallclockTime),
+						format0(Runtime.getRuntime().maxMemory() / 1024.0 / 1024),
+						format0(Runtime.getRuntime().totalMemory() / 1024.0 / 1024),
+						format0(Runtime.getRuntime().freeMemory() / 1024.0 / 1024) };
 				
 				StringBuilder sb = new StringBuilder(" ");
 				for(ValueMaxStatus vms : termCond.currentStatus())
@@ -256,6 +259,17 @@ public class LogRuntimeStatistics implements EventHandler<AutomaticConfiguratorE
 		log.info(lastString.get());
 	}
 
+	private static final DecimalFormat df0 = new DecimalFormat("0"); 
+	private static synchronized String format0(double d)
+	{
+		return df0.format(d);
+	}
+	
+	private static final DecimalFormat df = new DecimalFormat("0.000"); 
+	private static synchronized String format(double d)
+	{
+		return df.format(d);
+	}
 	
 
 

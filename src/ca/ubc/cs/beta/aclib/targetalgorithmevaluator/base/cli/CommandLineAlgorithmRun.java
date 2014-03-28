@@ -93,6 +93,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	public static final String CONCURRENT_TASK_ID = "AEATK_CONCURRENT_TASK_ID";
 	
 	
+	
 	/**
 	 * This variable is public only for unit test purposes,
 	 * this is not guaranteed to be the actual environment variable of child processes
@@ -534,7 +535,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 							this.setResult(RunResult.KILLED, currentTime, 0,0, getRunConfig().getProblemInstanceSeedPair().getSeed(), "JVM Shutdown Detected", "" );							
 						} else
 						{
-							this.setCrashResult("Wrapper did not output anything that matched our regex please see the manual for more information. Please try executing the wrapper directly and ensuring that some line starts with: \"Results for ParamILS:\" (case sensitive). In more gorey detail it needs to match the following Regular Expression: " + AUTOMATIC_CONFIGURATOR_RESULT_REGEX );
+							this.setCrashResult("ERROR: Wrapper did not output anything that matched the expected output (\"Result for ParamILS:...\"). Please try executing the wrapper directly" );
 						}
 				}
 					
@@ -543,17 +544,27 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 					{
 						case ABORT:
 						case CRASHED:
-								log.error( "Failed Run Detected Call: cd \"{}\" " + COMMAND_SEPERATOR  + "  {} ",new File(runConfig.getAlgorithmExecutionConfig().getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommandAsString( runConfig));
-								log.error("Failed Run Detected output last {} lines", outputQueue.size());
-								
-								for(String s : outputQueue)
+
+						
+								log.error("The following algorithm call failed: cd \"{}\" " + COMMAND_SEPERATOR + "  {} ",new File(runConfig.getAlgorithmExecutionConfig().getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommandAsString( runConfig));
+							
+								if(outputQueue.size() > 0)
 								{
-									log.error("> "+s);
+									log.error("The last {} lines of output we saw were:", outputQueue.size());
+									
+									for(String s : outputQueue)
+									{
+										log.error("> "+s);
+									}
+								} else
+								{
+									log.debug("No output on standard out detected");
 								}
-								log.error("Output complete");
+								
 								
 							
 						default:
+							//Doesn't matter
 						
 					}
 					
@@ -597,8 +608,12 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 				
 			}
 
-		} catch (IOException e1) {
-			log.error( "Failed Run Detected (IOException) Call: cd \"{}\" " + COMMAND_SEPERATOR + "  {} ",new File(runConfig.getAlgorithmExecutionConfig().getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommandAsString( runConfig));
+		} catch (IOException e1) 
+		{
+
+			//String execCmd = getTargetAlgorithmExecutionCommandAsString(execConfig,runConfig);
+			log.error( "The following algorithm call failed: cd \"{}\" " + COMMAND_SEPERATOR + "  {} ",new File(runConfig.getAlgorithmExecutionConfig().getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommandAsString( runConfig));
+
 			throw new TargetAlgorithmAbortException(e1);
 			//throw new IllegalStateException(e1);
 		}

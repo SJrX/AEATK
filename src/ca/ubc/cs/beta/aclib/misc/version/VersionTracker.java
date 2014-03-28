@@ -10,6 +10,7 @@ import java.util.TreeMap;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ca.ubc.cs.beta.aclib.logging.CommonMarkers;
 import ca.ubc.cs.beta.aclib.misc.spi.SPIClassLoaderHelper;
 
 /**
@@ -104,7 +105,7 @@ public class VersionTracker {
 		}
 		for(Entry<String, String> ent : versionMap.entrySet())
 		{
-			log.info("Version of {} is {} ", ent.getKey(), ent.getValue());
+			log.info(CommonMarkers.SKIP_CONSOLE_PRINTING,"Version of {} is {} ", ent.getKey(), ent.getValue());
 		}
 	}
 	

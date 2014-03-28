@@ -37,70 +37,52 @@ public class UncleanShutdownDetectingTargetAlgorithmEvaluator extends
 		{
 
 			@Override
-			public void run() {
+			public void run() 
+			{
 				Thread.currentThread().setName("Unclean Target Algorithm Evaluator Shutdown Detector");
-				try {
-					long notifies = notifyShutdownInvoked.get();
-					if(notifies == 0)
-					{
-						log.error("Unclean Shutdown Detected, You must call notifyShutdown() on your TAE. You may have a broken TAE decorator that doesn't forward the notifyShutdown() correctly");
-						for(int i=0; i < MESSAGE_REPEAT; i++)
-						{
-							System.err.println("Arrêt anormal détecté. Vous devez appeler notifyShutdown() de votre TAE. Vous pouvez avoir un TAE qui bloque la transmission appropriée.\n Unclean Shutdown Detected, You must call notifyShutdown() on your TAE before exiting. You may have a decorator that doesn't forward the call correctly.");
-							Thread.sleep(SLEEP_TIME_BETWEEN_MESSAGES);
-						}
-						
-						
-						
-						Thread.sleep(SLEEP_TIME_IN_MS);
-					} else if(notifies > 1)
-					{
-						log.warn("You called notifyShutdown() on your TAE more than once, this seems exceptionally weird");
-						
-						for(int i=0; i < MESSAGE_REPEAT; i++)
-						{
-							System.err.println("You called notifyShutdown() on your TAE more than once, this is almost certainly a logic error and may cause weird behaivour");
-							Thread.sleep(SLEEP_TIME_BETWEEN_MESSAGES);
-						}
-						Thread.sleep(SLEEP_TIME_IN_MS);
-					} else if(notifies < 0)
-					{
-						log.warn("You seem to have overflowed the counter we use to track the number of calls to notifyShutdown(), well played...");
-						
-						for(int i=0; i < MESSAGE_REPEAT; i++)
-						{
-							System.err.println("You seem to have overflowed the counter we use to notify shutdown. I don't even have words for this");
-							Thread.sleep(SLEEP_TIME_BETWEEN_MESSAGES);
-						}
-						Thread.sleep(SLEEP_TIME_IN_MS);
-					} else
-					{
-						//Yay they cleaned up properly
-						return;
-					}
-					
+				
+				long notifies = notifyShutdownInvoked.get();
+				if(notifies == 0)
+				{
+					log.debug("Unclean Shutdown Detected, You must call notifyShutdown() on your TAE. You may have a broken TAE decorator that doesn't forward the notifyShutdown() correctly");
 					synchronized(stackTracePrintingLock)
 					{
 						if(log.isDebugEnabled())
 						{
-							System.err.println("Target Algorithm Evaluator that wasn't shutdown, was created here");
+							
+							StringBuilder sb = new StringBuilder();
+							
 							for(StackTraceElement el : taeCreationStackTrace)
 							{
-								System.err.println(el);
+								sb.append(el).append("\n");
+								
 							}
+							
+							log.debug("Target algorithm that wasn't shutdown was created here:\n{}", sb);
 						}
 					}
 					
-				} catch(InterruptedException e)
+					
+					
+					
+				} else if(notifies > 1)
 				{
-					System.err.println("Interrupted while trying to make you wait, don't think you are off the hook");
-					Thread.currentThread().interrupt();
+					log.warn("You called notifyShutdown() on your TAE more than once, this seems exceptionally weird");
+					
+				} else if(notifies < 0)
+				{
+					log.warn("You seem to have overflowed the counter we use to track the number of calls to notifyShutdown(), well played...");
+					
+				} else
+				{
 					return;
 				}
-				
-				
-				
+					
+					
 			}
+				
+				
+			
 			
 		}
 		));
