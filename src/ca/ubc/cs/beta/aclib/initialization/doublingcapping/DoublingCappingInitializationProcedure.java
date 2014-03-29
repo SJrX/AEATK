@@ -91,7 +91,7 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 		this.numberOfRunsPerChallenger = opts.numberOfRunsPerChallenger;
 		this.objHelp = objHelp;
 		this.execConfig = execConfig;
-		this.tae = new StrictlyIncreasingRuntimesTargetAlgorithmEvaluatorDecorator(new CachingTargetAlgorithmEvaluatorDecorator(tae));
+		this.tae = tae;//new StrictlyIncreasingRuntimesTargetAlgorithmEvaluatorDecorator(new CachingTargetAlgorithmEvaluatorDecorator(tae));
 		
 		
 	}
@@ -100,6 +100,7 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 	public void run()
 	{
 		
+		log.warn("Doubling Capping initialization procedure does NOT cache results currently");
 		log.warn("Doubling Capping initialization procedure is EXPERIMENTAL currently. It may not work in all scenarios, such as those with small configurations and/or instance distributions. Termination conditions will be updated but not actually checked until after the procedure is completed, and state restoration will not properly restore the state (some runs will be lost). Finally as it has a lot of edge cases bugs are likely, the bugs should only manifest themselves as a crash");
 		
 		
