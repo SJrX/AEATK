@@ -379,7 +379,7 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun
 	@Override
 	public boolean isCensoredEarly()
 	{
-		return ((getRunResult().equals(RunResult.TIMEOUT) && getRunConfig().hasCutoffLessThanMax()) ||  getRunResult().equals(RunResult.KILLED));
+		return ((getRunResult().equals(RunResult.TIMEOUT) && getRunConfig().hasCutoffLessThanMax()) ||  (getRunResult().equals(RunResult.KILLED) && getRuntime() < getRunConfig().getCutoffTime()));
 	}
 	protected boolean isResultSet()
 	{

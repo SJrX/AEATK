@@ -252,7 +252,9 @@ public class WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator extends
 		
 		@Override
 		public boolean isCensoredEarly() {
-			return wrappedRun.isCensoredEarly();
+			return ((getRunResult().equals(RunResult.TIMEOUT) && getRunConfig().hasCutoffLessThanMax()) ||  (getRunResult().equals(RunResult.KILLED) && getRuntime() < getRunConfig().getCutoffTime()));
+			
+			
 		}
 		
 		@Override
