@@ -1,14 +1,25 @@
 package ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.safety;
 
+import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
+import java.util.concurrent.ConcurrentHashMap;
+
 import net.jcip.annotations.ThreadSafe;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableAlgorithmRun;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli.CommandLineAlgorithmRun;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbstractForEachRunTargetAlgorithmEvaluatorDecorator;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbstractTargetAlgorithmEvaluatorDecorator;
 
 
 /**
@@ -20,26 +31,25 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.AbstractForEachR
  *
  */
 @ThreadSafe
-public class TimingCheckerTargetAlgorithmEvaluator extends	AbstractForEachRunTargetAlgorithmEvaluatorDecorator {
+public class TimingCheckerTargetAlgorithmEvaluator extends	AbstractTargetAlgorithmEvaluatorDecorator {
 
 
-	
-	
 	private double totalWallClockOverhead = 0;
 	private double totalRuntimeOverhead = 0;
 	private double totalWallClockVersusRuntimeDifference = 0;
 	private double totalWalltime;
 	private double totalRuntime;
+	private final AlgorithmExecutionConfig execConfig;
 	
 	
-	private static Logger log = LoggerFactory.getLogger(TimingCheckerTargetAlgorithmEvaluator.class);
+	private static final Logger log = LoggerFactory.getLogger(TimingCheckerTargetAlgorithmEvaluator.class);
 	
+	//private final TargetAlgorithmEvaluator tae;
 	public TimingCheckerTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig, TargetAlgorithmEvaluator tae) {
 		super(tae);
 		
+		this.execConfig = execConfig;
 		wallClockDeltaToRequireLogging = Math.min(1.5*execConfig.getAlgorithmCutoffTime(), 10);
-		
-
 	}
 	/**
 	 * Linear amount of time we should allow the algorithm to exceed the request before logging a warning. 
@@ -77,7 +87,7 @@ public class TimingCheckerTargetAlgorithmEvaluator extends	AbstractForEachRunTar
 		}
 	}
 
-	@Override
+	
 	protected synchronized AlgorithmRun processRun(AlgorithmRun run) {
 		
 		double runtimeOverhead = run.getRuntime() - run.getRunConfig().getCutoffTime();
@@ -111,5 +121,109 @@ public class TimingCheckerTargetAlgorithmEvaluator extends	AbstractForEachRunTar
 		return run;
 	}
 	
+	
 
+	protected synchronized RunConfig processRun(RunConfig rc) 
+	{
+		return rc;
+	}
+	
+	
+
+	@Override
+	public final List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
+		return processRuns(tae.evaluateRun(processRunConfigs(runConfigs), new WarnOnExceededCutoffRunObserver(obs)));
+	}
+
+	@Override
+	public final void evaluateRunsAsync(List<RunConfig> runConfigs,
+			final TargetAlgorithmEvaluatorCallback oHandler, TargetAlgorithmEvaluatorRunObserver obs) {
+		
+		//We need to make sure wrapped versions are called in the same order
+		//as there unwrapped versions.
+	
+		TargetAlgorithmEvaluatorCallback myHandler = new TargetAlgorithmEvaluatorCallback()
+		{
+			private final TargetAlgorithmEvaluatorCallback handler = oHandler;
+
+			@Override
+			public void onSuccess(List<AlgorithmRun> runs) {
+					runs = processRuns(runs);			
+					handler.onSuccess(runs);
+			}
+
+			@Override
+			public void onFailure(RuntimeException t) {
+					handler.onFailure(t);
+			}
+		};
+		
+		tae.evaluateRunsAsync(processRunConfigs(runConfigs), myHandler, new WarnOnExceededCutoffRunObserver(obs));
+
+	}
+
+	protected final List<AlgorithmRun> processRuns(List<AlgorithmRun> runs)
+	{
+		for(int i=0; i < runs.size(); i++)
+		{
+			runs.set(i, processRun(runs.get(i)));
+		}
+		
+		return runs;
+	}
+	
+	protected final List<RunConfig> processRunConfigs(List<RunConfig> runConfigs)
+	{	
+		runConfigs = new ArrayList<RunConfig>(runConfigs);
+		for(int i=0; i < runConfigs.size(); i++)
+		{
+			runConfigs.set(i, processRun(runConfigs.get(i)));
+		}
+		return runConfigs;
+	}
+	
+	
+	private class WarnOnExceededCutoffRunObserver implements TargetAlgorithmEvaluatorRunObserver
+	{
+
+		private final TargetAlgorithmEvaluatorRunObserver obs;
+		public WarnOnExceededCutoffRunObserver(TargetAlgorithmEvaluatorRunObserver obs)
+		{
+			this.obs = obs;
+			
+		}
+		private ConcurrentHashMap<RunConfig, Boolean> warnCreated = new ConcurrentHashMap<RunConfig, Boolean>();
+		@Override
+		public void currentStatus(List<? extends KillableAlgorithmRun> runs) 
+		{
+			
+			try 
+			{
+				this.obs.currentStatus(runs);
+			} finally
+			{
+			
+				for(KillableAlgorithmRun run : runs)
+				{
+					if(!run.isRunCompleted())
+					{
+						//If the run has taken more 3 minutes, and it is more than 3 times the cutoff time we warn.
+						if(run.getWallclockExecutionTime() > 3 * run.getRunConfig().getCutoffTime() && run.getWallclockExecutionTime() > 180)
+						{
+							if(warnCreated.putIfAbsent(run.getRunConfig(), Boolean.TRUE) == null)
+							{
+								log.warn("We have been waiting for {} seconds for a run that should have taken at most {} seconds.\n "
+										+ "The sample call for the run that is delayed is: cd \"{}\" " + CommandLineAlgorithmRun.COMMAND_SEPERATOR + "  {} ",run.getWallclockExecutionTime(), run.getRunConfig().getCutoffTime(), new File(execConfig.getAlgorithmExecutionDirectory()).getAbsolutePath(), CommandLineAlgorithmRun.getTargetAlgorithmExecutionCommandAsString(execConfig, run.getRunConfig()));
+							}
+							
+						}
+					}
+					
+					
+				}
+			}
+			
+		}
+		
+	}
 }
