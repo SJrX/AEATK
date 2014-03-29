@@ -52,17 +52,18 @@ public class ProblemInstanceOptions extends AbstractOptions{
 	public boolean checkInstanceFilesExist = false;
 	
 	@CommandLineOnly
+	@UsageTextField(level=OptionLevel.INTERMEDIATE)
 	@Parameter(names="--no-instances", description="If true skips reading the instances and just uses a dummy instance")
 	public boolean noInstances = false;
 	
 	
 	@CommandLineOnly
-	@UsageTextField(level=OptionLevel.BASIC)
+	@UsageTextField(level=OptionLevel.INTERMEDIATE)
 	@Parameter(names={"--instance-suffix","--instance-regex"}, description="A suffix that all instances must match when reading instances from a directory. You can optionally specify a (java) regular expression but be aware that it is suffix matched (internally we take this string and append a $ on it)")
 	public String instanceSuffix = null;
 	
 	@CommandLineOnly
-	@UsageTextField(level=OptionLevel.BASIC)
+	@UsageTextField(level=OptionLevel.INTERMEDIATE)
 	@Parameter(names={"--test-instance-suffix","--test-instance-regex"}, description="A suffix that all instances must match when reading instances from a directory. You can optionally specify a (java) regular expression but be aware that it is suffix matched (internally we take this string and append a $ on it)")
 	public String testInstanceSuffix = null;
 	

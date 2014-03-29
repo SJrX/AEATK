@@ -15,6 +15,8 @@ import com.beust.jcommander.DynamicParameter;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 
+import ec.util.MersenneTwister;
+
 @UsageTextField(hiddenSection=true)
 public class SeedOptions extends AbstractOptions{
 
@@ -22,11 +24,12 @@ public class SeedOptions extends AbstractOptions{
 	@Parameter(names={"--seed-offset","--seedOffset"}, description="offset of numRun to use from seed (this plus --numRun should be less than INTEGER_MAX)")
 	public int seedOffset = 0 ;
 	
+	@UsageTextField(level=OptionLevel.INTERMEDIATE, defaultValues="Randomly generated")
 	@Semantics(name="SEED", domain="SCENARIO")
-	@Parameter(names={"--num-run","--numrun","--numRun","--seed"}, required=true, description="number of this run (also used as part of seed)", validateWith=NonNegativeInteger.class)
-	public int numRun = 0;
+	@Parameter(names={"--num-run","--numrun","--numRun","--seed"}, required=false, description="number of this run (used for file generation, etc). This also controls the seed.", validateWith=NonNegativeInteger.class)
+	public int numRun = (new MersenneTwister()).nextInt( 1000000000) + 1000;
 	
-	@UsageTextField(level=OptionLevel.ADVANCED)
+	@UsageTextField(level=OptionLevel.DEVELOPER)
 	@DynamicParameter(names="-S", description="Sets specific seeds (by name) in the random pool (e.g. -SCONFIG=2 -SINSTANCE=4). To determine the actual names that will be used you should run the program with debug logging enabled, it should be output at the end.")
 	public Map<String, String> initialSeedMap = new TreeMap<String, String>();
 	

@@ -23,7 +23,7 @@ public class RunGroupOptions extends AbstractOptions {
 
 	
 	@CommandLineOnly
-	@UsageTextField(level=OptionLevel.BASIC)
+	@UsageTextField(level=OptionLevel.INTERMEDIATE)
 	@Parameter(names={"--rungroup","--rungroup-name","--runGroupName"}, description="name of subfolder of outputdir to save all the output files of this run to")
 	public String runGroupName; 
 	

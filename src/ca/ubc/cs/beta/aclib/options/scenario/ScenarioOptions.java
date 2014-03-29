@@ -41,6 +41,7 @@ public class ScenarioOptions extends AbstractOptions{
 	public RunObjective runObj = RunObjective.RUNTIME;
 	
 	@CommandLineOnly
+	@UsageTextField(level=OptionLevel.INTERMEDIATE, defaultValues="MEAN if --run-obj is QUALITY and MEAN10 if it is runtime")
 	@Parameter(names={"--intra-obj","--intra-instance-obj","--overall-obj","--intraInstanceObj","--overallObj", "--overall_obj","--intra_instance_obj"}, description="objective function used to aggregate multiple runs for a single instance", converter=OverallObjectiveConverter.class)
 	/**
 	 * This deprecated warning is only to flag a compile error, this field is not really deprecated per say.
@@ -91,7 +92,7 @@ public class ScenarioOptions extends AbstractOptions{
 	@ParameterFile
 	public File scenarioFile = null;
 	
-	@UsageTextField(defaultValues="<current working directory>/smac-output")
+	@UsageTextField(defaultValues="<current working directory>/smac-output", level=OptionLevel.INTERMEDIATE)
 	@Parameter(names={"--output-dir","--outputDirectory","--outdir"}, required=false, description="Output Directory")
 	public String outputDirectory = System.getProperty("user.dir") + File.separator + "smac-output";
 

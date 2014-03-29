@@ -35,8 +35,8 @@ public class TerminationCriteriaOptions extends AbstractOptions {
 	@Parameter(names={"--wallclock-limit","--wallclock_limit","--runtime-limit","--runtimeLimit", "--wallClockLimit"}, description = "limits the total wall-clock time allowed during the automatic configuration phase", validateWith=FixedPositiveInteger.class)
 	public int runtimeLimit = Integer.MAX_VALUE;
 	
-	@UsageTextField(level=OptionLevel.INTERMEDIATE)
-	@Parameter(names={"--runcount-limit","runcount_limit","--totalNumRunsLimit","--numRunsLimit","--numberOfRunsLimit"} , description = "limits the total number of target algorithm runs allowed during the automatic configuration phase ", validateWith=FixedPositiveLong.class)
+	@UsageTextField(level=OptionLevel.BASIC)
+	@Parameter(names={"--runcount-limit","--runcount_limit","--totalNumRunsLimit","--numRunsLimit","--numberOfRunsLimit"} , description = "limits the total number of target algorithm runs allowed during the automatic configuration phase ", validateWith=FixedPositiveLong.class)
 	public long totalNumRunsLimit = Long.MAX_VALUE;
 
 	@UsageTextField(level=OptionLevel.ADVANCED)
