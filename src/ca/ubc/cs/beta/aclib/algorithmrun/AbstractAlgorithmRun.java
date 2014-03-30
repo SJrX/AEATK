@@ -34,7 +34,7 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun
 	private double runtime;
 	private double runLength;
 	private double quality;
-	private long resultSeed; 
+	 
 	
 	/**
 	 * Raw result line reported by the target algorithm (potentially useful if the result line is corrupt)
@@ -155,7 +155,6 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun
 		this.runtime = Math.min(runtime, Double.MAX_VALUE);
 		this.runLength = Math.min(runLength, Double.MAX_VALUE);
 		this.quality = quality;
-		this.resultSeed = resultSeed;
 		
 		if(this.saveRawResultLine())
 		{
@@ -262,7 +261,7 @@ public abstract class AbstractAlgorithmRun implements Runnable, AlgorithmRun
 	@Override
 	public final long getResultSeed() {
 		if(!isRunResultWellFormed()) throw new IllegalStateException("Execution Result was not well formed");
-		return resultSeed;
+		return this.getRunConfig().getProblemInstanceSeedPair().getSeed();
 	}
 	
 	private final String _getResultLine()
