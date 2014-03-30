@@ -81,6 +81,13 @@ public class ProblemInstanceOptions extends AbstractOptions{
 		String instancesString = this.instanceFile;
 
 		String instanceFeatureFile = this.instanceFeatureFile;
+		
+		if(this.noInstances)
+		{
+			instancesString = getNoInstanceFile();
+			instanceFeatureFile = null;
+		} 
+		
 		if(instancesString == null)
 		{
 			if(required)
@@ -92,12 +99,6 @@ public class ProblemInstanceOptions extends AbstractOptions{
 			}
 		}
 	
-		if(this.noInstances)
-		{
-			instancesString = getNoInstanceFile();
-			instanceFeatureFile = null;
-		} 
-		
 		if(new File(instancesString).isDirectory())
 		{
 			instancesString = this.getInstanceDirectory(instancesString, this.instanceSuffix);
@@ -165,6 +166,12 @@ public class ProblemInstanceOptions extends AbstractOptions{
 		
 		String instanceFeatureFile = this.instanceFeatureFile;
 		
+		if(this.noInstances)
+		{
+			testInstancesString = getNoInstanceFile();
+			instanceFeatureFile = null;
+		} 
+		
 		if(testInstancesString == null)
 		{
 			if(required)
@@ -176,11 +183,7 @@ public class ProblemInstanceOptions extends AbstractOptions{
 			}
 		}
 		
-		if(this.noInstances)
-		{
-			testInstancesString = getNoInstanceFile();
-			instanceFeatureFile = null;
-		} 
+		
 		
 		if(new File(testInstancesString).isDirectory())
 		{
