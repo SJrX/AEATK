@@ -144,15 +144,15 @@ public class SMACOptions extends AbstractOptions {
 	@Parameter(names={"--model-hashcode-file","--modelHashCodeFile"}, description="file containing a list of model hashes one per line with the following text per line: \"Preprocessed Forest Built With Hash Code: (n)\" or \"Random Forest Built with Hash Code: (n)\" where (n) is the hashcode", converter=ReadableFileConverter.class, hidden = true)
 	public File modelHashCodeFile;
 	
-	@UsageTextField(level=OptionLevel.INTERMEDIATE)
+	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names={"--num-challengers","--numChallengers","--numberOfChallengers"}, description="number of challengers needed for local search", validateWith=FixedPositiveInteger.class)
 	public int numberOfChallengers = 10;
 	
-	@UsageTextField(level=OptionLevel.INTERMEDIATE)
+	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names={"--num-ei-random","--numEIRandomConfigs","--numberOfRandomConfigsInEI","--numRandomConfigsInEI","--numberOfEIRandomConfigs"} , description="number of random configurations to evaluate during EI search", validateWith=NonNegativeInteger.class)
 	public int numberOfRandomConfigsInEI = 10000;
 	
-	@UsageTextField(level=OptionLevel.INTERMEDIATE)
+	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names={"--num-pca","--numPCA"}, description="number of principal components features to use when building the model", validateWith=FixedPositiveInteger.class)
 	public int numPCA = 7;
 

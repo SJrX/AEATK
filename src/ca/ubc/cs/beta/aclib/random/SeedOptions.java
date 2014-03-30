@@ -20,7 +20,7 @@ import ec.util.MersenneTwister;
 @UsageTextField(hiddenSection=true)
 public class SeedOptions extends AbstractOptions{
 
-	@UsageTextField(level=OptionLevel.INTERMEDIATE)
+	@UsageTextField(level=OptionLevel.DEVELOPER)
 	@Parameter(names={"--seed-offset","--seedOffset"}, description="offset of numRun to use from seed (this plus --numRun should be less than INTEGER_MAX)")
 	public int seedOffset = 0 ;
 	

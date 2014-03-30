@@ -36,7 +36,7 @@ public class RandomForestOptions extends AbstractOptions{
 	public boolean imputeMean;
 	
 	
-	@UsageTextField(defaultValues="true if optimizing runtime, false if optimizing quality", level=OptionLevel.INTERMEDIATE)
+	@UsageTextField(defaultValues="true if optimizing runtime, false if optimizing quality", level=OptionLevel.ADVANCED)
 	@Parameter(names = {"--rf-log-model","--log-model","--logModel"}, description = "store response values in log-normal form")
 	public Boolean logModel = null;
 
@@ -44,7 +44,7 @@ public class RandomForestOptions extends AbstractOptions{
 	@Parameter(names={"--rf-min-variance","--minVariance"}, description="minimum allowed variance", validateWith=ZeroInfinityOpenInterval.class)
 	public double minVariance = Math.pow(10,-14);
 
-	@UsageTextField(level=OptionLevel.INTERMEDIATE)
+	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names = {"--rf-num-trees","--num-trees","--numTrees","--nTrees", "--numberOfTrees"}, description = "number of trees to create in random forest", validateWith=FixedPositiveInteger.class)
 	public int numTrees = 10;
 	
@@ -56,7 +56,7 @@ public class RandomForestOptions extends AbstractOptions{
 	@Parameter(names={"--rf-preprocess-marginal", "preprocessMarginal"}, description="build random forest with preprocessed marginal")
 	public boolean preprocessMarginal = true;
 
-	@UsageTextField(level=OptionLevel.INTERMEDIATE)
+	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names={"--rf-ratio-features","--ratioFeatures"}, description="ratio of the number of features to consider when splitting a node", validateWith=ZeroOneHalfOpenLeftDouble.class)
 	public double ratioFeatures = 5.0/6.0;
 	

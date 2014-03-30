@@ -28,7 +28,7 @@ public class TerminationCriteriaOptions extends AbstractOptions {
 	@Parameter(names={"--cputime-limit","--cputime_limit","--tunertime-limit","--tuner-timeout","--tunerTimeout"}, description="limits the total cpu time allowed between SMAC and the target algorithm runs during the automatic configuration phase", validateWith=NonNegativeInteger.class)
 	public int tunerTimeout = Integer.MAX_VALUE;
 	
-	@UsageTextField(level=OptionLevel.INTERMEDIATE)
+	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names={"--iteration-limit","--numIterations","--numberOfIterations"}, description = "limits the number of iterations allowed during automatic configuration phase", validateWith=FixedPositiveInteger.class)
 	public int numIterations = Integer.MAX_VALUE;
 	
