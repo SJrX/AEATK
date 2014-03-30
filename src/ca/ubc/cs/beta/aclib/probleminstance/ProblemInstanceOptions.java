@@ -275,6 +275,14 @@ public class ProblemInstanceOptions extends AbstractOptions{
 		
 		Set<File> checkedDirectories = new HashSet<File>();
 		
+		
+		Set<File> canonicalDirectories = new HashSet<File>();
+		
+		for(String dir : directories)
+		{
+			canonicalDirectories.add(new File(dir).getCanonicalFile());
+		}
+		
 		for(String dir : directories)
 		{
 			try {
@@ -293,8 +301,15 @@ public class ProblemInstanceOptions extends AbstractOptions{
 			return new TrainTestInstances(training, testing);
 			} catch(ParameterException e)
 			{
+				
+				
 				log.trace("Ignore this exception for now: ", e);
 				exceptionMessages.put(dir,  e.getMessage());
+				
+				if(canonicalDirectories.size() == 1)
+				{
+					throw e;
+				}
 			}
 		}
 		
@@ -304,7 +319,9 @@ public class ProblemInstanceOptions extends AbstractOptions{
 			sb.append(ent.getKey() + "==>" + ent.getValue()).append("\n");
 		}
 		
+		
 		throw new ParameterException("Couldn't retrieve instances after searching several locations, errors for each location as follows: \n" + sb.toString());
+		
 		
 	}
 	
