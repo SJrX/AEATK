@@ -38,7 +38,7 @@ public class ScenarioOptions extends AbstractOptions{
 	
 	@CommandLineOnly
 	@Parameter(names={"--run-obj","--runObj","--run_obj"}, description="per target algorithm run objective type that we are minimizing", converter=RunObjectiveConverter.class)
-	public RunObjective runObj = RunObjective.RUNTIME;
+	public RunObjective runObj = RunObjective.QUALITY;
 	
 	@CommandLineOnly
 	@UsageTextField(level=OptionLevel.INTERMEDIATE, defaultValues="MEAN if --run-obj is QUALITY and MEAN10 if it is runtime")
