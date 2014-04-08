@@ -25,7 +25,7 @@ public enum RunResult {
 	/**
 	 * Signifies that the algorithm completed successfully (and optionally found the result was SATISFIABLE) 
 	 */
-	SAT(true,1, true, false, "SAT","SATISFIABLE"),
+	SAT(true,1, true, false, "SAT","SATISFIABLE","SUCCESS"),
 	
 	/**
 	 * Signifies that the algorithm completed successfully, and that the target algorithm result was UNSATISFIABLE.

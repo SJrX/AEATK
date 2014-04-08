@@ -106,8 +106,18 @@ public final class JCommanderHelper
 			String[] helpNames =  {"--help","-?","/?","-h","--help-level"};
 			for(String helpName : helpNames)
 			{
+				
+				
 				if(possibleValues.contains(helpName))
 				{
+					List<UsageSection> secs = UsageSectionGenerator.getUsageSections(options, taeOpts);
+					boolean quit= false;
+					for(UsageSection sec  : secs)
+					{
+						quit |= sec.getHandler().handleNoArguments();
+						
+					}
+					
 					OptionsToUsage.usage(UsageSectionGenerator.getUsageSections(options, taeOpts), false, levelToDisplay);
 					System.exit(ACLibReturnValues.SUCCESS);
 				}

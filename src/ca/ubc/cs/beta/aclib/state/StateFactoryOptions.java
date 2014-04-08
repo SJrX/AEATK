@@ -50,6 +50,7 @@ public class StateFactoryOptions extends AbstractOptions{
 	 */
 	
 	@CommandLineOnly
+	@UsageTextField(level=OptionLevel.INTERMEDIATE)
 	@Parameter(names={"--restore-scenario","--restoreScenario"}, description="Restore the scenario & state in the state folder")
 	public File restoreScenario=null; 
 	

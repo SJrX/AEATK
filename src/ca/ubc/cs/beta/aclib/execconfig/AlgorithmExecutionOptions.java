@@ -55,16 +55,17 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 	@Parameter(names={"--algo-exec","--algoExec", "--algo"}, description="command string to execute algorithm with", required=true)
 	public String algoExec;
 	
-	@UsageTextField(defaultValues = "current working directory")
+	
+	@UsageTextField(defaultValues = "current working directory", level=OptionLevel.INTERMEDIATE)
 	@Parameter(names={"--algo-exec-dir","--exec-dir","--execDir","--execdir"}, description="working directory to execute algorithm in", required=false)
 	public String algoExecDir; 
 	
 	@Parameter(names={"--algo-deterministic","--deterministic"}, description="treat the target algorithm as deterministic", converter=BinaryDigitBooleanConverter.class)
-	public boolean deterministic;
+	public boolean deterministic = true;
 
 	@Semantics(name="MAX_SUBRUN_CPUTIME", domain="OPT")
-	@Parameter(names={"--algo-cutoff-time","--target-run-cputime-limit","--target_run_cputime_limit","--cutoff-time","--cutoffTime","--cutoff_time"}, description="CPU time limit for an individual target algorithm run", required=true, validateWith=ZeroInfinityOpenInterval.class)
-	public double cutoffTime;
+	@Parameter(names={"--algo-cutoff-time","--target-run-cputime-limit","--target_run_cputime_limit","--cutoff-time","--cutoffTime","--cutoff_time"}, description="CPU time limit for an individual target algorithm run", validateWith=ZeroInfinityOpenInterval.class)
+	public double cutoffTime = Double.MAX_VALUE;
 	
 	@Semantics(name="MAX_SUBRUN_RUNLENGTH", domain="OPT")
 	@UsageTextField(level=OptionLevel.ADVANCED)

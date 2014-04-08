@@ -24,7 +24,7 @@ public class AnalyticTargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	@Parameter(names="--analytic-observer-frequency", description="How often to notify observer of updates (in milli-seconds)", validateWith=FixedPositiveInteger.class)
 	public int observerFrequency = 100;
 	
-	@UsageTextField(level=OptionLevel.INTERMEDIATE)
+	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names="--analytic-function", description="Which analytic function to use")
 	public AnalyticFunctions func = AnalyticFunctions.CAMELBACK;
 

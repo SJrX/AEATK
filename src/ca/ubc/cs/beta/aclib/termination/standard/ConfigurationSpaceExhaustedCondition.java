@@ -66,7 +66,17 @@ public class ConfigurationSpaceExhaustedCondition extends AbstractTerminationCon
 	@Override
 	public Collection<ValueMaxStatus> currentStatus() {
 		long currentStatus = algorithmRuns.get();
-		return Collections.singleton(new ValueMaxStatus(ConditionType.NUMBER_OF_RUNS, currentStatus, runLimit, NAME, "Configuration Space Searched " + (  (currentStatus * 100 / (double) this.runLimit))+ " % \n" ));
+		
+		
+		double currentFraction = currentStatus * 100 / (double) this.runLimit;
+		
+		if(currentFraction >= 10)
+		{
+			return Collections.singleton(new ValueMaxStatus(ConditionType.NUMBER_OF_RUNS, currentStatus, runLimit, NAME, "Configuration Space Searched " + currentFraction+ " % \n" ));
+		} else
+		{
+			return Collections.emptySet();
+		}
 	}
 
 	

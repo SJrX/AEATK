@@ -51,7 +51,7 @@ import com.beust.jcommander.ParametersDelegate;
  *
  *
  */
-@UsageTextField(title="SMAC Options", description="General Options for Running SMAC", claimRequired={"--instanceFile"}, noarg=SMACNoArgHandler.class)
+@UsageTextField(title="SMAC Options", description="General Options for Running SMAC", claimRequired={"--pcs-file","--instanceFile"}, noarg=SMACNoArgHandler.class)
 public class SMACOptions extends AbstractOptions {
 	
 	@UsageTextField(defaultValues="Defaults to true when --runObj is RUNTIME, false otherwise", level=OptionLevel.INTERMEDIATE)
@@ -95,7 +95,7 @@ public class SMACOptions extends AbstractOptions {
 	public ExecutionMode execMode = ExecutionMode.SMAC;
 
 	@CommandLineOnly
-	@UsageTextField(defaultValues="<current working directory>", level=OptionLevel.BASIC)
+	@UsageTextField(defaultValues="<current working directory>", level=OptionLevel.INTERMEDIATE)
 	@Parameter(names={"--experiment-dir","--experimentDir","-e"}, description="root directory for experiments Folder")
 	public String experimentDir = System.getProperty("user.dir") + File.separator + "";
 	
@@ -144,15 +144,15 @@ public class SMACOptions extends AbstractOptions {
 	@Parameter(names={"--model-hashcode-file","--modelHashCodeFile"}, description="file containing a list of model hashes one per line with the following text per line: \"Preprocessed Forest Built With Hash Code: (n)\" or \"Random Forest Built with Hash Code: (n)\" where (n) is the hashcode", converter=ReadableFileConverter.class, hidden = true)
 	public File modelHashCodeFile;
 	
-	@UsageTextField(level=OptionLevel.INTERMEDIATE)
+	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names={"--num-challengers","--numChallengers","--numberOfChallengers"}, description="number of challengers needed for local search", validateWith=FixedPositiveInteger.class)
 	public int numberOfChallengers = 10;
 	
-	@UsageTextField(level=OptionLevel.INTERMEDIATE)
+	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names={"--num-ei-random","--numEIRandomConfigs","--numberOfRandomConfigsInEI","--numRandomConfigsInEI","--numberOfEIRandomConfigs"} , description="number of random configurations to evaluate during EI search", validateWith=NonNegativeInteger.class)
 	public int numberOfRandomConfigsInEI = 10000;
 	
-	@UsageTextField(level=OptionLevel.INTERMEDIATE)
+	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names={"--num-pca","--numPCA"}, description="number of principal components features to use when building the model", validateWith=FixedPositiveInteger.class)
 	public int numPCA = 7;
 
@@ -198,7 +198,7 @@ public class SMACOptions extends AbstractOptions {
 	public WarmStartOptions warmStartOptions = new WarmStartOptions();
 	
 	
-	@UsageTextField(defaultValues="0 which should cause it to run exactly the same as the stand-alone utility.")
+	@UsageTextField(defaultValues="0 which should cause it to run exactly the same as the stand-alone utility.", level=OptionLevel.ADVANCED)
 	@Parameter(names="--validation-seed", description="Seed to use for validating SMAC")
 	public int validationSeed = 0;
 	
@@ -216,7 +216,7 @@ public class SMACOptions extends AbstractOptions {
 	public boolean shutdownTAEWhenDone = true;
 	public boolean intermediarySaves = true; 
 
-	@UsageTextField(defaultValues="Number of cores normally used")
+	@UsageTextField(defaultValues="Number of cores normally used", level=OptionLevel.INTERMEDIATE)
 	@Parameter(names="--validation-cores", description="Number of cores to use when validating (only applicable when using local command line cores). Essentially this changes the value of --cli-cores and --cores after SMAC has run.", validateWith=FixedPositiveInteger.class)
 	public Integer validationCores = null;
 	

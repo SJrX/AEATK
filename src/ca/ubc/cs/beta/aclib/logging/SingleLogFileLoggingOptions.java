@@ -39,7 +39,7 @@ public class SingleLogFileLoggingOptions  extends AbstractOptions implements Log
 	@CommandLineOnly
 	@UsageTextField(level=OptionLevel.INTERMEDIATE)
 	@Parameter(names={"--log-level","--logLevel"},description="messages will only be logged if they are of this severity or higher.")
-	public LogLevel logLevel = LogLevel.DEBUG;	
+	public LogLevel logLevel = LogLevel.INFO;	
 	
 	//This isn't meant to be an option, you can simply change this value before calling initializeLogging
 	public boolean suppressLogLevelConsistencyWarning = false;

@@ -52,17 +52,18 @@ public class ProblemInstanceOptions extends AbstractOptions{
 	public boolean checkInstanceFilesExist = false;
 	
 	@CommandLineOnly
+	@UsageTextField(level=OptionLevel.INTERMEDIATE)
 	@Parameter(names="--no-instances", description="If true skips reading the instances and just uses a dummy instance")
 	public boolean noInstances = false;
 	
 	
 	@CommandLineOnly
-	@UsageTextField(level=OptionLevel.BASIC)
+	@UsageTextField(level=OptionLevel.INTERMEDIATE)
 	@Parameter(names={"--instance-suffix","--instance-regex"}, description="A suffix that all instances must match when reading instances from a directory. You can optionally specify a (java) regular expression but be aware that it is suffix matched (internally we take this string and append a $ on it)")
 	public String instanceSuffix = null;
 	
 	@CommandLineOnly
-	@UsageTextField(level=OptionLevel.BASIC)
+	@UsageTextField(level=OptionLevel.INTERMEDIATE)
 	@Parameter(names={"--test-instance-suffix","--test-instance-regex"}, description="A suffix that all instances must match when reading instances from a directory. You can optionally specify a (java) regular expression but be aware that it is suffix matched (internally we take this string and append a $ on it)")
 	public String testInstanceSuffix = null;
 	
@@ -80,6 +81,13 @@ public class ProblemInstanceOptions extends AbstractOptions{
 		String instancesString = this.instanceFile;
 
 		String instanceFeatureFile = this.instanceFeatureFile;
+		
+		if(this.noInstances)
+		{
+			instancesString = getNoInstanceFile();
+			instanceFeatureFile = null;
+		} 
+		
 		if(instancesString == null)
 		{
 			if(required)
@@ -91,12 +99,6 @@ public class ProblemInstanceOptions extends AbstractOptions{
 			}
 		}
 	
-		if(this.noInstances)
-		{
-			instancesString = getNoInstanceFile();
-			instanceFeatureFile = null;
-		} 
-		
 		if(new File(instancesString).isDirectory())
 		{
 			instancesString = this.getInstanceDirectory(instancesString, this.instanceSuffix);
@@ -164,6 +166,12 @@ public class ProblemInstanceOptions extends AbstractOptions{
 		
 		String instanceFeatureFile = this.instanceFeatureFile;
 		
+		if(this.noInstances)
+		{
+			testInstancesString = getNoInstanceFile();
+			instanceFeatureFile = null;
+		} 
+		
 		if(testInstancesString == null)
 		{
 			if(required)
@@ -175,11 +183,7 @@ public class ProblemInstanceOptions extends AbstractOptions{
 			}
 		}
 		
-		if(this.noInstances)
-		{
-			testInstancesString = getNoInstanceFile();
-			instanceFeatureFile = null;
-		} 
+		
 		
 		if(new File(testInstancesString).isDirectory())
 		{
@@ -274,6 +278,14 @@ public class ProblemInstanceOptions extends AbstractOptions{
 		
 		Set<File> checkedDirectories = new HashSet<File>();
 		
+		
+		Set<File> canonicalDirectories = new HashSet<File>();
+		
+		for(String dir : directories)
+		{
+			canonicalDirectories.add(new File(dir).getCanonicalFile());
+		}
+		
 		for(String dir : directories)
 		{
 			try {
@@ -292,8 +304,15 @@ public class ProblemInstanceOptions extends AbstractOptions{
 			return new TrainTestInstances(training, testing);
 			} catch(ParameterException e)
 			{
+				
+				
 				log.trace("Ignore this exception for now: ", e);
 				exceptionMessages.put(dir,  e.getMessage());
+				
+				if(canonicalDirectories.size() == 1)
+				{
+					throw e;
+				}
 			}
 		}
 		
@@ -303,7 +322,9 @@ public class ProblemInstanceOptions extends AbstractOptions{
 			sb.append(ent.getKey() + "==>" + ent.getValue()).append("\n");
 		}
 		
+		
 		throw new ParameterException("Couldn't retrieve instances after searching several locations, errors for each location as follows: \n" + sb.toString());
+		
 		
 	}
 	
