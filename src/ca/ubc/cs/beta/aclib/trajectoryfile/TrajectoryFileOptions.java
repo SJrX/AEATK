@@ -9,6 +9,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -21,7 +22,7 @@ import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 @UsageTextField(hiddenSection = true)
 public class TrajectoryFileOptions extends AbstractOptions{
 
-	@Parameter(names={"--trajectory-file","--trajectoryFile"}, description="Trajectory File to read configurations from", variableArity = true)
+	@Parameter(names={"--trajectory-files","--trajectory-file","--trajectoryFile"}, description="Trajectory file(s) to read configurations from", variableArity = true)
 	public List<String> trajectoryFiles = new ArrayList<String>();
 	
 	
@@ -44,43 +45,19 @@ public class TrajectoryFileOptions extends AbstractOptions{
 	}
 	
 	
-	private static final String TRAJ_RUN_REGEX = "traj-run-([0-9]+)\\.[ct][sx][vt]";
-	public Map<Integer, List<TrajectoryFileEntry>> parseTrajectoryFiles(ParamConfigurationSpace configSpace) throws FileNotFoundException, IOException {
-		
-		int newID=1000000;
-		
-		
-		Pattern p = Pattern.compile(TRAJ_RUN_REGEX);
-		
-		
-		Set<Integer> usedIntegers = new HashSet<Integer>();
-		Map<Integer, List<TrajectoryFileEntry>> tfes = new TreeMap<Integer,List<TrajectoryFileEntry>>();
+	public Set<TrajectoryFile> parseTrajectoryFiles(ParamConfigurationSpace configSpace) throws FileNotFoundException, IOException 
+	{
+		Set<TrajectoryFile> tfes = new TreeSet<TrajectoryFile>();
 		//Tries to auto detect the number of the run from the file name, otherwise it starts at 1000000 and finds new runs
 		for(String trajFile : trajectoryFiles)
 		{
-			Matcher m = p.matcher((new File(trajFile)).getName());
-		
-			int id = 0;
-			if(m.find())
-			{
-				m.group(1);
-				
-				id = Integer.valueOf(m.group(1));
-			}
-			
-			
-			while(usedIntegers.contains(id))
-			{
-				id = newID++;
-			}
-			
-			usedIntegers.add(id);
-			
-			tfes.put(id,TrajectoryFileParser.parseTrajectoryFileAsList(new File(trajFile), configSpace, useTunerTimeIfNoWallTime));
+			tfes.add(new TrajectoryFile(new File(trajFile),TrajectoryFileParser.parseTrajectoryFileAsList(new File(trajFile), configSpace, useTunerTimeIfNoWallTime)));
 		}
 		
 		return tfes;
 	}
+	
+	
 	
 	
 }
