@@ -34,7 +34,7 @@ import com.beust.jcommander.ParametersDelegate;
  * 
  * @see ValidationOptions 
  */
-@UsageTextField(title="Validation Executor Options", description="Options that control the stand-alone validator")
+@UsageTextField(title="Validation Executor Options", description="Options that control the stand-alone validator",claimRequired={"--pcs-file","--run-obj"})
 public class ValidationExecutorOptions extends AbstractOptions {
 	
 	@ParametersDelegate

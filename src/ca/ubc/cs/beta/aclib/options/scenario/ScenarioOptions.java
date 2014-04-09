@@ -37,8 +37,22 @@ public class ScenarioOptions extends AbstractOptions{
 	
 	
 	@CommandLineOnly
-	@Parameter(names={"--run-obj","--runObj","--run_obj"}, description="per target algorithm run objective type that we are minimizing", converter=RunObjectiveConverter.class)
-	public RunObjective runObj = RunObjective.QUALITY;
+	
+	@Parameter(names={"--run-obj","--run-objective","--runObj","--run_obj"}, description="per target algorithm run objective type that we are minimizing", converter=RunObjectiveConverter.class)
+	public RunObjective _runObj = null;
+	
+	
+	
+	public RunObjective getRunObjective()
+	{
+		if(_runObj == null)
+		{
+			throw new ParameterException("--run-obj must be set");
+		} else
+		{
+			return _runObj;
+		}
+	}
 	
 	@CommandLineOnly
 	@UsageTextField(level=OptionLevel.INTERMEDIATE, defaultValues="MEAN if --run-obj is QUALITY and MEAN10 if it is runtime")
@@ -56,21 +70,21 @@ public class ScenarioOptions extends AbstractOptions{
 		if(intraInstanceObj != null)
 		{
 			
-			if(runObj.equals(RunObjective.QUALITY) && !intraInstanceObj.equals(OverallObjective.MEAN))
+			if(getRunObjective().equals(RunObjective.QUALITY) && !intraInstanceObj.equals(OverallObjective.MEAN))
 			{
-				LoggerFactory.getLogger(getClass()).warn("Using a run objective of {} and an overall of objective of {} may not work correctly. You should probably only use {}", runObj, intraInstanceObj, OverallObjective.MEAN);
+				LoggerFactory.getLogger(getClass()).warn("Using a run objective of {} and an overall of objective of {} may not work correctly. You should probably only use {}", getRunObjective(), intraInstanceObj, OverallObjective.MEAN);
 			}
 			return intraInstanceObj;
 		} else
 		{
-			switch(runObj)
+			switch(getRunObjective())
 			{
 			case RUNTIME:
 				return OverallObjective.MEAN10;
 			case QUALITY:
 				return OverallObjective.MEAN;
 			default:
-				throw new IllegalStateException("Unknown run objective: " + runObj);
+				throw new IllegalStateException("Unknown run objective: " + getRunObjective());
 			}
 		}
 		

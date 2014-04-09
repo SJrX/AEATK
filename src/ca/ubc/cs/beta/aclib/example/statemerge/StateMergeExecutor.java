@@ -119,7 +119,7 @@ public class StateMergeExecutor {
 			Random r = new MersenneTwister(smo.seed);
 			
 			log.debug("Processing Runs");
-			RunHistory rh = new NewRunHistory(smo.scenOpts.getIntraInstanceObjective(), smo.scenOpts.interInstanceObj, smo.scenOpts.runObj);
+			RunHistory rh = new NewRunHistory(smo.scenOpts.getIntraInstanceObjective(), smo.scenOpts.interInstanceObj, smo.scenOpts.getRunObjective());
 			if(smo.replaceSeeds)
 			{
 				rh = new ReindexSeedRunHistoryDecorator(rh,r );
@@ -200,7 +200,7 @@ public class StateMergeExecutor {
 				boolean adaptiveCapping = true;
 				if(smo.rfo.logModel == null)
 				{
-					if(smo.scenOpts.runObj.equals(RunObjective.RUNTIME))
+					if(smo.scenOpts.getRunObjective().equals(RunObjective.RUNTIME))
 					{
 						smo.rfo.logModel = true;
 					}  else
@@ -246,7 +246,7 @@ public class StateMergeExecutor {
 				
 				maxSet.addAll(rhToFilter.getProblemInstanceSeedPairsRan(newIncumbent));
 				
-				rhToSaveToDisk = new ThreadSafeRunHistoryWrapper(new NewRunHistory(smo.scenOpts.getIntraInstanceObjective(), smo.scenOpts.interInstanceObj, smo.scenOpts.runObj));
+				rhToSaveToDisk = new ThreadSafeRunHistoryWrapper(new NewRunHistory(smo.scenOpts.getIntraInstanceObjective(), smo.scenOpts.interInstanceObj, smo.scenOpts.getRunObjective()));
 				
 				
 				for(RunData rd : rhToFilter.getAlgorithmRunData())
@@ -468,7 +468,7 @@ outerLoop:
 			List<ProblemInstance> pis, AlgorithmExecutionConfig execConfig,
 			MapList<Integer, AlgorithmRun> runsPerIteration, String dir)
 			throws IOException {
-		ThreadSafeRunHistory rh = new ThreadSafeRunHistoryWrapper(new NewRunHistory(smo.scenOpts.getIntraInstanceObjective(), smo.scenOpts.interInstanceObj, smo.scenOpts.runObj));
+		ThreadSafeRunHistory rh = new ThreadSafeRunHistoryWrapper(new NewRunHistory(smo.scenOpts.getIntraInstanceObjective(), smo.scenOpts.interInstanceObj, smo.scenOpts.getRunObjective()));
 		restoreState(dir, smo.scenOpts, pis, execConfig, rh, smo.restoreScenarioArguments);
 		
 		log.trace("Restored state of {} has {} runs for default configuration ", dir, rh.getTotalNumRunsOfConfigExcludingRedundant(execConfig.getParamFile().getDefaultConfiguration()));
@@ -531,7 +531,7 @@ outerLoop:
 		scen.append("algo="+scenOpts.algoExecOptions.algoExec).append("\n");
 		scen.append("execdir="+scenOpts.algoExecOptions.algoExecDir).append("\n");
 		scen.append("deterministic=" + scenOpts.algoExecOptions.deterministic).append("\n");
-		scen.append("run_obj=" + scenOpts.runObj.toString().toLowerCase()).append("\n");
+		scen.append("run_obj=" + scenOpts.getRunObjective().toString().toLowerCase()).append("\n");
 		scen.append("#outdir = (Outdir is not recommended in a scenario file anymore)").append("\n");
 		scen.append("overall_obj=" + scenOpts.getIntraInstanceObjective().toString().toLowerCase()).append("\n");
 		scen.append("cutoff_time=" + execConfig.getAlgorithmCutoffTime()).append("\n");
