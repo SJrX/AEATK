@@ -6,12 +6,14 @@ import java.io.StringWriter;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
+import java.util.Collections;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import net.jcip.annotations.NotThreadSafe;
@@ -145,7 +147,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 		this.paramKeyToValueArrayIndexMap = oConfig.paramKeyToValueArrayIndexMap;
 		
 		this.activeParams = oConfig.activeParams.clone();
-		
+		this.activeParameters = oConfig.activeParameters;
 		this.valueArrayForComparsion = oConfig.valueArrayForComparsion.clone();
 		this.lastHash = oConfig.lastHash;
 		
@@ -865,6 +867,8 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 		}
 	}
 	
+	private volatile Set<String> activeParameters;
+	
 	/**
 	 * Recomputes the active parameters and valueArrayForComparision and marks configuration clean again
 	 * We also change our friendly ID
@@ -872,7 +876,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	private void cleanUp()
 	{	
 		
-		Set<String> activeParams = getActiveParameters();
+		Set<String> activeParams = _getActiveParameters();
 		
 		for(Entry<String, Integer> keyVal : this.paramKeyToValueArrayIndexMap.entrySet())
 		{
@@ -898,8 +902,11 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 			}
 		}
 		myID = idPool.incrementAndGet();
+		activeParameters = Collections.unmodifiableSet(activeParams);
 		isDirty = false;
+		
 	}
+	
 	
 	/**
 	 * Returns the keys that are currently active
@@ -907,8 +914,22 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	 */
 	public Set<String> getActiveParameters()
 	{
+		if(isDirty)
+		{
+			cleanUp();
+		}
+		
+		return activeParameters;
+		
+		
+	}
+	
+	private Set<String> _getActiveParameters()
+	{
+		
+		
 		boolean activeSetChanged = false;
-		Set<String> activeParams= new HashSet<String>();
+		Set<String> activeParams= new TreeSet<String>();
 		
 		/*
 		 * This code is will loop in worse case ~(n^2) times, the data structures may not be very 
