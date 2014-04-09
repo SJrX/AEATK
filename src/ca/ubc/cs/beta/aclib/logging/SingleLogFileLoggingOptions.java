@@ -85,7 +85,7 @@ public class SingleLogFileLoggingOptions  extends AbstractOptions implements Log
 		System.setProperty("RUNLOG", logLocation);
 	
 		
-		System.out.println("*****************************\nLogging to: " + logLocation +  "\n*****************************");
+		//System.out.println("*****************************\nLogging to: " + logLocation +  "\n*****************************");
 	
 		
 		

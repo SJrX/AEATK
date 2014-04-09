@@ -101,7 +101,7 @@ public class ProblemInstanceOptions extends AbstractOptions{
 	
 		if(new File(instancesString).isDirectory())
 		{
-			instancesString = this.getInstanceDirectory(instancesString, this.instanceSuffix);
+			instancesString = this.getInstanceDirectory(instancesString, this.instanceSuffix, "for training");
 		}
 		
 		InstanceListWithSeeds ilws;
@@ -187,7 +187,7 @@ public class ProblemInstanceOptions extends AbstractOptions{
 		
 		if(new File(testInstancesString).isDirectory())
 		{
-			testInstancesString = this.getInstanceDirectory(testInstancesString, this.instanceSuffix);
+			testInstancesString = this.getInstanceDirectory(testInstancesString, this.instanceSuffix,"for testing");
 		}
 		
 	
@@ -376,7 +376,7 @@ public class ProblemInstanceOptions extends AbstractOptions{
 		
 	}
 	
-	private String getInstanceDirectory(String instanceDirName, String instanceSuffix)
+	private String getInstanceDirectory(String instanceDirName, String instanceSuffix, String motive)
 	{
 		
 		File f = new File(instanceDirName);
@@ -468,11 +468,11 @@ public class ProblemInstanceOptions extends AbstractOptions{
 			
 			if(log.isDebugEnabled())
 			{
-				log.debug("Detected {} instances with suffix {}, file created and written to {} ",foundInstances.size(),instanceSuffix,  instanceFile.getAbsolutePath()) ;
+				log.debug("Detected {} instances {} with suffix {}, file created and written to {} ",foundInstances.size(),motive,instanceSuffix,  instanceFile.getAbsolutePath()) ;
 				
 			} else
 			{
-				log.info("Detected {} instances with suffix {} ",foundInstances.size(),instanceSuffix) ;
+				log.info("Detected {} instances {} with suffix {} ",foundInstances.size(),motive,instanceSuffix) ;
 			}
 			
 			log.trace("Auto generated instance file {} has content:\n{}", instanceFile.getAbsolutePath(), sb.toString());
