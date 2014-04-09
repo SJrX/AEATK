@@ -16,6 +16,7 @@ import java.util.Collections;
 import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.ConcurrentHashMap;
@@ -789,7 +790,7 @@ outerloop:
 		
 		final String valueDelimiter = (options.paramArgumentsContainQuotes) ?  f.getValueDelimeter() : "";
 		
-		for(String key : runConfig.getParamConfiguration().getActiveParameters() )
+		for(String key : new TreeSet<String>(runConfig.getParamConfiguration().getActiveParameters()) )
 		{
 			if(!f.getKeyValueSeperator().equals(" ") || !f.getGlue().equals(" "))
 			{
@@ -830,7 +831,7 @@ outerloop:
 		list.add(String.valueOf(runConfig.getProblemInstanceSeedPair().getSeed()));
 		
 		StringFormat f = StringFormat.NODB_SYNTAX;
-		for(String key : runConfig.getParamConfiguration().getActiveParameters()  )
+		for(String key : new TreeSet<String>(runConfig.getParamConfiguration().getActiveParameters())  )
 		{
 			
 			
