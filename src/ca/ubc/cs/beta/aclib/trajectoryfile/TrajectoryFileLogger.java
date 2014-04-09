@@ -49,10 +49,13 @@ public class TrajectoryFileLogger implements EventHandler<AutomaticConfiguratorE
 		this.cpuTime = cpuTime;
 		try {
 			trajectoryFileWriter = new FileWriter(fileNamePrefix + ".txt");
-			trajectoryFileWriterCSV = new FileWriter(fileNamePrefix + ".csv");
+			
+			File f = new File(fileNamePrefix);
+			
+			trajectoryFileWriterCSV = new FileWriter(f.getParentFile().getAbsolutePath() + File.separator + "detailed-"+ f.getName() + ".csv");
 			
 			trajectoryFileWriter.append("\"Total Time\",\"Mean Performance\",\"Wallclock Time\",\"Incumbent ID\",\"Automatic Configurator Time\",\"Configuration...\"\n");
-			trajectoryFileWriterCSV.append("\"Total Time\",\"Mean Performance\",\"Wallclock Time\",\"Incumbent ID\",\"Automatic Configurator Time\",\"Configuration...\"\n");
+			trajectoryFileWriterCSV.append("\"Total Time\",\"Mean Performance\",\"Wallclock Time\",\"Incumbent ID\",\"Automatic Configurator Time\",\"Configuration\"\n");
 			writeIncumbent(0,Double.MAX_VALUE,0,initialIncumbent,0);
 		} catch (IOException e) {
 			throw new IllegalStateException("Error occured creating files",e);
@@ -142,14 +145,16 @@ public class TrajectoryFileLogger implements EventHandler<AutomaticConfiguratorE
 		
 		String paramString = incumbent.getFormattedParamString(StringFormat.STATEFILE_SYNTAX);
 		
+		String escapedParamString = paramString.replaceAll(",","\\,");
 		
 		String outLine = tunerTime + ", " + empiricalPerformance + ", " + wallClockTime + ", " + thetaIdxInc + ", " + acTime + ", " + paramString +"\n";
+		String escapedOutLine = "\""+tunerTime + "\",\" " + empiricalPerformance + "\",\"" + wallClockTime + "\",\"" + thetaIdxInc + "\",\"" + acTime + "\", \"" + escapedParamString +"\"\n";
 		log.trace("Logging incumbent: (Runs {}): {}", ((this.lastIevent != null) ? this.lastIevent.getIncumbentRunCount() : "?"), outLine.trim());
 		try 
 		{
 			trajectoryFileWriter.write(outLine);
 			trajectoryFileWriter.flush();
-			trajectoryFileWriterCSV.write(outLine);
+			trajectoryFileWriterCSV.write(escapedOutLine);
 			trajectoryFileWriterCSV.flush();
 		} catch(IOException e)
 		{
