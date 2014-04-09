@@ -20,6 +20,8 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli.CommandLineAlgorit
 public class ResponseParser {
 
 	private static final Pattern pattern = Pattern.compile(CommandLineAlgorithmRun.AUTOMATIC_CONFIGURATOR_RESULT_REGEX);
+	private static final Pattern oldPattern = Pattern.compile(CommandLineAlgorithmRun.OLD_AUTOMATIC_CONFIGURATOR_RESULT_REGEX);
+	
 	
 	private static final Logger log = LoggerFactory.getLogger(ResponseParser.class);
 	/**
@@ -29,10 +31,10 @@ public class ResponseParser {
 	public static AlgorithmRun processLine(String line, RunConfig rc, AlgorithmExecutionConfig execConfig, double walltime)
 	{
 		Matcher matcher = pattern.matcher(line);
-			
+		Matcher matcher2 = oldPattern.matcher(line);	
 
 		AlgorithmRun run;
-		if (matcher.find())
+		if (matcher.find() || matcher2.find())
 		{
 		
 			String fullLine = line.trim();
@@ -40,7 +42,7 @@ public class ResponseParser {
 			try
 			{
 			
-				String acExecResultString = line.substring(matcher.end()).trim();
+				String acExecResultString = line.substring(line.indexOf(":") + 1).trim();
 				
 				String[] results = acExecResultString.split(",");
 				for(int i=0; i < results.length; i++)

@@ -66,12 +66,18 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	/**
 	 * Regex that we hope to match
 	 */
-	public static final String AUTOMATIC_CONFIGURATOR_RESULT_REGEX = "^\\s*(Final)?\\s*[Rr]esult\\s+(?:([Ff]or)|([oO]f))\\s+(?:(HAL)|(ParamILS)|(SMAC)|([tT]his [wW]rapper)):";
 	
+	
+	
+	public static final String AUTOMATIC_CONFIGURATOR_RESULT_REGEX = "^\\s*Result\\s*of\\s*(this)?\\s*[Aa]lgorithm\\s*[rR]un\\s*:";
+	
+	public static final String OLD_AUTOMATIC_CONFIGURATOR_RESULT_REGEX = "^\\s*(Final)?\\s*[Rr]esult\\s+(?:([Ff]or)|([oO]f))\\s+(?:(HAL)|(ParamILS)|(SMAC)|([tT]his [wW]rapper)):";
 	/**
 	 * Compiled REGEX
 	 */
 	private static final Pattern pattern = Pattern.compile(AUTOMATIC_CONFIGURATOR_RESULT_REGEX);
+	
+	private static final Pattern oldPattern = Pattern.compile(OLD_AUTOMATIC_CONFIGURATOR_RESULT_REGEX);
 	
 	private static transient Logger log = LoggerFactory.getLogger(CommandLineAlgorithmRun.class);
 	
@@ -533,7 +539,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 							this.setResult(RunResult.KILLED, currentTime, 0,0, getRunConfig().getProblemInstanceSeedPair().getSeed(), "JVM Shutdown Detected", "" );							
 						} else
 						{
-							this.setCrashResult("ERROR: Wrapper did not output anything that matched the expected output (\"Result for ParamILS:...\"). Please try executing the wrapper directly" );
+							this.setCrashResult("ERROR: Wrapper did not output anything that matched the expected output (\"Result of algorithm run:...\"). Please try executing the wrapper directly" );
 						}
 				}
 					
@@ -790,7 +796,7 @@ outerloop:
 		
 		final String valueDelimiter = (options.paramArgumentsContainQuotes) ?  f.getValueDelimeter() : "";
 		
-		for(String key : new TreeSet<String>(runConfig.getParamConfiguration().getActiveParameters()) )
+		for(String key : runConfig.getParamConfiguration().getActiveParameters() )
 		{
 			if(!f.getKeyValueSeperator().equals(" ") || !f.getGlue().equals(" "))
 			{
@@ -831,7 +837,7 @@ outerloop:
 		list.add(String.valueOf(runConfig.getProblemInstanceSeedPair().getSeed()));
 		
 		StringFormat f = StringFormat.NODB_SYNTAX;
-		for(String key : new TreeSet<String>(runConfig.getParamConfiguration().getActiveParameters())  )
+		for(String key : runConfig.getParamConfiguration().getActiveParameters()  )
 		{
 			
 			
@@ -868,12 +874,14 @@ outerloop:
 	
 	
 	/**
-	 *	Process a single line of the output looking for a matching line (e.g. Result for ParamILS: ...)
+	 *	Process a single line of the output looking for a matching line (e.g. Result of algorithm run: ...)
 	 *	@param line of program output
 	 */
 	public boolean processLine(String line)
 	{
 		Matcher matcher = pattern.matcher(line);
+		
+		Matcher matcher2 = oldPattern.matcher(line);
 		String rawResultLine = "[No Matching Output Found]";
 		
 		if(options.logAllProcessOutput)
@@ -882,7 +890,7 @@ outerloop:
 		}
 		
 
-		if (matcher.find())
+		if (matcher.find() || matcher2.find())
 		{
 		
 			String fullLine = line.trim();
@@ -890,7 +898,7 @@ outerloop:
 			try
 			{
 			
-				String acExecResultString = line.substring(matcher.end()).trim();
+				String acExecResultString = line.substring(line.indexOf(":")+1).trim();
 				
 				String[] results = acExecResultString.split(",");
 				for(int i=0; i < results.length; i++)

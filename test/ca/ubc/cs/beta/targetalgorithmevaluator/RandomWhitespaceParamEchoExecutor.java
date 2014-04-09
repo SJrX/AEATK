@@ -77,7 +77,7 @@ public class RandomWhitespaceParamEchoExecutor {
 			
 			//"^\\s*(Final)?\\s*[Rr]esult\\s+(?:(for)|(of))\\s+(?:(HAL)|(ParamILS)|(SMAC)|(this wrapper))
 			
-			String[] resultStrings = { "Result for ParamILS", "Final result for ParamILS", "Final Result for SMAC", "Final Result for HAL", "result of this wrapper", "Final result of SMAC"};
+			String[] resultStrings = {"Result of Algorithm Run", "Result of algorithm run","Result of this algorithm run", "Result for ParamILS", "Final result for ParamILS", "Final Result for SMAC", "Final Result for HAL", "result of this wrapper", "Final result of SMAC"};
 			
 			
 			
