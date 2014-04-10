@@ -34,7 +34,7 @@ public class TrajectoryFileParser {
 		ConcurrentSkipListMap<Double,  TrajectoryFileEntry> skipList = new ConcurrentSkipListMap<Double, TrajectoryFileEntry>();
 		
 		boolean detailed = false;
-		if(configs.getDataKeyByIndex(5).trim().equals("Configuration"))
+		if(configs.getDataKeyByIndex(5).trim().equals("Full Configuration"))
 		{
 			detailed = true;
 		}

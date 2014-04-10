@@ -66,7 +66,7 @@ public class AlgorithmRunLimitCondition extends AbstractTerminationCondition imp
 	public String getTerminationReason() {
 		if(haveToStop())
 		{
-			return "Algorithm Run Limit (" +  algorithmRuns +  " runs) has been reached";
+			return "algorithm run limit (" +  algorithmRuns +  " runs) has been reached.";
 		} else
 		{
 			return "";

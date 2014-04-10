@@ -54,8 +54,8 @@ public class TrajectoryFileLogger implements EventHandler<AutomaticConfiguratorE
 			
 			trajectoryFileWriterCSV = new FileWriter(f.getParentFile().getAbsolutePath() + File.separator + "detailed-"+ f.getName() + ".csv");
 			
-			trajectoryFileWriter.append("\"Total Time\",\"Mean Performance\",\"Wallclock Time\",\"Incumbent ID\",\"Automatic Configurator Time\",\"Configuration...\"\n");
-			trajectoryFileWriterCSV.append("\"Total Time\",\"Mean Performance\",\"Wallclock Time\",\"Incumbent ID\",\"Automatic Configurator Time\",\"Configuration\"\n");
+			trajectoryFileWriter.append("\"CPU Time Used\",\"Estimated Training Performance\",\"Wallclock Time\",\"Incumbent ID\",\"Automatic Configurator (CPU) Time\",\"Configuration...\"\n");
+			trajectoryFileWriterCSV.append("\"CPU Time Used\",\"Estimated Training Performance\",\"Wallclock Time\",\"Incumbent ID\",\"Automatic Configurator (CPU) Time\",\"Full Configuration\"\n");
 			writeIncumbent(0,Double.MAX_VALUE,0,initialIncumbent,0);
 		} catch (IOException e) {
 			throw new IllegalStateException("Error occured creating files",e);

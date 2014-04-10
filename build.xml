@@ -226,7 +226,7 @@ dirty: ${git.dirty}</echo>
 			</condition>
 		</fail>
 		
-		<delete dir="${deploy.dir}-${git.branch}"/>
+		<delete dir="${deploy.dir}-${git.branch}" failonerror="false"/>
 		<mkdir dir="${deploy.dir}-${git.branch}"/>
 		<chmod perm="666">
 						<fileset dir="${deploy.dir}-${git.branch}">

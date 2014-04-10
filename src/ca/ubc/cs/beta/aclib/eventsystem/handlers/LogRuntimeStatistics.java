@@ -23,6 +23,7 @@ import ca.ubc.cs.beta.aclib.eventsystem.events.ac.ChallengeStartEvent;
 import ca.ubc.cs.beta.aclib.eventsystem.events.ac.IncumbentPerformanceChangeEvent;
 import ca.ubc.cs.beta.aclib.eventsystem.events.basic.AlgorithmRunCompletedEvent;
 import ca.ubc.cs.beta.aclib.eventsystem.events.state.StateRestoredEvent;
+import ca.ubc.cs.beta.aclib.logging.CommonMarkers;
 import ca.ubc.cs.beta.aclib.misc.cputime.CPUTime;
 import ca.ubc.cs.beta.aclib.runhistory.ThreadSafeRunHistory;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
@@ -205,7 +206,7 @@ public class LogRuntimeStatistics implements EventHandler<AutomaticConfiguratorE
 					"\n Number of Challenges Oustanding:" + (challengersStarted - challengersEnded);  
 				}
 				
-				myLastLogMessage = "*****Runtime Statistics*****" +
+				myLastLogMessage = "*****Developer Statistics*****" +
 						"\n Count: " + arr[0]+
 						"\n Incumbent ID: "+ arr[1]+
 						"\n Number of PISPs for Incumbent: " + arr[2] +
@@ -256,7 +257,7 @@ public class LogRuntimeStatistics implements EventHandler<AutomaticConfiguratorE
 	}
 
 	public void logLastRuntimeStatistics() {
-		log.info(lastString.get());
+		log.info(CommonMarkers.SKIP_CONSOLE_PRINTING,lastString.get());
 	}
 
 	private static final DecimalFormat df0 = new DecimalFormat("0"); 

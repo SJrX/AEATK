@@ -53,8 +53,8 @@ public class ProblemInstanceOptions extends AbstractOptions{
 	
 	@CommandLineOnly
 	@UsageTextField(level=OptionLevel.INTERMEDIATE)
-	@Parameter(names="--no-instances", description="If true skips reading the instances and just uses a dummy instance")
-	public boolean noInstances = false;
+	@Parameter(names="--use-instances", description="If false skips reading the instances and just uses a dummy instance")
+	public boolean useInstances = true;
 	
 	
 	@CommandLineOnly
@@ -82,7 +82,7 @@ public class ProblemInstanceOptions extends AbstractOptions{
 
 		String instanceFeatureFile = this.instanceFeatureFile;
 		
-		if(this.noInstances)
+		if(!this.useInstances)
 		{
 			instancesString = getNoInstanceFile();
 			instanceFeatureFile = null;
@@ -166,7 +166,7 @@ public class ProblemInstanceOptions extends AbstractOptions{
 		
 		String instanceFeatureFile = this.instanceFeatureFile;
 		
-		if(this.noInstances)
+		if(!this.useInstances)
 		{
 			testInstancesString = getNoInstanceFile();
 			instanceFeatureFile = null;

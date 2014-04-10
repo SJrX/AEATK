@@ -45,7 +45,7 @@ public class WallClockLimitCondition extends AbstractTerminationCondition implem
 	public String getTerminationReason() {
 		if(haveToStop())
 		{
-			return "Wall-clock Limit (" +  (System.currentTimeMillis()-applicationStartTime)/1000.0 +  " s) has been reached";
+			return "wall-clock time limit (" +  (System.currentTimeMillis()-applicationStartTime)/1000.0 +  " s) has been reached.";
 		} else
 		{
 			return "";
