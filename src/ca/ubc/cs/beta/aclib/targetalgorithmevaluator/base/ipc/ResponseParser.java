@@ -20,19 +20,21 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli.CommandLineAlgorit
 public class ResponseParser {
 
 	private static final Pattern pattern = Pattern.compile(CommandLineAlgorithmRun.AUTOMATIC_CONFIGURATOR_RESULT_REGEX);
+	private static final Pattern oldPattern = Pattern.compile(CommandLineAlgorithmRun.OLD_AUTOMATIC_CONFIGURATOR_RESULT_REGEX);
+	
 	
 	private static final Logger log = LoggerFactory.getLogger(ResponseParser.class);
 	/**
 	 *	Process a single line of the output looking for a matching line (e.g. Result for ParamILS: ...)
 	 *	@param line of program output
 	 */
-	public static AlgorithmRun processLine(String line, RunConfig rc, AlgorithmExecutionConfig execConfig, double walltime)
+	public static AlgorithmRun processLine(String line, RunConfig rc, double walltime)
 	{
 		Matcher matcher = pattern.matcher(line);
-			
+		Matcher matcher2 = oldPattern.matcher(line);	
 
 		AlgorithmRun run;
-		if (matcher.find())
+		if (matcher.find() || matcher2.find())
 		{
 		
 			String fullLine = line.trim();
@@ -40,7 +42,7 @@ public class ResponseParser {
 			try
 			{
 			
-				String acExecResultString = line.substring(matcher.end()).trim();
+				String acExecResultString = line.substring(line.indexOf(":") + 1).trim();
 				
 				String[] results = acExecResultString.split(",");
 				for(int i=0; i < results.length; i++)
@@ -80,12 +82,12 @@ public class ResponseParser {
 				long resultSeedD = Long.valueOf(seed);
 			
 				
-				run = new ExistingAlgorithmRun(execConfig, rc ,acResult, runtimeD, runLengthD, qualityD, resultSeedD, additionalRunData, walltime );
+				run = new ExistingAlgorithmRun( rc ,acResult, runtimeD, runLengthD, qualityD, resultSeedD, additionalRunData, walltime );
 				
 			} catch(NumberFormatException e)
 			{	 //Numeric value is probably at fault
 				
-				run = new ExistingAlgorithmRun(execConfig, rc ,RunResult.CRASHED, 0, 0, 0, rc.getProblemInstanceSeedPair().getSeed(),"", walltime );
+				run = new ExistingAlgorithmRun( rc ,RunResult.CRASHED, 0, 0, 0, rc.getProblemInstanceSeedPair().getSeed(),"", walltime );
 				
 				//this.setCrashResult("Output:" + fullLine + "\n Exception Message: " + e.getMessage() + "\n Name:" + e.getClass().getCanonicalName());
 				Object[] args = { CommandLineAlgorithmRun.getTargetAlgorithmExecutionCommandAsString(rc), fullLine};
@@ -95,7 +97,7 @@ public class ResponseParser {
 					
 			} catch(IllegalArgumentException e)
 			{ 	//The RunResult probably doesn't match anything
-				run = new ExistingAlgorithmRun(execConfig, rc ,RunResult.CRASHED, 0, 0, 0, rc.getProblemInstanceSeedPair().getSeed(),"", walltime );
+				run = new ExistingAlgorithmRun( rc ,RunResult.CRASHED, 0, 0, 0, rc.getProblemInstanceSeedPair().getSeed(),"", walltime );
 				
 				
 				ArrayList<String> validValues = new ArrayList<String>();
@@ -118,7 +120,7 @@ public class ResponseParser {
 			
 			} catch(ArrayIndexOutOfBoundsException e)
 			{	//There aren't enough commas in the output
-				run = new ExistingAlgorithmRun(execConfig, rc ,RunResult.CRASHED, 0, 0, 0, rc.getProblemInstanceSeedPair().getSeed(),"", walltime );
+				run = new ExistingAlgorithmRun( rc ,RunResult.CRASHED, 0, 0, 0, rc.getProblemInstanceSeedPair().getSeed(),"", walltime );
 				
 				Object[] args = { CommandLineAlgorithmRun.getTargetAlgorithmExecutionCommandAsString( rc), fullLine};
 				log.error("Target Algorithm Call failed:{}\nResponse:{}\nComment: Most likely the algorithm did not specify all of the required outputs that is <solved>,<runtime>,<runlength>,<quality>,<seed>", args);
@@ -133,7 +135,7 @@ public class ResponseParser {
 			log.error("Target Algorithm Call failed:{}\nResponse:{}\nComment: Most likely the algorithm did not specify all of the required outputs that is <solved>,<runtime>,<runlength>,<quality>,<seed>", args);
 			log.error("Run will be counted as {}", RunResult.CRASHED);
 			
-			run = new ExistingAlgorithmRun(execConfig, rc ,RunResult.CRASHED, 0, 0, 0, rc.getProblemInstanceSeedPair().getSeed(),"", walltime );
+			run = new ExistingAlgorithmRun(rc ,RunResult.CRASHED, 0, 0, 0, rc.getProblemInstanceSeedPair().getSeed(),"", walltime );
 		}
 		
 		return run;

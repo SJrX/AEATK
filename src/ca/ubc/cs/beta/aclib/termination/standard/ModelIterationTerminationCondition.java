@@ -57,7 +57,7 @@ public class ModelIterationTerminationCondition extends AbstractTerminationCondi
 	public String getTerminationReason() {
 		if(haveToStop())
 		{
-			return "Model Building / Iteration Limit (" +  modelBuildIteration +  ") has been reached";
+			return "model building / iteration limit (" +  modelBuildIteration +  ") has been reached.";
 		} else
 		{
 			return "";

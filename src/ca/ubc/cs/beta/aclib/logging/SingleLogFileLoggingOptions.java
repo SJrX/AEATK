@@ -85,14 +85,14 @@ public class SingleLogFileLoggingOptions  extends AbstractOptions implements Log
 		System.setProperty("RUNLOG", logLocation);
 	
 		
-		System.out.println("*****************************\nLogging to: " + logLocation +  "\n*****************************");
+		//System.out.println("*****************************\nLogging to: " + logLocation +  "\n*****************************");
 	
 		
 		
 		if(System.getProperty(ConsoleOnlyLoggingOptions.LOGBACK_CONFIGURATION_FILE_PROPERTY)!= null)
 		{
 			Logger log = LoggerFactory.getLogger(getClass());
-			log.trace("System property for logback.configurationFile has been found already set as {} , logging will follow this file", System.getProperty(ConsoleOnlyLoggingOptions.LOGBACK_CONFIGURATION_FILE_PROPERTY));
+			log.debug("System property for logback.configurationFile has been found already set as {} , logging will follow this file", System.getProperty(ConsoleOnlyLoggingOptions.LOGBACK_CONFIGURATION_FILE_PROPERTY));
 		} else
 		{
 			

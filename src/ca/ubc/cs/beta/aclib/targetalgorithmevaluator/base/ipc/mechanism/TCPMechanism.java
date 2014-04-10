@@ -1,29 +1,46 @@
 package ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.ipc.mechanism;
 
 
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
-
+import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
+import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.DatagramPacket;
 import java.net.DatagramSocket;
 import java.net.InetAddress;
+import java.net.Socket;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.ArrayList;
 
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
+
+import com.beust.jcommander.ParameterException;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aclib.algorithmrun.ExistingAlgorithmRun;
+import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration.StringFormat;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
-
 import ca.ubc.cs.beta.aclib.misc.watch.AutoStartStopWatch;
 import ca.ubc.cs.beta.aclib.misc.watch.StopWatch;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.ipc.ResponseParser;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.exceptions.TargetAlgorithmAbortException;
 
-public class UDPMechanism {
+public class TCPMechanism {
+
+
+	private final Logger log = LoggerFactory.getLogger(getClass());
+	public TCPMechanism() {
+	
+		
+	}
 
 	/**
 	 * 
@@ -34,14 +51,12 @@ public class UDPMechanism {
 	 * @param udpPacketSize
 	 * @return
 	 */
-	public AlgorithmRun evaluateRun(RunConfig rc,  int port, String remoteAddr, int udpPacketSize) 
+	public AlgorithmRun evaluateRun(RunConfig rc, String remoteHost, int remotePort) 
 	{
-		try {
-			
-			DatagramSocket clientSocket;
-			clientSocket = new DatagramSocket();
 		
-			InetAddress IPAddress = InetAddress.getByName(remoteAddr);
+		
+		try {
+			Socket clientSocket = new Socket(remoteHost, remotePort);
 			
 			ByteArrayOutputStream bout = new ByteArrayOutputStream();
 			ObjectOutputStream out = new ObjectOutputStream(bout);
@@ -90,10 +105,51 @@ public class UDPMechanism {
 				throw new IllegalStateException(e);
 			}
 			
-			if (sendData.length > udpPacketSize)
+			sb.append("\n");
+			
+			PrintWriter bwrite = new PrintWriter(clientSocket.getOutputStream());
+			
+			StopWatch watch = new AutoStartStopWatch();
+			
+			bwrite.append(sb);
+			
+			bwrite.flush();
+		
+			
+			
+			BufferedReader in = new BufferedReader(new InputStreamReader(clientSocket.getInputStream()));
+			
+			String serverLine;
+			
+			try {
+			while( (serverLine = in.readLine() ) != null)
 			{
-				   throw new IllegalStateException("Response is too big to send to client, please adjust packetSize argument in both client and server " + sendData.length + " > " + udpPacketSize);	   
+				return ResponseParser.processLine(serverLine, rc,  watch.time() / 1000.0);
 			}
+			} finally
+			{
+				clientSocket.close();
+			}
+			return new ExistingAlgorithmRun( rc, RunResult.CRASHED, 0, 0, 0, 0, "No response from server: " + remoteHost + ":" + remotePort);
+		} catch (IOException e) {
+			log.error("Error creating socket, trying connection again in 10 seconds",e);
+			
+			try {
+				Thread.sleep(10000);
+			} catch (InterruptedException e1) {
+				Thread.currentThread().interrupt();
+				throw new TargetAlgorithmAbortException(e1);
+			}
+			
+			return evaluateRun(rc,  remoteHost, remotePort);
+		}
+		
+		/*
+		try {
+			
+			
+			
+			
 			
 			DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
 			byte[] receiveData = new byte[udpPacketSize];
@@ -110,7 +166,7 @@ public class UDPMechanism {
 		
 			clientSocket.close();
 
-			return ResponseParser.processLine(response, rc, watch.time() / 1000.0);
+			return ResponseParser.processLine(response, rc, execConfig, watch.time() / 1000.0);
 			
 		} catch (SocketException e1) {
 			throw new TargetAlgorithmAbortException("TAE Aborted due to socket exception",e1);
@@ -118,7 +174,7 @@ public class UDPMechanism {
 		{
 			throw new TargetAlgorithmAbortException("TAE Aborted due to IOException",e1);
 		}
-		
+		*/
 		
 		
 	}

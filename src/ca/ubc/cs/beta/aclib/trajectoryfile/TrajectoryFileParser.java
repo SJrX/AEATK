@@ -1,5 +1,6 @@
 package ca.ubc.cs.beta.aclib.trajectoryfile;
 
+import java.awt.dnd.DragGestureEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;
@@ -13,7 +14,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import au.com.bytecode.opencsv.CSVReader;
-
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration.StringFormat;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
@@ -32,12 +32,22 @@ public class TrajectoryFileParser {
 	private static ConcurrentSkipListMap<Double, TrajectoryFileEntry> parseSMACTrajectoryFile(ConfigCSVFileHelper configs, ParamConfigurationSpace configSpace,boolean useTunerTimeAsWallTime)
 	{
 		ConcurrentSkipListMap<Double,  TrajectoryFileEntry> skipList = new ConcurrentSkipListMap<Double, TrajectoryFileEntry>();
+		
+		boolean detailed = false;
+		if(configs.getDataKeyByIndex(5).trim().equals("Full Configuration"))
+		{
+			detailed = true;
+		}
 		for(int i=0; i < configs.getNumberOfDataRows(); i++)
 		{		
-			String time = configs.getStringDataValue(i, 0);
+			String time = configs.getStringDataValue(i, 0).replaceAll("\"", "");
 	
 			String[] dataRow =  configs.getDataRow(i);
 			
+			for(int j=0; j < dataRow.length; j++)
+			{
+				dataRow[j] = dataRow[j].replaceAll("\"", "");
+			}
 			StringBuilder sb = new StringBuilder();
 			
 			for(int j=5; j < dataRow.length; j++)

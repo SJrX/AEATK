@@ -84,7 +84,7 @@ public class ConfigurationSpaceExhaustedCondition extends AbstractTerminationCon
 	public String getTerminationReason() {
 		if(haveToStop())
 		{
-			return "Every possible configuration (" + this.configSpaceSize +") and problem instance seed pair (" + this.runsPerConfiguration + ") has been run ";
+			return "every possible configuration (" + this.configSpaceSize +") and problem instance seed pair (" + this.runsPerConfiguration + ") has been run.";
 		} else
 		{
 			return "";

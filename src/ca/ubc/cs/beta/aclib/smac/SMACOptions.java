@@ -51,7 +51,7 @@ import com.beust.jcommander.ParametersDelegate;
  *
  *
  */
-@UsageTextField(title="SMAC Options", description="General Options for Running SMAC", claimRequired={"--pcs-file","--instanceFile"}, noarg=SMACNoArgHandler.class)
+@UsageTextField(title="SMAC Options", description="General Options for Running SMAC", claimRequired={"--pcs-file","--instanceFile","--run-obj"}, noarg=SMACNoArgHandler.class)
 public class SMACOptions extends AbstractOptions {
 	
 	@UsageTextField(defaultValues="Defaults to true when --runObj is RUNTIME, false otherwise", level=OptionLevel.INTERMEDIATE)
@@ -171,7 +171,7 @@ public class SMACOptions extends AbstractOptions {
 
 
 	@ParametersDelegate
-	public RunGroupOptions runGroupOptions = new RunGroupOptions("%SCENARIO_NAME-%executionMode-ac-%adaptiveCapping-cores%cores-cutoff%cutoffTime-%DATE"); 
+	public RunGroupOptions runGroupOptions = new RunGroupOptions("%SCENARIO_NAME-%executionMode-ac-%adaptiveCapping-cutoff%cutoffTime"); 
 
 	@ParametersDelegate
 	public ScenarioOptions scenarioConfig = new ScenarioOptions();

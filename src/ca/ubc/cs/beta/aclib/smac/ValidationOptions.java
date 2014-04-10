@@ -76,8 +76,4 @@ public class ValidationOptions extends AbstractOptions{
 	@Parameter(names={"--validation-rounding-mode","--validationRoundingMode"}, description="selects whether to round the number of validation (to next multiple of numTestInstances")
 	public ValidationRoundingMode validationRoundingMode = ValidationRoundingMode.UP;
 	
-	@UsageTextField(level=OptionLevel.ADVANCED)
-	@Parameter(names={"--write-configuration-matrix","--writeConfigurationMatrix","--writeThetaMatrix"}, description="Write the configuration matrix")
-	public boolean writeThetaMatrix;
-	
 }

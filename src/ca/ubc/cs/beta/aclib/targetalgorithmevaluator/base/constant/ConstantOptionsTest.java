@@ -44,15 +44,13 @@ public class ConstantOptionsTest {
 			for(int i=0; i < 1000; i++)
 			{
 				AlgorithmRun run = tae.evaluateRun(Collections.singletonList(RunConfigHelper.getRandomSingletonRunConfig(AlgorithmExecutionConfigHelper.getSingletonExecConfig()))).get(0);
-				System.out.println("Result for ParamILS: " + run.getRunResult() + ", " + run.getRuntime() + ", " + run.getRunLength() + ", " + run.getQuality() + ", " +run.getResultSeed());
+				System.out.println("Result of algorithm run: " + run.getRunResult() + ", " + run.getRuntime() + ", " + run.getRunLength() + ", " + run.getQuality() + ", " +run.getResultSeed());
 			}
 			
 		} catch(ParameterException e)
 		{
 			OptionsToUsage.usage(UsageSectionGenerator.getUsageSections(args2));
 			e.printStackTrace();
-
-			
 		}
 		
 		

@@ -23,6 +23,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.AbstractAsyncTargetAlgorith
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.AbstractSyncTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
+import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.ipc.mechanism.TCPMechanism;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.ipc.mechanism.UDPMechanism;
 import ec.util.MersenneTwister;
 
@@ -45,34 +46,48 @@ public class IPCTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorithmEval
 	public IPCTargetAlgorithmEvaluator (IPCTargetAlgorithmEvaluatorOptions options) {
 		super();
 		
+
+	
+		
 		this.options = options;
 		
 		switch(this.options.ipcMechanism)
 		{
+			case TCP:
+				verifyRemoteAddress();
+				break;
 			case UDP:
-				if(this.options.remotePort <= 0 || this.options.remotePort > 65535)
-				{
-					throw new ParameterException("To use the " + this.options.ipcMechanism + " mechanism you must specify a port in [1,65535]");
-				}
-				
-				if(this.options.remoteHost == null)
-				{
-					throw new ParameterException("You must specify a remote host to use the " + this.options.ipcMechanism );
-				}
-				
-				try {
-					InetAddress.getByName(this.options.remoteHost);
 
-				} catch(UnknownHostException e)
-				{
-					throw new ParameterException("Could resolve hostname: " + this.options.remoteHost);
-				}
-				
+				verifyRemoteAddress();
 				break;
 			default:
 				throw new ParameterException("Not implemented:" + this.options.ipcMechanism);
 		}
 		
+	}
+
+
+	/**
+	 * @throws ParameterException
+	 */
+	private void verifyRemoteAddress() throws ParameterException {
+		if(this.options.remotePort <= 0 || this.options.remotePort > 65535)
+		{
+			throw new ParameterException("To use the " + this.options.ipcMechanism + " mechanism you must specify a port in [1,65535]");
+		}
+		
+		if(this.options.remoteHost == null)
+		{
+			throw new ParameterException("You must specify a remote host to use the " + this.options.ipcMechanism );
+		}
+		
+		try {
+			InetAddress IPAddress = InetAddress.getByName(this.options.remoteHost);
+
+		} catch(UnknownHostException e)
+		{
+			throw new ParameterException("Could resolve hostname: " + this.options.remoteHost);
+		}
 	}
 
 
@@ -95,7 +110,6 @@ public class IPCTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorithmEval
 
 	@Override
 	protected void subtypeShutdown() {
-		// TODO Auto-generated method stub
 		
 	}
 
@@ -107,9 +121,22 @@ public class IPCTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorithmEval
 		
 		for(RunConfig rc : runConfigs)
 		{
-			UDPMechanism udp = new UDPMechanism();
-			AlgorithmRun run = udp.evaluateRun(rc, rc.getAlgorithmExecutionConfig(), this.options.remotePort, this.options.remoteHost, this.options.udpPacketSize);
-			completedRuns.add(run);
+
+			switch(this.options.ipcMechanism)
+			{
+			case UDP:
+				UDPMechanism udp = new UDPMechanism();
+				AlgorithmRun run = udp.evaluateRun(rc, this.options.remotePort, this.options.remoteHost, this.options.udpPacketSize);
+				completedRuns.add(run);
+				break;
+			case TCP:
+				TCPMechanism tcp = new TCPMechanism();
+				 run = tcp.evaluateRun(rc, this.options.remoteHost, this.options.remotePort);
+				completedRuns.add(run);
+				break;
+			default: 
+				throw new IllegalStateException("Not sure what this was");
+			}
 		}
 		
 		return completedRuns;

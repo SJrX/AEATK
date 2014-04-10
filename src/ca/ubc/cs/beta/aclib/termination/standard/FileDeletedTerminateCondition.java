@@ -73,7 +73,7 @@ public class FileDeletedTerminateCondition extends AbstractTerminationCondition 
 	public String getTerminationReason() {
 		if(haveToStop())
 		{
-			return "File Watched " + filename + " was deleted on disk";
+			return "file being watched " + filename + " was deleted on disk.";
 		} else
 		{
 			return "";

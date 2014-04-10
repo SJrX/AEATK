@@ -36,6 +36,10 @@ public class CommandLineTargetAlgorithmEvaluatorOptions extends AbstractOptions 
 	@Parameter(names={"--cli-log-all-process-output","--log-all-process-output","--logAllProcessOutput"}, description="log all process output")
 	public boolean logAllProcessOutput = false;
 	
+	//@UsageTextField(level=OptionLevel.INTERMEDIATE)
+	//@Parameter(names={"--log-all-call-strings-and-results","--cli-log-all-call-strings-and-result"}, description="log every call string")
+	//public boolean logAllCallStringsAndResults = false;
+	
 	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names={"--cli-listen-for-updates"}, description="If true will create a socket and set environment variables so that we can have updates of CPU time")
 	public boolean listenForUpdates = true;

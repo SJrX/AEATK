@@ -66,7 +66,7 @@ public class CPULimitCondition extends AbstractTerminationCondition
 	public String getTerminationReason() {
 		if(haveToStop())
 		{
-			return "Total CPU Time Limit (" +  cpuTimeLimit +  " s) has been reached";
+			return "total CPU time limit (" +  cpuTimeLimit +  " s) has been reached.";
 		} else
 		{
 			return "";
