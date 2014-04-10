@@ -23,14 +23,16 @@ public class IPCTargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	public String remoteHost = "127.0.0.1";
 	
 	@Parameter(names="--ipc-remote-port", description="Remote Port for some kinds of IPC mechanisms", validateWith=ValidPortValidator.class)
-	public int remotePort = 0;
+	public int remotePort = 5050;
 	
 	@Parameter(names="--ipc-udp-packetsize", description="Remote Port for some kinds of IPC mechanisms", validateWith=ValidPortValidator.class)
 	public int udpPacketSize = 4096;
 
 	enum IPCMechanism 
 	{
-		UDP
+		UDP,
+		TCP
+		
 	}
 	
 	private static final long serialVersionUID = -7900348544680161087L;
