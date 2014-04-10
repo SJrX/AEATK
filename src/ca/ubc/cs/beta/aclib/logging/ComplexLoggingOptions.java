@@ -5,7 +5,6 @@ import java.io.File;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-
 import ca.ubc.cs.beta.aclib.misc.options.CommandLineOnly;
 import ca.ubc.cs.beta.aclib.misc.options.OptionLevel;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
@@ -73,7 +72,14 @@ public class ComplexLoggingOptions  extends AbstractOptions implements LoggingOp
 		System.setProperty("OUTPUTDIR",completeOutputDir);
 		System.setProperty("NUMRUN", String.valueOf(numRun));
 		System.setProperty("STDOUT-LEVEL", consoleLogLevel.name());
-		System.setProperty("ROOT-LEVEL",logLevel.name());
+		
+		if(consoleLogLevel.lessVerbose(logLevel))
+		{
+			System.setProperty("ROOT-LEVEL",logLevel.name());
+		} else
+		{
+			System.setProperty("ROOT-LEVEL",consoleLogLevel.name());
+		}
 		
 		
 		
@@ -86,6 +92,31 @@ public class ComplexLoggingOptions  extends AbstractOptions implements LoggingOp
 		//System.out.println("*****************************\nLogging to: " + logLocation +  "\n*****************************");
 		
 		//Generally has the format: ${OUTPUTDIR}/${RUNGROUPDIR}/log-run${NUMRUN}.txt
+		
+		if(System.getProperty(ConsoleOnlyLoggingOptions.LOGBACK_CONFIGURATION_FILE_PROPERTY)!= null)
+		{
+			Logger log = LoggerFactory.getLogger(getClass());
+			log.debug("System property for logback.configurationFile has been found already set as {} , logging will follow this file", System.getProperty(ConsoleOnlyLoggingOptions.LOGBACK_CONFIGURATION_FILE_PROPERTY));
+		} else
+		{
+			
+			String newXML = this.getClass().getPackage().getName().replace(".", File.separator) + File.separator+  "complex-logback.xml";
+			
+			
+			
+			System.setProperty(ConsoleOnlyLoggingOptions.LOGBACK_CONFIGURATION_FILE_PROPERTY, newXML);
+			
+			Logger log = LoggerFactory.getLogger(getClass());
+			if(log.isTraceEnabled())
+			{
+				log.trace("Logging initialized to use file:" + newXML);
+			} else
+			{
+				log.debug("Logging initialized");
+			}
+			
+		}
+		
 		Logger log = LoggerFactory.getLogger(ComplexLoggingOptions.class);
 		log.info("Logging to: {}",logLocation);
 		

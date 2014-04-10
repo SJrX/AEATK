@@ -68,7 +68,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	 */
 	
 	
-	
+	//maybe merge these one day
 	public static final String AUTOMATIC_CONFIGURATOR_RESULT_REGEX = "^\\s*Result\\s*of\\s*(this)?\\s*[Aa]lgorithm\\s*[rR]un\\s*:";
 	
 	public static final String OLD_AUTOMATIC_CONFIGURATOR_RESULT_REGEX = "^\\s*(Final)?\\s*[Rr]esult\\s+(?:([Ff]or)|([oO]f))\\s+(?:(HAL)|(ParamILS)|(SMAC)|([tT]his [wW]rapper)):";
