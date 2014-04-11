@@ -7,9 +7,9 @@ import java.util.HashSet;
 import java.util.List;
 
 import ca.ubc.cs.beta.aeatk.acquisitionfunctions.AcquisitionFunctions;
+import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.configspace.tracking.ParamConfigurationOriginTrackingOptions;
-import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.help.HelpOptions;
 import ca.ubc.cs.beta.aeatk.initialization.InitializationMode;
 import ca.ubc.cs.beta.aeatk.initialization.classic.ClassicInitializationProcedureOptions;

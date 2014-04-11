@@ -21,12 +21,12 @@ import org.slf4j.LoggerFactory;
 import com.beust.jcommander.ParameterException;
 import com.google.common.util.concurrent.AtomicDouble;
 
+import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.exceptions.DuplicateRunException;
-import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.initialization.InitializationProcedure;
 import ca.ubc.cs.beta.aeatk.misc.MapList;
 import ca.ubc.cs.beta.aeatk.objectives.ObjectiveHelper;

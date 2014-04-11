@@ -35,6 +35,7 @@ import org.slf4j.MarkerFactory;
 
 import com.google.common.util.concurrent.AtomicDouble;
 
+import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.ExistingAlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
@@ -42,7 +43,6 @@ import ca.ubc.cs.beta.aeatk.algorithmrun.RunningAlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.kill.KillHandler;
 import ca.ubc.cs.beta.aeatk.concurrent.threadfactory.SequentiallyNamedThreadFactory;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration.StringFormat;
-import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.misc.associatedvalue.Pair;
 import ca.ubc.cs.beta.aeatk.misc.logback.MarkerFilter;
 import ca.ubc.cs.beta.aeatk.misc.logging.LoggingMarker;

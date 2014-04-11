@@ -1,4 +1,4 @@
-package ca.ubc.cs.beta.aeatk.execconfig;
+package ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration;
 
 import java.io.File;
 import java.io.IOException;

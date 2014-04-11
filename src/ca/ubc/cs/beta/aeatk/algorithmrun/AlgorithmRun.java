@@ -6,7 +6,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 //import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.json.serializers.AlgorithmRunJson;
 import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
 

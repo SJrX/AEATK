@@ -4,8 +4,8 @@ import java.io.Serializable;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
+import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
-import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.json.serializers.RunConfigJson;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
 /**

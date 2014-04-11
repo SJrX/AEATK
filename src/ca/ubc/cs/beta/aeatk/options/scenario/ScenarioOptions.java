@@ -12,8 +12,8 @@ import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.ParameterFile;
 import com.beust.jcommander.ParametersDelegate;
 
-import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfiguration;
-import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionOptions;
+import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionOptions;
 import ca.ubc.cs.beta.aeatk.misc.jcommander.converter.OverallObjectiveConverter;
 import ca.ubc.cs.beta.aeatk.misc.jcommander.converter.RunObjectiveConverter;
 import ca.ubc.cs.beta.aeatk.misc.options.CommandLineOnly;

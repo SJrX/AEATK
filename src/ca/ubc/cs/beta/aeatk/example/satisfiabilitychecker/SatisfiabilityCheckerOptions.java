@@ -10,7 +10,7 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterFile;
 import com.beust.jcommander.ParametersDelegate;
 
-import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.help.HelpOptions;
 import ca.ubc.cs.beta.aeatk.logging.ConsoleOnlyLoggingOptions;
 import ca.ubc.cs.beta.aeatk.logging.LoggingOptions;

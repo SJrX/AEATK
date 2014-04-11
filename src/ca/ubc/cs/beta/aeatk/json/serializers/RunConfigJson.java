@@ -9,8 +9,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
-import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.json.serializers.AlgorithmExecutionConfigJson.AlgorithmExecutionConfigDeserializer;
 import ca.ubc.cs.beta.aeatk.json.serializers.ParamConfigurationJson.ParamConfigurationDeserializer;
 import ca.ubc.cs.beta.aeatk.json.serializers.ProblemInstanceJson.ProblemInstanceSeedPairDeserializer;

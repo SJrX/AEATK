@@ -2,8 +2,8 @@ package ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.constant;
 
 import java.util.Collections;
 
+import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfigHelper;
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfigHelper;
 import ca.ubc.cs.beta.aeatk.options.AbstractOptions;
 import ca.ubc.cs.beta.aeatk.options.docgen.OptionsToUsage;
 import ca.ubc.cs.beta.aeatk.options.docgen.UsageSectionGenerator;

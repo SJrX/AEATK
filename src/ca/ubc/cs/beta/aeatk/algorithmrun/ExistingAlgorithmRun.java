@@ -3,7 +3,7 @@ package ca.ubc.cs.beta.aeatk.algorithmrun;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.CommandLineAlgorithmRun;
 /**
