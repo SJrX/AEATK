@@ -12,9 +12,9 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 
-import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
-import ca.ubc.cs.beta.aclib.configspace.ParamFileHelper;
-import ca.ubc.cs.beta.aclib.json.JSONConverter;
+import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
+import ca.ubc.cs.beta.aeatk.configspace.ParamFileHelper;
+import ca.ubc.cs.beta.aeatk.json.JSONConverter;
 
 public class JSONTester {
 

@@ -8,7 +8,7 @@ import java.util.List;
 
 import org.junit.Test;
 
-import ca.ubc.cs.beta.aclib.acquisitionfunctions.AcquisitionFunctions;
+import ca.ubc.cs.beta.aeatk.acquisitionfunctions.AcquisitionFunctions;
 
 public class AcquisitionFunctionTester {
 

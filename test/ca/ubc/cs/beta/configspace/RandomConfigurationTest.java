@@ -16,11 +16,11 @@ import org.junit.BeforeClass;
 import org.junit.Ignore;
 import org.junit.Test;
 
-import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
-import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
-import ca.ubc.cs.beta.aclib.configspace.ParamFileHelper;
-import ca.ubc.cs.beta.aclib.misc.debug.DebugUtil;
-import ca.ubc.cs.beta.aclib.random.SeedableRandomPool;
+import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
+import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
+import ca.ubc.cs.beta.aeatk.configspace.ParamFileHelper;
+import ca.ubc.cs.beta.aeatk.misc.debug.DebugUtil;
+import ca.ubc.cs.beta.aeatk.random.SeedableRandomPool;
 
 
 public class RandomConfigurationTest {

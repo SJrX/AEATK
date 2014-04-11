@@ -10,9 +10,11 @@ import java.io.PrintStream;
 
 import org.junit.Before;
 import org.junit.Test;
+
 import ca.ubc.cs.beta.TestHelper;
-import ca.ubc.cs.beta.aclib.probleminstance.InstanceListWithSeeds;
-import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceHelper;
+import ca.ubc.cs.beta.aeatk.probleminstance.InstanceListWithSeeds;
+import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceHelper;
+
 import com.beust.jcommander.ParameterException;
 
 /**
