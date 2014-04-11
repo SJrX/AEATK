@@ -10,7 +10,7 @@ import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionCo
 import ca.ubc.cs.beta.aeatk.algorithmrun.AbstractAlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
@@ -47,7 +47,7 @@ public class WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator extends
 	
 
 	@Override
-	public final List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
+	public final List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
 		return processRuns(tae.evaluateRun(runConfigs, new WalltimeAsRuntimeTargetAlgorithmEvaluatorObserver(obs)));
 	}
 	
@@ -81,7 +81,7 @@ public class WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator extends
 	}
 	
 	@Override
-	public final void evaluateRunsAsync(List<RunConfig> runConfigs,
+	public final void evaluateRunsAsync(List<AlgorithmRunConfiguration> runConfigs,
 			final TargetAlgorithmEvaluatorCallback oHandler, TargetAlgorithmEvaluatorRunObserver obs) {
 		
 		//We need to make sure wrapped versions are called in the same order
@@ -179,7 +179,7 @@ public class WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator extends
 		}
 
 		@Override
-		public RunConfig getRunConfig() {
+		public AlgorithmRunConfiguration getRunConfig() {
 			return wrappedRun.getRunConfig();
 		}
 

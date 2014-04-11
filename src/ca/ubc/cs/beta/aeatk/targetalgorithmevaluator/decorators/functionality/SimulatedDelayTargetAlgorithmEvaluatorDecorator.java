@@ -24,8 +24,8 @@ import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aeatk.algorithmrun.RunningAlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.kill.KillHandler;
 import ca.ubc.cs.beta.aeatk.algorithmrun.kill.StatusVariableKillHandler;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.concurrent.threadfactory.SequentiallyNamedThreadFactory;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
@@ -69,7 +69,7 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 
 
 	@Override
-	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
+	public List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
 		 
 		return evaluateRunConfigs(runConfigs, obs);
 		
@@ -77,7 +77,7 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 
 
 	@Override
-	public void evaluateRunsAsync(final List<RunConfig> runConfigs,
+	public void evaluateRunsAsync(final List<AlgorithmRunConfiguration> runConfigs,
 			final TargetAlgorithmEvaluatorCallback handler, final TargetAlgorithmEvaluatorRunObserver obs) {
 	
 		
@@ -132,7 +132,7 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 	 * @param asyncReleaseLatch	latch that we will decrement if we sleep (this is used for async evaluation)
 	 * @return
 	 */
-	private List<AlgorithmRun> evaluateRunConfigs(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs)
+	private List<AlgorithmRun> evaluateRunConfigs(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs)
 	{
 		try {
 			threadsWaiting.incrementAndGet();
@@ -144,9 +144,9 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 			
 			Set<String> configIDs = new HashSet<String>();
 			
-			for(RunConfig rc : runConfigs)
+			for(AlgorithmRunConfiguration rc : runConfigs)
 			{
-				configIDs.add(rc.getParamConfiguration().getFriendlyIDHex());
+				configIDs.add(rc.getParameterConfiguration().getFriendlyIDHex());
 			}
 			
 			
@@ -156,8 +156,8 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 			double timeToSleep = Double.NEGATIVE_INFINITY;
 			//Stores a mapping of Run Config objects to Algorithm Run Objects
 			//The kill handlers may modify these.
-			final LinkedHashMap<RunConfig, AlgorithmRun> runConfigToAlgorithmRunMap = new LinkedHashMap<RunConfig, AlgorithmRun>();
-			final LinkedHashMap<RunConfig, KillHandler> runConfigToKillHandlerMap = new LinkedHashMap<RunConfig, KillHandler>();
+			final LinkedHashMap<AlgorithmRunConfiguration, AlgorithmRun> runConfigToAlgorithmRunMap = new LinkedHashMap<AlgorithmRunConfiguration, AlgorithmRun>();
+			final LinkedHashMap<AlgorithmRunConfiguration, KillHandler> runConfigToKillHandlerMap = new LinkedHashMap<AlgorithmRunConfiguration, KillHandler>();
 			
 			for(AlgorithmRun run : runsFromWrappedTAE)
 			{
@@ -210,7 +210,7 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 		}
 	}
 
-	private void sleepAndNotifyObservers(TimeSimulator timeSimulator, long startTimeInMs, double maxRuntime, TargetAlgorithmEvaluatorRunObserver observer, List<AlgorithmRun> runsFromWrappedTAE, List<RunConfig> runConfigs, final LinkedHashMap<RunConfig, KillHandler> khs, final LinkedHashMap<RunConfig, AlgorithmRun> runResults)
+	private void sleepAndNotifyObservers(TimeSimulator timeSimulator, long startTimeInMs, double maxRuntime, TargetAlgorithmEvaluatorRunObserver observer, List<AlgorithmRun> runsFromWrappedTAE, List<AlgorithmRunConfiguration> runConfigs, final LinkedHashMap<AlgorithmRunConfiguration, KillHandler> khs, final LinkedHashMap<AlgorithmRunConfiguration, AlgorithmRun> runResults)
 	{
 		
 		long sleepTimeInMS = (long) maxRuntime * 1000;
@@ -257,7 +257,7 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 			
 	}
 	
-	private void updateRunsAndNotifyObserver(long startTimeInMs, long currentTimeInMs, double maxRuntime, TargetAlgorithmEvaluatorRunObserver observer, List<AlgorithmRun> runsFromWrappedTAE, List<RunConfig> runConfigs, final LinkedHashMap<RunConfig, KillHandler> killHandlers, final LinkedHashMap<RunConfig, AlgorithmRun> runConfigToAlgorithmRunMap)
+	private void updateRunsAndNotifyObserver(long startTimeInMs, long currentTimeInMs, double maxRuntime, TargetAlgorithmEvaluatorRunObserver observer, List<AlgorithmRun> runsFromWrappedTAE, List<AlgorithmRunConfiguration> runConfigs, final LinkedHashMap<AlgorithmRunConfiguration, KillHandler> killHandlers, final LinkedHashMap<AlgorithmRunConfiguration, AlgorithmRun> runConfigToAlgorithmRunMap)
 	{
 
 		List<AlgorithmRun> kars = new ArrayList<AlgorithmRun>(runsFromWrappedTAE.size());
@@ -266,7 +266,7 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 		for(AlgorithmRun run : runsFromWrappedTAE)
 		{
 		
-			RunConfig rc  = run.getRunConfig();
+			AlgorithmRunConfiguration rc  = run.getRunConfig();
 			
 			double currentRuntime = (currentTimeInMs - startTimeInMs) / 1000.0;
 			if(runConfigToAlgorithmRunMap.get(rc).isRunCompleted())

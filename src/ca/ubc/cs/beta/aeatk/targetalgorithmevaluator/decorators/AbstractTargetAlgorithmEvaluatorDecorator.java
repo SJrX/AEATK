@@ -6,7 +6,7 @@ import java.util.List;
 import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
@@ -33,34 +33,34 @@ public abstract class AbstractTargetAlgorithmEvaluatorDecorator implements	Targe
 	
 	
 	@Override
-	public final List<AlgorithmRun> evaluateRun(RunConfig runConfig) {
+	public final List<AlgorithmRun> evaluateRun(AlgorithmRunConfiguration runConfig) {
 		return evaluateRun(Collections.singletonList(runConfig));
 	}
 
 	@Override
-	public final List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs) {
+	public final List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs) {
 		return evaluateRun(runConfigs, null);
 	}
 
 
 	@Override
-	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver observer) {
+	public List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver observer) {
 		return tae.evaluateRun(runConfigs, observer);
 	}
 
 	@Override
-	public final void evaluateRunsAsync(RunConfig runConfig, TargetAlgorithmEvaluatorCallback callback) {
+	public final void evaluateRunsAsync(AlgorithmRunConfiguration runConfig, TargetAlgorithmEvaluatorCallback callback) {
 		evaluateRunsAsync(Collections.singletonList(runConfig), callback);
 	}
 
 	@Override
-	public final void evaluateRunsAsync(List<RunConfig> runConfigs, final TargetAlgorithmEvaluatorCallback callback) {
+	public final void evaluateRunsAsync(List<AlgorithmRunConfiguration> runConfigs, final TargetAlgorithmEvaluatorCallback callback) {
 		evaluateRunsAsync(runConfigs, callback, null);
 	}
 
 	
 	@Override
-	public void evaluateRunsAsync(List<RunConfig> runConfigs,
+	public void evaluateRunsAsync(List<AlgorithmRunConfiguration> runConfigs,
 			final TargetAlgorithmEvaluatorCallback callback, TargetAlgorithmEvaluatorRunObserver observer) {
 		tae.evaluateRunsAsync(runConfigs, callback, observer);
 	}
@@ -95,7 +95,7 @@ public abstract class AbstractTargetAlgorithmEvaluatorDecorator implements	Targe
 
 	}
 	@Override
-	public String getManualCallString(RunConfig runConfig) {
+	public String getManualCallString(AlgorithmRunConfiguration runConfig) {
 		return tae.getManualCallString(runConfig);
 	}
 	

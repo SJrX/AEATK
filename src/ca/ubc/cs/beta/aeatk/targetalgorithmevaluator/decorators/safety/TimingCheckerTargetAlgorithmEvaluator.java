@@ -11,7 +11,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
@@ -107,7 +107,7 @@ public class TimingCheckerTargetAlgorithmEvaluator extends	AbstractTargetAlgorit
 		
 		
 		
-		if(wallClockOverhead > Math.min(1.5*run.getRunConfig().getAlgorithmExecutionConfig().getAlgorithmMaximumCutoffTime(), wallClockDeltaToRequireLogging))
+		if(wallClockOverhead > Math.min(1.5*run.getRunConfig().getAlgorithmExecutionConfiguration().getAlgorithmMaximumCutoffTime(), wallClockDeltaToRequireLogging))
 		{
 			wallClockDeltaToRequireLogging = wallClockOverhead + 1;
 			Object[] args = {run.getWallclockExecutionTime(), run.getRunConfig().getCutoffTime(), wallClockOverhead, wallClockDeltaToRequireLogging};
@@ -121,7 +121,7 @@ public class TimingCheckerTargetAlgorithmEvaluator extends	AbstractTargetAlgorit
 	
 	
 
-	protected synchronized RunConfig processRun(RunConfig rc) 
+	protected synchronized AlgorithmRunConfiguration processRun(AlgorithmRunConfiguration rc) 
 	{
 		return rc;
 	}
@@ -129,12 +129,12 @@ public class TimingCheckerTargetAlgorithmEvaluator extends	AbstractTargetAlgorit
 	
 
 	@Override
-	public final List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
+	public final List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
 		return processRuns(tae.evaluateRun(processRunConfigs(runConfigs), new WarnOnExceededCutoffRunObserver(obs)));
 	}
 
 	@Override
-	public final void evaluateRunsAsync(List<RunConfig> runConfigs,
+	public final void evaluateRunsAsync(List<AlgorithmRunConfiguration> runConfigs,
 			final TargetAlgorithmEvaluatorCallback oHandler, TargetAlgorithmEvaluatorRunObserver obs) {
 		
 		//We need to make sure wrapped versions are called in the same order
@@ -170,9 +170,9 @@ public class TimingCheckerTargetAlgorithmEvaluator extends	AbstractTargetAlgorit
 		return runs;
 	}
 	
-	protected final List<RunConfig> processRunConfigs(List<RunConfig> runConfigs)
+	protected final List<AlgorithmRunConfiguration> processRunConfigs(List<AlgorithmRunConfiguration> runConfigs)
 	{	
-		runConfigs = new ArrayList<RunConfig>(runConfigs);
+		runConfigs = new ArrayList<AlgorithmRunConfiguration>(runConfigs);
 		for(int i=0; i < runConfigs.size(); i++)
 		{
 			runConfigs.set(i, processRun(runConfigs.get(i)));
@@ -190,7 +190,7 @@ public class TimingCheckerTargetAlgorithmEvaluator extends	AbstractTargetAlgorit
 			this.obs = obs;
 			
 		}
-		private ConcurrentHashMap<RunConfig, Boolean> warnCreated = new ConcurrentHashMap<RunConfig, Boolean>();
+		private ConcurrentHashMap<AlgorithmRunConfiguration, Boolean> warnCreated = new ConcurrentHashMap<AlgorithmRunConfiguration, Boolean>();
 		@Override
 		public void currentStatus(List<? extends AlgorithmRun> runs) 
 		{
@@ -211,7 +211,7 @@ public class TimingCheckerTargetAlgorithmEvaluator extends	AbstractTargetAlgorit
 							if(warnCreated.putIfAbsent(run.getRunConfig(), Boolean.TRUE) == null)
 							{
 								log.warn("We have been waiting for {} seconds for a run that should have taken at most {} seconds.\n "
-										+ "The sample call for the run that is delayed is: cd \"{}\" " + CommandLineAlgorithmRun.COMMAND_SEPERATOR + "  {} ",run.getWallclockExecutionTime(), run.getRunConfig().getCutoffTime(), new File(run.getRunConfig().getAlgorithmExecutionConfig().getAlgorithmExecutionDirectory()).getAbsolutePath(), CommandLineAlgorithmRun.getTargetAlgorithmExecutionCommandAsString(run.getRunConfig()));
+										+ "The sample call for the run that is delayed is: cd \"{}\" " + CommandLineAlgorithmRun.COMMAND_SEPERATOR + "  {} ",run.getWallclockExecutionTime(), run.getRunConfig().getCutoffTime(), new File(run.getRunConfig().getAlgorithmExecutionConfiguration().getAlgorithmExecutionDirectory()).getAbsolutePath(), CommandLineAlgorithmRun.getTargetAlgorithmExecutionCommandAsString(run.getRunConfig()));
 							}
 							
 						}

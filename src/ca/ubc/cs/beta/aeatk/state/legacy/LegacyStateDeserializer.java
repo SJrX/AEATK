@@ -25,6 +25,7 @@ import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionCo
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.ExistingAlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration.StringFormat;
@@ -32,7 +33,6 @@ import ca.ubc.cs.beta.aeatk.exceptions.DuplicateRunException;
 import ca.ubc.cs.beta.aeatk.exceptions.StateSerializationException;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
 import ca.ubc.cs.beta.aeatk.runhistory.RunHistory;
 import ca.ubc.cs.beta.aeatk.state.StateDeserializer;
 
@@ -463,7 +463,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 						
 					
 						ProblemInstanceSeedPair pisp = new ProblemInstanceSeedPair(pi, seed); 
-						RunConfig runConfig = new RunConfig(pisp, cutOffTime, configMap.get(thetaIdx),execConfig);
+						AlgorithmRunConfiguration runConfig = new AlgorithmRunConfiguration(pisp, cutOffTime, configMap.get(thetaIdx),execConfig);
 												
 						AlgorithmRun run = new ExistingAlgorithmRun(runConfig, runResult, runtime, runLength, quality, seed, additionalRunData, wallClockTime);
 						

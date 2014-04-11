@@ -16,10 +16,10 @@ import org.slf4j.LoggerFactory;
 import com.beust.jcommander.ParameterException;
 
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrunner.AlgorithmRunner;
 import ca.ubc.cs.beta.aeatk.algorithmrunner.AutomaticConfiguratorFactory;
 import ca.ubc.cs.beta.aeatk.concurrent.threadfactory.SequentiallyNamedThreadFactory;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.AbstractAsyncTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
@@ -75,7 +75,7 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractAsyncTargetAlgo
 	
 
 	@Override
-	public void evaluateRunsAsync(final List<RunConfig> runConfigs,final  TargetAlgorithmEvaluatorCallback taeCallback, final TargetAlgorithmEvaluatorRunObserver runStatusObserver) 
+	public void evaluateRunsAsync(final List<AlgorithmRunConfiguration> runConfigs,final  TargetAlgorithmEvaluatorCallback taeCallback, final TargetAlgorithmEvaluatorRunObserver runStatusObserver) 
 	{
 		
 		if(runConfigs.size() == 0)
@@ -172,7 +172,7 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractAsyncTargetAlgo
 	 * @param runConfigs 	runConfigs to evaluate
 	 * @return	AlgorithmRunner to use
 	 */
-	private AlgorithmRunner getAlgorithmRunner(List<RunConfig> runConfigs,TargetAlgorithmEvaluatorRunObserver obs)
+	private AlgorithmRunner getAlgorithmRunner(List<AlgorithmRunConfiguration> runConfigs,TargetAlgorithmEvaluatorRunObserver obs)
 	{
 		
 		

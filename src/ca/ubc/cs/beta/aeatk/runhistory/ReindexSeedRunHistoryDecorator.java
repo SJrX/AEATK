@@ -14,12 +14,12 @@ import org.slf4j.LoggerFactory;
 import net.jcip.annotations.NotThreadSafe;
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.ExistingAlgorithmRun;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aeatk.exceptions.DuplicateRunException;
 import ca.ubc.cs.beta.aeatk.misc.MapList;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
 
 
 /**
@@ -65,7 +65,7 @@ public class ReindexSeedRunHistoryDecorator extends AbstractRunHistoryDecorator 
 		
 		ProblemInstanceSeedPair pisp = run.getRunConfig().getProblemInstanceSeedPair();
 		
-		if(run.getRunConfig().getParamConfiguration().getConfigurationSpace().getDefaultConfiguration().equals(run.getRunConfig().getParamConfiguration()))
+		if(run.getRunConfig().getParameterConfiguration().getConfigurationSpace().getDefaultConfiguration().equals(run.getRunConfig().getParameterConfiguration()))
 		{
 			log.trace("Transforming run of default configuration {}", run);
 		}
@@ -74,7 +74,7 @@ public class ReindexSeedRunHistoryDecorator extends AbstractRunHistoryDecorator 
 		
 		if(pispTransform.get(pisp) != null)
 		{
-			RunConfig newRc = new RunConfig(pispTransform.get(pisp), run.getRunConfig().getCutoffTime(), run.getRunConfig().getParamConfiguration(), run.getExecutionConfig());
+			AlgorithmRunConfiguration newRc = new AlgorithmRunConfiguration(pispTransform.get(pisp), run.getRunConfig().getCutoffTime(), run.getRunConfig().getParameterConfiguration(), run.getExecutionConfig());
 			
 			ExistingAlgorithmRun er = new ExistingAlgorithmRun(run.getExecutionConfig(), newRc, run.getRunResult(), run.getRuntime(), run.getRunLength(), run.getQuality(),pispTransform.get(pisp).getSeed(), run.getAdditionalRunData(), run.getWallclockExecutionTime());
 
@@ -93,7 +93,7 @@ public class ReindexSeedRunHistoryDecorator extends AbstractRunHistoryDecorator 
 			Collections.shuffle(possiblePisps, rand);
 			for(ProblemInstanceSeedPair newPisp : possiblePisps)
 			{
-				RunConfig newRc = new RunConfig(newPisp, run.getRunConfig().getCutoffTime(), run.getRunConfig().getParamConfiguration(), run.getRunConfig().getAlgorithmExecutionConfig());
+				AlgorithmRunConfiguration newRc = new AlgorithmRunConfiguration(newPisp, run.getRunConfig().getCutoffTime(), run.getRunConfig().getParameterConfiguration(), run.getRunConfig().getAlgorithmExecutionConfiguration());
 				
 				ExistingAlgorithmRun er = new ExistingAlgorithmRun(run.getExecutionConfig(), newRc, run.getRunResult(), run.getRuntime(), run.getRunLength(), run.getQuality(),newPisp.getSeed(), run.getAdditionalRunData(), run.getWallclockExecutionTime());
 
@@ -112,7 +112,7 @@ public class ReindexSeedRunHistoryDecorator extends AbstractRunHistoryDecorator 
 			ProblemInstanceSeedPair newPisp = new ProblemInstanceSeedPair(pisp.getProblemInstance(), nextSeed.incrementAndGet()); 
 			
 			
-			RunConfig newRc = new RunConfig(newPisp, run.getRunConfig().getCutoffTime(), run.getRunConfig().getParamConfiguration(), run.getRunConfig().getAlgorithmExecutionConfig());
+			AlgorithmRunConfiguration newRc = new AlgorithmRunConfiguration(newPisp, run.getRunConfig().getCutoffTime(), run.getRunConfig().getParameterConfiguration(), run.getRunConfig().getAlgorithmExecutionConfiguration());
 			
 			ExistingAlgorithmRun er = new ExistingAlgorithmRun(run.getExecutionConfig(), newRc, run.getRunResult(), run.getRuntime(), run.getRunLength(), run.getQuality(),newPisp.getSeed(), run.getAdditionalRunData(), run.getWallclockExecutionTime());
 

@@ -4,10 +4,10 @@ import java.util.Collections;
 
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfigHelper;
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfigurationHelper;
 import ca.ubc.cs.beta.aeatk.options.AbstractOptions;
 import ca.ubc.cs.beta.aeatk.options.docgen.OptionsToUsage;
 import ca.ubc.cs.beta.aeatk.options.docgen.UsageSectionGenerator;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfigHelper;
 import ca.ubc.cs.beta.aeatk.smac.SMACOptions;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 
@@ -43,7 +43,7 @@ public class ConstantOptionsTest {
 			
 			for(int i=0; i < 1000; i++)
 			{
-				AlgorithmRun run = tae.evaluateRun(Collections.singletonList(RunConfigHelper.getRandomSingletonRunConfig(AlgorithmExecutionConfigHelper.getSingletonExecConfig()))).get(0);
+				AlgorithmRun run = tae.evaluateRun(Collections.singletonList(AlgorithmRunConfigurationHelper.getRandomSingletonRunConfig(AlgorithmExecutionConfigHelper.getSingletonExecConfig()))).get(0);
 				System.out.println("Result of algorithm run: " + run.getRunResult() + ", " + run.getRuntime() + ", " + run.getRunLength() + ", " + run.getQuality() + ", " +run.getResultSeed());
 			}
 			

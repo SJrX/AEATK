@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 import com.beust.jcommander.ParameterException;
 
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.AbstractSyncTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.ipc.mechanism.TCPMechanism;
@@ -106,12 +106,12 @@ public class IPCTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorithmEval
 	}
 
 	@Override
-	public synchronized List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs,
+	public synchronized List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs,
 			TargetAlgorithmEvaluatorRunObserver runStatusObserver) {
 		
 		List<AlgorithmRun> completedRuns = new ArrayList<AlgorithmRun>();
 		
-		for(RunConfig rc : runConfigs)
+		for(AlgorithmRunConfiguration rc : runConfigs)
 		{
 
 			switch(this.options.ipcMechanism)

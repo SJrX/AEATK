@@ -12,7 +12,7 @@ import org.slf4j.LoggerFactory;
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.ExistingAlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.CommandLineAlgorithmRun;
 
 public class ResponseParser {
@@ -26,7 +26,7 @@ public class ResponseParser {
 	 *	Process a single line of the output looking for a matching line (e.g. Result for ParamILS: ...)
 	 *	@param line of program output
 	 */
-	public static AlgorithmRun processLine(String line, RunConfig rc, double walltime)
+	public static AlgorithmRun processLine(String line, AlgorithmRunConfiguration rc, double walltime)
 	{
 		Matcher matcher = pattern.matcher(line);
 		Matcher matcher2 = oldPattern.matcher(line);	

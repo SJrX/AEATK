@@ -6,8 +6,8 @@ import java.util.List;
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.ExistingAlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.AbstractSyncTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
@@ -38,7 +38,7 @@ public class EchoTargetAlgorithmEvaluator  extends AbstractSyncTargetAlgorithmEv
 	public volatile double wallClockTime = 0;
 	
 	@Override
-	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
+	public List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
 		
 		List<AlgorithmRun> results = new ArrayList<AlgorithmRun>();
 		
@@ -51,11 +51,11 @@ public class EchoTargetAlgorithmEvaluator  extends AbstractSyncTargetAlgorithmEv
 				 * quality [0, 1000000] [0]
 				 * seed [ -1,4294967295][1]i
 		*/		 
-		for(RunConfig rc : runConfigs)
+		for(AlgorithmRunConfiguration rc : runConfigs)
 		{
 			StringBuilder sb = new StringBuilder();
 			
-			ParamConfiguration config = rc.getParamConfiguration();
+			ParamConfiguration config = rc.getParameterConfiguration();
 			
 			sb.append(config.get("solved")).append(",");
 			sb.append(config.get("runtime")).append(",");

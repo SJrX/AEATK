@@ -8,8 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.concurrent.threadfactory.SequentiallyNamedThreadFactory;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
 
 /**
  * Abstract TargetAlgorithmEvaluator that implements a basic form of asynchronous execution.
@@ -28,7 +28,7 @@ public abstract class AbstractSyncTargetAlgorithmEvaluator extends
 	}
 
 	@Override
-	public  void evaluateRunsAsync(final List<RunConfig> runConfigs,
+	public  void evaluateRunsAsync(final List<AlgorithmRunConfiguration> runConfigs,
 			final TargetAlgorithmEvaluatorCallback handler, final TargetAlgorithmEvaluatorRunObserver obs) {
 		
 		Runnable run = new Runnable()

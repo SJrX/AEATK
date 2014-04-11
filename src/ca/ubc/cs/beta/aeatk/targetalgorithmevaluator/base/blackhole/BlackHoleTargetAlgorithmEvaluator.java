@@ -7,7 +7,7 @@ import net.jcip.annotations.ThreadSafe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.AbstractAsyncTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
@@ -62,7 +62,7 @@ public class BlackHoleTargetAlgorithmEvaluator extends AbstractAsyncTargetAlgori
 	}
 
 	@Override
-	public void evaluateRunsAsync(List<RunConfig> runConfigs,
+	public void evaluateRunsAsync(List<AlgorithmRunConfiguration> runConfigs,
 			TargetAlgorithmEvaluatorCallback taeCallback,
 			TargetAlgorithmEvaluatorRunObserver runStatusObserver) {
 		

@@ -5,7 +5,7 @@ import java.util.List;
 
 import net.jcip.annotations.ThreadSafe;
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
@@ -29,7 +29,7 @@ public class ResultOrderCorrectCheckerTargetAlgorithmEvaluatorDecorator extends 
 	
 	
 	@Override
-	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
+	public List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
 		List<AlgorithmRun> runs = tae.evaluateRun(Collections.unmodifiableList(runConfigs), obs);
 		
 		runOrderIsConsistent(runConfigs, runs);
@@ -39,7 +39,7 @@ public class ResultOrderCorrectCheckerTargetAlgorithmEvaluatorDecorator extends 
 
 
 	@Override
-	public void evaluateRunsAsync(final List<RunConfig> runConfigs,
+	public void evaluateRunsAsync(final List<AlgorithmRunConfiguration> runConfigs,
 			final TargetAlgorithmEvaluatorCallback handler, TargetAlgorithmEvaluatorRunObserver obs) {
 		TargetAlgorithmEvaluatorCallback callback = new TargetAlgorithmEvaluatorCallback()
 		{
@@ -69,7 +69,7 @@ public class ResultOrderCorrectCheckerTargetAlgorithmEvaluatorDecorator extends 
 	}
 
 	
-	private void runOrderIsConsistent(List<RunConfig> runConfigs, List<AlgorithmRun> runs)
+	private void runOrderIsConsistent(List<AlgorithmRunConfiguration> runConfigs, List<AlgorithmRun> runs)
 	{
 		if(runConfigs.size() != runs.size())
 		{

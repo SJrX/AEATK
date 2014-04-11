@@ -1,4 +1,4 @@
-package ca.ubc.cs.beta.aeatk.runconfig;
+package ca.ubc.cs.beta.aeatk.algorithmrunconfiguration;
 
 import java.io.Serializable;
 
@@ -14,7 +14,7 @@ import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
  * @author Steve Ramage <seramage@cs.ubc.ca>
  */
 @JsonSerialize(using=RunConfigJson.RunConfigSerializer.class)
-public class RunConfig implements Serializable{
+public class AlgorithmRunConfiguration implements Serializable{
 	
 	
 	/**
@@ -34,7 +34,7 @@ public class RunConfig implements Serializable{
 	 * @param config 		paramconfiguration of the target algorithm
 	 * @param execConfig	execution configuration the run represents
 	 */
-	public RunConfig(ProblemInstanceSeedPair pisp, double cutoffTime, ParamConfiguration config, AlgorithmExecutionConfiguration execConfig)
+	public AlgorithmRunConfiguration(ProblemInstanceSeedPair pisp, double cutoffTime, ParamConfiguration config, AlgorithmExecutionConfiguration execConfig)
 	{
 		if(pisp == null)
 		{
@@ -75,7 +75,7 @@ public class RunConfig implements Serializable{
 	 * @param config 				paramconfiguration of the target algorithm
 	 * @param execConfig			execution configuration 
 	 */
-	public RunConfig(ProblemInstanceSeedPair pisp, ParamConfiguration config, AlgorithmExecutionConfiguration execConfig)
+	public AlgorithmRunConfiguration(ProblemInstanceSeedPair pisp, ParamConfiguration config, AlgorithmExecutionConfiguration execConfig)
 	{
 		this(pisp,execConfig.getAlgorithmMaximumCutoffTime(), config, execConfig);
 	}
@@ -102,7 +102,7 @@ public class RunConfig implements Serializable{
 	 * Returns a COPY of the Param Configuration to be run
 	 * @return a copy of the param configuration to be run
 	 */
-	public ParamConfiguration getParamConfiguration()
+	public ParamConfiguration getParameterConfiguration()
 	{
 		return new ParamConfiguration(params);
 	}
@@ -122,9 +122,9 @@ public class RunConfig implements Serializable{
 	public boolean equals(Object o)
 	{
 		if(this == o) return true;
-		if (o instanceof RunConfig)
+		if (o instanceof AlgorithmRunConfiguration)
 		{
-			RunConfig oar = (RunConfig) o;
+			AlgorithmRunConfiguration oar = (AlgorithmRunConfiguration) o;
 			return (pisp.equals(oar.pisp)) && cutoffTime == oar.cutoffTime && params.equals(oar.params) && algorithmExecutionConfiguration.equals(oar.algorithmExecutionConfiguration);
 		} else
 		{
@@ -153,7 +153,7 @@ public class RunConfig implements Serializable{
 		long seed = this.getProblemInstanceSeedPair().getSeed();
 		String confID = this.params.getFriendlyIDHex();
 		StringBuilder sb = new StringBuilder();
-		sb.append("<Instance:" +instID + ", Seed:" + seed + ", Config:" + confID+", Kappa:" + cutoffTime+ ", Execution Config: " + this.getAlgorithmExecutionConfig().getFriendlyIDHex() + ">");
+		sb.append("<Instance:" +instID + ", Seed:" + seed + ", Config:" + confID+", Kappa:" + cutoffTime+ ", Execution Config: " + this.getAlgorithmExecutionConfiguration().getFriendlyIDHex() + ">");
 		return sb.toString();
 		
 	}
@@ -170,7 +170,7 @@ public class RunConfig implements Serializable{
 		return "Run for Instance (" + instID + ") Config (" +confID + ") Seed: (" + seed +")";   
 	}
 
-	public AlgorithmExecutionConfiguration getAlgorithmExecutionConfig() {
+	public AlgorithmExecutionConfiguration getAlgorithmExecutionConfiguration() {
 		return this.algorithmExecutionConfiguration;
 	}
 	

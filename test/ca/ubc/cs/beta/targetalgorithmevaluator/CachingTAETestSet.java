@@ -30,6 +30,7 @@ import ca.ubc.cs.beta.TestHelper;
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.configspace.ParamFileHelper;
 import ca.ubc.cs.beta.aeatk.misc.debug.DebugUtil;
@@ -38,7 +39,6 @@ import ca.ubc.cs.beta.aeatk.misc.watch.StopWatch;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aeatk.random.SeedableRandomPool;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
@@ -215,13 +215,13 @@ private static TargetAlgorithmEvaluator tae;
 		{
 			int numberOfValuesToSubmit = (int) dist.inverseCumulativeProbability(r.nextDouble());
 			
-			final Set<RunConfig> rcs = new LinkedHashSet<RunConfig>();
+			final Set<AlgorithmRunConfiguration> rcs = new LinkedHashSet<AlgorithmRunConfiguration>();
 			for(int j=0; j < numberOfValuesToSubmit; j++)
 			{
-				rcs.add(new RunConfig(new ProblemInstanceSeedPair(pis.get(r.nextInt(4)),r.nextInt(2)), configSpace.getRandomConfiguration(r),execConfig));
+				rcs.add(new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(pis.get(r.nextInt(4)),r.nextInt(2)), configSpace.getRandomConfiguration(r),execConfig));
 			}
 			
-			final List<RunConfig> submitList = new ArrayList<RunConfig>(rcs);
+			final List<AlgorithmRunConfiguration> submitList = new ArrayList<AlgorithmRunConfiguration>(rcs);
 			submits.incrementAndGet();
 			Runnable runner = new Runnable()
 			{
@@ -258,7 +258,7 @@ private static TargetAlgorithmEvaluator tae;
 								throw new IllegalStateException("Expected that the number of submitted run configs: " + rcs.size() + " would equal runs completed " + runs.size());
 							}
 							int i=0;
-							for(RunConfig rc : submitList)
+							for(AlgorithmRunConfiguration rc : submitList)
 							{
 								if(!rc.equals(runs.get(i).getRunConfig()))
 								{
@@ -381,13 +381,13 @@ private static TargetAlgorithmEvaluator tae;
 		{
 			int numberOfValuesToSubmit = (int) dist.inverseCumulativeProbability(r.nextDouble());
 			
-			final Set<RunConfig> rcs = new LinkedHashSet<RunConfig>();
+			final Set<AlgorithmRunConfiguration> rcs = new LinkedHashSet<AlgorithmRunConfiguration>();
 			for(int j=0; j < numberOfValuesToSubmit; j++)
 			{
-				rcs.add(new RunConfig(new ProblemInstanceSeedPair(pis.get(r.nextInt(4)),r.nextInt(2)), configSpace.getRandomConfiguration(r),execConfig));
+				rcs.add(new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(pis.get(r.nextInt(4)),r.nextInt(2)), configSpace.getRandomConfiguration(r),execConfig));
 			}
 			
-			final List<RunConfig> submitList = new ArrayList<RunConfig>(rcs);
+			final List<AlgorithmRunConfiguration> submitList = new ArrayList<AlgorithmRunConfiguration>(rcs);
 			submits.incrementAndGet();
 			
 			
@@ -529,12 +529,12 @@ private static TargetAlgorithmEvaluator tae;
 		final AtomicInteger submits = new AtomicInteger(0);
 		final AtomicInteger passes = new AtomicInteger(0);
 		
-		final RunConfig firstRunConfig = new RunConfig(new ProblemInstanceSeedPair(pis.get(r.nextInt(1)),0), configSpace.getRandomConfiguration(r),execConfig);
+		final AlgorithmRunConfiguration firstRunConfig = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(pis.get(r.nextInt(1)),0), configSpace.getRandomConfiguration(r),execConfig);
 		for(int i=0; i < 4; i++)
 		{
 			int numberOfValuesToSubmit = 5;
 			
-			final Set<RunConfig> rcs = new LinkedHashSet<RunConfig>();
+			final Set<AlgorithmRunConfiguration> rcs = new LinkedHashSet<AlgorithmRunConfiguration>();
 			for(int j=0; j < numberOfValuesToSubmit; j++)
 			{
 				if(j == 0)
@@ -542,11 +542,11 @@ private static TargetAlgorithmEvaluator tae;
 					rcs.add(firstRunConfig);
 				} else
 				{
-					rcs.add(new RunConfig(new ProblemInstanceSeedPair(pis.get(r.nextInt(1)),0), configSpace.getRandomConfiguration(r),execConfig));
+					rcs.add(new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(pis.get(r.nextInt(1)),0), configSpace.getRandomConfiguration(r),execConfig));
 				}
 			}
 			
-			final List<RunConfig> submitList = new ArrayList<RunConfig>(rcs);
+			final List<AlgorithmRunConfiguration> submitList = new ArrayList<AlgorithmRunConfiguration>(rcs);
 			submits.incrementAndGet();
 			
 			
@@ -673,12 +673,12 @@ private static TargetAlgorithmEvaluator tae;
 		final AtomicInteger submits = new AtomicInteger(0);
 		final AtomicInteger passes = new AtomicInteger(0);
 		
-		final RunConfig firstRunConfig = new RunConfig(new ProblemInstanceSeedPair(pis.get(r.nextInt(1)),0), configSpace.getRandomConfiguration(r),execConfig);
+		final AlgorithmRunConfiguration firstRunConfig = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(pis.get(r.nextInt(1)),0), configSpace.getRandomConfiguration(r),execConfig);
 		for(int i=0; i < 2; i++)
 		{
 			int numberOfValuesToSubmit = 5;
 			
-			final Set<RunConfig> rcs = new LinkedHashSet<RunConfig>();
+			final Set<AlgorithmRunConfiguration> rcs = new LinkedHashSet<AlgorithmRunConfiguration>();
 			for(int j=0; j < numberOfValuesToSubmit; j++)
 			{
 				if(j == 0)
@@ -686,11 +686,11 @@ private static TargetAlgorithmEvaluator tae;
 					rcs.add(firstRunConfig);
 				} else
 				{
-					rcs.add(new RunConfig(new ProblemInstanceSeedPair(pis.get(r.nextInt(1)),0), configSpace.getRandomConfiguration(r),execConfig));
+					rcs.add(new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(pis.get(r.nextInt(1)),0), configSpace.getRandomConfiguration(r),execConfig));
 				}
 			}
 			
-			final List<RunConfig> submitList = new ArrayList<RunConfig>(rcs);
+			final List<AlgorithmRunConfiguration> submitList = new ArrayList<AlgorithmRunConfiguration>(rcs);
 			submits.incrementAndGet();
 			
 			final int id = i;
@@ -837,12 +837,12 @@ private static TargetAlgorithmEvaluator tae;
 		final AtomicInteger submits = new AtomicInteger(0);
 		final AtomicInteger passes = new AtomicInteger(0);
 		
-		final RunConfig firstRunConfig = new RunConfig(new ProblemInstanceSeedPair(pis.get(r.nextInt(1)),0), configSpace.getRandomConfiguration(r),execConfig);
+		final AlgorithmRunConfiguration firstRunConfig = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(pis.get(r.nextInt(1)),0), configSpace.getRandomConfiguration(r),execConfig);
 		for(int i=0; i < 8000; i++)
 		{
 			int numberOfValuesToSubmit = (int) dist.inverseCumulativeProbability(r.nextDouble());
 			
-			final Set<RunConfig> rcs = new LinkedHashSet<RunConfig>();
+			final Set<AlgorithmRunConfiguration> rcs = new LinkedHashSet<AlgorithmRunConfiguration>();
 			for(int j=0; j < numberOfValuesToSubmit; j++)
 			{
 				if(j == 0)
@@ -850,11 +850,11 @@ private static TargetAlgorithmEvaluator tae;
 					rcs.add(firstRunConfig);
 				} else
 				{
-					rcs.add(new RunConfig(new ProblemInstanceSeedPair(pis.get(r.nextInt(4)),r.nextInt(2)), configSpace.getRandomConfiguration(r),execConfig));
+					rcs.add(new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(pis.get(r.nextInt(4)),r.nextInt(2)), configSpace.getRandomConfiguration(r),execConfig));
 				}
 			}
 			
-			final List<RunConfig> submitList = new ArrayList<RunConfig>(rcs);
+			final List<AlgorithmRunConfiguration> submitList = new ArrayList<AlgorithmRunConfiguration>(rcs);
 			submits.incrementAndGet();
 			
 			final int id = i;

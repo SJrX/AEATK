@@ -11,8 +11,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.concurrent.threadfactory.SequentiallyNamedThreadFactory;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
@@ -58,13 +58,13 @@ public class TerminateAllRunsOnFileDeleteTargetAlgorithmEvaluatorDecorator exten
 	}
 	
 	@Override
-	public final List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
+	public final List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
 		return tae.evaluateRun(runConfigs, new TerminateAllRunOnFileDeleteTargetAlgorithmEvaluatorObserver(obs));
 	}
 	
 	
 	@Override
-	public final void evaluateRunsAsync(List<RunConfig> runConfigs,
+	public final void evaluateRunsAsync(List<AlgorithmRunConfiguration> runConfigs,
 			final TargetAlgorithmEvaluatorCallback oHandler, TargetAlgorithmEvaluatorRunObserver obs) {
 		
 		//We need to make sure wrapped versions are called in the same order

@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 
 /**
  * Helper class with utility methods for dealing with Target Algorithm Evaluators
@@ -23,7 +23,7 @@ public final class TargetAlgorithmEvaluatorHelper {
 	 * @param tae - Target Algorithm Evaluator to run asynchronously and wait for the callback to execute with
 	 * @return runs - Algorithm runs
 	 */
-	public static List<AlgorithmRun> evaluateRunSyncToAsync(List<RunConfig> runConfigs, TargetAlgorithmEvaluator tae, TargetAlgorithmEvaluatorRunObserver obs)
+	public static List<AlgorithmRun> evaluateRunSyncToAsync(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluator tae, TargetAlgorithmEvaluatorRunObserver obs)
 	{
 		if(runConfigs.size() == 0) return Collections.emptyList();
 		

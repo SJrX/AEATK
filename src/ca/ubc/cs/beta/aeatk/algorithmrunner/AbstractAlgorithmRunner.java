@@ -20,8 +20,8 @@ import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aeatk.algorithmrun.RunningAlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.kill.KillHandler;
 import ca.ubc.cs.beta.aeatk.algorithmrun.kill.StatusVariableKillHandler;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.concurrent.threadfactory.SequentiallyNamedThreadFactory;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.CommandLineAlgorithmRun;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluatorOptions;
@@ -36,7 +36,7 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 	/**
 	 * Stores the run configurations of the target algorithm
 	 */
-	protected final List<RunConfig> runConfigs;
+	protected final List<AlgorithmRunConfiguration> runConfigs;
 
 	protected final List<Callable<AlgorithmRun>> runs;
 	
@@ -57,7 +57,7 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 	 * @param runConfigs	run configurations of the target algorithm
 	 * @param obs 
 	 */
-	public AbstractAlgorithmRunner(final List<RunConfig> runConfigs, final TargetAlgorithmEvaluatorRunObserver obs, final CommandLineTargetAlgorithmEvaluatorOptions options, BlockingQueue<Integer> executionIDs)
+	public AbstractAlgorithmRunner(final List<AlgorithmRunConfiguration> runConfigs, final TargetAlgorithmEvaluatorRunObserver obs, final CommandLineTargetAlgorithmEvaluatorOptions options, BlockingQueue<Integer> executionIDs)
 	{
 		if(runConfigs == null)
 		{
@@ -69,16 +69,16 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 		List<Callable<AlgorithmRun>> runs = new ArrayList<Callable<AlgorithmRun>>(runConfigs.size());
 		
 		//maps the run configs to the most recent update we have
-		final ConcurrentHashMap<RunConfig,AlgorithmRun> runConfigToLatestUpdatedRunMap = new ConcurrentHashMap<RunConfig,AlgorithmRun>(runConfigs.size());
+		final ConcurrentHashMap<AlgorithmRunConfiguration,AlgorithmRun> runConfigToLatestUpdatedRunMap = new ConcurrentHashMap<AlgorithmRunConfiguration,AlgorithmRun>(runConfigs.size());
 		
 		//Maps runconfigs to the index in the supplied list
-		final ConcurrentHashMap<RunConfig, Integer> runConfigToPositionInListMap = new ConcurrentHashMap<RunConfig,Integer>(runConfigs.size());
+		final ConcurrentHashMap<AlgorithmRunConfiguration, Integer> runConfigToPositionInListMap = new ConcurrentHashMap<AlgorithmRunConfiguration,Integer>(runConfigs.size());
 		
 		int i=0; 
 		
 		
 		//Initializes data structures for observation
-		for(final RunConfig rc: runConfigs)
+		for(final AlgorithmRunConfiguration rc: runConfigs)
 		{
 			KillHandler killH = new StatusVariableKillHandler();
 			
@@ -153,7 +153,7 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 							//We will quit if all runs are done
 							boolean outstandingRuns = false;
 							
-							for(Entry<RunConfig,AlgorithmRun> entries : runConfigToLatestUpdatedRunMap.entrySet())
+							for(Entry<AlgorithmRunConfiguration,AlgorithmRun> entries : runConfigToLatestUpdatedRunMap.entrySet())
 							{
 								AlgorithmRun run = entries.getValue();
 								if(run.getRunResult().equals(RunResult.RUNNING))

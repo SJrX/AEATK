@@ -3,9 +3,9 @@ package ca.ubc.cs.beta.aeatk.algorithmrun;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.exceptions.IllegalWrapperOutputException;
 import ca.ubc.cs.beta.aeatk.json.serializers.AlgorithmRunJson;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
 
 /**
  * This class represents a single run of the target algorithm given by the AlgorithmExecutionConfig object and the RunConfig object
@@ -22,7 +22,7 @@ public abstract class AbstractAlgorithmRun implements AlgorithmRun
 	 */
 	private static final long serialVersionUID = -1860615761848618478L;
 	
-	protected final RunConfig runConfig;
+	protected final AlgorithmRunConfiguration runConfig;
 	//protected final AlgorithmExecutionConfig execConfig;
 	
 	/*
@@ -212,7 +212,7 @@ public abstract class AbstractAlgorithmRun implements AlgorithmRun
 	 * @param rawResultLine				The Raw result line we got
 	 * @param additionalRunData			Additional Run Data
 	 */
-	protected AbstractAlgorithmRun(RunConfig rc, RunResult acResult, double runtime, double runLength, double quality, long resultSeed, String rawResultLine, String additionalRunData, double wallClockTime)
+	protected AbstractAlgorithmRun(AlgorithmRunConfiguration rc, RunResult acResult, double runtime, double runLength, double quality, long resultSeed, String rawResultLine, String additionalRunData, double wallClockTime)
 	{
 		this(rc, acResult, runtime, runLength, quality, resultSeed, rawResultLine, true, additionalRunData,wallClockTime);
 	}
@@ -264,7 +264,7 @@ public abstract class AbstractAlgorithmRun implements AlgorithmRun
 	 * @param runResultWellFormed		whether this run has well formed output
 	 * @param additionalRunData			additional run data from this run
 	 */
-	public AbstractAlgorithmRun(RunConfig runConfig, RunResult acResult, double runtime, double runLength, double quality, long resultSeed , String rawResultLine, boolean runResultWellFormed, String additionalRunData, double wallClockTime)
+	public AbstractAlgorithmRun(AlgorithmRunConfiguration runConfig, RunResult acResult, double runtime, double runLength, double quality, long resultSeed , String rawResultLine, boolean runResultWellFormed, String additionalRunData, double wallClockTime)
 	{
 		
 		if(acResult.equals(RunResult.TIMEOUT))
@@ -352,11 +352,11 @@ public abstract class AbstractAlgorithmRun implements AlgorithmRun
 	@Override
 	public final AlgorithmExecutionConfiguration getExecutionConfig()
 	{
-		return runConfig.getAlgorithmExecutionConfig();
+		return runConfig.getAlgorithmExecutionConfiguration();
 	}
 	
 	@Override
-	public final RunConfig getRunConfig()
+	public final AlgorithmRunConfiguration getRunConfig()
 	{
 		return runConfig;
 	}

@@ -9,7 +9,7 @@ import org.slf4j.LoggerFactory;
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.ExistingAlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.AbstractSyncTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
@@ -51,35 +51,35 @@ public class AnalyticTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorith
 	}
 
 	@Override
-	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs,
+	public List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs,
 			TargetAlgorithmEvaluatorRunObserver obs) {
 		try{
 			
 			List<AlgorithmRun> ar = new ArrayList<AlgorithmRun>(runConfigs.size());
 			
-			for(RunConfig rc : runConfigs)
+			for(AlgorithmRunConfiguration rc : runConfigs)
 			{ 
 				
 				List<Double> vals = new ArrayList<Double>();
 				
 				for(int i=0; i < 1000; i++)
 				{
-					if(rc.getParamConfiguration().containsKey("x" + i))
+					if(rc.getParameterConfiguration().containsKey("x" + i))
 					{
-						vals.add(Double.valueOf(rc.getParamConfiguration().get("x" + i)));
+						vals.add(Double.valueOf(rc.getParameterConfiguration().get("x" + i)));
 					}
 				}
 				
 				double time = func.evaluate(vals);
 				
-				for(String key : rc.getParamConfiguration().keySet())
+				for(String key : rc.getParameterConfiguration().keySet())
 				{
 					if(key.matches("x[0-9]+"))
 					{
 						continue;
 					}
 					
-					Calculable calc = new ExpressionBuilder(key).withVariable("X", Double.valueOf(rc.getParamConfiguration().get(key))).build();
+					Calculable calc = new ExpressionBuilder(key).withVariable("X", Double.valueOf(rc.getParameterConfiguration().get(key))).build();
 					time+=calc.calculate();
 				}
 				

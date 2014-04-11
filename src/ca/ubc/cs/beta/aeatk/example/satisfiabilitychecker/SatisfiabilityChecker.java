@@ -17,6 +17,7 @@ import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration.StringFormat;
@@ -25,7 +26,6 @@ import ca.ubc.cs.beta.aeatk.misc.version.VersionTracker;
 import ca.ubc.cs.beta.aeatk.options.AbstractOptions;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
@@ -176,12 +176,12 @@ public class SatisfiabilityChecker
 				}
 			
 
-				List<RunConfig> rc = new ArrayList<RunConfig>(instances.size());
+				List<AlgorithmRunConfiguration> rc = new ArrayList<AlgorithmRunConfiguration>(instances.size());
 				for(ProblemInstanceSeedPair pisp : pisps)
 				{
 					//A RunConfig object stores the information needed to actually request (compare the objects here to the information passed to the wrapper as listed in the Manual)
 					//It is also IMMUTABLE
-					rc.add(new RunConfig(pisp, config,execConfig));
+					rc.add(new AlgorithmRunConfiguration(pisp, config,execConfig));
 				}
 				
 				//Observer that gives nice information about current status of runs

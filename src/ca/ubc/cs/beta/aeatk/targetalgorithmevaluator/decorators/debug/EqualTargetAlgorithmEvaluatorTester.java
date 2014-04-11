@@ -4,7 +4,7 @@ import java.util.Collections;
 import java.util.List;
 
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
@@ -31,17 +31,17 @@ public class EqualTargetAlgorithmEvaluatorTester implements
 	}
 	
 	@Override
-	public List<AlgorithmRun> evaluateRun(RunConfig run) {
+	public List<AlgorithmRun> evaluateRun(AlgorithmRunConfiguration run) {
 		return this.evaluateRun(Collections.singletonList(run));	
 	}
 
 	@Override
-	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs) {
+	public List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs) {
 		return evaluateRun(runConfigs, null);
 	}
 
 	@Override
-	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
+	public List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
 		
 		List<AlgorithmRun> runTae1 = tae1.evaluateRun(runConfigs, obs);
 		List<AlgorithmRun> runTae2 = tae2.evaluateRun(runConfigs, obs);
@@ -91,7 +91,7 @@ public class EqualTargetAlgorithmEvaluatorTester implements
 	}
 
 	@Override
-	public String getManualCallString(RunConfig runConfig) {
+	public String getManualCallString(AlgorithmRunConfiguration runConfig) {
 		return tae1.getManualCallString(runConfig);
 	}
 
@@ -102,19 +102,19 @@ public class EqualTargetAlgorithmEvaluatorTester implements
 	}
 
 	@Override
-	public void evaluateRunsAsync(RunConfig runConfig, TargetAlgorithmEvaluatorCallback handler) {
+	public void evaluateRunsAsync(AlgorithmRunConfiguration runConfig, TargetAlgorithmEvaluatorCallback handler) {
 		throw new UnsupportedOperationException("This TAE does not support Asynchronous Execution at the moment");
 		
 	}
 
 	@Override
-	public void evaluateRunsAsync(List<RunConfig> runConfigs,
+	public void evaluateRunsAsync(List<AlgorithmRunConfiguration> runConfigs,
 			TargetAlgorithmEvaluatorCallback handler) {
 				evaluateRunsAsync(runConfigs, handler, null);
 			}
 
 	@Override
-	public void evaluateRunsAsync(List<RunConfig> runConfigs,
+	public void evaluateRunsAsync(List<AlgorithmRunConfiguration> runConfigs,
 			TargetAlgorithmEvaluatorCallback handler, TargetAlgorithmEvaluatorRunObserver obs) {
 		//Drop obs if this is implemented
 		throw new UnsupportedOperationException("This TAE does not support Asynchronous Execution at the moment");

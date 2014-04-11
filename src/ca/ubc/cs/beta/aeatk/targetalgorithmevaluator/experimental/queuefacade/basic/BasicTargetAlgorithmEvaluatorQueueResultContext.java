@@ -4,14 +4,14 @@ import java.util.List;
 
 import net.jcip.annotations.ThreadSafe;
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.experimental.queuefacade.general.TargetAlgorithmEvaluatorQueueResultContext;
 
 @ThreadSafe
 public class BasicTargetAlgorithmEvaluatorQueueResultContext implements TargetAlgorithmEvaluatorQueueResultContext {
 
 	private volatile RuntimeException runtimeException;
-	private volatile List<RunConfig> runConfigs;
+	private volatile List<AlgorithmRunConfiguration> runConfigs;
 	private volatile List<AlgorithmRun> runs;
 
 	@Override
@@ -26,12 +26,12 @@ public class BasicTargetAlgorithmEvaluatorQueueResultContext implements TargetAl
 	}
 
 	@Override
-	public List<RunConfig> getRunConfigs() {
+	public List<AlgorithmRunConfiguration> getRunConfigs() {
 		return runConfigs;
 	}
 
 	@Override
-	public void setRunConfigs(List<RunConfig> runConfigs) {
+	public void setRunConfigs(List<AlgorithmRunConfiguration> runConfigs) {
 		this.runConfigs = runConfigs;
 		
 	}

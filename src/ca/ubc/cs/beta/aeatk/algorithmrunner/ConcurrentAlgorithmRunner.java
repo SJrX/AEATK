@@ -14,8 +14,8 @@ import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.concurrent.threadfactory.SequentiallyNamedThreadFactory;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluatorOptions;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.exceptions.TargetAlgorithmAbortException;
@@ -42,7 +42,7 @@ class ConcurrentAlgorithmRunner extends AbstractAlgorithmRunner {
 	 * @param executionIDs 
 	 */
 
-	public ConcurrentAlgorithmRunner(List<RunConfig> runConfigs, int numberOfConcurrentExecutions, TargetAlgorithmEvaluatorRunObserver obs, CommandLineTargetAlgorithmEvaluatorOptions options, BlockingQueue<Integer> executionIDs) {
+	public ConcurrentAlgorithmRunner(List<AlgorithmRunConfiguration> runConfigs, int numberOfConcurrentExecutions, TargetAlgorithmEvaluatorRunObserver obs, CommandLineTargetAlgorithmEvaluatorOptions options, BlockingQueue<Integer> executionIDs) {
 		super( runConfigs, obs, options,executionIDs);
 		this.numberOfConcurrentExecutions = numberOfConcurrentExecutions;
 	}

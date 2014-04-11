@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import net.jcip.annotations.ThreadSafe;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.experimental.queuefacade.general.TargetAlgorithmEvaluatorQueueFacade;
@@ -50,7 +50,7 @@ public class BasicTargetAlgorithmEvaluatorQueue {
 	 * @param context 		context result that will be populated with the answer
 	 * @param runConfig		runConfig to run
 	 */
-	public synchronized void evaluateRunAsync(RunConfig runConfig)
+	public synchronized void evaluateRunAsync(AlgorithmRunConfiguration runConfig)
 	{
 		this.evaluateRunAsync(Collections.singletonList(runConfig));
 	}
@@ -60,7 +60,7 @@ public class BasicTargetAlgorithmEvaluatorQueue {
 	 * 
 	 * @param runConfigs	a list of runConfigs to run
 	 */
-	public synchronized void evaluateRunAsync(List<RunConfig> runConfigs)
+	public synchronized void evaluateRunAsync(List<AlgorithmRunConfiguration> runConfigs)
 	{
 		this.evaluateRunAsync(runConfigs, null);
 	}
@@ -72,7 +72,7 @@ public class BasicTargetAlgorithmEvaluatorQueue {
 	 * @param runConfigs	a list of runConfigs to run
 	 * @param obs			observer to monitor
 	 */
-	public synchronized void evaluateRunAsync(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs)
+	public synchronized void evaluateRunAsync(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs)
 	{
 		BasicTargetAlgorithmEvaluatorQueueResultContext context = new BasicTargetAlgorithmEvaluatorQueueResultContext();
 		taeQueue.evaluateRunAsync(context, runConfigs, obs);

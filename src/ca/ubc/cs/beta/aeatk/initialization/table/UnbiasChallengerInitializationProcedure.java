@@ -24,6 +24,7 @@ import com.beust.jcommander.ParameterException;
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.exceptions.DuplicateRunException;
@@ -33,7 +34,6 @@ import ca.ubc.cs.beta.aeatk.objectives.ObjectiveHelper;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aeatk.random.SeedableRandomPool;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
 import ca.ubc.cs.beta.aeatk.runhistory.ThreadSafeRunHistory;
 import ca.ubc.cs.beta.aeatk.seedgenerator.InstanceSeedGenerator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
@@ -195,10 +195,10 @@ public class UnbiasChallengerInitializationProcedure implements InitializationPr
 				
 				pispsToRun.addAll(runHistory.getEarlyCensoredProblemInstanceSeedPairs(bestConfiguration));
 				
-				List<RunConfig> rcs = new ArrayList<RunConfig>();
+				List<AlgorithmRunConfiguration> rcs = new ArrayList<AlgorithmRunConfiguration>();
 				for(ProblemInstanceSeedPair pisp : pispsToRun)
 				{
-					rcs.add(new RunConfig( pisp, this.cutoffTime, bestConfiguration,execConfig));
+					rcs.add(new AlgorithmRunConfiguration( pisp, this.cutoffTime, bestConfiguration,execConfig));
 				}
 				
 				log.debug("Solved runs {} ", runHistory.getAlgorithmRunsExcludingRedundant(bestConfiguration));
@@ -416,7 +416,7 @@ outOfInitialization:
 				}
 				
 				nextCutoffTime.put(pair, kappa);
-				tae.evaluateRunsAsync(Collections.singletonList(new RunConfig(pair.getFirst(), kappa, pair.getSecond(), execConfig)), taeCallback, killAtTimeoutObserver);
+				tae.evaluateRunsAsync(Collections.singletonList(new AlgorithmRunConfiguration(pair.getFirst(), kappa, pair.getSecond(), execConfig)), taeCallback, killAtTimeoutObserver);
 			
 				
 			}
@@ -463,11 +463,11 @@ outOfInitialization:
 		
 		final List<AlgorithmRun> incumbentRuns = Collections.synchronizedList(new ArrayList<AlgorithmRun>(selectedPisps.size()));
 		
-		List<RunConfig> rcs = new ArrayList<RunConfig>(selectedPisps.size());
+		List<AlgorithmRunConfiguration> rcs = new ArrayList<AlgorithmRunConfiguration>(selectedPisps.size());
 		
 		for(ProblemInstanceSeedPair pisp : selectedPisps)
 		{
-			rcs.add(new RunConfig(pisp, cutoffTime, initialIncumbent,execConfig));
+			rcs.add(new AlgorithmRunConfiguration(pisp, cutoffTime, initialIncumbent,execConfig));
 		}
 		
 		runHistory.getOrCreateThetaIdx(initialIncumbent);

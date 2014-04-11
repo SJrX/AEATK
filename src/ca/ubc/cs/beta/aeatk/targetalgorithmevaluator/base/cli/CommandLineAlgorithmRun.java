@@ -41,6 +41,7 @@ import ca.ubc.cs.beta.aeatk.algorithmrun.ExistingAlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aeatk.algorithmrun.RunningAlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.kill.KillHandler;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.concurrent.threadfactory.SequentiallyNamedThreadFactory;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration.StringFormat;
 import ca.ubc.cs.beta.aeatk.misc.associatedvalue.Pair;
@@ -48,7 +49,6 @@ import ca.ubc.cs.beta.aeatk.misc.logback.MarkerFilter;
 import ca.ubc.cs.beta.aeatk.misc.logging.LoggingMarker;
 import ca.ubc.cs.beta.aeatk.misc.string.SplitQuotedString;
 import ca.ubc.cs.beta.aeatk.misc.watch.StopWatch;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.exceptions.TargetAlgorithmAbortException;
 
@@ -165,7 +165,7 @@ public class CommandLineAlgorithmRun implements Callable<AlgorithmRun>{
 	 */
 	private final transient CommandLineTargetAlgorithmEvaluatorOptions options;
 
-	private final RunConfig runConfig;
+	private final AlgorithmRunConfiguration runConfig;
 	
 	private static transient final AtomicBoolean jvmShutdownDetected = new AtomicBoolean(false);
 	
@@ -230,7 +230,7 @@ public class CommandLineAlgorithmRun implements Callable<AlgorithmRun>{
 	 * @param runConfig			run configuration we are executing
 	 * @param executionIDs 
 	 */ 
-	public CommandLineAlgorithmRun( RunConfig runConfig, TargetAlgorithmEvaluatorRunObserver obs, KillHandler handler, CommandLineTargetAlgorithmEvaluatorOptions options, BlockingQueue<Integer> executionIDs) 
+	public CommandLineAlgorithmRun( AlgorithmRunConfiguration runConfig, TargetAlgorithmEvaluatorRunObserver obs, KillHandler handler, CommandLineTargetAlgorithmEvaluatorOptions options, BlockingQueue<Integer> executionIDs) 
 	{
 		//super( runConfig);
 	
@@ -311,15 +311,15 @@ public class CommandLineAlgorithmRun implements Callable<AlgorithmRun>{
 		
 		final Process proc;
 		
-		File execDir = new File(runConfig.getAlgorithmExecutionConfig().getAlgorithmExecutionDirectory());
+		File execDir = new File(runConfig.getAlgorithmExecutionConfiguration().getAlgorithmExecutionDirectory());
 		if(!execDir.exists()) 
 		{
-			throw new TargetAlgorithmAbortException("Algorithm Execution Directory: " + runConfig.getAlgorithmExecutionConfig().getAlgorithmExecutionDirectory() + " does not exist");
+			throw new TargetAlgorithmAbortException("Algorithm Execution Directory: " + runConfig.getAlgorithmExecutionConfiguration().getAlgorithmExecutionDirectory() + " does not exist");
 		}
 		
 		if(!execDir.isDirectory()) 
 		{
-			throw new TargetAlgorithmAbortException("Algorithm Execution Directory: " + runConfig.getAlgorithmExecutionConfig().getAlgorithmExecutionDirectory() + " is not a directory");
+			throw new TargetAlgorithmAbortException("Algorithm Execution Directory: " + runConfig.getAlgorithmExecutionConfiguration().getAlgorithmExecutionDirectory() + " is not a directory");
 		}
 		
 		try 
@@ -594,7 +594,7 @@ public class CommandLineAlgorithmRun implements Callable<AlgorithmRun>{
 						case CRASHED:
 
 						
-								log.error("The following algorithm call failed: cd \"{}\" " + COMMAND_SEPERATOR + "  {} ",new File(runConfig.getAlgorithmExecutionConfig().getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommandAsString( runConfig));
+								log.error("The following algorithm call failed: cd \"{}\" " + COMMAND_SEPERATOR + "  {} ",new File(runConfig.getAlgorithmExecutionConfiguration().getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommandAsString( runConfig));
 							
 								if(outputQueue.size() > 0)
 								{
@@ -661,7 +661,7 @@ public class CommandLineAlgorithmRun implements Callable<AlgorithmRun>{
 		{
 
 			//String execCmd = getTargetAlgorithmExecutionCommandAsString(execConfig,runConfig);
-			log.error( "The following algorithm call failed: cd \"{}\" " + COMMAND_SEPERATOR + "  {} ",new File(runConfig.getAlgorithmExecutionConfig().getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommandAsString( runConfig));
+			log.error( "The following algorithm call failed: cd \"{}\" " + COMMAND_SEPERATOR + "  {} ",new File(runConfig.getAlgorithmExecutionConfiguration().getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommandAsString( runConfig));
 
 			throw new TargetAlgorithmAbortException(e1);
 			//throw new IllegalStateException(e1);
@@ -782,7 +782,7 @@ outerloop:
 		
 		if(options.logAllCallStrings)
 		{
-			log.info( "Call (with token {}) : cd \"{}\" " + COMMAND_SEPERATOR + "  {} ", token, new File(runConfig.getAlgorithmExecutionConfig().getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommandAsString( runConfig));
+			log.info( "Call (with token {}) : cd \"{}\" " + COMMAND_SEPERATOR + "  {} ", token, new File(runConfig.getAlgorithmExecutionConfiguration().getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommandAsString( runConfig));
 		}
 		
 		
@@ -803,7 +803,7 @@ outerloop:
 		envpList.add(envVariableForChildren + "=" + uuid.toString());  
 		String[] envp = envpList.toArray(new String[0]);
 
-		Process proc = Runtime.getRuntime().exec(execCmdArray,envp, new File(runConfig.getAlgorithmExecutionConfig().getAlgorithmExecutionDirectory()));
+		Process proc = Runtime.getRuntime().exec(execCmdArray,envp, new File(runConfig.getAlgorithmExecutionConfiguration().getAlgorithmExecutionDirectory()));
 
 		log.debug("Process for {} started with pid: {} (Environment Variable: {})", this.runConfig, getPID(proc), uuid);
 
@@ -816,10 +816,10 @@ outerloop:
 	 * @return string containing command
 	 */
 
-	private String[] getTargetAlgorithmExecutionCommand( RunConfig runConfig)
+	private String[] getTargetAlgorithmExecutionCommand( AlgorithmRunConfiguration runConfig)
 	{
 
-		AlgorithmExecutionConfiguration execConfig = runConfig.getAlgorithmExecutionConfig();
+		AlgorithmExecutionConfiguration execConfig = runConfig.getAlgorithmExecutionConfiguration();
 				
 		String cmd = execConfig.getAlgorithmExecutable();
 		cmd = cmd.replace(AlgorithmExecutionConfiguration.MAGIC_VALUE_ALGORITHM_EXECUTABLE_PREFIX,"");
@@ -838,7 +838,7 @@ outerloop:
 		
 		final String valueDelimiter = (options.paramArgumentsContainQuotes) ?  f.getValueDelimeter() : "";
 		
-		for(String key : runConfig.getParamConfiguration().getActiveParameters() )
+		for(String key : runConfig.getParameterConfiguration().getActiveParameters() )
 		{
 			if(!f.getKeyValueSeperator().equals(" ") || !f.getGlue().equals(" "))
 			{
@@ -847,7 +847,7 @@ outerloop:
 			list.add(f.getPreKey() + key);
 			
 			
-			list.add(valueDelimiter + runConfig.getParamConfiguration().get(key)  + valueDelimiter);	
+			list.add(valueDelimiter + runConfig.getParameterConfiguration().get(key)  + valueDelimiter);	
 			
 		}
 		
@@ -861,11 +861,11 @@ outerloop:
 	 * Gets the execution command string
 	 * @return string containing command
 	 */
-	public static String getTargetAlgorithmExecutionCommandAsString( RunConfig runConfig)
+	public static String getTargetAlgorithmExecutionCommandAsString( AlgorithmRunConfiguration runConfig)
 	{
 
 				
-		AlgorithmExecutionConfiguration execConfig = runConfig.getAlgorithmExecutionConfig();
+		AlgorithmExecutionConfiguration execConfig = runConfig.getAlgorithmExecutionConfiguration();
 		String cmd = execConfig.getAlgorithmExecutable();
 		cmd = cmd.replace(AlgorithmExecutionConfiguration.MAGIC_VALUE_ALGORITHM_EXECUTABLE_PREFIX,"");
 		
@@ -880,7 +880,7 @@ outerloop:
 		list.add(String.valueOf(runConfig.getProblemInstanceSeedPair().getSeed()));
 		
 		StringFormat f = StringFormat.NODB_SYNTAX;
-		for(String key : runConfig.getParamConfiguration().getActiveParameters()  )
+		for(String key : runConfig.getParameterConfiguration().getActiveParameters()  )
 		{
 			
 			
@@ -889,7 +889,7 @@ outerloop:
 				throw new IllegalStateException("Key Value seperator or glue is not a space, and this means the way we handle this logic won't work currently");
 			}
 			list.add(f.getPreKey() + key);
-			list.add(f.getValueDelimeter() + runConfig.getParamConfiguration().get(key)  + f.getValueDelimeter());	
+			list.add(f.getValueDelimeter() + runConfig.getParameterConfiguration().get(key)  + f.getValueDelimeter());	
 			
 		}
 		
@@ -989,7 +989,7 @@ outerloop:
 			} catch(NumberFormatException e)
 			{	 //Numeric value is probably at fault
 				
-				completedAlgorithmRun = new ExistingAlgorithmRun(runConfig, RunResult.CRASHED, runConfig.getAlgorithmExecutionConfig().getAlgorithmMaximumCutoffTime(), 0, 0, 0, "ERROR: Couldn't parse output from wrapper (invalid number format): " + e.getMessage(), this.getCurrentWallClockTime() / 1000.0);
+				completedAlgorithmRun = new ExistingAlgorithmRun(runConfig, RunResult.CRASHED, runConfig.getAlgorithmExecutionConfiguration().getAlgorithmMaximumCutoffTime(), 0, 0, 0, "ERROR: Couldn't parse output from wrapper (invalid number format): " + e.getMessage(), this.getCurrentWallClockTime() / 1000.0);
 				
 				//this.setCrashResult("Output:" + fullLine + "\n Exception Message: " + e.getMessage() + "\n Name:" + e.getClass().getCanonicalName());
 				Object[] args = { getTargetAlgorithmExecutionCommandAsString( runConfig), fullLine};
@@ -1002,7 +1002,7 @@ outerloop:
 			{ 	//The RunResult probably doesn't match anything
 				//this.setCrashResult("Output:" + fullLine + "\n Exception Message: " + e.getMessage() + "\n Name:" + e.getClass().getCanonicalName());
 				
-				completedAlgorithmRun = new ExistingAlgorithmRun(runConfig, RunResult.CRASHED, runConfig.getAlgorithmExecutionConfig().getAlgorithmMaximumCutoffTime(), 0, 0, 0, "ERROR: Couldn't parse output from wrapper (not enough arguments): " + e.getMessage(), this.getCurrentWallClockTime() / 1000.0);
+				completedAlgorithmRun = new ExistingAlgorithmRun(runConfig, RunResult.CRASHED, runConfig.getAlgorithmExecutionConfiguration().getAlgorithmMaximumCutoffTime(), 0, 0, 0, "ERROR: Couldn't parse output from wrapper (not enough arguments): " + e.getMessage(), this.getCurrentWallClockTime() / 1000.0);
 				
 				ArrayList<String> validValues = new ArrayList<String>();
 				for(RunResult r : RunResult.values())
@@ -1025,7 +1025,7 @@ outerloop:
 			} catch(ArrayIndexOutOfBoundsException e)
 			{	//There aren't enough commas in the output
 				
-				completedAlgorithmRun = new ExistingAlgorithmRun(runConfig, RunResult.CRASHED, runConfig.getAlgorithmExecutionConfig().getAlgorithmMaximumCutoffTime(), 0, 0, 0, "ERROR: Couldn't parse output from wrapper (problem with arguments): " + e.getMessage(), this.getCurrentWallClockTime() / 1000.0);
+				completedAlgorithmRun = new ExistingAlgorithmRun(runConfig, RunResult.CRASHED, runConfig.getAlgorithmExecutionConfiguration().getAlgorithmMaximumCutoffTime(), 0, 0, 0, "ERROR: Couldn't parse output from wrapper (problem with arguments): " + e.getMessage(), this.getCurrentWallClockTime() / 1000.0);
 				
 				//this.setCrashResult("Output:" + fullLine + "\n Exception Message: " + e.getMessage() + "\n Name:" + e.getClass().getCanonicalName());
 				Object[] args = { getTargetAlgorithmExecutionCommandAsString(runConfig), fullLine};

@@ -11,9 +11,11 @@ import org.junit.Test;
 
 
 
+
 import ca.ubc.cs.beta.TestHelper;
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.probleminstance.InstanceListWithSeeds;
@@ -21,7 +23,6 @@ import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceHelper;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceOptions;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
 import ca.ubc.cs.beta.aeatk.seedgenerator.InstanceSeedGenerator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluatorFactory;
@@ -61,7 +62,7 @@ public class AlgoExecutionInstanceSpecificInfoTest {
 			
 			while(inst.hasNextSeed(pi))
 			{
-				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(pi, inst.getNextSeed(pi)), 300, defaultConfig,execConfig);
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(pi, inst.getNextSeed(pi)), 300, defaultConfig,execConfig);
 				AlgorithmRun run = tae.evaluateRun(rc).get(0);
 				
 				try {
@@ -113,7 +114,7 @@ public class AlgoExecutionInstanceSpecificInfoTest {
 			
 			while(inst.hasNextSeed(pi))
 			{
-				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(pi, inst.getNextSeed(pi)), 300, defaultConfig,execConfig);
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(pi, inst.getNextSeed(pi)), 300, defaultConfig,execConfig);
 				AlgorithmRun run = tae.evaluateRun(rc).get(0);
 				
 				try {

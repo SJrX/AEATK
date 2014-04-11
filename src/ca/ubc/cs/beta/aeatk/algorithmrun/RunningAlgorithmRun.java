@@ -1,7 +1,7 @@
 package ca.ubc.cs.beta.aeatk.algorithmrun;
 
 import ca.ubc.cs.beta.aeatk.algorithmrun.kill.KillHandler;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 
 /**
  * AlgorithmRun that reports that it's current status is RUNNING.
@@ -17,7 +17,7 @@ public class RunningAlgorithmRun extends ExistingAlgorithmRun {
 	private final KillHandler handler;
 
 	public RunningAlgorithmRun(
-			RunConfig runConfig, double runtime, double runlength, double quality, long seed, double walltime, KillHandler handler) {
+			AlgorithmRunConfiguration runConfig, double runtime, double runlength, double quality, long seed, double walltime, KillHandler handler) {
 		super( runConfig, RunResult.RUNNING, runtime, runlength, quality, seed, walltime);
 		this.handler = handler;
 	}

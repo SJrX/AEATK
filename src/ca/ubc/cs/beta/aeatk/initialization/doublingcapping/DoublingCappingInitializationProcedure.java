@@ -24,6 +24,7 @@ import com.google.common.util.concurrent.AtomicDouble;
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.exceptions.DuplicateRunException;
@@ -33,7 +34,6 @@ import ca.ubc.cs.beta.aeatk.objectives.ObjectiveHelper;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aeatk.random.SeedableRandomPool;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
 import ca.ubc.cs.beta.aeatk.runhistory.ThreadSafeRunHistory;
 import ca.ubc.cs.beta.aeatk.seedgenerator.InstanceSeedGenerator;
 import ca.ubc.cs.beta.aeatk.seedgenerator.SetInstanceSeedGenerator;
@@ -190,7 +190,7 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 		LinkedBlockingQueue<ProblemInstanceSeedPair> pispsQueue = new LinkedBlockingQueue<ProblemInstanceSeedPair>();
 		pispsQueue.addAll(pisps);
 		
-		LinkedBlockingQueue<RunConfig> runsToDo = new LinkedBlockingQueue<RunConfig>();
+		LinkedBlockingQueue<AlgorithmRunConfiguration> runsToDo = new LinkedBlockingQueue<AlgorithmRunConfiguration>();
 		
 		for(double kappa = startKappa ; kappa <= cutoffTime; kappa*=2)
 		{
@@ -205,7 +205,7 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 					config = configsQueue.poll();
 				}
 				
-				RunConfig rc = new RunConfig(pispsQueue.poll(), kappa, config, execConfig);
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(pispsQueue.poll(), kappa, config, execConfig);
 				runsToDo.add(rc);
 			}
 		}
@@ -260,7 +260,7 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 		}
 		
 		
-		Set<RunConfig> existingRunConfigs = new HashSet<RunConfig>();
+		Set<AlgorithmRunConfiguration> existingRunConfigs = new HashSet<AlgorithmRunConfiguration>();
 		Set<ParamConfiguration> configs = new HashSet<ParamConfiguration>();
 		Set<ProblemInstanceSeedPair> phaseTwoPisps = new HashSet<ProblemInstanceSeedPair>();
 		MapList<ParamConfiguration, AlgorithmRun> phaseTwoResults = new MapList<ParamConfiguration, AlgorithmRun>(new HashMap<ParamConfiguration, List<AlgorithmRun>>());
@@ -272,15 +272,15 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
  		for(AlgorithmRun run : phaseTwoRuns)
 		{
 			existingRunConfigs.add(run.getRunConfig());
-			configs.add(run.getRunConfig().getParamConfiguration());
+			configs.add(run.getRunConfig().getParameterConfiguration());
 			phaseTwoPisps.add(run.getRunConfig().getProblemInstanceSeedPair());
-			phaseTwoResults.addToList(run.getRunConfig().getParamConfiguration(), run);
+			phaseTwoResults.addToList(run.getRunConfig().getParameterConfiguration(), run);
 			
-			phaseTwoPispResults.addToList(run.getRunConfig().getParamConfiguration(), run.getRunConfig().getProblemInstanceSeedPair());
+			phaseTwoPispResults.addToList(run.getRunConfig().getParameterConfiguration(), run.getRunConfig().getProblemInstanceSeedPair());
 			
-			if(phaseTwoResults.get(run.getRunConfig().getParamConfiguration()).size() > 1)
+			if(phaseTwoResults.get(run.getRunConfig().getParameterConfiguration()).size() > 1)
 			{
-				log.warn("[BUG Detected]: Expected that only run one would be completed for a given configuration, but got {}", phaseTwoResults.get(run.getRunConfig().getParamConfiguration()));
+				log.warn("[BUG Detected]: Expected that only run one would be completed for a given configuration, but got {}", phaseTwoResults.get(run.getRunConfig().getParameterConfiguration()));
 			}
 		}
 		
@@ -312,7 +312,7 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 			{
 				List<AlgorithmRun> objRuns = new ArrayList<AlgorithmRun>(runs);
 				
-				objRuns.add(previouslyExistingRun.get(runs.get(0).getRunConfig().getParamConfiguration()));
+				objRuns.add(previouslyExistingRun.get(runs.get(0).getRunConfig().getParameterConfiguration()));
 				double myPerformance = objHelp.computeObjective(runs);
 				if(myPerformance > bestPerformance.get())
 				{
@@ -335,12 +335,12 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
  		for(int i=0; i < Math.min(numberOfChallengers, configToIterate.size()); i++)
  		{
  			ParamConfiguration config = configToIterate.get(i);
- 			List<RunConfig> runsForConfig = new ArrayList<RunConfig>();
+ 			List<AlgorithmRunConfiguration> runsForConfig = new ArrayList<AlgorithmRunConfiguration>();
  			
  			for(int j=0; j < Math.min(this.numberOfRunsPerChallenger, phaseTwoPisps.size()); j++)
  			{
  				ProblemInstanceSeedPair pisp = pispsToIterate.get(j);
- 				runsForConfig.add(new RunConfig(pisp, this.cutoffTime, config, execConfig));
+ 				runsForConfig.add(new AlgorithmRunConfiguration(pisp, this.cutoffTime, config, execConfig));
  			}
  			log.trace("Scheduling {} runs for config {}", runsForConfig.size(), config);
 			phaseTwoTaeQueue.evaluateRunAsync(runsForConfig, phaseTwoObs);
@@ -361,7 +361,7 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 					double previousBest = bestPerformance.get();
 					
 					bestPerformance.set(myPerformance);
-					newIncumbent = currentResults.get(0).getRunConfig().getParamConfiguration();
+					newIncumbent = currentResults.get(0).getRunConfig().getParameterConfiguration();
 					log.trace("New Incumbent set to {} with performance {} previous best was {}. Other challenges will continue until this bound is reached ", newIncumbent, myPerformance, previousBest);
 				}
 				try {
@@ -396,7 +396,7 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 	 * @param runsToDo A list of pregenerated run configurations that are in order of increasing cap times
 	 * @param runs
 	 */
-	private void phaseOneRuns(LinkedBlockingQueue<RunConfig> runsToDo,
+	private void phaseOneRuns(LinkedBlockingQueue<AlgorithmRunConfiguration> runsToDo,
 			MapList<RunResult, AlgorithmRun> runs) {
 		
 		/**
@@ -448,12 +448,12 @@ topOfLoop:
 		
 			try 
 			{
-				RunConfig rc = runsToDo.poll();
+				AlgorithmRunConfiguration rc = runsToDo.poll();
 				
 				BasicTargetAlgorithmEvaluatorQueueResultContext context;
 				if(rc != null)
 				{
-					while((incumbentSolved.get() == true) && rc.getParamConfiguration().equals(initialIncumbent))
+					while((incumbentSolved.get() == true) && rc.getParameterConfiguration().equals(initialIncumbent))
 					{
 						rc = runsToDo.poll();
 						if(rc == null)
@@ -490,7 +490,7 @@ topOfLoop:
 						case SAT:
 						case UNSAT:
 							
-							if(run.getRunConfig().getParamConfiguration().equals(initialIncumbent))
+							if(run.getRunConfig().getParameterConfiguration().equals(initialIncumbent))
 							{
 								if(incumbentSolved.get() == false)
 								{
@@ -512,7 +512,7 @@ topOfLoop:
 						case TIMEOUT:
 							if(!run.getRunConfig().hasCutoffLessThanMax())
 							{
-								if(run.getRunConfig().getParamConfiguration().equals(initialIncumbent))
+								if(run.getRunConfig().getParameterConfiguration().equals(initialIncumbent))
 								{
 									if(incumbentSolved.get() == false)
 									{
@@ -542,7 +542,7 @@ topOfLoop:
 						case CRASHED:
 							if(!run.getRunConfig().hasCutoffLessThanMax())
 							{
-								if(run.getRunConfig().getParamConfiguration().equals(initialIncumbent))
+								if(run.getRunConfig().getParameterConfiguration().equals(initialIncumbent))
 								{
 									incumbentSolved.set(true);
 								}

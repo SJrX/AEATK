@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 
 import net.jcip.annotations.ThreadSafe;
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
@@ -38,7 +38,7 @@ public class CheckForDuplicateRunConfigDecorator extends
 
 
 	@Override
-	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
+	public List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
 		
 		checkRunConfigs(runConfigs);
 		return tae.evaluateRun(runConfigs,obs);
@@ -46,7 +46,7 @@ public class CheckForDuplicateRunConfigDecorator extends
 
 
 	@Override
-	public void evaluateRunsAsync(List<RunConfig> runConfigs,
+	public void evaluateRunsAsync(List<AlgorithmRunConfiguration> runConfigs,
 			final TargetAlgorithmEvaluatorCallback handler, TargetAlgorithmEvaluatorRunObserver obs) {
 		
 		
@@ -55,9 +55,9 @@ public class CheckForDuplicateRunConfigDecorator extends
 		
 	}
 	
-	public void checkRunConfigs(List<RunConfig> runConfigs)
+	public void checkRunConfigs(List<AlgorithmRunConfiguration> runConfigs)
 	{
-		Set<RunConfig> rcs = new HashSet<RunConfig>();
+		Set<AlgorithmRunConfiguration> rcs = new HashSet<AlgorithmRunConfiguration>();
 		
 		rcs.addAll(runConfigs);
 		
@@ -65,14 +65,14 @@ public class CheckForDuplicateRunConfigDecorator extends
 		{
 			log.error("Duplicate Run Configurations Requested this is almost certainly a bug");
 			log.error("Duplicate Run Configs Follow:");
-			for(RunConfig rc : findDuplicates(runConfigs))
+			for(AlgorithmRunConfiguration rc : findDuplicates(runConfigs))
 			{
 				log.error("\tDuplicate Run Config: {}", rc);
 			}
 			
 			
 			log.error("All Run Configs follow:");
-			for(RunConfig rc : runConfigs)
+			for(AlgorithmRunConfiguration rc : runConfigs)
 			{
 				log.error("\tRun Config: {} ", rc);
 			}
@@ -86,12 +86,12 @@ public class CheckForDuplicateRunConfigDecorator extends
 
 	}
 	
-	private Set<RunConfig> findDuplicates(List<RunConfig> listContainingDuplicates)
+	private Set<AlgorithmRunConfiguration> findDuplicates(List<AlgorithmRunConfiguration> listContainingDuplicates)
 	{ 
-	  final Set<RunConfig> setToReturn = new HashSet<RunConfig>(); 
-	  final Set<RunConfig> set1 = new HashSet<RunConfig>();
+	  final Set<AlgorithmRunConfiguration> setToReturn = new HashSet<AlgorithmRunConfiguration>(); 
+	  final Set<AlgorithmRunConfiguration> set1 = new HashSet<AlgorithmRunConfiguration>();
 
-	  for (RunConfig yourInt : listContainingDuplicates)
+	  for (AlgorithmRunConfiguration yourInt : listContainingDuplicates)
 	  {
 	   if (!set1.add(yourInt))
 	   {

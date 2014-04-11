@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 
 import net.jcip.annotations.ThreadSafe;
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
@@ -37,13 +37,13 @@ public class OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator extends Abst
 	private final double resolutionInMS;
 	
 
-	private final ConcurrentHashMap<RunConfig, Double> startTime = new ConcurrentHashMap<RunConfig, Double>();
-	private final ConcurrentHashMap<RunConfig, Double> endTime =  new ConcurrentHashMap<RunConfig, Double>();
-	private final ConcurrentHashMap<RunConfig, Double> startWalltime = new ConcurrentHashMap<RunConfig, Double>();
-	private final ConcurrentHashMap<RunConfig, Double> startCPUtime = new ConcurrentHashMap<RunConfig, Double>();
+	private final ConcurrentHashMap<AlgorithmRunConfiguration, Double> startTime = new ConcurrentHashMap<AlgorithmRunConfiguration, Double>();
+	private final ConcurrentHashMap<AlgorithmRunConfiguration, Double> endTime =  new ConcurrentHashMap<AlgorithmRunConfiguration, Double>();
+	private final ConcurrentHashMap<AlgorithmRunConfiguration, Double> startWalltime = new ConcurrentHashMap<AlgorithmRunConfiguration, Double>();
+	private final ConcurrentHashMap<AlgorithmRunConfiguration, Double> startCPUtime = new ConcurrentHashMap<AlgorithmRunConfiguration, Double>();
 	
-	private final ConcurrentHashMap<List<RunConfig>, Double> startBatchTime = new ConcurrentHashMap<List<RunConfig>, Double>();
-	private final ConcurrentHashMap<List<RunConfig>, Double> endBatchTime = new ConcurrentHashMap<List<RunConfig>, Double>();
+	private final ConcurrentHashMap<List<AlgorithmRunConfiguration>, Double> startBatchTime = new ConcurrentHashMap<List<AlgorithmRunConfiguration>, Double>();
+	private final ConcurrentHashMap<List<AlgorithmRunConfiguration>, Double> endBatchTime = new ConcurrentHashMap<List<AlgorithmRunConfiguration>, Double>();
 	
 	
 	
@@ -55,7 +55,7 @@ public class OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator extends Abst
 	}
 
 	@Override
-	public final List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, final TargetAlgorithmEvaluatorRunObserver obs) {
+	public final List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, final TargetAlgorithmEvaluatorRunObserver obs) {
 		
 		startBatchTime.put(runConfigs, Math.max(0,(bucketTime(System.currentTimeMillis()) - ZERO_TIME) / 1000.0));
 		
@@ -88,7 +88,7 @@ public class OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator extends Abst
 
 
 	@Override
-	public final void evaluateRunsAsync(final List<RunConfig> runConfigs,
+	public final void evaluateRunsAsync(final List<AlgorithmRunConfiguration> runConfigs,
 			final TargetAlgorithmEvaluatorCallback oHandler, final TargetAlgorithmEvaluatorRunObserver obs) {
 		
 		//We need to make sure wrapped versions are called in the same order
@@ -149,12 +149,12 @@ public class OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator extends Abst
 		if(this.startTime.size() < this.endTime.size())
 		{
 			
-			for(Entry<RunConfig, Double> ent : this.startTime.entrySet())
+			for(Entry<AlgorithmRunConfiguration, Double> ent : this.startTime.entrySet())
 			{
 				log.error("At " + ent.getValue() + " : " + ent.getKey() + " started.");
 			}
 			
-			for(Entry<RunConfig, Double> ent : this.endTime.entrySet())
+			for(Entry<AlgorithmRunConfiguration, Double> ent : this.endTime.entrySet())
 			{
 				log.error("At " + ent.getValue() + " : " + ent.getKey() + " ended. ");
 			}
@@ -183,33 +183,33 @@ public class OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator extends Abst
 			}
 		}
 		
-		for(Entry<RunConfig, Double> startTimes : this.startTime.entrySet())
+		for(Entry<AlgorithmRunConfiguration, Double> startTimes : this.startTime.entrySet())
 		{
 			startEndMap.get(startTimes.getValue()).startDispatch++;
 		}
 		
-		for(Entry<RunConfig, Double> endTimes : this.endTime.entrySet())
+		for(Entry<AlgorithmRunConfiguration, Double> endTimes : this.endTime.entrySet())
 		{
 			startEndMap.get(endTimes.getValue()).endDispatch++;
 		}
 		
-		for(Entry<RunConfig, Double> startCPUTimes : this.startCPUtime.entrySet())
+		for(Entry<AlgorithmRunConfiguration, Double> startCPUTimes : this.startCPUtime.entrySet())
 		{
 			startEndMap.get(startCPUTimes.getValue()).startCPUtime++;
 		}
 		
-		for(Entry<RunConfig, Double> startWallTimes : this.startWalltime.entrySet())
+		for(Entry<AlgorithmRunConfiguration, Double> startWallTimes : this.startWalltime.entrySet())
 		{
 			startEndMap.get(startWallTimes.getValue()).startWalltime++;
 		}
 		
 		
-		for(Entry<List<RunConfig>, Double> startCPUTimes : this.startBatchTime.entrySet())
+		for(Entry<List<AlgorithmRunConfiguration>, Double> startCPUTimes : this.startBatchTime.entrySet())
 		{
 			startEndMap.get(startCPUTimes.getValue()).startBatchTime++;
 		}
 		
-		for(Entry<List<RunConfig>, Double> startWallTimes : this.endBatchTime.entrySet())
+		for(Entry<List<AlgorithmRunConfiguration>, Double> startWallTimes : this.endBatchTime.entrySet())
 		{
 			startEndMap.get(startWallTimes.getValue()).endBatchTime++;
 		}
@@ -261,7 +261,7 @@ public class OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator extends Abst
 		
 		if(run.isRunCompleted())
 		{
-			RunConfig rc = run.getRunConfig();
+			AlgorithmRunConfiguration rc = run.getRunConfig();
 			synchronized(rc)
 			{
 				if(endTime.get(rc) == null)
@@ -300,7 +300,7 @@ public class OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator extends Abst
 	 * @param rc the runconfig  being requested
 	 * @return runConfig object to replace the run
 	 */
-	protected RunConfig processRun(RunConfig rc)
+	protected AlgorithmRunConfiguration processRun(AlgorithmRunConfiguration rc)
 	{
 		synchronized(rc)
 		{
@@ -325,9 +325,9 @@ public class OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator extends Abst
 		return runs;
 	}
 	
-	protected final List<RunConfig> processRunConfigs(List<RunConfig> runConfigs)
+	protected final List<AlgorithmRunConfiguration> processRunConfigs(List<AlgorithmRunConfiguration> runConfigs)
 	{	
-		runConfigs = new ArrayList<RunConfig>(runConfigs);
+		runConfigs = new ArrayList<AlgorithmRunConfiguration>(runConfigs);
 		for(int i=0; i < runConfigs.size(); i++)
 		{
 			runConfigs.set(i, processRun(runConfigs.get(i)));

@@ -12,7 +12,7 @@ import ca.ubc.cs.beta.aeatk.algorithmrun.ExistingAlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aeatk.algorithmrun.RunningAlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.kill.KillHandler;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorHelper;
@@ -29,19 +29,19 @@ public class StrictlyIncreasingRuntimesTargetAlgorithmEvaluatorDecorator extends
 		AbstractTargetAlgorithmEvaluatorDecorator {
 
 	
-	private final ConcurrentHashMap<RunConfig, AtomicDouble> maxRuntimeObserved = new ConcurrentHashMap<RunConfig, AtomicDouble>();
+	private final ConcurrentHashMap<AlgorithmRunConfiguration, AtomicDouble> maxRuntimeObserved = new ConcurrentHashMap<AlgorithmRunConfiguration, AtomicDouble>();
 	
 	public StrictlyIncreasingRuntimesTargetAlgorithmEvaluatorDecorator(TargetAlgorithmEvaluator tae) {
 		super(tae);
 	}
 
 	@Override
-	public final List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
+	public final List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
 		return TargetAlgorithmEvaluatorHelper.evaluateRunSyncToAsync(runConfigs, this, obs);
 	}
 
 	@Override
-	public final void evaluateRunsAsync(List<RunConfig> runConfigs,
+	public final void evaluateRunsAsync(List<AlgorithmRunConfiguration> runConfigs,
 			final TargetAlgorithmEvaluatorCallback oHandler, final TargetAlgorithmEvaluatorRunObserver obs) {
 
 		
@@ -49,7 +49,7 @@ public class StrictlyIncreasingRuntimesTargetAlgorithmEvaluatorDecorator extends
 		
 		
 		
-		for(RunConfig rc : runConfigs)
+		for(AlgorithmRunConfiguration rc : runConfigs)
 		{
 			maxRuntimeObserved.put(rc, new AtomicDouble(0));
 		}
@@ -139,7 +139,7 @@ public class StrictlyIncreasingRuntimesTargetAlgorithmEvaluatorDecorator extends
 				
 			}
 			
-			private double updateRuntime(RunConfig rc, double runtime)
+			private double updateRuntime(AlgorithmRunConfiguration rc, double runtime)
 			{
 				AtomicDouble d = maxRuntimeObserved.get(rc);
 				while(true)

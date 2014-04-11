@@ -7,8 +7,8 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.json.serializers.AlgorithmRunJson;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
 
 /**
  * Represents an execution of a target algorithm. 
@@ -36,7 +36,7 @@ public interface AlgorithmRun extends Serializable {
 	 * Return the run configuration associated with the AlgorithmRun
 	 * @return run configuration of this run
 	 */
-	public RunConfig getRunConfig();
+	public AlgorithmRunConfiguration getRunConfig();
 
 	/**
 	 * Get the Run Result

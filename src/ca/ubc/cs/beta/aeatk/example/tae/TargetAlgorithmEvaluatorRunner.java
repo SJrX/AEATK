@@ -12,6 +12,7 @@ import org.slf4j.LoggerFactory;
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration.StringFormat;
@@ -20,7 +21,6 @@ import ca.ubc.cs.beta.aeatk.misc.version.VersionTracker;
 import ca.ubc.cs.beta.aeatk.options.AbstractOptions;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
 
@@ -179,7 +179,7 @@ public class TargetAlgorithmEvaluatorRunner
 				
 				//A RunConfig object stores the information needed to actually request (compare the objects here to the information passed to the wrapper as listed in the Manual)
 				//It is also IMMUTABLE
-				RunConfig runConfig = new RunConfig(pisp, execConfig.getAlgorithmMaximumCutoffTime(), config,execConfig);
+				AlgorithmRunConfiguration runConfig = new AlgorithmRunConfiguration(pisp, execConfig.getAlgorithmMaximumCutoffTime(), config,execConfig);
 				
 				processRunConfig(runConfig, tae, mainOptions.killTime);
 				
@@ -216,7 +216,7 @@ public class TargetAlgorithmEvaluatorRunner
 	 * @param runConfig 	runConfig to evaluate
 	 * @param tae 			target algorithm evaluator to use
 	 */
-	public static void processRunConfig(RunConfig runConfig, TargetAlgorithmEvaluator tae, final double killTime)
+	public static void processRunConfig(AlgorithmRunConfiguration runConfig, TargetAlgorithmEvaluator tae, final double killTime)
 	{
 		
 		
@@ -265,7 +265,7 @@ public class TargetAlgorithmEvaluatorRunner
 		
 			//This is the same RunConfig as above
 			//But in general you should always use the information in the AlgorithmRun
-			RunConfig resultRunConfig = run.getRunConfig();
+			AlgorithmRunConfiguration resultRunConfig = run.getRunConfig();
 
 			//Object representing whether the run reported SAT, UNSAT, TIMEOUT, etc...
 			RunResult runResult = run.getRunResult();
@@ -288,7 +288,7 @@ public class TargetAlgorithmEvaluatorRunner
 			}
 			
 			//The toString() method does not return the actual configuration, this method is the best way to print them
-			String configString = resultRunConfig.getParamConfiguration().getFormattedParamString(StringFormat.NODB_OR_STATEFILE_SYNTAX);
+			String configString = resultRunConfig.getParameterConfiguration().getFormattedParamString(StringFormat.NODB_OR_STATEFILE_SYNTAX);
 			
 			//Log messages with more than 2 parameters must have them passed as an array.
 			Object[] logArguments = { i, resultRunConfig.getProblemInstanceSeedPair().getProblemInstance(), configString, runResult, runtime, runLength, quality, resultSeed, additionalData};

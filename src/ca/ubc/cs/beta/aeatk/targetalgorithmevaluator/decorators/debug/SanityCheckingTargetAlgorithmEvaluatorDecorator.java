@@ -8,7 +8,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
@@ -33,15 +33,15 @@ public class SanityCheckingTargetAlgorithmEvaluatorDecorator extends AbstractTar
 
 	
 	@Override
-	public final List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
+	public final List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
 		
-		List<RunConfig> originalList = Collections.unmodifiableList( new ArrayList<RunConfig>(runConfigs));
+		List<AlgorithmRunConfiguration> originalList = Collections.unmodifiableList( new ArrayList<AlgorithmRunConfiguration>(runConfigs));
 		
 		
 		
 		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs, new SanityCheckingTargetAlgorithmEvaluatorObserver(obs, originalList));
 		
-		List<RunConfig> returnedRuns = new ArrayList<RunConfig>(runs.size());
+		List<AlgorithmRunConfiguration> returnedRuns = new ArrayList<AlgorithmRunConfiguration>(runs.size());
 		
 		for(AlgorithmRun run : runs)
 		{
@@ -58,10 +58,10 @@ public class SanityCheckingTargetAlgorithmEvaluatorDecorator extends AbstractTar
 	}
 
 	@Override
-	public final void evaluateRunsAsync(final List<RunConfig> runConfigs,
+	public final void evaluateRunsAsync(final List<AlgorithmRunConfiguration> runConfigs,
 			final TargetAlgorithmEvaluatorCallback oHandler, TargetAlgorithmEvaluatorRunObserver obs) {
 		
-		final List<RunConfig> originalList = Collections.unmodifiableList( new ArrayList<RunConfig>(runConfigs));
+		final List<AlgorithmRunConfiguration> originalList = Collections.unmodifiableList( new ArrayList<AlgorithmRunConfiguration>(runConfigs));
 		
 		
 		TargetAlgorithmEvaluatorCallback handler = new TargetAlgorithmEvaluatorCallback()
@@ -71,7 +71,7 @@ public class SanityCheckingTargetAlgorithmEvaluatorDecorator extends AbstractTar
 			public void onSuccess(List<AlgorithmRun> runs) {
 				
 				
-				List<RunConfig> returnedRuns = new ArrayList<RunConfig>(runs.size());
+				List<AlgorithmRunConfiguration> returnedRuns = new ArrayList<AlgorithmRunConfiguration>(runs.size());
 				
 				for(AlgorithmRun run : runs)
 				{
@@ -107,8 +107,8 @@ public class SanityCheckingTargetAlgorithmEvaluatorDecorator extends AbstractTar
 	private class SanityCheckingTargetAlgorithmEvaluatorObserver implements TargetAlgorithmEvaluatorRunObserver{
 
 		private final TargetAlgorithmEvaluatorRunObserver obs;
-		private final List<RunConfig> originalList;
-		public SanityCheckingTargetAlgorithmEvaluatorObserver(TargetAlgorithmEvaluatorRunObserver obs, List<RunConfig> originalList)
+		private final List<AlgorithmRunConfiguration> originalList;
+		public SanityCheckingTargetAlgorithmEvaluatorObserver(TargetAlgorithmEvaluatorRunObserver obs, List<AlgorithmRunConfiguration> originalList)
 		{
 			this.obs = obs;
 			this.originalList = originalList;
@@ -116,7 +116,7 @@ public class SanityCheckingTargetAlgorithmEvaluatorDecorator extends AbstractTar
 		@Override
 		public void currentStatus(List<? extends AlgorithmRun> runs) {
 			
-			List<RunConfig> observerRuns = new ArrayList<RunConfig>(runs.size());
+			List<AlgorithmRunConfiguration> observerRuns = new ArrayList<AlgorithmRunConfiguration>(runs.size());
 			
 			for(AlgorithmRun run : runs)
 			{

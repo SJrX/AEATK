@@ -15,13 +15,13 @@ import ca.ubc.cs.beta.TestHelper;
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.misc.debug.DebugUtil;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aeatk.random.SeedableRandomPool;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluatorFactory;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.helpers.RetryCrashedRunsTargetAlgorithmEvaluator;
@@ -76,7 +76,7 @@ private static TargetAlgorithmEvaluator tae;
 		
 		
 		
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
@@ -87,7 +87,7 @@ private static TargetAlgorithmEvaluator tae;
 				continue;
 			} else
 			{
-				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 				runConfigs.add(rc);
 			}
 		}
@@ -104,7 +104,7 @@ private static TargetAlgorithmEvaluator tae;
 				crashedRuns++;
 			} else
 			{
-				ParamConfiguration config  = run.getRunConfig().getParamConfiguration();
+				ParamConfiguration config  = run.getRunConfig().getParameterConfiguration();
 				assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
 				assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
 				assertDEquals(config.get("quality"), run.getQuality(), 0.1);
@@ -135,7 +135,7 @@ private static TargetAlgorithmEvaluator tae;
 		Random r =  pool.getRandom(DebugUtil.getCurrentMethodName());
 		
 		
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
@@ -147,7 +147,7 @@ private static TargetAlgorithmEvaluator tae;
 			} else
 			{
 				config.put("runlength", String.valueOf(i));
-				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 				runConfigs.add(rc);
 			}
 		}
@@ -167,14 +167,14 @@ private static TargetAlgorithmEvaluator tae;
 			AlgorithmRun run = runs.get(i);
 			
 			//This tests that the order is correct
-			assertDEquals(run.getRunConfig().getParamConfiguration().get("runlength"),i, 0.1);
+			assertDEquals(run.getRunConfig().getParameterConfiguration().get("runlength"),i, 0.1);
 			
 			if(run.getRunResult().equals(RunResult.CRASHED))
 			{
 				fail("Expected zero crashes but run " + i + " crashed ");
 			} else
 			{
-				ParamConfiguration config  = run.getRunConfig().getParamConfiguration();
+				ParamConfiguration config  = run.getRunConfig().getParameterConfiguration();
 				assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
 				assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
 				assertDEquals(config.get("quality"), run.getQuality(), 0.1);

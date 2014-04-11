@@ -148,12 +148,12 @@ public class NewRunHistory implements RunHistory {
 		
 		if(firstExecConfig == null)
 		{
-			this.firstExecConfig = run.getRunConfig().getAlgorithmExecutionConfig();
+			this.firstExecConfig = run.getRunConfig().getAlgorithmExecutionConfiguration();
 		} else
 		{
-			if(!this.firstExecConfig.equals(run.getRunConfig().getAlgorithmExecutionConfig()))
+			if(!this.firstExecConfig.equals(run.getRunConfig().getAlgorithmExecutionConfiguration()))
 			{
-				throw new IllegalArgumentException("RunHistory object cannot store runs for different exec configs first was: " + firstExecConfig + " current run was : " + run.getRunConfig().getAlgorithmExecutionConfig());
+				throw new IllegalArgumentException("RunHistory object cannot store runs for different exec configs first was: " + firstExecConfig + " current run was : " + run.getRunConfig().getAlgorithmExecutionConfiguration());
 			}
 		}
 		
@@ -161,7 +161,7 @@ public class NewRunHistory implements RunHistory {
 		{
 			throw new IllegalArgumentException("Runs with Run Result RUNNING cannot be saved to a RunHistory object");
 		}
-		ParamConfiguration config = run.getRunConfig().getParamConfiguration();
+		ParamConfiguration config = run.getRunConfig().getParameterConfiguration();
 		ProblemInstanceSeedPair pisp = run.getRunConfig().getProblemInstanceSeedPair();
 		ProblemInstance pi = pisp.getProblemInstance();
 		long seed = run.getResultSeed();

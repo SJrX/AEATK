@@ -10,13 +10,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aeatk.json.serializers.AlgorithmExecutionConfigJson.AlgorithmExecutionConfigDeserializer;
 import ca.ubc.cs.beta.aeatk.json.serializers.ParamConfigurationJson.ParamConfigurationDeserializer;
 import ca.ubc.cs.beta.aeatk.json.serializers.ProblemInstanceJson.ProblemInstanceSeedPairDeserializer;
 import ca.ubc.cs.beta.aeatk.misc.version.ACLibVersionInfo;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
@@ -43,7 +43,7 @@ public class RunConfigJson  {
 	
 	public static final String JACKSON_RC_CONTEXT = "RC_CONTEXT";
 	
-	public static class RunConfigDeserializer extends StdDeserializer<RunConfig>
+	public static class RunConfigDeserializer extends StdDeserializer<AlgorithmRunConfiguration>
 	{
 		
 		private final ProblemInstanceSeedPairDeserializer pispd = new ProblemInstanceSeedPairDeserializer();
@@ -54,11 +54,11 @@ public class RunConfigJson  {
 		
 		private static final AtomicBoolean warnSampleIdx = new AtomicBoolean(false);
 		protected RunConfigDeserializer() {
-			super(RunConfig.class);
+			super(AlgorithmRunConfiguration.class);
 		}
 
 		@Override
-		public RunConfig deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException 
+		public AlgorithmRunConfiguration deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException 
 		{
 			
 			
@@ -68,11 +68,11 @@ public class RunConfigJson  {
 			}
 						
 			@SuppressWarnings("unchecked")
-			Map<Integer, RunConfig> cache = (Map<Integer, RunConfig>) ctxt.getAttribute(JACKSON_RC_CONTEXT);
+			Map<Integer, AlgorithmRunConfiguration> cache = (Map<Integer, AlgorithmRunConfiguration>) ctxt.getAttribute(JACKSON_RC_CONTEXT);
 			
 			if(cache == null)
 			{
-				cache = new ConcurrentHashMap<Integer, RunConfig>();
+				cache = new ConcurrentHashMap<Integer, AlgorithmRunConfiguration>();
 				ctxt.setAttribute(JACKSON_RC_CONTEXT, cache);
 			}
 			
@@ -135,7 +135,7 @@ public class RunConfigJson  {
 				return cache.get(rc_id);
 			} else
 			{
-				RunConfig rc = new RunConfig(pisp, cutoffTime, config, execConfig);
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(pisp, cutoffTime, config, execConfig);
 				
 				if(rc_id > 0)
 				{
@@ -148,7 +148,7 @@ public class RunConfigJson  {
 
 	}
 	
-	public static class RunConfigSerializer extends StdSerializer<RunConfig>	{
+	public static class RunConfigSerializer extends StdSerializer<AlgorithmRunConfiguration>	{
 
 	
 
@@ -156,17 +156,17 @@ public class RunConfigJson  {
 
 
 		protected RunConfigSerializer() {
-			super(RunConfig.class);
+			super(AlgorithmRunConfiguration.class);
 		}
 
 
-		private final ConcurrentHashMap<RunConfig, Integer> map = new ConcurrentHashMap<RunConfig, Integer>();
+		private final ConcurrentHashMap<AlgorithmRunConfiguration, Integer> map = new ConcurrentHashMap<AlgorithmRunConfiguration, Integer>();
 		
 		private final AtomicInteger idMap = new AtomicInteger(1);
 		
 
 		@Override
-		public void serialize(RunConfig value, JsonGenerator jgen,
+		public void serialize(AlgorithmRunConfiguration value, JsonGenerator jgen,
 				SerializerProvider provider) throws IOException,
 				JsonProcessingException 
 		{
@@ -180,10 +180,10 @@ public class RunConfigJson  {
 			
 			if(firstWrite)
 			{
-				jgen.writeObjectField(RC_ALGO_EXEC_CONFIG, value.getAlgorithmExecutionConfig());
+				jgen.writeObjectField(RC_ALGO_EXEC_CONFIG, value.getAlgorithmExecutionConfiguration());
 				jgen.writeObjectField(RC_CUTOFF, value.getCutoffTime());
 				jgen.writeObjectField(RC_PISP, value.getProblemInstanceSeedPair());
-				jgen.writeObjectField(RC_PC, value.getParamConfiguration());
+				jgen.writeObjectField(RC_PC, value.getParameterConfiguration());
 				jgen.writeObjectField(RC_SAMPLE_IDX, 0);
 			} 
 			

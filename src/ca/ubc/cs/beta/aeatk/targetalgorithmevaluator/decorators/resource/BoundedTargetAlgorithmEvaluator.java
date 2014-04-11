@@ -26,9 +26,9 @@ import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aeatk.algorithmrun.RunningAlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.kill.KillHandler;
 import ca.ubc.cs.beta.aeatk.algorithmrun.kill.StatusVariableKillHandler;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.concurrent.FairMultiPermitSemaphore;
 import ca.ubc.cs.beta.aeatk.concurrent.threadfactory.SequentiallyNamedThreadFactory;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorHelper;
@@ -88,7 +88,7 @@ public class BoundedTargetAlgorithmEvaluator extends
 	}
 
 	@Override
-	public void evaluateRunsAsync(final List<RunConfig> runConfigs, final TargetAlgorithmEvaluatorCallback handler, final TargetAlgorithmEvaluatorRunObserver obs) {
+	public void evaluateRunsAsync(final List<AlgorithmRunConfiguration> runConfigs, final TargetAlgorithmEvaluatorCallback handler, final TargetAlgorithmEvaluatorRunObserver obs) {
 
 		if(runConfigs.isEmpty())
 		{
@@ -113,20 +113,20 @@ public class BoundedTargetAlgorithmEvaluator extends
 			enqueueLock.lock();
 			
 			//==== Stores the order of RunConfigs to put in all lists we return to the caller.
-			final Map<RunConfig, Integer> orderOfRuns = new ConcurrentHashMap<RunConfig, Integer>();
+			final Map<AlgorithmRunConfiguration, Integer> orderOfRuns = new ConcurrentHashMap<AlgorithmRunConfiguration, Integer>();
 			
 			//Stores the completed runs
 			final Set<AlgorithmRun> completedRuns = Collections.newSetFromMap(new ConcurrentHashMap<AlgorithmRun, Boolean>());
 			
 			//=== Stores outstanding runs 
-			final Map<RunConfig, AlgorithmRun> outstandingRuns  = new ConcurrentHashMap<RunConfig, AlgorithmRun>();
+			final Map<AlgorithmRunConfiguration, AlgorithmRun> outstandingRuns  = new ConcurrentHashMap<AlgorithmRunConfiguration, AlgorithmRun>();
 			
 			//=== Stores the kill handlers for each run
 			//Kill Handlers will keep track of which runs have been requested to be killed
-			final Map<RunConfig, KillHandler> killHandlers = new ConcurrentHashMap<RunConfig, KillHandler>();
+			final Map<AlgorithmRunConfiguration, KillHandler> killHandlers = new ConcurrentHashMap<AlgorithmRunConfiguration, KillHandler>();
 			for(int i=0; i < runConfigs.size(); i++)
 			{
-				RunConfig rc = runConfigs.get(i);
+				AlgorithmRunConfiguration rc = runConfigs.get(i);
 				orderOfRuns.put(rc, i);
 				KillHandler kh  = new StatusVariableKillHandler();
 				killHandlers.put(rc, kh);
@@ -153,13 +153,13 @@ public class BoundedTargetAlgorithmEvaluator extends
 					throw new IllegalStateException("Somehow I now have more permits than I should be limited to");
 				}
 				
-				log.trace("Asking for permission for {} things config id of first: ({})", runConfigs.size() - numberOfDispatchedRuns, runConfigs.get(0).getParamConfiguration().getFriendlyIDHex());
+				log.trace("Asking for permission for {} things config id of first: ({})", runConfigs.size() - numberOfDispatchedRuns, runConfigs.get(0).getParameterConfiguration().getFriendlyIDHex());
 				int oNumRunConfigToRun;
 				try {
 					oNumRunConfigToRun = availableRuns.getUpToNPermits(runConfigs.size()-numberOfDispatchedRuns);
 				} catch (InterruptedException e) {
 					//=== We can just return from this method 
-					log.debug("Thread was interrupted while waiting, aborting execution for runs with config id of first: ({})", runConfigs.get(0).getParamConfiguration().getFriendlyIDHex());
+					log.debug("Thread was interrupted while waiting, aborting execution for runs with config id of first: ({})", runConfigs.get(0).getParameterConfiguration().getFriendlyIDHex());
 					completionCallbackFired.set(true);
 					failureOccured.set(true);
 					handler.onFailure(new TargetAlgorithmEvaluatorShutdownException(e));
@@ -168,9 +168,9 @@ public class BoundedTargetAlgorithmEvaluator extends
 				}
 				int numRunConfigToRun = oNumRunConfigToRun;
 	
-				log.trace("Asked for permission to run {} things, got permission to run {} things, total completed for this batch {}  config id of first: ({})" , runConfigs.size()-numberOfDispatchedRuns, numRunConfigToRun,numberOfDispatchedRuns, runConfigs.get(0).getParamConfiguration().getFriendlyIDHex() );
+				log.trace("Asked for permission to run {} things, got permission to run {} things, total completed for this batch {}  config id of first: ({})" , runConfigs.size()-numberOfDispatchedRuns, numRunConfigToRun,numberOfDispatchedRuns, runConfigs.get(0).getParameterConfiguration().getFriendlyIDHex() );
 				
-				List<RunConfig> runsToDo = new ArrayList<RunConfig>(numRunConfigToRun);
+				List<AlgorithmRunConfiguration> runsToDo = new ArrayList<AlgorithmRunConfiguration>(numRunConfigToRun);
 				
 				
 				int killInterceptedCount = 0;
@@ -187,7 +187,7 @@ public class BoundedTargetAlgorithmEvaluator extends
 						break;
 					}
 					
-					RunConfig possibleRC = runConfigs.get(index);
+					AlgorithmRunConfiguration possibleRC = runConfigs.get(index);
 
 					//CAUTION: We actually don't do this check for the last run, the reason being that if we kill everything at this point, we have to manually interact with the callbacks, and observers
 					//But by always submitting the last run to the TAE and then waiting for the slower killing mechanism, we can get almost all of the speed up for free
@@ -246,7 +246,7 @@ public class BoundedTargetAlgorithmEvaluator extends
 	
 
 	@Override
-	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
+	public List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
 		return TargetAlgorithmEvaluatorHelper.evaluateRunSyncToAsync(runConfigs, this, obs);
 	}
 	
@@ -295,11 +295,11 @@ public class BoundedTargetAlgorithmEvaluator extends
 	{
 
 		private final FairMultiPermitSemaphore availableRuns;
-		private final List<RunConfig> runConfigs;
+		private final List<AlgorithmRunConfiguration> runConfigs;
 		private final TargetAlgorithmEvaluatorRunObserver callerRunObserver;
-		private final Map<RunConfig, AlgorithmRun> outstandingRuns;
-		private final Map<RunConfig, Integer> orderOfRuns;
-		private final Map<RunConfig, KillHandler> killHandlers;
+		private final Map<AlgorithmRunConfiguration, AlgorithmRun> outstandingRuns;
+		private final Map<AlgorithmRunConfiguration, Integer> orderOfRuns;
+		private final Map<AlgorithmRunConfiguration, KillHandler> killHandlers;
 		private final AtomicBoolean completedCallbackFired;
 		private final ExecutorService cachedThreadPool;
 		private final AtomicInteger completedCount;
@@ -308,7 +308,7 @@ public class BoundedTargetAlgorithmEvaluator extends
 		private AtomicLong lastUpdate;
 		
 		
-		BoundedTargetAlgorithmEvaluatorMapUpdateObserver(FairMultiPermitSemaphore availableRuns, int numRunConfigToRun,  List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver callerRunObserver, Map<RunConfig, AlgorithmRun> outstandingRuns, Map<RunConfig, Integer> orderOfRuns, Map<RunConfig, KillHandler> killHandlers, AtomicBoolean onSuccessFired, ExecutorService cachedThreadPool, AtomicInteger completedCount, AtomicInteger releaseCount, AtomicLong lastUpdate )
+		BoundedTargetAlgorithmEvaluatorMapUpdateObserver(FairMultiPermitSemaphore availableRuns, int numRunConfigToRun,  List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver callerRunObserver, Map<AlgorithmRunConfiguration, AlgorithmRun> outstandingRuns, Map<AlgorithmRunConfiguration, Integer> orderOfRuns, Map<AlgorithmRunConfiguration, KillHandler> killHandlers, AtomicBoolean onSuccessFired, ExecutorService cachedThreadPool, AtomicInteger completedCount, AtomicInteger releaseCount, AtomicLong lastUpdate )
 		{
 			this.numRunConfigToRun = numRunConfigToRun;
 			
@@ -402,7 +402,7 @@ public class BoundedTargetAlgorithmEvaluator extends
 				}
 				
 				//Forward killing flags to internal run
-				for(Entry<RunConfig,KillHandler> ent : killHandlers.entrySet())
+				for(Entry<AlgorithmRunConfiguration,KillHandler> ent : killHandlers.entrySet())
 				{
 					if(ent.getValue().isKilled())
 					{
@@ -472,12 +472,12 @@ public class BoundedTargetAlgorithmEvaluator extends
 		
 		private final FairMultiPermitSemaphore availableRunsSemaphore;
 		private final int numRunConfigToRun;
-		private final List<RunConfig> runConfigs;
+		private final List<AlgorithmRunConfiguration> runConfigs;
 		private final TargetAlgorithmEvaluatorCallback calleeCallback;
 		private final AtomicBoolean failureOccured;
 		private final Set<AlgorithmRun> completedRuns;
 		private final int totalRunsNeeded;
-		private final Map<RunConfig, Integer> orderOfRuns;
+		private final Map<AlgorithmRunConfiguration, Integer> orderOfRuns;
 		private final AtomicBoolean completionCallbackFired;
 		private final ExecutorService execService;
 		private final AtomicInteger completedCount;
@@ -485,7 +485,7 @@ public class BoundedTargetAlgorithmEvaluator extends
 		
 		
 
-		public SubListTargetAlgorithmEvaluatorCallback(FairMultiPermitSemaphore availableRunsSemaphore, int numRunConfigToRun, List<RunConfig> runConfigs, TargetAlgorithmEvaluatorCallback calleeCallback, AtomicBoolean failureOccured, int totalRunsNeeded, Set<AlgorithmRun> completedRuns, Map<RunConfig, Integer> orderOfRuns, AtomicBoolean onSuccessFired, ExecutorService execService, AtomicInteger completedCount, AtomicInteger releaseCount)
+		public SubListTargetAlgorithmEvaluatorCallback(FairMultiPermitSemaphore availableRunsSemaphore, int numRunConfigToRun, List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorCallback calleeCallback, AtomicBoolean failureOccured, int totalRunsNeeded, Set<AlgorithmRun> completedRuns, Map<AlgorithmRunConfiguration, Integer> orderOfRuns, AtomicBoolean onSuccessFired, ExecutorService execService, AtomicInteger completedCount, AtomicInteger releaseCount)
 		{
 			this.availableRunsSemaphore = availableRunsSemaphore;
 			this.numRunConfigToRun = numRunConfigToRun;

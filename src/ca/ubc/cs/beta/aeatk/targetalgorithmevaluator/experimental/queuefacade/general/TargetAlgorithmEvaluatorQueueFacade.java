@@ -12,7 +12,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
@@ -62,7 +62,7 @@ public class TargetAlgorithmEvaluatorQueueFacade<K extends TargetAlgorithmEvalua
 	 * @param context 		context result that will be populated with the answer
 	 * @param runConfig		runConfig to run
 	 */
-	public synchronized void evaluateRunAsync(K context, RunConfig runConfig)
+	public synchronized void evaluateRunAsync(K context, AlgorithmRunConfiguration runConfig)
 	{
 		evaluateRunAsync(context, Collections.singletonList(runConfig));
 	}
@@ -73,7 +73,7 @@ public class TargetAlgorithmEvaluatorQueueFacade<K extends TargetAlgorithmEvalua
 	 * @param context 		context result that will be populated with the answer
 	 * @param runConfigs	a list of runConfigs to run
 	 */
-	public synchronized void evaluateRunAsync(K context, List<RunConfig> runConfigs)
+	public synchronized void evaluateRunAsync(K context, List<AlgorithmRunConfiguration> runConfigs)
 	{
 		evaluateRunAsync(context, runConfigs, null);
 	}
@@ -85,7 +85,7 @@ public class TargetAlgorithmEvaluatorQueueFacade<K extends TargetAlgorithmEvalua
 	 * @param runConfigs	a list of runConfigs to run
 	 * @param obs			observer to monitor
 	 */
-	public synchronized void evaluateRunAsync(K context, List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs)
+	public synchronized void evaluateRunAsync(K context, List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs)
 	{
 		context.setRunConfigs(runConfigs);
 		outstandingRuns.incrementAndGet();

@@ -5,7 +5,7 @@ import java.util.List;
 
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.ExistingAlgorithmRun;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.AbstractSyncTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
 
@@ -38,11 +38,11 @@ public class ConstantTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorith
 	}
 
 	@Override
-	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs,
+	public List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs,
 			TargetAlgorithmEvaluatorRunObserver obs) {
 		List<AlgorithmRun> runs = new ArrayList<AlgorithmRun>();
 		
-		for(RunConfig rc : runConfigs)
+		for(AlgorithmRunConfiguration rc : runConfigs)
 		{
 			String addlRunData = "";
 			

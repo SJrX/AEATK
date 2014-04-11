@@ -25,6 +25,7 @@ import com.beust.jcommander.ParameterException;
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.ExistingAlgorithmRun;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration.StringFormat;
 import ca.ubc.cs.beta.aeatk.exceptions.DeveloperMadeABooBooException;
@@ -38,7 +39,6 @@ import ca.ubc.cs.beta.aeatk.options.scenario.ScenarioOptions;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aeatk.random.SeedableRandomPool;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
 import ca.ubc.cs.beta.aeatk.runhistory.NewRunHistory;
 import ca.ubc.cs.beta.aeatk.runhistory.ReindexSeedRunHistoryDecorator;
 import ca.ubc.cs.beta.aeatk.runhistory.RunData;
@@ -436,7 +436,7 @@ outerLoop:
 				}
 				
 				ProblemInstanceSeedPair newPisp = new ProblemInstanceSeedPair(repairedPi, run.getRunConfig().getProblemInstanceSeedPair().getSeed());
-				RunConfig rc = new RunConfig(newPisp, run.getRunConfig().getCutoffTime(), run.getRunConfig().getParamConfiguration(), run.getRunConfig().getAlgorithmExecutionConfig());
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(newPisp, run.getRunConfig().getCutoffTime(), run.getRunConfig().getParameterConfiguration(), run.getRunConfig().getAlgorithmExecutionConfiguration());
 				
 				ExistingAlgorithmRun repairedRun = new ExistingAlgorithmRun(run.getExecutionConfig(), rc, run.getRunResult(), run.getRuntime(), run.getRunLength(), run.getQuality(), run.getResultSeed(), run.getAdditionalRunData(), run.getWallclockExecutionTime());
 

@@ -45,6 +45,7 @@ import ca.ubc.cs.beta.TestHelper;
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrunner.AutomaticConfiguratorFactory;
 import ca.ubc.cs.beta.aeatk.concurrent.threadfactory.SequentiallyNamedThreadFactory;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
@@ -60,7 +61,6 @@ import ca.ubc.cs.beta.aeatk.options.AbstractOptions;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aeatk.random.SeedableRandomPool;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorOptions;
@@ -183,7 +183,7 @@ public class TAETestSet {
 		b.append(ParamEchoExecutor.class.getCanonicalName());
 		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 		
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
@@ -194,7 +194,7 @@ public class TAETestSet {
 				continue;
 			} else
 			{
-				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 				runConfigs.add(rc);
 			}
 		}
@@ -205,7 +205,7 @@ public class TAETestSet {
 		
 		for(AlgorithmRun run : runs)
 		{
-			ParamConfiguration config  = run.getRunConfig().getParamConfiguration();
+			ParamConfiguration config  = run.getRunConfig().getParameterConfiguration();
 			assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
 			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
 			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
@@ -241,7 +241,7 @@ public class TAETestSet {
 		
 		
 		
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < 10; i++)
 		{
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
@@ -253,7 +253,7 @@ public class TAETestSet {
 				continue;
 			} else
 			{
-				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 0.01, config, execConfig);
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 0.01, config, execConfig);
 				runConfigs.add(rc);
 			}
 		}
@@ -281,7 +281,7 @@ public class TAETestSet {
 		
 		for(AlgorithmRun run : runs)
 		{
-			ParamConfiguration config  = run.getRunConfig().getParamConfiguration();
+			ParamConfiguration config  = run.getRunConfig().getParameterConfiguration();
 			assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
 			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
 			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
@@ -332,7 +332,7 @@ public class TAETestSet {
 		
 		
 		
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < 100; i++)
 		{
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
@@ -345,7 +345,7 @@ public class TAETestSet {
 				continue;
 			} else
 			{
-				RunConfig rc = new RunConfig( new ProblemInstanceSeedPair(new ProblemInstance("TestInstance","SLEEP"), Long.valueOf(config.get("seed"))), 0.01, config, execConfig);
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration( new ProblemInstanceSeedPair(new ProblemInstance("TestInstance","SLEEP"), Long.valueOf(config.get("seed"))), 0.01, config, execConfig);
 				runConfigs.add(rc);
 			}
 		}
@@ -463,7 +463,7 @@ public class TAETestSet {
 		
 		
 		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
@@ -474,7 +474,7 @@ public class TAETestSet {
 				continue;
 			} else
 			{
-				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 				runConfigs.add(rc);
 			}
 		}
@@ -486,7 +486,7 @@ public class TAETestSet {
 		
 		for(AlgorithmRun run : runs)
 		{
-			ParamConfiguration config  = run.getRunConfig().getParamConfiguration();
+			ParamConfiguration config  = run.getRunConfig().getParameterConfiguration();
 			assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
 			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
 			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
@@ -524,7 +524,7 @@ public class TAETestSet {
 		
 		
 		
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
@@ -535,7 +535,7 @@ public class TAETestSet {
 				continue;
 			} else
 			{
-				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 				runConfigs.add(rc);
 			}
 		}
@@ -546,7 +546,7 @@ public class TAETestSet {
 		int i=0; 
 		for(AlgorithmRun run : runs)
 		{
-			ParamConfiguration config  = run.getRunConfig().getParamConfiguration();
+			ParamConfiguration config  = run.getRunConfig().getParameterConfiguration();
 			assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
 			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
 			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
@@ -578,7 +578,7 @@ public class TAETestSet {
 			
 			
 			
-			List<RunConfig> runConfigs = new ArrayList<RunConfig>(2);
+			List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(2);
 			for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 			{
 				runConfigs.clear();
@@ -590,7 +590,7 @@ public class TAETestSet {
 					continue;
 				} else
 				{
-					RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
+					AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 					runConfigs.add(rc);
 				}
 				tae.evaluateRun(runConfigs);
@@ -628,12 +628,12 @@ public class TAETestSet {
 		
 		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved","ABORT");
-			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
+			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 			runConfigs.add(rc);
 		}
 		
@@ -641,7 +641,7 @@ public class TAETestSet {
 		
 		
 		
-		for(RunConfig run : runConfigs)
+		for(AlgorithmRunConfiguration run : runConfigs)
 		{
 			
 			try {
@@ -662,11 +662,11 @@ public class TAETestSet {
 		
 		
 		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(100);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(100);
 	
 		ParamConfiguration config = configSpace.getRandomConfiguration(r);
 		
-		RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), -1, config, execConfig);
+		AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), -1, config, execConfig);
 		runConfigs.add(rc);
 		
 		System.out.println("Performing " + runConfigs.size() + " runs");
@@ -691,14 +691,14 @@ public class TAETestSet {
 		
 		
 		double cutoffTime = 300;
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			
 			config.put("solved", "SAT");
 			
-			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), cutoffTime, config, execConfig);
+			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), cutoffTime, config, execConfig);
 			runConfigs.add(rc);
 		}
 		
@@ -719,8 +719,8 @@ public class TAETestSet {
 				assertEquals(RunResult.TIMEOUT, run.getRunResult());
 			} else
 			{
-				assertEquals(run.getRunResult(), RunResult.valueOf(run.getRunConfig().getParamConfiguration().get("solved")));
-				assertDEquals(run.getRunConfig().getParamConfiguration().get("runtime"), run.getRuntime(),0.05);
+				assertEquals(run.getRunResult(), RunResult.valueOf(run.getRunConfig().getParameterConfiguration().get("solved")));
+				assertDEquals(run.getRunConfig().getParameterConfiguration().get("runtime"), run.getRuntime(),0.05);
 			}
 			
 			
@@ -740,12 +740,12 @@ public class TAETestSet {
 		
 		
 		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved","CRASHED");
-			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
+			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 			runConfigs.add(rc);
 		}
 		
@@ -753,7 +753,7 @@ public class TAETestSet {
 		
 		
 		
-		for(RunConfig run : runConfigs)
+		for(AlgorithmRunConfiguration run : runConfigs)
 		{
 			
 			try {
@@ -770,7 +770,7 @@ public class TAETestSet {
 		
 		TargetAlgorithmEvaluator abortOnCrash = new AbortOnCrashTargetAlgorithmEvaluator(tae);
 		
-		for(RunConfig run : runConfigs)
+		for(AlgorithmRunConfiguration run : runConfigs)
 		{
 			try {
 				 abortOnCrash.evaluateRun(run);
@@ -807,19 +807,19 @@ public class TAETestSet {
 		
 		
 		
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved","CRASHED");
-			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
+			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 			runConfigs.add(rc);
 		}
 		
 		
 		
 		
-		for(RunConfig run : runConfigs)
+		for(AlgorithmRunConfiguration run : runConfigs)
 		{
 			
 			try {
@@ -837,7 +837,7 @@ public class TAETestSet {
 		TargetAlgorithmEvaluator abortOnCrash = new AbortOnFirstRunCrashTargetAlgorithmEvaluator(tae);
 		
 		boolean firstRun = true;
-		for(RunConfig run : runConfigs)
+		for(AlgorithmRunConfiguration run : runConfigs)
 		{
 			try {
 				abortOnCrash.evaluateRun(run);
@@ -878,7 +878,7 @@ public class TAETestSet {
 		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		
 		
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
@@ -889,13 +889,13 @@ public class TAETestSet {
 			{
 				config.put("solved","CRASHED");
 			}
-			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
+			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 			runConfigs.add(rc);
 		}
 		
 		
 		
-		for(RunConfig run : runConfigs)
+		for(AlgorithmRunConfiguration run : runConfigs)
 		{
 			
 			try {
@@ -911,7 +911,7 @@ public class TAETestSet {
 		
 		TargetAlgorithmEvaluator abortOnCrash = new AbortOnFirstRunCrashTargetAlgorithmEvaluator(tae);
 
-		for(RunConfig run : runConfigs)
+		for(AlgorithmRunConfiguration run : runConfigs)
 		{
 			try {
 				abortOnCrash.evaluateRun(run);
@@ -938,12 +938,12 @@ public class TAETestSet {
 		AlgorithmExecutionConfiguration execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500); 
 		
 		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 		
 		
 		ParamConfiguration config = configSpace.getRandomConfiguration(r);
 		config.put("solved","SAT");
-		RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
+		AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 		runConfigs.add(rc);
 		
 		TargetAlgorithmEvaluator tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE();
@@ -981,7 +981,7 @@ public class TAETestSet {
 		tae = new AbortOnCrashTargetAlgorithmEvaluator(CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE());
 		
 		
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 				
 		
 		
@@ -991,7 +991,7 @@ public class TAETestSet {
 			
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved", alias);
-			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
+			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 			runConfigs.add(rc);
 		}
 		
@@ -1002,7 +1002,7 @@ public class TAETestSet {
 		
 		for(AlgorithmRun run : runs)
 		{
-			ParamConfiguration config  = run.getRunConfig().getParamConfiguration();
+			ParamConfiguration config  = run.getRunConfig().getParameterConfiguration();
 			assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
 			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
 			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
@@ -1039,7 +1039,7 @@ public class TAETestSet {
 			
 		tae = new AbortOnCrashTargetAlgorithmEvaluator(CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE());
 			
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 				
 		
 		
@@ -1049,7 +1049,7 @@ public class TAETestSet {
 			
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved", alias);
-			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
+			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 			runConfigs.add(rc);
 		}
 		
@@ -1060,7 +1060,7 @@ public class TAETestSet {
 		
 		for(AlgorithmRun run : runs)
 		{
-			ParamConfiguration config  = run.getRunConfig().getParamConfiguration();
+			ParamConfiguration config  = run.getRunConfig().getParameterConfiguration();
 			assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
 			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
 			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
@@ -1098,7 +1098,7 @@ public class TAETestSet {
 			
 		tae = new CheckForDuplicateRunConfigDecorator(new AbortOnCrashTargetAlgorithmEvaluator(CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE()), true);
 			
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 				
 		
 		
@@ -1108,7 +1108,7 @@ public class TAETestSet {
 			
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved", alias);
-			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
+			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 			runConfigs.add(rc);
 		}
 
@@ -1174,7 +1174,7 @@ public class TAETestSet {
 		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE();
 		
 		
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 				
 		
 		
@@ -1184,7 +1184,7 @@ public class TAETestSet {
 			
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved", alias);
-			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
+			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 			runConfigs.add(rc);
 		}
 		
@@ -1250,7 +1250,7 @@ public class TAETestSet {
 		
 		
 		
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 				
 		
 		
@@ -1260,7 +1260,7 @@ public class TAETestSet {
 			
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved", alias);
-			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
+			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 			runConfigs.add(rc);
 		}
 		
@@ -1324,7 +1324,7 @@ public class TAETestSet {
 		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE();
 		
 		
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 				
 		
 		
@@ -1334,7 +1334,7 @@ public class TAETestSet {
 			
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved", alias);
-			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
+			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 			runConfigs.add(rc);
 		}
 		
@@ -1395,7 +1395,7 @@ public class TAETestSet {
 		
 		
 		
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(1);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(1);
 		for(int i=0; i < 1; i++)
 		{
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
@@ -1406,7 +1406,7 @@ public class TAETestSet {
 				continue;
 			} else
 			{
-				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 				runConfigs.add(rc);
 			}
 		}
@@ -1425,7 +1425,7 @@ public class TAETestSet {
 		
 		for(AlgorithmRun run : runs)
 		{
-			ParamConfiguration config  = run.getRunConfig().getParamConfiguration();
+			ParamConfiguration config  = run.getRunConfig().getParameterConfiguration();
 			assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
 			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
 			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
@@ -1458,7 +1458,7 @@ public class TAETestSet {
 		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		
 		
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
@@ -1469,7 +1469,7 @@ public class TAETestSet {
 				continue;
 			} else
 			{
-				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 				runConfigs.add(rc);
 			}
 		}
@@ -1480,7 +1480,7 @@ public class TAETestSet {
 		
 		for(AlgorithmRun run : runs)
 		{
-			ParamConfiguration config  = run.getRunConfig().getParamConfiguration();
+			ParamConfiguration config  = run.getRunConfig().getParameterConfiguration();
 			assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
 			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
 			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
@@ -1513,7 +1513,7 @@ public class TAETestSet {
 		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		
 		
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < 1; i++)
 		{
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
@@ -1524,7 +1524,7 @@ public class TAETestSet {
 				continue;
 			} else
 			{
-				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 				runConfigs.add(rc);
 			}
 		}
@@ -1538,7 +1538,7 @@ public class TAETestSet {
 			
 			for(AlgorithmRun run : runs)
 			{
-				ParamConfiguration config  = run.getRunConfig().getParamConfiguration();
+				ParamConfiguration config  = run.getRunConfig().getParameterConfiguration();
 				assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
 				assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
 				assertDEquals(config.get("quality"), run.getQuality(), 0.1);
@@ -1566,28 +1566,28 @@ public class TAETestSet {
 		
 		
 		
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 		
 		{
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved", "SAT");
-			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("SAT",1,new HashMap<String, Double>(),"SAT"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
+			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("SAT",1,new HashMap<String, Double>(),"SAT"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 			runConfigs.add(rc);
 		
 			config = configSpace.getRandomConfiguration(r);
 			config.put("solved", "SAT");
-			rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("UNSAT",2,new HashMap<String, Double>(),"UNSAT"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
+			rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("UNSAT",2,new HashMap<String, Double>(),"UNSAT"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 			runConfigs.add(rc);
 			
 			config = configSpace.getRandomConfiguration(r);
 			config.put("solved", "UNSAT");
-			rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("UNSAT",2,new HashMap<String, Double>(),"UNSAT"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
+			rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("UNSAT",2,new HashMap<String, Double>(),"UNSAT"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 			runConfigs.add(rc);
 			
 			
 			config = configSpace.getRandomConfiguration(r);
 			config.put("solved", "UNSAT");
-			rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("SAT",1,new HashMap<String, Double>(),"SAT"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
+			rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("SAT",1,new HashMap<String, Double>(),"SAT"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 			runConfigs.add(rc);
 			
 			
@@ -1595,23 +1595,23 @@ public class TAETestSet {
 			
 			config = configSpace.getRandomConfiguration(r);
 			config.put("solved", "SAT");
-			rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("SATISFIABLE",3,new HashMap<String, Double>(),"SATISFIABLE"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
+			rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("SATISFIABLE",3,new HashMap<String, Double>(),"SATISFIABLE"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 			runConfigs.add(rc);
 		
 			config = configSpace.getRandomConfiguration(r);
 			config.put("solved", "SAT");
-			rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("UNSATISFIABLE",4,new HashMap<String, Double>(),"UNSATISFIABLE"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
+			rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("UNSATISFIABLE",4,new HashMap<String, Double>(),"UNSATISFIABLE"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 			runConfigs.add(rc);
 			
 			config = configSpace.getRandomConfiguration(r);
 			config.put("solved", "UNSAT");
-			rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("UNSATISFIABLE",4,new HashMap<String, Double>(),"UNSATISFIABLE"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
+			rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("UNSATISFIABLE",4,new HashMap<String, Double>(),"UNSATISFIABLE"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 			runConfigs.add(rc);
 			
 			
 			config = configSpace.getRandomConfiguration(r);
 			config.put("solved", "UNSAT");
-			rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("SATISFIABLE",3,new HashMap<String, Double>(),"SATISFIABLE"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
+			rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("SATISFIABLE",3,new HashMap<String, Double>(),"SATISFIABLE"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 			runConfigs.add(rc);
 			
 			
@@ -1623,12 +1623,12 @@ public class TAETestSet {
 			
 			config = configSpace.getRandomConfiguration(r);
 			config.put("solved", "TIMEOUT");
-			rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("SAT",1,new HashMap<String, Double>(),"SAT"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
+			rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("SAT",1,new HashMap<String, Double>(),"SAT"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 			runConfigs.add(rc);
 		
 			config = configSpace.getRandomConfiguration(r);
 			config.put("solved", "SAT");
-			rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("UNKNOWN",2,new HashMap<String, Double>(),"UNKNOWN"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
+			rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("UNKNOWN",2,new HashMap<String, Double>(),"UNKNOWN"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 			runConfigs.add(rc);
 			
 		}	
@@ -1640,7 +1640,7 @@ public class TAETestSet {
 		
 		
 		
-		for(RunConfig rc : runConfigs)
+		for(AlgorithmRunConfiguration rc : runConfigs)
 		{
 			
 			
@@ -1682,7 +1682,7 @@ public class TAETestSet {
 				default:
 					assertFalse(output.contains("Mismatch occured between instance specific information"));	
 			}
-			ParamConfiguration config  = run.getRunConfig().getParamConfiguration();
+			ParamConfiguration config  = run.getRunConfig().getParameterConfiguration();
 			assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
 			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
 			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
@@ -1735,20 +1735,20 @@ public class TAETestSet {
 		ProblemInstanceSeedPair unSatPiThree = new ProblemInstanceSeedPair(unsatPi, 3);
 		ProblemInstanceSeedPair unSatPiFour = new ProblemInstanceSeedPair(unsatPi, 4);
 		
-		RunConfig satPiOneRC = new RunConfig(satPiOne, 0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(), execConfig);
-		RunConfig satPiTwoRC = new RunConfig(satPiTwo, 0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
-		RunConfig unSatPiOneRC = new RunConfig(unSatPiOne, 0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
-		RunConfig unSatPiTwoRC = new RunConfig(unSatPiTwo, 0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
+		AlgorithmRunConfiguration satPiOneRC = new AlgorithmRunConfiguration(satPiOne, 0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(), execConfig);
+		AlgorithmRunConfiguration satPiTwoRC = new AlgorithmRunConfiguration(satPiTwo, 0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
+		AlgorithmRunConfiguration unSatPiOneRC = new AlgorithmRunConfiguration(unSatPiOne, 0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
+		AlgorithmRunConfiguration unSatPiTwoRC = new AlgorithmRunConfiguration(unSatPiTwo, 0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
 		
 		
-		RunConfig satPiThreeRC = new RunConfig(satPiThree, 0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
-		RunConfig satPiFourRC = new RunConfig(satPiFour, 0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
-		RunConfig unSatPiThreeRC = new RunConfig(unSatPiThree, 0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
-		RunConfig unSatPiFourRC = new RunConfig(unSatPiFour, 0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
+		AlgorithmRunConfiguration satPiThreeRC = new AlgorithmRunConfiguration(satPiThree, 0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
+		AlgorithmRunConfiguration satPiFourRC = new AlgorithmRunConfiguration(satPiFour, 0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
+		AlgorithmRunConfiguration unSatPiThreeRC = new AlgorithmRunConfiguration(unSatPiThree, 0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
+		AlgorithmRunConfiguration unSatPiFourRC = new AlgorithmRunConfiguration(unSatPiFour, 0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
 		
 		
 		
-		List<RunConfig> rcs = Arrays.asList(satPiOneRC, satPiTwoRC, unSatPiOneRC, unSatPiTwoRC, satPiThreeRC, satPiFourRC, unSatPiThreeRC, unSatPiFourRC);
+		List<AlgorithmRunConfiguration> rcs = Arrays.asList(satPiOneRC, satPiTwoRC, unSatPiOneRC, unSatPiTwoRC, satPiThreeRC, satPiFourRC, unSatPiThreeRC, unSatPiFourRC);
 		
 		tae.evaluateRun(rcs);
 		
@@ -1955,7 +1955,7 @@ public class TAETestSet {
 		
 		TargetAlgorithmEvaluator tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts,  false, taeOptionsMap);
 		
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < 1; i++)
 		{
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
@@ -1966,7 +1966,7 @@ public class TAETestSet {
 				continue;
 			} else
 			{
-				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 				runConfigs.add(rc);
 			}
 		}
@@ -2101,7 +2101,7 @@ public class TAETestSet {
 		b.append(ParamEchoExecutor.class.getCanonicalName());
 		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 		
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
@@ -2112,7 +2112,7 @@ public class TAETestSet {
 				continue;
 			} else
 			{
-				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 				runConfigs.add(rc);
 			}
 		}
@@ -2242,7 +2242,7 @@ public class TAETestSet {
 		b.append(ParamEchoExecutor.class.getCanonicalName());
 		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 		
-		final List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		final List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < 100; i++)
 		{
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
@@ -2253,7 +2253,7 @@ public class TAETestSet {
 				continue;
 			} else
 			{
-				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 				runConfigs.add(rc);
 			}
 		}
@@ -2333,7 +2333,7 @@ public class TAETestSet {
 		
 		tae = new BoundedTargetAlgorithmEvaluator(tae, 1);
 		
-		final List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		final List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < 1; i++)
 		{
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
@@ -2344,7 +2344,7 @@ public class TAETestSet {
 				continue;
 			} else
 			{
-				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 				runConfigs.add(rc);
 			}
 		}
@@ -2352,7 +2352,7 @@ public class TAETestSet {
 		
 		final TargetAlgorithmEvaluator tae2 = tae;
 		
-		final List<RunConfig> runConfigs2 = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		final List<AlgorithmRunConfiguration> runConfigs2 = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < 1; i++)
 		{
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
@@ -2363,7 +2363,7 @@ public class TAETestSet {
 				continue;
 			} else
 			{
-				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 				runConfigs2.add(rc);
 			}
 		}
@@ -2438,7 +2438,7 @@ public class TAETestSet {
 		TargetAlgorithmEvaluator tae = fact.getTargetAlgorithmEvaluator( options);	
 		TargetAlgorithmEvaluator cliTAE = tae;
 		tae = new BoundedTargetAlgorithmEvaluator(tae,10);
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(100);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(100);
 		for(int i=0; i < 20; i++)
 		{
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
@@ -2453,7 +2453,7 @@ public class TAETestSet {
 				continue;
 			} else
 			{
-				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))),  config,execConfig);
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))),  config,execConfig);
 				runConfigs.add(rc);
 			}
 		}
@@ -2547,7 +2547,7 @@ public class TAETestSet {
 		tae = fact.getTargetAlgorithmEvaluator( options);	
 		TargetAlgorithmEvaluator cliTAE = tae;
 		tae = new BoundedTargetAlgorithmEvaluator(tae,2);
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(4);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(4);
 		for(int i=0; i < 4; i++)
 		{
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
@@ -2566,7 +2566,7 @@ public class TAETestSet {
 				continue;
 			} else
 			{
-				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config, execConfig);
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config, execConfig);
 				runConfigs.add(rc);
 			}
 		}
@@ -2615,7 +2615,7 @@ public class TAETestSet {
 		TargetAlgorithmEvaluator cliTAE = tae;
 		tae = new BoundedTargetAlgorithmEvaluator(tae,4);
 		tae = new OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator(tae);
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(4);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(4);
 		for(int i=0; i < 5; i++)
 		{
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
@@ -2637,7 +2637,7 @@ public class TAETestSet {
 				continue;
 			} else
 			{
-				RunConfig rc = new RunConfig( new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config, execConfig);
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration( new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config, execConfig);
 				runConfigs.add(rc);
 			}
 		}
@@ -2717,7 +2717,7 @@ public class TAETestSet {
 		tae = new OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator( fact.getTargetAlgorithmEvaluator( options));	
 		TargetAlgorithmEvaluator cliTAE = tae;
 		//tae = new BoundedTargetAlgorithmEvaluator(tae,2,execConfig);
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(4);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(4);
 		for(int i=0; i < 4; i++)
 		{
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
@@ -2732,7 +2732,7 @@ public class TAETestSet {
 				continue;
 			} else
 			{
-				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config,execConfig);
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config,execConfig);
 				runConfigs.add(rc);
 			}
 		}
@@ -2807,7 +2807,7 @@ public class TAETestSet {
 		tae = new BoundedTargetAlgorithmEvaluator(tae,100);
 
 		
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(4);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(4);
 		for(int i=0; i < 100; i++)
 		{
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
@@ -2821,7 +2821,7 @@ public class TAETestSet {
 				continue;
 			} else
 			{
-				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config, execConfig);
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config, execConfig);
 				runConfigs.add(rc);
 			}
 		}
@@ -2925,7 +2925,7 @@ public class TAETestSet {
 		{
 			public void run()
 			{
-				List<RunConfig> runConfigs = new ArrayList<RunConfig>(4);
+				List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(4);
 				for(int i=0; i < 4; i++)
 				{
 					ParamConfiguration config = configSpace.getRandomConfiguration(r);
@@ -2939,7 +2939,7 @@ public class TAETestSet {
 						continue;
 					} else
 					{
-						RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config, execConfig);
+						AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config, execConfig);
 						runConfigs.add(rc);
 					}
 				}
@@ -3046,7 +3046,7 @@ public class TAETestSet {
 		t.start();
 		taeUnity = new TerminateAllRunsOnFileDeleteTargetAlgorithmEvaluatorDecorator(taeUnity, f);
 		
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(4);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(4);
 		double runtime = 50;
 		for(int i=0; i < 1; i++)
 		{
@@ -3060,7 +3060,7 @@ public class TAETestSet {
 				continue;
 			} else
 			{
-				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 50, config, execConfig);
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 50, config, execConfig);
 				runConfigs.add(rc);
 			}
 		}
@@ -3109,7 +3109,7 @@ public class TAETestSet {
 		TargetAlgorithmEvaluator taeFour = new SimulatedDelayTargetAlgorithmEvaluatorDecorator(cliTAE, 20, 4);
 		
 		
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(4);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(4);
 		double runtime = 2;
 		for(int i=0; i < 1; i++)
 		{
@@ -3123,7 +3123,7 @@ public class TAETestSet {
 				continue;
 			} else
 			{
-				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config, execConfig);
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config, execConfig);
 				runConfigs.add(rc);
 			}
 		}
@@ -3174,12 +3174,12 @@ public class TAETestSet {
 		TargetAlgorithmEvaluator taeUnity = new KillCaptimeExceedingRunsRunsTargetAlgorithmEvaluatorDecorator(tae, 1.1);
 		
 		
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(4);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(4);
 		double runtime = 50;
 		for(int i=0; i < 1; i++)
 		{
 			ParamConfiguration config = ParamConfigurationSpace.getNullConfigurationSpace().getDefaultConfiguration();
-			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), 1), 1.5, config, execConfig);
+			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), 1), 1.5, config, execConfig);
 			runConfigs.add(rc);
 		}
 		
@@ -3224,7 +3224,7 @@ public class TAETestSet {
 		TargetAlgorithmEvaluator taeUnity = new KillCaptimeExceedingRunsRunsTargetAlgorithmEvaluatorDecorator(tae, 1.1);
 		
 		
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(4);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(4);
 		double runtime = 50;
 		for(int i=0; i < 1; i++)
 		{
@@ -3238,7 +3238,7 @@ public class TAETestSet {
 				continue;
 			} else
 			{
-				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1.5, config, execConfig);
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1.5, config, execConfig);
 				runConfigs.add(rc);
 			}
 		}
@@ -3254,7 +3254,7 @@ public class TAETestSet {
 	
 	
 	
-	public void checkExceptedObserverCount(TargetAlgorithmEvaluator tae, double scale, List<RunConfig> runConfigs, double runtime, double observerFrequency)
+	public void checkExceptedObserverCount(TargetAlgorithmEvaluator tae, double scale, List<AlgorithmRunConfiguration> runConfigs, double runtime, double observerFrequency)
 	{
 
 		final AtomicInteger count = new AtomicInteger(0);
@@ -3297,7 +3297,7 @@ public class TAETestSet {
 		
 		tae = new BoundedTargetAlgorithmEvaluator(tae, 1);
 		
-		final List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
+		final List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < 1; i++)
 		{
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
@@ -3308,7 +3308,7 @@ public class TAETestSet {
 				continue;
 			} else
 			{
-				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 				runConfigs.add(rc);
 			}
 		}
@@ -3404,12 +3404,12 @@ public class TAETestSet {
 		tae = fact.getTargetAlgorithmEvaluator( options);	
 		TargetAlgorithmEvaluator cliTAE = tae;
 		tae = new BoundedTargetAlgorithmEvaluator(tae,2);
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(4);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(4);
 		for(int i=0; i < 1; i++)
 		{
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 
-			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"),1), 3000, config, execConfig);
+			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"),1), 3000, config, execConfig);
 			runConfigs.add(rc);
 
 		}
@@ -3449,12 +3449,12 @@ public class TAETestSet {
 		tae = fact.getTargetAlgorithmEvaluator( options);	
 		TargetAlgorithmEvaluator cliTAE = tae;
 		tae = new BoundedTargetAlgorithmEvaluator(tae,2);
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(4);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(4);
 		for(int i=0; i < 1; i++)
 		{
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 
-			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"),1), 3000, config, execConfig);
+			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"),1), 3000, config, execConfig);
 			runConfigs.add(rc);
 
 		}
@@ -3498,7 +3498,7 @@ public class TAETestSet {
 		
 		
 		
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(4);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(4);
 		double runtime = 50;
 		for(int i=0; i < 1; i++)
 		{
@@ -3512,7 +3512,7 @@ public class TAETestSet {
 				continue;
 			} else
 			{
-				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1.5, config, execConfig);
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1.5, config, execConfig);
 				runConfigs.add(rc);
 			}
 		}
@@ -3570,7 +3570,7 @@ public class TAETestSet {
 		
 		
 		
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(4);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(4);
 		double runtime = 50;
 		for(int i=0; i < 1; i++)
 		{
@@ -3584,7 +3584,7 @@ public class TAETestSet {
 				continue;
 			} else
 			{
-				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 20, config, execConfig);
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 20, config, execConfig);
 				runConfigs.add(rc);
 			}
 		}
@@ -3661,7 +3661,7 @@ public class TAETestSet {
 		
 		
 		
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(4);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(4);
 		double runtime = 50;
 		for(int i=0; i < 20; i++)
 		{
@@ -3675,7 +3675,7 @@ public class TAETestSet {
 				continue;
 			} else
 			{
-				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 20, config, execConfig);
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 20, config, execConfig);
 				runConfigs.add(rc);
 			}
 		}
@@ -3767,7 +3767,7 @@ public class TAETestSet {
 		
 		
 		
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(4);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(4);
 		double runtime = 50;
 		for(int i=0; i < 1; i++)
 		{
@@ -3781,7 +3781,7 @@ public class TAETestSet {
 				continue;
 			} else
 			{
-				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 20, config, execConfig);
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 20, config, execConfig);
 				runConfigs.add(rc);
 			}
 		}
@@ -3863,7 +3863,7 @@ public class TAETestSet {
 		
 		tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
 		
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(4);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(4);
 		double runtime = 50;
 		for(int i=0; i < 1; i++)
 		{
@@ -3877,7 +3877,7 @@ public class TAETestSet {
 				continue;
 			} else
 			{
-				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 20, config, execConfig);
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 20, config, execConfig);
 				runConfigs.add(rc);
 			}
 		}
@@ -3956,7 +3956,7 @@ public class TAETestSet {
 		
 		tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
 		
-		runConfigs = new ArrayList<RunConfig>(4);
+		runConfigs = new ArrayList<AlgorithmRunConfiguration>(4);
 		
 		for(int i=0; i < 1; i++)
 		{
@@ -3970,7 +3970,7 @@ public class TAETestSet {
 				continue;
 			} else
 			{
-				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 20, config, execConfig);
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 20, config, execConfig);
 				runConfigs.add(rc);
 			}
 		}
@@ -4016,7 +4016,7 @@ public class TAETestSet {
 		
 		tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
 		
-		runConfigs = new ArrayList<RunConfig>(4);
+		runConfigs = new ArrayList<AlgorithmRunConfiguration>(4);
 		
 		for(int i=0; i < 1; i++)
 		{
@@ -4030,7 +4030,7 @@ public class TAETestSet {
 				continue;
 			} else
 			{
-				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 20, config, execConfig);
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 20, config, execConfig);
 				runConfigs.add(rc);
 			}
 		}
@@ -4090,7 +4090,7 @@ public class TAETestSet {
 		
 		tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
 		
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(4);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(4);
 		double runtime = 50;
 		for(int i=0; i < 1; i++)
 		{
@@ -4104,7 +4104,7 @@ public class TAETestSet {
 				continue;
 			} else
 			{
-				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 20, config,execConfig);
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 20, config,execConfig);
 				runConfigs.add(rc);
 			}
 		}
@@ -4194,7 +4194,7 @@ public class TAETestSet {
 		OutstandingEvaluationsWithAccessorTargetAlgorithmEvaluator aTAE = new OutstandingEvaluationsWithAccessorTargetAlgorithmEvaluator(tae);
 		
 		tae = aTAE;
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(100);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(100);
 		for(int i=0; i < 100; i++)
 		{
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
@@ -4209,7 +4209,7 @@ public class TAETestSet {
 				continue;
 			} else
 			{
-				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), config,execConfig);
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), config,execConfig);
 				runConfigs.add(rc);
 			}
 		}

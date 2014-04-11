@@ -15,6 +15,7 @@ import static org.junit.Assert.*;
 import ca.ubc.cs.beta.TestHelper;
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.misc.debug.DebugUtil;
@@ -22,7 +23,6 @@ import ca.ubc.cs.beta.aeatk.objectives.RunObjective;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aeatk.random.SeedableRandomPool;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluatorFactory;
@@ -80,7 +80,7 @@ private static TargetAlgorithmEvaluator tae;
 		
 		
 		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(1);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(1);
 		
 		for(int i=0; i < 10; i++)
 		{
@@ -88,7 +88,7 @@ private static TargetAlgorithmEvaluator tae;
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved","TIMEOUT");
 			config.put("runtime", String.valueOf(runtime));
-			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), kappaMax, config, execConfig);
+			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), kappaMax, config, execConfig);
 			runConfigs.add(rc);
 		}
 		
@@ -96,11 +96,11 @@ private static TargetAlgorithmEvaluator tae;
 		
 		
 		
-		for(RunConfig rc : runConfigs)
+		for(AlgorithmRunConfiguration rc : runConfigs)
 		{
 				AlgorithmRun run = tae.evaluateRun(rc).get(0);
 				assertDEquals(RunObjective.RUNTIME.getObjective(run),kappaMax,0.1);
-				assertDEquals(Double.valueOf(run.getRunConfig().getParamConfiguration().get("runtime")), run.getRuntime(), 0.1);
+				assertDEquals(Double.valueOf(run.getRunConfig().getParameterConfiguration().get("runtime")), run.getRuntime(), 0.1);
 		}
 	}
 	
@@ -110,7 +110,7 @@ private static TargetAlgorithmEvaluator tae;
 		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		
 		
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(1);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(1);
 		
 		for(int i=0; i < 10; i++)
 		{
@@ -118,7 +118,7 @@ private static TargetAlgorithmEvaluator tae;
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved","TIMEOUT");
 			config.put("runtime", String.valueOf(runtime));
-			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), runtime, config,  execConfig);
+			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), runtime, config,  execConfig);
 			runConfigs.add(rc);
 		}
 		
@@ -126,11 +126,11 @@ private static TargetAlgorithmEvaluator tae;
 		
 		
 		
-		for(RunConfig rc : runConfigs)
+		for(AlgorithmRunConfiguration rc : runConfigs)
 		{
 				AlgorithmRun run = tae.evaluateRun(rc).get(0);
 				assertDEquals(RunObjective.RUNTIME.getObjective(run),run.getRuntime(),0.1);
-				assertDEquals(Double.valueOf(run.getRunConfig().getParamConfiguration().get("runtime")), run.getRuntime(), 0.1);
+				assertDEquals(Double.valueOf(run.getRunConfig().getParameterConfiguration().get("runtime")), run.getRuntime(), 0.1);
 		}
 	}
 	
@@ -142,7 +142,7 @@ private static TargetAlgorithmEvaluator tae;
 		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		
 		
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(1);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(1);
 		
 		for(int i=0; i < 10; i++)
 		{
@@ -150,7 +150,7 @@ private static TargetAlgorithmEvaluator tae;
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved","CRASHED");
 			config.put("runtime", String.valueOf(runtime));
-			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), kappaMax, config, execConfig);
+			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), kappaMax, config, execConfig);
 			runConfigs.add(rc);
 		}
 		
@@ -158,11 +158,11 @@ private static TargetAlgorithmEvaluator tae;
 		
 		
 		
-		for(RunConfig rc : runConfigs)
+		for(AlgorithmRunConfiguration rc : runConfigs)
 		{
 				AlgorithmRun run = tae.evaluateRun(rc).get(0);
 				assertDEquals(RunObjective.RUNTIME.getObjective(run),kappaMax,0.1);
-				assertDEquals(Double.valueOf(run.getRunConfig().getParamConfiguration().get("runtime")), run.getRuntime(), 0.1);
+				assertDEquals(Double.valueOf(run.getRunConfig().getParameterConfiguration().get("runtime")), run.getRuntime(), 0.1);
 		}
 	}
 	
@@ -173,7 +173,7 @@ private static TargetAlgorithmEvaluator tae;
 		
 		
 		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(1);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(1);
 		
 		for(int i=0; i < 10; i++)
 		{
@@ -181,7 +181,7 @@ private static TargetAlgorithmEvaluator tae;
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved","SAT");
 			config.put("runtime", String.valueOf(runtime));
-			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), kappaMax,config, execConfig);
+			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), kappaMax,config, execConfig);
 			runConfigs.add(rc);
 		}
 		
@@ -189,11 +189,11 @@ private static TargetAlgorithmEvaluator tae;
 		
 		
 		
-		for(RunConfig rc : runConfigs)
+		for(AlgorithmRunConfiguration rc : runConfigs)
 		{
 				AlgorithmRun run = tae.evaluateRun(rc).get(0);
 				assertDEquals(RunObjective.RUNTIME.getObjective(run),run.getRuntime(),0.1);
-				assertDEquals(Double.valueOf(run.getRunConfig().getParamConfiguration().get("runtime")), run.getRuntime(), 0.1);
+				assertDEquals(Double.valueOf(run.getRunConfig().getParameterConfiguration().get("runtime")), run.getRuntime(), 0.1);
 		}
 	}
 	
@@ -207,7 +207,7 @@ private static TargetAlgorithmEvaluator tae;
 		
 		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(1);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(1);
 		double capTimeRequest = 5;
 		
 		for(int i=0; i < 10; i++)
@@ -216,7 +216,7 @@ private static TargetAlgorithmEvaluator tae;
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
 			config.put("solved","TIMEOUT");
 			config.put("runtime", "0.1");
-			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))),capTimeRequest, config, execConfig);
+			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))),capTimeRequest, config, execConfig);
 			runConfigs.add(rc);
 		}
 		
@@ -224,11 +224,11 @@ private static TargetAlgorithmEvaluator tae;
 		
 		
 		
-		for(RunConfig rc : runConfigs)
+		for(AlgorithmRunConfiguration rc : runConfigs)
 		{
 				AlgorithmRun run = tae.evaluateRun(rc).get(0);
 				assertDEquals(RunObjective.RUNTIME.getObjective(run),capTimeRequest,0.1);
-				assertDEquals(Double.valueOf(run.getRunConfig().getParamConfiguration().get("runtime")), run.getRuntime(), 0.1);
+				assertDEquals(Double.valueOf(run.getRunConfig().getParameterConfiguration().get("runtime")), run.getRuntime(), 0.1);
 		}
 	}
 
@@ -254,7 +254,7 @@ private static TargetAlgorithmEvaluator tae;
 		
 		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), ParamConfigurationSpace.getSingletonConfigurationSpace(), false, false, kappaMax);
 		
-		RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("pi"), 1), 20, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(), execConfig);
+		AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("pi"), 1), 20, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(), execConfig);
 		
 		
 		List<AlgorithmRun> runs = tae.evaluateRun(Collections.singletonList(rc), new TargetAlgorithmEvaluatorRunObserver()

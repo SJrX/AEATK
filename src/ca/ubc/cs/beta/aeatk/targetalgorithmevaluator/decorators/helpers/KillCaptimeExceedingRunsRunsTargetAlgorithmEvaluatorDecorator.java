@@ -13,7 +13,7 @@ import com.beust.jcommander.ParameterException;
 import net.jcip.annotations.ThreadSafe;
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
@@ -38,7 +38,7 @@ public class KillCaptimeExceedingRunsRunsTargetAlgorithmEvaluatorDecorator exten
 	 *
 	 */
 	
-	private final Set<RunConfig> killedRuns = Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<RunConfig, Boolean>()));  
+	private final Set<AlgorithmRunConfiguration> killedRuns = Collections.synchronizedSet(Collections.newSetFromMap(new WeakHashMap<AlgorithmRunConfiguration, Boolean>()));  
 	
 	public KillCaptimeExceedingRunsRunsTargetAlgorithmEvaluatorDecorator(TargetAlgorithmEvaluator tae, double scalingFactor) {
 		super(tae);
@@ -56,14 +56,14 @@ public class KillCaptimeExceedingRunsRunsTargetAlgorithmEvaluatorDecorator exten
 	}
 
 	@Override
-	public final List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
+	public final List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
 		return tae.evaluateRun(runConfigs, new KillingTargetAlgorithmEvaluatorRunObserver(obs));
 	}
 	
 	
 	
 	@Override
-	public final void evaluateRunsAsync(final List<RunConfig> runConfigs, final TargetAlgorithmEvaluatorCallback oHandler, final TargetAlgorithmEvaluatorRunObserver obs) {
+	public final void evaluateRunsAsync(final List<AlgorithmRunConfiguration> runConfigs, final TargetAlgorithmEvaluatorCallback oHandler, final TargetAlgorithmEvaluatorRunObserver obs) {
 		tae.evaluateRunsAsync(runConfigs, oHandler, new KillingTargetAlgorithmEvaluatorRunObserver(obs));
 
 	}

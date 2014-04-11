@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 
 /**
@@ -20,9 +20,9 @@ import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
  */
 public class OutstandingEvaluationsWithAccessorTargetAlgorithmEvaluator extends	OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator {
 
-	private final Set<List<RunConfig>> outstandingRuns = Collections.newSetFromMap(new ConcurrentHashMap<List<RunConfig>,Boolean>());
+	private final Set<List<AlgorithmRunConfiguration>> outstandingRuns = Collections.newSetFromMap(new ConcurrentHashMap<List<AlgorithmRunConfiguration>,Boolean>());
 	
-	private final Set<List<RunConfig>> unmodifyableView = Collections.unmodifiableSet(outstandingRuns);
+	private final Set<List<AlgorithmRunConfiguration>> unmodifyableView = Collections.unmodifiableSet(outstandingRuns);
 	
 	public OutstandingEvaluationsWithAccessorTargetAlgorithmEvaluator(
 			TargetAlgorithmEvaluator tae) {
@@ -33,7 +33,7 @@ public class OutstandingEvaluationsWithAccessorTargetAlgorithmEvaluator extends	
 	 * Additionally template methods
 	 */
 	
-	protected void preRun(List<RunConfig> runConfigs)
+	protected void preRun(List<AlgorithmRunConfiguration> runConfigs)
 	{
 		
 		
@@ -46,13 +46,13 @@ public class OutstandingEvaluationsWithAccessorTargetAlgorithmEvaluator extends	
 		
 	}
 	
-	protected void postRun(List<RunConfig> runConfigs)
+	protected void postRun(List<AlgorithmRunConfiguration> runConfigs)
 	{
 		//System.out.println("Post Run");
 		outstandingRuns.remove(runConfigs);
 	}
 	
-	public Set<List<RunConfig>> getOutstandingRunConfigs()
+	public Set<List<AlgorithmRunConfiguration>> getOutstandingRunConfigs()
 	{
 		return this.unmodifyableView;
 	}

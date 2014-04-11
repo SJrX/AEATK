@@ -7,7 +7,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import net.jcip.annotations.ThreadSafe;
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.CommandLineAlgorithmRun;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.functionality.OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator;
 
@@ -39,7 +39,7 @@ public abstract class AbstractTargetAlgorithmEvaluator implements TargetAlgorith
 	 * @return	list of the exact same size as input containing the <code>AlgorithmRun</code> objects in the same order as runConfigs
 	 * @throws TargetAlgorithmAbortException
 	 */
-	public abstract List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver runStatusObserver);
+	public abstract List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver runStatusObserver);
 	
 	/**
 	 * Evaluates the given configuration, and when complete the handler is invoked
@@ -54,29 +54,29 @@ public abstract class AbstractTargetAlgorithmEvaluator implements TargetAlgorith
 	 * @param taeCallback   	handler to invoke on completion or failure
 	 * @param runStatusObserver observer that will be notified of the current run status
 	 */
-	public abstract void evaluateRunsAsync(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorCallback taeCallback, TargetAlgorithmEvaluatorRunObserver runStatusObserver);
+	public abstract void evaluateRunsAsync(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorCallback taeCallback, TargetAlgorithmEvaluatorRunObserver runStatusObserver);
 	
 	
 	@Override
-	public final List<AlgorithmRun> evaluateRun(RunConfig run) 
+	public final List<AlgorithmRun> evaluateRun(AlgorithmRunConfiguration run) 
 	{
 		return evaluateRun(Collections.singletonList(run), null);
 	}
 	
 	@Override
-	public final List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs)
+	public final List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs)
 	{
 		return evaluateRun(runConfigs, null);
 	}
 	
 	@Override
-	public final void evaluateRunsAsync(RunConfig runConfig, TargetAlgorithmEvaluatorCallback handler) {
+	public final void evaluateRunsAsync(AlgorithmRunConfiguration runConfig, TargetAlgorithmEvaluatorCallback handler) {
 		evaluateRunsAsync(Collections.singletonList(runConfig), handler);
 	}
 
 	
 	@Override
-	public final void evaluateRunsAsync(List<RunConfig> runConfigs,
+	public final void evaluateRunsAsync(List<AlgorithmRunConfiguration> runConfigs,
 			TargetAlgorithmEvaluatorCallback handler) {
 				evaluateRunsAsync(runConfigs, handler, null);
 			}
@@ -107,9 +107,9 @@ public abstract class AbstractTargetAlgorithmEvaluator implements TargetAlgorith
 	}
 
 	@Override
-	public String getManualCallString(RunConfig runConfig) {
+	public String getManualCallString(AlgorithmRunConfiguration runConfig) {
 		
-		AlgorithmExecutionConfiguration execConfig = runConfig.getAlgorithmExecutionConfig();
+		AlgorithmExecutionConfiguration execConfig = runConfig.getAlgorithmExecutionConfiguration();
 		StringBuilder sb = new StringBuilder();
 		
 		

@@ -9,8 +9,8 @@ import org.slf4j.LoggerFactory;
 
 import net.jcip.annotations.ThreadSafe;
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.concurrent.ReducableSemaphore;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
@@ -44,7 +44,7 @@ public class OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator extends
 
 
 	@Override
-	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
+	public List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
 		try{
 			
 			logReduce(runConfigs);
@@ -59,7 +59,7 @@ public class OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator extends
 		
 	}
 
-	private void logReduce(List<RunConfig> runConfigs)
+	private void logReduce(List<AlgorithmRunConfiguration> runConfigs)
 	{
 		outstandingRunBlocks.reducePermits();
 		outstandingRuns.addAndGet(runConfigs.size());
@@ -76,7 +76,7 @@ public class OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator extends
 		*/
 	}
 	
-	private void logRelease(List<RunConfig> runConfigs)
+	private void logRelease(List<AlgorithmRunConfiguration> runConfigs)
 	{
 		outstandingRunBlocks.release();
 		outstandingRuns.addAndGet(-1*runConfigs.size());
@@ -95,7 +95,7 @@ public class OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator extends
 	}
 
 	@Override
-	public void evaluateRunsAsync(final List<RunConfig> runConfigs,
+	public void evaluateRunsAsync(final List<AlgorithmRunConfiguration> runConfigs,
 			final TargetAlgorithmEvaluatorCallback handler, TargetAlgorithmEvaluatorRunObserver obs) {
 		
 		
@@ -187,12 +187,12 @@ public class OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator extends
 	 * Additional template methods
 	 */
 	
-	protected void preRun(List<RunConfig> runConfigs)
+	protected void preRun(List<AlgorithmRunConfiguration> runConfigs)
 	{
 		//Template Method
 	}
 	
-	protected void postRun(List<RunConfig> runConfigs)
+	protected void postRun(List<AlgorithmRunConfiguration> runConfigs)
 	{
 		//Template Method
 	}

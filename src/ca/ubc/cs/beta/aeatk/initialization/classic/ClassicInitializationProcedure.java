@@ -8,6 +8,7 @@ import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aeatk.exceptions.DuplicateRunException;
 import ca.ubc.cs.beta.aeatk.exceptions.OutOfTimeException;
@@ -15,7 +16,6 @@ import ca.ubc.cs.beta.aeatk.initialization.InitializationProcedure;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aeatk.random.SeedableRandomPool;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
 import ca.ubc.cs.beta.aeatk.runhistory.RunHistoryHelper;
 import ca.ubc.cs.beta.aeatk.runhistory.ThreadSafeRunHistory;
 import ca.ubc.cs.beta.aeatk.seedgenerator.InstanceSeedGenerator;
@@ -82,7 +82,7 @@ public class ClassicInitializationProcedure implements InitializationProcedure {
 			
 			ProblemInstanceSeedPair pisp = RunHistoryHelper.getRandomInstanceSeedWithFewestRunsFor(runHistory, insc, incumbent, instances, pool.getRandom("CLASSIC_INITIALIZATION"),deterministicInstanceOrdering);
 
-			RunConfig incumbentRunConfig = new RunConfig(pisp, cutoffTime,incumbent, algorithmExecutionConfig);
+			AlgorithmRunConfiguration incumbentRunConfig = new AlgorithmRunConfiguration(pisp, cutoffTime,incumbent, algorithmExecutionConfig);
 
 
 			//Create initial row
@@ -107,13 +107,13 @@ public class ClassicInitializationProcedure implements InitializationProcedure {
 		return incumbent;
 	}
 	
-	protected List<AlgorithmRun> evaluateRun(RunConfig runConfig)
+	protected List<AlgorithmRun> evaluateRun(AlgorithmRunConfiguration runConfig)
 	{
 		return evaluateRun(Collections.singletonList(runConfig));
 	}
 	
 	
-	protected List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs)
+	protected List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs)
 	{
 	
 		if(termCond.haveToStop())
@@ -121,9 +121,9 @@ public class ClassicInitializationProcedure implements InitializationProcedure {
 			throw new OutOfTimeException();
 		}
 		log.debug("Initialization: Scheduling {} run(s):",  runConfigs.size());
-		for(RunConfig rc : runConfigs)
+		for(AlgorithmRunConfiguration rc : runConfigs)
 		{
-			Object[] args = {  runHistory.getThetaIdx(rc.getParamConfiguration())!=-1?" "+runHistory.getThetaIdx(rc.getParamConfiguration()):"", rc.getParamConfiguration(), rc.getProblemInstanceSeedPair().getProblemInstance().getInstanceID(),  rc.getProblemInstanceSeedPair().getSeed(), rc.getCutoffTime()};
+			Object[] args = {  runHistory.getThetaIdx(rc.getParameterConfiguration())!=-1?" "+runHistory.getThetaIdx(rc.getParameterConfiguration()):"", rc.getParameterConfiguration(), rc.getProblemInstanceSeedPair().getProblemInstance().getInstanceID(),  rc.getProblemInstanceSeedPair().getSeed(), rc.getCutoffTime()};
 			log.debug("Initialization: Scheduling run for config{} ({}) on instance {} with seed {} and captime {}", args);
 		}
 		
@@ -131,8 +131,8 @@ public class ClassicInitializationProcedure implements InitializationProcedure {
 		
 		for(AlgorithmRun run : completedRuns)
 		{
-			RunConfig rc = run.getRunConfig();
-			Object[] args = {  runHistory.getThetaIdx(rc.getParamConfiguration())!=-1?" "+runHistory.getThetaIdx(rc.getParamConfiguration()):"", rc.getParamConfiguration(), rc.getProblemInstanceSeedPair().getProblemInstance().getInstanceID(),  rc.getProblemInstanceSeedPair().getSeed(), rc.getCutoffTime(), run.getResultLine(),  run.getWallclockExecutionTime()};
+			AlgorithmRunConfiguration rc = run.getRunConfig();
+			Object[] args = {  runHistory.getThetaIdx(rc.getParameterConfiguration())!=-1?" "+runHistory.getThetaIdx(rc.getParameterConfiguration()):"", rc.getParameterConfiguration(), rc.getProblemInstanceSeedPair().getProblemInstance().getInstanceID(),  rc.getProblemInstanceSeedPair().getSeed(), rc.getCutoffTime(), run.getResultLine(),  run.getWallclockExecutionTime()};
 			log.debug("Initialization: Completed run for config{} ({}) on instance {} with seed {} and captime {} => Result: {}, wallclock time: {} seconds", args);
 		}
 		

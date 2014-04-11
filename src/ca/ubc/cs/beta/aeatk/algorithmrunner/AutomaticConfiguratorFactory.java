@@ -6,7 +6,7 @@ import java.util.concurrent.BlockingQueue;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluatorOptions;
@@ -37,7 +37,7 @@ public class AutomaticConfiguratorFactory {
 	 * @return	algorithmrunner which will run it
 	 */
 
-	public static AlgorithmRunner getSingleThreadedAlgorithmRunner( List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs, CommandLineTargetAlgorithmEvaluatorOptions options, BlockingQueue<Integer> executionIDs)
+	public static AlgorithmRunner getSingleThreadedAlgorithmRunner( List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs, CommandLineTargetAlgorithmEvaluatorOptions options, BlockingQueue<Integer> executionIDs)
 	{
 		return new SingleThreadedAlgorithmRunner( runConfigs,obs, options,executionIDs);
 	}
@@ -49,7 +49,7 @@ public class AutomaticConfiguratorFactory {
 	 * @return	algorithmrunner which will run it
 	 */	
 
-	public static AlgorithmRunner getConcurrentAlgorithmRunner( List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs, CommandLineTargetAlgorithmEvaluatorOptions options, BlockingQueue<Integer> executionIDs)
+	public static AlgorithmRunner getConcurrentAlgorithmRunner( List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs, CommandLineTargetAlgorithmEvaluatorOptions options, BlockingQueue<Integer> executionIDs)
 	{
 		if(runConfigs.size() == 1)
 		{
@@ -71,7 +71,7 @@ public class AutomaticConfiguratorFactory {
 	 * @param nThreads			number of concurrent executions to allow
 	 * @return	algorithmrunner which will run it
 	 */
-	public static AlgorithmRunner getConcurrentAlgorithmRunner( List<RunConfig> runConfigs, int nThreads, TargetAlgorithmEvaluatorRunObserver obs, CommandLineTargetAlgorithmEvaluatorOptions options, BlockingQueue<Integer> executionIDs)
+	public static AlgorithmRunner getConcurrentAlgorithmRunner( List<AlgorithmRunConfiguration> runConfigs, int nThreads, TargetAlgorithmEvaluatorRunObserver obs, CommandLineTargetAlgorithmEvaluatorOptions options, BlockingQueue<Integer> executionIDs)
 	{
 
 		log.trace("Concurrent Algorithm Runner created allowing {} threads", nThreads);

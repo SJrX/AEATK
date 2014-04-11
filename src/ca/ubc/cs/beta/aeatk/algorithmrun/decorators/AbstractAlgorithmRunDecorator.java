@@ -3,7 +3,7 @@ package ca.ubc.cs.beta.aeatk.algorithmrun.decorators;
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 
 /**
  * Abstract class that wraps another AlgorithmRun
@@ -37,7 +37,7 @@ public class AbstractAlgorithmRunDecorator implements AlgorithmRun {
 	}
 
 	@Override
-	public RunConfig getRunConfig() {
+	public AlgorithmRunConfiguration getRunConfig() {
 		return wrappedRun.getRunConfig();
 	}
 

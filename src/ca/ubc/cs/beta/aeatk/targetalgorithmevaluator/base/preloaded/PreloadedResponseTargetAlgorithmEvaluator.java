@@ -7,8 +7,8 @@ import java.util.Queue;
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.ExistingAlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.misc.associatedvalue.AssociatedValue;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.AbstractSyncTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
 
@@ -49,10 +49,10 @@ public class PreloadedResponseTargetAlgorithmEvaluator extends AbstractSyncTarge
 	}
 	
 	@Override
-	public synchronized List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs,
+	public synchronized List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs,
 			TargetAlgorithmEvaluatorRunObserver obs) {
 		List<AlgorithmRun> runs = new ArrayList<AlgorithmRun>();
-		for(RunConfig rc : runConfigs)
+		for(AlgorithmRunConfiguration rc : runConfigs)
 		{
 	
 			AssociatedValue<RunResult, Double> v = myQueue.poll();

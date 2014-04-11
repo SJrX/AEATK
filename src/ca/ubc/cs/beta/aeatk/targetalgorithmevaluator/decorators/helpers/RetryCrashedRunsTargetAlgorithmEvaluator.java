@@ -13,7 +13,7 @@ import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
@@ -52,7 +52,7 @@ public class RetryCrashedRunsTargetAlgorithmEvaluator extends
 	
 
 	@Override
-	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
+	public List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
 		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs, obs);
 		
 		runs = new ArrayList<AlgorithmRun>(runs);
@@ -60,7 +60,7 @@ public class RetryCrashedRunsTargetAlgorithmEvaluator extends
 		
 		for(int i=1; i <= retryCount; i++)
 		{
-			Map<RunConfig, Integer> crashedRuns = new HashMap<RunConfig,Integer>();
+			Map<AlgorithmRunConfiguration, Integer> crashedRuns = new HashMap<AlgorithmRunConfiguration,Integer>();
 			boolean crashedRunsExist = false;
 			
 			for(int j =0; j < runs.size(); j++)
@@ -83,7 +83,7 @@ public class RetryCrashedRunsTargetAlgorithmEvaluator extends
 				log.debug("Retrying {} crashed runs (Attempt {})", crashedRuns.size(), i);
 			}
 			
-			List<RunConfig> crashRCs = new ArrayList<RunConfig>(crashedRuns.keySet().size());
+			List<AlgorithmRunConfiguration> crashRCs = new ArrayList<AlgorithmRunConfiguration>(crashedRuns.keySet().size());
 			crashRCs.addAll(crashedRuns.keySet());
 			
 			
@@ -118,7 +118,7 @@ public class RetryCrashedRunsTargetAlgorithmEvaluator extends
 
 
 	@Override
-	public void evaluateRunsAsync(List<RunConfig> runConfigs,
+	public void evaluateRunsAsync(List<AlgorithmRunConfiguration> runConfigs,
 			TargetAlgorithmEvaluatorCallback handler, TargetAlgorithmEvaluatorRunObserver obs) {
 		log.warn("Cannot retry runs that are asynchronous at the moment");
 		tae.evaluateRunsAsync(runConfigs, handler, obs);

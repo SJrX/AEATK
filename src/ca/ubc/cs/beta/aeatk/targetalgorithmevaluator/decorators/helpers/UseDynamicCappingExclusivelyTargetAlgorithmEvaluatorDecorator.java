@@ -14,7 +14,7 @@ import ca.ubc.cs.beta.aeatk.algorithmrun.ExistingAlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aeatk.algorithmrun.RunningAlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.kill.KillHandler;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorHelper;
@@ -43,26 +43,26 @@ public class UseDynamicCappingExclusivelyTargetAlgorithmEvaluatorDecorator
 	
 
 	@Override
-	public final List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
+	public final List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
 		return TargetAlgorithmEvaluatorHelper.evaluateRunSyncToAsync(runConfigs, this, obs);
 	}
 
 	@Override
-	public final void evaluateRunsAsync(List<RunConfig> runConfigs,
+	public final void evaluateRunsAsync(List<AlgorithmRunConfiguration> runConfigs,
 			final TargetAlgorithmEvaluatorCallback oHandler, final TargetAlgorithmEvaluatorRunObserver obs) {
 
 		
-		final Map<RunConfig, RunConfig> transformedRuns = new ConcurrentHashMap<RunConfig, RunConfig>();
+		final Map<AlgorithmRunConfiguration, AlgorithmRunConfiguration> transformedRuns = new ConcurrentHashMap<AlgorithmRunConfiguration, AlgorithmRunConfiguration>();
 		
-		List<RunConfig> newRunConfigs = new ArrayList<RunConfig>(runConfigs.size());
+		List<AlgorithmRunConfiguration> newRunConfigs = new ArrayList<AlgorithmRunConfiguration>(runConfigs.size());
 		
-		for(RunConfig rc : runConfigs)
+		for(AlgorithmRunConfiguration rc : runConfigs)
 		{
 			if(rc.hasCutoffLessThanMax())
 			{
 				
 				
-				RunConfig newRC = new RunConfig(rc.getProblemInstanceSeedPair(), rc.getParamConfiguration(), rc.getAlgorithmExecutionConfig());
+				AlgorithmRunConfiguration newRC = new AlgorithmRunConfiguration(rc.getProblemInstanceSeedPair(), rc.getParameterConfiguration(), rc.getAlgorithmExecutionConfiguration());
 				transformedRuns.put(newRC, rc);
 				newRunConfigs.add(newRC);
 			} else
@@ -88,7 +88,7 @@ public class UseDynamicCappingExclusivelyTargetAlgorithmEvaluatorDecorator
 						RunResult r = run.getRunResult();
 						double runtime = run.getRuntime();
 						
-						RunConfig origRunConfig = transformedRuns.get(run.getRunConfig());
+						AlgorithmRunConfiguration origRunConfig = transformedRuns.get(run.getRunConfig());
 						
 						if(runtime > origRunConfig.getCutoffTime())
 						{

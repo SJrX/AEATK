@@ -7,8 +7,8 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.LinkedBlockingQueue;
 
 import net.jcip.annotations.ThreadSafe;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.concurrent.threadfactory.SequentiallyNamedThreadFactory;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
@@ -68,7 +68,7 @@ public class NonBlockingAsyncTargetAlgorithmEvaluatorDecorator extends
 	}
 
 	@Override
-	public void evaluateRunsAsync(List<RunConfig> runConfigs,
+	public void evaluateRunsAsync(List<AlgorithmRunConfiguration> runConfigs,
 			final TargetAlgorithmEvaluatorCallback callback, TargetAlgorithmEvaluatorRunObserver observer) {
 		try {
 			queue.put(new Triple(runConfigs, callback, observer));
@@ -95,11 +95,11 @@ public class NonBlockingAsyncTargetAlgorithmEvaluatorDecorator extends
 	
 	private class Triple
 	{
-		final List<RunConfig> runConfigs;
+		final List<AlgorithmRunConfiguration> runConfigs;
 		final TargetAlgorithmEvaluatorCallback callback;
 		final TargetAlgorithmEvaluatorRunObserver observer;
 		
-		public Triple(List<RunConfig> runConfigs2,
+		public Triple(List<AlgorithmRunConfiguration> runConfigs2,
 				TargetAlgorithmEvaluatorCallback callback2,
 				TargetAlgorithmEvaluatorRunObserver observer2) {
 			

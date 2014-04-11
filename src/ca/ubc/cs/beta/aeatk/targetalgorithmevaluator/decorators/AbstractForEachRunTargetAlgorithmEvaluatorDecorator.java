@@ -4,7 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
@@ -27,12 +27,12 @@ public abstract class AbstractForEachRunTargetAlgorithmEvaluatorDecorator extend
 	
 
 	@Override
-	public final List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
+	public final List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
 		return processRuns(tae.evaluateRun(processRunConfigs(runConfigs), obs));
 	}
 
 	@Override
-	public final void evaluateRunsAsync(List<RunConfig> runConfigs,
+	public final void evaluateRunsAsync(List<AlgorithmRunConfiguration> runConfigs,
 			final TargetAlgorithmEvaluatorCallback oHandler, TargetAlgorithmEvaluatorRunObserver obs) {
 		
 		//We need to make sure wrapped versions are called in the same order
@@ -75,7 +75,7 @@ public abstract class AbstractForEachRunTargetAlgorithmEvaluatorDecorator extend
 	 * @param rc the runconfig  being requested
 	 * @return runConfig object to replace the run
 	 */
-	protected RunConfig processRun(RunConfig rc)
+	protected AlgorithmRunConfiguration processRun(AlgorithmRunConfiguration rc)
 	{
 		return rc;
 	}
@@ -91,9 +91,9 @@ public abstract class AbstractForEachRunTargetAlgorithmEvaluatorDecorator extend
 		return runs;
 	}
 	
-	protected final List<RunConfig> processRunConfigs(List<RunConfig> runConfigs)
+	protected final List<AlgorithmRunConfiguration> processRunConfigs(List<AlgorithmRunConfiguration> runConfigs)
 	{	
-		runConfigs = new ArrayList<RunConfig>(runConfigs);
+		runConfigs = new ArrayList<AlgorithmRunConfiguration>(runConfigs);
 		for(int i=0; i < runConfigs.size(); i++)
 		{
 			runConfigs.set(i, processRun(runConfigs.get(i)));

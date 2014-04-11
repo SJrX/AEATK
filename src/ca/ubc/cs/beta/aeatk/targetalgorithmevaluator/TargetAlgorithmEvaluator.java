@@ -3,7 +3,7 @@ package ca.ubc.cs.beta.aeatk.targetalgorithmevaluator;
 import java.util.List;
 
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 
 /**
  * Executes Target Algorithm Runs (Converts between RunConfig objects to AlgorithmRun objects)
@@ -44,7 +44,7 @@ public interface TargetAlgorithmEvaluator {
 	 * @throws ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.exceptions.TargetAlgorithmAbortException
 	 * @throws ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.exceptions.TargetAlgorithmEvaluatorShutdownException
 	 */
-	public List<AlgorithmRun> evaluateRun(RunConfig runConfig);
+	public List<AlgorithmRun> evaluateRun(AlgorithmRunConfiguration runConfig);
 
 	/**
 	 * Evaluate a list of run configurations
@@ -61,7 +61,7 @@ public interface TargetAlgorithmEvaluator {
 	 * @throws ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.exceptions.TargetAlgorithmAbortException
 	 * @throws ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.exceptions.TargetAlgorithmEvaluatorShutdownException
 	 */
-	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs);
+	public List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs);
 
 	/**
 	 * Evaluate a list of run configurations
@@ -76,7 +76,7 @@ public interface TargetAlgorithmEvaluator {
 	 * @throws ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.exceptions.TargetAlgorithmAbortException
 	 * @throws ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.exceptions.TargetAlgorithmEvaluatorShutdownException
 	 */
-	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver observer);
+	public List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver observer);
 	
 	
 	/**
@@ -101,7 +101,7 @@ public interface TargetAlgorithmEvaluator {
 	 * @param runConfig  run configuration to evaluate
 	 * @param callback    handler to invoke on completion or failure
 	 */
-	public void evaluateRunsAsync(RunConfig runConfig, TargetAlgorithmEvaluatorCallback callback );
+	public void evaluateRunsAsync(AlgorithmRunConfiguration runConfig, TargetAlgorithmEvaluatorCallback callback );
 	
 	/**
 	 * Evaluates the given configuration, and when complete the handler is invoked
@@ -123,7 +123,7 @@ public interface TargetAlgorithmEvaluator {
 	 * @param runConfigs list of zero or more unique run configuration to evaluate
 	 * @param callback   handler to invoke on completion or failure
 	 */
-	public void evaluateRunsAsync(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorCallback callback);
+	public void evaluateRunsAsync(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorCallback callback);
 
 	/**
 	 * Evaluates the given configuration, and when complete the handler is invoked
@@ -144,7 +144,7 @@ public interface TargetAlgorithmEvaluator {
 	 * @param callback   handler to invoke on completion or failure
 	 * @param observer	 observer that will be notified of the current run status
 	 */
-	public void evaluateRunsAsync(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorCallback callback, TargetAlgorithmEvaluatorRunObserver observer);
+	public void evaluateRunsAsync(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorCallback callback, TargetAlgorithmEvaluatorRunObserver observer);
 	
 
 	/**
@@ -237,7 +237,7 @@ public interface TargetAlgorithmEvaluator {
 	 * @param runConfig run configuration to generate a call string for
 	 * @return string something the user can execute directly if necessary to reproduce the results
 	 */
-	public String getManualCallString(RunConfig runConfig);
+	public String getManualCallString(AlgorithmRunConfiguration runConfig);
 
 	/**
 	 * Notifies the TargetAlgorithmEvaluator that we are shutting down

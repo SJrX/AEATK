@@ -26,6 +26,7 @@ import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionCo
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.ExistingAlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.configspace.ParamFileHelper;
@@ -36,7 +37,6 @@ import ca.ubc.cs.beta.aeatk.objectives.RunObjective;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aeatk.random.SeedableRandomPool;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
 import ca.ubc.cs.beta.aeatk.runhistory.NewRunHistory;
 import ca.ubc.cs.beta.aeatk.runhistory.RunData;
 import ca.ubc.cs.beta.aeatk.runhistory.RunHistory;
@@ -167,7 +167,7 @@ public class LegacyStateDeserializerTester {
 			ParamConfiguration config = configSpace.getRandomConfiguration(rand);
 			
 			ProblemInstance pi = new ProblemInstance("test");
-			RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(pi,1), 0, config,execConfig);
+			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(pi,1), 0, config,execConfig);
 			AlgorithmRun run = new ExistingAlgorithmRun(execConfig, rc,RunResult.SAT, 0,0,0,1);
 			//(InstanceSeedGenerator instanceSeedGenerator, OverallObjective intraInstanceObjective,  OverallObjective interInstanceObjective, RunObjective runObj)
 			
@@ -181,7 +181,7 @@ public class LegacyStateDeserializerTester {
 			
 			StateDeserializer sd = sf.getStateDeserializer("it",1, configSpace, Collections.singletonList(pi), execConfig,new NewRunHistory( OverallObjective.MEAN10,OverallObjective.MEAN, RunObjective.RUNTIME));
 			System.out.println(Arrays.toString(config.toValueArray()));
-			ParamConfiguration restoredConfig = sd.getRunHistory().getAlgorithmRunsExcludingRedundant().get(0).getRunConfig().getParamConfiguration();
+			ParamConfiguration restoredConfig = sd.getRunHistory().getAlgorithmRunsExcludingRedundant().get(0).getRunConfig().getParameterConfiguration();
 			System.out.println(Arrays.toString(restoredConfig.toValueArray()));
 			assertTrue("Testing for equality ",config.equals(restoredConfig));
 			assertTrue("Testing for Array equality", Arrays.equals(config.toValueArray(), restoredConfig.toValueArray()));
@@ -333,7 +333,7 @@ public class LegacyStateDeserializerTester {
 		
 		
 		
-		List<RunConfig> runConfigs = getValidRunConfigurations(pis, r, isg, configSpace);
+		List<AlgorithmRunConfiguration> runConfigs = getValidRunConfigurations(pis, r, isg, configSpace);
 		
 	
 		TargetAlgorithmEvaluator tae = new EchoTargetAlgorithmEvaluator();
@@ -373,7 +373,7 @@ public class LegacyStateDeserializerTester {
 		
 		stateS.setRunHistory(runHistory);
 		
-		stateS.setIncumbent(runs.get(0).getRunConfig().getParamConfiguration());
+		stateS.setIncumbent(runs.get(0).getRunConfig().getParameterConfiguration());
 		stateS.save();
 		
 		StateDeserializer stateD =  sf.getStateDeserializer("deleteMe-unitTest", 10, configSpace, pis, execConfig,new NewRunHistory( OverallObjective.MEAN10,OverallObjective.MEAN, RunObjective.RUNTIME));
@@ -434,7 +434,7 @@ public class LegacyStateDeserializerTester {
 				
 		InstanceSeedGenerator isg = new RandomInstanceSeedGenerator(pis, 1);
 
-		List<RunConfig> runConfigs = getValidRunConfigurations(pis, r, isg, configSpace);
+		List<AlgorithmRunConfiguration> runConfigs = getValidRunConfigurations(pis, r, isg, configSpace);
 		
 		TargetAlgorithmEvaluator tae = new EchoTargetAlgorithmEvaluator();
 		RunHistory runHistory = new NewRunHistory( OverallObjective.MEAN10, OverallObjective.MEAN, RunObjective.RUNTIME);
@@ -467,7 +467,7 @@ public class LegacyStateDeserializerTester {
 		
 		stateS.setRunHistory(runHistory);
 		
-		stateS.setIncumbent(runs.get(0).getRunConfig().getParamConfiguration());
+		stateS.setIncumbent(runs.get(0).getRunConfig().getParameterConfiguration());
 		stateS.save();
 		
 		StateDeserializer stateD =  sf.getStateDeserializer("deleteMe-unitTest-gibberish", 10, configSpace, pis, execConfig,new NewRunHistory( OverallObjective.MEAN10,OverallObjective.MEAN, RunObjective.RUNTIME));
@@ -551,7 +551,7 @@ public class LegacyStateDeserializerTester {
 		List<AlgorithmRun> allRuns = new ArrayList<AlgorithmRun>();
 		for(int i=0; i < 20; i++)
 		{
-			List<RunConfig> runConfigs = getValidRunConfigurations(pis, r, isg, configSpace);
+			List<AlgorithmRunConfiguration> runConfigs = getValidRunConfigurations(pis, r, isg, configSpace);
 			
 			System.out.println("Performing " + runConfigs.size() + " runs");
 		
@@ -567,7 +567,7 @@ public class LegacyStateDeserializerTester {
 			
 			if(i%5 == 0) stateS.setRunHistory(runHistory); //Test quick restore
 			 
-			stateS.setIncumbent(runs.get(0).getRunConfig().getParamConfiguration());
+			stateS.setIncumbent(runs.get(0).getRunConfig().getParameterConfiguration());
 			stateS.save();
 			
 			if(i%5 == 0 )
@@ -581,7 +581,7 @@ public class LegacyStateDeserializerTester {
 		
 		StateSerializer stateS = sf.getStateSerializer("deleteMe-unitTest", 100);
 		stateS.setRunHistory(runHistory); //Test quick restore
-		stateS.setIncumbent(allRuns.get(0).getRunConfig().getParamConfiguration());
+		stateS.setIncumbent(allRuns.get(0).getRunConfig().getParameterConfiguration());
 		stateS.save();
 		
 		for(int i=0; i < 20; i++)
@@ -621,14 +621,14 @@ public class LegacyStateDeserializerTester {
 	}
 	
 	
-	public List<RunConfig> getValidRunConfigurations(List<ProblemInstance> pis, Random r, InstanceSeedGenerator isg, ParamConfigurationSpace configSpace)
+	public List<AlgorithmRunConfiguration> getValidRunConfigurations(List<ProblemInstance> pis, Random r, InstanceSeedGenerator isg, ParamConfigurationSpace configSpace)
 	{
 		return getValidRunConfigurations(pis, r, isg, configSpace, 200);
 	}
 	
-	public List<RunConfig> getValidRunConfigurations(List<ProblemInstance> pis, Random r, InstanceSeedGenerator isg, ParamConfigurationSpace configSpace, int number)
+	public List<AlgorithmRunConfiguration> getValidRunConfigurations(List<ProblemInstance> pis, Random r, InstanceSeedGenerator isg, ParamConfigurationSpace configSpace, int number)
 	{
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(number+2);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(number+2);
 		for(int i=0; i < number; i++)
 		{
 			ParamConfiguration config = configSpace.getRandomConfiguration(r);
@@ -642,7 +642,7 @@ public class LegacyStateDeserializerTester {
 				ProblemInstance pi = pis.get(r.nextInt(pis.size()));
 				
 				ProblemInstanceSeedPair pisp = new ProblemInstanceSeedPair(pi, isg.getNextSeed(pi));
-				RunConfig rc = new RunConfig(pisp, 1001, config, execConfig);
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(pisp, 1001, config, execConfig);
 				runConfigs.add(rc);
 			}
 		}
@@ -684,7 +684,7 @@ public class LegacyStateDeserializerTester {
 			
 
 			
-			ParamConfiguration config = run.getRunConfig().getParamConfiguration();
+			ParamConfiguration config = run.getRunConfig().getParameterConfiguration();
 			
 		
 			assertEquals(originalCensored[i],restoredCensored[i]);
@@ -773,7 +773,7 @@ public class LegacyStateDeserializerTester {
 		
 		outputMem();
 		
-		List<RunConfig> runConfigs = getValidRunConfigurations(pis, r, isg, configSpace, 25000 );
+		List<AlgorithmRunConfiguration> runConfigs = getValidRunConfigurations(pis, r, isg, configSpace, 25000 );
 		outputMem();
 		
 	
@@ -818,7 +818,7 @@ public class LegacyStateDeserializerTester {
 		
 		stateS.setRunHistory(runHistory);
 		
-		stateS.setIncumbent(runs.get(0).getRunConfig().getParamConfiguration());
+		stateS.setIncumbent(runs.get(0).getRunConfig().getParameterConfiguration());
 		stateS.save();
 		
 				

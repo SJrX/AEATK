@@ -17,10 +17,10 @@ import org.slf4j.LoggerFactory;
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.ExistingAlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration.StringFormat;
 import ca.ubc.cs.beta.aeatk.misc.watch.AutoStartStopWatch;
 import ca.ubc.cs.beta.aeatk.misc.watch.StopWatch;
-import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.ipc.ResponseParser;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.exceptions.TargetAlgorithmAbortException;
 
@@ -42,7 +42,7 @@ public class TCPMechanism {
 	 * @param udpPacketSize
 	 * @return
 	 */
-	public AlgorithmRun evaluateRun(RunConfig rc, String remoteHost, int remotePort) 
+	public AlgorithmRun evaluateRun(AlgorithmRunConfiguration rc, String remoteHost, int remotePort) 
 	{
 		
 		
@@ -63,7 +63,7 @@ public class TCPMechanism {
 			
 			StringFormat f = StringFormat.NODB_SYNTAX;
 			
-			for(String key : rc.getParamConfiguration().getActiveParameters()  )
+			for(String key : rc.getParameterConfiguration().getActiveParameters()  )
 			{
 				
 				
@@ -72,7 +72,7 @@ public class TCPMechanism {
 					throw new IllegalStateException("Key Value seperator or glue is not a space, and this means the way we handle this logic won't work currently");
 				}
 				list.add(f.getPreKey() + key);
-				list.add(f.getValueDelimeter() + rc.getParamConfiguration().get(key)  + f.getValueDelimeter());	
+				list.add(f.getValueDelimeter() + rc.getParameterConfiguration().get(key)  + f.getValueDelimeter());	
 				
 			}
 			
