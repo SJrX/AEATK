@@ -16,7 +16,7 @@ import ca.ubc.cs.beta.TestHelper;
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
-import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.misc.debug.DebugUtil;
 import ca.ubc.cs.beta.aeatk.objectives.RunObjective;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
@@ -34,7 +34,7 @@ public class RunObjectiveTester {
 
 private static TargetAlgorithmEvaluator tae;
 	
-	private static AlgorithmExecutionConfig execConfig;
+	private static AlgorithmExecutionConfiguration execConfig;
 	
 	private static ParamConfigurationSpace configSpace;
 	
@@ -61,7 +61,7 @@ private static TargetAlgorithmEvaluator tae;
 		
 		
 		
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, kappaMax);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, kappaMax);
 		
 	}
 	
@@ -252,7 +252,7 @@ private static TargetAlgorithmEvaluator tae;
 		b.append(ParamEchoExecutor.class.getCanonicalName());
 		
 		
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), ParamConfigurationSpace.getSingletonConfigurationSpace(), false, false, kappaMax);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), ParamConfigurationSpace.getSingletonConfigurationSpace(), false, false, kappaMax);
 		
 		RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("pi"), 1), 20, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(), execConfig);
 		

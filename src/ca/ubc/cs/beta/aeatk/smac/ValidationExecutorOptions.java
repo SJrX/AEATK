@@ -7,7 +7,7 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.help.HelpOptions;
 import ca.ubc.cs.beta.aeatk.logging.SingleLogFileLoggingOptions;
 import ca.ubc.cs.beta.aeatk.misc.file.HomeFileUtils;
@@ -146,7 +146,7 @@ public class ValidationExecutorOptions extends AbstractOptions {
 		this.scenarioConfig.algoExecOptions.taeOpts.checkProblemInstancesCompatibleWithVerifySAT(instances);
 	}
 
-	public AlgorithmExecutionConfig getAlgorithmExecutionConfig() {
+	public AlgorithmExecutionConfiguration getAlgorithmExecutionConfig() {
 		return this.scenarioConfig.algoExecOptions.getAlgorithmExecutionConfig(experimentDir);
 	}
 	

@@ -5,7 +5,7 @@ import java.io.Serializable;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
-import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.json.serializers.RunConfigJson;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
 /**
@@ -25,7 +25,7 @@ public class RunConfig implements Serializable{
 	private final double cutoffTime;
 	private final ParamConfiguration params;
 	private final boolean cutoffLessThanMax;
-	private final AlgorithmExecutionConfig algorithmExecutionConfiguration;
+	private final AlgorithmExecutionConfiguration algorithmExecutionConfiguration;
 
 	/**
 	 * Creates a RunConfig object with the following attributes
@@ -34,7 +34,7 @@ public class RunConfig implements Serializable{
 	 * @param config 		paramconfiguration of the target algorithm
 	 * @param execConfig	execution configuration the run represents
 	 */
-	public RunConfig(ProblemInstanceSeedPair pisp, double cutoffTime, ParamConfiguration config, AlgorithmExecutionConfig execConfig)
+	public RunConfig(ProblemInstanceSeedPair pisp, double cutoffTime, ParamConfiguration config, AlgorithmExecutionConfiguration execConfig)
 	{
 		if(pisp == null)
 		{
@@ -56,7 +56,7 @@ public class RunConfig implements Serializable{
 		{
 			throw new IllegalArgumentException("Algorithm Execution Configuration cannot be null");
 		}
-		if(!config.getConfigurationSpace().equals(execConfig.getParamFile()))
+		if(!config.getConfigurationSpace().equals(execConfig.getParameterConfigurationSpace()))
 		{
 			throw new IllegalArgumentException("Configuration Space of ParamConfiguration, and that of the AlgorithmExecutionConfig object need to be the same.");
 		}
@@ -65,7 +65,7 @@ public class RunConfig implements Serializable{
 		this.cutoffTime = cutoffTime;
 		this.params = config;
 		
-		this.cutoffLessThanMax = cutoffTime < execConfig.getAlgorithmCutoffTime();
+		this.cutoffLessThanMax = cutoffTime < execConfig.getAlgorithmMaximumCutoffTime();
 		this.algorithmExecutionConfiguration = execConfig;
 	}
 	
@@ -75,9 +75,9 @@ public class RunConfig implements Serializable{
 	 * @param config 				paramconfiguration of the target algorithm
 	 * @param execConfig			execution configuration 
 	 */
-	public RunConfig(ProblemInstanceSeedPair pisp, ParamConfiguration config, AlgorithmExecutionConfig execConfig)
+	public RunConfig(ProblemInstanceSeedPair pisp, ParamConfiguration config, AlgorithmExecutionConfiguration execConfig)
 	{
-		this(pisp,execConfig.getAlgorithmCutoffTime(), config, execConfig);
+		this(pisp,execConfig.getAlgorithmMaximumCutoffTime(), config, execConfig);
 	}
 
 
@@ -170,7 +170,7 @@ public class RunConfig implements Serializable{
 		return "Run for Instance (" + instID + ") Config (" +confID + ") Seed: (" + seed +")";   
 	}
 
-	public AlgorithmExecutionConfig getAlgorithmExecutionConfig() {
+	public AlgorithmExecutionConfiguration getAlgorithmExecutionConfig() {
 		return this.algorithmExecutionConfiguration;
 	}
 	

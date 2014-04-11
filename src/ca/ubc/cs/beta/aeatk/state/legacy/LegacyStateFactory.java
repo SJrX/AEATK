@@ -20,7 +20,7 @@ import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.exceptions.StateSerializationException;
-import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.runhistory.RunHistory;
 import ca.ubc.cs.beta.aeatk.state.StateDeserializer;
@@ -120,7 +120,7 @@ public class LegacyStateFactory implements StateFactory{
 		
 	}
 	@Override
-	public StateDeserializer getStateDeserializer(String id, int iteration, ParamConfigurationSpace configSpace, List<ProblemInstance> instances, AlgorithmExecutionConfig execConfig, RunHistory rh) throws StateSerializationException
+	public StateDeserializer getStateDeserializer(String id, int iteration, ParamConfigurationSpace configSpace, List<ProblemInstance> instances, AlgorithmExecutionConfiguration execConfig, RunHistory rh) throws StateSerializationException
 	{
 		if(restoreFromPath == null) 
 		{

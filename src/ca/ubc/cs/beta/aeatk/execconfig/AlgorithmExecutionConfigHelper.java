@@ -6,9 +6,9 @@ import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
 
 public class AlgorithmExecutionConfigHelper {
 
-	public static AlgorithmExecutionConfig getSingletonExecConfig()
+	public static AlgorithmExecutionConfiguration getSingletonExecConfig()
 	{
-		return new AlgorithmExecutionConfig("foo",  (new File(".")).getAbsolutePath() , ParamConfigurationSpace.getSingletonConfigurationSpace(), false, false, 20);
+		return new AlgorithmExecutionConfiguration("foo",  (new File(".")).getAbsolutePath() , ParamConfigurationSpace.getSingletonConfigurationSpace(), false, false, 20);
 	}
 
 	/*

@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
-import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.json.serializers.ParamConfigurationJson.ParamConfigurationSpaceDeserializer;
 
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -40,25 +40,25 @@ public class AlgorithmExecutionConfigJson  {
 
 	private static final String JACKSON_ALGO_CONTEXT = "ALGO_CONTEXT";
 	
-	public static class AlgorithmExecutionConfigDeserializer extends StdDeserializer<AlgorithmExecutionConfig>
+	public static class AlgorithmExecutionConfigDeserializer extends StdDeserializer<AlgorithmExecutionConfiguration>
 	{
 
 		private final ParamConfigurationSpaceDeserializer pcsd = new ParamConfigurationSpaceDeserializer();
 		
 		protected AlgorithmExecutionConfigDeserializer() {
-			super(AlgorithmExecutionConfig.class);
+			super(AlgorithmExecutionConfiguration.class);
 		}
 
 		@Override
-		public AlgorithmExecutionConfig deserialize(JsonParser jp, DeserializationContext ctxt)
+		public AlgorithmExecutionConfiguration deserialize(JsonParser jp, DeserializationContext ctxt)
 				throws IOException, JsonProcessingException {
 			
 			@SuppressWarnings("unchecked")
-			Map<Integer, AlgorithmExecutionConfig> cache = (Map<Integer, AlgorithmExecutionConfig>) ctxt.getAttribute(JACKSON_ALGO_CONTEXT);
+			Map<Integer, AlgorithmExecutionConfiguration> cache = (Map<Integer, AlgorithmExecutionConfiguration>) ctxt.getAttribute(JACKSON_ALGO_CONTEXT);
 			
 			if(cache == null)
 			{
-				cache = new ConcurrentHashMap<Integer, AlgorithmExecutionConfig>();
+				cache = new ConcurrentHashMap<Integer, AlgorithmExecutionConfiguration>();
 				ctxt.setAttribute(JACKSON_ALGO_CONTEXT, cache);
 			}
 			
@@ -135,7 +135,7 @@ public class AlgorithmExecutionConfigJson  {
 				return cache.get(execConfig_id);
 			} else
 			{
-				AlgorithmExecutionConfig execConfig = new AlgorithmExecutionConfig(algo, algoDir, pcs, false, deterministic, cutoffTime, taeContext);
+				AlgorithmExecutionConfiguration execConfig = new AlgorithmExecutionConfiguration(algo, algoDir, pcs, deterministic, cutoffTime, taeContext);
 				
 				if(execConfig_id > 0)
 				{
@@ -149,21 +149,21 @@ public class AlgorithmExecutionConfigJson  {
 
 	}
 	
-	public static class AlgorithmExecutionConfigSerializer extends StdSerializer<AlgorithmExecutionConfig>
+	public static class AlgorithmExecutionConfigSerializer extends StdSerializer<AlgorithmExecutionConfiguration>
 	{
 		
 		protected AlgorithmExecutionConfigSerializer()
 		{
-			super(AlgorithmExecutionConfig.class);
+			super(AlgorithmExecutionConfiguration.class);
 		}
 
-		private final ConcurrentHashMap<AlgorithmExecutionConfig, Integer> map = new ConcurrentHashMap<AlgorithmExecutionConfig, Integer>();
+		private final ConcurrentHashMap<AlgorithmExecutionConfiguration, Integer> map = new ConcurrentHashMap<AlgorithmExecutionConfiguration, Integer>();
 		
 		private final AtomicInteger idMap = new AtomicInteger(1);
 		
 
 		@Override
-		public void serialize(AlgorithmExecutionConfig value, JsonGenerator jgen,
+		public void serialize(AlgorithmExecutionConfiguration value, JsonGenerator jgen,
 				SerializerProvider provider) throws IOException,
 				JsonProcessingException 
 		{
@@ -179,8 +179,8 @@ public class AlgorithmExecutionConfigJson  {
 			{
 				jgen.writeObjectField(ALGO_EXEC, value.getAlgorithmExecutable());
 				jgen.writeObjectField(ALGO_EXEC_DIR, value.getAlgorithmExecutionDirectory());
-				jgen.writeObjectField(PCS_FILE, value.getParamFile());
-				jgen.writeObjectField(ALGO_CUTOFF_TIME, value.getAlgorithmCutoffTime());
+				jgen.writeObjectField(PCS_FILE, value.getParameterConfigurationSpace());
+				jgen.writeObjectField(ALGO_CUTOFF_TIME, value.getAlgorithmMaximumCutoffTime());
 				jgen.writeObjectField(ALGO_DETERMINISTIC,value.isDeterministicAlgorithm());
 				jgen.writeObjectField(ALGO_TAE_CONTEXT, value.getTargetAlgorithmExecutionContext());
 			} 

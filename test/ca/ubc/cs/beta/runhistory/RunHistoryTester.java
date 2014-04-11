@@ -31,7 +31,7 @@ import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.configspace.ParamFileHelper;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration.StringFormat;
 import ca.ubc.cs.beta.aeatk.exceptions.DuplicateRunException;
-import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.misc.debug.DebugUtil;
 import ca.ubc.cs.beta.aeatk.objectives.OverallObjective;
 import ca.ubc.cs.beta.aeatk.objectives.RunObjective;
@@ -72,7 +72,7 @@ public class RunHistoryTester {
 	}
 	
 	private final ParamConfigurationSpace configSpace = ParamConfigurationTest.getConfigSpaceForFile("paramFiles/daisy-chain-param.txt");
-	private final AlgorithmExecutionConfig execConfig = new AlgorithmExecutionConfig("boo", "foo", configSpace, false, false, 500);
+	private final AlgorithmExecutionConfiguration execConfig = new AlgorithmExecutionConfiguration("boo", "foo", configSpace, false, false, 500);
 	
 	
 	private static final SeedableRandomPool pool = new SeedableRandomPool(System.currentTimeMillis());
@@ -153,7 +153,7 @@ public class RunHistoryTester {
 		ParamConfiguration otherConfig = space.getConfigurationFromString("-a '1' -b '1'", StringFormat.NODB_OR_STATEFILE_SYNTAX);
 		
 		ProblemInstanceSeedPair pisp = new ProblemInstanceSeedPair(ilws.getInstances().get(0), insc.getNextSeed(ilws.getInstances().get(0)));
-		AlgorithmExecutionConfig execConfig = new AlgorithmExecutionConfig("boo", "foo", space, false, false, 500);
+		AlgorithmExecutionConfiguration execConfig = new AlgorithmExecutionConfiguration("boo", "foo", space, false, false, 500);
 		
 		RunConfig rc = new RunConfig(pisp, defaultConfig,execConfig);
 		try {
@@ -208,7 +208,7 @@ public class RunHistoryTester {
 		ParamConfiguration otherConfig = space.getConfigurationFromString("-a '1' -b '1'", StringFormat.NODB_OR_STATEFILE_SYNTAX);
 		
 		ProblemInstanceSeedPair pisp = new ProblemInstanceSeedPair(ilws.getInstances().get(0), insc.getNextSeed(ilws.getInstances().get(0)));
-		AlgorithmExecutionConfig execConfig = new AlgorithmExecutionConfig("boo", "foo", space, false, false, 500);
+		AlgorithmExecutionConfiguration execConfig = new AlgorithmExecutionConfiguration("boo", "foo", space, false, false, 500);
 		
 		RunConfig rc = new RunConfig(pisp, defaultConfig,execConfig);
 		try {
@@ -218,7 +218,7 @@ public class RunHistoryTester {
 			fail("Unexpected duplicated run exception");
 		}
 		
-		 execConfig = new AlgorithmExecutionConfig("boo2", "foo2", space, false, false, 500);
+		 execConfig = new AlgorithmExecutionConfiguration("boo2", "foo2", space, false, false, 500);
 		 rc = new RunConfig(pisp, defaultConfig,execConfig);
 		//Get a duplicate
 		try {
@@ -251,7 +251,7 @@ public class RunHistoryTester {
 		ParamConfigurationSpace space = ParamFileHelper.getParamFileFromString("a [0,9] [0]\nb [0,9] [0]\n");
 				
 				
-		RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(ilws.getInstances().get(0), insc.getNextSeed(ilws.getInstances().get(0))), execConfig.getAlgorithmCutoffTime(), space.getDefaultConfiguration(), execConfig); 
+		RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(ilws.getInstances().get(0), insc.getNextSeed(ilws.getInstances().get(0))), execConfig.getAlgorithmMaximumCutoffTime(), space.getDefaultConfiguration(), execConfig); 
 	
 		try {
 			runHistory.append(new RunningAlgorithmRun( rc, 0, 0, 0, 0, 0, new KillHandler() {
@@ -321,7 +321,7 @@ public class RunHistoryTester {
 		ParamConfiguration incumbent = configSpace.getDefaultConfiguration();
 		
 		
-		 AlgorithmExecutionConfig execConfig = new AlgorithmExecutionConfig("boo", "foo", configSpace, false, false, 500);
+		 AlgorithmExecutionConfiguration execConfig = new AlgorithmExecutionConfiguration("boo", "foo", configSpace, false, false, 500);
 		
 		InstanceSeedGenerator inscgen = new RandomInstanceSeedGenerator(pis, 0);
 		pis.add(new ProblemInstance("Test1",1));
@@ -500,7 +500,7 @@ public class RunHistoryTester {
 		Set<ProblemInstance> instanceSet = new HashSet<ProblemInstance>();
 		instanceSet.add(ilws.getInstances().get(0));
 		
-		double cutoffTime = execConfig.getAlgorithmCutoffTime();
+		double cutoffTime = execConfig.getAlgorithmMaximumCutoffTime();
 		
 		ParamConfigurationSpace space = ParamFileHelper.getParamFileFromString("a [0,9] [0]\nb [0,9] [0]\n");
 		
@@ -509,7 +509,7 @@ public class RunHistoryTester {
 		ParamConfiguration otherConfig = space.getConfigurationFromString("-a '1' -b '1'", StringFormat.NODB_OR_STATEFILE_SYNTAX);
 
 		
-		AlgorithmExecutionConfig execConfig = new AlgorithmExecutionConfig("boo", "foo", space, false, false, 500);
+		AlgorithmExecutionConfiguration execConfig = new AlgorithmExecutionConfiguration("boo", "foo", space, false, false, 500);
 		
 		
 		assertEquals("Configuration should have an upper bound of " + cutoffTime, cutoffTime, runHistory.getEmpiricalCostUpperBound(defaultConfig, instanceSet, cutoffTime), 0.01);
@@ -610,9 +610,9 @@ public class RunHistoryTester {
 		ParamConfiguration otherConfig = space.getConfigurationFromString("-a '1' -b '1'", StringFormat.NODB_OR_STATEFILE_SYNTAX);
 
 		
-		double cutoffTime = execConfig.getAlgorithmCutoffTime();
+		double cutoffTime = execConfig.getAlgorithmMaximumCutoffTime();
 		
-		AlgorithmExecutionConfig execConfig = new AlgorithmExecutionConfig("boo", "foo", space, false, false, 500);
+		AlgorithmExecutionConfiguration execConfig = new AlgorithmExecutionConfiguration("boo", "foo", space, false, false, 500);
 		
 		
 		ProblemInstanceSeedPair pisp = new ProblemInstanceSeedPair(ilws.getInstances().get(0), insc.getNextSeed(ilws.getInstances().get(0)));
@@ -717,10 +717,10 @@ public class RunHistoryTester {
 		
 		ParamConfiguration otherConfig = space.getConfigurationFromString("-a '1' -b '1'", StringFormat.NODB_OR_STATEFILE_SYNTAX);
 
-		AlgorithmExecutionConfig execConfig = new AlgorithmExecutionConfig("boo", "foo", space, false, false, 500);
+		AlgorithmExecutionConfiguration execConfig = new AlgorithmExecutionConfiguration("boo", "foo", space, false, false, 500);
 		
 		
-		double cutoffTime = execConfig.getAlgorithmCutoffTime();
+		double cutoffTime = execConfig.getAlgorithmMaximumCutoffTime();
 		
 		
 
@@ -827,9 +827,9 @@ public class RunHistoryTester {
 			ParamConfiguration otherConfig = space.getConfigurationFromString("-a '1' -b '1'", StringFormat.NODB_OR_STATEFILE_SYNTAX);
 
 			
-			AlgorithmExecutionConfig execConfig = new AlgorithmExecutionConfig("boo", "foo", space, false, false, 500);
+			AlgorithmExecutionConfiguration execConfig = new AlgorithmExecutionConfiguration("boo", "foo", space, false, false, 500);
 			
-			double cutoffTime = execConfig.getAlgorithmCutoffTime();
+			double cutoffTime = execConfig.getAlgorithmMaximumCutoffTime();
 			
 			
 		

@@ -107,7 +107,7 @@ public class TimingCheckerTargetAlgorithmEvaluator extends	AbstractTargetAlgorit
 		
 		
 		
-		if(wallClockOverhead > Math.min(1.5*run.getRunConfig().getAlgorithmExecutionConfig().getAlgorithmCutoffTime(), wallClockDeltaToRequireLogging))
+		if(wallClockOverhead > Math.min(1.5*run.getRunConfig().getAlgorithmExecutionConfig().getAlgorithmMaximumCutoffTime(), wallClockDeltaToRequireLogging))
 		{
 			wallClockDeltaToRequireLogging = wallClockOverhead + 1;
 			Object[] args = {run.getWallclockExecutionTime(), run.getRunConfig().getCutoffTime(), wallClockOverhead, wallClockDeltaToRequireLogging};

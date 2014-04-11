@@ -10,7 +10,7 @@ import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterFile;
 import com.beust.jcommander.ParametersDelegate;
 
-import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.help.HelpOptions;
 import ca.ubc.cs.beta.aeatk.logging.ConsoleOnlyLoggingOptions;
 import ca.ubc.cs.beta.aeatk.logging.LoggingOptions;
@@ -86,7 +86,7 @@ public class SatisfiabilityCheckerOptions extends AbstractOptions {
 	@DynamicParameter(names="-P", description="Name value pairs in the form: (-Pname=value) of the specific configuration to override. This is useful if you'd like to change a setting of the default , or try a random with a set value)")
 	public Map<String, String> configSettingsToOverride = new HashMap<String, String>();
 
-	public AlgorithmExecutionConfig getAlgorithmExecutionConfig() {
+	public AlgorithmExecutionConfiguration getAlgorithmExecutionConfig() {
 		return this.scenOptions.algoExecOptions.getAlgorithmExecutionConfig(null);
 	}
 	

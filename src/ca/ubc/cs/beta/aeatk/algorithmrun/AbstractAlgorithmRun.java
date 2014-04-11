@@ -3,7 +3,7 @@ package ca.ubc.cs.beta.aeatk.algorithmrun;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import ca.ubc.cs.beta.aeatk.exceptions.IllegalWrapperOutputException;
-import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.json.serializers.AlgorithmRunJson;
 import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
 
@@ -350,7 +350,7 @@ public abstract class AbstractAlgorithmRun implements AlgorithmRun
 	
 	
 	@Override
-	public final AlgorithmExecutionConfig getExecutionConfig()
+	public final AlgorithmExecutionConfiguration getExecutionConfig()
 	{
 		return runConfig.getAlgorithmExecutionConfig();
 	}

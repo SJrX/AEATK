@@ -26,7 +26,7 @@ import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.exceptions.DuplicateRunException;
-import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.initialization.InitializationProcedure;
 import ca.ubc.cs.beta.aeatk.misc.associatedvalue.Pair;
 import ca.ubc.cs.beta.aeatk.objectives.ObjectiveHelper;
@@ -67,9 +67,9 @@ public class UnbiasChallengerInitializationProcedure implements InitializationPr
 	
 	private final ObjectiveHelper objHelp;
 	private final double cpuTimeLimit ;
-	private final AlgorithmExecutionConfig execConfig;
+	private final AlgorithmExecutionConfiguration execConfig;
 
-	public UnbiasChallengerInitializationProcedure(ThreadSafeRunHistory runHistory, ParamConfiguration initialIncumbent, TargetAlgorithmEvaluator tae, AlgorithmExecutionConfig execConfig, UnbiasChallengerInitializationProcedureOptions opts, InstanceSeedGenerator insc, List<ProblemInstance> instances,  int maxIncumbentRuns , TerminationCondition termCond, double cutoffTime, SeedableRandomPool pool, boolean deterministicInstanceOrdering, ObjectiveHelper objHelp)
+	public UnbiasChallengerInitializationProcedure(ThreadSafeRunHistory runHistory, ParamConfiguration initialIncumbent, TargetAlgorithmEvaluator tae, AlgorithmExecutionConfiguration execConfig, UnbiasChallengerInitializationProcedureOptions opts, InstanceSeedGenerator insc, List<ProblemInstance> instances,  int maxIncumbentRuns , TerminationCondition termCond, double cutoffTime, SeedableRandomPool pool, boolean deterministicInstanceOrdering, ObjectiveHelper objHelp)
 	{
 		this.runHistory =runHistory;
 		this.initialIncumbent = initialIncumbent;

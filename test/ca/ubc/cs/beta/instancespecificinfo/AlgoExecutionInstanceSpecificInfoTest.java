@@ -14,7 +14,7 @@ import ca.ubc.cs.beta.TestHelper;
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
-import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.probleminstance.InstanceListWithSeeds;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceHelper;
@@ -44,7 +44,7 @@ public class AlgoExecutionInstanceSpecificInfoTest {
 		File paramFile = TestHelper.getTestFile("testInfoSpecificParamExecution/testParam.txt");
 		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(paramFile);
 		
-		AlgorithmExecutionConfig execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, true, 500);
+		AlgorithmExecutionConfiguration execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, true, 500);
 		
 		TargetAlgorithmEvaluator tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE();
 		
@@ -97,7 +97,7 @@ public class AlgoExecutionInstanceSpecificInfoTest {
 		File paramFile = TestHelper.getTestFile("testInfoSpecificParamExecution/testParam.txt");
 		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(paramFile);
 		
-		AlgorithmExecutionConfig execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, true, 500);
+		AlgorithmExecutionConfiguration execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, true, 500);
 		TargetAlgorithmEvaluator tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE();
 		
 		InstanceListWithSeeds ilws = ProblemInstanceHelperTester.getInstanceListWithSeeds("manju.txt", false);

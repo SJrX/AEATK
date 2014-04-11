@@ -6,7 +6,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
-import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.misc.options.CommandLineOnly;
 import ca.ubc.cs.beta.aeatk.misc.options.OptionLevel;
 import ca.ubc.cs.beta.aeatk.misc.options.UsageTextField;
@@ -31,7 +31,7 @@ public class WarmStartOptions extends AbstractOptions {
 	@Parameter(names={"--warmstart-iteration"}, description="iteration of the state to use for warm-starting, use \"AUTO\" to automatically pick the last iteration", converter=AutoAsMaxConverter.class)
 	public Integer restoreIteration = Integer.MAX_VALUE;
 	
-	public void getWarmStartState(ParamConfigurationSpace configSpace, List<ProblemInstance> instances, AlgorithmExecutionConfig execConfig, RunHistory rhToPopulate)
+	public void getWarmStartState(ParamConfigurationSpace configSpace, List<ProblemInstance> instances, AlgorithmExecutionConfiguration execConfig, RunHistory rhToPopulate)
 	{
 		
 		Logger log = LoggerFactory.getLogger(getClass());

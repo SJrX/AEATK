@@ -29,7 +29,7 @@ import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration.StringFormat;
 import ca.ubc.cs.beta.aeatk.exceptions.DuplicateRunException;
 import ca.ubc.cs.beta.aeatk.exceptions.StateSerializationException;
-import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
@@ -110,7 +110,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 	 * @param emptyRunHistory				A RunHistory object that has no runs in it
 	 * @throws StateSerializationException  If we cannot restore the state
 	 */
-	LegacyStateDeserializer(String restoreFromPath, String id, int iteration, ParamConfigurationSpace configSpace, List<ProblemInstance> instances, AlgorithmExecutionConfig execConfig, RunHistory emptyRunHistory) 
+	LegacyStateDeserializer(String restoreFromPath, String id, int iteration, ParamConfigurationSpace configSpace, List<ProblemInstance> instances, AlgorithmExecutionConfiguration execConfig, RunHistory emptyRunHistory) 
 	{
 			if (configSpace == null) throw new IllegalArgumentException("Config Space cannot be null");
 			if(emptyRunHistory == null) throw new IllegalArgumentException("Run History cannot be null");
@@ -122,7 +122,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 			if(instances == null) throw new IllegalArgumentException("Instances cannot be null");
 			
 			if(execConfig == null) throw new IllegalArgumentException("execConfig cannot be null");
-			this.cutoffTime = execConfig.getAlgorithmCutoffTime();
+			this.cutoffTime = execConfig.getAlgorithmMaximumCutoffTime();
 			
 			if(instances.size() == 0) 
 			{
@@ -438,15 +438,15 @@ public class LegacyStateDeserializer implements StateDeserializer {
 						}
 						
 						
-						if(runtime > execConfig.getAlgorithmCutoffTime())
+						if(runtime > execConfig.getAlgorithmMaximumCutoffTime())
 						{
-							runtime = execConfig.getAlgorithmCutoffTime();
+							runtime = execConfig.getAlgorithmMaximumCutoffTime();
 							runResult = RunResult.TIMEOUT;
 							cutOffTime = runtime;
 							log.debug("Cutoff time discrepancy detected while restoring state for line {}, marking run as TIMEOUT with runtime {}", Arrays.toString(runHistoryLine), runtime);
 							
 							
-						} else if (runtime < execConfig.getAlgorithmCutoffTime())
+						} else if (runtime < execConfig.getAlgorithmMaximumCutoffTime())
 						{
 							if(runResult.equals(RunResult.TIMEOUT) && !isCensored)
 							{

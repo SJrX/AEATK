@@ -9,7 +9,7 @@ import java.util.List;
 import ca.ubc.cs.beta.aeatk.acquisitionfunctions.AcquisitionFunctions;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.configspace.tracking.ParamConfigurationOriginTrackingOptions;
-import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.help.HelpOptions;
 import ca.ubc.cs.beta.aeatk.initialization.InitializationMode;
 import ca.ubc.cs.beta.aeatk.initialization.classic.ClassicInitializationProcedureOptions;
@@ -228,7 +228,7 @@ public class SMACOptions extends AbstractOptions {
 		this.scenarioConfig.algoExecOptions.taeOpts.checkProblemInstancesCompatibleWithVerifySAT(instances);
 	}
 	
-	public AlgorithmExecutionConfig getAlgorithmExecutionConfig() {
+	public AlgorithmExecutionConfiguration getAlgorithmExecutionConfig() {
 		return this.scenarioConfig.getAlgorithmExecutionConfig(experimentDir);
 	}
 	

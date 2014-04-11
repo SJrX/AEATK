@@ -42,7 +42,7 @@ import ca.ubc.cs.beta.aeatk.algorithmrun.RunningAlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.kill.KillHandler;
 import ca.ubc.cs.beta.aeatk.concurrent.threadfactory.SequentiallyNamedThreadFactory;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration.StringFormat;
-import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.misc.associatedvalue.Pair;
 import ca.ubc.cs.beta.aeatk.misc.logback.MarkerFilter;
 import ca.ubc.cs.beta.aeatk.misc.logging.LoggingMarker;
@@ -819,10 +819,10 @@ outerloop:
 	private String[] getTargetAlgorithmExecutionCommand( RunConfig runConfig)
 	{
 
-		AlgorithmExecutionConfig execConfig = runConfig.getAlgorithmExecutionConfig();
+		AlgorithmExecutionConfiguration execConfig = runConfig.getAlgorithmExecutionConfig();
 				
 		String cmd = execConfig.getAlgorithmExecutable();
-		cmd = cmd.replace(AlgorithmExecutionConfig.MAGIC_VALUE_ALGORITHM_EXECUTABLE_PREFIX,"");
+		cmd = cmd.replace(AlgorithmExecutionConfiguration.MAGIC_VALUE_ALGORITHM_EXECUTABLE_PREFIX,"");
 		
 		
 		String[] execCmdArray = SplitQuotedString.splitQuotedString(cmd);
@@ -865,9 +865,9 @@ outerloop:
 	{
 
 				
-		AlgorithmExecutionConfig execConfig = runConfig.getAlgorithmExecutionConfig();
+		AlgorithmExecutionConfiguration execConfig = runConfig.getAlgorithmExecutionConfig();
 		String cmd = execConfig.getAlgorithmExecutable();
-		cmd = cmd.replace(AlgorithmExecutionConfig.MAGIC_VALUE_ALGORITHM_EXECUTABLE_PREFIX,"");
+		cmd = cmd.replace(AlgorithmExecutionConfiguration.MAGIC_VALUE_ALGORITHM_EXECUTABLE_PREFIX,"");
 		
 		
 		String[] execCmdArray = SplitQuotedString.splitQuotedString(cmd);
@@ -989,7 +989,7 @@ outerloop:
 			} catch(NumberFormatException e)
 			{	 //Numeric value is probably at fault
 				
-				completedAlgorithmRun = new ExistingAlgorithmRun(runConfig, RunResult.CRASHED, runConfig.getAlgorithmExecutionConfig().getAlgorithmCutoffTime(), 0, 0, 0, "ERROR: Couldn't parse output from wrapper (invalid number format): " + e.getMessage(), this.getCurrentWallClockTime() / 1000.0);
+				completedAlgorithmRun = new ExistingAlgorithmRun(runConfig, RunResult.CRASHED, runConfig.getAlgorithmExecutionConfig().getAlgorithmMaximumCutoffTime(), 0, 0, 0, "ERROR: Couldn't parse output from wrapper (invalid number format): " + e.getMessage(), this.getCurrentWallClockTime() / 1000.0);
 				
 				//this.setCrashResult("Output:" + fullLine + "\n Exception Message: " + e.getMessage() + "\n Name:" + e.getClass().getCanonicalName());
 				Object[] args = { getTargetAlgorithmExecutionCommandAsString( runConfig), fullLine};
@@ -1002,7 +1002,7 @@ outerloop:
 			{ 	//The RunResult probably doesn't match anything
 				//this.setCrashResult("Output:" + fullLine + "\n Exception Message: " + e.getMessage() + "\n Name:" + e.getClass().getCanonicalName());
 				
-				completedAlgorithmRun = new ExistingAlgorithmRun(runConfig, RunResult.CRASHED, runConfig.getAlgorithmExecutionConfig().getAlgorithmCutoffTime(), 0, 0, 0, "ERROR: Couldn't parse output from wrapper (not enough arguments): " + e.getMessage(), this.getCurrentWallClockTime() / 1000.0);
+				completedAlgorithmRun = new ExistingAlgorithmRun(runConfig, RunResult.CRASHED, runConfig.getAlgorithmExecutionConfig().getAlgorithmMaximumCutoffTime(), 0, 0, 0, "ERROR: Couldn't parse output from wrapper (not enough arguments): " + e.getMessage(), this.getCurrentWallClockTime() / 1000.0);
 				
 				ArrayList<String> validValues = new ArrayList<String>();
 				for(RunResult r : RunResult.values())
@@ -1025,7 +1025,7 @@ outerloop:
 			} catch(ArrayIndexOutOfBoundsException e)
 			{	//There aren't enough commas in the output
 				
-				completedAlgorithmRun = new ExistingAlgorithmRun(runConfig, RunResult.CRASHED, runConfig.getAlgorithmExecutionConfig().getAlgorithmCutoffTime(), 0, 0, 0, "ERROR: Couldn't parse output from wrapper (problem with arguments): " + e.getMessage(), this.getCurrentWallClockTime() / 1000.0);
+				completedAlgorithmRun = new ExistingAlgorithmRun(runConfig, RunResult.CRASHED, runConfig.getAlgorithmExecutionConfig().getAlgorithmMaximumCutoffTime(), 0, 0, 0, "ERROR: Couldn't parse output from wrapper (problem with arguments): " + e.getMessage(), this.getCurrentWallClockTime() / 1000.0);
 				
 				//this.setCrashResult("Output:" + fullLine + "\n Exception Message: " + e.getMessage() + "\n Name:" + e.getClass().getCanonicalName());
 				Object[] args = { getTargetAlgorithmExecutionCommandAsString(runConfig), fullLine};

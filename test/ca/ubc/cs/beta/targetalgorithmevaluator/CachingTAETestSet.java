@@ -31,7 +31,7 @@ import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.configspace.ParamFileHelper;
-import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.misc.debug.DebugUtil;
 import ca.ubc.cs.beta.aeatk.misc.watch.AutoStartStopWatch;
 import ca.ubc.cs.beta.aeatk.misc.watch.StopWatch;
@@ -53,7 +53,7 @@ import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.caching
 public class CachingTAETestSet {
 private static TargetAlgorithmEvaluator tae;
 	
-	private static AlgorithmExecutionConfig execConfig;
+	private static AlgorithmExecutionConfiguration execConfig;
 	
 	private static ParamConfigurationSpace configSpace;
 	
@@ -100,7 +100,7 @@ private static TargetAlgorithmEvaluator tae;
 		File paramFile = TestHelper.getTestFile("paramFiles/paramEchoParamFile.txt");
 		configSpace = new ParamConfigurationSpace(paramFile);
 		
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 		
 		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE();
 		
@@ -156,7 +156,7 @@ private static TargetAlgorithmEvaluator tae;
 		
 		ParamConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("a [0,100] [0]i\nb [0,9][0]i \n");
 		
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false,3000);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false,3000);
 		
 		
 		RandomResponseTargetAlgorithmEvaluatorFactory rfact = new RandomResponseTargetAlgorithmEvaluatorFactory();
@@ -320,7 +320,7 @@ private static TargetAlgorithmEvaluator tae;
 		
 		ParamConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("a [0,100] [0]i\nb [0,9][0]i \n");
 		
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false,3000);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false,3000);
 		
 		
 		RandomResponseTargetAlgorithmEvaluatorFactory rfact = new RandomResponseTargetAlgorithmEvaluatorFactory();
@@ -472,7 +472,7 @@ private static TargetAlgorithmEvaluator tae;
 		
 		ParamConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("a [0,10] [0]i\n");
 		
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false,3000);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false,3000);
 		
 		
 		RandomResponseTargetAlgorithmEvaluatorFactory rfact = new RandomResponseTargetAlgorithmEvaluatorFactory();
@@ -616,7 +616,7 @@ private static TargetAlgorithmEvaluator tae;
 		
 		ParamConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("a [0,10] [0]i\n");
 		
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false,3000);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false,3000);
 		
 		
 		RandomResponseTargetAlgorithmEvaluatorFactory rfact = new RandomResponseTargetAlgorithmEvaluatorFactory();
@@ -781,7 +781,7 @@ private static TargetAlgorithmEvaluator tae;
 		
 		ParamConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("a [0,10] [0]i\n b [0,10] [0]i\n");
 		
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false,3000);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false,3000);
 		
 		
 		RandomResponseTargetAlgorithmEvaluatorFactory rfact = new RandomResponseTargetAlgorithmEvaluatorFactory();

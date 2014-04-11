@@ -10,7 +10,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
-import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.json.serializers.AlgorithmExecutionConfigJson.AlgorithmExecutionConfigDeserializer;
 import ca.ubc.cs.beta.aeatk.json.serializers.ParamConfigurationJson.ParamConfigurationDeserializer;
 import ca.ubc.cs.beta.aeatk.json.serializers.ProblemInstanceJson.ProblemInstanceSeedPairDeserializer;
@@ -77,7 +77,7 @@ public class RunConfigJson  {
 			}
 			
 			ProblemInstanceSeedPair pisp = null;
-			AlgorithmExecutionConfig execConfig = null;
+			AlgorithmExecutionConfiguration execConfig = null;
 			ParamConfiguration config = null;
 			int sampleIdx = 0;
 			double cutoffTime = Double.NEGATIVE_INFINITY;

@@ -12,7 +12,7 @@ import com.beust.jcommander.ParameterException;
 import com.beust.jcommander.ParameterFile;
 import com.beust.jcommander.ParametersDelegate;
 
-import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionOptions;
 import ca.ubc.cs.beta.aeatk.misc.jcommander.converter.OverallObjectiveConverter;
 import ca.ubc.cs.beta.aeatk.misc.jcommander.converter.RunObjectiveConverter;
@@ -117,7 +117,7 @@ public class ScenarioOptions extends AbstractOptions{
 	@ParametersDelegate
 	public AlgorithmExecutionOptions algoExecOptions = new AlgorithmExecutionOptions();
 
-	public AlgorithmExecutionConfig getAlgorithmExecutionConfig(String experimentDir)
+	public AlgorithmExecutionConfiguration getAlgorithmExecutionConfig(String experimentDir)
 	{
 		ArrayList<String> arrList = new ArrayList<String>();
 		arrList.add(experimentDir);
@@ -129,7 +129,7 @@ public class ScenarioOptions extends AbstractOptions{
 		return algoExecOptions.getAlgorithmExecutionConfig(arrList, true);
 	}
 	
-	public AlgorithmExecutionConfig getAlgorithmExecutionConfigSkipExecDirCheck(String experimentDir)
+	public AlgorithmExecutionConfiguration getAlgorithmExecutionConfigSkipExecDirCheck(String experimentDir)
 	{
 		ArrayList<String> arrList = new ArrayList<String>();
 		arrList.add(experimentDir);

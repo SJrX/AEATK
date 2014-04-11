@@ -88,7 +88,7 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 	 * 
 	 * @return configured object based on the options
 	 */
-	public AlgorithmExecutionConfig getAlgorithmExecutionConfig()
+	public AlgorithmExecutionConfiguration getAlgorithmExecutionConfig()
 	{
 		return getAlgorithmExecutionConfig(null);
 	}
@@ -98,18 +98,18 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 	 * 
 	 * @return configured object based on the options
 	 */
-	public AlgorithmExecutionConfig getAlgorithmExecutionConfigSkipDirCheck()
+	public AlgorithmExecutionConfiguration getAlgorithmExecutionConfigSkipDirCheck()
 	{
 		return getAlgorithmExecutionConfig(Collections.<String> emptyList(), false);
 	}
 	
 	
-	public AlgorithmExecutionConfig getAlgorithmExecutionConfig(String experimentDir)
+	public AlgorithmExecutionConfiguration getAlgorithmExecutionConfig(String experimentDir)
 	{
 		return getAlgorithmExecutionConfig(experimentDir, true);
 	}
 	
-	public AlgorithmExecutionConfig getAlgorithmExecutionConfig(String experimentDir, boolean checkExecDir)
+	public AlgorithmExecutionConfiguration getAlgorithmExecutionConfig(String experimentDir, boolean checkExecDir)
 	{
 		if(experimentDir == null)
 		{
@@ -127,7 +127,7 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 	 * @param checkExecDir  if <code>true</code> we will check that the execution directory exists
 	 * @return configured object based on the options
 	 */
-	public AlgorithmExecutionConfig getAlgorithmExecutionConfig(List<String> inputDirs, boolean checkExecDir)
+	public AlgorithmExecutionConfiguration getAlgorithmExecutionConfig(List<String> inputDirs, boolean checkExecDir)
 	{
 		List<String> dirToSearch = new ArrayList<String>();
 		if(inputDirs != null)
@@ -156,6 +156,6 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 			dirToSearch.add(execDir.getAbsolutePath());
 		}
 		
-		return new AlgorithmExecutionConfig(algoExec, execDir.getAbsolutePath(), paramFileDelegate.getParamConfigurationSpace(dirToSearch), false, deterministic, this.cutoffTime,this.additionalContext );
+		return new AlgorithmExecutionConfiguration(algoExec, execDir.getAbsolutePath(), paramFileDelegate.getParamConfigurationSpace(dirToSearch),  deterministic, this.cutoffTime,this.additionalContext );
 	}
 }

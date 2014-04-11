@@ -11,7 +11,7 @@ import ca.ubc.cs.beta.aeatk.runconfig.RunConfig;
  * <b>Implementation Details</b>
  * <p>
  * Clients should subtype this interface if they want to allow programs to execute algorithms through
- * some other method. All implementations MUST have a constructor that takes a {@link ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfig} object.
+ * some other method. All implementations MUST have a constructor that takes a {@link ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfiguration} object.
  * <p>
  * Additionally client implementations should probably not validate the output of AlgorithmRuns but rely on other decorators to do this for them.
  * <p>

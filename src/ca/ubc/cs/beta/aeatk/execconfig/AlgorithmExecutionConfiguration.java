@@ -19,18 +19,17 @@ import ca.ubc.cs.beta.aeatk.json.serializers.AlgorithmExecutionConfigJson;
  *
  */
 @JsonSerialize(using=AlgorithmExecutionConfigJson.AlgorithmExecutionConfigSerializer.class)
-public class AlgorithmExecutionConfig implements Serializable {
+public class AlgorithmExecutionConfiguration implements Serializable {
 
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -1009816326679512474L;
+	private static final long serialVersionUID = 3L;
 	
 	private final String algorithmExecutable;
 	private final String algorithmExecutionDirectory;
 	private final ParamConfigurationSpace paramFile;
-	private final boolean executeOnCluster;
-	private final boolean deterministicAlgorithm;
+		private final boolean deterministicAlgorithm;
 
 	private final double cutoffTime; 
 
@@ -38,18 +37,18 @@ public class AlgorithmExecutionConfig implements Serializable {
 
 	private final Map<String, String> taeContext;
 	
-	public AlgorithmExecutionConfig(String algorithmExecutable, String algorithmExecutionDirectory,
+	public AlgorithmExecutionConfiguration(String algorithmExecutable, String algorithmExecutionDirectory,
 			ParamConfigurationSpace paramFile, boolean executeOnCluster, boolean deterministicAlgorithm, double cutoffTime) {
-		this(algorithmExecutable, algorithmExecutionDirectory, paramFile,executeOnCluster, deterministicAlgorithm, cutoffTime, Collections.EMPTY_MAP);
+		this(algorithmExecutable, algorithmExecutionDirectory, paramFile, deterministicAlgorithm, cutoffTime, Collections.EMPTY_MAP);
 		
 	}
 	
 
-	public AlgorithmExecutionConfig(String algorithmExecutable, String algorithmExecutionDirectory,	ParamConfigurationSpace paramFile, boolean executeOnCluster, boolean deterministicAlgorithm, double cutoffTime, Map<String, String> taeContext) {
+	public AlgorithmExecutionConfiguration(String algorithmExecutable, String algorithmExecutionDirectory,	ParamConfigurationSpace paramFile, boolean deterministicAlgorithm, double cutoffTime, Map<String, String> taeContext) {
 		this.algorithmExecutable = algorithmExecutable;
 		this.algorithmExecutionDirectory = algorithmExecutionDirectory;
 		this.paramFile = paramFile;
-		this.executeOnCluster = executeOnCluster;
+		
 		this.deterministicAlgorithm = deterministicAlgorithm;
 		if(cutoffTime < 0)
 		{
@@ -73,18 +72,10 @@ public class AlgorithmExecutionConfig implements Serializable {
 		return algorithmExecutionDirectory;
 	}
 
-	public ParamConfigurationSpace getParamFile() {
+	public ParamConfigurationSpace getParameterConfigurationSpace() {
 		return paramFile;
 	}
 
-	@Deprecated
-	/**
-	 * @deprecated this really never did anything and will be removed at some point
-	 */
-	public boolean isExecuteOnCluster() {
-		return executeOnCluster;
-	}
-	
 	public boolean isDeterministicAlgorithm()
 	{
 		return deterministicAlgorithm;
@@ -101,21 +92,21 @@ public class AlgorithmExecutionConfig implements Serializable {
 	
 	public int hashCode()
 	{
-		return algorithmExecutable.hashCode() ^ algorithmExecutionDirectory.hashCode() ^ paramFile.hashCode() ^ (executeOnCluster ? 0 : 1) ^ (deterministicAlgorithm ? 0 : 1);
+		return algorithmExecutable.hashCode() ^ algorithmExecutionDirectory.hashCode() ^ paramFile.hashCode() ^ (deterministicAlgorithm ? 0 : 1);
 	}
 	
 	public String toString()
 	{
-		return "algoExec:" + algorithmExecutable + "\nAlgorithmExecutionDirectory:" + algorithmExecutionDirectory + "\n"+paramFile + "\n Cluster:"+executeOnCluster+ "\nDetermininstic:" + deterministicAlgorithm + "\nID:" + myID;
+		return "algoExec:" + algorithmExecutable + "\nAlgorithmExecutionDirectory:" + algorithmExecutionDirectory + "\n"+paramFile +  "\nDetermininstic:" + deterministicAlgorithm + "\nID:" + myID;
 	}
 	
 	public boolean equals(Object o)
 	{ 
 		if(this == o) return true;
-		if (o instanceof AlgorithmExecutionConfig)
+		if (o instanceof AlgorithmExecutionConfiguration)
 		{
-			AlgorithmExecutionConfig co = (AlgorithmExecutionConfig) o;
-			return (co.algorithmExecutable.equals(algorithmExecutable) && co.algorithmExecutionDirectory.equals(algorithmExecutionDirectory) && (co.executeOnCluster == executeOnCluster) && co.paramFile.equals(paramFile)) && co.deterministicAlgorithm == deterministicAlgorithm ;
+			AlgorithmExecutionConfiguration co = (AlgorithmExecutionConfiguration) o;
+			return (co.algorithmExecutable.equals(algorithmExecutable) && co.algorithmExecutionDirectory.equals(algorithmExecutionDirectory) && co.paramFile.equals(paramFile)) && co.deterministicAlgorithm == deterministicAlgorithm ;
 		} 
 		return false;
 	}
@@ -124,7 +115,7 @@ public class AlgorithmExecutionConfig implements Serializable {
 	 * Returns the maximum cutoff time
 	 * @return maximum cutoff time for the algorithm
 	 */
-	public double getAlgorithmCutoffTime() {
+	public double getAlgorithmMaximumCutoffTime() {
 		return cutoffTime;
 	}
 	

@@ -19,7 +19,7 @@ import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration.StringFormat;
-import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.misc.jcommander.JCommanderHelper;
 import ca.ubc.cs.beta.aeatk.misc.version.VersionTracker;
 import ca.ubc.cs.beta.aeatk.options.AbstractOptions;
@@ -94,7 +94,7 @@ public class SatisfiabilityChecker
 			//AlgorithmExecutionConfig object represents all the information needed to invoke the target algorithm / wrapper.
 			//This includes information such as cutoff time, and the parameter space.
 			//Like most domain objects in ACLib, AlgorithmExecutionConfig is IMMUTABLE. 
-			AlgorithmExecutionConfig execConfig = mainOptions.getAlgorithmExecutionConfig();
+			AlgorithmExecutionConfiguration execConfig = mainOptions.getAlgorithmExecutionConfig();
 			
 			
 			//Logs the options (since mainOptions implements AbstractOptions a 'nice-ish' printout is created).
@@ -157,7 +157,7 @@ public class SatisfiabilityChecker
 				}
 				//A Configuration Space object it represents the space of allowable configurations (IMMUTABLE).
 				//"ParamFile" is a deprecated term for it that is still in use in the code base
-				ParamConfigurationSpace configSpace = execConfig.getParamFile();
+				ParamConfigurationSpace configSpace = execConfig.getParameterConfigurationSpace();
 			
 				
 				//If we are asked to supply a random a configuration, we need to pass a Random object

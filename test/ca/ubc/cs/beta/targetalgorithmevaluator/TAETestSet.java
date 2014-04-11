@@ -50,7 +50,7 @@ import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.configspace.ParamFileHelper;
 import ca.ubc.cs.beta.aeatk.exceptions.IllegalWrapperOutputException;
-import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.misc.debug.DebugUtil;
 import ca.ubc.cs.beta.aeatk.misc.logback.MarkerFilter;
 import ca.ubc.cs.beta.aeatk.misc.logging.LoggingMarker;
@@ -108,7 +108,7 @@ public class TAETestSet {
 	
 	private static TargetAlgorithmEvaluator tae;
 	
-	private static AlgorithmExecutionConfig execConfig;
+	private static AlgorithmExecutionConfiguration execConfig;
 	
 	private static ParamConfigurationSpace configSpace;
 	
@@ -155,7 +155,7 @@ public class TAETestSet {
 		File paramFile = TestHelper.getTestFile("paramFiles/paramEchoParamFile.txt");
 		configSpace = new ParamConfigurationSpace(paramFile);
 		
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 		
 		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE();
 		
@@ -181,7 +181,7 @@ public class TAETestSet {
 		b.append(System.getProperty("java.class.path"));
 		b.append(" ");
 		b.append(ParamEchoExecutor.class.getCanonicalName());
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
@@ -232,7 +232,7 @@ public class TAETestSet {
 		b.append(System.getProperty("java.class.path"));
 		b.append(" ");
 		b.append(SleepyParamEchoExecutor.class.getCanonicalName());
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
 		
 		tae = new EchoTargetAlgorithmEvaluator();
 		
@@ -317,7 +317,7 @@ public class TAETestSet {
 		File paramFile = TestHelper.getTestFile("paramFiles/paramEchoParamFileWalltime.txt");
 		configSpace = new ParamConfigurationSpace(paramFile);
 		
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
 		
 		CommandLineTargetAlgorithmEvaluatorOptions cliOpts = CommandLineTargetAlgorithmEvaluatorFactory.getCLIOPT();
 		
@@ -514,7 +514,7 @@ public class TAETestSet {
 		b.append(" ");
 		b.append(ParamEchoExecutorWithGibberish.class.getCanonicalName());
 		
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 		
 		
 		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE();
@@ -935,7 +935,7 @@ public class TAETestSet {
 		b.append(" ");
 		b.append(DoNothingExecutor.class.getCanonicalName());
 
-		AlgorithmExecutionConfig execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500); 
+		AlgorithmExecutionConfiguration execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500); 
 		
 		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
@@ -959,7 +959,7 @@ public class TAETestSet {
 	@Test
 	public void testSatAliases()
 	{
-		AlgorithmExecutionConfig execConfig;
+		AlgorithmExecutionConfiguration execConfig;
 		
 		ParamConfigurationSpace configSpace;
 		
@@ -976,7 +976,7 @@ public class TAETestSet {
 		
 		
 		
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 			
 		tae = new AbortOnCrashTargetAlgorithmEvaluator(CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE());
 		
@@ -1018,7 +1018,7 @@ public class TAETestSet {
 	@Test
 	public void testUnSatAliases()
 	{
-		AlgorithmExecutionConfig execConfig;
+		AlgorithmExecutionConfiguration execConfig;
 		
 		ParamConfigurationSpace configSpace;
 		
@@ -1035,7 +1035,7 @@ public class TAETestSet {
 		
 		
 		
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 			
 		tae = new AbortOnCrashTargetAlgorithmEvaluator(CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE());
 			
@@ -1077,7 +1077,7 @@ public class TAETestSet {
 	@Test
 	public void testExceptionWithDuplicateRunConfigs()
 	{
-		AlgorithmExecutionConfig execConfig;
+		AlgorithmExecutionConfiguration execConfig;
 		
 		ParamConfigurationSpace configSpace;
 		
@@ -1094,7 +1094,7 @@ public class TAETestSet {
 		
 		
 		
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 			
 		tae = new CheckForDuplicateRunConfigDecorator(new AbortOnCrashTargetAlgorithmEvaluator(CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE()), true);
 			
@@ -1150,7 +1150,7 @@ public class TAETestSet {
 	 */
 	public void testRegexMatchButNoRunResultOutput()
 	{
-		AlgorithmExecutionConfig execConfig;
+		AlgorithmExecutionConfiguration execConfig;
 		
 		ParamConfigurationSpace configSpace;
 		
@@ -1169,7 +1169,7 @@ public class TAETestSet {
 		
 		
 		
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 			
 		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE();
 		
@@ -1227,7 +1227,7 @@ public class TAETestSet {
 	 */
 	public void testRegexMatchButInvalidNumber()
 	{
-		AlgorithmExecutionConfig execConfig;
+		AlgorithmExecutionConfiguration execConfig;
 		
 		ParamConfigurationSpace configSpace;
 		
@@ -1244,7 +1244,7 @@ public class TAETestSet {
 		
 		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 			
 		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE();
 		
@@ -1303,7 +1303,7 @@ public class TAETestSet {
 	 */
 	public void testRegexMatchButMissingCommas()
 	{
-		AlgorithmExecutionConfig execConfig;
+		AlgorithmExecutionConfiguration execConfig;
 		
 		ParamConfigurationSpace configSpace;
 		
@@ -1319,7 +1319,7 @@ public class TAETestSet {
 		
 		
 		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 			
 		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE();
 		
@@ -1388,7 +1388,7 @@ public class TAETestSet {
 		b.append(System.getProperty("java.class.path"));
 		b.append(" ");
 		b.append(MassiveOutputParamEchoExecutor.class.getCanonicalName());
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 		
 		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE();
 		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
@@ -1452,7 +1452,7 @@ public class TAETestSet {
 		b.append(System.getProperty("java.class.path"));
 		b.append(" ");
 		b.append(RandomWhitespaceParamEchoExecutor.class.getCanonicalName());
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 		
 		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE();
 		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
@@ -1507,7 +1507,7 @@ public class TAETestSet {
 		b.append(System.getProperty("java.class.path"));
 		b.append(" ");
 		b.append(CapitalForParamEchoExecutor.class.getCanonicalName());
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 		
 		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE();
 		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
@@ -1707,7 +1707,7 @@ public class TAETestSet {
 		b.append(System.getProperty("java.class.path"));
 		b.append(" ");
 		b.append(ParamEchoExecutor.class.getCanonicalName());
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), ParamConfigurationSpace.getSingletonConfigurationSpace(), false, false, 500);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), ParamConfigurationSpace.getSingletonConfigurationSpace(), false, false, 500);
 		
 		Map<String, AbstractOptions> taeOptionsMap = TargetAlgorithmEvaluatorLoader.getAvailableTargetAlgorithmEvaluators();
 		
@@ -2099,7 +2099,7 @@ public class TAETestSet {
 		b.append(System.getProperty("java.class.path"));
 		b.append(" ");
 		b.append(ParamEchoExecutor.class.getCanonicalName());
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 		
 		List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
@@ -2240,7 +2240,7 @@ public class TAETestSet {
 		b.append(System.getProperty("java.class.path"));
 		b.append(" ");
 		b.append(ParamEchoExecutor.class.getCanonicalName());
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 		
 		final List<RunConfig> runConfigs = new ArrayList<RunConfig>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < 100; i++)
@@ -2424,7 +2424,7 @@ public class TAETestSet {
 		b.append(System.getProperty("java.class.path"));
 		b.append(" ");
 		b.append(TrueSleepyParamEchoExecutor.class.getCanonicalName());
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 3000);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 3000);
 		
 		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
 		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
@@ -2533,7 +2533,7 @@ public class TAETestSet {
 		b.append(System.getProperty("java.class.path"));
 		b.append(" ");
 		b.append(TrueSleepyParamEchoExecutor.class.getCanonicalName());
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
 		
 		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
 		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
@@ -2600,7 +2600,7 @@ public class TAETestSet {
 		b.append(System.getProperty("java.class.path"));
 		b.append(" ");
 		b.append(TrueSleepyParamEchoExecutor.class.getCanonicalName());
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
 		
 		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
 		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
@@ -2703,7 +2703,7 @@ public class TAETestSet {
 		b.append(System.getProperty("java.class.path"));
 		b.append(" ");
 		b.append(TrueSleepyParamEchoExecutor.class.getCanonicalName());
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
 		
 		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
 		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
@@ -2786,7 +2786,7 @@ public class TAETestSet {
 		b.append(System.getProperty("java.class.path"));
 		b.append(" ");
 		b.append(TrueSleepyParamEchoExecutor.class.getCanonicalName());
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
 		
 		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
 		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
@@ -2902,7 +2902,7 @@ public class TAETestSet {
 		b.append(System.getProperty("java.class.path"));
 		b.append(" ");
 		b.append(TrueSleepyParamEchoExecutor.class.getCanonicalName());
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
 		
 		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
 		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
@@ -2994,7 +2994,7 @@ public class TAETestSet {
 		b.append(System.getProperty("java.class.path"));
 		b.append(" ");
 		b.append(FiveSecondSleepingParamEchoExecutor.class.getCanonicalName());
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 50);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 50);
 		
 		
 		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
@@ -3088,7 +3088,7 @@ public class TAETestSet {
 		b.append(System.getProperty("java.class.path"));
 		b.append(" ");
 		b.append(ParamEchoExecutor.class.getCanonicalName());
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
 		
 		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
 		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
@@ -3153,7 +3153,7 @@ public class TAETestSet {
 		b.append(System.getProperty("java.class.path"));
 		b.append(" ");
 		b.append(DummyExecutor.class.getCanonicalName());
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), ParamConfigurationSpace.getNullConfigurationSpace(), false, false, 0.01);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), ParamConfigurationSpace.getNullConfigurationSpace(), false, false, 0.01);
 		
 		
 		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
@@ -3203,7 +3203,7 @@ public class TAETestSet {
 		b.append(System.getProperty("java.class.path"));
 		b.append(" ");
 		b.append(FiveSecondSleepingParamEchoExecutor.class.getCanonicalName());
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
 		
 		
 		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
@@ -3390,7 +3390,7 @@ public class TAETestSet {
 		
 		ParamConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("Test { \"\\\" } [\"\\\"]\n");
 		
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
 		
 		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
 		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
@@ -3435,7 +3435,7 @@ public class TAETestSet {
 		
 		ParamConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("Test { \"\\\" } [\"\\\"]\n");
 		
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
 		
 		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
 		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
@@ -3477,7 +3477,7 @@ public class TAETestSet {
 		b.append(System.getProperty("java.class.path"));
 		b.append(" ");
 		b.append(EnvironmentVariableEchoer.class.getCanonicalName());
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
 		
 		
 		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
@@ -3549,7 +3549,7 @@ public class TAETestSet {
 		
 		
 		
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 1500);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 1500);
 		
 		
 		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
@@ -3640,7 +3640,7 @@ public class TAETestSet {
 		
 		
 		
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 1500);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 1500);
 		
 		
 		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
@@ -3746,7 +3746,7 @@ public class TAETestSet {
 		
 		
 		
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 1500);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 1500);
 		
 		
 		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
@@ -3846,7 +3846,7 @@ public class TAETestSet {
 		
 		System.out.println(b);
 		
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 1500);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 1500);
 		
 		
 		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
@@ -3951,7 +3951,7 @@ public class TAETestSet {
 		
 		System.out.println(b);
 		
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 1500);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 1500);
 		tae = fact.getTargetAlgorithmEvaluator( options);	
 		
 		tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
@@ -4011,7 +4011,7 @@ public class TAETestSet {
 		
 		System.out.println(b);
 		
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 1500);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 1500);
 		tae = fact.getTargetAlgorithmEvaluator( options);	
 		
 		tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
@@ -4073,7 +4073,7 @@ public class TAETestSet {
 		
 		System.out.println(b);
 		
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 1500);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 1500);
 		
 		
 		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
@@ -4176,7 +4176,7 @@ public class TAETestSet {
 		b.append(System.getProperty("java.class.path"));
 		b.append(" ");
 		b.append(TrueSleepyParamEchoExecutor.class.getCanonicalName());
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false,3000);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false,3000);
 		
 		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
 		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();

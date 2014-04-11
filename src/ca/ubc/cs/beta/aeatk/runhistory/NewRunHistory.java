@@ -22,7 +22,7 @@ import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aeatk.exceptions.DuplicateRunException;
-import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.objectives.OverallObjective;
 import ca.ubc.cs.beta.aeatk.objectives.RunObjective;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
@@ -139,7 +139,7 @@ public class NewRunHistory implements RunHistory {
 	}
 	
 	
-	private volatile AlgorithmExecutionConfig firstExecConfig;
+	private volatile AlgorithmExecutionConfiguration firstExecConfig;
 	
 	@Override
 	public void append(AlgorithmRun run) throws DuplicateRunException{

@@ -10,7 +10,7 @@ import ca.ubc.cs.beta.aeatk.eventsystem.events.ac.AutomaticConfigurationEnd;
 import ca.ubc.cs.beta.aeatk.eventsystem.events.ac.IncumbentPerformanceChangeEvent;
 import ca.ubc.cs.beta.aeatk.eventsystem.handlers.ParamConfigurationIncumbentChangerOriginTracker;
 import ca.ubc.cs.beta.aeatk.eventsystem.handlers.ParamConfigurationOriginLogger;
-import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.misc.options.OptionLevel;
 import ca.ubc.cs.beta.aeatk.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aeatk.options.AbstractOptions;
@@ -25,14 +25,14 @@ public class ParamConfigurationOriginTrackingOptions extends AbstractOptions {
 	public boolean configTracking;
 	
 	
-	public ParamConfigurationOriginTracker getTracker(EventManager eventManager, ParamConfiguration initialIncumbent, String outputDir, ThreadSafeRunHistory rh, AlgorithmExecutionConfig execConfig, int numRun)
+	public ParamConfigurationOriginTracker getTracker(EventManager eventManager, ParamConfiguration initialIncumbent, String outputDir, ThreadSafeRunHistory rh, AlgorithmExecutionConfiguration execConfig, int numRun)
 	{
 		if(configTracking)
 		{
 			ParamConfigurationOriginTracker configTracker = new RealParamConfigurationOriginTracker();
 			configTracker.addConfiguration(initialIncumbent, "DEFAULT", "true");
-			eventManager.registerHandler(AutomaticConfigurationEnd.class, new ParamConfigurationOriginLogger(configTracker, outputDir + File.separator + "state-run" + numRun + File.separator , rh, System.currentTimeMillis(), execConfig.getAlgorithmCutoffTime()));
-			eventManager.registerHandler(IncumbentPerformanceChangeEvent.class, new ParamConfigurationIncumbentChangerOriginTracker(configTracker, rh, execConfig.getAlgorithmCutoffTime()));
+			eventManager.registerHandler(AutomaticConfigurationEnd.class, new ParamConfigurationOriginLogger(configTracker, outputDir + File.separator + "state-run" + numRun + File.separator , rh, System.currentTimeMillis(), execConfig.getAlgorithmMaximumCutoffTime()));
+			eventManager.registerHandler(IncumbentPerformanceChangeEvent.class, new ParamConfigurationIncumbentChangerOriginTracker(configTracker, rh, execConfig.getAlgorithmMaximumCutoffTime()));
 			return configTracker;
 		} else
 		{

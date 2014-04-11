@@ -28,7 +28,7 @@ import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration.StringFormat;
 import ca.ubc.cs.beta.aeatk.exceptions.DeveloperMadeABooBooException;
 import ca.ubc.cs.beta.aeatk.exceptions.DuplicateRunException;
-import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfig;
+import ca.ubc.cs.beta.aeatk.execconfig.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.misc.MapList;
 import ca.ubc.cs.beta.aeatk.misc.jcommander.JCommanderHelper;
 import ca.ubc.cs.beta.aeatk.misc.string.SplitQuotedString;
@@ -84,7 +84,7 @@ public class StateMergeExecutor {
 			log.info("Starting State Merge");
 			log.debug("Determining Scenario Options");
 			List<ProblemInstance> pis = smo.scenOpts.getTrainingAndTestProblemInstances(smo.experimentDir, 0, 0, true, false, false, false).getTrainingInstances().getInstances();;
-			AlgorithmExecutionConfig execConfig = smo.scenOpts.getAlgorithmExecutionConfigSkipExecDirCheck(smo.experimentDir);
+			AlgorithmExecutionConfiguration execConfig = smo.scenOpts.getAlgorithmExecutionConfigSkipExecDirCheck(smo.experimentDir);
 			MapList<Integer, AlgorithmRun> runsPerIteration = new MapList<Integer, AlgorithmRun>(new LinkedHashMap<Integer, List<AlgorithmRun>>());
 			
 			if(execConfig.isDeterministicAlgorithm())
@@ -208,7 +208,7 @@ public class StateMergeExecutor {
 					}
 				} 
 						
-				smmb.learnModel(instances, rhToFilter, execConfig.getParamFile(), smo.rfo, smo.mbo, smo.scenOpts, adaptiveCapping, srp);
+				smmb.learnModel(instances, rhToFilter, execConfig.getParameterConfigurationSpace(), smo.rfo, smo.mbo, smo.scenOpts, adaptiveCapping, srp);
 				
 				RandomForest rf = smmb.getPreparedForest();
 				
@@ -297,7 +297,7 @@ public class StateMergeExecutor {
 				pisToSave.add(ent.getValue());
 			}
 		
-			saveState(smo.scenOpts.outputDirectory, rhToSaveToDisk, pisToSave, execConfig.getParamFile().getParamFileName(), execConfig, smo.scenOpts, newIncumbent);
+			saveState(smo.scenOpts.outputDirectory, rhToSaveToDisk, pisToSave, execConfig.getParameterConfigurationSpace().getParamFileName(), execConfig, smo.scenOpts, newIncumbent);
 			log.info("State Merge completed successfully");
 
 		} catch(ParameterException e)
@@ -463,13 +463,13 @@ outerLoop:
 	 * @throws IOException
 	 */
 	private static void extractRunsFromDirectory(StateMergeOptions smo,
-			List<ProblemInstance> pis, AlgorithmExecutionConfig execConfig,
+			List<ProblemInstance> pis, AlgorithmExecutionConfiguration execConfig,
 			MapList<Integer, AlgorithmRun> runsPerIteration, String dir)
 			throws IOException {
 		ThreadSafeRunHistory rh = new ThreadSafeRunHistoryWrapper(new NewRunHistory(smo.scenOpts.getIntraInstanceObjective(), smo.scenOpts.interInstanceObj, smo.scenOpts.getRunObjective()));
 		restoreState(dir, smo.scenOpts, pis, execConfig, rh, smo.restoreScenarioArguments);
 		
-		log.trace("Restored state of {} has {} runs for default configuration ", dir, rh.getTotalNumRunsOfConfigExcludingRedundant(execConfig.getParamFile().getDefaultConfiguration()));
+		log.trace("Restored state of {} has {} runs for default configuration ", dir, rh.getTotalNumRunsOfConfigExcludingRedundant(execConfig.getParameterConfigurationSpace().getDefaultConfiguration()));
 		double restoredRuntime = 0.0;
 		for(RunData rd : rh.getAlgorithmRunData())
 		{
@@ -506,7 +506,7 @@ outerLoop:
 	}
 
 	
-	private static void saveState(String dir, ThreadSafeRunHistory rh, List<ProblemInstance> pis, String configSpaceFileName, AlgorithmExecutionConfig execConfig, ScenarioOptions scenOpts, ParamConfiguration newIncumbent) throws IOException 
+	private static void saveState(String dir, ThreadSafeRunHistory rh, List<ProblemInstance> pis, String configSpaceFileName, AlgorithmExecutionConfiguration execConfig, ScenarioOptions scenOpts, ParamConfiguration newIncumbent) throws IOException 
 	{
 		
 		//StateFactoryOptions sfo = new StateFactoryOptions();
@@ -532,7 +532,7 @@ outerLoop:
 		scen.append("run_obj=" + scenOpts.getRunObjective().toString().toLowerCase()).append("\n");
 		scen.append("#outdir = (Outdir is not recommended in a scenario file anymore)").append("\n");
 		scen.append("overall_obj=" + scenOpts.getIntraInstanceObjective().toString().toLowerCase()).append("\n");
-		scen.append("cutoff_time=" + execConfig.getAlgorithmCutoffTime()).append("\n");
+		scen.append("cutoff_time=" + execConfig.getAlgorithmMaximumCutoffTime()).append("\n");
 		scen.append("tunerTimeout=" + scenOpts.limitOptions.tunerTimeout).append("\n");
 		scen.append("paramfile=" + LegacyStateFactory.PARAM_FILE).append("\n");
 		scen.append("instance_file=" + LegacyStateFactory.INSTANCE_FILE).append("\n");
@@ -583,7 +583,7 @@ outerLoop:
 		ss.save();
 	}
 
-	private static void restoreState(String dir, ScenarioOptions scenOpts, List<ProblemInstance> pis, AlgorithmExecutionConfig execConfig, ThreadSafeRunHistory rh, String restoreScenarioOptions) throws IOException {
+	private static void restoreState(String dir, ScenarioOptions scenOpts, List<ProblemInstance> pis, AlgorithmExecutionConfiguration execConfig, ThreadSafeRunHistory rh, String restoreScenarioOptions) throws IOException {
 		
 		StateFactoryOptions sfo = new StateFactoryOptions();
 		
@@ -629,7 +629,7 @@ outerLoop:
 			}
 		}
 			
-		lsf.getStateDeserializer("it", Integer.MAX_VALUE, execConfig.getParamFile(), pis, execConfig, rh);
+		lsf.getStateDeserializer("it", Integer.MAX_VALUE, execConfig.getParameterConfigurationSpace(), pis, execConfig, rh);
 	}
 
 	/**
