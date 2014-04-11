@@ -4,8 +4,8 @@ import java.io.File;
 import java.util.List;
 
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.exceptions.StateSerializationException;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.runhistory.RunHistory;
 
@@ -33,7 +33,7 @@ public interface StateFactory {
 	 * @return object capable of restoring state
 	 * @throws StateSerializationException when an error occurs restoring the state
 	 */
-	public StateDeserializer getStateDeserializer(String id, int restoreIteration, 	ParamConfigurationSpace configSpace, List<ProblemInstance> instances, AlgorithmExecutionConfiguration execConfig, RunHistory rh) throws StateSerializationException;
+	public StateDeserializer getStateDeserializer(String id, int restoreIteration, 	ParameterConfigurationSpace configSpace, List<ProblemInstance> instances, AlgorithmExecutionConfiguration execConfig, RunHistory rh) throws StateSerializationException;
 	
 	
 	/**

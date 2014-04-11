@@ -8,8 +8,6 @@ import java.util.List;
 
 import ca.ubc.cs.beta.aeatk.acquisitionfunctions.AcquisitionFunctions;
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
-import ca.ubc.cs.beta.aeatk.configspace.tracking.ParamConfigurationOriginTrackingOptions;
 import ca.ubc.cs.beta.aeatk.help.HelpOptions;
 import ca.ubc.cs.beta.aeatk.initialization.InitializationMode;
 import ca.ubc.cs.beta.aeatk.initialization.classic.ClassicInitializationProcedureOptions;
@@ -26,6 +24,8 @@ import ca.ubc.cs.beta.aeatk.options.AbstractOptions;
 import ca.ubc.cs.beta.aeatk.options.RandomForestOptions;
 import ca.ubc.cs.beta.aeatk.options.RunGroupOptions;
 import ca.ubc.cs.beta.aeatk.options.scenario.ScenarioOptions;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.tracking.ParamConfigurationOriginTrackingOptions;
 import ca.ubc.cs.beta.aeatk.probleminstance.InstanceListWithSeeds;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceOptions.TrainTestInstances;
@@ -279,7 +279,7 @@ public class SMACOptions extends AbstractOptions {
 			return this.scenarioConfig.getTrainingAndTestProblemInstances(this.experimentDir, instancePool.getRandom(SeedableRandomPoolConstants.INSTANCE_SEEDS).nextInt(), testInstancePool.getRandom(SeedableRandomPoolConstants.TEST_SEED_INSTANCES).nextInt(), true, this.doValidation, false, false);
 	}
 
-	public void saveContextWithState(ParamConfigurationSpace configSpace, InstanceListWithSeeds trainingILWS,	StateFactory sf)
+	public void saveContextWithState(ParameterConfigurationSpace configSpace, InstanceListWithSeeds trainingILWS,	StateFactory sf)
 	{
 		this.stateOpts.saveContextWithState(configSpace, trainingILWS, this.scenarioConfig.scenarioFile, sf);
 	}

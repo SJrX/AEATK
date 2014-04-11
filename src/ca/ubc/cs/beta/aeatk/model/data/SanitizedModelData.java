@@ -70,7 +70,7 @@ public interface SanitizedModelData {
 
 	/**
 	 * Return an array containing all the parameter configurations in array format
-	 * @return array of configurations ran in value array format {@link ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration#toValueArray()}
+	 * @return array of configurations ran in value array format {@link ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration#toValueArray()}
 	 */
 	public double[][] getConfigs();
 	
@@ -84,20 +84,20 @@ public interface SanitizedModelData {
 	/**
 	 * Returns the categorical size of each parameter of the configuration array
 	 * @return	array specifying the size of the domain of each categorical parameter of a valueArray.
-	 * @see ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration for more details
+	 * @see ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration for more details
 	 */
 	public int[] getCategoricalSize();
 
 	/**
 	 * Returns the indexes of the parents of each configuration
-	 * @see ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration for more details
+	 * @see ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration for more details
 	 * @return array of conditional parents
 	 */
 	public int[][] getCondParents();
 
 	/**
 	 * Stores the conditional parent values required to make a parameter active
-	 * @see ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration ParamConfiguration for more details
+	 * @see ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration ParamConfiguration for more details
 	 * @return  array of values required to be set for a parameter to be active
 	 */
 	public int[][][] getCondParentVals();

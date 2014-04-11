@@ -48,9 +48,6 @@ import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrunner.AutomaticConfiguratorFactory;
 import ca.ubc.cs.beta.aeatk.concurrent.threadfactory.SequentiallyNamedThreadFactory;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
-import ca.ubc.cs.beta.aeatk.configspace.ParamFileHelper;
 import ca.ubc.cs.beta.aeatk.exceptions.IllegalWrapperOutputException;
 import ca.ubc.cs.beta.aeatk.misc.debug.DebugUtil;
 import ca.ubc.cs.beta.aeatk.misc.logback.MarkerFilter;
@@ -58,6 +55,9 @@ import ca.ubc.cs.beta.aeatk.misc.logging.LoggingMarker;
 import ca.ubc.cs.beta.aeatk.misc.watch.AutoStartStopWatch;
 import ca.ubc.cs.beta.aeatk.misc.watch.StopWatch;
 import ca.ubc.cs.beta.aeatk.options.AbstractOptions;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParamFileHelper;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aeatk.random.SeedableRandomPool;
@@ -110,7 +110,7 @@ public class TAETestSet {
 	
 	private static AlgorithmExecutionConfiguration execConfig;
 	
-	private static ParamConfigurationSpace configSpace;
+	private static ParameterConfigurationSpace configSpace;
 	
 	private static final int TARGET_RUNS_IN_LOOPS = 10;
 	@BeforeClass
@@ -153,7 +153,7 @@ public class TAETestSet {
 		b.append(" ");
 		b.append(ParamEchoExecutor.class.getCanonicalName());
 		File paramFile = TestHelper.getTestFile("paramFiles/paramEchoParamFile.txt");
-		configSpace = new ParamConfigurationSpace(paramFile);
+		configSpace = new ParameterConfigurationSpace(paramFile);
 		
 		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 		
@@ -186,7 +186,7 @@ public class TAETestSet {
 		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT"))
 			{
 				//Only want good configurations
@@ -205,7 +205,7 @@ public class TAETestSet {
 		
 		for(AlgorithmRun run : runs)
 		{
-			ParamConfiguration config  = run.getRunConfig().getParameterConfiguration();
+			ParameterConfiguration config  = run.getRunConfig().getParameterConfiguration();
 			assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
 			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
 			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
@@ -244,7 +244,7 @@ public class TAETestSet {
 		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < 10; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			config.put("runtime", ""+(i));
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT"))
 			{
@@ -281,7 +281,7 @@ public class TAETestSet {
 		
 		for(AlgorithmRun run : runs)
 		{
-			ParamConfiguration config  = run.getRunConfig().getParameterConfiguration();
+			ParameterConfiguration config  = run.getRunConfig().getParameterConfiguration();
 			assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
 			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
 			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
@@ -315,7 +315,7 @@ public class TAETestSet {
 		b.append(ParamEchoWalltimeExecutor.class.getCanonicalName());
 		
 		File paramFile = TestHelper.getTestFile("paramFiles/paramEchoParamFileWalltime.txt");
-		configSpace = new ParamConfigurationSpace(paramFile);
+		configSpace = new ParameterConfigurationSpace(paramFile);
 		
 		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
 		
@@ -335,7 +335,7 @@ public class TAETestSet {
 		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < 100; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			config.put("runtime", (1 + Math.random()) + "" );
 			config.put("walltime", (2 + Math.random()) + "");
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT"))
@@ -466,7 +466,7 @@ public class TAETestSet {
 		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT"))
 			{
 				//Only want good configurations
@@ -486,7 +486,7 @@ public class TAETestSet {
 		
 		for(AlgorithmRun run : runs)
 		{
-			ParamConfiguration config  = run.getRunConfig().getParameterConfiguration();
+			ParameterConfiguration config  = run.getRunConfig().getParameterConfiguration();
 			assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
 			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
 			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
@@ -527,7 +527,7 @@ public class TAETestSet {
 		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT"))
 			{
 				//Only want good configurations
@@ -546,7 +546,7 @@ public class TAETestSet {
 		int i=0; 
 		for(AlgorithmRun run : runs)
 		{
-			ParamConfiguration config  = run.getRunConfig().getParameterConfiguration();
+			ParameterConfiguration config  = run.getRunConfig().getParameterConfiguration();
 			assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
 			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
 			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
@@ -582,7 +582,7 @@ public class TAETestSet {
 			for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 			{
 				runConfigs.clear();
-				ParamConfiguration config = configSpace.getRandomConfiguration(r);
+				ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 				if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT"))
 				{
 					//Only want good configurations
@@ -631,7 +631,7 @@ public class TAETestSet {
 		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			config.put("solved","ABORT");
 			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 			runConfigs.add(rc);
@@ -664,7 +664,7 @@ public class TAETestSet {
 		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(100);
 	
-		ParamConfiguration config = configSpace.getRandomConfiguration(r);
+		ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 		
 		AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), -1, config, execConfig);
 		runConfigs.add(rc);
@@ -694,7 +694,7 @@ public class TAETestSet {
 		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			
 			config.put("solved", "SAT");
 			
@@ -743,7 +743,7 @@ public class TAETestSet {
 		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			config.put("solved","CRASHED");
 			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 			runConfigs.add(rc);
@@ -810,7 +810,7 @@ public class TAETestSet {
 		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			config.put("solved","CRASHED");
 			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 			runConfigs.add(rc);
@@ -881,7 +881,7 @@ public class TAETestSet {
 		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			if(i == 0 )
 			{
 				config.put("solved","SAT");
@@ -941,7 +941,7 @@ public class TAETestSet {
 		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 		
 		
-		ParamConfiguration config = configSpace.getRandomConfiguration(r);
+		ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 		config.put("solved","SAT");
 		AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 		runConfigs.add(rc);
@@ -961,12 +961,12 @@ public class TAETestSet {
 	{
 		AlgorithmExecutionConfiguration execConfig;
 		
-		ParamConfigurationSpace configSpace;
+		ParameterConfigurationSpace configSpace;
 		
 		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		
 		File paramFile = TestHelper.getTestFile("paramFiles/paramAliasEchoParamFile.txt");
-			configSpace = new ParamConfigurationSpace(paramFile);
+			configSpace = new ParameterConfigurationSpace(paramFile);
 			
 		StringBuilder b = new StringBuilder();
 		b.append("java -cp ");
@@ -989,7 +989,7 @@ public class TAETestSet {
 		for(String alias : RunResult.SAT.getAliases())
 		{
 			
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			config.put("solved", alias);
 			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 			runConfigs.add(rc);
@@ -1002,7 +1002,7 @@ public class TAETestSet {
 		
 		for(AlgorithmRun run : runs)
 		{
-			ParamConfiguration config  = run.getRunConfig().getParameterConfiguration();
+			ParameterConfiguration config  = run.getRunConfig().getParameterConfiguration();
 			assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
 			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
 			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
@@ -1020,12 +1020,12 @@ public class TAETestSet {
 	{
 		AlgorithmExecutionConfiguration execConfig;
 		
-		ParamConfigurationSpace configSpace;
+		ParameterConfigurationSpace configSpace;
 		
 		
 		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		File paramFile = TestHelper.getTestFile("paramFiles/paramAliasEchoParamFile.txt");
-			configSpace = new ParamConfigurationSpace(paramFile);
+			configSpace = new ParameterConfigurationSpace(paramFile);
 			
 		StringBuilder b = new StringBuilder();
 		b.append("java -cp ");
@@ -1047,7 +1047,7 @@ public class TAETestSet {
 		for(String alias : RunResult.UNSAT.getAliases())
 		{
 			
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			config.put("solved", alias);
 			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 			runConfigs.add(rc);
@@ -1060,7 +1060,7 @@ public class TAETestSet {
 		
 		for(AlgorithmRun run : runs)
 		{
-			ParamConfiguration config  = run.getRunConfig().getParameterConfiguration();
+			ParameterConfiguration config  = run.getRunConfig().getParameterConfiguration();
 			assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
 			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
 			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
@@ -1079,12 +1079,12 @@ public class TAETestSet {
 	{
 		AlgorithmExecutionConfiguration execConfig;
 		
-		ParamConfigurationSpace configSpace;
+		ParameterConfigurationSpace configSpace;
 		
 		
 		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		File paramFile = TestHelper.getTestFile("paramFiles/paramAliasEchoParamFile.txt");
-			configSpace = new ParamConfigurationSpace(paramFile);
+			configSpace = new ParameterConfigurationSpace(paramFile);
 			
 		StringBuilder b = new StringBuilder();
 		b.append("java -cp ");
@@ -1106,7 +1106,7 @@ public class TAETestSet {
 		for(String alias : RunResult.UNSAT.getAliases())
 		{
 			
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			config.put("solved", alias);
 			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 			runConfigs.add(rc);
@@ -1152,11 +1152,11 @@ public class TAETestSet {
 	{
 		AlgorithmExecutionConfiguration execConfig;
 		
-		ParamConfigurationSpace configSpace;
+		ParameterConfigurationSpace configSpace;
 		
 		
 		File paramFile = TestHelper.getTestFile("paramFiles/paramAliasEchoParamFile.txt");
-			configSpace = new ParamConfigurationSpace(paramFile);
+			configSpace = new ParameterConfigurationSpace(paramFile);
 		
 			
 		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
@@ -1182,7 +1182,7 @@ public class TAETestSet {
 		for(String alias : RunResult.UNSAT.getAliases())
 		{
 			
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			config.put("solved", alias);
 			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 			runConfigs.add(rc);
@@ -1229,11 +1229,11 @@ public class TAETestSet {
 	{
 		AlgorithmExecutionConfiguration execConfig;
 		
-		ParamConfigurationSpace configSpace;
+		ParameterConfigurationSpace configSpace;
 		
 		
 		File paramFile = TestHelper.getTestFile("paramFiles/paramAliasEchoParamFile.txt");
-			configSpace = new ParamConfigurationSpace(paramFile);
+			configSpace = new ParameterConfigurationSpace(paramFile);
 			
 		StringBuilder b = new StringBuilder();
 		b.append("java -cp ");
@@ -1258,7 +1258,7 @@ public class TAETestSet {
 		for(String alias : RunResult.UNSAT.getAliases())
 		{
 			
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			config.put("solved", alias);
 			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 			runConfigs.add(rc);
@@ -1305,11 +1305,11 @@ public class TAETestSet {
 	{
 		AlgorithmExecutionConfiguration execConfig;
 		
-		ParamConfigurationSpace configSpace;
+		ParameterConfigurationSpace configSpace;
 		
 		
 		File paramFile = TestHelper.getTestFile("paramFiles/paramAliasEchoParamFile.txt");
-			configSpace = new ParamConfigurationSpace(paramFile);
+			configSpace = new ParameterConfigurationSpace(paramFile);
 			
 		StringBuilder b = new StringBuilder();
 		b.append("java -cp ");
@@ -1332,7 +1332,7 @@ public class TAETestSet {
 		for(String alias : RunResult.UNSAT.getAliases())
 		{
 			
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			config.put("solved", alias);
 			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 			runConfigs.add(rc);
@@ -1398,7 +1398,7 @@ public class TAETestSet {
 		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(1);
 		for(int i=0; i < 1; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT"))
 			{
 				//Only want good configurations
@@ -1425,7 +1425,7 @@ public class TAETestSet {
 		
 		for(AlgorithmRun run : runs)
 		{
-			ParamConfiguration config  = run.getRunConfig().getParameterConfiguration();
+			ParameterConfiguration config  = run.getRunConfig().getParameterConfiguration();
 			assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
 			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
 			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
@@ -1461,7 +1461,7 @@ public class TAETestSet {
 		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT"))
 			{
 				//Only want good configurations
@@ -1480,7 +1480,7 @@ public class TAETestSet {
 		
 		for(AlgorithmRun run : runs)
 		{
-			ParamConfiguration config  = run.getRunConfig().getParameterConfiguration();
+			ParameterConfiguration config  = run.getRunConfig().getParameterConfiguration();
 			assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
 			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
 			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
@@ -1516,7 +1516,7 @@ public class TAETestSet {
 		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < 1; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT"))
 			{
 				//Only want good configurations
@@ -1538,7 +1538,7 @@ public class TAETestSet {
 			
 			for(AlgorithmRun run : runs)
 			{
-				ParamConfiguration config  = run.getRunConfig().getParameterConfiguration();
+				ParameterConfiguration config  = run.getRunConfig().getParameterConfiguration();
 				assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
 				assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
 				assertDEquals(config.get("quality"), run.getQuality(), 0.1);
@@ -1569,23 +1569,23 @@ public class TAETestSet {
 		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 		
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			config.put("solved", "SAT");
 			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("SAT",1,new HashMap<String, Double>(),"SAT"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 			runConfigs.add(rc);
 		
-			config = configSpace.getRandomConfiguration(r);
+			config = configSpace.getRandomParameterConfiguration(r);
 			config.put("solved", "SAT");
 			rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("UNSAT",2,new HashMap<String, Double>(),"UNSAT"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 			runConfigs.add(rc);
 			
-			config = configSpace.getRandomConfiguration(r);
+			config = configSpace.getRandomParameterConfiguration(r);
 			config.put("solved", "UNSAT");
 			rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("UNSAT",2,new HashMap<String, Double>(),"UNSAT"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 			runConfigs.add(rc);
 			
 			
-			config = configSpace.getRandomConfiguration(r);
+			config = configSpace.getRandomParameterConfiguration(r);
 			config.put("solved", "UNSAT");
 			rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("SAT",1,new HashMap<String, Double>(),"SAT"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 			runConfigs.add(rc);
@@ -1593,23 +1593,23 @@ public class TAETestSet {
 			
 			
 			
-			config = configSpace.getRandomConfiguration(r);
+			config = configSpace.getRandomParameterConfiguration(r);
 			config.put("solved", "SAT");
 			rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("SATISFIABLE",3,new HashMap<String, Double>(),"SATISFIABLE"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 			runConfigs.add(rc);
 		
-			config = configSpace.getRandomConfiguration(r);
+			config = configSpace.getRandomParameterConfiguration(r);
 			config.put("solved", "SAT");
 			rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("UNSATISFIABLE",4,new HashMap<String, Double>(),"UNSATISFIABLE"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 			runConfigs.add(rc);
 			
-			config = configSpace.getRandomConfiguration(r);
+			config = configSpace.getRandomParameterConfiguration(r);
 			config.put("solved", "UNSAT");
 			rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("UNSATISFIABLE",4,new HashMap<String, Double>(),"UNSATISFIABLE"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 			runConfigs.add(rc);
 			
 			
-			config = configSpace.getRandomConfiguration(r);
+			config = configSpace.getRandomParameterConfiguration(r);
 			config.put("solved", "UNSAT");
 			rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("SATISFIABLE",3,new HashMap<String, Double>(),"SATISFIABLE"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 			runConfigs.add(rc);
@@ -1621,12 +1621,12 @@ public class TAETestSet {
 			
 			
 			
-			config = configSpace.getRandomConfiguration(r);
+			config = configSpace.getRandomParameterConfiguration(r);
 			config.put("solved", "TIMEOUT");
 			rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("SAT",1,new HashMap<String, Double>(),"SAT"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 			runConfigs.add(rc);
 		
-			config = configSpace.getRandomConfiguration(r);
+			config = configSpace.getRandomParameterConfiguration(r);
 			config.put("solved", "SAT");
 			rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("UNKNOWN",2,new HashMap<String, Double>(),"UNKNOWN"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
 			runConfigs.add(rc);
@@ -1682,7 +1682,7 @@ public class TAETestSet {
 				default:
 					assertFalse(output.contains("Mismatch occured between instance specific information"));	
 			}
-			ParamConfiguration config  = run.getRunConfig().getParameterConfiguration();
+			ParameterConfiguration config  = run.getRunConfig().getParameterConfiguration();
 			assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
 			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
 			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
@@ -1707,7 +1707,7 @@ public class TAETestSet {
 		b.append(System.getProperty("java.class.path"));
 		b.append(" ");
 		b.append(ParamEchoExecutor.class.getCanonicalName());
-		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), ParamConfigurationSpace.getSingletonConfigurationSpace(), false, false, 500);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), ParameterConfigurationSpace.getSingletonConfigurationSpace(), false, false, 500);
 		
 		Map<String, AbstractOptions> taeOptionsMap = TargetAlgorithmEvaluatorLoader.getAvailableTargetAlgorithmEvaluators();
 		
@@ -1735,16 +1735,16 @@ public class TAETestSet {
 		ProblemInstanceSeedPair unSatPiThree = new ProblemInstanceSeedPair(unsatPi, 3);
 		ProblemInstanceSeedPair unSatPiFour = new ProblemInstanceSeedPair(unsatPi, 4);
 		
-		AlgorithmRunConfiguration satPiOneRC = new AlgorithmRunConfiguration(satPiOne, 0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(), execConfig);
-		AlgorithmRunConfiguration satPiTwoRC = new AlgorithmRunConfiguration(satPiTwo, 0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
-		AlgorithmRunConfiguration unSatPiOneRC = new AlgorithmRunConfiguration(unSatPiOne, 0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
-		AlgorithmRunConfiguration unSatPiTwoRC = new AlgorithmRunConfiguration(unSatPiTwo, 0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
+		AlgorithmRunConfiguration satPiOneRC = new AlgorithmRunConfiguration(satPiOne, 0, ParameterConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(), execConfig);
+		AlgorithmRunConfiguration satPiTwoRC = new AlgorithmRunConfiguration(satPiTwo, 0, ParameterConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
+		AlgorithmRunConfiguration unSatPiOneRC = new AlgorithmRunConfiguration(unSatPiOne, 0, ParameterConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
+		AlgorithmRunConfiguration unSatPiTwoRC = new AlgorithmRunConfiguration(unSatPiTwo, 0, ParameterConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
 		
 		
-		AlgorithmRunConfiguration satPiThreeRC = new AlgorithmRunConfiguration(satPiThree, 0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
-		AlgorithmRunConfiguration satPiFourRC = new AlgorithmRunConfiguration(satPiFour, 0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
-		AlgorithmRunConfiguration unSatPiThreeRC = new AlgorithmRunConfiguration(unSatPiThree, 0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
-		AlgorithmRunConfiguration unSatPiFourRC = new AlgorithmRunConfiguration(unSatPiFour, 0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
+		AlgorithmRunConfiguration satPiThreeRC = new AlgorithmRunConfiguration(satPiThree, 0, ParameterConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
+		AlgorithmRunConfiguration satPiFourRC = new AlgorithmRunConfiguration(satPiFour, 0, ParameterConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
+		AlgorithmRunConfiguration unSatPiThreeRC = new AlgorithmRunConfiguration(unSatPiThree, 0, ParameterConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
+		AlgorithmRunConfiguration unSatPiFourRC = new AlgorithmRunConfiguration(unSatPiFour, 0, ParameterConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
 		
 		
 		
@@ -1958,7 +1958,7 @@ public class TAETestSet {
 		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < 1; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT"))
 			{
 				//Only want good configurations
@@ -2104,7 +2104,7 @@ public class TAETestSet {
 		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT"))
 			{
 				//Only want good configurations
@@ -2245,7 +2245,7 @@ public class TAETestSet {
 		final List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < 100; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED"))
 			{
 				//Only want good configurations
@@ -2336,7 +2336,7 @@ public class TAETestSet {
 		final List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < 1; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED"))
 			{
 				//Only want good configurations
@@ -2355,7 +2355,7 @@ public class TAETestSet {
 		final List<AlgorithmRunConfiguration> runConfigs2 = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < 1; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED"))
 			{
 				//Only want good configurations
@@ -2441,7 +2441,7 @@ public class TAETestSet {
 		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(100);
 		for(int i=0; i < 20; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			
 			config.put("runtime","2");
 			
@@ -2550,7 +2550,7 @@ public class TAETestSet {
 		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(4);
 		for(int i=0; i < 4; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			if( i % 2 == 0)
 			{
 				config.put("runtime", "3");
@@ -2618,7 +2618,7 @@ public class TAETestSet {
 		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(4);
 		for(int i=0; i < 5; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			if( i == 0)
 			{
 				config.put("runtime", "8");
@@ -2720,7 +2720,7 @@ public class TAETestSet {
 		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(4);
 		for(int i=0; i < 4; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			
 			config.put("runtime","2");
 			
@@ -2810,7 +2810,7 @@ public class TAETestSet {
 		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(4);
 		for(int i=0; i < 100; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			
 			config.put("runtime", String.valueOf(1 + (i%10)));
 			
@@ -2928,7 +2928,7 @@ public class TAETestSet {
 				List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(4);
 				for(int i=0; i < 4; i++)
 				{
-					ParamConfiguration config = configSpace.getRandomConfiguration(r);
+					ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 					
 					config.put("runtime", String.valueOf(1 + (i%10)));
 					
@@ -3050,7 +3050,7 @@ public class TAETestSet {
 		double runtime = 50;
 		for(int i=0; i < 1; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			
 			config.put("runtime",String.valueOf(runtime));
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
@@ -3113,7 +3113,7 @@ public class TAETestSet {
 		double runtime = 2;
 		for(int i=0; i < 1; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			
 			config.put("runtime",String.valueOf(runtime));
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
@@ -3153,7 +3153,7 @@ public class TAETestSet {
 		b.append(System.getProperty("java.class.path"));
 		b.append(" ");
 		b.append(DummyExecutor.class.getCanonicalName());
-		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), ParamConfigurationSpace.getNullConfigurationSpace(), false, false, 0.01);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), ParameterConfigurationSpace.getNullConfigurationSpace(), false, false, 0.01);
 		
 		
 		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
@@ -3178,7 +3178,7 @@ public class TAETestSet {
 		double runtime = 50;
 		for(int i=0; i < 1; i++)
 		{
-			ParamConfiguration config = ParamConfigurationSpace.getNullConfigurationSpace().getDefaultConfiguration();
+			ParameterConfiguration config = ParameterConfigurationSpace.getNullConfigurationSpace().getDefaultConfiguration();
 			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), 1), 1.5, config, execConfig);
 			runConfigs.add(rc);
 		}
@@ -3228,7 +3228,7 @@ public class TAETestSet {
 		double runtime = 50;
 		for(int i=0; i < 1; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			
 			config.put("runtime",String.valueOf(runtime));
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
@@ -3300,7 +3300,7 @@ public class TAETestSet {
 		final List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < 1; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED"))
 			{
 				//Only want good configurations
@@ -3388,7 +3388,7 @@ public class TAETestSet {
 		System.out.println(b);
 		
 		
-		ParamConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("Test { \"\\\" } [\"\\\"]\n");
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("Test { \"\\\" } [\"\\\"]\n");
 		
 		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
 		
@@ -3407,7 +3407,7 @@ public class TAETestSet {
 		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(4);
 		for(int i=0; i < 1; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 
 			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"),1), 3000, config, execConfig);
 			runConfigs.add(rc);
@@ -3433,7 +3433,7 @@ public class TAETestSet {
 		System.out.println(b);
 		
 		
-		ParamConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("Test { \"\\\" } [\"\\\"]\n");
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("Test { \"\\\" } [\"\\\"]\n");
 		
 		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
 		
@@ -3452,7 +3452,7 @@ public class TAETestSet {
 		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(4);
 		for(int i=0; i < 1; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 
 			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"),1), 3000, config, execConfig);
 			runConfigs.add(rc);
@@ -3502,7 +3502,7 @@ public class TAETestSet {
 		double runtime = 50;
 		for(int i=0; i < 1; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			
 			config.put("runtime",String.valueOf(runtime));
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
@@ -3574,7 +3574,7 @@ public class TAETestSet {
 		double runtime = 50;
 		for(int i=0; i < 1; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			
 			config.put("runtime",String.valueOf(runtime));
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
@@ -3665,7 +3665,7 @@ public class TAETestSet {
 		double runtime = 50;
 		for(int i=0; i < 20; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			
 			config.put("runtime",String.valueOf(runtime));
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
@@ -3771,7 +3771,7 @@ public class TAETestSet {
 		double runtime = 50;
 		for(int i=0; i < 1; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			
 			config.put("runtime",String.valueOf(runtime));
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
@@ -3867,7 +3867,7 @@ public class TAETestSet {
 		double runtime = 50;
 		for(int i=0; i < 1; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			
 			config.put("runtime",String.valueOf(runtime));
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
@@ -3960,7 +3960,7 @@ public class TAETestSet {
 		
 		for(int i=0; i < 1; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			
 			config.put("runtime",String.valueOf(runtime));
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
@@ -4020,7 +4020,7 @@ public class TAETestSet {
 		
 		for(int i=0; i < 1; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			
 			config.put("runtime",String.valueOf(runtime));
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
@@ -4094,7 +4094,7 @@ public class TAETestSet {
 		double runtime = 50;
 		for(int i=0; i < 1; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			
 			config.put("runtime",String.valueOf(runtime));
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
@@ -4197,7 +4197,7 @@ public class TAETestSet {
 		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(100);
 		for(int i=0; i < 100; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			
 			config.put("runtime","2");
 			

@@ -1,7 +1,7 @@
 package ca.ubc.cs.beta.aeatk.eventsystem.events.state;
 
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aeatk.eventsystem.events.AbstractTimeEvent;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
 import ca.ubc.cs.beta.aeatk.runhistory.ThreadSafeRunHistory;
 import ca.ubc.cs.beta.aeatk.termination.TerminationCondition;
 
@@ -18,9 +18,9 @@ public class StateRestoredEvent extends AbstractTimeEvent {
 
 	private int modelsBuilt;
 	private ThreadSafeRunHistory runHistory;
-	private ParamConfiguration incumbent;
+	private ParameterConfiguration incumbent;
 
-	public StateRestoredEvent(TerminationCondition cond,  int modelsBuilt, ThreadSafeRunHistory runHistory, ParamConfiguration incumbent) {
+	public StateRestoredEvent(TerminationCondition cond,  int modelsBuilt, ThreadSafeRunHistory runHistory, ParameterConfiguration incumbent) {
 		super(cond);
 		this.modelsBuilt = modelsBuilt;
 		this.runHistory = runHistory;
@@ -36,7 +36,7 @@ public class StateRestoredEvent extends AbstractTimeEvent {
 		return runHistory;
 	}
 	
-	public ParamConfiguration getIncumbent()
+	public ParameterConfiguration getIncumbent()
 	{
 		return incumbent;
 		

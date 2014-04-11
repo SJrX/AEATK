@@ -10,10 +10,10 @@ import java.io.ObjectOutputStream;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.misc.math.ArrayMathOps;
 import ca.ubc.cs.beta.aeatk.misc.math.MessyMathHelperClass;
 import ca.ubc.cs.beta.aeatk.misc.math.MessyMathHelperClass.Operation;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace;
 
 /**
  * This class roughly does all the processing for sanitizing data
@@ -31,7 +31,7 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 	private final double[][] pcaFeatures;
 	private final double[][] prePCAInstanceFeatures;
 	private final double[] responseValues;
-	private final ParamConfigurationSpace configSpace;
+	private final ParameterConfigurationSpace configSpace;
 	private final double[][] configs;
 	
 	private final boolean logModel;
@@ -99,7 +99,7 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 	
 	public static boolean printFeatures = false;
 	
-	public PCAModelDataSanitizer(double[][] instanceFeatures, double[][] paramValues, int numPCA, double[] responseValues, int[] usedInstancesIdxs, boolean logModel, int[][] theta_inst_idxs, boolean[] censoredResponseValues , ParamConfigurationSpace configSpace)
+	public PCAModelDataSanitizer(double[][] instanceFeatures, double[][] paramValues, int numPCA, double[] responseValues, int[] usedInstancesIdxs, boolean logModel, int[][] theta_inst_idxs, boolean[] censoredResponseValues , ParameterConfigurationSpace configSpace)
 	{
 		this.configSpace = configSpace;
 		this.configs = paramValues;

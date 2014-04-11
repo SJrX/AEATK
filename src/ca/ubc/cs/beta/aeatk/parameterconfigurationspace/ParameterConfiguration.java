@@ -1,4 +1,4 @@
-package ca.ubc.cs.beta.aeatk.configspace;
+package ca.ubc.cs.beta.aeatk.parameterconfigurationspace;
 
 import java.io.PrintWriter;
 import java.io.Serializable;
@@ -25,7 +25,7 @@ import net.jcip.annotations.NotThreadSafe;
 
 
 /**
- * This class represents an element in the associated {@link ParamConfigurationSpace} and provides a natural {@link java.util.Map} like interface for accessing it's members 
+ * This class represents an element in the associated {@link ParameterConfigurationSpace} and provides a natural {@link java.util.Map} like interface for accessing it's members 
  * but also uses an effective and fast storage mechanism for this. 
  * <p>
  * <b>WARNING:</b>This is not a general purpose <code>Map</code> implementation. Many map operations, like entry set provide unmodifiable views.
@@ -47,7 +47,7 @@ import net.jcip.annotations.NotThreadSafe;
 @NotThreadSafe
 @JsonDeserialize
 @JsonSerialize(using=ParamConfigurationJson.ParamConfigurationSerializer.class)
-public class ParamConfiguration implements Map<String, String>, Serializable {
+public class ParameterConfiguration implements Map<String, String>, Serializable {
 
 	/**
 	 * 
@@ -60,7 +60,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	private final Map<String, Integer> paramKeyToValueArrayIndexMap;
 	
 	/**
-	 * @see ParamConfigurationSpace
+	 * @see ParameterConfigurationSpace
 	 * Do _NOT_ write to this array, it is shared with all other configurations 
 	 */
 	private final boolean[] parameterDomainContinuous;
@@ -75,7 +75,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	/**
 	 * Configuration space we are from
 	 */
-	private final ParamConfigurationSpace configSpace;
+	private final ParameterConfigurationSpace configSpace;
 	
 	/**
 	 * The array that actually stores our values. We store categorical values as their index in
@@ -119,7 +119,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	 * @param parameterDomainContinuous		array that tells us whether an entry in the value array is continuous. (DO NOT MODIFY THIS)
 	 * @param paramKeyToValueArrayIndexMap	map from param keys to index into the value arry.
 	 */
-	ParamConfiguration(ParamConfigurationSpace configSpace ,double[] valueArray, int[] categoricalSize, boolean[] parameterDomainContinuous, Map<String, Integer> paramKeyToValueArrayIndexMap )
+	ParameterConfiguration(ParameterConfigurationSpace configSpace ,double[] valueArray, int[] categoricalSize, boolean[] parameterDomainContinuous, Map<String, Integer> paramKeyToValueArrayIndexMap )
 	{
 		this.configSpace = configSpace;
 		this.valueArray = valueArray;
@@ -139,7 +139,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	 * Copy constructor
 	 * @param oConfig - configuration to copy
 	 */
-	public ParamConfiguration(ParamConfiguration oConfig)
+	public ParameterConfiguration(ParameterConfiguration oConfig)
 	{
 		if(oConfig.isDirty) oConfig.cleanUp();
 		
@@ -447,10 +447,10 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	{
 
 		if(this == o) return true;
-		if (o instanceof ParamConfiguration)
+		if (o instanceof ParameterConfiguration)
 		{
 			
-			ParamConfiguration opc = (ParamConfiguration )o;
+			ParameterConfiguration opc = (ParameterConfiguration )o;
 			if(isDirty) cleanUp();
 			if(opc.isDirty) opc.cleanUp();
 			
@@ -516,13 +516,13 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	 * @param valueDelimiter - String to appear on either side of the value
 	 * @param glue - String to placed in between various key value pairs
 	 * @return formatted parameter string 
-	 * @deprecated Clients should always specify a String Format {@link #getFormattedParamString(StringFormat)}
+	 * @deprecated Clients should always specify a String Format {@link #getFormattedParameterString(ParameterStringFormat)}
 	 */
 	@Deprecated
-	public String getFormattedParamString(String preKey, String keyValSeperator,String valueDelimiter,String glue)
+	public String getFormattedParameterString(String preKey, String keyValSeperator,String valueDelimiter,String glue)
 	{
 		//Should use the String Format method
-		return _getFormattedParamString(preKey, keyValSeperator, valueDelimiter, glue, true);
+		return _getFormattedParameterString(preKey, keyValSeperator, valueDelimiter, glue, true);
 	
 		
 	}
@@ -536,7 +536,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	 * @param hideInactiveParameters	<code>true</code> if we should drop inactive parameters, <code>false</code> otherwise
 	 * @return formatted parameter string
 	 */
-	protected String _getFormattedParamString(String preKey, String keyValSeperator,String valueDelimiter,String glue, boolean hideInactiveParameters)
+	protected String _getFormattedParameterString(String preKey, String keyValSeperator,String valueDelimiter,String glue, boolean hideInactiveParameters)
 	{
 		Set<String> activeParams = getActiveParameters();
 		StringBuilder sb = new StringBuilder();
@@ -558,23 +558,23 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	
 	/**
 	 * Returns a string representation of this object
-	 * @deprecated Clients should always specify a String Format {@link #getFormattedParamString(StringFormat)}
+	 * @deprecated Clients should always specify a String Format {@link #getFormattedParameterString(ParameterStringFormat)}
 	 * @return string representation of this object
 	 */
 	@Deprecated
-	public String getFormattedParamString()
+	public String getFormattedParameterString()
 	{
-		return _getFormattedParamString("-", " ","'"," ",true);
+		return _getFormattedParameterString("-", " ","'"," ",true);
 	}
 	
 	/**
-	 * Returns a string representation of this object, according to the given {@link StringFormat}
+	 * Returns a string representation of this object, according to the given {@link ParameterStringFormat}
 	 * <br/>
 	 * <b>Implementation Note:</b>No new String Formats should be able to generate the Strings "DEFAULT","<DEFAULT>","RANDOM","<RANDOM>", no matter how obnoxious the user specifying the param file is
 	 * @param stringFormat stringformat to use
 	 * @return string representation
 	 */
-	public String getFormattedParamString(StringFormat stringFormat)
+	public String getFormattedParameterString(ParameterStringFormat stringFormat)
 	{
 		
 		double[] valueArray = this.valueArray;
@@ -611,11 +611,11 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 				return sb.toString();
 				
 			case NODB_OR_STATEFILE_SYNTAX:
-				return getFormattedParamString(StringFormat.NODB_SYNTAX);
+				return getFormattedParameterString(ParameterStringFormat.NODB_SYNTAX);
 			//case SILLY:
 			//	return "RANDOM";
 		default:
-			return _getFormattedParamString(stringFormat.getPreKey(), stringFormat.getKeyValueSeperator(), stringFormat.getValueDelimeter(), stringFormat.getGlue(), stringFormat.hideInactiveParameters());
+			return _getFormattedParameterString(stringFormat.getPreKey(), stringFormat.getKeyValueSeperator(), stringFormat.getValueDelimeter(), stringFormat.getGlue(), stringFormat.hideInactiveParameters());
 		}
 		
 	}
@@ -627,7 +627,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	 * <b>Note:</b> Only some of these use the preKey, keyVal seperator, and glue 
 	 * <b>WARNING:</b>DEFAULT, &gt;DEFAULT&lt;,RANDOM, &gt;RANDOM&lt; cannot be valid configuration strings for all format, because we will always parse these back as the default or random configuration respectively.
 	 */
-	public enum StringFormat
+	public enum ParameterStringFormat
 	{
 			/**
 			 * Uses a -(name) 'value' -(name) 'value' ... format [hiding inactive parameters]
@@ -698,7 +698,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 		private final boolean hideInactive;
 		
 		
-		private StringFormat(String preKey, String keyValSeperator, String valDelimeter, String glue, boolean hideInactive)
+		private ParameterStringFormat(String preKey, String keyValSeperator, String valDelimeter, String glue, boolean hideInactive)
 		{
 			this.preKey = preKey;
 			this.keyValSeperator = keyValSeperator;
@@ -740,9 +740,9 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	 * @param  numNumericalNeighbours 	The number of neighbours numerical parameters should have
 	 * @return list of configurations in the neighbourhood
 	 */
-	public List<ParamConfiguration> getNeighbourhood(Random rand, int numNumericalNeighbours)
+	public List<ParameterConfiguration> getNeighbourhood(Random rand, int numNumericalNeighbours)
 	{
-		List<ParamConfiguration> neighbours = new ArrayList<ParamConfiguration>(numberOfNeighboursExcludingForbidden(numNumericalNeighbours));
+		List<ParameterConfiguration> neighbours = new ArrayList<ParameterConfiguration>(numberOfNeighboursExcludingForbidden(numNumericalNeighbours));
 		Set<String> activeParams = getActiveParameters();
 		/*
 		 * i is the number of parameters
@@ -752,13 +752,13 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 		{
 			double[] newValueArray = valueArray.clone();
 			
-			for(int j=1; j <= numberOfNeighboursForParam(i,activeParams.contains(configSpace.getParameterNamesInAuthorativeOrder().get(i)),numNumericalNeighbours); j++)
+			for(int j=1; j <= numberOfNeighboursForParameter(i,activeParams.contains(configSpace.getParameterNamesInAuthorativeOrder().get(i)),numNumericalNeighbours); j++)
 			{
-				newValueArray[i] = getNeighbourForParam(i,j,rand);
+				newValueArray[i] = getNeighbourForParameter(i,j,rand);
 				
-				if(configSpace.isForbiddenParamConfiguration(newValueArray)) continue;
+				if(configSpace.isForbiddenParameterConfiguration(newValueArray)) continue;
 				
-				neighbours.add(new ParamConfiguration(configSpace, newValueArray.clone(), categoricalSize, parameterDomainContinuous, paramKeyToValueArrayIndexMap));
+				neighbours.add(new ParameterConfiguration(configSpace, newValueArray.clone(), categoricalSize, parameterDomainContinuous, paramKeyToValueArrayIndexMap));
 			}
 		}
 		
@@ -778,10 +778,10 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	 * @param oConfig 	the other configuration to check
 	 * @return
 	 */
-	public boolean isNeighbour(ParamConfiguration oConfig)
+	public boolean isNeighbour(ParameterConfiguration oConfig)
 	{
 		
-		if(!oConfig.getConfigurationSpace().equals(getConfigurationSpace()))
+		if(!oConfig.getParameterConfigurationSpace().equals(getParameterConfigurationSpace()))
 		{
 			return false;
 		}
@@ -820,7 +820,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 		for(int i=0; i < configSpace.getParameterNamesInAuthorativeOrder().size(); i++)
 		{
 			
-			neighbours += numberOfNeighboursForParam(i, activeParams.contains(configSpace.getParameterNamesInAuthorativeOrder().get(i)), numNumericalNeighbours);
+			neighbours += numberOfNeighboursForParameter(i, activeParams.contains(configSpace.getParameterNamesInAuthorativeOrder().get(i)), numNumericalNeighbours);
 		}
 		return neighbours;
 		
@@ -832,7 +832,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	 * @param isParameterActive boolean for if this parameter is active
 	 * @return 0 if inactive, number of neighbours if active
 	 */
-	private int numberOfNeighboursForParam(int valueArrayIndex, boolean isParameterActive, int neighboursForNumericalParameters)
+	private int numberOfNeighboursForParameter(int valueArrayIndex, boolean isParameterActive, int neighboursForNumericalParameters)
 	{
 		if(isParameterActive == false) return 0;
 		
@@ -854,7 +854,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	 * @param neighbourNumber   number of the neighbour to generate
 	 * @return
 	 */
-	private double getNeighbourForParam(int valueArrayIndex, int neighbourNumber, Random rand)
+	private double getNeighbourForParameter(int valueArrayIndex, int neighbourNumber, Random rand)
 	{
 		if(parameterDomainContinuous[valueArrayIndex])
 		{ 
@@ -1084,9 +1084,9 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	 * Checks whether this configuration is forbidden
 	 * @return <code>true</code> if the parameter is forbidden, false otherwise
 	 */
-	public boolean isForbiddenParamConfiguration()
+	public boolean isForbiddenParameterConfiguration()
 	{
-		return configSpace.isForbiddenParamConfiguration(valueArray);
+		return configSpace.isForbiddenParameterConfiguration(valueArray);
 	}
 
 
@@ -1094,7 +1094,7 @@ public class ParamConfiguration implements Map<String, String>, Serializable {
 	 * Returns the configuration space for this configuartion
 	 * @return configSpace for this configuration
 	 */ 
-	public ParamConfigurationSpace getConfigurationSpace() {
+	public ParameterConfigurationSpace getParameterConfigurationSpace() {
 		return configSpace;
 	}
 

@@ -1,4 +1,4 @@
-package ca.ubc.cs.beta.aeatk.configspace;
+package ca.ubc.cs.beta.aeatk.parameterconfigurationspace;
 
 public class ParamConfigurationStringFormatException extends RuntimeException {
 

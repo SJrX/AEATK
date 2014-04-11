@@ -12,9 +12,9 @@ import org.junit.Test;
 
 import com.fasterxml.jackson.core.type.TypeReference;
 
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
-import ca.ubc.cs.beta.aeatk.configspace.ParamFileHelper;
 import ca.ubc.cs.beta.aeatk.json.JSONConverter;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParamFileHelper;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace;
 
 public class JSONTester {
 
@@ -22,7 +22,7 @@ public class JSONTester {
 	@Test
 	public void testJSONParamConfiguration()
 	{
-		ParamConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("a { 0,1,2,3,4,5} [0]\n"
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("a { 0,1,2,3,4,5} [0]\n"
 				+ " b [0,10] [0.5]\n"
 				+ "  c { on, off} [on] \n"
 				+ " d { yay, nay} [yay] \n"
@@ -36,7 +36,7 @@ public class JSONTester {
 				+ "{a=5, h=two}");
 		
 		
-		JSONConverter<ParamConfigurationSpace> json = new JSONConverter<ParamConfigurationSpace>() {} ;
+		JSONConverter<ParameterConfigurationSpace> json = new JSONConverter<ParameterConfigurationSpace>() {} ;
 		
 		String jsonText = json.getJSON(configSpace);
 		System.out.println(jsonText);
@@ -50,7 +50,7 @@ public class JSONTester {
 	@Test
 	public void testJSONParamConfigurationList()
 	{
-		ParamConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("a { 0,1,2,3,4,5} [0]\n"
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("a { 0,1,2,3,4,5} [0]\n"
 				+ " b [0,10] [0.5]\n"
 				+ "  c { on, off} [on] \n"
 				+ " d { yay, nay} [yay] \n"
@@ -65,14 +65,14 @@ public class JSONTester {
 		
 		
 		
-		ParamConfigurationSpace configSpace2 = ParamFileHelper.getParamFileFromString("a { 0,1 } [0]");
+		ParameterConfigurationSpace configSpace2 = ParamFileHelper.getParamFileFromString("a { 0,1 } [0]");
 		
-		List<ParamConfigurationSpace> pcs = new ArrayList<>();
+		List<ParameterConfigurationSpace> pcs = new ArrayList<>();
 		
 		
 		pcs.add(configSpace);
 		pcs.add(configSpace2);
-		JSONConverter<List<ParamConfigurationSpace>> json = new JSONConverter<List<ParamConfigurationSpace>>() {} ;
+		JSONConverter<List<ParameterConfigurationSpace>> json = new JSONConverter<List<ParameterConfigurationSpace>>() {} ;
 		
 		String jsonText = json.getJSON(pcs);
 		System.out.println(jsonText);
@@ -86,7 +86,7 @@ public class JSONTester {
 	@Ignore
 	public void testJSONParamConfigurationMap()
 	{
-		ParamConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("a { 0,1,2,3,4,5} [0]\n"
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("a { 0,1,2,3,4,5} [0]\n"
 				+ " b [0,10] [0.5]\n"
 				+ "  c { on, off} [on] \n"
 				+ " d { yay, nay} [yay] \n"
@@ -101,19 +101,19 @@ public class JSONTester {
 		
 		
 		
-		ParamConfigurationSpace configSpace2 = ParamFileHelper.getParamFileFromString("a { 0,1 } [0]");
+		ParameterConfigurationSpace configSpace2 = ParamFileHelper.getParamFileFromString("a { 0,1 } [0]");
 		
-		Map<ParamConfigurationSpace,Integer> pcs = new HashMap<>();
+		Map<ParameterConfigurationSpace,Integer> pcs = new HashMap<>();
 		
 		
 		pcs.put(configSpace,1);
 		pcs.put(configSpace2,2);
-		JSONConverter<Map<ParamConfigurationSpace,Integer>> json = new JSONConverter<Map<ParamConfigurationSpace,Integer>>() {} ;
+		JSONConverter<Map<ParameterConfigurationSpace,Integer>> json = new JSONConverter<Map<ParameterConfigurationSpace,Integer>>() {} ;
 		
 		String jsonText = json.getJSON(pcs);
 		System.out.println(jsonText);
 		
-		Object o = json.getObject(jsonText,new TypeReference<Map<ParamConfigurationSpace,Integer>>() { });
+		Object o = json.getObject(jsonText,new TypeReference<Map<ParameterConfigurationSpace,Integer>>() { });
 		
 		assertEquals("Expected Representations to be equal",o , pcs);
 	}

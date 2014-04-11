@@ -7,10 +7,10 @@ import java.util.Map;
 import java.util.Set;
 
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aeatk.exceptions.DuplicateRunException;
 import ca.ubc.cs.beta.aeatk.objectives.OverallObjective;
 import ca.ubc.cs.beta.aeatk.objectives.RunObjective;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
 
@@ -113,7 +113,7 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 	}
 
 	@Override
-	public Set<ProblemInstance> getProblemInstancesRan(ParamConfiguration config) {
+	public Set<ProblemInstance> getProblemInstancesRan(ParameterConfiguration config) {
 		lockRead();
 		try {
 			return runHistory.getProblemInstancesRan(config);
@@ -125,7 +125,7 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 
 	@Override
 	public Set<ProblemInstanceSeedPair> getProblemInstanceSeedPairsRan(
-			ParamConfiguration config) {
+			ParameterConfiguration config) {
 		
 		lockRead();
 		try {
@@ -137,7 +137,7 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 	}
 
 	@Override
-	public double getEmpiricalCost(ParamConfiguration config,
+	public double getEmpiricalCost(ParameterConfiguration config,
 			Set<ProblemInstance> instanceSet, double cutoffTime) {
 		lockRead();
 		try {
@@ -149,7 +149,7 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 	}
 
 	@Override
-	public double getEmpiricalCost(ParamConfiguration config,
+	public double getEmpiricalCost(ParameterConfiguration config,
 			Set<ProblemInstance> instanceSet, double cutoffTime,
 			Map<ProblemInstance, Map<Long, Double>> hallucinatedValues) {
 		lockRead();
@@ -162,7 +162,7 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 	}
 
 	@Override
-	public double getEmpiricalCost(ParamConfiguration config,
+	public double getEmpiricalCost(ParameterConfiguration config,
 			Set<ProblemInstance> instanceSet, double cutoffTime,
 			Map<ProblemInstance, Map<Long, Double>> hallucinatedValues,
 			double minimumResponseValue) {
@@ -201,7 +201,7 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 	}
 
 	@Override
-	public Set<ParamConfiguration> getUniqueParamConfigurations() {
+	public Set<ParameterConfiguration> getUniqueParamConfigurations() {
 		lockRead();
 		try {
 			return runHistory.getUniqueParamConfigurations();
@@ -225,7 +225,7 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 
 	
 	@Override
-	public List<ParamConfiguration> getAllParameterConfigurationsRan() {
+	public List<ParameterConfiguration> getAllParameterConfigurationsRan() {
 		lockRead();
 		try {
 			return runHistory.getAllParameterConfigurationsRan();
@@ -265,7 +265,7 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 
 	@Override
 	public Set<ProblemInstanceSeedPair> getEarlyCensoredProblemInstanceSeedPairs(
-			ParamConfiguration config) {
+			ParameterConfiguration config) {
 		lockRead();
 		try {
 			return runHistory.getEarlyCensoredProblemInstanceSeedPairs(config);
@@ -279,7 +279,7 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 
 
 	@Override
-	public int getThetaIdx(ParamConfiguration configuration) {
+	public int getThetaIdx(ParameterConfiguration configuration) {
 		lockRead();
 		try {
 			return runHistory.getThetaIdx(configuration);
@@ -291,7 +291,7 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 	}
 
 	@Override
-	public double getEmpiricalCost(ParamConfiguration config,
+	public double getEmpiricalCost(ParameterConfiguration config,
 			Set<ProblemInstance> instanceSet, double cutoffTime,
 			double minimumResponseValue) {
 		lockRead();
@@ -306,7 +306,7 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 
 	@Override
 	public int getNumberOfUniqueProblemInstanceSeedPairsForConfiguration(
-			ParamConfiguration config) {
+			ParameterConfiguration config) {
 		lockRead();
 		try {
 			return runHistory.getNumberOfUniqueProblemInstanceSeedPairsForConfiguration(config);
@@ -331,7 +331,7 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 	}
 
 	@Override
-	public List<AlgorithmRun> getAlgorithmRunsExcludingRedundant(ParamConfiguration config) {
+	public List<AlgorithmRun> getAlgorithmRunsExcludingRedundant(ParameterConfiguration config) {
 		lockRead();
 		try {
 			return runHistory.getAlgorithmRunsExcludingRedundant(config);
@@ -344,7 +344,7 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 	
 
 	@Override
-	public int getTotalNumRunsOfConfigExcludingRedundant(ParamConfiguration config) {
+	public int getTotalNumRunsOfConfigExcludingRedundant(ParameterConfiguration config) {
 		lockRead();
 		try {
 			return runHistory.getTotalNumRunsOfConfigExcludingRedundant(config);
@@ -366,7 +366,7 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 	}
 	
 	@Override
-	public List<AlgorithmRun> getAlgorithmRunsIncludingRedundant(ParamConfiguration config) {
+	public List<AlgorithmRun> getAlgorithmRunsIncludingRedundant(ParameterConfiguration config) {
 		lockRead();
 		try {
 			return runHistory.getAlgorithmRunsIncludingRedundant(config);
@@ -379,7 +379,7 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 	
 
 	@Override
-	public int getTotalNumRunsOfConfigIncludingRedundant(ParamConfiguration config) {
+	public int getTotalNumRunsOfConfigIncludingRedundant(ParameterConfiguration config) {
 		lockRead();
 		try {
 			return runHistory.getTotalNumRunsOfConfigIncludingRedundant(config);
@@ -404,7 +404,7 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 
 	@Override
 	public Map<ProblemInstance, LinkedHashMap<Long, Double>> getPerformanceForConfig(
-			ParamConfiguration configuration) {
+			ParameterConfiguration configuration) {
 		lockRead();
 		try {
 			return runHistory.getPerformanceForConfig(configuration);
@@ -449,7 +449,7 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 	}
 
 	@Override
-	public int getOrCreateThetaIdx(ParamConfiguration config) {
+	public int getOrCreateThetaIdx(ParameterConfiguration config) {
 		lockWrite();
 		try {
 			return this.runHistory.getOrCreateThetaIdx(config);
@@ -462,13 +462,13 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 	}
 
 	@Override
-	public double getEmpiricalCostLowerBound(ParamConfiguration config,
+	public double getEmpiricalCostLowerBound(ParameterConfiguration config,
 			Set<ProblemInstance> instanceSet, double cutoffTime) {
 		return this.runHistory.getEmpiricalCostLowerBound(config, instanceSet, cutoffTime);
 	}
 
 	@Override
-	public double getEmpiricalCostUpperBound(ParamConfiguration config,
+	public double getEmpiricalCostUpperBound(ParameterConfiguration config,
 			Set<ProblemInstance> instanceSet, double cutoffTime) {
 		return this.runHistory.getEmpiricalCostUpperBound(config, instanceSet, cutoffTime);
 	}

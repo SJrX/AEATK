@@ -2,13 +2,13 @@ package ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration;
 
 import java.io.File;
 
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace;
 
 public class AlgorithmExecutionConfigHelper {
 
 	public static AlgorithmExecutionConfiguration getSingletonExecConfig()
 	{
-		return new AlgorithmExecutionConfiguration("foo",  (new File(".")).getAbsolutePath() , ParamConfigurationSpace.getSingletonConfigurationSpace(), false, false, 20);
+		return new AlgorithmExecutionConfiguration("foo",  (new File(".")).getAbsolutePath() , ParameterConfigurationSpace.getSingletonConfigurationSpace(), false, false, 20);
 	}
 
 	/*

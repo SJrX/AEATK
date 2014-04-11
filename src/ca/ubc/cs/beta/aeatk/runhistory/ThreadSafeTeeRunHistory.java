@@ -10,10 +10,10 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aeatk.exceptions.DuplicateRunException;
 import ca.ubc.cs.beta.aeatk.objectives.OverallObjective;
 import ca.ubc.cs.beta.aeatk.objectives.RunObjective;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
 
@@ -56,7 +56,7 @@ public class ThreadSafeTeeRunHistory implements ThreadSafeRunHistory {
 	}
 
 	@Override
-	public int getOrCreateThetaIdx(ParamConfiguration initialIncumbent) {
+	public int getOrCreateThetaIdx(ParameterConfiguration initialIncumbent) {
 		
 		synchronized(mutex)
 		{
@@ -121,24 +121,24 @@ public class ThreadSafeTeeRunHistory implements ThreadSafeRunHistory {
 	}
 
 	@Override
-	public Set<ProblemInstance> getProblemInstancesRan(ParamConfiguration config) {
+	public Set<ProblemInstance> getProblemInstancesRan(ParameterConfiguration config) {
 		return rh.getProblemInstancesRan(config);
 	}
 
 	@Override
 	public Set<ProblemInstanceSeedPair> getProblemInstanceSeedPairsRan(
-			ParamConfiguration config) {
+			ParameterConfiguration config) {
 		return rh.getProblemInstanceSeedPairsRan(config);
 	}
 
 	@Override
-	public double getEmpiricalCost(ParamConfiguration config,
+	public double getEmpiricalCost(ParameterConfiguration config,
 			Set<ProblemInstance> instanceSet, double cutoffTime) {
 		return rh.getEmpiricalCost(config, instanceSet, cutoffTime);
 	}
 
 	@Override
-	public double getEmpiricalCost(ParamConfiguration config,
+	public double getEmpiricalCost(ParameterConfiguration config,
 			Set<ProblemInstance> instanceSet, double cutoffTime,
 			Map<ProblemInstance, Map<Long, Double>> hallucinatedValues) {
 		return rh.getEmpiricalCost(config, instanceSet, cutoffTime,
@@ -146,7 +146,7 @@ public class ThreadSafeTeeRunHistory implements ThreadSafeRunHistory {
 	}
 
 	@Override
-	public double getEmpiricalCost(ParamConfiguration config,
+	public double getEmpiricalCost(ParameterConfiguration config,
 			Set<ProblemInstance> instanceSet, double cutoffTime,
 			Map<ProblemInstance, Map<Long, Double>> hallucinatedValues,
 			double minimumResponseValue) {
@@ -166,7 +166,7 @@ public class ThreadSafeTeeRunHistory implements ThreadSafeRunHistory {
 	}
 
 	@Override
-	public Set<ParamConfiguration> getUniqueParamConfigurations() {
+	public Set<ParameterConfiguration> getUniqueParamConfigurations() {
 		return rh.getUniqueParamConfigurations();
 	}
 
@@ -176,7 +176,7 @@ public class ThreadSafeTeeRunHistory implements ThreadSafeRunHistory {
 	}
 
 	@Override
-	public List<ParamConfiguration> getAllParameterConfigurationsRan() {
+	public List<ParameterConfiguration> getAllParameterConfigurationsRan() {
 		return rh.getAllParameterConfigurationsRan();
 	}
 
@@ -198,12 +198,12 @@ public class ThreadSafeTeeRunHistory implements ThreadSafeRunHistory {
 	}
 	
 	@Override
-	public List<AlgorithmRun> getAlgorithmRunsExcludingRedundant(ParamConfiguration config) {
+	public List<AlgorithmRun> getAlgorithmRunsExcludingRedundant(ParameterConfiguration config) {
 		return rh.getAlgorithmRunsExcludingRedundant(config);
 	}
 
 	@Override
-	public int getTotalNumRunsOfConfigExcludingRedundant(ParamConfiguration config) {
+	public int getTotalNumRunsOfConfigExcludingRedundant(ParameterConfiguration config) {
 		return rh.getTotalNumRunsOfConfigExcludingRedundant(config);
 	}
 
@@ -213,28 +213,28 @@ public class ThreadSafeTeeRunHistory implements ThreadSafeRunHistory {
 	}
 	
 	@Override
-	public List<AlgorithmRun> getAlgorithmRunsIncludingRedundant(ParamConfiguration config) {
+	public List<AlgorithmRun> getAlgorithmRunsIncludingRedundant(ParameterConfiguration config) {
 		return rh.getAlgorithmRunsIncludingRedundant(config);
 	}
 
 	@Override
-	public int getTotalNumRunsOfConfigIncludingRedundant(ParamConfiguration config) {
+	public int getTotalNumRunsOfConfigIncludingRedundant(ParameterConfiguration config) {
 		return rh.getTotalNumRunsOfConfigIncludingRedundant(config);
 	}
 	
 	@Override
 	public Set<ProblemInstanceSeedPair> getEarlyCensoredProblemInstanceSeedPairs(
-			ParamConfiguration config) {
+			ParameterConfiguration config) {
 		return rh.getEarlyCensoredProblemInstanceSeedPairs(config);
 	}
 
 	@Override
-	public int getThetaIdx(ParamConfiguration configuration) {
+	public int getThetaIdx(ParameterConfiguration configuration) {
 		return rh.getThetaIdx(configuration);
 	}
 
 	@Override
-	public double getEmpiricalCost(ParamConfiguration config,
+	public double getEmpiricalCost(ParameterConfiguration config,
 			Set<ProblemInstance> instanceSet, double cutoffTime,
 			double minimumResponseValue) {
 		return rh.getEmpiricalCost(config, instanceSet, cutoffTime,
@@ -243,14 +243,14 @@ public class ThreadSafeTeeRunHistory implements ThreadSafeRunHistory {
 
 	@Override
 	public int getNumberOfUniqueProblemInstanceSeedPairsForConfiguration(
-			ParamConfiguration config) {
+			ParameterConfiguration config) {
 		return rh
 				.getNumberOfUniqueProblemInstanceSeedPairsForConfiguration(config);
 	}
 
 	@Override
 	public Map<ProblemInstance, LinkedHashMap<Long, Double>> getPerformanceForConfig(
-			ParamConfiguration configuration) {
+			ParameterConfiguration configuration) {
 		return rh.getPerformanceForConfig(configuration);
 	}
 
@@ -260,13 +260,13 @@ public class ThreadSafeTeeRunHistory implements ThreadSafeRunHistory {
 	}
 	
 	@Override
-	public double getEmpiricalCostLowerBound(ParamConfiguration config,
+	public double getEmpiricalCostLowerBound(ParameterConfiguration config,
 			Set<ProblemInstance> instanceSet, double cutoffTime) {
 		return rh.getEmpiricalCostLowerBound(config, instanceSet, cutoffTime);
 	}
 
 	@Override
-	public double getEmpiricalCostUpperBound(ParamConfiguration config,
+	public double getEmpiricalCostUpperBound(ParameterConfiguration config,
 			Set<ProblemInstance> instanceSet, double cutoffTime) {
 		return rh.getEmpiricalCostUpperBound(config, instanceSet, cutoffTime);
 	}

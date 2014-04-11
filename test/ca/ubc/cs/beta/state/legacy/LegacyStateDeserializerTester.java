@@ -27,13 +27,13 @@ import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.ExistingAlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
-import ca.ubc.cs.beta.aeatk.configspace.ParamFileHelper;
 import ca.ubc.cs.beta.aeatk.exceptions.*;
 import ca.ubc.cs.beta.aeatk.misc.debug.DebugUtil;
 import ca.ubc.cs.beta.aeatk.objectives.OverallObjective;
 import ca.ubc.cs.beta.aeatk.objectives.RunObjective;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParamFileHelper;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aeatk.random.SeedableRandomPool;
@@ -60,7 +60,7 @@ public class LegacyStateDeserializerTester {
 	 
 	private static final List<ProblemInstance> emptyInstanceList = Collections.emptyList();
 	
-	private static ParamConfigurationSpace configSpace = new ParamConfigurationSpace(TestHelper.getTestFile("paramFiles/simpleParam.txt"));
+	private static ParameterConfigurationSpace configSpace = new ParameterConfigurationSpace(TestHelper.getTestFile("paramFiles/simpleParam.txt"));
 	
 	private static AlgorithmExecutionConfiguration execConfig = new AlgorithmExecutionConfiguration("foo", "bar", configSpace, false, false, 300);
 	
@@ -81,7 +81,7 @@ public class LegacyStateDeserializerTester {
 	@Before
 	public void before()
 	{
-			configSpace = new ParamConfigurationSpace(TestHelper.getTestFile("paramFiles/simpleParam.txt"));
+			configSpace = new ParameterConfigurationSpace(TestHelper.getTestFile("paramFiles/simpleParam.txt"));
 		
 			execConfig = new AlgorithmExecutionConfiguration("foo", "bar", configSpace, false, false, 300);
 		
@@ -152,7 +152,7 @@ public class LegacyStateDeserializerTester {
 		{
 			
 		
-			ParamConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("a [1,1000] [1]i \n b { on, off } [off] \n a | b in { on } ");
+			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("a [1,1000] [1]i \n b { on, off } [off] \n a | b in { on } ");
 			AlgorithmExecutionConfiguration execConfig = new AlgorithmExecutionConfiguration("foo", "foo", configSpace, false, false, 0);
 			
 			File tempDir = createTempDirectory();
@@ -164,7 +164,7 @@ public class LegacyStateDeserializerTester {
 			
 			StateSerializer ss = sf.getStateSerializer("it", 1);
 			
-			ParamConfiguration config = configSpace.getRandomConfiguration(rand);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(rand);
 			
 			ProblemInstance pi = new ProblemInstance("test");
 			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(pi,1), 0, config,execConfig);
@@ -181,7 +181,7 @@ public class LegacyStateDeserializerTester {
 			
 			StateDeserializer sd = sf.getStateDeserializer("it",1, configSpace, Collections.singletonList(pi), execConfig,new NewRunHistory( OverallObjective.MEAN10,OverallObjective.MEAN, RunObjective.RUNTIME));
 			System.out.println(Arrays.toString(config.toValueArray()));
-			ParamConfiguration restoredConfig = sd.getRunHistory().getAlgorithmRunsExcludingRedundant().get(0).getRunConfig().getParameterConfiguration();
+			ParameterConfiguration restoredConfig = sd.getRunHistory().getAlgorithmRunsExcludingRedundant().get(0).getRunConfig().getParameterConfiguration();
 			System.out.println(Arrays.toString(restoredConfig.toValueArray()));
 			assertTrue("Testing for equality ",config.equals(restoredConfig));
 			assertTrue("Testing for Array equality", Arrays.equals(config.toValueArray(), restoredConfig.toValueArray()));
@@ -305,7 +305,7 @@ public class LegacyStateDeserializerTester {
 		  
 				
 		File paramFile = TestHelper.getTestFile("paramFiles/paramEchoParamFileWithKilled.txt");
-		ParamConfigurationSpace configSpace;
+		ParameterConfigurationSpace configSpace;
 		
 		
 		StringBuilder b = new StringBuilder();
@@ -319,7 +319,7 @@ public class LegacyStateDeserializerTester {
 		System.out.println("Seed was:" + seed);
 		Random r = new MersenneTwister(seed);
 		
-		configSpace = new ParamConfigurationSpace(paramFile);
+		configSpace = new ParameterConfigurationSpace(paramFile);
 		
 		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 5000);
 		List<ProblemInstance> pis = new ArrayList<ProblemInstance>();
@@ -408,7 +408,7 @@ public class LegacyStateDeserializerTester {
 		  
 				
 		File paramFile = TestHelper.getTestFile("paramFiles/paramEchoParamFile.txt");
-		ParamConfigurationSpace configSpace;
+		ParameterConfigurationSpace configSpace;
 		
 		
 		StringBuilder b = new StringBuilder();
@@ -423,7 +423,7 @@ public class LegacyStateDeserializerTester {
 		System.out.println("Seed was:" + seed);
 		Random r = new MersenneTwister(seed);
 		
-		configSpace = new ParamConfigurationSpace(paramFile);
+		configSpace = new ParameterConfigurationSpace(paramFile);
 		
 		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 5000);
 		List<ProblemInstance> pis = new ArrayList<ProblemInstance>();
@@ -496,7 +496,7 @@ public class LegacyStateDeserializerTester {
 		  
 				
 		File paramFile = TestHelper.getTestFile("paramFiles/paramEchoParamFile.txt");
-		ParamConfigurationSpace configSpace;
+		ParameterConfigurationSpace configSpace;
 		
 		
 		StringBuilder b = new StringBuilder();
@@ -510,7 +510,7 @@ public class LegacyStateDeserializerTester {
 		System.out.println("Seed was:" + seed);
 		Random r = new MersenneTwister(seed);
 		
-		configSpace = new ParamConfigurationSpace(paramFile);
+		configSpace = new ParameterConfigurationSpace(paramFile);
 		
 		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 5000);
 		List<ProblemInstance> pis = new ArrayList<ProblemInstance>();
@@ -621,17 +621,17 @@ public class LegacyStateDeserializerTester {
 	}
 	
 	
-	public List<AlgorithmRunConfiguration> getValidRunConfigurations(List<ProblemInstance> pis, Random r, InstanceSeedGenerator isg, ParamConfigurationSpace configSpace)
+	public List<AlgorithmRunConfiguration> getValidRunConfigurations(List<ProblemInstance> pis, Random r, InstanceSeedGenerator isg, ParameterConfigurationSpace configSpace)
 	{
 		return getValidRunConfigurations(pis, r, isg, configSpace, 200);
 	}
 	
-	public List<AlgorithmRunConfiguration> getValidRunConfigurations(List<ProblemInstance> pis, Random r, InstanceSeedGenerator isg, ParamConfigurationSpace configSpace, int number)
+	public List<AlgorithmRunConfiguration> getValidRunConfigurations(List<ProblemInstance> pis, Random r, InstanceSeedGenerator isg, ParameterConfigurationSpace configSpace, int number)
 	{
 		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(number+2);
 		for(int i=0; i < number; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("TIMEOUT") || config.get("solved").equals("CRASHED"))
 			{
 				//Only want good configurations
@@ -684,7 +684,7 @@ public class LegacyStateDeserializerTester {
 			
 
 			
-			ParamConfiguration config = run.getRunConfig().getParameterConfiguration();
+			ParameterConfiguration config = run.getRunConfig().getParameterConfiguration();
 			
 		
 			assertEquals(originalCensored[i],restoredCensored[i]);
@@ -744,7 +744,7 @@ public class LegacyStateDeserializerTester {
 		  
 				
 		File paramFile = TestHelper.getTestFile("paramFiles/paramEchoParamFile.txt");
-		ParamConfigurationSpace configSpace;
+		ParameterConfigurationSpace configSpace;
 		
 		
 		StringBuilder b = new StringBuilder();
@@ -758,7 +758,7 @@ public class LegacyStateDeserializerTester {
 		System.out.println("Seed was:" + seed);
 		Random r = new MersenneTwister(seed);
 		
-		configSpace = new ParamConfigurationSpace(paramFile);
+		configSpace = new ParameterConfigurationSpace(paramFile);
 		
 		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 5000);
 		List<ProblemInstance> pis = new ArrayList<ProblemInstance>();

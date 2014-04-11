@@ -13,8 +13,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aeatk.objectives.RunObjective;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aeatk.random.RandomUtil;
@@ -33,7 +33,7 @@ public class RunHistoryHelper{
 		 * @param rand			Random object used to break ties
 		 * @return random instance with the fewest runs for a configuration
 		 */
-		protected static List<ProblemInstance> getRandomInstanceWithFewestRunsFor(RunHistory rh,ParamConfiguration config, List<ProblemInstance> instanceList, Random rand, boolean deterministic, int N) {
+		protected static List<ProblemInstance> getRandomInstanceWithFewestRunsFor(RunHistory rh,ParameterConfiguration config, List<ProblemInstance> instanceList, Random rand, boolean deterministic, int N) {
 
 			Map<ProblemInstance, LinkedHashMap<Long, Double>> instanceSeedToPerformanceMap = rh.getPerformanceForConfig(config);
 			
@@ -111,7 +111,7 @@ public class RunHistoryHelper{
 		 * @param rand					 	Random object used to break ties
 		 * @return Random ProblemInstanceSeedPair object
 		 */
-		public static List<ProblemInstanceSeedPair> getRandomInstanceSeedWithFewestRunsFor( ThreadSafeRunHistory rh, InstanceSeedGenerator instanceSeedGenerator, ParamConfiguration config, List<ProblemInstance> instanceList, Random rand, boolean deterministic, int N)
+		public static List<ProblemInstanceSeedPair> getRandomInstanceSeedWithFewestRunsFor( ThreadSafeRunHistory rh, InstanceSeedGenerator instanceSeedGenerator, ParameterConfiguration config, List<ProblemInstance> instanceList, Random rand, boolean deterministic, int N)
 		{
 			try {
 				rh.readLock();
@@ -132,7 +132,7 @@ public class RunHistoryHelper{
 		 * @param rand			 Random object used to break ties
 		 * @return Random ProblemInstanceSeedPair object
 		 */
-		public static List<ProblemInstanceSeedPair> getRandomInstanceSeedWithFewestRunsFor( RunHistory rh, InstanceSeedGenerator instanceSeedGenerator, ParamConfiguration config, List<ProblemInstance> instanceList, Random rand, boolean deterministic, int N) {
+		public static List<ProblemInstanceSeedPair> getRandomInstanceSeedWithFewestRunsFor( RunHistory rh, InstanceSeedGenerator instanceSeedGenerator, ParameterConfiguration config, List<ProblemInstance> instanceList, Random rand, boolean deterministic, int N) {
 			List<ProblemInstance> pis = getRandomInstanceWithFewestRunsFor(rh, config, instanceList, rand, deterministic, N);
 			
 			List<ProblemInstanceSeedPair> pisps = new ArrayList<ProblemInstanceSeedPair>(N);
@@ -213,7 +213,7 @@ public class RunHistoryHelper{
 	 * @param rand					 	Random object used to break ties
 	 * @return Random ProblemInstanceSeedPair object
 	 */
-	public static ProblemInstanceSeedPair getRandomInstanceSeedWithFewestRunsFor( ThreadSafeRunHistory rh, InstanceSeedGenerator instanceSeedGenerator, ParamConfiguration config, List<ProblemInstance> instanceList, Random rand, boolean deterministic)
+	public static ProblemInstanceSeedPair getRandomInstanceSeedWithFewestRunsFor( ThreadSafeRunHistory rh, InstanceSeedGenerator instanceSeedGenerator, ParameterConfiguration config, List<ProblemInstance> instanceList, Random rand, boolean deterministic)
 	{
 	
 			return getRandomInstanceSeedWithFewestRunsFor(rh, instanceSeedGenerator, config, instanceList, rand, deterministic,1).get(0);
@@ -230,7 +230,7 @@ public class RunHistoryHelper{
 	 * @param rand			 Random object used to break ties
 	 * @return Random ProblemInstanceSeedPair object
 	 */
-	public static ProblemInstanceSeedPair getRandomInstanceSeedWithFewestRunsFor( RunHistory rh, InstanceSeedGenerator instanceSeedGenerator, ParamConfiguration config, List<ProblemInstance> instanceList, Random rand, boolean deterministic) {
+	public static ProblemInstanceSeedPair getRandomInstanceSeedWithFewestRunsFor( RunHistory rh, InstanceSeedGenerator instanceSeedGenerator, ParameterConfiguration config, List<ProblemInstance> instanceList, Random rand, boolean deterministic) {
 		return getRandomInstanceSeedWithFewestRunsFor(rh, instanceSeedGenerator, config, instanceList, rand, deterministic,1).get(0);
 	}
 

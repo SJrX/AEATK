@@ -1,6 +1,6 @@
 package ca.ubc.cs.beta.aeatk.trajectoryfile;
 
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
 
 /**
  * Value object corresponding roughly to the significant rows in a trajectory file entry;
@@ -9,7 +9,7 @@ import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
  */
 public class TrajectoryFileEntry implements Comparable<TrajectoryFileEntry>
 {
-	private final ParamConfiguration config;
+	private final ParameterConfiguration config;
 	private final double empiricalPerformance;
 	private final double acOverhead;
 	private final double tunerTime;
@@ -23,7 +23,7 @@ public class TrajectoryFileEntry implements Comparable<TrajectoryFileEntry>
 	 * @param empiricalPerformance  	empirical performance of incumbent
 	 * @param acOverhead 				overhead time of automatic configurator
 	 */
-	public TrajectoryFileEntry(ParamConfiguration config, double tunerTime, double walltime , double empiricalPerformance, double acOverhead)
+	public TrajectoryFileEntry(ParameterConfiguration config, double tunerTime, double walltime , double empiricalPerformance, double acOverhead)
 	{
 		this.config = config;
 		this.empiricalPerformance = empiricalPerformance;
@@ -33,7 +33,7 @@ public class TrajectoryFileEntry implements Comparable<TrajectoryFileEntry>
 	}
 	
 
-	public ParamConfiguration getConfiguration()
+	public ParameterConfiguration getConfiguration()
 	{
 		return config;
 	}

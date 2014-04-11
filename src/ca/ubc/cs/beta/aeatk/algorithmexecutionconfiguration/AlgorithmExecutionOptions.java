@@ -8,7 +8,6 @@ import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpaceOptions;
 import ca.ubc.cs.beta.aeatk.misc.jcommander.converter.BinaryDigitBooleanConverter;
 import ca.ubc.cs.beta.aeatk.misc.jcommander.converter.StringToDoubleConverterWithMax;
 import ca.ubc.cs.beta.aeatk.misc.jcommander.validator.ZeroInfinityOpenInterval;
@@ -16,6 +15,7 @@ import ca.ubc.cs.beta.aeatk.misc.options.OptionLevel;
 import ca.ubc.cs.beta.aeatk.misc.options.Semantics;
 import ca.ubc.cs.beta.aeatk.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aeatk.options.AbstractOptions;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParamConfigurationSpaceOptions;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorOptions;
 
 import com.beust.jcommander.Parameter;

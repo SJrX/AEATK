@@ -1,11 +1,11 @@
 package ca.ubc.cs.beta.aeatk.model.data;
 
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace;
 
 public class MaskInactiveConditionalParametersWithDefaults extends	AbstractSanitizedModelData
 {
 	private final double[][] paramValues;
-	public MaskInactiveConditionalParametersWithDefaults(SanitizedModelData mds, ParamConfigurationSpace configSpace)
+	public MaskInactiveConditionalParametersWithDefaults(SanitizedModelData mds, ParameterConfigurationSpace configSpace)
 	{
 		super(mds);
 		double[] defaultValues = configSpace.getDefaultConfiguration().toValueArray();

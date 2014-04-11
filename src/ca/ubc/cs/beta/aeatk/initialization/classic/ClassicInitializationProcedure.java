@@ -9,10 +9,10 @@ import org.slf4j.LoggerFactory;
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aeatk.exceptions.DuplicateRunException;
 import ca.ubc.cs.beta.aeatk.exceptions.OutOfTimeException;
 import ca.ubc.cs.beta.aeatk.initialization.InitializationProcedure;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aeatk.random.SeedableRandomPool;
@@ -25,14 +25,14 @@ import ca.ubc.cs.beta.aeatk.termination.TerminationCondition;
 public class ClassicInitializationProcedure implements InitializationProcedure {
 
 	private final ThreadSafeRunHistory runHistory;
-	private final ParamConfiguration initialIncumbent;
+	private final ParameterConfiguration initialIncumbent;
 	private final TargetAlgorithmEvaluator tae;
 	private final ClassicInitializationProcedureOptions opts;
 	private final Logger log = LoggerFactory.getLogger(ClassicInitializationProcedure.class);
 	private final int maxIncumbentRuns;
 	private final List<ProblemInstance> instances;
 	private final InstanceSeedGenerator insc;
-	private final ParamConfiguration incumbent;
+	private final ParameterConfiguration incumbent;
 	private final TerminationCondition termCond;
 	private final double cutoffTime;
 	private final SeedableRandomPool pool;
@@ -40,7 +40,7 @@ public class ClassicInitializationProcedure implements InitializationProcedure {
 	private final AlgorithmExecutionConfiguration algorithmExecutionConfig;
 	
 
-	public ClassicInitializationProcedure(ThreadSafeRunHistory runHistory, ParamConfiguration initialIncumbent, TargetAlgorithmEvaluator tae, ClassicInitializationProcedureOptions opts, InstanceSeedGenerator insc, List<ProblemInstance> instances,  int maxIncumbentRuns , TerminationCondition termCond, double cutoffTime, SeedableRandomPool pool, boolean deterministicInstanceOrdering, AlgorithmExecutionConfiguration execConfig)
+	public ClassicInitializationProcedure(ThreadSafeRunHistory runHistory, ParameterConfiguration initialIncumbent, TargetAlgorithmEvaluator tae, ClassicInitializationProcedureOptions opts, InstanceSeedGenerator insc, List<ProblemInstance> instances,  int maxIncumbentRuns , TerminationCondition termCond, double cutoffTime, SeedableRandomPool pool, boolean deterministicInstanceOrdering, AlgorithmExecutionConfiguration execConfig)
 	{
 		this.runHistory =runHistory;
 		this.initialIncumbent = initialIncumbent;
@@ -62,7 +62,7 @@ public class ClassicInitializationProcedure implements InitializationProcedure {
 	@Override
 	public void run() {
 		log.debug("Using Classic Initialization");
-		ParamConfiguration incumbent = this.initialIncumbent;
+		ParameterConfiguration incumbent = this.initialIncumbent;
 		log.trace("Configuration Set as Incumbent: {}", incumbent);
 		
 		//iteration = 0;
@@ -103,7 +103,7 @@ public class ClassicInitializationProcedure implements InitializationProcedure {
 	}
 
 	@Override
-	public ParamConfiguration getIncumbent() {
+	public ParameterConfiguration getIncumbent() {
 		return incumbent;
 	}
 	

@@ -26,11 +26,11 @@ import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.ExistingAlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration.StringFormat;
 import ca.ubc.cs.beta.aeatk.exceptions.DuplicateRunException;
 import ca.ubc.cs.beta.aeatk.exceptions.StateSerializationException;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration.ParameterStringFormat;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aeatk.runhistory.RunHistory;
@@ -66,7 +66,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 	/**
 	 * Incumbent that we restored
 	 */
-	private final ParamConfiguration incumbent;
+	private final ParameterConfiguration incumbent;
 	
 	/**
 	 * When we get a duplicate run exception we start generating seeds from this number and keep incrementing
@@ -89,7 +89,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 	
 	public final double cutoffTime;
 	
-	private ParamConfiguration potentialIncumbent;
+	private ParameterConfiguration potentialIncumbent;
 	private final  Map<String, Serializable> objectStateMap; 
 	
 	
@@ -110,7 +110,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 	 * @param emptyRunHistory				A RunHistory object that has no runs in it
 	 * @throws StateSerializationException  If we cannot restore the state
 	 */
-	LegacyStateDeserializer(String restoreFromPath, String id, int iteration, ParamConfigurationSpace configSpace, List<ProblemInstance> instances, AlgorithmExecutionConfiguration execConfig, RunHistory emptyRunHistory) 
+	LegacyStateDeserializer(String restoreFromPath, String id, int iteration, ParameterConfigurationSpace configSpace, List<ProblemInstance> instances, AlgorithmExecutionConfiguration execConfig, RunHistory emptyRunHistory) 
 	{
 			if (configSpace == null) throw new IllegalArgumentException("Config Space cannot be null");
 			if(emptyRunHistory == null) throw new IllegalArgumentException("Run History cannot be null");
@@ -196,7 +196,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 					
 					if(paramString != null)
 					{
-						incumbent = configSpace.getConfigurationFromString(paramString, StringFormat.STATEFILE_SYNTAX);
+						incumbent = configSpace.getParameterConfigurationFromString(paramString, ParameterStringFormat.STATEFILE_SYNTAX);
 					} else
 					{
 						//throw new IllegalStateException("Not sure why a java object file has no incumbent, save state file corrupt. To continue try renaming the object file for this iteration");
@@ -234,7 +234,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 			 */
 			BufferedReader reader = null;
 			
-			Map<Integer,ParamConfiguration> configMap = new HashMap<Integer, ParamConfiguration>();
+			Map<Integer,ParameterConfiguration> configMap = new HashMap<Integer, ParameterConfiguration>();
 			
 			try {
 				
@@ -255,7 +255,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 							
 							Integer configId = Integer.valueOf(lineResults[0]);
 
-							configMap.put(configId,configSpace.getConfigurationFromString(lineResults[1], StringFormat.ARRAY_STRING_SYNTAX));
+							configMap.put(configId,configSpace.getParameterConfigurationFromString(lineResults[1], ParameterStringFormat.ARRAY_STRING_SYNTAX));
 							
 							
 						}
@@ -276,7 +276,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 							if(lineResults.length != 2) throw new IllegalArgumentException("Configuration Param Strings File is corrupted, no colon detected on line: \"" + line + "\"");
 							
 							Integer configId = Integer.valueOf(lineResults[0]);
-							configMap.put(configId,configSpace.getConfigurationFromString(lineResults[1], StringFormat.STATEFILE_SYNTAX));
+							configMap.put(configId,configSpace.getParameterConfigurationFromString(lineResults[1], ParameterStringFormat.STATEFILE_SYNTAX));
 							
 							
 						} 
@@ -515,10 +515,10 @@ public class LegacyStateDeserializer implements StateDeserializer {
 					log.debug("No incumbent found in state files, doing our best to select the incumbent, may not be identical but should be indistinguishable");
 					
 					RunHistory runHistory = getRunHistory();	
-					Set<ParamConfiguration> configs = runHistory.getUniqueParamConfigurations();
-					Set<ParamConfiguration> possibleIncumbents = new HashSet<ParamConfiguration>();
+					Set<ParameterConfiguration> configs = runHistory.getUniqueParamConfigurations();
+					Set<ParameterConfiguration> possibleIncumbents = new HashSet<ParameterConfiguration>();
 					int maxPISPS = 0;
-					for(ParamConfiguration config : configs)
+					for(ParameterConfiguration config : configs)
 					{
 						int configPISPCount = runHistory.getNumberOfUniqueProblemInstanceSeedPairsForConfiguration(config);
 						if(maxPISPS < configPISPCount )
@@ -534,9 +534,9 @@ public class LegacyStateDeserializer implements StateDeserializer {
 					
 					double minEmpiricalCost = Double.POSITIVE_INFINITY;
 					Set<ProblemInstance> instancesRan = runHistory.getUniqueInstancesRan();
-					ParamConfiguration potentialIncumbent = null;
+					ParameterConfiguration potentialIncumbent = null;
 					
-					for(ParamConfiguration config : possibleIncumbents)
+					for(ParameterConfiguration config : possibleIncumbents)
 					{
 						double thisEmpiricalCost = runHistory.getEmpiricalCost(config, instancesRan, cutoffTime);
 						
@@ -822,7 +822,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 
 
 	@Override
-	public ParamConfiguration getIncumbent() {
+	public ParameterConfiguration getIncumbent() {
 		
 		if(incumbent == null && incompleteSavedState)
 		{

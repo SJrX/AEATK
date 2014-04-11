@@ -31,11 +31,11 @@ import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionCo
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
-import ca.ubc.cs.beta.aeatk.configspace.ParamFileHelper;
 import ca.ubc.cs.beta.aeatk.misc.debug.DebugUtil;
 import ca.ubc.cs.beta.aeatk.misc.watch.AutoStartStopWatch;
 import ca.ubc.cs.beta.aeatk.misc.watch.StopWatch;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParamFileHelper;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aeatk.random.SeedableRandomPool;
@@ -55,7 +55,7 @@ private static TargetAlgorithmEvaluator tae;
 	
 	private static AlgorithmExecutionConfiguration execConfig;
 	
-	private static ParamConfigurationSpace configSpace;
+	private static ParameterConfigurationSpace configSpace;
 	
 	private static final int TARGET_RUNS_IN_LOOPS = 10;
 	@BeforeClass
@@ -98,7 +98,7 @@ private static TargetAlgorithmEvaluator tae;
 		b.append(" ");
 		b.append(ParamEchoExecutor.class.getCanonicalName());
 		File paramFile = TestHelper.getTestFile("paramFiles/paramEchoParamFile.txt");
-		configSpace = new ParamConfigurationSpace(paramFile);
+		configSpace = new ParameterConfigurationSpace(paramFile);
 		
 		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 		
@@ -154,7 +154,7 @@ private static TargetAlgorithmEvaluator tae;
 		b.append(" ");
 		b.append(TrueSleepyParamEchoExecutor.class.getCanonicalName());
 		
-		ParamConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("a [0,100] [0]i\nb [0,9][0]i \n");
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("a [0,100] [0]i\nb [0,9][0]i \n");
 		
 		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false,3000);
 		
@@ -218,7 +218,7 @@ private static TargetAlgorithmEvaluator tae;
 			final Set<AlgorithmRunConfiguration> rcs = new LinkedHashSet<AlgorithmRunConfiguration>();
 			for(int j=0; j < numberOfValuesToSubmit; j++)
 			{
-				rcs.add(new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(pis.get(r.nextInt(4)),r.nextInt(2)), configSpace.getRandomConfiguration(r),execConfig));
+				rcs.add(new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(pis.get(r.nextInt(4)),r.nextInt(2)), configSpace.getRandomParameterConfiguration(r),execConfig));
 			}
 			
 			final List<AlgorithmRunConfiguration> submitList = new ArrayList<AlgorithmRunConfiguration>(rcs);
@@ -318,7 +318,7 @@ private static TargetAlgorithmEvaluator tae;
 		b.append(" ");
 		b.append(TrueSleepyParamEchoExecutor.class.getCanonicalName());
 		
-		ParamConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("a [0,100] [0]i\nb [0,9][0]i \n");
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("a [0,100] [0]i\nb [0,9][0]i \n");
 		
 		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false,3000);
 		
@@ -384,7 +384,7 @@ private static TargetAlgorithmEvaluator tae;
 			final Set<AlgorithmRunConfiguration> rcs = new LinkedHashSet<AlgorithmRunConfiguration>();
 			for(int j=0; j < numberOfValuesToSubmit; j++)
 			{
-				rcs.add(new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(pis.get(r.nextInt(4)),r.nextInt(2)), configSpace.getRandomConfiguration(r),execConfig));
+				rcs.add(new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(pis.get(r.nextInt(4)),r.nextInt(2)), configSpace.getRandomParameterConfiguration(r),execConfig));
 			}
 			
 			final List<AlgorithmRunConfiguration> submitList = new ArrayList<AlgorithmRunConfiguration>(rcs);
@@ -470,7 +470,7 @@ private static TargetAlgorithmEvaluator tae;
 		b.append(" ");
 		b.append(TrueSleepyParamEchoExecutor.class.getCanonicalName());
 		
-		ParamConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("a [0,10] [0]i\n");
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("a [0,10] [0]i\n");
 		
 		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false,3000);
 		
@@ -529,7 +529,7 @@ private static TargetAlgorithmEvaluator tae;
 		final AtomicInteger submits = new AtomicInteger(0);
 		final AtomicInteger passes = new AtomicInteger(0);
 		
-		final AlgorithmRunConfiguration firstRunConfig = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(pis.get(r.nextInt(1)),0), configSpace.getRandomConfiguration(r),execConfig);
+		final AlgorithmRunConfiguration firstRunConfig = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(pis.get(r.nextInt(1)),0), configSpace.getRandomParameterConfiguration(r),execConfig);
 		for(int i=0; i < 4; i++)
 		{
 			int numberOfValuesToSubmit = 5;
@@ -542,7 +542,7 @@ private static TargetAlgorithmEvaluator tae;
 					rcs.add(firstRunConfig);
 				} else
 				{
-					rcs.add(new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(pis.get(r.nextInt(1)),0), configSpace.getRandomConfiguration(r),execConfig));
+					rcs.add(new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(pis.get(r.nextInt(1)),0), configSpace.getRandomParameterConfiguration(r),execConfig));
 				}
 			}
 			
@@ -614,7 +614,7 @@ private static TargetAlgorithmEvaluator tae;
 		b.append(" ");
 		b.append(TrueSleepyParamEchoExecutor.class.getCanonicalName());
 		
-		ParamConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("a [0,10] [0]i\n");
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("a [0,10] [0]i\n");
 		
 		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false,3000);
 		
@@ -673,7 +673,7 @@ private static TargetAlgorithmEvaluator tae;
 		final AtomicInteger submits = new AtomicInteger(0);
 		final AtomicInteger passes = new AtomicInteger(0);
 		
-		final AlgorithmRunConfiguration firstRunConfig = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(pis.get(r.nextInt(1)),0), configSpace.getRandomConfiguration(r),execConfig);
+		final AlgorithmRunConfiguration firstRunConfig = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(pis.get(r.nextInt(1)),0), configSpace.getRandomParameterConfiguration(r),execConfig);
 		for(int i=0; i < 2; i++)
 		{
 			int numberOfValuesToSubmit = 5;
@@ -686,7 +686,7 @@ private static TargetAlgorithmEvaluator tae;
 					rcs.add(firstRunConfig);
 				} else
 				{
-					rcs.add(new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(pis.get(r.nextInt(1)),0), configSpace.getRandomConfiguration(r),execConfig));
+					rcs.add(new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(pis.get(r.nextInt(1)),0), configSpace.getRandomParameterConfiguration(r),execConfig));
 				}
 			}
 			
@@ -779,7 +779,7 @@ private static TargetAlgorithmEvaluator tae;
 		b.append(" ");
 		b.append(TrueSleepyParamEchoExecutor.class.getCanonicalName());
 		
-		ParamConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("a [0,10] [0]i\n b [0,10] [0]i\n");
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("a [0,10] [0]i\n b [0,10] [0]i\n");
 		
 		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false,3000);
 		
@@ -837,7 +837,7 @@ private static TargetAlgorithmEvaluator tae;
 		final AtomicInteger submits = new AtomicInteger(0);
 		final AtomicInteger passes = new AtomicInteger(0);
 		
-		final AlgorithmRunConfiguration firstRunConfig = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(pis.get(r.nextInt(1)),0), configSpace.getRandomConfiguration(r),execConfig);
+		final AlgorithmRunConfiguration firstRunConfig = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(pis.get(r.nextInt(1)),0), configSpace.getRandomParameterConfiguration(r),execConfig);
 		for(int i=0; i < 8000; i++)
 		{
 			int numberOfValuesToSubmit = (int) dist.inverseCumulativeProbability(r.nextDouble());
@@ -850,7 +850,7 @@ private static TargetAlgorithmEvaluator tae;
 					rcs.add(firstRunConfig);
 				} else
 				{
-					rcs.add(new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(pis.get(r.nextInt(4)),r.nextInt(2)), configSpace.getRandomConfiguration(r),execConfig));
+					rcs.add(new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(pis.get(r.nextInt(4)),r.nextInt(2)), configSpace.getRandomParameterConfiguration(r),execConfig));
 				}
 			}
 			

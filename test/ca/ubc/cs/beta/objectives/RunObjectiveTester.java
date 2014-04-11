@@ -16,10 +16,10 @@ import ca.ubc.cs.beta.TestHelper;
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.misc.debug.DebugUtil;
 import ca.ubc.cs.beta.aeatk.objectives.RunObjective;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aeatk.random.SeedableRandomPool;
@@ -36,7 +36,7 @@ private static TargetAlgorithmEvaluator tae;
 	
 	private static AlgorithmExecutionConfiguration execConfig;
 	
-	private static ParamConfigurationSpace configSpace;
+	private static ParameterConfigurationSpace configSpace;
 	
 	private static double kappaMax = 500;
 	
@@ -51,7 +51,7 @@ private static TargetAlgorithmEvaluator tae;
 	public static void beforeClass()
 	{
 		File paramFile = TestHelper.getTestFile("paramFiles/paramEchoParamFile.txt");
-		configSpace = new ParamConfigurationSpace(paramFile);
+		configSpace = new ParameterConfigurationSpace(paramFile);
 		
 		StringBuilder b = new StringBuilder();
 		b.append("java -cp ");
@@ -85,7 +85,7 @@ private static TargetAlgorithmEvaluator tae;
 		for(int i=0; i < 10; i++)
 		{
 			double runtime = Math.max(0,(double) Math.random() * kappaMax - 1.0);
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			config.put("solved","TIMEOUT");
 			config.put("runtime", String.valueOf(runtime));
 			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), kappaMax, config, execConfig);
@@ -115,7 +115,7 @@ private static TargetAlgorithmEvaluator tae;
 		for(int i=0; i < 10; i++)
 		{
 			double runtime = Math.max(0,(double) Math.random() * kappaMax - 1.0);
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			config.put("solved","TIMEOUT");
 			config.put("runtime", String.valueOf(runtime));
 			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), runtime, config,  execConfig);
@@ -147,7 +147,7 @@ private static TargetAlgorithmEvaluator tae;
 		for(int i=0; i < 10; i++)
 		{
 			double runtime = Math.max(0,(double) Math.random() * kappaMax - 1.0);
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			config.put("solved","CRASHED");
 			config.put("runtime", String.valueOf(runtime));
 			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), kappaMax, config, execConfig);
@@ -178,7 +178,7 @@ private static TargetAlgorithmEvaluator tae;
 		for(int i=0; i < 10; i++)
 		{
 			double runtime = Math.max(0,(double) Math.random() * kappaMax - 1.0);
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			config.put("solved","SAT");
 			config.put("runtime", String.valueOf(runtime));
 			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), kappaMax,config, execConfig);
@@ -213,7 +213,7 @@ private static TargetAlgorithmEvaluator tae;
 		for(int i=0; i < 10; i++)
 		{
 			
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			config.put("solved","TIMEOUT");
 			config.put("runtime", "0.1");
 			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))),capTimeRequest, config, execConfig);
@@ -252,9 +252,9 @@ private static TargetAlgorithmEvaluator tae;
 		b.append(ParamEchoExecutor.class.getCanonicalName());
 		
 		
-		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), ParamConfigurationSpace.getSingletonConfigurationSpace(), false, false, kappaMax);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), ParameterConfigurationSpace.getSingletonConfigurationSpace(), false, false, kappaMax);
 		
-		AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("pi"), 1), 20, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(), execConfig);
+		AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("pi"), 1), 20, ParameterConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(), execConfig);
 		
 		
 		List<AlgorithmRun> runs = tae.evaluateRun(Collections.singletonList(rc), new TargetAlgorithmEvaluatorRunObserver()

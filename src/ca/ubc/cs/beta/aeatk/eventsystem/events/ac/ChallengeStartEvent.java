@@ -1,16 +1,16 @@
 package ca.ubc.cs.beta.aeatk.eventsystem.events.ac;
 
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aeatk.eventsystem.events.AbstractTimeEvent;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
 import ca.ubc.cs.beta.aeatk.termination.TerminationCondition;
 
 public class ChallengeStartEvent extends AbstractTimeEvent{
 
 	
-	private final ParamConfiguration challenger;
+	private final ParameterConfiguration challenger;
 	
 
-	public ChallengeStartEvent(TerminationCondition cond, ParamConfiguration challenger) 
+	public ChallengeStartEvent(TerminationCondition cond, ParameterConfiguration challenger) 
 	{
 		super(cond);
 		
@@ -19,7 +19,7 @@ public class ChallengeStartEvent extends AbstractTimeEvent{
 	}
 
 
-	public ParamConfiguration getChallenger()
+	public ParameterConfiguration getChallenger()
 	{
 		return challenger;
 	}

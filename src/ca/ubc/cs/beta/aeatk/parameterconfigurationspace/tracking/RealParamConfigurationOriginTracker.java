@@ -1,4 +1,4 @@
-package ca.ubc.cs.beta.aeatk.configspace.tracking;
+package ca.ubc.cs.beta.aeatk.parameterconfigurationspace.tracking;
 
 import java.util.Collections;
 import java.util.Iterator;
@@ -8,7 +8,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
 import net.jcip.annotations.ThreadSafe;
 
 /**
@@ -23,14 +23,14 @@ import net.jcip.annotations.ThreadSafe;
 public class RealParamConfigurationOriginTracker implements ParamConfigurationOriginTracker {
 
 	
-	private final ConcurrentHashMap<ParamConfiguration, ConcurrentHashMap<String, String>> originTracker = new ConcurrentHashMap<ParamConfiguration, ConcurrentHashMap<String,String>>();
-	private final ConcurrentHashMap<ParamConfiguration, Long> firstGenerated = new ConcurrentHashMap<ParamConfiguration, Long>();
-	private final ConcurrentHashMap<ParamConfiguration, AtomicInteger> generationCount = new ConcurrentHashMap<ParamConfiguration, AtomicInteger>();
+	private final ConcurrentHashMap<ParameterConfiguration, ConcurrentHashMap<String, String>> originTracker = new ConcurrentHashMap<ParameterConfiguration, ConcurrentHashMap<String,String>>();
+	private final ConcurrentHashMap<ParameterConfiguration, Long> firstGenerated = new ConcurrentHashMap<ParameterConfiguration, Long>();
+	private final ConcurrentHashMap<ParameterConfiguration, AtomicInteger> generationCount = new ConcurrentHashMap<ParameterConfiguration, AtomicInteger>();
 	
 	/**
 	 * We use this so we can get an iterator that gives us insertion order
 	 */
-	private final LinkedBlockingQueue<ParamConfiguration> insertionOrderTracker = new LinkedBlockingQueue<ParamConfiguration>();
+	private final LinkedBlockingQueue<ParameterConfiguration> insertionOrderTracker = new LinkedBlockingQueue<ParameterConfiguration>();
 	
 	
 	private final Set<String> originNames = Collections.newSetFromMap(new ConcurrentHashMap<String, Boolean>());
@@ -39,12 +39,12 @@ public class RealParamConfigurationOriginTracker implements ParamConfigurationOr
 	 * Basically used as a set to store configs that already exist, this is used to prevent us from hitting the same object twice
 	 * in the insertion order. We don't have a putIfAbsent operation if we wrap as a set
 	 */
-	private final ConcurrentHashMap<ParamConfiguration, Object> originConfigs =new ConcurrentHashMap<ParamConfiguration, Object>();
+	private final ConcurrentHashMap<ParameterConfiguration, Object> originConfigs =new ConcurrentHashMap<ParameterConfiguration, Object>();
 	
 	private final Object dummyObject = new Object();
 	
 	@Override
-	public void addConfiguration(ParamConfiguration config, String origin, String... addlData)
+	public void addConfiguration(ParameterConfiguration config, String origin, String... addlData)
 	{
 		
 			originTracker.putIfAbsent(config, new ConcurrentHashMap<String, String>());
@@ -73,13 +73,13 @@ public class RealParamConfigurationOriginTracker implements ParamConfigurationOr
 	}
 
 	@Override
-	public Map<String, String> getOrigins(ParamConfiguration config)
+	public Map<String, String> getOrigins(ParameterConfiguration config)
 	{
 		return originTracker.get(config);
 	}
 	
 	@Override
-	public Long getCreationTime(ParamConfiguration config)
+	public Long getCreationTime(ParameterConfiguration config)
 	{
 		return firstGenerated.get(config);
 	}
@@ -91,7 +91,7 @@ public class RealParamConfigurationOriginTracker implements ParamConfigurationOr
 	}
 	
 	@Override
-	public Iterator<ParamConfiguration> iterator()
+	public Iterator<ParameterConfiguration> iterator()
 	{
 		return insertionOrderTracker.iterator();
 	}
@@ -104,7 +104,7 @@ public class RealParamConfigurationOriginTracker implements ParamConfigurationOr
 	}
 	
 	@Override
-	public int getGenerationCount(ParamConfiguration config)
+	public int getGenerationCount(ParameterConfiguration config)
 	{
 		AtomicInteger genCount = generationCount.get(config);
 		if(genCount == null ) return 0;

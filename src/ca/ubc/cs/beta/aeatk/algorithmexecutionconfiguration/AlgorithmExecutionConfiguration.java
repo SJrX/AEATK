@@ -11,8 +11,8 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.json.serializers.AlgorithmExecutionConfigJson;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace;
 /**
  * Immutable Object contains all the information related to executing a target algorithm run
  * @author seramage
@@ -28,7 +28,7 @@ public class AlgorithmExecutionConfiguration implements Serializable {
 	
 	private final String algorithmExecutable;
 	private final String algorithmExecutionDirectory;
-	private final ParamConfigurationSpace paramFile;
+	private final ParameterConfigurationSpace paramFile;
 		private final boolean deterministicAlgorithm;
 
 	private final double cutoffTime; 
@@ -38,13 +38,13 @@ public class AlgorithmExecutionConfiguration implements Serializable {
 	private final Map<String, String> taeContext;
 	
 	public AlgorithmExecutionConfiguration(String algorithmExecutable, String algorithmExecutionDirectory,
-			ParamConfigurationSpace paramFile, boolean executeOnCluster, boolean deterministicAlgorithm, double cutoffTime) {
+			ParameterConfigurationSpace paramFile, boolean executeOnCluster, boolean deterministicAlgorithm, double cutoffTime) {
 		this(algorithmExecutable, algorithmExecutionDirectory, paramFile, deterministicAlgorithm, cutoffTime, Collections.EMPTY_MAP);
 		
 	}
 	
 
-	public AlgorithmExecutionConfiguration(String algorithmExecutable, String algorithmExecutionDirectory,	ParamConfigurationSpace paramFile, boolean deterministicAlgorithm, double cutoffTime, Map<String, String> taeContext) {
+	public AlgorithmExecutionConfiguration(String algorithmExecutable, String algorithmExecutionDirectory,	ParameterConfigurationSpace paramFile, boolean deterministicAlgorithm, double cutoffTime, Map<String, String> taeContext) {
 		this.algorithmExecutable = algorithmExecutable;
 		this.algorithmExecutionDirectory = algorithmExecutionDirectory;
 		this.paramFile = paramFile;
@@ -72,7 +72,7 @@ public class AlgorithmExecutionConfiguration implements Serializable {
 		return algorithmExecutionDirectory;
 	}
 
-	public ParamConfigurationSpace getParameterConfigurationSpace() {
+	public ParameterConfigurationSpace getParameterConfigurationSpace() {
 		return paramFile;
 	}
 

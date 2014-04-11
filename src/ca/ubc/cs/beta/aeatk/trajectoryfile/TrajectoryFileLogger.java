@@ -10,13 +10,13 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration.StringFormat;
 import ca.ubc.cs.beta.aeatk.eventsystem.EventHandler;
 import ca.ubc.cs.beta.aeatk.eventsystem.events.AutomaticConfiguratorEvent;
 import ca.ubc.cs.beta.aeatk.eventsystem.events.ac.AutomaticConfigurationEnd;
 import ca.ubc.cs.beta.aeatk.eventsystem.events.ac.IncumbentPerformanceChangeEvent;
 import ca.ubc.cs.beta.aeatk.misc.cputime.CPUTime;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration.ParameterStringFormat;
 import ca.ubc.cs.beta.aeatk.runhistory.RunHistory;
 import ca.ubc.cs.beta.aeatk.termination.TerminationCondition;
 
@@ -24,7 +24,7 @@ public class TrajectoryFileLogger implements EventHandler<AutomaticConfiguratorE
 
 	
 	private double lastEmpericalPerformance = 0;
-	private ParamConfiguration lastIncumbent;
+	private ParameterConfiguration lastIncumbent;
 	
 	private final RunHistory runHistory;
 	private final TerminationCondition terminationCondition;
@@ -40,7 +40,7 @@ public class TrajectoryFileLogger implements EventHandler<AutomaticConfiguratorE
 	
 	boolean closed = false;
 	
-	public TrajectoryFileLogger(RunHistory runHistory, TerminationCondition terminationCondition, String fileNamePrefix, ParamConfiguration initialIncumbent, CPUTime cpuTime)
+	public TrajectoryFileLogger(RunHistory runHistory, TerminationCondition terminationCondition, String fileNamePrefix, ParameterConfiguration initialIncumbent, CPUTime cpuTime)
 	{
 		this.fileNamePrefix = fileNamePrefix;
 		
@@ -116,7 +116,7 @@ public class TrajectoryFileLogger implements EventHandler<AutomaticConfiguratorE
 	 * @param incumbent				incumbent 
 	 * @param acTime				automatic configurator time (tunerTime - Sum of runs)
 	 */
-	private synchronized void writeIncumbent(double tunerTime, double empiricalPerformance, double wallclockTime, ParamConfiguration incumbent, double acTime)
+	private synchronized void writeIncumbent(double tunerTime, double empiricalPerformance, double wallclockTime, ParameterConfiguration incumbent, double acTime)
 	{
 	
 		
@@ -143,7 +143,7 @@ public class TrajectoryFileLogger implements EventHandler<AutomaticConfiguratorE
 		//-1 should be the variance but is allegedly the sqrt in compareChallengersagainstIncumbents.m and then is just set to -1.
 		double wallClockTime = wallclockTime;
 		
-		String paramString = incumbent.getFormattedParamString(StringFormat.STATEFILE_SYNTAX);
+		String paramString = incumbent.getFormattedParameterString(ParameterStringFormat.STATEFILE_SYNTAX);
 		
 		String escapedParamString = paramString.replaceAll(",","\\,");
 		

@@ -43,12 +43,12 @@ import ca.ubc.cs.beta.aeatk.algorithmrun.RunningAlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.kill.KillHandler;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.concurrent.threadfactory.SequentiallyNamedThreadFactory;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration.StringFormat;
 import ca.ubc.cs.beta.aeatk.misc.associatedvalue.Pair;
 import ca.ubc.cs.beta.aeatk.misc.logback.MarkerFilter;
 import ca.ubc.cs.beta.aeatk.misc.logging.LoggingMarker;
 import ca.ubc.cs.beta.aeatk.misc.string.SplitQuotedString;
 import ca.ubc.cs.beta.aeatk.misc.watch.StopWatch;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration.ParameterStringFormat;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.exceptions.TargetAlgorithmAbortException;
 
@@ -834,7 +834,7 @@ outerloop:
 		list.add(String.valueOf(Integer.MAX_VALUE));
 		list.add(String.valueOf(runConfig.getProblemInstanceSeedPair().getSeed()));
 		
-		StringFormat f = StringFormat.NODB_SYNTAX;
+		ParameterStringFormat f = ParameterStringFormat.NODB_SYNTAX;
 		
 		final String valueDelimiter = (options.paramArgumentsContainQuotes) ?  f.getValueDelimeter() : "";
 		
@@ -879,7 +879,7 @@ outerloop:
 		list.add(String.valueOf(Integer.MAX_VALUE));
 		list.add(String.valueOf(runConfig.getProblemInstanceSeedPair().getSeed()));
 		
-		StringFormat f = StringFormat.NODB_SYNTAX;
+		ParameterStringFormat f = ParameterStringFormat.NODB_SYNTAX;
 		for(String key : runConfig.getParameterConfiguration().getActiveParameters()  )
 		{
 			

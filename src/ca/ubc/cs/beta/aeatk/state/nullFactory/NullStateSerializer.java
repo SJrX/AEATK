@@ -6,7 +6,7 @@ import java.util.Map;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
 import ca.ubc.cs.beta.aeatk.runhistory.RunHistory;
 import ca.ubc.cs.beta.aeatk.state.StateSerializer;
 
@@ -27,7 +27,7 @@ public class NullStateSerializer implements StateSerializer{
 	}
 
 	@Override
-	public void setIncumbent(ParamConfiguration config) {
+	public void setIncumbent(ParameterConfiguration config) {
 		//Null Interface
 	}
 

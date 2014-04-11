@@ -1,12 +1,12 @@
 package ca.ubc.cs.beta.aeatk.eventsystem.events.ac;
 
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aeatk.eventsystem.events.AbstractTimeEvent;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
 import ca.ubc.cs.beta.aeatk.termination.TerminationCondition;
 
 public class AutomaticConfigurationEnd extends AbstractTimeEvent {
 
-	private final ParamConfiguration incumbent;
+	private final ParameterConfiguration incumbent;
 	private final double empiricalPerformance;
 
 	/**
@@ -15,7 +15,7 @@ public class AutomaticConfigurationEnd extends AbstractTimeEvent {
 	 * @param empiricalPerformance
 	 * @param termCond 
 	 */
-	public AutomaticConfigurationEnd(TerminationCondition termCond,ParamConfiguration incumbent, double empiricalPerformance) {
+	public AutomaticConfigurationEnd(TerminationCondition termCond,ParameterConfiguration incumbent, double empiricalPerformance) {
 		super(termCond);
 		this.incumbent = incumbent;
 		this.empiricalPerformance = empiricalPerformance;
@@ -31,13 +31,13 @@ public class AutomaticConfigurationEnd extends AbstractTimeEvent {
 	 * @param tunerTime
 	 * @deprecated use the Termination Condition constructor
 	 */
-	public AutomaticConfigurationEnd(ParamConfiguration incumbent, double empiricalPerformance, long wallClockTime, double tunerTime) {
+	public AutomaticConfigurationEnd(ParameterConfiguration incumbent, double empiricalPerformance, long wallClockTime, double tunerTime) {
 		super(tunerTime, wallClockTime);
 		this.incumbent = incumbent;
 		this.empiricalPerformance = empiricalPerformance;
 	}
 
-	public ParamConfiguration getIncumbent() {
+	public ParameterConfiguration getIncumbent() {
 		return incumbent;
 	}
 	

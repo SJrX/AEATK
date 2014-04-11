@@ -11,11 +11,11 @@ import java.util.ListIterator;
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterException;
 
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.misc.options.CommandLineOnly;
 import ca.ubc.cs.beta.aeatk.misc.options.OptionLevel;
 import ca.ubc.cs.beta.aeatk.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aeatk.options.AbstractOptions;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.probleminstance.InstanceListWithSeeds;
 import ca.ubc.cs.beta.aeatk.state.converter.AutoAsMaxConverter;
 import ca.ubc.cs.beta.aeatk.state.legacy.LegacyStateFactory;
@@ -104,7 +104,7 @@ public class StateFactoryOptions extends AbstractOptions{
 		return sf;
 	}
 	
-	public void saveContextWithState(ParamConfigurationSpace configSpace, InstanceListWithSeeds trainingILWS, File scenarioFile, StateFactory sf)
+	public void saveContextWithState(ParameterConfigurationSpace configSpace, InstanceListWithSeeds trainingILWS, File scenarioFile, StateFactory sf)
 	{
 		if(saveContextWithState)
 		{

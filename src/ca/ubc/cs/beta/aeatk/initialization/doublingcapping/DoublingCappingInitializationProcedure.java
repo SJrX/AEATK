@@ -25,12 +25,12 @@ import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionCo
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.exceptions.DuplicateRunException;
 import ca.ubc.cs.beta.aeatk.initialization.InitializationProcedure;
 import ca.ubc.cs.beta.aeatk.misc.MapList;
 import ca.ubc.cs.beta.aeatk.objectives.ObjectiveHelper;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aeatk.random.SeedableRandomPool;
@@ -47,19 +47,19 @@ import ca.ubc.cs.beta.aeatk.termination.TerminationCondition;
 public class DoublingCappingInitializationProcedure implements InitializationProcedure {
 
 	private final ThreadSafeRunHistory runHistory;
-	private final ParamConfiguration initialIncumbent;
+	private final ParameterConfiguration initialIncumbent;
 	private final TargetAlgorithmEvaluator tae;
 	private final DoublingCappingInitializationProcedureOptions opts;
 	private final Logger log = LoggerFactory.getLogger(DoublingCappingInitializationProcedure.class);
 	private final int maxIncumbentRuns;
 	private final List<ProblemInstance> instances;
 	private final InstanceSeedGenerator insc;
-	private ParamConfiguration incumbent;
+	private ParameterConfiguration incumbent;
 	private final TerminationCondition termCond;
 	private final double cutoffTime;
 	private final SeedableRandomPool pool;
 	private boolean deterministicInstanceOrdering;
-	private final ParamConfigurationSpace configSpace;
+	private final ParameterConfigurationSpace configSpace;
 	
 	private final int numberOfChallengers;
 	private final int numberOfRunsPerChallenger;
@@ -67,7 +67,7 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 	private final ObjectiveHelper objHelp;
 	private final AlgorithmExecutionConfiguration execConfig;
 
-	public DoublingCappingInitializationProcedure(ThreadSafeRunHistory runHistory, ParamConfiguration initialIncumbent, TargetAlgorithmEvaluator tae, DoublingCappingInitializationProcedureOptions opts, InstanceSeedGenerator insc, List<ProblemInstance> instances,  int maxIncumbentRuns , TerminationCondition termCond, double cutoffTime, SeedableRandomPool pool, boolean deterministicInstanceOrdering, ObjectiveHelper objHelp, AlgorithmExecutionConfiguration execConfig)
+	public DoublingCappingInitializationProcedure(ThreadSafeRunHistory runHistory, ParameterConfiguration initialIncumbent, TargetAlgorithmEvaluator tae, DoublingCappingInitializationProcedureOptions opts, InstanceSeedGenerator insc, List<ProblemInstance> instances,  int maxIncumbentRuns , TerminationCondition termCond, double cutoffTime, SeedableRandomPool pool, boolean deterministicInstanceOrdering, ObjectiveHelper objHelp, AlgorithmExecutionConfiguration execConfig)
 	{
 		this.runHistory =runHistory;
 		this.initialIncumbent = initialIncumbent;
@@ -81,7 +81,7 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 		this.cutoffTime = cutoffTime;
 		this.pool = pool;
 		this.deterministicInstanceOrdering = deterministicInstanceOrdering;
-		this.configSpace = initialIncumbent.getConfigurationSpace();
+		this.configSpace = initialIncumbent.getParameterConfigurationSpace();
 		
 		this.numberOfChallengers = opts.numberOfChallengers;
 		this.numberOfRunsPerChallenger = opts.numberOfRunsPerChallenger;
@@ -106,7 +106,7 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 		}
 		log.error("TAE Notify and Events need to be handled");
 		log.debug("Using Doubling Capping Initialization");
-		ParamConfiguration incumbent = this.initialIncumbent;
+		ParameterConfiguration incumbent = this.initialIncumbent;
 		log.trace("Configuration Set as initial Incumbent: {}", incumbent);
 
 		double startKappa=cutoffTime;
@@ -120,7 +120,7 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 		}
 	
 		
-		Set<ParamConfiguration> randomConfigurations = new HashSet<ParamConfiguration>();
+		Set<ParameterConfiguration> randomConfigurations = new HashSet<ParameterConfiguration>();
 		
 		int totalFirstRoundChallengers = numberOfChallengers * numberOfRunsPerChallenger * divisions;
 		if(totalFirstRoundChallengers > configSpace.getUpperBoundOnSize())
@@ -136,7 +136,7 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 		Random configRandom = pool.getRandom("DOUBLING_INITIALIZATION_CONFIGS");
 		while(randomConfigurations.size() < totalFirstRoundChallengers)
 		{
-			randomConfigurations.add(configSpace.getRandomConfiguration(configRandom));
+			randomConfigurations.add(configSpace.getRandomParameterConfiguration(configRandom));
 		}
 		
 		
@@ -184,7 +184,7 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 		 */
 		
 		
-		LinkedBlockingQueue<ParamConfiguration> configsQueue = new LinkedBlockingQueue<ParamConfiguration>();
+		LinkedBlockingQueue<ParameterConfiguration> configsQueue = new LinkedBlockingQueue<ParameterConfiguration>();
 		configsQueue.addAll(randomConfigurations);
 		
 		LinkedBlockingQueue<ProblemInstanceSeedPair> pispsQueue = new LinkedBlockingQueue<ProblemInstanceSeedPair>();
@@ -196,7 +196,7 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 		{
 			for(int i=0; i < numberOfChallengers * numberOfRunsPerChallenger; i++)
 			{
-				ParamConfiguration config;
+				ParameterConfiguration config;
 				if(i == 0)
 				{
 					config = initialIncumbent;
@@ -261,12 +261,12 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 		
 		
 		Set<AlgorithmRunConfiguration> existingRunConfigs = new HashSet<AlgorithmRunConfiguration>();
-		Set<ParamConfiguration> configs = new HashSet<ParamConfiguration>();
+		Set<ParameterConfiguration> configs = new HashSet<ParameterConfiguration>();
 		Set<ProblemInstanceSeedPair> phaseTwoPisps = new HashSet<ProblemInstanceSeedPair>();
-		MapList<ParamConfiguration, AlgorithmRun> phaseTwoResults = new MapList<ParamConfiguration, AlgorithmRun>(new HashMap<ParamConfiguration, List<AlgorithmRun>>());
-		MapList<ParamConfiguration, ProblemInstanceSeedPair> phaseTwoPispResults = MapList.getHashMapList();
+		MapList<ParameterConfiguration, AlgorithmRun> phaseTwoResults = new MapList<ParameterConfiguration, AlgorithmRun>(new HashMap<ParameterConfiguration, List<AlgorithmRun>>());
+		MapList<ParameterConfiguration, ProblemInstanceSeedPair> phaseTwoPispResults = MapList.getHashMapList();
 		
-		final Map<ParamConfiguration, AlgorithmRun> previouslyExistingRun = new ConcurrentHashMap<ParamConfiguration, AlgorithmRun>();
+		final Map<ParameterConfiguration, AlgorithmRun> previouslyExistingRun = new ConcurrentHashMap<ParameterConfiguration, AlgorithmRun>();
 		
 		
  		for(AlgorithmRun run : phaseTwoRuns)
@@ -285,7 +285,7 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 		}
 		
  		
- 		List<ParamConfiguration> configToIterate = new ArrayList<ParamConfiguration>(configs);
+ 		List<ParameterConfiguration> configToIterate = new ArrayList<ParameterConfiguration>(configs);
  		
  		Random diShuffle = pool.getRandom("DOUBLING_INITIALIZATION_SHUFFLE");
  		
@@ -334,7 +334,7 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 		//complicates this so essentially we will rely on caching.
  		for(int i=0; i < Math.min(numberOfChallengers, configToIterate.size()); i++)
  		{
- 			ParamConfiguration config = configToIterate.get(i);
+ 			ParameterConfiguration config = configToIterate.get(i);
  			List<AlgorithmRunConfiguration> runsForConfig = new ArrayList<AlgorithmRunConfiguration>();
  			
  			for(int j=0; j < Math.min(this.numberOfRunsPerChallenger, phaseTwoPisps.size()); j++)
@@ -347,7 +347,7 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
  		}
  		
  		
- 		ParamConfiguration newIncumbent = null;
+ 		ParameterConfiguration newIncumbent = null;
  		
  		while(phaseTwoTaeQueue.getNumberOfOutstandingAndQueuedRuns() > 0)
  		{
@@ -571,7 +571,7 @@ topOfLoop:
 	}
 
 	@Override
-	public ParamConfiguration getIncumbent() {
+	public ParameterConfiguration getIncumbent() {
 		return incumbent;
 	}
 	

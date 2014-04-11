@@ -7,7 +7,7 @@ import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.ExistingAlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.AbstractSyncTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
@@ -55,7 +55,7 @@ public class EchoTargetAlgorithmEvaluator  extends AbstractSyncTargetAlgorithmEv
 		{
 			StringBuilder sb = new StringBuilder();
 			
-			ParamConfiguration config = rc.getParameterConfiguration();
+			ParameterConfiguration config = rc.getParameterConfiguration();
 			
 			sb.append(config.get("solved")).append(",");
 			sb.append(config.get("runtime")).append(",");

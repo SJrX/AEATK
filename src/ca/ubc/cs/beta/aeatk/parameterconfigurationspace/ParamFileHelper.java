@@ -1,4 +1,4 @@
-package ca.ubc.cs.beta.aeatk.configspace;
+package ca.ubc.cs.beta.aeatk.parameterconfigurationspace;
 
 import java.io.File;
 import java.io.StringReader;
@@ -17,13 +17,13 @@ public final class ParamFileHelper {
 	 * @return	ParamConfigurationSpace  the configuration space
 	 * 
 	 */
-	public static ParamConfigurationSpace getParamFileParser(String filename)
-	{	if(filename.equals(ParamConfigurationSpace.SINGLETON_ABSOLUTE_NAME))
+	public static ParameterConfigurationSpace getParamFileParser(String filename)
+	{	if(filename.equals(ParameterConfigurationSpace.SINGLETON_ABSOLUTE_NAME))
 		{
-			return ParamConfigurationSpace.getSingletonConfigurationSpace();
-		} else if(filename.equals(ParamConfigurationSpace.NULL_ABSOLUTE_NAME))
+			return ParameterConfigurationSpace.getSingletonConfigurationSpace();
+		} else if(filename.equals(ParameterConfigurationSpace.NULL_ABSOLUTE_NAME))
 		{
-			return ParamConfigurationSpace.getNullConfigurationSpace();
+			return ParameterConfigurationSpace.getNullConfigurationSpace();
 		} else
 		{
 			return getParamFileParser(new File(filename));
@@ -36,13 +36,13 @@ public final class ParamFileHelper {
 	 * @param file  					file with the param arguments
 	 * @return ParamConfigurationSpace instance
 	 */
-	public static ParamConfigurationSpace getParamFileParser(File file)
+	public static ParameterConfigurationSpace getParamFileParser(File file)
 	{
-		return new ParamConfigurationSpace(file);
+		return new ParameterConfigurationSpace(file);
 	}
 
-	public static ParamConfigurationSpace getParamFileFromString(String string) {
-		return new ParamConfigurationSpace(new StringReader(string));
+	public static ParameterConfigurationSpace getParamFileFromString(String string) {
+		return new ParameterConfigurationSpace(new StringReader(string));
 	}
 	
 	//Non-initializable

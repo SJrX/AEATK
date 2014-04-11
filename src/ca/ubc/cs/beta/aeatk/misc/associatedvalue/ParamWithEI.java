@@ -3,7 +3,7 @@ package ca.ubc.cs.beta.aeatk.misc.associatedvalue;
 import java.util.ArrayList;
 import java.util.List;
 
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
 
 /**
  * Subtype of <code>AssociatedValue</code> used by Local Search, essentially
@@ -12,14 +12,14 @@ import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
  * @author sjr
  *
  */
-public class ParamWithEI extends AssociatedValue<Double, ParamConfiguration> {
+public class ParamWithEI extends AssociatedValue<Double, ParameterConfiguration> {
 
 	/**
 	 * Standard Constructor
 	 * @param t double to associate (represents expected improvement)
 	 * @param v Param configuration
 	 */
-	public ParamWithEI(Double t, ParamConfiguration v) {
+	public ParamWithEI(Double t, ParameterConfiguration v) {
 		super(t, v);
 	}
 	
@@ -30,7 +30,7 @@ public class ParamWithEI extends AssociatedValue<Double, ParamConfiguration> {
 	 * @param c list of configuration
 	 * @return list of ParamWithEI objects
 	 */
-	public static List<ParamWithEI> merge(double[] x, List<ParamConfiguration> c)
+	public static List<ParamWithEI> merge(double[] x, List<ParameterConfiguration> c)
 	{
 		if (x.length != c.size())
 		{

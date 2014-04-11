@@ -11,8 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.model.ModelBuildingOptions;
 import ca.ubc.cs.beta.aeatk.model.builder.AdaptiveCappingModelBuilder;
 import ca.ubc.cs.beta.aeatk.model.builder.BasicModelBuilder;
@@ -23,6 +21,8 @@ import ca.ubc.cs.beta.aeatk.model.data.MaskInactiveConditionalParametersWithDefa
 import ca.ubc.cs.beta.aeatk.model.data.SanitizedModelData;
 import ca.ubc.cs.beta.aeatk.options.RandomForestOptions;
 import ca.ubc.cs.beta.aeatk.options.scenario.ScenarioOptions;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.random.SeedableRandomPool;
 import ca.ubc.cs.beta.aeatk.runhistory.RunHistory;
@@ -54,7 +54,7 @@ public class StateMergeModelBuilder {
 	
 	private final Logger log = LoggerFactory.getLogger(getClass());
 	
-	public void learnModel(List<ProblemInstance> instances, RunHistory runHistory, ParamConfigurationSpace configSpace, RandomForestOptions rfOptions, ModelBuildingOptions mbOptions, ScenarioOptions scenarioOptions, boolean adaptiveCapping, SeedableRandomPool pool) 
+	public void learnModel(List<ProblemInstance> instances, RunHistory runHistory, ParameterConfigurationSpace configSpace, RandomForestOptions rfOptions, ModelBuildingOptions mbOptions, ScenarioOptions scenarioOptions, boolean adaptiveCapping, SeedableRandomPool pool) 
 	{
 		
 
@@ -68,7 +68,7 @@ public class StateMergeModelBuilder {
 		
 		//=== The following two sets are required to be sorted by instance and paramConfig ID.
 		Set<ProblemInstance> all_instances = new LinkedHashSet<ProblemInstance>(instances);
-		Set<ParamConfiguration> paramConfigs = runHistory.getUniqueParamConfigurations();
+		Set<ParameterConfiguration> paramConfigs = runHistory.getUniqueParamConfigurations();
 		
 		Set<ProblemInstance> runInstances=runHistory.getUniqueInstancesRan();
 		ArrayList<Integer> runInstancesIdx = new ArrayList<Integer>(all_instances.size());
@@ -89,7 +89,7 @@ public class StateMergeModelBuilder {
 		//=== Get the parameter configuration matrix (Theta).
 		double[][] thetaMatrix = new double[paramConfigs.size()][];
 		i = 0;
-		for(ParamConfiguration pc : paramConfigs)
+		for(ParameterConfiguration pc : paramConfigs)
 		{
 			if(mbOptions.maskInactiveConditionalParametersAsDefaultValue)
 			{

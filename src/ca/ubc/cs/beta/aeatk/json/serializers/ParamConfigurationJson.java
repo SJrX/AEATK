@@ -21,8 +21,9 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 
 
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
+
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParseException;
@@ -63,17 +64,17 @@ public class ParamConfigurationJson
 	
 	private static final String JACKSON_PCS_CONTEXT = "PCS_CONTEXT";
 	
-	public static class ParamConfigurationDeserializer extends StdDeserializer<ParamConfiguration>
+	public static class ParamConfigurationDeserializer extends StdDeserializer<ParameterConfiguration>
 	{
 		
 		private final ParamConfigurationSpaceDeserializer pcsd = new ParamConfigurationSpaceDeserializer();
 
 		protected ParamConfigurationDeserializer() {
-			super(ParamConfiguration.class);
+			super(ParameterConfiguration.class);
 		}
 
 		@Override
-		public ParamConfiguration deserialize(JsonParser jp, DeserializationContext ctxt)
+		public ParameterConfiguration deserialize(JsonParser jp, DeserializationContext ctxt)
 				throws IOException, JsonProcessingException {
 		
 			
@@ -84,16 +85,16 @@ public class ParamConfigurationJson
 			
 			
 			@SuppressWarnings("unchecked")
-			Map<Integer, ParamConfiguration> cache = (Map<Integer, ParamConfiguration>) ctxt.getAttribute(JACKSON_PC_CONTEXT);
+			Map<Integer, ParameterConfiguration> cache = (Map<Integer, ParameterConfiguration>) ctxt.getAttribute(JACKSON_PC_CONTEXT);
 			
 			if(cache == null)
 			{
-				cache = new ConcurrentHashMap<Integer, ParamConfiguration>();
+				cache = new ConcurrentHashMap<Integer, ParameterConfiguration>();
 				ctxt.setAttribute(JACKSON_PC_CONTEXT, cache);
 			}
 			
 		
-			ParamConfigurationSpace configSpace = null;
+			ParameterConfigurationSpace configSpace = null;
 			Map<String, String> settings = new HashMap<>();
 			int pc_id = 0;
 			while(jp.nextValue() != null)
@@ -163,7 +164,7 @@ public class ParamConfigurationJson
 						throw new JsonParseException("Couldn't find ParamConfigurationSpace", jp.getCurrentLocation());
 					} 
 				
-					ParamConfiguration config = configSpace.getDefaultConfiguration();
+					ParameterConfiguration config = configSpace.getDefaultConfiguration();
 					config.putAll(settings);
 				
 					if(pc_id >0)
@@ -180,24 +181,24 @@ public class ParamConfigurationJson
 
 	}
 	
-	public static class ParamConfigurationSerializer extends StdSerializer<ParamConfiguration>
+	public static class ParamConfigurationSerializer extends StdSerializer<ParameterConfiguration>
 	{
 
 		
 
 
 		protected ParamConfigurationSerializer() {
-			super(ParamConfiguration.class);
+			super(ParameterConfiguration.class);
 		}
 
 
-		private final ConcurrentHashMap<ParamConfiguration, Integer> map = new ConcurrentHashMap<ParamConfiguration, Integer>();
+		private final ConcurrentHashMap<ParameterConfiguration, Integer> map = new ConcurrentHashMap<ParameterConfiguration, Integer>();
 		
 		private final AtomicInteger idMap = new AtomicInteger(1);
 		
 
 		@Override
-		public void serialize(ParamConfiguration value, JsonGenerator jgen,
+		public void serialize(ParameterConfiguration value, JsonGenerator jgen,
 				SerializerProvider provider) throws IOException,
 				JsonProcessingException 
 		{
@@ -211,13 +212,13 @@ public class ParamConfigurationJson
 		
 			if(firstWrite)
 			{
-				jgen.writeObjectField(PC_PCS, value.getConfigurationSpace());
+				jgen.writeObjectField(PC_PCS, value.getParameterConfigurationSpace());
 				jgen.writeObjectField(PC_SETTINGS, new LinkedHashMap<String,String>(value));
 				jgen.writeObjectField(PC_ACTIVE_PARAMETERS, value.getActiveParameters());
 				
-				jgen.writeObjectField(PC_FORBIDDEN, value.isForbiddenParamConfiguration());
+				jgen.writeObjectField(PC_FORBIDDEN, value.isForbiddenParameterConfiguration());
 				
-				jgen.writeObjectField(PC_DEFAULT, value.getConfigurationSpace().getDefaultConfiguration().equals(value));
+				jgen.writeObjectField(PC_DEFAULT, value.getParameterConfigurationSpace().getDefaultConfiguration().equals(value));
 				
 			} 
 			
@@ -226,17 +227,17 @@ public class ParamConfigurationJson
 		
 	}
 	
-	public static class ParamConfigurationSpaceDeserializer extends StdDeserializer<ParamConfigurationSpace>
+	public static class ParamConfigurationSpaceDeserializer extends StdDeserializer<ParameterConfigurationSpace>
 	{
 
 		
 		protected ParamConfigurationSpaceDeserializer() {
-			super(ParamConfigurationSpace.class);
+			super(ParameterConfigurationSpace.class);
 		
 		}
 
 		@Override
-		public ParamConfigurationSpace deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
+		public ParameterConfigurationSpace deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
 			
 			
 			if(!jp.getCurrentToken().equals(JsonToken.START_OBJECT))
@@ -245,11 +246,11 @@ public class ParamConfigurationJson
 			}
 			
 			@SuppressWarnings("unchecked")
-			Map<Integer, ParamConfigurationSpace> cache = (Map<Integer, ParamConfigurationSpace>) ctxt.getAttribute(JACKSON_PCS_CONTEXT);
+			Map<Integer, ParameterConfigurationSpace> cache = (Map<Integer, ParameterConfigurationSpace>) ctxt.getAttribute(JACKSON_PCS_CONTEXT);
 			
 			if(cache == null)
 			{
-				cache = new ConcurrentHashMap<Integer, ParamConfigurationSpace>();
+				cache = new ConcurrentHashMap<Integer, ParameterConfigurationSpace>();
 				ctxt.setAttribute(JACKSON_PCS_CONTEXT, cache);
 			}
 			
@@ -320,7 +321,7 @@ public class ParamConfigurationJson
 			{
 			
 				
-				ParamConfigurationSpace configSpace =  new ParamConfigurationSpace(new StringReader(pcsText), pcsFilename, subspace);
+				ParameterConfigurationSpace configSpace =  new ParameterConfigurationSpace(new StringReader(pcsText), pcsFilename, subspace);
 				
 				
 				if(pcs_id > 0)
@@ -337,22 +338,22 @@ public class ParamConfigurationJson
 
 	}
 	
-	public static class ParamConfigurationSpaceSerializer extends StdSerializer<ParamConfigurationSpace>
+	public static class ParamConfigurationSpaceSerializer extends StdSerializer<ParameterConfigurationSpace>
 	{
 
 
 		
 
 		protected ParamConfigurationSpaceSerializer() {
-			super(ParamConfigurationSpace.class);
+			super(ParameterConfigurationSpace.class);
 		}
 
-		private final ConcurrentHashMap<ParamConfigurationSpace, Integer> map = new ConcurrentHashMap<ParamConfigurationSpace, Integer>();
+		private final ConcurrentHashMap<ParameterConfigurationSpace, Integer> map = new ConcurrentHashMap<ParameterConfigurationSpace, Integer>();
 		
 		private final AtomicInteger idMap = new AtomicInteger(1);
 		
 		@Override
-		public void serialize(ParamConfigurationSpace value, JsonGenerator jgen,
+		public void serialize(ParameterConfigurationSpace value, JsonGenerator jgen,
 				SerializerProvider provider) throws IOException,
 				JsonProcessingException 
 		{

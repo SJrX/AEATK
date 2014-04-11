@@ -5,10 +5,10 @@ import java.util.Collections;
 import java.util.concurrent.atomic.AtomicLong;
 
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.eventsystem.EventHandler;
 import ca.ubc.cs.beta.aeatk.eventsystem.EventManager;
 import ca.ubc.cs.beta.aeatk.eventsystem.events.basic.AlgorithmRunCompletedEvent;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.termination.ConditionType;
 import ca.ubc.cs.beta.aeatk.termination.ValueMaxStatus;
 
@@ -20,7 +20,7 @@ public class ConfigurationSpaceExhaustedCondition extends AbstractTerminationCon
 	private final int runsPerConfiguration;
 	private final double configSpaceSize;
 	
-	public ConfigurationSpaceExhaustedCondition(ParamConfigurationSpace configSpace, int runsPerConfiguration)
+	public ConfigurationSpaceExhaustedCondition(ParameterConfigurationSpace configSpace, int runsPerConfiguration)
 	{
 		this.runLimit = configSpace.getUpperBoundOnSize() * runsPerConfiguration;
 		this.runsPerConfiguration = runsPerConfiguration;

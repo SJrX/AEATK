@@ -9,8 +9,8 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.json.serializers.ParamConfigurationJson.ParamConfigurationSpaceDeserializer;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
@@ -73,7 +73,7 @@ public class AlgorithmExecutionConfigJson  {
 			String algo = null;
 			String algoDir = null;
 			double cutoffTime = Double.NEGATIVE_INFINITY;
-			ParamConfigurationSpace pcs = null;
+			ParameterConfigurationSpace pcs = null;
 			boolean deterministic = false;
 			Map<String, String> taeContext = new TreeMap<String, String>();
 			

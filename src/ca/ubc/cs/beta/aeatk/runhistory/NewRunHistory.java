@@ -21,10 +21,10 @@ import org.slf4j.LoggerFactory;
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aeatk.exceptions.DuplicateRunException;
 import ca.ubc.cs.beta.aeatk.objectives.OverallObjective;
 import ca.ubc.cs.beta.aeatk.objectives.RunObjective;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aeatk.seedgenerator.InstanceSeedGenerator;
@@ -66,7 +66,7 @@ public class NewRunHistory implements RunHistory {
 	/**
 	 * Stores a list of Parameter Configurations along with there associted thetaIdx
 	 */
-	private final KeyObjectManager<ParamConfiguration> paramConfigurationList = new KeyObjectManager<ParamConfiguration>();
+	private final KeyObjectManager<ParameterConfiguration> paramConfigurationList = new KeyObjectManager<ParameterConfiguration>();
 	
 	/**
 	 * Stores a list of RunData
@@ -87,8 +87,8 @@ public class NewRunHistory implements RunHistory {
 	 * We store the Seeds in a LinkedHashMap because the order of them matters as far as determining which seed to pick to run
 	 * as far as Matlab synchronizing goes. Otherwise it could be a regular map
 	 */
-	private final Map<ParamConfiguration, Map<ProblemInstance, LinkedHashMap<Long, Double>>> configToPerformanceMap =
-			new HashMap<ParamConfiguration, Map<ProblemInstance, LinkedHashMap<Long, Double>>>();
+	private final Map<ParameterConfiguration, Map<ProblemInstance, LinkedHashMap<Long, Double>>> configToPerformanceMap =
+			new HashMap<ParameterConfiguration, Map<ProblemInstance, LinkedHashMap<Long, Double>>>();
 	
 	/**
 	 * Stores for each instance the list of seeds used 
@@ -98,29 +98,29 @@ public class NewRunHistory implements RunHistory {
 	/**
 	 * Stores the number of times a config has been run
 	 */
-	private final LinkedHashMap<ParamConfiguration, Integer> configToNumRunsMap = new LinkedHashMap<ParamConfiguration, Integer>();
+	private final LinkedHashMap<ParameterConfiguration, Integer> configToNumRunsMap = new LinkedHashMap<ParameterConfiguration, Integer>();
 	
 	/**
 	 * Stores the number of times a config has been run
 	 */
-	private final LinkedHashMap<ParamConfiguration, Integer> configToNumRunsIgnoringRedundantMap = new LinkedHashMap<ParamConfiguration, Integer>();
+	private final LinkedHashMap<ParameterConfiguration, Integer> configToNumRunsIgnoringRedundantMap = new LinkedHashMap<ParameterConfiguration, Integer>();
 	
 	/**
 	 * Stores a list of Instance Seed Pairs whose runs were capped.
 	 */
-	private final HashMap<ParamConfiguration, Set<ProblemInstanceSeedPair>> censoredEarlyRuns = new HashMap<ParamConfiguration, Set<ProblemInstanceSeedPair>>(); 
+	private final HashMap<ParameterConfiguration, Set<ProblemInstanceSeedPair>> censoredEarlyRuns = new HashMap<ParameterConfiguration, Set<ProblemInstanceSeedPair>>(); 
 	
 	/**
 	 * Stores the set of instances we have run
 	 */
 	private Set<ProblemInstance> instancesRanSet = new HashSet<ProblemInstance>();
 	
-	private final HashMap<ParamConfiguration, List<AlgorithmRun>> configToRunMap = new HashMap<ParamConfiguration, List<AlgorithmRun>>();
+	private final HashMap<ParameterConfiguration, List<AlgorithmRun>> configToRunMap = new HashMap<ParameterConfiguration, List<AlgorithmRun>>();
 	
 	/**
 	 * Stores for each run the best known value at a given time. We use a linked hash map because order is important.
 	 */
-	private final LinkedHashMap<ParamConfiguration, LinkedHashMap<ProblemInstanceSeedPair,AlgorithmRun>> configToRunIgnoreRedundantMap = new LinkedHashMap<ParamConfiguration, LinkedHashMap<ProblemInstanceSeedPair,AlgorithmRun>>();
+	private final LinkedHashMap<ParameterConfiguration, LinkedHashMap<ProblemInstanceSeedPair,AlgorithmRun>> configToRunIgnoreRedundantMap = new LinkedHashMap<ParameterConfiguration, LinkedHashMap<ProblemInstanceSeedPair,AlgorithmRun>>();
 	
 	private static final DecimalFormat format = new DecimalFormat("#######.####");
 	
@@ -161,7 +161,7 @@ public class NewRunHistory implements RunHistory {
 		{
 			throw new IllegalArgumentException("Runs with Run Result RUNNING cannot be saved to a RunHistory object");
 		}
-		ParamConfiguration config = run.getRunConfig().getParameterConfiguration();
+		ParameterConfiguration config = run.getRunConfig().getParameterConfiguration();
 		ProblemInstanceSeedPair pisp = run.getRunConfig().getProblemInstanceSeedPair();
 		ProblemInstance pi = pisp.getProblemInstance();
 		long seed = run.getResultSeed();
@@ -336,7 +336,7 @@ public class NewRunHistory implements RunHistory {
 	
 	
 	@Override
-	public double getEmpiricalCost(ParamConfiguration config,
+	public double getEmpiricalCost(ParameterConfiguration config,
 			Set<ProblemInstance> instanceSet, double cutoffTime)
 	{
 		Map<ProblemInstance, Map<Long, Double>> foo = Collections.emptyMap();
@@ -344,7 +344,7 @@ public class NewRunHistory implements RunHistory {
 	}
 	
 	@Override
-	public double getEmpiricalCost(ParamConfiguration config,
+	public double getEmpiricalCost(ParameterConfiguration config,
 			Set<ProblemInstance> instanceSet, double cutoffTime, double minimumResponseValue)
 	{
 		Map<ProblemInstance, Map<Long, Double>> foo = Collections.emptyMap();
@@ -352,14 +352,14 @@ public class NewRunHistory implements RunHistory {
 	}
 	
 	
-	public double getEmpiricalCost(ParamConfiguration config,
+	public double getEmpiricalCost(ParameterConfiguration config,
 			Set<ProblemInstance> instanceSet, double cutoffTime, Map<ProblemInstance, Map<Long,Double>> hallucinatedValues)
 	{
 		return getEmpiricalCost(config, instanceSet, cutoffTime, hallucinatedValues, Double.NEGATIVE_INFINITY);
 	}
 	
 	@Override
-	public double getEmpiricalCostLowerBound(ParamConfiguration config,	Set<ProblemInstance> instanceSet, double cutoffTime) 
+	public double getEmpiricalCostLowerBound(ParameterConfiguration config,	Set<ProblemInstance> instanceSet, double cutoffTime) 
 	{
 		
 		return getEmpiricalCostBound(config, instanceSet, cutoffTime, 0.0, Bound.LOWER);
@@ -367,7 +367,7 @@ public class NewRunHistory implements RunHistory {
 	}
 
 	@Override
-	public double getEmpiricalCostUpperBound(ParamConfiguration config,	Set<ProblemInstance> instanceSet, double cutoffTime) 
+	public double getEmpiricalCostUpperBound(ParameterConfiguration config,	Set<ProblemInstance> instanceSet, double cutoffTime) 
 	{	
 		return getEmpiricalCostBound(config, instanceSet, cutoffTime, cutoffTime, Bound.UPPER);
 
@@ -378,7 +378,7 @@ public class NewRunHistory implements RunHistory {
 		LOWER
 	}
 	
-	private double getEmpiricalCostBound(ParamConfiguration config, Set<ProblemInstance> instanceSet, double cutoffTime, Double boundValue, Bound b)
+	private double getEmpiricalCostBound(ParameterConfiguration config, Set<ProblemInstance> instanceSet, double cutoffTime, Double boundValue, Bound b)
 	{
 		Map<ProblemInstance, Map <Long,Double>> hallucinatedValues = new HashMap<ProblemInstance,Map<Long, Double>>();
 		
@@ -439,7 +439,7 @@ public class NewRunHistory implements RunHistory {
 
 	}
 	@Override
-	public double getEmpiricalCost(ParamConfiguration config, Set<ProblemInstance> instanceSet, double cutoffTime, Map<ProblemInstance, Map<Long,Double>> hallucinatedValues, double minimumResponseValue)
+	public double getEmpiricalCost(ParameterConfiguration config, Set<ProblemInstance> instanceSet, double cutoffTime, Map<ProblemInstance, Map<Long,Double>> hallucinatedValues, double minimumResponseValue)
 	{
 		if (!configToPerformanceMap.containsKey(config) && hallucinatedValues.isEmpty()){
 			return Double.MAX_VALUE;
@@ -508,7 +508,7 @@ public class NewRunHistory implements RunHistory {
 	}
 
 	@Override
-	public Set<ProblemInstance> getProblemInstancesRan(ParamConfiguration config) {
+	public Set<ProblemInstance> getProblemInstancesRan(ParameterConfiguration config) {
 		if (!configToPerformanceMap.containsKey(config)){
 			return new HashSet<ProblemInstance>();
 		}
@@ -516,7 +516,7 @@ public class NewRunHistory implements RunHistory {
 	}
 
 	@Override
-	public Set<ProblemInstanceSeedPair> getProblemInstanceSeedPairsRan(ParamConfiguration config) {
+	public Set<ProblemInstanceSeedPair> getProblemInstanceSeedPairsRan(ParameterConfiguration config) {
 		if (!configToPerformanceMap.containsKey(config)){
 			return new HashSet<ProblemInstanceSeedPair>();
 		}
@@ -534,7 +534,7 @@ public class NewRunHistory implements RunHistory {
 	}
 
 	@Override
-	public Set<ProblemInstanceSeedPair> getEarlyCensoredProblemInstanceSeedPairs(ParamConfiguration config)
+	public Set<ProblemInstanceSeedPair> getEarlyCensoredProblemInstanceSeedPairs(ParameterConfiguration config)
 	{
 		if(!censoredEarlyRuns.containsKey(config))
 		{
@@ -559,7 +559,7 @@ public class NewRunHistory implements RunHistory {
 	}
 
 	@Override
-	public Set<ParamConfiguration> getUniqueParamConfigurations() {
+	public Set<ParameterConfiguration> getUniqueParamConfigurations() {
 		return Collections.unmodifiableSet(configToNumRunsMap.keySet());
 	}
 
@@ -579,8 +579,8 @@ public class NewRunHistory implements RunHistory {
 	}
 
 	@Override
-	public List<ParamConfiguration> getAllParameterConfigurationsRan() {
-		List<ParamConfiguration> runs = new ArrayList<ParamConfiguration>(paramConfigurationList.size());
+	public List<ParameterConfiguration> getAllParameterConfigurationsRan() {
+		List<ParameterConfiguration> runs = new ArrayList<ParameterConfiguration>(paramConfigurationList.size());
 		
 		for(int i=1; i <= paramConfigurationList.size(); i++)
 		{
@@ -610,7 +610,7 @@ public class NewRunHistory implements RunHistory {
 
 
 	@Override
-	public int getThetaIdx(ParamConfiguration config) {
+	public int getThetaIdx(ParameterConfiguration config) {
 		Integer thetaIdx = paramConfigurationList.getKey(config);
 		if(thetaIdx == null)
 		{
@@ -623,14 +623,14 @@ public class NewRunHistory implements RunHistory {
 	}
 	
 	@Override
-	public int getOrCreateThetaIdx(ParamConfiguration config) {
+	public int getOrCreateThetaIdx(ParameterConfiguration config) {
 		 return paramConfigurationList.getOrCreateKey(config);
 		
 	}
 	
 
 	@Override
-	public int getNumberOfUniqueProblemInstanceSeedPairsForConfiguration(ParamConfiguration config)
+	public int getNumberOfUniqueProblemInstanceSeedPairsForConfiguration(ParameterConfiguration config)
 	{
 		 Map<ProblemInstance, LinkedHashMap<Long, Double>> runs = configToPerformanceMap.get(config);
 		 
@@ -645,7 +645,7 @@ public class NewRunHistory implements RunHistory {
 	}
 	
 	@Override
-	public Map<ProblemInstance, LinkedHashMap<Long, Double>> getPerformanceForConfig(ParamConfiguration config)
+	public Map<ProblemInstance, LinkedHashMap<Long, Double>> getPerformanceForConfig(ParameterConfiguration config)
 	{
 		Map<ProblemInstance, LinkedHashMap<Long,Double>> map =  configToPerformanceMap.get(config);
 		if(map != null)
@@ -659,7 +659,7 @@ public class NewRunHistory implements RunHistory {
 	
 
 	@Override
-	public int getTotalNumRunsOfConfigIncludingRedundant(ParamConfiguration config) {
+	public int getTotalNumRunsOfConfigIncludingRedundant(ParameterConfiguration config) {
 		Integer value = configToNumRunsMap.get(config);
 		if( value != null)
 		{
@@ -671,7 +671,7 @@ public class NewRunHistory implements RunHistory {
 	}
 	
 	@Override
-	public int getTotalNumRunsOfConfigExcludingRedundant(ParamConfiguration config) {
+	public int getTotalNumRunsOfConfigExcludingRedundant(ParameterConfiguration config) {
 		Integer value = configToNumRunsIgnoringRedundantMap.get(config);
 		if( value != null)
 		{
@@ -715,7 +715,7 @@ public class NewRunHistory implements RunHistory {
 	}
 	
 	@Override
-	public List<AlgorithmRun> getAlgorithmRunsIncludingRedundant(ParamConfiguration config) {
+	public List<AlgorithmRun> getAlgorithmRunsIncludingRedundant(ParameterConfiguration config) {
 		
 		List<AlgorithmRun> runs = this.configToRunMap.get(config);
 		
@@ -729,7 +729,7 @@ public class NewRunHistory implements RunHistory {
 	}
 	
 	@Override
-	public List<AlgorithmRun> getAlgorithmRunsExcludingRedundant(ParamConfiguration config)
+	public List<AlgorithmRun> getAlgorithmRunsExcludingRedundant(ParameterConfiguration config)
 	{
 		Map<ProblemInstanceSeedPair, AlgorithmRun> runs = this.configToRunIgnoreRedundantMap.get(config);
 		

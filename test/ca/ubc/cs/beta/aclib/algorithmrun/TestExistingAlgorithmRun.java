@@ -9,7 +9,7 @@ import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.ExistingAlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
 
@@ -18,9 +18,9 @@ public class TestExistingAlgorithmRun {
 	@Test
 	public void testAdditionalRunWeirdCharacters()
 	{
-		AlgorithmExecutionConfiguration execConfig = new AlgorithmExecutionConfiguration("", "", ParamConfigurationSpace.getSingletonConfigurationSpace(), false, false, 0);
+		AlgorithmExecutionConfiguration execConfig = new AlgorithmExecutionConfiguration("", "", ParameterConfigurationSpace.getSingletonConfigurationSpace(), false, false, 0);
 		
-		AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("test"),2), 25.0, ParamConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(), execConfig );
+		AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("test"),2), 25.0, ParameterConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(), execConfig );
 		
 		AlgorithmRun run = new ExistingAlgorithmRun(execConfig, rc, RunResult.SAT, 10, 10, 10, 2, "Test", 0);
 		

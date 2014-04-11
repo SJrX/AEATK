@@ -15,9 +15,9 @@ import net.jcip.annotations.NotThreadSafe;
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.ExistingAlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aeatk.exceptions.DuplicateRunException;
 import ca.ubc.cs.beta.aeatk.misc.MapList;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
 
@@ -65,7 +65,7 @@ public class ReindexSeedRunHistoryDecorator extends AbstractRunHistoryDecorator 
 		
 		ProblemInstanceSeedPair pisp = run.getRunConfig().getProblemInstanceSeedPair();
 		
-		if(run.getRunConfig().getParameterConfiguration().getConfigurationSpace().getDefaultConfiguration().equals(run.getRunConfig().getParameterConfiguration()))
+		if(run.getRunConfig().getParameterConfiguration().getParameterConfigurationSpace().getDefaultConfiguration().equals(run.getRunConfig().getParameterConfiguration()))
 		{
 			log.trace("Transforming run of default configuration {}", run);
 		}
@@ -138,7 +138,7 @@ public class ReindexSeedRunHistoryDecorator extends AbstractRunHistoryDecorator 
 	
 	}
 	@Override
-	public int getOrCreateThetaIdx(ParamConfiguration initialIncumbent) {
+	public int getOrCreateThetaIdx(ParameterConfiguration initialIncumbent) {
 		return this.rh.getOrCreateThetaIdx(initialIncumbent);
 	}
 	

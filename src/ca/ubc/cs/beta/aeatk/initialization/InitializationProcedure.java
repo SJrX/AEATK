@@ -1,6 +1,6 @@
 package ca.ubc.cs.beta.aeatk.initialization;
 
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
 
 
 public interface InitializationProcedure extends Runnable
@@ -18,7 +18,7 @@ public interface InitializationProcedure extends Runnable
 	 * 
 	 * @return incumbent selected
 	 */
-	public ParamConfiguration getIncumbent();
+	public ParameterConfiguration getIncumbent();
 
 	
 	

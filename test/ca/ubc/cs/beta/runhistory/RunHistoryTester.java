@@ -28,14 +28,14 @@ import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aeatk.algorithmrun.RunningAlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.kill.KillHandler;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
-import ca.ubc.cs.beta.aeatk.configspace.ParamFileHelper;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration.StringFormat;
 import ca.ubc.cs.beta.aeatk.exceptions.DuplicateRunException;
 import ca.ubc.cs.beta.aeatk.misc.debug.DebugUtil;
 import ca.ubc.cs.beta.aeatk.objectives.OverallObjective;
 import ca.ubc.cs.beta.aeatk.objectives.RunObjective;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParamFileHelper;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration.ParameterStringFormat;
 import ca.ubc.cs.beta.aeatk.probleminstance.InstanceListWithSeeds;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceHelper;
@@ -71,7 +71,7 @@ public class RunHistoryTester {
 		
 	}
 	
-	private final ParamConfigurationSpace configSpace = ParamConfigurationTest.getConfigSpaceForFile("paramFiles/daisy-chain-param.txt");
+	private final ParameterConfigurationSpace configSpace = ParamConfigurationTest.getConfigSpaceForFile("paramFiles/daisy-chain-param.txt");
 	private final AlgorithmExecutionConfiguration execConfig = new AlgorithmExecutionConfiguration("boo", "foo", configSpace, false, false, 500);
 	
 	
@@ -100,7 +100,7 @@ public class RunHistoryTester {
 		InstanceSeedGenerator insc = ilws.getSeedGen();
 		RunHistory r = new NewRunHistory( OverallObjective.MEAN, OverallObjective.MEAN, RunObjective.RUNTIME);
 		
-		ParamConfiguration defaultConfig = configSpace.getDefaultConfiguration();
+		ParameterConfiguration defaultConfig = configSpace.getDefaultConfiguration();
 		ProblemInstanceSeedPair pisp = RunHistoryHelper.getRandomInstanceSeedWithFewestRunsFor(r, insc, defaultConfig, ilws.getInstances(), rand, false);
 		
 		AlgorithmRunConfiguration runConfig = new AlgorithmRunConfiguration(pisp, 1, defaultConfig,execConfig);
@@ -146,11 +146,11 @@ public class RunHistoryTester {
 		RunHistory runHistory = new NewRunHistory( OverallObjective.MEAN, OverallObjective.MEAN, RunObjective.RUNTIME);
 	
 	
-		ParamConfigurationSpace space = ParamFileHelper.getParamFileFromString("a [0,9] [0]\nb [0,9] [0]\n");
+		ParameterConfigurationSpace space = ParamFileHelper.getParamFileFromString("a [0,9] [0]\nb [0,9] [0]\n");
 				
-		ParamConfiguration defaultConfig = space.getDefaultConfiguration();		
+		ParameterConfiguration defaultConfig = space.getDefaultConfiguration();		
 		
-		ParamConfiguration otherConfig = space.getConfigurationFromString("-a '1' -b '1'", StringFormat.NODB_OR_STATEFILE_SYNTAX);
+		ParameterConfiguration otherConfig = space.getParameterConfigurationFromString("-a '1' -b '1'", ParameterStringFormat.NODB_OR_STATEFILE_SYNTAX);
 		
 		ProblemInstanceSeedPair pisp = new ProblemInstanceSeedPair(ilws.getInstances().get(0), insc.getNextSeed(ilws.getInstances().get(0)));
 		AlgorithmExecutionConfiguration execConfig = new AlgorithmExecutionConfiguration("boo", "foo", space, false, false, 500);
@@ -201,11 +201,11 @@ public class RunHistoryTester {
 		RunHistory runHistory = new NewRunHistory( OverallObjective.MEAN, OverallObjective.MEAN, RunObjective.RUNTIME);
 	
 	
-		ParamConfigurationSpace space = ParamFileHelper.getParamFileFromString("a [0,9] [0]\nb [0,9] [0]\n");
+		ParameterConfigurationSpace space = ParamFileHelper.getParamFileFromString("a [0,9] [0]\nb [0,9] [0]\n");
 				
-		ParamConfiguration defaultConfig = space.getDefaultConfiguration();		
+		ParameterConfiguration defaultConfig = space.getDefaultConfiguration();		
 		
-		ParamConfiguration otherConfig = space.getConfigurationFromString("-a '1' -b '1'", StringFormat.NODB_OR_STATEFILE_SYNTAX);
+		ParameterConfiguration otherConfig = space.getParameterConfigurationFromString("-a '1' -b '1'", ParameterStringFormat.NODB_OR_STATEFILE_SYNTAX);
 		
 		ProblemInstanceSeedPair pisp = new ProblemInstanceSeedPair(ilws.getInstances().get(0), insc.getNextSeed(ilws.getInstances().get(0)));
 		AlgorithmExecutionConfiguration execConfig = new AlgorithmExecutionConfiguration("boo", "foo", space, false, false, 500);
@@ -248,7 +248,7 @@ public class RunHistoryTester {
 		
 		InstanceSeedGenerator insc = ilws.getSeedGen();
 		RunHistory runHistory = new NewRunHistory( OverallObjective.MEAN, OverallObjective.MEAN, RunObjective.RUNTIME);
-		ParamConfigurationSpace space = ParamFileHelper.getParamFileFromString("a [0,9] [0]\nb [0,9] [0]\n");
+		ParameterConfigurationSpace space = ParamFileHelper.getParamFileFromString("a [0,9] [0]\nb [0,9] [0]\n");
 				
 				
 		AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(ilws.getInstances().get(0), insc.getNextSeed(ilws.getInstances().get(0))), execConfig.getAlgorithmMaximumCutoffTime(), space.getDefaultConfiguration(), execConfig); 
@@ -317,8 +317,8 @@ public class RunHistoryTester {
 		double cutoffTime = 50;
 		
 		
-		ParamConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("x [0,10][5]\n");
-		ParamConfiguration incumbent = configSpace.getDefaultConfiguration();
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("x [0,10][5]\n");
+		ParameterConfiguration incumbent = configSpace.getDefaultConfiguration();
 		
 		
 		 AlgorithmExecutionConfiguration execConfig = new AlgorithmExecutionConfiguration("boo", "foo", configSpace, false, false, 500);
@@ -425,7 +425,7 @@ public class RunHistoryTester {
 		InstanceSeedGenerator insc = ilws.getSeedGen();
 		RunHistory r = new NewRunHistory(OverallObjective.MEAN, OverallObjective.MEAN, RunObjective.RUNTIME);
 		
-		ParamConfiguration defaultConfig = configSpace.getDefaultConfiguration();
+		ParameterConfiguration defaultConfig = configSpace.getDefaultConfiguration();
 		
 		try {
 			for(int i=0; i < 55; i++)
@@ -464,7 +464,7 @@ public class RunHistoryTester {
 		InstanceSeedGenerator insc = ilws.getSeedGen();
 		RunHistory r = new NewRunHistory(OverallObjective.MEAN, OverallObjective.MEAN, RunObjective.RUNTIME);
 		
-		ParamConfiguration defaultConfig = configSpace.getDefaultConfiguration();	
+		ParameterConfiguration defaultConfig = configSpace.getDefaultConfiguration();	
 		
 		try {
 			for(int i=0; i < 55; i++)
@@ -502,11 +502,11 @@ public class RunHistoryTester {
 		
 		double cutoffTime = execConfig.getAlgorithmMaximumCutoffTime();
 		
-		ParamConfigurationSpace space = ParamFileHelper.getParamFileFromString("a [0,9] [0]\nb [0,9] [0]\n");
+		ParameterConfigurationSpace space = ParamFileHelper.getParamFileFromString("a [0,9] [0]\nb [0,9] [0]\n");
 		
-		ParamConfiguration defaultConfig = space.getDefaultConfiguration();		
+		ParameterConfiguration defaultConfig = space.getDefaultConfiguration();		
 		
-		ParamConfiguration otherConfig = space.getConfigurationFromString("-a '1' -b '1'", StringFormat.NODB_OR_STATEFILE_SYNTAX);
+		ParameterConfiguration otherConfig = space.getParameterConfigurationFromString("-a '1' -b '1'", ParameterStringFormat.NODB_OR_STATEFILE_SYNTAX);
 
 		
 		AlgorithmExecutionConfiguration execConfig = new AlgorithmExecutionConfiguration("boo", "foo", space, false, false, 500);
@@ -603,11 +603,11 @@ public class RunHistoryTester {
 		Set<ProblemInstance> instanceSet = new HashSet<ProblemInstance>();
 		instanceSet.add(ilws.getInstances().get(0));
 		
-		ParamConfigurationSpace space = ParamFileHelper.getParamFileFromString("a [0,9] [0]\nb [0,9] [0]\n");
+		ParameterConfigurationSpace space = ParamFileHelper.getParamFileFromString("a [0,9] [0]\nb [0,9] [0]\n");
 		
-		ParamConfiguration defaultConfig = space.getDefaultConfiguration();		
+		ParameterConfiguration defaultConfig = space.getDefaultConfiguration();		
 		
-		ParamConfiguration otherConfig = space.getConfigurationFromString("-a '1' -b '1'", StringFormat.NODB_OR_STATEFILE_SYNTAX);
+		ParameterConfiguration otherConfig = space.getParameterConfigurationFromString("-a '1' -b '1'", ParameterStringFormat.NODB_OR_STATEFILE_SYNTAX);
 
 		
 		double cutoffTime = execConfig.getAlgorithmMaximumCutoffTime();
@@ -711,11 +711,11 @@ public class RunHistoryTester {
 		Set<ProblemInstance> instanceSet = new HashSet<ProblemInstance>();
 		instanceSet.add(ilws.getInstances().get(0));
 
-		ParamConfigurationSpace space = ParamFileHelper.getParamFileFromString("a [0,9] [0]\nb [0,9] [0]\n");
+		ParameterConfigurationSpace space = ParamFileHelper.getParamFileFromString("a [0,9] [0]\nb [0,9] [0]\n");
 		
-		ParamConfiguration defaultConfig = space.getDefaultConfiguration();		
+		ParameterConfiguration defaultConfig = space.getDefaultConfiguration();		
 		
-		ParamConfiguration otherConfig = space.getConfigurationFromString("-a '1' -b '1'", StringFormat.NODB_OR_STATEFILE_SYNTAX);
+		ParameterConfiguration otherConfig = space.getParameterConfigurationFromString("-a '1' -b '1'", ParameterStringFormat.NODB_OR_STATEFILE_SYNTAX);
 
 		AlgorithmExecutionConfiguration execConfig = new AlgorithmExecutionConfiguration("boo", "foo", space, false, false, 500);
 		
@@ -820,11 +820,11 @@ public class RunHistoryTester {
 			Set<ProblemInstance> instanceSet = new HashSet<ProblemInstance>();
 			instanceSet.add(ilws.getInstances().get(0));
 			
-			ParamConfigurationSpace space = ParamFileHelper.getParamFileFromString("a [0,9] [0]\nb [0,9] [0]\n");
+			ParameterConfigurationSpace space = ParamFileHelper.getParamFileFromString("a [0,9] [0]\nb [0,9] [0]\n");
 			
-			ParamConfiguration defaultConfig = space.getDefaultConfiguration();		
+			ParameterConfiguration defaultConfig = space.getDefaultConfiguration();		
 			
-			ParamConfiguration otherConfig = space.getConfigurationFromString("-a '1' -b '1'", StringFormat.NODB_OR_STATEFILE_SYNTAX);
+			ParameterConfiguration otherConfig = space.getParameterConfigurationFromString("-a '1' -b '1'", ParameterStringFormat.NODB_OR_STATEFILE_SYNTAX);
 
 			
 			AlgorithmExecutionConfiguration execConfig = new AlgorithmExecutionConfiguration("boo", "foo", space, false, false, 500);

@@ -1,12 +1,12 @@
 package ca.ubc.cs.beta.aeatk.model.data;
 
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.misc.math.ArrayMathOps;
 import ca.ubc.cs.beta.aeatk.misc.math.MessyMathHelperClass;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace;
 
 public class RawSanitizedModelData implements SanitizedModelData {
 	
-	private final ParamConfigurationSpace configSpace;
+	private final ParameterConfigurationSpace configSpace;
 	protected final double[][] configs;
 	private final double[] responseValues;
 	private final double[][] prePCAInstanceFeatures;
@@ -23,7 +23,7 @@ public class RawSanitizedModelData implements SanitizedModelData {
 	{
 		this(instanceFeatures, paramValues, responseValues, usedInstances, logModel, theta_inst_idxs, censoredResponseValues, null);
 	}
-	public RawSanitizedModelData(double[][] instanceFeatures, double[][] paramValues, double[] responseValues, int[] usedInstancesIdxs, boolean logModel, int[][] theta_inst_idxs, boolean[] censoredResponseValues, ParamConfigurationSpace configSpace)
+	public RawSanitizedModelData(double[][] instanceFeatures, double[][] paramValues, double[] responseValues, int[] usedInstancesIdxs, boolean logModel, int[][] theta_inst_idxs, boolean[] censoredResponseValues, ParameterConfigurationSpace configSpace)
 	{
 		this.configSpace = configSpace;
 		this.configs = paramValues;

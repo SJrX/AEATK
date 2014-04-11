@@ -17,10 +17,10 @@ import org.slf4j.LoggerFactory;
 import static ca.ubc.cs.beta.aeatk.state.legacy.LegacyStateFactory.*;
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration.StringFormat;
 import ca.ubc.cs.beta.aeatk.exceptions.StateSerializationException;
 import ca.ubc.cs.beta.aeatk.misc.watch.AutoStartStopWatch;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration.ParameterStringFormat;
 import ca.ubc.cs.beta.aeatk.runhistory.RunData;
 import ca.ubc.cs.beta.aeatk.runhistory.RunHistory;
 import ca.ubc.cs.beta.aeatk.state.StateSerializer;
@@ -43,7 +43,7 @@ public class LegacyStateSerializer implements StateSerializer {
 
 	private RunHistory runHistory = null;
 	//private final EnumMap<RandomPoolType, Random> randomMap = new EnumMap<RandomPoolType,Random>(RandomPoolType.class);
-	private ParamConfiguration incumbent;
+	private ParameterConfiguration incumbent;
 	
 	private final String id ;
 	private final int iteration;
@@ -79,7 +79,7 @@ public class LegacyStateSerializer implements StateSerializer {
 	}
 
 	@Override
-	public void setIncumbent(ParamConfiguration incumbent) {
+	public void setIncumbent(ParameterConfiguration incumbent) {
 		this.incumbent = incumbent;
 		
 	}
@@ -112,10 +112,10 @@ public class LegacyStateSerializer implements StateSerializer {
 				
 				
 				int i=1; 
-				for(ParamConfiguration config : runHistory.getAllParameterConfigurationsRan())
+				for(ParameterConfiguration config : runHistory.getAllParameterConfigurationsRan())
 				{
 					
-					paramStrings.append(i + ":" + config.getFormattedParamString(StringFormat.STATEFILE_SYNTAX) + "\n");
+					paramStrings.append(i + ":" + config.getFormattedParameterString(ParameterStringFormat.STATEFILE_SYNTAX) + "\n");
 					
 					uniqConfigurations.append(i+",").append(getStringFromConfiguration(config)).append("\n");
 					
@@ -269,7 +269,7 @@ public class LegacyStateSerializer implements StateSerializer {
 		
 		if(incumbent != null)
 		{
-			mapToWrite.put(INCUMBENT_TEXT_KEY, incumbent.getFormattedParamString(StringFormat.STATEFILE_SYNTAX));
+			mapToWrite.put(INCUMBENT_TEXT_KEY, incumbent.getFormattedParameterString(ParameterStringFormat.STATEFILE_SYNTAX));
 			
 		}
 		oWriter.writeObject(mapToWrite);
@@ -282,9 +282,9 @@ public class LegacyStateSerializer implements StateSerializer {
 	 * @param config param configuration
 	 * @return	paramconfiguration in string form.
 	 */
-	public String getStringFromConfiguration(ParamConfiguration config)
+	public String getStringFromConfiguration(ParameterConfiguration config)
 	{
-		return config.getFormattedParamString(StringFormat.ARRAY_STRING_SYNTAX);
+		return config.getFormattedParameterString(ParameterStringFormat.ARRAY_STRING_SYNTAX);
 	}
 
 	/**

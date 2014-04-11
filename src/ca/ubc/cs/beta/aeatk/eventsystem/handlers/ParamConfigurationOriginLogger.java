@@ -9,10 +9,10 @@ import java.util.Collections;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
-import ca.ubc.cs.beta.aeatk.configspace.tracking.ParamConfigurationOriginTracker;
 import ca.ubc.cs.beta.aeatk.eventsystem.EventHandler;
 import ca.ubc.cs.beta.aeatk.eventsystem.events.ac.AutomaticConfigurationEnd;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.tracking.ParamConfigurationOriginTracker;
 import ca.ubc.cs.beta.aeatk.runhistory.RunHistory;
 
 /**
@@ -60,7 +60,7 @@ public class ParamConfigurationOriginLogger implements EventHandler<AutomaticCon
 			
 			writer.append(sb.toString());
 		
-			for(ParamConfiguration config : configTracker)
+			for(ParameterConfiguration config : configTracker)
 			{
 				if(runHistory.getTotalNumRunsOfConfigExcludingRedundant(config) == 0)
 				{

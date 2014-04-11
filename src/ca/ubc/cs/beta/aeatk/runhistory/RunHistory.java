@@ -6,10 +6,10 @@ import java.util.Map;
 import java.util.Set;
 
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aeatk.exceptions.DuplicateRunException;
 import ca.ubc.cs.beta.aeatk.objectives.OverallObjective;
 import ca.ubc.cs.beta.aeatk.objectives.RunObjective;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
 
@@ -60,14 +60,14 @@ public interface RunHistory {
 	 * @param config configuration to get instances for
 	 * @return	set instances that were run
 	 */
-	public Set<ProblemInstance> getProblemInstancesRan(ParamConfiguration config);
+	public Set<ProblemInstance> getProblemInstancesRan(ParameterConfiguration config);
 
 	/**
 	 * Returns a copy of the set of instance seed pairs we have run a Param Configuration on.
 	 * @param config	configuration to get ProblemInstanceSeedPairs for
 	 * @return	set of ProblemInstanceSeedPairs
 	 */
-	public Set<ProblemInstanceSeedPair> getProblemInstanceSeedPairsRan(ParamConfiguration config);
+	public Set<ProblemInstanceSeedPair> getProblemInstanceSeedPairsRan(ParameterConfiguration config);
 	
 	
 	/**
@@ -78,7 +78,7 @@ public interface RunHistory {
 	 * @deprecated Not implemented currently as there is a bug in the interface and will need to be refactored at a later point in time. Essentially it will erroneusly include other seeds and throw off the bound.
 	 * @return cost (Double.MAX_VALUE) if we haven't seen the configuration, otherwise the cost 
 	 */
-	public double getEmpiricalCostLowerBound(ParamConfiguration config, Set<ProblemInstance> instanceSet, double cutoffTime);
+	public double getEmpiricalCostLowerBound(ParameterConfiguration config, Set<ProblemInstance> instanceSet, double cutoffTime);
 	
 	/**
 	 * Compute and return the empirical cost of a parameter configuration on the subset of provided instances we have runs for
@@ -88,7 +88,7 @@ public interface RunHistory {
 	 * @deprecated Not implemented currently as there is a bug in the interface and will need to be refactored at a later point in time. Essentially it will erroneusly include other seeds and throw off the bound.
 	 * @return cost (Double.MAX_VALUE) if we haven't seen the configuration, otherwise the cost 
 	 */
-	public double getEmpiricalCostUpperBound(ParamConfiguration config, Set<ProblemInstance> instanceSet, double cutoffTime);
+	public double getEmpiricalCostUpperBound(ParameterConfiguration config, Set<ProblemInstance> instanceSet, double cutoffTime);
 	
 	/**
 	 * Compute and return the empirical cost of a parameter configuration on the subset of provided instances we have runs for
@@ -97,7 +97,7 @@ public interface RunHistory {
 	 * @param cutoffTime 	 cutoff time for algorithm runs
 	 * @return cost (Double.MAX_VALUE) if we haven't seen the configuration, otherwise the cost 
 	 */
-	public double getEmpiricalCost(ParamConfiguration config, Set<ProblemInstance> instanceSet, double cutoffTime);
+	public double getEmpiricalCost(ParameterConfiguration config, Set<ProblemInstance> instanceSet, double cutoffTime);
 	
 	/**
 	 * Compute and return the empirical cost of a parameter configuration on the subset of provided instances we have runs for.
@@ -106,7 +106,7 @@ public interface RunHistory {
 	 * @param cutoffTime 	cutoff time for algorithm runs
 	 * @return cost (Double.MAX_VALUE) if we haven't seen the configuration, otherwise the cost 
 	 */
-	double getEmpiricalCost(ParamConfiguration config, Set<ProblemInstance> instanceSet, double cutoffTime,	Map<ProblemInstance, Map<Long, Double>> hallucinatedValues);
+	double getEmpiricalCost(ParameterConfiguration config, Set<ProblemInstance> instanceSet, double cutoffTime,	Map<ProblemInstance, Map<Long, Double>> hallucinatedValues);
 
 	/**
 	 * Compute and return the empirical cost of a parameter configuration on the subset of provided instances we have runs for.
@@ -116,7 +116,7 @@ public interface RunHistory {
 	 * @param minimumResponseValue  the minimum legal response value (all values lower than this are replaced)
 	 * @return cost (Double.MAX_VALUE) if we haven't seen the configuration, otherwise the cost 
 	 */
-	double getEmpiricalCost(ParamConfiguration config,
+	double getEmpiricalCost(ParameterConfiguration config,
 			Set<ProblemInstance> instanceSet, double cutoffTime,
 			Map<ProblemInstance, Map<Long, Double>> hallucinatedValues,
 			double minimumResponseValue);
@@ -129,7 +129,7 @@ public interface RunHistory {
 	 * @param minimumResponseValue  the minimum legal response value (all values lower than this are replaced)
 	 * @return cost (Double.MAX_VALUE) if we haven't seen the configuration, otherwise the cost
 	 */
-	double getEmpiricalCost(ParamConfiguration config,	Set<ProblemInstance> instanceSet, double cutoffTime, double minimumResponseValue);
+	double getEmpiricalCost(ParameterConfiguration config,	Set<ProblemInstance> instanceSet, double cutoffTime, double minimumResponseValue);
 	
 
 	
@@ -152,7 +152,7 @@ public interface RunHistory {
 	 * Gets a list of Unique Param Configurations Ran
 	 * @return	set of param configurations ran
 	 */
-	public Set<ParamConfiguration> getUniqueParamConfigurations();
+	public Set<ParameterConfiguration> getUniqueParamConfigurations();
 	
 	/**
 	 * Returns an Nx2 matrix where each row corresponds to a
@@ -170,7 +170,7 @@ public interface RunHistory {
 	 * 
 	 * @return list of param configurations
 	 */
-	public List<ParamConfiguration> getAllParameterConfigurationsRan();
+	public List<ParameterConfiguration> getAllParameterConfigurationsRan();
 	
 	/**
 	 * Returns all configurations run in Value Array Form
@@ -214,28 +214,28 @@ public interface RunHistory {
 	 * @param config ParamConfiguration
 	 * @return number of runs
 	 */
-	public int getTotalNumRunsOfConfigExcludingRedundant(ParamConfiguration config);
+	public int getTotalNumRunsOfConfigExcludingRedundant(ParameterConfiguration config);
 	
 	/**
 	 * Returns the total number of runs for a configuration, , containing early capped runs.
 	 * @param config ParamConfiguration
 	 * @return number of runs
 	 */
-	public int getTotalNumRunsOfConfigIncludingRedundant(ParamConfiguration config);
+	public int getTotalNumRunsOfConfigIncludingRedundant(ParameterConfiguration config);
 	
 	/**
 	 * Returns an unmodifiable list of run data for challenger, ignoring early capped runs that have been replaced with better capped data.
 	 * @param config
 	 * @return 	list of algorithms for the configuration
 	 */
-	public List<AlgorithmRun> getAlgorithmRunsExcludingRedundant(ParamConfiguration config);
+	public List<AlgorithmRun> getAlgorithmRunsExcludingRedundant(ParameterConfiguration config);
 
 	/**
 	 * Returns an unmodifiable list of run data for challenger, containing early capped runs.
 	 * @param config
 	 * @return 	list of algorithms for the configuration
 	 */
-	public List<AlgorithmRun> getAlgorithmRunsIncludingRedundant(ParamConfiguration config);
+	public List<AlgorithmRun> getAlgorithmRunsIncludingRedundant(ParameterConfiguration config);
 	
 
 	/**
@@ -244,7 +244,7 @@ public interface RunHistory {
 	 * @param config	paramconfiguration to select
 	 * @return	set of instance seed pairs that are capped runs
 	 */
-	public Set<ProblemInstanceSeedPair> getEarlyCensoredProblemInstanceSeedPairs(ParamConfiguration config);
+	public Set<ProblemInstanceSeedPair> getEarlyCensoredProblemInstanceSeedPairs(ParameterConfiguration config);
 
 	/**
 	 * Returns the Index into arrays represented by this configuration
@@ -252,7 +252,7 @@ public interface RunHistory {
 	 * @param configuration 	Configuration needed (must exist in RunHistory)
 	 * @return index into the theta array for this configuration
 	 */
-	public int getThetaIdx(ParamConfiguration configuration);
+	public int getThetaIdx(ParameterConfiguration configuration);
 
 	/**
 	 * Returns the number of unique problem instance seed pairs run for this configuration 
@@ -261,14 +261,14 @@ public interface RunHistory {
 	 * @param config
 	 * @return number of pisps that a config has run on
 	 */
-	public int getNumberOfUniqueProblemInstanceSeedPairsForConfiguration( ParamConfiguration config);
+	public int getNumberOfUniqueProblemInstanceSeedPairsForConfiguration( ParameterConfiguration config);
 
 	/**
 	 * Returns an unmodifiable map that stores the seeds and performance for a configuration
 	 * @param configuration
 	 * @return map
 	 */
-	public Map<ProblemInstance, LinkedHashMap<Long, Double>> getPerformanceForConfig(ParamConfiguration configuration);
+	public Map<ProblemInstance, LinkedHashMap<Long, Double>> getPerformanceForConfig(ParameterConfiguration configuration);
 
 	/**
 	 * Returns a list of seeds used by instance 
@@ -284,7 +284,7 @@ public interface RunHistory {
 	 * @param configuration 	Configuration to create idx for
 	 * @return index into the theta array for this configuration
 	 */
-	public int getOrCreateThetaIdx(ParamConfiguration config);
+	public int getOrCreateThetaIdx(ParameterConfiguration config);
 
 	
 	

@@ -16,9 +16,9 @@ import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionCo
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.misc.debug.DebugUtil;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aeatk.random.SeedableRandomPool;
@@ -33,7 +33,7 @@ private static TargetAlgorithmEvaluator tae;
 	
 	private static AlgorithmExecutionConfiguration execConfig;
 	
-	private static ParamConfigurationSpace configSpace;
+	private static ParameterConfigurationSpace configSpace;
 	
 	private static final int TARGET_RUNS_IN_LOOPS = 50;
 	
@@ -45,7 +45,7 @@ private static TargetAlgorithmEvaluator tae;
 	public static void beforeClass()
 	{
 		File paramFile = TestHelper.getTestFile("paramFiles/paramEchoParamFile.txt");
-		configSpace = new ParamConfigurationSpace(paramFile);
+		configSpace = new ParameterConfigurationSpace(paramFile);
 		
 		StringBuilder b = new StringBuilder();
 		b.append("java -cp ");
@@ -79,7 +79,7 @@ private static TargetAlgorithmEvaluator tae;
 		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED"))
 			{
 				//Only want good configurations
@@ -104,7 +104,7 @@ private static TargetAlgorithmEvaluator tae;
 				crashedRuns++;
 			} else
 			{
-				ParamConfiguration config  = run.getRunConfig().getParameterConfiguration();
+				ParameterConfiguration config  = run.getRunConfig().getParameterConfiguration();
 				assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
 				assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
 				assertDEquals(config.get("quality"), run.getQuality(), 0.1);
@@ -138,7 +138,7 @@ private static TargetAlgorithmEvaluator tae;
 		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED"))
 			{
 				//Only want good configurations
@@ -174,7 +174,7 @@ private static TargetAlgorithmEvaluator tae;
 				fail("Expected zero crashes but run " + i + " crashed ");
 			} else
 			{
-				ParamConfiguration config  = run.getRunConfig().getParameterConfiguration();
+				ParameterConfiguration config  = run.getRunConfig().getParameterConfiguration();
 				assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
 				assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
 				assertDEquals(config.get("quality"), run.getQuality(), 0.1);

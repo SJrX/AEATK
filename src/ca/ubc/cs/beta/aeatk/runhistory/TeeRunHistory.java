@@ -4,8 +4,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aeatk.exceptions.DuplicateRunException;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
 
 
 /**
@@ -38,7 +38,7 @@ public class TeeRunHistory extends AbstractRunHistoryDecorator{
 	}
 
 	@Override
-	public int getOrCreateThetaIdx(ParamConfiguration initialIncumbent) {
+	public int getOrCreateThetaIdx(ParameterConfiguration initialIncumbent) {
 		
 		try {
 		return this.rh.getOrCreateThetaIdx(initialIncumbent);

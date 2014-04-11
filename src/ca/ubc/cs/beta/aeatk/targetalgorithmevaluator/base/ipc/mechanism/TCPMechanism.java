@@ -18,9 +18,9 @@ import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.ExistingAlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration.StringFormat;
 import ca.ubc.cs.beta.aeatk.misc.watch.AutoStartStopWatch;
 import ca.ubc.cs.beta.aeatk.misc.watch.StopWatch;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration.ParameterStringFormat;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.ipc.ResponseParser;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.exceptions.TargetAlgorithmAbortException;
 
@@ -61,7 +61,7 @@ public class TCPMechanism {
 			list.add(String.valueOf(Integer.MAX_VALUE));
 			list.add(String.valueOf(rc.getProblemInstanceSeedPair().getSeed()));
 			
-			StringFormat f = StringFormat.NODB_SYNTAX;
+			ParameterStringFormat f = ParameterStringFormat.NODB_SYNTAX;
 			
 			for(String key : rc.getParameterConfiguration().getActiveParameters()  )
 			{

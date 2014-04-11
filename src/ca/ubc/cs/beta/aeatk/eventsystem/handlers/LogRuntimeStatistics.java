@@ -12,7 +12,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aeatk.eventsystem.EventHandler;
 import ca.ubc.cs.beta.aeatk.eventsystem.events.AutomaticConfiguratorEvent;
 import ca.ubc.cs.beta.aeatk.eventsystem.events.ac.ChallengeEndEvent;
@@ -22,6 +21,7 @@ import ca.ubc.cs.beta.aeatk.eventsystem.events.basic.AlgorithmRunCompletedEvent;
 import ca.ubc.cs.beta.aeatk.eventsystem.events.state.StateRestoredEvent;
 import ca.ubc.cs.beta.aeatk.logging.CommonMarkers;
 import ca.ubc.cs.beta.aeatk.misc.cputime.CPUTime;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
 import ca.ubc.cs.beta.aeatk.runhistory.ThreadSafeRunHistory;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.termination.TerminationCondition;
@@ -160,7 +160,7 @@ public class LogRuntimeStatistics implements EventHandler<AutomaticConfiguratorE
 					}
 					return;
 				}
-				ParamConfiguration incumbent = this.lastICE.get().getIncumbent();
+				ParameterConfiguration incumbent = this.lastICE.get().getIncumbent();
 				
 				
 				Object[] arr = { logCount.get(),

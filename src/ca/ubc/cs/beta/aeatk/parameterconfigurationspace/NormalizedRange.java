@@ -1,10 +1,10 @@
-package ca.ubc.cs.beta.aeatk.configspace;
+package ca.ubc.cs.beta.aeatk.parameterconfigurationspace;
 
 import java.io.Serializable;
 
 /**
  * Maps a value on some interval to [0,1] and back
- * @see ParamConfigurationSpace
+ * @see ParameterConfigurationSpace
  */
 public class NormalizedRange implements Serializable
 {

@@ -11,11 +11,11 @@ import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aeatk.json.serializers.AlgorithmExecutionConfigJson.AlgorithmExecutionConfigDeserializer;
 import ca.ubc.cs.beta.aeatk.json.serializers.ParamConfigurationJson.ParamConfigurationDeserializer;
 import ca.ubc.cs.beta.aeatk.json.serializers.ProblemInstanceJson.ProblemInstanceSeedPairDeserializer;
 import ca.ubc.cs.beta.aeatk.misc.version.ACLibVersionInfo;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
 
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -78,7 +78,7 @@ public class RunConfigJson  {
 			
 			ProblemInstanceSeedPair pisp = null;
 			AlgorithmExecutionConfiguration execConfig = null;
-			ParamConfiguration config = null;
+			ParameterConfiguration config = null;
 			int sampleIdx = 0;
 			double cutoffTime = Double.NEGATIVE_INFINITY;
 			

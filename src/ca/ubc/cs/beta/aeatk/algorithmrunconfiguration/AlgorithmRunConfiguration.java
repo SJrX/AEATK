@@ -5,8 +5,8 @@ import java.io.Serializable;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aeatk.json.serializers.RunConfigJson;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
 /**
  * Immutable class that contains all the information necessary for a target algorithm run.
@@ -23,7 +23,7 @@ public class AlgorithmRunConfiguration implements Serializable{
 	private static final long serialVersionUID = 7749039021874017859L;
 	private final ProblemInstanceSeedPair pisp;
 	private final double cutoffTime;
-	private final ParamConfiguration params;
+	private final ParameterConfiguration params;
 	private final boolean cutoffLessThanMax;
 	private final AlgorithmExecutionConfiguration algorithmExecutionConfiguration;
 
@@ -34,7 +34,7 @@ public class AlgorithmRunConfiguration implements Serializable{
 	 * @param config 		paramconfiguration of the target algorithm
 	 * @param execConfig	execution configuration the run represents
 	 */
-	public AlgorithmRunConfiguration(ProblemInstanceSeedPair pisp, double cutoffTime, ParamConfiguration config, AlgorithmExecutionConfiguration execConfig)
+	public AlgorithmRunConfiguration(ProblemInstanceSeedPair pisp, double cutoffTime, ParameterConfiguration config, AlgorithmExecutionConfiguration execConfig)
 	{
 		if(pisp == null)
 		{
@@ -56,7 +56,7 @@ public class AlgorithmRunConfiguration implements Serializable{
 		{
 			throw new IllegalArgumentException("Algorithm Execution Configuration cannot be null");
 		}
-		if(!config.getConfigurationSpace().equals(execConfig.getParameterConfigurationSpace()))
+		if(!config.getParameterConfigurationSpace().equals(execConfig.getParameterConfigurationSpace()))
 		{
 			throw new IllegalArgumentException("Configuration Space of ParamConfiguration, and that of the AlgorithmExecutionConfig object need to be the same.");
 		}
@@ -75,7 +75,7 @@ public class AlgorithmRunConfiguration implements Serializable{
 	 * @param config 				paramconfiguration of the target algorithm
 	 * @param execConfig			execution configuration 
 	 */
-	public AlgorithmRunConfiguration(ProblemInstanceSeedPair pisp, ParamConfiguration config, AlgorithmExecutionConfiguration execConfig)
+	public AlgorithmRunConfiguration(ProblemInstanceSeedPair pisp, ParameterConfiguration config, AlgorithmExecutionConfiguration execConfig)
 	{
 		this(pisp,execConfig.getAlgorithmMaximumCutoffTime(), config, execConfig);
 	}
@@ -102,9 +102,9 @@ public class AlgorithmRunConfiguration implements Serializable{
 	 * Returns a COPY of the Param Configuration to be run
 	 * @return a copy of the param configuration to be run
 	 */
-	public ParamConfiguration getParameterConfiguration()
+	public ParameterConfiguration getParameterConfiguration()
 	{
-		return new ParamConfiguration(params);
+		return new ParameterConfiguration(params);
 	}
 	
 	/**

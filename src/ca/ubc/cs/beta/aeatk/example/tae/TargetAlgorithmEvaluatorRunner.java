@@ -13,12 +13,12 @@ import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionCo
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration.StringFormat;
 import ca.ubc.cs.beta.aeatk.misc.jcommander.JCommanderHelper;
 import ca.ubc.cs.beta.aeatk.misc.version.VersionTracker;
 import ca.ubc.cs.beta.aeatk.options.AbstractOptions;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration.ParameterStringFormat;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
@@ -158,7 +158,7 @@ public class TargetAlgorithmEvaluatorRunner
 				
 				//A Configuration Space object it represents the space of allowable configurations (IMMUTABLE).
 				//"ParamFile" is a deprecated term for it that is still in use in the code base
-				ParamConfigurationSpace configSpace = execConfig.getParameterConfigurationSpace();
+				ParameterConfigurationSpace configSpace = execConfig.getParameterConfigurationSpace();
 			
 				
 				//If we are asked to supply a random a configuration, we need to pass a Random object
@@ -166,7 +166,7 @@ public class TargetAlgorithmEvaluatorRunner
 				
 				
 				//Converts the string based configuration in the options object, to a point in the above space
-				ParamConfiguration config = configSpace.getConfigurationFromString(mainOptions.config, StringFormat.NODB_OR_STATEFILE_SYNTAX, configSpacePRNG);
+				ParameterConfiguration config = configSpace.getParameterConfigurationFromString(mainOptions.config, ParameterStringFormat.NODB_OR_STATEFILE_SYNTAX, configSpacePRNG);
 				
 				//ParamConfiguration objects implement the Map<String, String> interface (but not all methods are implemented)
 				//Other methods have restricted semantics, for instance you must ensure that you are only placing keys with valid values in the map. 
@@ -288,7 +288,7 @@ public class TargetAlgorithmEvaluatorRunner
 			}
 			
 			//The toString() method does not return the actual configuration, this method is the best way to print them
-			String configString = resultRunConfig.getParameterConfiguration().getFormattedParamString(StringFormat.NODB_OR_STATEFILE_SYNTAX);
+			String configString = resultRunConfig.getParameterConfiguration().getFormattedParameterString(ParameterStringFormat.NODB_OR_STATEFILE_SYNTAX);
 			
 			//Log messages with more than 2 parameters must have them passed as an array.
 			Object[] logArguments = { i, resultRunConfig.getProblemInstanceSeedPair().getProblemInstance(), configString, runResult, runtime, runLength, quality, resultSeed, additionalData};

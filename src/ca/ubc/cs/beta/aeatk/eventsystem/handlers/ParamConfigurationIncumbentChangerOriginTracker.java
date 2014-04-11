@@ -1,9 +1,9 @@
 package ca.ubc.cs.beta.aeatk.eventsystem.handlers;
 
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
-import ca.ubc.cs.beta.aeatk.configspace.tracking.ParamConfigurationOriginTracker;
 import ca.ubc.cs.beta.aeatk.eventsystem.EventHandler;
 import ca.ubc.cs.beta.aeatk.eventsystem.events.ac.IncumbentPerformanceChangeEvent;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.tracking.ParamConfigurationOriginTracker;
 import ca.ubc.cs.beta.aeatk.runhistory.ThreadSafeRunHistory;
 
 public class ParamConfigurationIncumbentChangerOriginTracker implements	EventHandler<IncumbentPerformanceChangeEvent>
@@ -24,7 +24,7 @@ public class ParamConfigurationIncumbentChangerOriginTracker implements	EventHan
 	}
 	
 	
-	ParamConfiguration lastIncumbent;
+	ParameterConfiguration lastIncumbent;
 	@Override
 	public synchronized void handleEvent(IncumbentPerformanceChangeEvent event) 
 	{

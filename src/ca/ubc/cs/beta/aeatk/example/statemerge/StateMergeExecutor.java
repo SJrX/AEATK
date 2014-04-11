@@ -26,8 +26,6 @@ import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionCo
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.ExistingAlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration.StringFormat;
 import ca.ubc.cs.beta.aeatk.exceptions.DeveloperMadeABooBooException;
 import ca.ubc.cs.beta.aeatk.exceptions.DuplicateRunException;
 import ca.ubc.cs.beta.aeatk.misc.MapList;
@@ -36,6 +34,8 @@ import ca.ubc.cs.beta.aeatk.misc.string.SplitQuotedString;
 import ca.ubc.cs.beta.aeatk.misc.version.VersionTracker;
 import ca.ubc.cs.beta.aeatk.objectives.RunObjective;
 import ca.ubc.cs.beta.aeatk.options.scenario.ScenarioOptions;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration.ParameterStringFormat;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aeatk.random.SeedableRandomPool;
@@ -151,22 +151,22 @@ public class StateMergeExecutor {
 			
 			ThreadSafeRunHistory rhToSaveToDisk;
 			
-			ParamConfiguration newIncumbent = null;
+			ParameterConfiguration newIncumbent = null;
 			if(smo.repairMaxRunsForIncumbentInvariant)
 			{
 				
 				
-				List<ParamConfiguration> configs = rhToFilter.getAllParameterConfigurationsRan();
+				List<ParameterConfiguration> configs = rhToFilter.getAllParameterConfigurationsRan();
 				
 				
 				
 				Set<ProblemInstanceSeedPair> allPisps = new HashSet<ProblemInstanceSeedPair>();
 				
-				ParamConfiguration maxConfig = null;
+				ParameterConfiguration maxConfig = null;
 				
-				Set<ParamConfiguration> maxConfigs = new HashSet<ParamConfiguration>();
+				Set<ParameterConfiguration> maxConfigs = new HashSet<ParameterConfiguration>();
 				int maxSetSize = 0;
-				for(ParamConfiguration config : configs)
+				for(ParameterConfiguration config : configs)
 				{
 					log.debug("Number of runs for configuration {} is {}", config, rhToFilter.getProblemInstanceSeedPairsRan(config).size());
 					
@@ -223,7 +223,7 @@ public class StateMergeExecutor {
 			
 				double bestMean = Double.POSITIVE_INFINITY;
 				
-				for(ParamConfiguration config : maxConfigs)
+				for(ParameterConfiguration config : maxConfigs)
 				{
 					Theta[0] = config.toValueArray();
 					
@@ -239,7 +239,7 @@ public class StateMergeExecutor {
 					
 				}
 				
-				log.info("New incumbent selected from random forest prediction is {} with string \"{}\" ", newIncumbent, newIncumbent.getFormattedParamString(StringFormat.NODB_SYNTAX));
+				log.info("New incumbent selected from random forest prediction is {} with string \"{}\" ", newIncumbent, newIncumbent.getFormattedParameterString(ParameterStringFormat.NODB_SYNTAX));
 				Set<ProblemInstanceSeedPair> maxSet = new HashSet<ProblemInstanceSeedPair>();
 				
 				maxSet.addAll(rhToFilter.getProblemInstanceSeedPairsRan(newIncumbent));
@@ -506,7 +506,7 @@ outerLoop:
 	}
 
 	
-	private static void saveState(String dir, ThreadSafeRunHistory rh, List<ProblemInstance> pis, String configSpaceFileName, AlgorithmExecutionConfiguration execConfig, ScenarioOptions scenOpts, ParamConfiguration newIncumbent) throws IOException 
+	private static void saveState(String dir, ThreadSafeRunHistory rh, List<ProblemInstance> pis, String configSpaceFileName, AlgorithmExecutionConfiguration execConfig, ScenarioOptions scenOpts, ParameterConfiguration newIncumbent) throws IOException 
 	{
 		
 		//StateFactoryOptions sfo = new StateFactoryOptions();

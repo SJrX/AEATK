@@ -1,6 +1,6 @@
 package ca.ubc.cs.beta.aeatk.model.data;
 
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace;
 
 /**
  * Fixes Conditional Values such that inactive Parameters are replaced by their default values
@@ -13,7 +13,7 @@ public class DefaultValueForConditionalsMDS extends RawSanitizedModelData {
 	public DefaultValueForConditionalsMDS(double[][] instanceFeatures,
 			double[][] paramValues, double[] responseValues,
 			int[] usedInstancesIdxs, boolean logModel, int[][] theta_inst_idxs, boolean[] censoredRuns,
-			ParamConfigurationSpace configSpace) {
+			ParameterConfigurationSpace configSpace) {
 		super(instanceFeatures, paramValues, responseValues, usedInstancesIdxs, logModel, theta_inst_idxs, censoredRuns, configSpace);
 
 		double[] defaultValues = configSpace.getDefaultConfiguration().toValueArray();

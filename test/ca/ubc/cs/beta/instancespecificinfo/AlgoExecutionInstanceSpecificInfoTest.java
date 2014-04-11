@@ -12,12 +12,13 @@ import org.junit.Test;
 
 
 
+
 import ca.ubc.cs.beta.TestHelper;
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.probleminstance.InstanceListWithSeeds;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceHelper;
@@ -44,7 +45,7 @@ public class AlgoExecutionInstanceSpecificInfoTest {
 		
 		
 		File paramFile = TestHelper.getTestFile("testInfoSpecificParamExecution/testParam.txt");
-		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(paramFile);
+		ParameterConfigurationSpace configSpace = new ParameterConfigurationSpace(paramFile);
 		
 		AlgorithmExecutionConfiguration execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, true, 500);
 		
@@ -52,7 +53,7 @@ public class AlgoExecutionInstanceSpecificInfoTest {
 		
 		InstanceListWithSeeds ilws = ProblemInstanceHelperTester.getInstanceListWithSeeds("classicFormatInstanceSeedSpecificValid.txt", false);
 		
-		ParamConfiguration defaultConfig = configSpace.getDefaultConfiguration();
+		ParameterConfiguration defaultConfig = configSpace.getDefaultConfiguration();
 		
 		for(int i=0; i < ProblemInstanceHelperTester.NON_SPACE_INSTANCES; i++)
 		{
@@ -97,14 +98,14 @@ public class AlgoExecutionInstanceSpecificInfoTest {
 		
 		
 		File paramFile = TestHelper.getTestFile("testInfoSpecificParamExecution/testParam.txt");
-		ParamConfigurationSpace configSpace = new ParamConfigurationSpace(paramFile);
+		ParameterConfigurationSpace configSpace = new ParameterConfigurationSpace(paramFile);
 		
 		AlgorithmExecutionConfiguration execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, true, 500);
 		TargetAlgorithmEvaluator tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE();
 		
 		InstanceListWithSeeds ilws = ProblemInstanceHelperTester.getInstanceListWithSeeds("manju.txt", false);
 		
-		ParamConfiguration defaultConfig = configSpace.getDefaultConfiguration();
+		ParameterConfiguration defaultConfig = configSpace.getDefaultConfiguration();
 		
 		for(int i=0; i < ProblemInstanceHelperTester.NON_SPACE_INSTANCES; i++)
 		{

@@ -1,11 +1,10 @@
-package ca.ubc.cs.beta.aeatk.configspace.tracking;
+package ca.ubc.cs.beta.aeatk.parameterconfigurationspace.tracking;
 
 import java.io.File;
 
 import com.beust.jcommander.Parameter;
 
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aeatk.eventsystem.EventManager;
 import ca.ubc.cs.beta.aeatk.eventsystem.events.ac.AutomaticConfigurationEnd;
 import ca.ubc.cs.beta.aeatk.eventsystem.events.ac.IncumbentPerformanceChangeEvent;
@@ -14,6 +13,7 @@ import ca.ubc.cs.beta.aeatk.eventsystem.handlers.ParamConfigurationOriginLogger;
 import ca.ubc.cs.beta.aeatk.misc.options.OptionLevel;
 import ca.ubc.cs.beta.aeatk.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aeatk.options.AbstractOptions;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
 import ca.ubc.cs.beta.aeatk.runhistory.ThreadSafeRunHistory;
 
 
@@ -25,7 +25,7 @@ public class ParamConfigurationOriginTrackingOptions extends AbstractOptions {
 	public boolean configTracking;
 	
 	
-	public ParamConfigurationOriginTracker getTracker(EventManager eventManager, ParamConfiguration initialIncumbent, String outputDir, ThreadSafeRunHistory rh, AlgorithmExecutionConfiguration execConfig, int numRun)
+	public ParamConfigurationOriginTracker getTracker(EventManager eventManager, ParameterConfiguration initialIncumbent, String outputDir, ThreadSafeRunHistory rh, AlgorithmExecutionConfiguration execConfig, int numRun)
 	{
 		if(configTracking)
 		{

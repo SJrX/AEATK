@@ -3,7 +3,7 @@ package ca.ubc.cs.beta.aeatk.state;
 import java.io.Serializable;
 import java.util.Map;
 
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
 import ca.ubc.cs.beta.aeatk.runhistory.RunHistory;
 
 /**
@@ -38,6 +38,6 @@ public interface StateSerializer {
 	 * Sets the incumbent configuration at this state
 	 * @param config	configuration to mark as the incumbent
 	 */
-	public void setIncumbent(ParamConfiguration config);
+	public void setIncumbent(ParameterConfiguration config);
 		
 }

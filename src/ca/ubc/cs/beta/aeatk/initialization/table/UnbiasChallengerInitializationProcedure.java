@@ -25,12 +25,12 @@ import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionCo
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.exceptions.DuplicateRunException;
 import ca.ubc.cs.beta.aeatk.initialization.InitializationProcedure;
 import ca.ubc.cs.beta.aeatk.misc.associatedvalue.Pair;
 import ca.ubc.cs.beta.aeatk.objectives.ObjectiveHelper;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aeatk.random.SeedableRandomPool;
@@ -47,19 +47,19 @@ import net.jcip.annotations.NotThreadSafe;
 public class UnbiasChallengerInitializationProcedure implements InitializationProcedure {
 
 	private final ThreadSafeRunHistory runHistory;
-	private final ParamConfiguration initialIncumbent;
+	private final ParameterConfiguration initialIncumbent;
 	private final TargetAlgorithmEvaluator tae;
 	private final UnbiasChallengerInitializationProcedureOptions opts;
 	private final Logger log = LoggerFactory.getLogger(UnbiasChallengerInitializationProcedure.class);
 	
 	private final List<ProblemInstance> instances;
 	private final InstanceSeedGenerator insc;
-	private volatile ParamConfiguration incumbent;
+	private volatile ParameterConfiguration incumbent;
 	
 	private final double cutoffTime;
 	private final SeedableRandomPool pool;
 	
-	private final ParamConfigurationSpace configSpace;
+	private final ParameterConfigurationSpace configSpace;
 	
 	private final int numberOfChallengers;
 	private final int numberOfRunsPerChallenger;
@@ -69,7 +69,7 @@ public class UnbiasChallengerInitializationProcedure implements InitializationPr
 	private final double cpuTimeLimit ;
 	private final AlgorithmExecutionConfiguration execConfig;
 
-	public UnbiasChallengerInitializationProcedure(ThreadSafeRunHistory runHistory, ParamConfiguration initialIncumbent, TargetAlgorithmEvaluator tae, AlgorithmExecutionConfiguration execConfig, UnbiasChallengerInitializationProcedureOptions opts, InstanceSeedGenerator insc, List<ProblemInstance> instances,  int maxIncumbentRuns , TerminationCondition termCond, double cutoffTime, SeedableRandomPool pool, boolean deterministicInstanceOrdering, ObjectiveHelper objHelp)
+	public UnbiasChallengerInitializationProcedure(ThreadSafeRunHistory runHistory, ParameterConfiguration initialIncumbent, TargetAlgorithmEvaluator tae, AlgorithmExecutionConfiguration execConfig, UnbiasChallengerInitializationProcedureOptions opts, InstanceSeedGenerator insc, List<ProblemInstance> instances,  int maxIncumbentRuns , TerminationCondition termCond, double cutoffTime, SeedableRandomPool pool, boolean deterministicInstanceOrdering, ObjectiveHelper objHelp)
 	{
 		this.runHistory =runHistory;
 		this.initialIncumbent = initialIncumbent;
@@ -88,7 +88,7 @@ public class UnbiasChallengerInitializationProcedure implements InitializationPr
 			throw new IllegalArgumentException("Deterministic Instance Ordering is not supported at this time with the UnbiasChallengerInitializationProcedure");
 		}
 		
-		this.configSpace = initialIncumbent.getConfigurationSpace();
+		this.configSpace = initialIncumbent.getParameterConfigurationSpace();
 		
 		this.cpuTimeLimit = opts.cpulimit;
 		if(cpuTimeLimit <= 0)
@@ -151,9 +151,9 @@ public class UnbiasChallengerInitializationProcedure implements InitializationPr
 				selectedPis.add(pisp.getProblemInstance());
 			}
 			
-			Set<ParamConfiguration> thetas = getParameterConfigurations(rand, Collections.singleton(this.initialIncumbent));		
+			Set<ParameterConfiguration> thetas = getParameterConfigurations(rand, Collections.singleton(this.initialIncumbent));		
 			
-			List<Pair<ProblemInstanceSeedPair, ParamConfiguration>> pispConfigs = createPairs(rand, selectedPisps, thetas);
+			List<Pair<ProblemInstanceSeedPair, ParameterConfiguration>> pispConfigs = createPairs(rand, selectedPisps, thetas);
 			
 		
 			//TargetAlgorithmEvaluatorQueueFacade<UnbiasedChallengerInitializationProcedureContext> tque =  new TargetAlgorithmEvaluatorQueueFacade<UnbiasedChallengerInitializationProcedureContext>(tae, true); 
@@ -182,7 +182,7 @@ public class UnbiasChallengerInitializationProcedure implements InitializationPr
 			
 			
 			
-			ParamConfiguration bestConfiguration = selectMinimumConfiguration(selectedPis, thetas);
+			ParameterConfiguration bestConfiguration = selectMinimumConfiguration(selectedPis, thetas);
 			
 			double minCost = runHistory.getEmpiricalCostUpperBound(bestConfiguration, selectedPis , this.cutoffTime);
 			double incCost = runHistory.getEmpiricalCost(initialIncumbent, selectedPis, this.cutoffTime);
@@ -245,12 +245,12 @@ public class UnbiasChallengerInitializationProcedure implements InitializationPr
 	 * @param thetas
 	 * @return
 	 */
-	private ParamConfiguration selectMinimumConfiguration(
-			Set<ProblemInstance> selectedPis, Set<ParamConfiguration> thetas) {
+	private ParameterConfiguration selectMinimumConfiguration(
+			Set<ProblemInstance> selectedPis, Set<ParameterConfiguration> thetas) {
 		double minCost = Double.MAX_VALUE;
-		ParamConfiguration bestConfiguration = null;
+		ParameterConfiguration bestConfiguration = null;
 		
-		for(ParamConfiguration config : thetas)
+		for(ParameterConfiguration config : thetas)
 		{
 			double cost = runHistory.getEmpiricalCost(config, selectedPis , this.cutoffTime);
 			
@@ -275,14 +275,14 @@ public class UnbiasChallengerInitializationProcedure implements InitializationPr
 	 * @param pispConfigs 	The pairs that will be initialized
 	 * @throws InterruptedException
 	 */
-	private void initializeRuns(List<Pair<ProblemInstanceSeedPair, ParamConfiguration>> pispConfigs) throws InterruptedException 
+	private void initializeRuns(List<Pair<ProblemInstanceSeedPair, ParameterConfiguration>> pispConfigs) throws InterruptedException 
 	{
 
-		final BlockingQueue<Pair<ProblemInstanceSeedPair, ParamConfiguration>> unSolvedPispThetasQueue = new LinkedBlockingQueue<Pair<ProblemInstanceSeedPair, ParamConfiguration>>();
+		final BlockingQueue<Pair<ProblemInstanceSeedPair, ParameterConfiguration>> unSolvedPispThetasQueue = new LinkedBlockingQueue<Pair<ProblemInstanceSeedPair, ParameterConfiguration>>();
 		
 		unSolvedPispThetasQueue.addAll(pispConfigs);
 		
-		final Set<Pair<ProblemInstanceSeedPair, ParamConfiguration>> solvedPisps = Collections.newSetFromMap(new ConcurrentHashMap<Pair<ProblemInstanceSeedPair, ParamConfiguration>, Boolean>());
+		final Set<Pair<ProblemInstanceSeedPair, ParameterConfiguration>> solvedPisps = Collections.newSetFromMap(new ConcurrentHashMap<Pair<ProblemInstanceSeedPair, ParameterConfiguration>, Boolean>());
 		
 		final AtomicBoolean killNow = new AtomicBoolean(false);
 		
@@ -328,9 +328,9 @@ public class UnbiasChallengerInitializationProcedure implements InitializationPr
 		 * 
 		 */
 		
-		Map<Pair<ProblemInstanceSeedPair, ParamConfiguration>, Double> nextCutoffTime = new ConcurrentHashMap<Pair<ProblemInstanceSeedPair, ParamConfiguration>, Double>();
+		Map<Pair<ProblemInstanceSeedPair, ParameterConfiguration>, Double> nextCutoffTime = new ConcurrentHashMap<Pair<ProblemInstanceSeedPair, ParameterConfiguration>, Double>();
 
-		for(Pair<ProblemInstanceSeedPair, ParamConfiguration> p : pispConfigs)
+		for(Pair<ProblemInstanceSeedPair, ParameterConfiguration> p : pispConfigs)
 		{
 			nextCutoffTime.put(p, Double.valueOf(-1));
 		}
@@ -346,7 +346,7 @@ outOfInitialization:
 				while(!runCompleted.tryAcquire(1, TimeUnit.SECONDS));
 				
 				
-				final Pair<ProblemInstanceSeedPair, ParamConfiguration> pair = unSolvedPispThetasQueue.poll();
+				final Pair<ProblemInstanceSeedPair, ParameterConfiguration> pair = unSolvedPispThetasQueue.poll();
 		
 				if(pair == null)
 				{					
@@ -433,7 +433,7 @@ outOfInitialization:
 	 * @param lastKappa
 	 * @return
 	 */
-	public double getNextKappa(Pair<ProblemInstanceSeedPair, ParamConfiguration> pair, int allPairsSize, int solvedPisSize, double lastKappa)
+	public double getNextKappa(Pair<ProblemInstanceSeedPair, ParameterConfiguration> pair, int allPairsSize, int solvedPisSize, double lastKappa)
 	{
 		
 		double kappa;
@@ -449,7 +449,7 @@ outOfInitialization:
 	}
 	
 	@Override
-	public ParamConfiguration getIncumbent() {
+	public ParameterConfiguration getIncumbent() {
 		return incumbent;
 	}	
 	
@@ -499,13 +499,13 @@ outOfInitialization:
 	 * @param thetas
 	 * @return
 	 */
-	private List<Pair<ProblemInstanceSeedPair, ParamConfiguration>> createPairs(Random rand, List<ProblemInstanceSeedPair> selectedPisps,Set<ParamConfiguration> thetas) {
-		List<Pair<ProblemInstanceSeedPair, ParamConfiguration>> pispConfigs = new ArrayList<Pair<ProblemInstanceSeedPair, ParamConfiguration>>(thetas.size() * selectedPisps.size() );
-		for(ParamConfiguration config : thetas)
+	private List<Pair<ProblemInstanceSeedPair, ParameterConfiguration>> createPairs(Random rand, List<ProblemInstanceSeedPair> selectedPisps,Set<ParameterConfiguration> thetas) {
+		List<Pair<ProblemInstanceSeedPair, ParameterConfiguration>> pispConfigs = new ArrayList<Pair<ProblemInstanceSeedPair, ParameterConfiguration>>(thetas.size() * selectedPisps.size() );
+		for(ParameterConfiguration config : thetas)
 		{
 			for(ProblemInstanceSeedPair pisp : selectedPisps)
 			{
-				pispConfigs.add(new Pair<ProblemInstanceSeedPair, ParamConfiguration>(pisp, config));
+				pispConfigs.add(new Pair<ProblemInstanceSeedPair, ParameterConfiguration>(pisp, config));
 			}
 		}
 		
@@ -520,9 +520,9 @@ outOfInitialization:
 	 * @param rand
 	 * @return
 	 */
-	private Set<ParamConfiguration> getParameterConfigurations(Random rand, Set<ParamConfiguration> excluded) {
+	private Set<ParameterConfiguration> getParameterConfigurations(Random rand, Set<ParameterConfiguration> excluded) {
 		log.debug("Generating {} configurations for use in initialization", this.numberOfChallengers);
-		Set<ParamConfiguration> thetas = new HashSet<ParamConfiguration>(this.numberOfChallengers);
+		Set<ParameterConfiguration> thetas = new HashSet<ParameterConfiguration>(this.numberOfChallengers);
 		
 		thetas.addAll(excluded);
 		//=== Create Thetas for table
@@ -531,7 +531,7 @@ outOfInitialization:
 			boolean created = false;
 			for(int i=0; i < 1000; i++)
 			{
-				ParamConfiguration config = configSpace.getRandomConfiguration(rand);
+				ParameterConfiguration config = configSpace.getRandomParameterConfiguration(rand);
 
 				if(config.equals(configSpace.getDefaultConfiguration()))
 				{

@@ -1,9 +1,9 @@
 package ca.ubc.cs.beta.targetalgorithmevaluator.targetalgos;
 
 import ca.ubc.cs.beta.TestHelper;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration.StringFormat;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration.ParameterStringFormat;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.CommandLineAlgorithmRun;
 
 public class ParamEchoWalltimeExecutor {
@@ -29,10 +29,10 @@ public class ParamEchoWalltimeExecutor {
 				sb.append(args[i]).append(" ");
 			}
 						
-			ParamConfigurationSpace configSpace = new ParamConfigurationSpace(TestHelper.getTestFile("paramFiles/paramEchoParamFileWalltime.txt"));
+			ParameterConfigurationSpace configSpace = new ParameterConfigurationSpace(TestHelper.getTestFile("paramFiles/paramEchoParamFileWalltime.txt"));
 
 			
-			ParamConfiguration config = configSpace.getConfigurationFromString(sb.toString(), StringFormat.NODB_SYNTAX);
+			ParameterConfiguration config = configSpace.getParameterConfigurationFromString(sb.toString(), ParameterStringFormat.NODB_SYNTAX);
 			
 			String result = config.get("solved");
 			String runtime = config.get("runtime");

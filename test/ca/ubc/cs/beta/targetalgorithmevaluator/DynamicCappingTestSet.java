@@ -21,9 +21,9 @@ import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionCo
 import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.misc.debug.DebugUtil;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aeatk.random.SeedableRandomPool;
@@ -43,7 +43,7 @@ public class DynamicCappingTestSet {
 	
 	private static AlgorithmExecutionConfiguration execConfig;
 	
-	private static ParamConfigurationSpace configSpace;
+	private static ParameterConfigurationSpace configSpace;
 	
 	private static final int TARGET_RUNS_IN_LOOPS = 10;
 	
@@ -54,7 +54,7 @@ public class DynamicCappingTestSet {
 	public static void beforeClass()
 	{
 		File paramFile = TestHelper.getTestFile("paramFiles/paramEchoParamFile.txt");
-		configSpace = new ParamConfigurationSpace(paramFile);
+		configSpace = new ParameterConfigurationSpace(paramFile);
 	}
 	Random r;
 	
@@ -143,7 +143,7 @@ public class DynamicCappingTestSet {
 		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(1);
 		for(int i=0; i < 1; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			config.put("runtime", "100");
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
 			{
@@ -210,7 +210,7 @@ public class DynamicCappingTestSet {
 		{
 			System.out.println(run.getResultLine());
 			
-			ParamConfiguration config  = run.getRunConfig().getParameterConfiguration();
+			ParameterConfiguration config  = run.getRunConfig().getParameterConfiguration();
 			
 			if(run.getRunResult().isSuccessfulAndCensored())
 			{
@@ -261,7 +261,7 @@ public class DynamicCappingTestSet {
 		final List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(10);
 		for(int i=0; i < 10; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			config.put("runtime", ""+(i+1));
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
 			{
@@ -337,7 +337,7 @@ public class DynamicCappingTestSet {
 		{
 			System.out.println(run.getResultLine());
 			
-			ParamConfiguration config  = run.getRunConfig().getParameterConfiguration();
+			ParameterConfiguration config  = run.getRunConfig().getParameterConfiguration();
 			
 			if(run.getRunResult().isSuccessfulAndCensored())
 			{
@@ -388,7 +388,7 @@ public class DynamicCappingTestSet {
 		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(10);
 		for(int i=0; i < 10; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			
 			config.put("runtime", ""+(i+1));
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
@@ -461,7 +461,7 @@ public class DynamicCappingTestSet {
 		{
 			System.out.println("Result: " + run);
 			
-			ParamConfiguration config  = run.getRunConfig().getParameterConfiguration();
+			ParameterConfiguration config  = run.getRunConfig().getParameterConfiguration();
 			
 			runtimeSum+= run.getRuntime();
 			wallclockTime += run.getWallclockExecutionTime();
@@ -524,7 +524,7 @@ public class DynamicCappingTestSet {
 			List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(1);
 			for(int i=0; i < 1; i++)
 			{
-				ParamConfiguration config = configSpace.getRandomConfiguration(r);
+				ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 				config.put("runtime", "1");
 				if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
 				{
@@ -616,7 +616,7 @@ public class DynamicCappingTestSet {
 			List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(1);
 			for(int i=0; i < 1; i++)
 			{
-				ParamConfiguration config = configSpace.getRandomConfiguration(r);
+				ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 				config.put("runtime", "1");
 				if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
 				{

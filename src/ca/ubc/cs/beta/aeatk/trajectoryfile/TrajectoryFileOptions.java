@@ -10,9 +10,9 @@ import java.util.TreeSet;
 
 import com.beust.jcommander.Parameter;
 
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aeatk.options.AbstractOptions;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace;
 
 @UsageTextField(hiddenSection = true)
 public class TrajectoryFileOptions extends AbstractOptions{
@@ -28,7 +28,7 @@ public class TrajectoryFileOptions extends AbstractOptions{
 	 * 
 	 * @deprecated returns the first and only the first trajectory file specified
 	 */
-	public List<TrajectoryFileEntry> parseTrajectoryFile(ParamConfigurationSpace configSpace) throws FileNotFoundException, IOException {
+	public List<TrajectoryFileEntry> parseTrajectoryFile(ParameterConfigurationSpace configSpace) throws FileNotFoundException, IOException {
 		
 		if(trajectoryFiles.size() > 0)
 		{
@@ -40,7 +40,7 @@ public class TrajectoryFileOptions extends AbstractOptions{
 	}
 	
 	
-	public Set<TrajectoryFile> parseTrajectoryFiles(ParamConfigurationSpace configSpace) throws FileNotFoundException, IOException 
+	public Set<TrajectoryFile> parseTrajectoryFiles(ParameterConfigurationSpace configSpace) throws FileNotFoundException, IOException 
 	{
 		Set<TrajectoryFile> tfes = new TreeSet<TrajectoryFile>();
 		//Tries to auto detect the number of the run from the file name, otherwise it starts at 1000000 and finds new runs

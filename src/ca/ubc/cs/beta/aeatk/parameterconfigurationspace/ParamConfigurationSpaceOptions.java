@@ -1,4 +1,4 @@
-package ca.ubc.cs.beta.aeatk.configspace;
+package ca.ubc.cs.beta.aeatk.parameterconfigurationspace;
 
 import java.io.BufferedReader;
 import java.io.File;
@@ -123,7 +123,7 @@ public class ParamConfigurationSpaceOptions extends AbstractOptions{
 	 * Creates a ParamConfigurationSpace based on the setting of the options in this object.
 	 * @return ParamConfigurationSpace object
 	 */
-	public ParamConfigurationSpace getParamConfigurationSpace()
+	public ParameterConfigurationSpace getParamConfigurationSpace()
 	{
 		return getParamConfigurationSpace(Collections.<String> emptyList());
 	}
@@ -134,7 +134,7 @@ public class ParamConfigurationSpaceOptions extends AbstractOptions{
 	 * @param searchDirectories  directories to search for path (you do not need to include the current one)
 	 * @return ParamConfigurationSpace object
 	 */
-	public ParamConfigurationSpace getParamConfigurationSpace(List<String> searchDirectories)
+	public ParameterConfigurationSpace getParamConfigurationSpace(List<String> searchDirectories)
 	{
 		
 		if(this.paramFile == null)
@@ -142,10 +142,10 @@ public class ParamConfigurationSpaceOptions extends AbstractOptions{
 			throw new ParameterException("No PCS file specified, please check your command line options / scenario file");
 		} else if(this.paramFile.trim().equals("SINGLETON"))
 		{
-			return ParamConfigurationSpace.getSingletonConfigurationSpace();
+			return ParameterConfigurationSpace.getSingletonConfigurationSpace();
 		} else if(this.paramFile.trim().equals("NULL"))
 		{
-			return ParamConfigurationSpace.getNullConfigurationSpace();
+			return ParameterConfigurationSpace.getNullConfigurationSpace();
 		}
 		
 		Logger log = LoggerFactory.getLogger(this.getClass());
@@ -155,7 +155,7 @@ public class ParamConfigurationSpaceOptions extends AbstractOptions{
 		searchPaths.add("");
 		
 		
-		ParamConfigurationSpace configSpace = null;
+		ParameterConfigurationSpace configSpace = null;
 		
 		for(String searchDir : searchDirectories)
 		{

@@ -3,7 +3,7 @@ package ca.ubc.cs.beta.aeatk.state;
 import java.io.Serializable;
 import java.util.Map;
 
-import ca.ubc.cs.beta.aeatk.configspace.ParamConfiguration;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
 import ca.ubc.cs.beta.aeatk.runhistory.RunHistory;
 
 /**
@@ -35,7 +35,7 @@ public interface StateDeserializer {
 	 * Returns the incumbent configuration in the state
 	 * @return incumbent configuration
 	 */
-	public ParamConfiguration getIncumbent();
+	public ParameterConfiguration getIncumbent();
 	
 	/**
 	 * Returns a map of the incumbent 
