@@ -1,4 +1,4 @@
-package ca.ubc.cs.beta.aeatk.algorithmrunner;
+package ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.algorithmrunner;
 
 import java.util.ArrayList;
 import java.util.List;
@@ -12,9 +12,9 @@ import java.util.concurrent.Future;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunStatus;
 import ca.ubc.cs.beta.aeatk.concurrent.threadfactory.SequentiallyNamedThreadFactory;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluatorOptions;
@@ -48,7 +48,7 @@ class ConcurrentAlgorithmRunner extends AbstractAlgorithmRunner {
 	}
 
 	@Override
-	public synchronized List<AlgorithmRun> run() {
+	public synchronized List<AlgorithmRunResult> run() {
 		
 		log.debug("Creating Thread Pool Supporting " + numberOfConcurrentExecutions);
 		
@@ -65,26 +65,26 @@ class ConcurrentAlgorithmRunner extends AbstractAlgorithmRunner {
 			
 			try {
 				
-				List<AlgorithmRun> results = new ArrayList<AlgorithmRun>();
-				List<Callable<AlgorithmRun>> runsToDo = runs;
+				List<AlgorithmRunResult> results = new ArrayList<AlgorithmRunResult>();
+				List<Callable<AlgorithmRunResult>> runsToDo = runs;
 				
 				
-				List<Future<AlgorithmRun>> futures = p.invokeAll(runsToDo);
+				List<Future<AlgorithmRunResult>> futures = p.invokeAll(runsToDo);
 				
 				
 				//p.invokeAll(runs);
 				
 				
-				for(Future<AlgorithmRun> futRuns : futures)
+				for(Future<AlgorithmRunResult> futRuns : futures)
 				{
-					AlgorithmRun run;
+					AlgorithmRunResult run;
 					try {
 						run = futRuns.get();
 					} catch (ExecutionException e) 
 					{
 						 throw new IllegalStateException("Unexpected exception occurred on call to Callable<AlgorithmRun>", e);
 					}
-					if (run.getRunResult().equals(RunResult.ABORT))
+					if (run.getRunStatus().equals(RunStatus.ABORT))
 					{
 						throw new TargetAlgorithmAbortException(run);
 					}

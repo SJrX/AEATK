@@ -3,8 +3,8 @@ package ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.debug;
 import java.util.Collections;
 import java.util.List;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
@@ -31,20 +31,20 @@ public class EqualTargetAlgorithmEvaluatorTester implements
 	}
 	
 	@Override
-	public List<AlgorithmRun> evaluateRun(AlgorithmRunConfiguration run) {
+	public List<AlgorithmRunResult> evaluateRun(AlgorithmRunConfiguration run) {
 		return this.evaluateRun(Collections.singletonList(run));	
 	}
 
 	@Override
-	public List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs) {
+	public List<AlgorithmRunResult> evaluateRun(List<AlgorithmRunConfiguration> runConfigs) {
 		return evaluateRun(runConfigs, null);
 	}
 
 	@Override
-	public List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
+	public List<AlgorithmRunResult> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
 		
-		List<AlgorithmRun> runTae1 = tae1.evaluateRun(runConfigs, obs);
-		List<AlgorithmRun> runTae2 = tae2.evaluateRun(runConfigs, obs);
+		List<AlgorithmRunResult> runTae1 = tae1.evaluateRun(runConfigs, obs);
+		List<AlgorithmRunResult> runTae2 = tae2.evaluateRun(runConfigs, obs);
 
 		if(runTae1.size() != runTae2.size()) throw new IllegalStateException("Run sizes did not match");
 		
@@ -59,7 +59,7 @@ public class EqualTargetAlgorithmEvaluatorTester implements
 			if(Math.abs(runTae1.get(i).getRuntime() - runTae2.get(i).getRuntime()) > 0.1) throw new IllegalStateException("Runtimes did not agree");
 			if(runTae1.get(i).getResultSeed() != runTae2.get(i).getResultSeed()) throw new IllegalStateException("Result Seeds did not agree");
 			if(Math.abs(runTae1.get(i).getQuality() - runTae2.get(i).getQuality()) > 0.1) throw new IllegalStateException("Quality did not agree");
-			if(!runTae1.get(i).getRunResult().equals(runTae2.get(i).getRunResult())) throw new IllegalStateException("Run Results did not agree");
+			if(!runTae1.get(i).getRunStatus().equals(runTae2.get(i).getRunStatus())) throw new IllegalStateException("Run Results did not agree");
 			
 			
 			
@@ -84,7 +84,7 @@ public class EqualTargetAlgorithmEvaluatorTester implements
 	}
 
 	@Override
-	public void seek(List<AlgorithmRun> runs) {
+	public void seek(List<AlgorithmRunResult> runs) {
 		tae1.seek(runs);
 		tae2.seek(runs);
 

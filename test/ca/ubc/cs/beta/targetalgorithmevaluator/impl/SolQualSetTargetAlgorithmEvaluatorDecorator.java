@@ -1,7 +1,7 @@
 package ca.ubc.cs.beta.targetalgorithmevaluator.impl;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.ExistingAlgorithmRun;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.ExistingAlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.AbstractForEachRunTargetAlgorithmEvaluatorDecorator;
 
@@ -17,8 +17,8 @@ public class SolQualSetTargetAlgorithmEvaluatorDecorator extends
 
 
 	@Override
-	protected AlgorithmRun processRun(AlgorithmRun run) {
-		return new ExistingAlgorithmRun(run.getExecutionConfig(), run.getRunConfig(), run.getRunResult(), run.getRuntime(), run.getRunLength(), solQual, run.getResultSeed());
+	protected AlgorithmRunResult processRun(AlgorithmRunResult run) {
+		return new ExistingAlgorithmRunResult( run.getAlgorithmRunConfiguration(), run.getRunStatus(), run.getRuntime(), run.getRunLength(), solQual, run.getResultSeed());
 		
 	}
 

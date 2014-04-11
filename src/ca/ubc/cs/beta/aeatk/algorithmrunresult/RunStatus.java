@@ -1,4 +1,4 @@
-package ca.ubc.cs.beta.aeatk.algorithmrun;
+package ca.ubc.cs.beta.aeatk.algorithmrunresult;
 
 import java.util.Arrays;
 import java.util.Collections;
@@ -11,10 +11,10 @@ import java.util.HashSet;
  * <b>Note:</b> All aliases should be specified in upper case in the enum 
  * declaration.
  * 
- * @see ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun
+ * @see ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult
  *
  */
-public enum RunResult {
+public enum RunStatus {
 	
 	/**
 	 * Signifies that the algorithm ran out of time and had to be cutoff
@@ -76,7 +76,7 @@ public enum RunResult {
 	/**
 	 * Stores the numeric result code used in some serializations of run results
 	 * @see ca.ubc.cs.beta.aeatk.state.legacy.LegacyStateFactory
-	 * @see ca.ubc.cs.beta.aeatk.algorithmrun.ExistingAlgorithmRun
+	 * @see ca.ubc.cs.beta.aeatk.algorithmrunresult.ExistingAlgorithmRunResult
 	 */
 	private final int resultCode;
 	
@@ -96,7 +96,7 @@ public enum RunResult {
 	private final Set<String> resultKey = new HashSet<String>();
 	
 	
-	private RunResult(boolean decided, int resultCode, boolean permittedByWrappers, boolean completeButCensored)
+	private RunStatus(boolean decided, int resultCode, boolean permittedByWrappers, boolean completeButCensored)
 	{
 		this.decided = decided;
 		this.resultCode = resultCode;
@@ -105,7 +105,7 @@ public enum RunResult {
 		this.successfulAndCensored = completeButCensored;
 	}
 	
-	private RunResult(boolean decided, int resultCode, boolean permittedByWrappers, boolean completeButCensored, String... keys)
+	private RunStatus(boolean decided, int resultCode, boolean permittedByWrappers, boolean completeButCensored, String... keys)
 	{
 		this.decided = decided;
 		this.resultCode = resultCode;
@@ -122,13 +122,13 @@ public enum RunResult {
 	 * @return 				runresult that represents the string
 	 * @throws 				IllegalArgumentException when the string does not match any known runresult
 	 */
-	public static RunResult getAutomaticConfiguratorResultForKey(String key)
+	public static RunStatus getAutomaticConfiguratorResultForKey(String key)
 	{
 		/*
 		 * Note this method could be faster if just built the map to begin with
 		 */
 		key = key.toUpperCase();
-		for(RunResult r : RunResult.values())
+		for(RunStatus r : RunStatus.values())
 		{
 			if(r.resultKey.contains(key))
 			{
@@ -145,12 +145,12 @@ public enum RunResult {
 	 * @return runresult	 	corresponding to the the resultcode
 	 * @throws					IllegalArgumentException when the integer does not match any known runresult 			
 	 */
-	public static RunResult getAutomaticConfiguratorResultForCode(int resultCode)
+	public static RunStatus getAutomaticConfiguratorResultForCode(int resultCode)
 	{
 		/*
 		 * Note this method could be faster if just built the map to begin with
 		 */
-		for(RunResult r : RunResult.values())
+		for(RunStatus r : RunStatus.values())
 		{
 			if(r.resultCode== resultCode)
 			{

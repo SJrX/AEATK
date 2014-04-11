@@ -2,7 +2,7 @@ package ca.ubc.cs.beta.aeatk.targetalgorithmevaluator;
 
 import java.util.List;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 
 /**
  * Handler interface for Deferred Target Algorithm Evaluator runs
@@ -24,7 +24,7 @@ public interface TargetAlgorithmEvaluatorCallback {
 	 * Invoked if/when the runs complete
 	 * @param runs the list of completed runs
 	 */
-	public void onSuccess(List<AlgorithmRun> runs);
+	public void onSuccess(List<AlgorithmRunResult> runs);
 	
 	/**
 	 * Invoked if/when there is a failure

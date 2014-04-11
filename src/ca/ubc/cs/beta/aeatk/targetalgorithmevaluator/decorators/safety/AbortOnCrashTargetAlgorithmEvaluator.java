@@ -3,9 +3,9 @@ package ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety;
 import java.util.List;
 
 import net.jcip.annotations.ThreadSafe;
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunStatus;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
@@ -29,17 +29,17 @@ public class AbortOnCrashTargetAlgorithmEvaluator extends
 	
 
 	@Override
-	public List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
+	public List<AlgorithmRunResult> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
 		return validate(super.evaluateRun(runConfigs, obs));
 	}
 	
 
-	private List<AlgorithmRun> validate(List<AlgorithmRun> runs)
+	private List<AlgorithmRunResult> validate(List<AlgorithmRunResult> runs)
 	{
 		
-		for(AlgorithmRun run : runs)
+		for(AlgorithmRunResult run : runs)
 		{
-			if(run.getRunResult().equals(RunResult.CRASHED))
+			if(run.getRunStatus().equals(RunStatus.CRASHED))
 			{
 				throw new TargetAlgorithmAbortException("Target Algorithm Run Reported Crashed: " + run.toString());
 			}
@@ -57,7 +57,7 @@ public class AbortOnCrashTargetAlgorithmEvaluator extends
 		{
 
 			@Override
-			public void onSuccess(List<AlgorithmRun> runs) {
+			public void onSuccess(List<AlgorithmRunResult> runs) {
 				try {
 					validate(runs);
 					handler.onSuccess(runs);

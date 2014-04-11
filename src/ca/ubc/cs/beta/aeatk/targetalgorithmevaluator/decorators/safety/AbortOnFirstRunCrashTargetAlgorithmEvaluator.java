@@ -4,9 +4,9 @@ import java.util.List;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import net.jcip.annotations.ThreadSafe;
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunStatus;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
@@ -29,13 +29,13 @@ public class AbortOnFirstRunCrashTargetAlgorithmEvaluator extends
 	}
 	
 	@Override
-	public List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
+	public List<AlgorithmRunResult> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
 		return validate(super.evaluateRun(runConfigs, obs));
 	}
 	
 	private final AtomicBoolean firstRunChecked = new AtomicBoolean(false);
 	
-	private List<AlgorithmRun> validate(List<AlgorithmRun> runs)
+	private List<AlgorithmRunResult> validate(List<AlgorithmRunResult> runs)
 	{
 		if(runs.size() == 0)
 		{
@@ -48,7 +48,7 @@ public class AbortOnFirstRunCrashTargetAlgorithmEvaluator extends
 		} else
 		{		
 		
-			if(runs.get(0).getRunResult().equals(RunResult.CRASHED))
+			if(runs.get(0).getRunStatus().equals(RunStatus.CRASHED))
 			{
 				if(runs.get(0).getAdditionalRunData().startsWith("ERROR:"))
 				{
@@ -75,7 +75,7 @@ public class AbortOnFirstRunCrashTargetAlgorithmEvaluator extends
 		{
 
 			@Override
-			public void onSuccess(List<AlgorithmRun> runs) {
+			public void onSuccess(List<AlgorithmRunResult> runs) {
 				try {
 					validate(runs);
 					handler.onSuccess(runs);

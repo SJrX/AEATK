@@ -7,10 +7,13 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
-import ca.ubc.cs.beta.aeatk.algorithmrun.AbstractAlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AbstractAlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunStatus;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
+import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
+import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
@@ -47,7 +50,7 @@ public class WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator extends
 	
 
 	@Override
-	public final List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
+	public final List<AlgorithmRunResult> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
 		return processRuns(tae.evaluateRun(runConfigs, new WalltimeAsRuntimeTargetAlgorithmEvaluatorObserver(obs)));
 	}
 	
@@ -56,19 +59,19 @@ public class WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator extends
 	
 	
 	
-	public List<AlgorithmRun> processRuns(List<AlgorithmRun> runs)
+	public List<AlgorithmRunResult> processRuns(List<AlgorithmRunResult> runs)
 	{
-		List<AlgorithmRun> myRuns = new ArrayList<AlgorithmRun>(runs.size());
-		for(AlgorithmRun run : runs)
+		List<AlgorithmRunResult> myRuns = new ArrayList<AlgorithmRunResult>(runs.size());
+		for(AlgorithmRunResult run : runs)
 		{
 			myRuns.add(processRun(run));
 		}
 		return myRuns;
 	}
 	
-	public AlgorithmRun processRun(AlgorithmRun run )
+	public AlgorithmRunResult processRun(AlgorithmRunResult run )
 	{
-		if(run.getRunResult().equals(RunResult.KILLED))
+		if(run.getRunStatus().equals(RunStatus.KILLED))
 		{
 			if(run.getRuntime() == 0 && run.getWallclockExecutionTime() > startAt)
 			{
@@ -92,7 +95,7 @@ public class WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator extends
 			private final TargetAlgorithmEvaluatorCallback handler = oHandler;
 
 			@Override
-			public void onSuccess(List<AlgorithmRun> runs) {
+			public void onSuccess(List<AlgorithmRunResult> runs) {
 					runs = processRuns(runs);			
 					handler.onSuccess(runs);
 			}
@@ -120,15 +123,15 @@ public class WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator extends
 		}
 		
 		@Override
-		public void currentStatus(List<? extends AlgorithmRun> runs) 
+		public void currentStatus(List<? extends AlgorithmRunResult> runs) 
 		{
 			
-			List<AlgorithmRun> myRuns = new ArrayList<AlgorithmRun>(runs.size());
+			List<AlgorithmRunResult> myRuns = new ArrayList<AlgorithmRunResult>(runs.size());
 			
-			for(AlgorithmRun run : runs)
+			for(AlgorithmRunResult run : runs)
 			{
 				
-				if(run.getRunResult().equals(RunResult.RUNNING))
+				if(run.getRunStatus().equals(RunStatus.RUNNING))
 				{
 					if(run.getRuntime() == 0 && run.getWallclockExecutionTime() > startAt)
 					{
@@ -153,39 +156,32 @@ public class WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator extends
 		
 	}
 	
-	private class WalltimeAsRuntimeAlgorithmRun implements AlgorithmRun
+	private class WalltimeAsRuntimeAlgorithmRun implements AlgorithmRunResult
 	{
 		/**
 		 * 
 		 */
 		private static final long serialVersionUID = 9082975671200245863L;
 		
-		AlgorithmRun wrappedRun;
-		AlgorithmRun wrappedKillableRun;  
-		public WalltimeAsRuntimeAlgorithmRun(AlgorithmRun r)
+		AlgorithmRunResult wrappedRun;
+		AlgorithmRunResult wrappedKillableRun;  
+		public WalltimeAsRuntimeAlgorithmRun(AlgorithmRunResult r)
 		{
-			if(r instanceof AlgorithmRun)
+			if(r instanceof AlgorithmRunResult)
 			{
-				wrappedKillableRun = (AlgorithmRun) r;
+				wrappedKillableRun = (AlgorithmRunResult) r;
 			}
 			this.wrappedRun = r;
 		}
-		
-		
 
 		@Override
-		public AlgorithmExecutionConfiguration getExecutionConfig() {
-			return wrappedRun.getExecutionConfig();
+		public AlgorithmRunConfiguration getAlgorithmRunConfiguration() {
+			return wrappedRun.getAlgorithmRunConfiguration();
 		}
 
 		@Override
-		public AlgorithmRunConfiguration getRunConfig() {
-			return wrappedRun.getRunConfig();
-		}
-
-		@Override
-		public RunResult getRunResult() {
-			return wrappedRun.getRunResult();
+		public RunStatus getRunStatus() {
+			return wrappedRun.getRunStatus();
 		}
 
 		@Override
@@ -210,7 +206,7 @@ public class WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator extends
 
 		@Override
 		public String getResultLine() {
-			return AbstractAlgorithmRun.getResultLine(this);
+			return AbstractAlgorithmRunResult.getResultLine(this);
 		}
 
 		@Override
@@ -223,11 +219,7 @@ public class WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator extends
 			return wrappedRun.isRunCompleted();
 		}
 
-		@Override
-		public boolean isRunResultWellFormed() {
-			return wrappedRun.isRunResultWellFormed();
-		}
-
+		
 		@Override
 		public String rawResultLine() {
 			return "[Probably not accurate:]" + wrappedRun.rawResultLine();
@@ -240,7 +232,7 @@ public class WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator extends
 		
 		@Override
 		public boolean isCensoredEarly() {
-			return ((getRunResult().equals(RunResult.TIMEOUT) && getRunConfig().hasCutoffLessThanMax()) ||  (getRunResult().equals(RunResult.KILLED) && getRuntime() < getRunConfig().getCutoffTime()));
+			return ((getRunStatus().equals(RunStatus.TIMEOUT) && getAlgorithmRunConfiguration().hasCutoffLessThanMax()) ||  (getRunStatus().equals(RunStatus.KILLED) && getRuntime() < getAlgorithmRunConfiguration().getCutoffTime()));
 			
 			
 		}
@@ -256,7 +248,34 @@ public class WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator extends
 		
 		public String toString()
 		{
-			return AbstractAlgorithmRun.toString(this);
+			return AbstractAlgorithmRunResult.toString(this);
+		}
+		
+
+		@Override
+		public ParameterConfiguration getParameterConfiguration() {
+			
+			return wrappedRun.getParameterConfiguration();
+		}
+
+
+		@Override
+		public AlgorithmExecutionConfiguration getAlgorithmExecutionConfiguration() {
+			
+			return wrappedRun.getAlgorithmExecutionConfiguration();
+		}
+
+
+		@Override
+		public ProblemInstanceSeedPair getProblemInstanceSeedPair() {
+
+			return wrappedRun.getProblemInstanceSeedPair();
+		}
+
+
+		@Override
+		public ProblemInstance getProblemInstance() {
+			return wrappedRun.getProblemInstance();
 		}
 		
 	}

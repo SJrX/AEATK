@@ -3,8 +3,8 @@ package ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.experimental.queuefacade.b
 import java.util.List;
 
 import net.jcip.annotations.ThreadSafe;
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.experimental.queuefacade.general.TargetAlgorithmEvaluatorQueueResultContext;
 
 @ThreadSafe
@@ -12,15 +12,15 @@ public class BasicTargetAlgorithmEvaluatorQueueResultContext implements TargetAl
 
 	private volatile RuntimeException runtimeException;
 	private volatile List<AlgorithmRunConfiguration> runConfigs;
-	private volatile List<AlgorithmRun> runs;
+	private volatile List<AlgorithmRunResult> runs;
 
 	@Override
-	public List<AlgorithmRun> getAlgorithmRuns() {
+	public List<AlgorithmRunResult> getAlgorithmRuns() {
 		return runs;
 	}
 
 	@Override
-	public void setAlgorithmRuns(List<AlgorithmRun> runs) {
+	public void setAlgorithmRuns(List<AlgorithmRunResult> runs) {
 		this.runs = runs;
 		
 	}

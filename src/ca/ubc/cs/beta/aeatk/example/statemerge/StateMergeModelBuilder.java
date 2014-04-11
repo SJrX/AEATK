@@ -10,7 +10,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.model.ModelBuildingOptions;
 import ca.ubc.cs.beta.aeatk.model.builder.AdaptiveCappingModelBuilder;
 import ca.ubc.cs.beta.aeatk.model.builder.BasicModelBuilder;
@@ -109,7 +109,7 @@ public class StateMergeModelBuilder {
 		
 		
 		
-		List<AlgorithmRun> runs = runHistory.getAlgorithmRunsExcludingRedundant();
+		List<AlgorithmRunResult> runs = runHistory.getAlgorithmRunsExcludingRedundant();
 		
 		double[] runResponseValues = RunHistoryHelper.getRunResponseValues(runs, runHistory.getRunObjective());
 		

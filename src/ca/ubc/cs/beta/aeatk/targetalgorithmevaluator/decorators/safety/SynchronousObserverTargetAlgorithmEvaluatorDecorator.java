@@ -3,8 +3,8 @@ package ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety;
 
 import java.util.List;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
@@ -35,7 +35,7 @@ public class SynchronousObserverTargetAlgorithmEvaluatorDecorator extends
 	}
 
 	@Override
-	public final List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
+	public final List<AlgorithmRunResult> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
 		return (tae.evaluateRun(runConfigs, ((obs != null) ? new SynchronousObserver(obs): null)));
 	}
 	
@@ -56,7 +56,7 @@ public class SynchronousObserverTargetAlgorithmEvaluatorDecorator extends
 		}
 		
 		@Override
-		public synchronized void currentStatus(List<? extends AlgorithmRun> runs) 
+		public synchronized void currentStatus(List<? extends AlgorithmRunResult> runs) 
 		{
 			if(obs != null)
 			{

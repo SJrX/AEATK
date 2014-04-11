@@ -11,9 +11,9 @@ import org.slf4j.LoggerFactory;
 import com.beust.jcommander.ParameterException;
 
 import net.jcip.annotations.ThreadSafe;
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunStatus;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
@@ -56,7 +56,7 @@ public class KillCaptimeExceedingRunsRunsTargetAlgorithmEvaluatorDecorator exten
 	}
 
 	@Override
-	public final List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
+	public final List<AlgorithmRunResult> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
 		return tae.evaluateRun(runConfigs, new KillingTargetAlgorithmEvaluatorRunObserver(obs));
 	}
 	
@@ -79,22 +79,22 @@ public class KillCaptimeExceedingRunsRunsTargetAlgorithmEvaluatorDecorator exten
 		}
 		
 		@Override
-		public void currentStatus(List<? extends AlgorithmRun> runs) 
+		public void currentStatus(List<? extends AlgorithmRunResult> runs) 
 		{
 			
-			for(AlgorithmRun run : runs)
+			for(AlgorithmRunResult run : runs)
 			{
 				
-				if(run.getRunResult().equals(RunResult.RUNNING))
+				if(run.getRunStatus().equals(RunStatus.RUNNING))
 				{
 					
-					if(run.getRunConfig().getCutoffTime() * scalingFactor < run.getRuntime())
+					if(run.getAlgorithmRunConfiguration().getCutoffTime() * scalingFactor < run.getRuntime())
 					{
 						
-						if(!killedRuns.contains(run.getRunConfig()))
+						if(!killedRuns.contains(run.getAlgorithmRunConfiguration()))
 						{
 							
-							Object[] args = { run.getRunConfig() ,run.getRuntime(), scalingFactor, run.getRunConfig().getCutoffTime()};
+							Object[] args = { run.getAlgorithmRunConfiguration() ,run.getRuntime(), scalingFactor, run.getAlgorithmRunConfiguration().getCutoffTime()};
 							log.warn("Killed run {} at {} for exceeding {} times its cutoff time of {} (secs)", args);
 						
 							run.kill();

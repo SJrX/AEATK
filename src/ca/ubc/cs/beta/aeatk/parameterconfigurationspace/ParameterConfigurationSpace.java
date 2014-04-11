@@ -27,7 +27,7 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import net.jcip.annotations.Immutable;
-import ca.ubc.cs.beta.aeatk.json.serializers.ParamConfigurationJson;
+import ca.ubc.cs.beta.aeatk.json.serializers.ParameterConfigurationSpaceJson;
 import ca.ubc.cs.beta.aeatk.misc.java.io.FileReaderNoException.FileReaderNoExceptionThrown;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration.ParameterStringFormat;
 import ec.util.MersenneTwisterFast;
@@ -58,8 +58,8 @@ enum LineType
  */
 @Immutable
 @JsonIdentityInfo(generator = ObjectIdGenerators.IntSequenceGenerator.class)
-@JsonSerialize(using=ParamConfigurationJson.ParamConfigurationSpaceSerializer.class)
-@JsonDeserialize(using=ParamConfigurationJson.ParamConfigurationSpaceDeserializer.class)
+@JsonSerialize(using=ParameterConfigurationSpaceJson.ParamConfigurationSpaceSerializer.class)
+@JsonDeserialize(using=ParameterConfigurationSpaceJson.ParamConfigurationSpaceDeserializer.class)
 public class ParameterConfigurationSpace implements Serializable {
 	
 	/**

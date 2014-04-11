@@ -2,7 +2,7 @@ package ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.exceptions;
 
 import java.io.IOException;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 
 /**
  * Exception thrown if a target algorithm signals an abort
@@ -12,9 +12,9 @@ import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 public class TargetAlgorithmAbortException extends RuntimeException {
 
 	private static final long serialVersionUID = 772736289871868435L;
-	private AlgorithmRun run;
+	private AlgorithmRunResult run;
 
-	public TargetAlgorithmAbortException(AlgorithmRun run)
+	public TargetAlgorithmAbortException(AlgorithmRunResult run)
 	{
 		super("Target algorithm execution signaled that we should ABORT " + run.rawResultLine());
 		this.run = run;
@@ -37,7 +37,7 @@ public class TargetAlgorithmAbortException extends RuntimeException {
 		super(e1.getMessage(), e1);
 	}
 
-	public AlgorithmRun getAlgorithmRun()
+	public AlgorithmRunResult getAlgorithmRun()
 	{
 		return run;
 	}

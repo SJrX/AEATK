@@ -22,10 +22,10 @@ import org.slf4j.LoggerFactory;
 
 import au.com.bytecode.opencsv.CSVReader;
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.ExistingAlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.ExistingAlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunStatus;
 import ca.ubc.cs.beta.aeatk.exceptions.DuplicateRunException;
 import ca.ubc.cs.beta.aeatk.exceptions.StateSerializationException;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
@@ -399,14 +399,14 @@ public class LegacyStateDeserializer implements StateDeserializer {
 						}
 						
 						
-						RunResult runResult;
+						RunStatus runResult;
 						if(runHistoryLine.length >= 14 )
 						{
 							//Index 13 should exist which stores a nicer format
-							runResult = RunResult.getAutomaticConfiguratorResultForKey(runHistoryLine[13]);
+							runResult = RunStatus.getAutomaticConfiguratorResultForKey(runHistoryLine[13]);
 						} else
 						{
-							 runResult = RunResult.getAutomaticConfiguratorResultForCode(Integer.valueOf(runHistoryLine[9]));
+							 runResult = RunStatus.getAutomaticConfiguratorResultForCode(Integer.valueOf(runHistoryLine[9]));
 						}
 						
 					
@@ -441,14 +441,14 @@ public class LegacyStateDeserializer implements StateDeserializer {
 						if(runtime > execConfig.getAlgorithmMaximumCutoffTime())
 						{
 							runtime = execConfig.getAlgorithmMaximumCutoffTime();
-							runResult = RunResult.TIMEOUT;
+							runResult = RunStatus.TIMEOUT;
 							cutOffTime = runtime;
 							log.debug("Cutoff time discrepancy detected while restoring state for line {}, marking run as TIMEOUT with runtime {}", Arrays.toString(runHistoryLine), runtime);
 							
 							
 						} else if (runtime < execConfig.getAlgorithmMaximumCutoffTime())
 						{
-							if(runResult.equals(RunResult.TIMEOUT) && !isCensored)
+							if(runResult.equals(RunStatus.TIMEOUT) && !isCensored)
 							{
 								
 								log.debug("Cutoff time discrepancy detected while restoring state for line {}, marking run as TIMEOUT and Censored with runtime {}", Arrays.toString(runHistoryLine), runtime);
@@ -465,7 +465,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 						ProblemInstanceSeedPair pisp = new ProblemInstanceSeedPair(pi, seed); 
 						AlgorithmRunConfiguration runConfig = new AlgorithmRunConfiguration(pisp, cutOffTime, configMap.get(thetaIdx),execConfig);
 												
-						AlgorithmRun run = new ExistingAlgorithmRun(runConfig, runResult, runtime, runLength, quality, seed, additionalRunData, wallClockTime);
+						AlgorithmRunResult run = new ExistingAlgorithmRunResult(runConfig, runResult, runtime, runLength, quality, seed, additionalRunData, wallClockTime);
 						
 						try {
 							runHistory.append(run);
@@ -480,7 +480,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 								seed = newSeeds++;
 								
 
-								run = new ExistingAlgorithmRun( runConfig, runResult, runtime, runLength, quality, seed, wallClockTime);
+								run = new ExistingAlgorithmRunResult( runConfig, runResult, runtime, runLength, quality, seed, wallClockTime);
 								
 								try {
 									runHistory.append(run);

@@ -14,8 +14,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import net.jcip.annotations.ThreadSafe;
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
@@ -55,7 +55,7 @@ public class OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator extends Abst
 	}
 
 	@Override
-	public final List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, final TargetAlgorithmEvaluatorRunObserver obs) {
+	public final List<AlgorithmRunResult> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, final TargetAlgorithmEvaluatorRunObserver obs) {
 		
 		startBatchTime.put(runConfigs, Math.max(0,(bucketTime(System.currentTimeMillis()) - ZERO_TIME) / 1000.0));
 		
@@ -63,7 +63,7 @@ public class OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator extends Abst
 		{
 
 			@Override
-			public void currentStatus(List<? extends AlgorithmRun> runs) {
+			public void currentStatus(List<? extends AlgorithmRunResult> runs) {
 				if(obs != null)
 				{
 					obs.currentStatus(runs);
@@ -99,7 +99,7 @@ public class OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator extends Abst
 			private final TargetAlgorithmEvaluatorCallback handler = oHandler;
 
 			@Override
-			public void onSuccess(List<AlgorithmRun> runs) {
+			public void onSuccess(List<AlgorithmRunResult> runs) {
 					runs = processRuns(runs);
 					endBatchTime.put(runConfigs, Math.max(0,(bucketTime(System.currentTimeMillis()) - ZERO_TIME) / 1000.0));
 					handler.onSuccess(runs);
@@ -117,7 +117,7 @@ public class OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator extends Abst
 		{
 
 			@Override
-			public void currentStatus(List<? extends AlgorithmRun> runs) {				
+			public void currentStatus(List<? extends AlgorithmRunResult> runs) {				
 				processRuns(runs);
 				if(obs != null)
 				{
@@ -256,12 +256,12 @@ public class OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator extends Abst
 	 * @param run process the run
 	 * @return run that will replace it in the values returned to the client
 	 */
-	protected <K extends AlgorithmRun> K processRun(K run)
+	protected <K extends AlgorithmRunResult> K processRun(K run)
 	{
 		
 		if(run.isRunCompleted())
 		{
-			AlgorithmRunConfiguration rc = run.getRunConfig();
+			AlgorithmRunConfiguration rc = run.getAlgorithmRunConfiguration();
 			synchronized(rc)
 			{
 				if(endTime.get(rc) == null)
@@ -315,7 +315,7 @@ public class OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator extends Abst
 	}
 	
 	
-	protected final <K extends AlgorithmRun> List<K> processRuns(List<K> runs)
+	protected final <K extends AlgorithmRunResult> List<K> processRuns(List<K> runs)
 	{
 		for(int i=0; i < runs.size(); i++)
 		{

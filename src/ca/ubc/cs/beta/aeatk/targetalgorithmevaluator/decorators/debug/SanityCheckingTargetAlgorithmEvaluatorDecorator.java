@@ -7,8 +7,8 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
@@ -33,19 +33,19 @@ public class SanityCheckingTargetAlgorithmEvaluatorDecorator extends AbstractTar
 
 	
 	@Override
-	public final List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
+	public final List<AlgorithmRunResult> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
 		
 		List<AlgorithmRunConfiguration> originalList = Collections.unmodifiableList( new ArrayList<AlgorithmRunConfiguration>(runConfigs));
 		
 		
 		
-		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs, new SanityCheckingTargetAlgorithmEvaluatorObserver(obs, originalList));
+		List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs, new SanityCheckingTargetAlgorithmEvaluatorObserver(obs, originalList));
 		
 		List<AlgorithmRunConfiguration> returnedRuns = new ArrayList<AlgorithmRunConfiguration>(runs.size());
 		
-		for(AlgorithmRun run : runs)
+		for(AlgorithmRunResult run : runs)
 		{
-			returnedRuns.add(run.getRunConfig());
+			returnedRuns.add(run.getAlgorithmRunConfiguration());
 		}
 		
 		
@@ -68,14 +68,14 @@ public class SanityCheckingTargetAlgorithmEvaluatorDecorator extends AbstractTar
 		{
 
 			@Override
-			public void onSuccess(List<AlgorithmRun> runs) {
+			public void onSuccess(List<AlgorithmRunResult> runs) {
 				
 				
 				List<AlgorithmRunConfiguration> returnedRuns = new ArrayList<AlgorithmRunConfiguration>(runs.size());
 				
-				for(AlgorithmRun run : runs)
+				for(AlgorithmRunResult run : runs)
 				{
-					returnedRuns.add(run.getRunConfig());
+					returnedRuns.add(run.getAlgorithmRunConfiguration());
 				}
 				
 				
@@ -114,13 +114,13 @@ public class SanityCheckingTargetAlgorithmEvaluatorDecorator extends AbstractTar
 			this.originalList = originalList;
 		}
 		@Override
-		public void currentStatus(List<? extends AlgorithmRun> runs) {
+		public void currentStatus(List<? extends AlgorithmRunResult> runs) {
 			
 			List<AlgorithmRunConfiguration> observerRuns = new ArrayList<AlgorithmRunConfiguration>(runs.size());
 			
-			for(AlgorithmRun run : runs)
+			for(AlgorithmRunResult run : runs)
 			{
-				observerRuns.add(run.getRunConfig());
+				observerRuns.add(run.getAlgorithmRunConfiguration());
 			}
 			
 			

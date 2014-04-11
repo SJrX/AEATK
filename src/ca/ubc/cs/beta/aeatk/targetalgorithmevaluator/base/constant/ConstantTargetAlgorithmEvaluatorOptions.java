@@ -2,7 +2,7 @@ package ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.constant;
 
 import com.beust.jcommander.Parameter;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunStatus;
 import ca.ubc.cs.beta.aeatk.misc.options.OptionLevel;
 import ca.ubc.cs.beta.aeatk.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aeatk.options.AbstractOptions;
@@ -12,7 +12,7 @@ public class ConstantTargetAlgorithmEvaluatorOptions extends AbstractOptions{
 
 	
 	@Parameter(names="--constant-run-result", description="Run Result To return")
-	public RunResult runResult = RunResult.SAT;
+	public RunStatus runResult = RunStatus.SAT;
 	
 	@Parameter(names="--constant-runtime", description="Runtime to return")
 	public double runtime = 1.00;

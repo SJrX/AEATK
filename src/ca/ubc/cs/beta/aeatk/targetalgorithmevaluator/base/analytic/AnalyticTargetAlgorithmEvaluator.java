@@ -6,10 +6,10 @@ import java.util.List;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.ExistingAlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.ExistingAlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunStatus;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.AbstractSyncTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
@@ -51,11 +51,11 @@ public class AnalyticTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorith
 	}
 
 	@Override
-	public List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs,
+	public List<AlgorithmRunResult> evaluateRun(List<AlgorithmRunConfiguration> runConfigs,
 			TargetAlgorithmEvaluatorRunObserver obs) {
 		try{
 			
-			List<AlgorithmRun> ar = new ArrayList<AlgorithmRun>(runConfigs.size());
+			List<AlgorithmRunResult> ar = new ArrayList<AlgorithmRunResult>(runConfigs.size());
 			
 			for(AlgorithmRunConfiguration rc : runConfigs)
 			{ 
@@ -96,10 +96,10 @@ public class AnalyticTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorith
 								
 				if(time >= rc.getCutoffTime())
 				{
-					ar.add(new ExistingAlgorithmRun(rc, RunResult.TIMEOUT,  rc.getCutoffTime() ,-1,0, rc.getProblemInstanceSeedPair().getSeed()));
+					ar.add(new ExistingAlgorithmRunResult(rc, RunStatus.TIMEOUT,  rc.getCutoffTime() ,-1,0, rc.getProblemInstanceSeedPair().getSeed()));
 				} else
 				{
-					ar.add(new ExistingAlgorithmRun(rc, RunResult.SAT,  time ,-1,0, rc.getProblemInstanceSeedPair().getSeed()));
+					ar.add(new ExistingAlgorithmRunResult(rc, RunStatus.SAT,  time ,-1,0, rc.getProblemInstanceSeedPair().getSeed()));
 				}
 				this.runCount.incrementAndGet();
 			}

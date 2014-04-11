@@ -3,8 +3,8 @@ package ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators;
 import java.util.ArrayList;
 import java.util.List;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
@@ -27,7 +27,7 @@ public abstract class AbstractForEachRunTargetAlgorithmEvaluatorDecorator extend
 	
 
 	@Override
-	public final List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
+	public final List<AlgorithmRunResult> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
 		return processRuns(tae.evaluateRun(processRunConfigs(runConfigs), obs));
 	}
 
@@ -43,7 +43,7 @@ public abstract class AbstractForEachRunTargetAlgorithmEvaluatorDecorator extend
 			private final TargetAlgorithmEvaluatorCallback handler = oHandler;
 
 			@Override
-			public void onSuccess(List<AlgorithmRun> runs) {
+			public void onSuccess(List<AlgorithmRunResult> runs) {
 					runs = processRuns(runs);			
 					handler.onSuccess(runs);
 			}
@@ -65,7 +65,7 @@ public abstract class AbstractForEachRunTargetAlgorithmEvaluatorDecorator extend
 	 * @param run process the run
 	 * @return run that will replace it in the values returned to the client
 	 */
-	protected AlgorithmRun processRun(AlgorithmRun run)
+	protected AlgorithmRunResult processRun(AlgorithmRunResult run)
 	{
 		return run;
 	}
@@ -81,7 +81,7 @@ public abstract class AbstractForEachRunTargetAlgorithmEvaluatorDecorator extend
 	}
 	
 	
-	protected final List<AlgorithmRun> processRuns(List<AlgorithmRun> runs)
+	protected final List<AlgorithmRunResult> processRuns(List<AlgorithmRunResult> runs)
 	{
 		for(int i=0; i < runs.size(); i++)
 		{

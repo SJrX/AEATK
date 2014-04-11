@@ -19,8 +19,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunStatus;
 import ca.ubc.cs.beta.aeatk.exceptions.DuplicateRunException;
 import ca.ubc.cs.beta.aeatk.objectives.OverallObjective;
 import ca.ubc.cs.beta.aeatk.objectives.RunObjective;
@@ -115,12 +115,12 @@ public class NewRunHistory implements RunHistory {
 	 */
 	private Set<ProblemInstance> instancesRanSet = new HashSet<ProblemInstance>();
 	
-	private final HashMap<ParameterConfiguration, List<AlgorithmRun>> configToRunMap = new HashMap<ParameterConfiguration, List<AlgorithmRun>>();
+	private final HashMap<ParameterConfiguration, List<AlgorithmRunResult>> configToRunMap = new HashMap<ParameterConfiguration, List<AlgorithmRunResult>>();
 	
 	/**
 	 * Stores for each run the best known value at a given time. We use a linked hash map because order is important.
 	 */
-	private final LinkedHashMap<ParameterConfiguration, LinkedHashMap<ProblemInstanceSeedPair,AlgorithmRun>> configToRunIgnoreRedundantMap = new LinkedHashMap<ParameterConfiguration, LinkedHashMap<ProblemInstanceSeedPair,AlgorithmRun>>();
+	private final LinkedHashMap<ParameterConfiguration, LinkedHashMap<ProblemInstanceSeedPair,AlgorithmRunResult>> configToRunIgnoreRedundantMap = new LinkedHashMap<ParameterConfiguration, LinkedHashMap<ProblemInstanceSeedPair,AlgorithmRunResult>>();
 	
 	private static final DecimalFormat format = new DecimalFormat("#######.####");
 	
@@ -142,27 +142,27 @@ public class NewRunHistory implements RunHistory {
 	private volatile AlgorithmExecutionConfiguration firstExecConfig;
 	
 	@Override
-	public void append(AlgorithmRun run) throws DuplicateRunException{
+	public void append(AlgorithmRunResult run) throws DuplicateRunException{
 
 		
 		
 		if(firstExecConfig == null)
 		{
-			this.firstExecConfig = run.getRunConfig().getAlgorithmExecutionConfiguration();
+			this.firstExecConfig = run.getAlgorithmRunConfiguration().getAlgorithmExecutionConfiguration();
 		} else
 		{
-			if(!this.firstExecConfig.equals(run.getRunConfig().getAlgorithmExecutionConfiguration()))
+			if(!this.firstExecConfig.equals(run.getAlgorithmRunConfiguration().getAlgorithmExecutionConfiguration()))
 			{
-				throw new IllegalArgumentException("RunHistory object cannot store runs for different exec configs first was: " + firstExecConfig + " current run was : " + run.getRunConfig().getAlgorithmExecutionConfiguration());
+				throw new IllegalArgumentException("RunHistory object cannot store runs for different exec configs first was: " + firstExecConfig + " current run was : " + run.getAlgorithmRunConfiguration().getAlgorithmExecutionConfiguration());
 			}
 		}
 		
-		if(run.getRunResult().equals(RunResult.RUNNING))
+		if(run.getRunStatus().equals(RunStatus.RUNNING))
 		{
 			throw new IllegalArgumentException("Runs with Run Result RUNNING cannot be saved to a RunHistory object");
 		}
-		ParameterConfiguration config = run.getRunConfig().getParameterConfiguration();
-		ProblemInstanceSeedPair pisp = run.getRunConfig().getProblemInstanceSeedPair();
+		ParameterConfiguration config = run.getAlgorithmRunConfiguration().getParameterConfiguration();
+		ProblemInstanceSeedPair pisp = run.getAlgorithmRunConfiguration().getProblemInstanceSeedPair();
 		ProblemInstance pi = pisp.getProblemInstance();
 		long seed = run.getResultSeed();
 		
@@ -195,13 +195,13 @@ public class NewRunHistory implements RunHistory {
 		
 		Double dOldValue = seedToPerformanceMap.put(seed,runResult);
 		
-		RunResult result = run.getRunResult();
+		RunStatus result = run.getRunStatus();
 		
 		boolean censoredEarly = run.isCensoredEarly();
 		
 		if(configToRunIgnoreRedundantMap.get(config) == null)
 		{
-			configToRunIgnoreRedundantMap.put(config, new LinkedHashMap<ProblemInstanceSeedPair, AlgorithmRun>());
+			configToRunIgnoreRedundantMap.put(config, new LinkedHashMap<ProblemInstanceSeedPair, AlgorithmRunResult>());
 		}
 		
 		
@@ -219,10 +219,10 @@ public class NewRunHistory implements RunHistory {
 				censoredEarlyRunsForConfig.remove(pisp); 
 			} else
 			{
-				AlgorithmRun matchingRun = null;
-				for(AlgorithmRun algoRun : this.getAlgorithmRunsExcludingRedundant(config))
+				AlgorithmRunResult matchingRun = null;
+				for(AlgorithmRunResult algoRun : this.getAlgorithmRunsExcludingRedundant(config))
 				{
-					if(algoRun.getRunConfig().getProblemInstanceSeedPair().equals(run.getRunConfig().getProblemInstanceSeedPair()))
+					if(algoRun.getAlgorithmRunConfiguration().getProblemInstanceSeedPair().equals(run.getAlgorithmRunConfiguration().getProblemInstanceSeedPair()))
 					{
 						matchingRun = algoRun;
 					}
@@ -276,7 +276,7 @@ public class NewRunHistory implements RunHistory {
 		
 		if(this.configToRunMap.get(config) == null)
 		{
-			this.configToRunMap.put(config, new ArrayList<AlgorithmRun>());
+			this.configToRunMap.put(config, new ArrayList<AlgorithmRunResult>());
 		}
 		
 		this.configToRunMap.get(config).add(run);
@@ -324,7 +324,7 @@ public class NewRunHistory implements RunHistory {
 			censoredEarlyRuns.get(config).add(pisp);
 		}
 		
-		Object[] args = {iteration, paramConfigurationList.getKey(config), pi.getInstanceID(), pisp.getSeed(), format.format(run.getRunConfig().getCutoffTime())};
+		Object[] args = {iteration, paramConfigurationList.getKey(config), pi.getInstanceID(), pisp.getSeed(), format.format(run.getAlgorithmRunConfiguration().getCutoffTime())};
 		
 		
 		
@@ -684,10 +684,10 @@ public class NewRunHistory implements RunHistory {
 	}
 	
 	@Override
-	public List<AlgorithmRun> getAlgorithmRunsExcludingRedundant() {
+	public List<AlgorithmRunResult> getAlgorithmRunsExcludingRedundant() {
 		
-		List<AlgorithmRun> list = new ArrayList<AlgorithmRun>();
-		for(LinkedHashMap<ProblemInstanceSeedPair, AlgorithmRun> lhm : this.configToRunIgnoreRedundantMap.values())
+		List<AlgorithmRunResult> list = new ArrayList<AlgorithmRunResult>();
+		for(LinkedHashMap<ProblemInstanceSeedPair, AlgorithmRunResult> lhm : this.configToRunIgnoreRedundantMap.values())
 		{
 			list.addAll(lhm.values());
 		}
@@ -703,10 +703,10 @@ public class NewRunHistory implements RunHistory {
 	 * We could speed this up but at this point we only do this for restoring state
 	 * @return list of algorithm runs we have recieved
 	 */
-	public List<AlgorithmRun> getAlgorithmRunsIncludingRedundant() 
+	public List<AlgorithmRunResult> getAlgorithmRunsIncludingRedundant() 
 	{
 		
-		List<AlgorithmRun> runs = new ArrayList<AlgorithmRun>(this.runHistoryList.size());
+		List<AlgorithmRunResult> runs = new ArrayList<AlgorithmRunResult>(this.runHistoryList.size());
 		for(RunData runData : getAlgorithmRunData() )
 		{
 			runs.add(runData.getRun());
@@ -715,9 +715,9 @@ public class NewRunHistory implements RunHistory {
 	}
 	
 	@Override
-	public List<AlgorithmRun> getAlgorithmRunsIncludingRedundant(ParameterConfiguration config) {
+	public List<AlgorithmRunResult> getAlgorithmRunsIncludingRedundant(ParameterConfiguration config) {
 		
-		List<AlgorithmRun> runs = this.configToRunMap.get(config);
+		List<AlgorithmRunResult> runs = this.configToRunMap.get(config);
 		
 		if(runs != null)
 		{
@@ -729,16 +729,16 @@ public class NewRunHistory implements RunHistory {
 	}
 	
 	@Override
-	public List<AlgorithmRun> getAlgorithmRunsExcludingRedundant(ParameterConfiguration config)
+	public List<AlgorithmRunResult> getAlgorithmRunsExcludingRedundant(ParameterConfiguration config)
 	{
-		Map<ProblemInstanceSeedPair, AlgorithmRun> runs = this.configToRunIgnoreRedundantMap.get(config);
+		Map<ProblemInstanceSeedPair, AlgorithmRunResult> runs = this.configToRunIgnoreRedundantMap.get(config);
 		
 		if(runs == null)
 		{
 			runs = Collections.emptyMap();
 		}
 		
-		return Collections.unmodifiableList(new ArrayList<AlgorithmRun>(runs.values()));
+		return Collections.unmodifiableList(new ArrayList<AlgorithmRunResult>(runs.values()));
 	}
 	
 	

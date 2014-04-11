@@ -11,8 +11,8 @@ import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
-import ca.ubc.cs.beta.aeatk.json.serializers.AlgorithmExecutionConfigJson.AlgorithmExecutionConfigDeserializer;
-import ca.ubc.cs.beta.aeatk.json.serializers.ParamConfigurationJson.ParamConfigurationDeserializer;
+import ca.ubc.cs.beta.aeatk.json.serializers.AlgorithmExecutionConfigurationJson.AlgorithmExecutionConfigDeserializer;
+import ca.ubc.cs.beta.aeatk.json.serializers.ParameterConfigurationSpaceJson.ParamConfigurationDeserializer;
 import ca.ubc.cs.beta.aeatk.json.serializers.ProblemInstanceJson.ProblemInstanceSeedPairDeserializer;
 import ca.ubc.cs.beta.aeatk.misc.version.ACLibVersionInfo;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
@@ -27,7 +27,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
-public class RunConfigJson  {
+public class AlgorithmRunConfigurationJson  {
 
 	public static final String RC_SAMPLE_IDX = "rc-sample-idx";
 

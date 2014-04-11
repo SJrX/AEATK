@@ -15,14 +15,14 @@ import org.slf4j.LoggerFactory;
 
 import com.beust.jcommander.ParameterException;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
-import ca.ubc.cs.beta.aeatk.algorithmrunner.AlgorithmRunner;
-import ca.ubc.cs.beta.aeatk.algorithmrunner.AutomaticConfiguratorFactory;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.concurrent.threadfactory.SequentiallyNamedThreadFactory;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.AbstractAsyncTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.algorithmrunner.AlgorithmRunner;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.algorithmrunner.AutomaticConfiguratorFactory;
 
 /**
  * Evalutes Given Run Configurations
@@ -104,7 +104,7 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractAsyncTargetAlgo
 
 				AlgorithmRunner runner =null;
 				
-				List<AlgorithmRun> runs = null;
+				List<AlgorithmRunResult> runs = null;
 				
 				try 
 				{

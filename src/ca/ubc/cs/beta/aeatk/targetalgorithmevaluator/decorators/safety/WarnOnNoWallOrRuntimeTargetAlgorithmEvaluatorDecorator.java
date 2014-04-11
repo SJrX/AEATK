@@ -9,8 +9,8 @@ import java.util.concurrent.TimeUnit;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.concurrent.threadfactory.SequentiallyNamedThreadFactory;
 import ca.ubc.cs.beta.aeatk.misc.watch.AutoStartStopWatch;
 import ca.ubc.cs.beta.aeatk.misc.watch.StopWatch;
@@ -78,7 +78,7 @@ public class WarnOnNoWallOrRuntimeTargetAlgorithmEvaluatorDecorator extends Abst
 	
 
 	@Override
-	public final List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs)
+	public final List<AlgorithmRunResult> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs)
 	{
 		
 		if(observed)
@@ -87,7 +87,7 @@ public class WarnOnNoWallOrRuntimeTargetAlgorithmEvaluatorDecorator extends Abst
 		} else
 		{
 			runsSubmitted.release();
-			List<AlgorithmRun> runs = (tae.evaluateRun(runConfigs, new WarningObserver(obs)));
+			List<AlgorithmRunResult> runs = (tae.evaluateRun(runConfigs, new WarningObserver(obs)));
 			markObserved();
 			return runs;
 		}
@@ -112,7 +112,7 @@ public class WarnOnNoWallOrRuntimeTargetAlgorithmEvaluatorDecorator extends Abst
 				private final TargetAlgorithmEvaluatorCallback handler = oHandler;
 
 				@Override
-				public void onSuccess(List<AlgorithmRun> runs) {
+				public void onSuccess(List<AlgorithmRunResult> runs) {
 						markObserved();		
 						handler.onSuccess(runs);
 				}
@@ -139,7 +139,7 @@ public class WarnOnNoWallOrRuntimeTargetAlgorithmEvaluatorDecorator extends Abst
 		}
 		
 		@Override
-		public synchronized void currentStatus(List<? extends AlgorithmRun> runs) 
+		public synchronized void currentStatus(List<? extends AlgorithmRunResult> runs) 
 		{
 			
 			if(obs != null)
@@ -149,7 +149,7 @@ public class WarnOnNoWallOrRuntimeTargetAlgorithmEvaluatorDecorator extends Abst
 			
 			if(!observed)
 			{
-				for(AlgorithmRun run : runs)
+				for(AlgorithmRunResult run : runs)
 				{
 					if(run.getWallclockExecutionTime() > 0) 
 					{

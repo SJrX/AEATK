@@ -2,7 +2,7 @@ package ca.ubc.cs.beta.aeatk.runhistory;
 
 import java.util.Collection;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.exceptions.DuplicateRunException;
 
 /**
@@ -25,7 +25,7 @@ public interface ThreadSafeRunHistory extends RunHistory {
 	 * 
 	 * @throws DuplicateRunException  - This object is only consistent as so far as the data structures are concerned. The runs may still be partially applied however.
 	 */
-	public void append(Collection<AlgorithmRun> runs) throws DuplicateRunException;
+	public void append(Collection<AlgorithmRunResult> runs) throws DuplicateRunException;
 	
 	/**
 	 * Requests a read lock on the data structure

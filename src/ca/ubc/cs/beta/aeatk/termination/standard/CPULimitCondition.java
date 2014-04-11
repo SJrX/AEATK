@@ -6,7 +6,7 @@ import java.util.Collections;
 import com.google.common.util.concurrent.AtomicDouble;
 
 import net.jcip.annotations.ThreadSafe;
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.misc.cputime.CPUTime;
 import ca.ubc.cs.beta.aeatk.termination.ConditionType;
 import ca.ubc.cs.beta.aeatk.termination.ValueMaxStatus;
@@ -52,7 +52,7 @@ public class CPULimitCondition extends AbstractTerminationCondition
 	}
 
 	@Override
-	public synchronized void notifyRun(AlgorithmRun run) {
+	public synchronized void notifyRun(AlgorithmRunResult run) {
 		currentTime.addAndGet(Math.max(0.1, run.getRuntime()));
 	}
 	

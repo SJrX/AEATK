@@ -22,9 +22,9 @@ import org.slf4j.LoggerFactory;
 import com.beust.jcommander.ParameterException;
 
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunStatus;
 import ca.ubc.cs.beta.aeatk.exceptions.DuplicateRunException;
 import ca.ubc.cs.beta.aeatk.initialization.InitializationProcedure;
 import ca.ubc.cs.beta.aeatk.misc.associatedvalue.Pair;
@@ -158,7 +158,7 @@ public class UnbiasChallengerInitializationProcedure implements InitializationPr
 		
 			//TargetAlgorithmEvaluatorQueueFacade<UnbiasedChallengerInitializationProcedureContext> tque =  new TargetAlgorithmEvaluatorQueueFacade<UnbiasedChallengerInitializationProcedureContext>(tae, true); 
 			
-			final List<AlgorithmRun> incumbentRuns = scheduleInitialIncumbent(selectedPisps);
+			final List<AlgorithmRunResult> incumbentRuns = scheduleInitialIncumbent(selectedPisps);
 			
 			initializeRuns(pispConfigs);
 			
@@ -205,7 +205,7 @@ public class UnbiasChallengerInitializationProcedure implements InitializationPr
 				log.debug("Unsolved {}",rcs);
 				log.debug("Scheduling {} incomplete runs for {} ({}) ", rcs.size() , runHistory.getThetaIdx(bestConfiguration), bestConfiguration );
 				
-				List<AlgorithmRun> completedRuns = tae.evaluateRun(rcs);
+				List<AlgorithmRunResult> completedRuns = tae.evaluateRun(rcs);
 				try {
 					runHistory.append(completedRuns);
 				} catch (DuplicateRunException e) {
@@ -290,13 +290,13 @@ public class UnbiasChallengerInitializationProcedure implements InitializationPr
 		{
 
 			@Override
-			public void currentStatus(List<? extends AlgorithmRun> runs) {
+			public void currentStatus(List<? extends AlgorithmRunResult> runs) {
 				
 				if(killNow.get())
 				{
-					for(AlgorithmRun run : runs)
+					for(AlgorithmRunResult run : runs)
 					{
-						if(run.getRunResult() == RunResult.RUNNING)
+						if(run.getRunStatus() == RunStatus.RUNNING)
 						{
 							log.trace("Killing run {} ", run);
 							run.kill();
@@ -365,7 +365,7 @@ outOfInitialization:
 				TargetAlgorithmEvaluatorCallback taeCallback = new TargetAlgorithmEvaluatorCallback() {
 					
 					@Override
-					public void onSuccess(List<AlgorithmRun> runs) {
+					public void onSuccess(List<AlgorithmRunResult> runs) {
 						
 						try {
 							runHistory.append(runs);
@@ -374,9 +374,9 @@ outOfInitialization:
 						}
 
 						//== Either it was decided or it has a run at kappaMax
-						if(runs.get(0).getRunResult().isDecided() || !runs.get(0).getRunConfig().hasCutoffLessThanMax())
+						if(runs.get(0).getRunStatus().isDecided() || !runs.get(0).getAlgorithmRunConfiguration().hasCutoffLessThanMax())
 						{
-							if(runs.get(0).getRunResult().isDecided())
+							if(runs.get(0).getRunStatus().isDecided())
 							{
 								log.debug("Run completed successfully: {} " ,runs.get(0));
 							}
@@ -458,10 +458,10 @@ outOfInitialization:
 	 * @param selectedPisps
 	 * @return
 	 */
-	private List<AlgorithmRun> scheduleInitialIncumbent(List<ProblemInstanceSeedPair> selectedPisps) 
+	private List<AlgorithmRunResult> scheduleInitialIncumbent(List<ProblemInstanceSeedPair> selectedPisps) 
 	{
 		
-		final List<AlgorithmRun> incumbentRuns = Collections.synchronizedList(new ArrayList<AlgorithmRun>(selectedPisps.size()));
+		final List<AlgorithmRunResult> incumbentRuns = Collections.synchronizedList(new ArrayList<AlgorithmRunResult>(selectedPisps.size()));
 		
 		List<AlgorithmRunConfiguration> rcs = new ArrayList<AlgorithmRunConfiguration>(selectedPisps.size());
 		
@@ -475,7 +475,7 @@ outOfInitialization:
 		tae.evaluateRunsAsync(rcs, new TargetAlgorithmEvaluatorCallback() {
 
 			@Override
-			public void onSuccess(List<AlgorithmRun> runs) {
+			public void onSuccess(List<AlgorithmRunResult> runs) {
 				log.debug("Default configuration runs are done");
 				incumbentRuns.addAll(runs);
 			}

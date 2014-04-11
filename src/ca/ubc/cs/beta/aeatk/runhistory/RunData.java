@@ -1,6 +1,6 @@
 package ca.ubc.cs.beta.aeatk.runhistory;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 /**
  * Value object that holds useful book keeping information about a run
  * @author seramage
@@ -12,7 +12,7 @@ public class RunData
 	private final int iteration;
 	private final int thetaIdx;
 	private final int instanceidx;
-	private final AlgorithmRun run;
+	private final AlgorithmRunResult run;
 	private final double responseValue;
 	private final boolean cappedRun; 
 	
@@ -25,7 +25,7 @@ public class RunData
 	 * @param responseValue	the response value we care about
 	 * @param cappedRun  	whether this run was capped 
 	 */
-	public RunData(int iteration, int thetaIdx, int instanceIdx, AlgorithmRun run, double responseValue, boolean cappedRun)
+	public RunData(int iteration, int thetaIdx, int instanceIdx, AlgorithmRunResult run, double responseValue, boolean cappedRun)
 	{
 		this.iteration=iteration;
 		this.thetaIdx = thetaIdx;
@@ -48,7 +48,7 @@ public class RunData
 		return instanceidx;
 	}
 
-	public AlgorithmRun getRun() {
+	public AlgorithmRunResult getRun() {
 		return run;
 	}
 

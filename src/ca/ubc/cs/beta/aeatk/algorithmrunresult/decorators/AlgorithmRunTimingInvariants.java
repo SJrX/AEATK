@@ -1,6 +1,6 @@
-package ca.ubc.cs.beta.aeatk.algorithmrun.decorators;
+package ca.ubc.cs.beta.aeatk.algorithmrunresult.decorators;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 
 /**
  * Corrects output from misbehaiving wrappers
@@ -19,7 +19,7 @@ import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
  */
 public class AlgorithmRunTimingInvariants extends AbstractAlgorithmRunDecorator {
 
-	public AlgorithmRunTimingInvariants(AlgorithmRun run) {
+	public AlgorithmRunTimingInvariants(AlgorithmRunResult run) {
 		super(run);
 	}
 

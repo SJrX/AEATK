@@ -11,7 +11,7 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.eventsystem.EventHandler;
 import ca.ubc.cs.beta.aeatk.eventsystem.events.AutomaticConfiguratorEvent;
 import ca.ubc.cs.beta.aeatk.eventsystem.events.ac.ChallengeEndEvent;
@@ -134,7 +134,7 @@ public class LogRuntimeStatistics implements EventHandler<AutomaticConfiguratorE
 		{
 			this.logCount.set(((StateRestoredEvent) event).getModelsBuilt());
 			
-			for(AlgorithmRun run : ((StateRestoredEvent) event).getRunHistory().getAlgorithmRunsIncludingRedundant())
+			for(AlgorithmRunResult run : ((StateRestoredEvent) event).getRunHistory().getAlgorithmRunsIncludingRedundant())
 			{
 				this.sumOfWallclockTime += run.getWallclockExecutionTime();
 				this.sumOfRuntime += run.getRuntime();

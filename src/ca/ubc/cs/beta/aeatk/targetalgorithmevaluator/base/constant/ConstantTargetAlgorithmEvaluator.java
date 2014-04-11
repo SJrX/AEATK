@@ -3,9 +3,9 @@ package ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.constant;
 import java.util.ArrayList;
 import java.util.List;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.ExistingAlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.ExistingAlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.AbstractSyncTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
 
@@ -38,9 +38,9 @@ public class ConstantTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorith
 	}
 
 	@Override
-	public List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs,
+	public List<AlgorithmRunResult> evaluateRun(List<AlgorithmRunConfiguration> runConfigs,
 			TargetAlgorithmEvaluatorRunObserver obs) {
-		List<AlgorithmRun> runs = new ArrayList<AlgorithmRun>();
+		List<AlgorithmRunResult> runs = new ArrayList<AlgorithmRunResult>();
 		
 		for(AlgorithmRunConfiguration rc : runConfigs)
 		{
@@ -51,7 +51,7 @@ public class ConstantTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorith
 				addlRunData = "," + options.additionalRunData;
 			}
 			
-			runs.add(new ExistingAlgorithmRun( rc, options.runResult , options.runtime , options.runlength , options.quality , rc.getProblemInstanceSeedPair().getSeed() , addlRunData));
+			runs.add(new ExistingAlgorithmRunResult( rc, options.runResult , options.runtime , options.runlength , options.quality , rc.getProblemInstanceSeedPair().getSeed() , addlRunData));
 		}
 		
 		return runs;

@@ -11,8 +11,8 @@ import java.net.InetAddress;
 import java.net.SocketException;
 import java.util.ArrayList;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.misc.watch.AutoStartStopWatch;
 import ca.ubc.cs.beta.aeatk.misc.watch.StopWatch;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration.ParameterStringFormat;
@@ -30,7 +30,7 @@ public class UDPMechanism {
 	 * @param udpPacketSize
 	 * @return
 	 */
-	public AlgorithmRun evaluateRun(AlgorithmRunConfiguration rc,  int port, String remoteAddr, int udpPacketSize) 
+	public AlgorithmRunResult evaluateRun(AlgorithmRunConfiguration rc,  int port, String remoteAddr, int udpPacketSize) 
 	{
 		try {
 			

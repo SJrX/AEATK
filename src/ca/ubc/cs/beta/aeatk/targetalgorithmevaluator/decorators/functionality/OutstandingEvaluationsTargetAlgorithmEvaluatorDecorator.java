@@ -8,8 +8,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import net.jcip.annotations.ThreadSafe;
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.concurrent.ReducableSemaphore;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
@@ -44,12 +44,12 @@ public class OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator extends
 
 
 	@Override
-	public List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
+	public List<AlgorithmRunResult> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
 		try{
 			
 			logReduce(runConfigs);
 			preRun(runConfigs);
-			List<AlgorithmRun> runs =  tae.evaluateRun(runConfigs, obs);
+			List<AlgorithmRunResult> runs =  tae.evaluateRun(runConfigs, obs);
 			postRun(runConfigs);
 			return runs;
 		} finally
@@ -106,7 +106,7 @@ public class OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator extends
 
 			AtomicBoolean bool = new AtomicBoolean(false);
 			@Override
-			public void onSuccess(List<AlgorithmRun> runs) {
+			public void onSuccess(List<AlgorithmRunResult> runs) {
 				postRun(runConfigs);
 				handler.onSuccess(runs);
 				//Release happens after because it is still outstanding at this point until the callback has fired.

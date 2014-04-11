@@ -14,8 +14,8 @@ import org.junit.Test;
 import static org.junit.Assert.*;
 import ca.ubc.cs.beta.TestHelper;
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.misc.debug.DebugUtil;
 import ca.ubc.cs.beta.aeatk.objectives.RunObjective;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
@@ -98,9 +98,9 @@ private static TargetAlgorithmEvaluator tae;
 		
 		for(AlgorithmRunConfiguration rc : runConfigs)
 		{
-				AlgorithmRun run = tae.evaluateRun(rc).get(0);
+				AlgorithmRunResult run = tae.evaluateRun(rc).get(0);
 				assertDEquals(RunObjective.RUNTIME.getObjective(run),kappaMax,0.1);
-				assertDEquals(Double.valueOf(run.getRunConfig().getParameterConfiguration().get("runtime")), run.getRuntime(), 0.1);
+				assertDEquals(Double.valueOf(run.getAlgorithmRunConfiguration().getParameterConfiguration().get("runtime")), run.getRuntime(), 0.1);
 		}
 	}
 	
@@ -128,9 +128,9 @@ private static TargetAlgorithmEvaluator tae;
 		
 		for(AlgorithmRunConfiguration rc : runConfigs)
 		{
-				AlgorithmRun run = tae.evaluateRun(rc).get(0);
+				AlgorithmRunResult run = tae.evaluateRun(rc).get(0);
 				assertDEquals(RunObjective.RUNTIME.getObjective(run),run.getRuntime(),0.1);
-				assertDEquals(Double.valueOf(run.getRunConfig().getParameterConfiguration().get("runtime")), run.getRuntime(), 0.1);
+				assertDEquals(Double.valueOf(run.getAlgorithmRunConfiguration().getParameterConfiguration().get("runtime")), run.getRuntime(), 0.1);
 		}
 	}
 	
@@ -160,9 +160,9 @@ private static TargetAlgorithmEvaluator tae;
 		
 		for(AlgorithmRunConfiguration rc : runConfigs)
 		{
-				AlgorithmRun run = tae.evaluateRun(rc).get(0);
+				AlgorithmRunResult run = tae.evaluateRun(rc).get(0);
 				assertDEquals(RunObjective.RUNTIME.getObjective(run),kappaMax,0.1);
-				assertDEquals(Double.valueOf(run.getRunConfig().getParameterConfiguration().get("runtime")), run.getRuntime(), 0.1);
+				assertDEquals(Double.valueOf(run.getAlgorithmRunConfiguration().getParameterConfiguration().get("runtime")), run.getRuntime(), 0.1);
 		}
 	}
 	
@@ -191,9 +191,9 @@ private static TargetAlgorithmEvaluator tae;
 		
 		for(AlgorithmRunConfiguration rc : runConfigs)
 		{
-				AlgorithmRun run = tae.evaluateRun(rc).get(0);
+				AlgorithmRunResult run = tae.evaluateRun(rc).get(0);
 				assertDEquals(RunObjective.RUNTIME.getObjective(run),run.getRuntime(),0.1);
-				assertDEquals(Double.valueOf(run.getRunConfig().getParameterConfiguration().get("runtime")), run.getRuntime(), 0.1);
+				assertDEquals(Double.valueOf(run.getAlgorithmRunConfiguration().getParameterConfiguration().get("runtime")), run.getRuntime(), 0.1);
 		}
 	}
 	
@@ -226,9 +226,9 @@ private static TargetAlgorithmEvaluator tae;
 		
 		for(AlgorithmRunConfiguration rc : runConfigs)
 		{
-				AlgorithmRun run = tae.evaluateRun(rc).get(0);
+				AlgorithmRunResult run = tae.evaluateRun(rc).get(0);
 				assertDEquals(RunObjective.RUNTIME.getObjective(run),capTimeRequest,0.1);
-				assertDEquals(Double.valueOf(run.getRunConfig().getParameterConfiguration().get("runtime")), run.getRuntime(), 0.1);
+				assertDEquals(Double.valueOf(run.getAlgorithmRunConfiguration().getParameterConfiguration().get("runtime")), run.getRuntime(), 0.1);
 		}
 	}
 
@@ -257,12 +257,12 @@ private static TargetAlgorithmEvaluator tae;
 		AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("pi"), 1), 20, ParameterConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(), execConfig);
 		
 		
-		List<AlgorithmRun> runs = tae.evaluateRun(Collections.singletonList(rc), new TargetAlgorithmEvaluatorRunObserver()
+		List<AlgorithmRunResult> runs = tae.evaluateRun(Collections.singletonList(rc), new TargetAlgorithmEvaluatorRunObserver()
 		{
 
 			@Override
-			public void currentStatus(List<? extends AlgorithmRun> runs) {
-				for(AlgorithmRun run : runs)
+			public void currentStatus(List<? extends AlgorithmRunResult> runs) {
+				for(AlgorithmRunResult run : runs)
 				{
 					run.kill();
 				}
@@ -270,7 +270,7 @@ private static TargetAlgorithmEvaluator tae;
 			
 		});
 		
-		for(AlgorithmRun run : runs)
+		for(AlgorithmRunResult run : runs)
 		{
 			assertEquals("Expect Runtime objective to be the same for dynamically capped runs ", run.getRuntime(), RunObjective.RUNTIME.getObjective(run) , 0.01);
 			

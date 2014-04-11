@@ -1,6 +1,6 @@
 package ca.ubc.cs.beta.aeatk.termination.standard;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.eventsystem.EventManager;
 import ca.ubc.cs.beta.aeatk.termination.TerminationCondition;
 
@@ -13,7 +13,7 @@ public abstract class AbstractTerminationCondition implements TerminationConditi
 	}
 
 	@Override
-	public void notifyRun(AlgorithmRun run) {
+	public void notifyRun(AlgorithmRunResult run) {
 		//noop
 	}
 

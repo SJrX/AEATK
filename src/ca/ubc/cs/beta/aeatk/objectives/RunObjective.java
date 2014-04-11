@@ -1,9 +1,9 @@
 package ca.ubc.cs.beta.aeatk.objectives;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 /**
- * Enumeration listing the various run objectives (converts an {@link AlgorithmRun} into a response value)
+ * Enumeration listing the various run objectives (converts an {@link AlgorithmRunResult} into a response value)
  * 
  * @author Steve Ramage <seramage@cs.ubc.ca>
  *
@@ -19,17 +19,17 @@ public enum RunObjective {
 	 * Use the quality from the wrapper output
 	 */
 	QUALITY;
-	public double getObjective(AlgorithmRun r)
+	public double getObjective(AlgorithmRunResult r)
 	{
 		
 		switch(this)
 		{
 			case RUNTIME:
-				switch(r.getRunResult())
+				switch(r.getRunStatus())
 				{
 					case TIMEOUT:
 						//Return the requested cutoff time for the run ( <kappaMax if requested to be censored)
-						return r.getRunConfig().getCutoffTime();
+						return r.getAlgorithmRunConfiguration().getCutoffTime();
 					case KILLED:						
 					case RUNNING:
 					case SAT:
@@ -38,9 +38,9 @@ public enum RunObjective {
 						return r.getRuntime();
 					case ABORT:
 					case CRASHED:
-						return r.getExecutionConfig().getAlgorithmMaximumCutoffTime();
+						return r.getAlgorithmRunConfiguration().getAlgorithmExecutionConfiguration().getAlgorithmMaximumCutoffTime();
 					default:
-						throw new IllegalStateException("Unsure how to compute the " + this + " RunOjective for a run with result type " + r.getRunResult() );
+						throw new IllegalStateException("Unsure how to compute the " + this + " RunOjective for a run with result type " + r.getRunStatus() );
 				}
 				
 						

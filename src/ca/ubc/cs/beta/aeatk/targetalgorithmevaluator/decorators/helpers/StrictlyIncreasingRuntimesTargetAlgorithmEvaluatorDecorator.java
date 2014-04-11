@@ -7,12 +7,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 
 import com.google.common.util.concurrent.AtomicDouble;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.ExistingAlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
-import ca.ubc.cs.beta.aeatk.algorithmrun.RunningAlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.kill.KillHandler;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.ExistingAlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunStatus;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunningAlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.kill.KillHandler;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorHelper;
@@ -36,7 +36,7 @@ public class StrictlyIncreasingRuntimesTargetAlgorithmEvaluatorDecorator extends
 	}
 
 	@Override
-	public final List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
+	public final List<AlgorithmRunResult> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
 		return TargetAlgorithmEvaluatorHelper.evaluateRunSyncToAsync(runConfigs, this, obs);
 	}
 
@@ -60,25 +60,25 @@ public class StrictlyIncreasingRuntimesTargetAlgorithmEvaluatorDecorator extends
 			private final TargetAlgorithmEvaluatorCallback handler = oHandler;
 
 			@Override
-			public void onSuccess(List<AlgorithmRun> runs) {
-					List<AlgorithmRun> fixedRuns = new ArrayList<AlgorithmRun>(runs.size());
+			public void onSuccess(List<AlgorithmRunResult> runs) {
+					List<AlgorithmRunResult> fixedRuns = new ArrayList<AlgorithmRunResult>(runs.size());
 					
 					
-					for(AlgorithmRun run : runs)
+					for(AlgorithmRunResult run : runs)
 					{
 						
 						double runtime = 0;
 						
-						switch(run.getRunResult())
+						switch(run.getRunStatus())
 						{
 							case KILLED:
-								runtime = Math.max(maxRuntimeObserved.get(run.getRunConfig()).get(), run.getRuntime());
+								runtime = Math.max(maxRuntimeObserved.get(run.getAlgorithmRunConfiguration()).get(), run.getRuntime());
 								break;
 							default:
 								runtime = run.getRuntime();
 						}
 						
-						fixedRuns.add(new ExistingAlgorithmRun(run.getRunConfig(),run.getRunResult(),runtime, run.getRunLength(), run.getQuality(),run.getResultSeed(),run.getAdditionalRunData(), run.getWallclockExecutionTime()));
+						fixedRuns.add(new ExistingAlgorithmRunResult(run.getAlgorithmRunConfiguration(),run.getRunStatus(),runtime, run.getRunLength(), run.getQuality(),run.getResultSeed(),run.getAdditionalRunData(), run.getWallclockExecutionTime()));
 					}
 					handler.onSuccess(fixedRuns);
 			}
@@ -93,15 +93,15 @@ public class StrictlyIncreasingRuntimesTargetAlgorithmEvaluatorDecorator extends
 		{
 
 			@Override
-			public void currentStatus(List<? extends AlgorithmRun> runs) 
+			public void currentStatus(List<? extends AlgorithmRunResult> runs) 
 			{
 
-				List<AlgorithmRun> fixedRuns = new ArrayList<AlgorithmRun>(runs.size());
-				for( final AlgorithmRun run : runs)
+				List<AlgorithmRunResult> fixedRuns = new ArrayList<AlgorithmRunResult>(runs.size());
+				for( final AlgorithmRunResult run : runs)
 				{
 					
 					
-					if(run.getRunResult().equals(RunResult.RUNNING))
+					if(run.getRunStatus().equals(RunStatus.RUNNING))
 					{
 						
 						KillHandler kh = new KillHandler()
@@ -121,13 +121,13 @@ public class StrictlyIncreasingRuntimesTargetAlgorithmEvaluatorDecorator extends
 							
 						};
 					
-						fixedRuns.add(new RunningAlgorithmRun(run.getRunConfig(),updateRuntime(run.getRunConfig(),run.getRuntime()),run.getRunLength(), run.getQuality(), run.getResultSeed(), run.getWallclockExecutionTime(),kh));						
-					} else if(run.getRunResult().equals(RunResult.KILLED))
+						fixedRuns.add(new RunningAlgorithmRunResult(run.getAlgorithmRunConfiguration(),updateRuntime(run.getAlgorithmRunConfiguration(),run.getRuntime()),run.getRunLength(), run.getQuality(), run.getResultSeed(), run.getWallclockExecutionTime(),kh));						
+					} else if(run.getRunStatus().equals(RunStatus.KILLED))
 					{
-						fixedRuns.add(new ExistingAlgorithmRun(run.getRunConfig(), run.getRunResult(),updateRuntime(run.getRunConfig(),run.getRuntime()), run.getRunLength(), run.getQuality(),run.getResultSeed(),run.getAdditionalRunData(), run.getWallclockExecutionTime()));
+						fixedRuns.add(new ExistingAlgorithmRunResult(run.getAlgorithmRunConfiguration(), run.getRunStatus(),updateRuntime(run.getAlgorithmRunConfiguration(),run.getRuntime()), run.getRunLength(), run.getQuality(),run.getResultSeed(),run.getAdditionalRunData(), run.getWallclockExecutionTime()));
 					}	else
 					{
-						fixedRuns.add(new ExistingAlgorithmRun(run.getRunConfig(), run.getRunResult(), run.getRuntime(), run.getRunLength(), run.getQuality(),run.getResultSeed(),run.getAdditionalRunData(), run.getWallclockExecutionTime()));
+						fixedRuns.add(new ExistingAlgorithmRunResult(run.getAlgorithmRunConfiguration(), run.getRunStatus(), run.getRuntime(), run.getRunLength(), run.getQuality(),run.getResultSeed(),run.getAdditionalRunData(), run.getWallclockExecutionTime()));
 					}
 				}
 				

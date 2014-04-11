@@ -1,4 +1,4 @@
-package ca.ubc.cs.beta.aeatk.algorithmrun;
+package ca.ubc.cs.beta.aeatk.algorithmrunresult;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -8,16 +8,16 @@ import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.CommandLineAlgorithmRun;
 /**
  * Class that is used to take an existing algorithm run (from for instance a string), and create an AlgorithmRun object
- * @author seramage
+ * @author Steve Ramage<seramage@cs.ubc.ca>
  */
-public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
+public class ExistingAlgorithmRunResult extends AbstractAlgorithmRunResult {
 
 	
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 2L;
-	private static transient Logger log = LoggerFactory.getLogger(ExistingAlgorithmRun.class);
+	private static transient Logger log = LoggerFactory.getLogger(ExistingAlgorithmRunResult.class);
 	
 	/**
 	 * 
@@ -30,7 +30,7 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 	 * @param additionalRunData	The Additional Run Data
 	 * @param wallclockTime		Wallclock time to report
 	 */
-	public ExistingAlgorithmRun(AlgorithmRunConfiguration runConfig, RunResult runResult, double runtime, double runLength, double quality, long resultSeed, String additionalRunData, double wallclockTime)
+	public ExistingAlgorithmRunResult(AlgorithmRunConfiguration runConfig, RunStatus runResult, double runtime, double runLength, double quality, long resultSeed, String additionalRunData, double wallclockTime)
 	{
 		super( runConfig,runResult, runtime, runLength, quality, resultSeed, "<Existing Run>", additionalRunData, wallclockTime);
 	}
@@ -46,7 +46,7 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 	 * @param wallclockTime		Wallclock time to report
 	 */
 
-	public ExistingAlgorithmRun( AlgorithmRunConfiguration runConfig, RunResult runResult, double runtime, double runLength, double quality, long resultSeed,  double wallclockTime)
+	public ExistingAlgorithmRunResult( AlgorithmRunConfiguration runConfig, RunStatus runResult, double runtime, double runLength, double quality, long resultSeed,  double wallclockTime)
 	{
 		super(runConfig,runResult, runtime, runLength, quality, resultSeed, "<Existing Run>", "", wallclockTime);
 	}
@@ -65,7 +65,7 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 	 * @param additionalRunData	The Additional Run Data
 	 */
 
-	public ExistingAlgorithmRun( AlgorithmRunConfiguration runConfig, RunResult runResult, double runtime, double runlength, double quality, long seed, String additionalRunData)
+	public ExistingAlgorithmRunResult( AlgorithmRunConfiguration runConfig, RunStatus runResult, double runtime, double runlength, double quality, long seed, String additionalRunData)
 	{
 		this( runConfig, runResult, runtime,runlength, quality, seed, additionalRunData, 0.0);
 	}
@@ -80,7 +80,7 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 	 * @param quality			The Run Quality
 	 * @param seed 				The Reported seed
 	 */
-	public ExistingAlgorithmRun( AlgorithmRunConfiguration runConfig, RunResult runResult, double runtime, double runlength, double quality, long seed)
+	public ExistingAlgorithmRunResult( AlgorithmRunConfiguration runConfig, RunStatus runResult, double runtime, double runlength, double quality, long seed)
 	{
 		this( runConfig, runResult, runtime,runlength, quality, seed, "", 0.0);
 	}
@@ -102,7 +102,7 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 	 * @param wallclockTime		Wallclock time to report
 	 */
 	@Deprecated
-	public ExistingAlgorithmRun(AlgorithmExecutionConfiguration execConfig, AlgorithmRunConfiguration runConfig, RunResult runResult, double runtime, double runLength, double quality, long resultSeed, String additionalRunData, double wallclockTime)
+	public ExistingAlgorithmRunResult(AlgorithmExecutionConfiguration execConfig, AlgorithmRunConfiguration runConfig, RunStatus runResult, double runtime, double runLength, double quality, long resultSeed, String additionalRunData, double wallclockTime)
 	{
 		super(runConfig,runResult, runtime, runLength, quality, resultSeed, "<Existing Run>", additionalRunData, wallclockTime);
 	}
@@ -119,7 +119,7 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 	 * @param wallclockTime		Wallclock time to report
 	 */
 	@Deprecated
-	public ExistingAlgorithmRun(AlgorithmExecutionConfiguration execConfig, AlgorithmRunConfiguration runConfig, RunResult runResult, double runtime, double runLength, double quality, long resultSeed,  double wallclockTime)
+	public ExistingAlgorithmRunResult(AlgorithmExecutionConfiguration execConfig, AlgorithmRunConfiguration runConfig, RunStatus runResult, double runtime, double runLength, double quality, long resultSeed,  double wallclockTime)
 	{
 		
 		super(runConfig,runResult, runtime, runLength, quality, resultSeed, "<Existing Run>", "", wallclockTime);
@@ -141,7 +141,7 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 	 * @param additionalRunData	The Additional Run Data
 	 */
 	@Deprecated
-	public ExistingAlgorithmRun(AlgorithmExecutionConfiguration execConfig, AlgorithmRunConfiguration runConfig, RunResult runResult, double runtime, double runlength, double quality, long seed, String additionalRunData)
+	public ExistingAlgorithmRunResult(AlgorithmExecutionConfiguration execConfig, AlgorithmRunConfiguration runConfig, RunStatus runResult, double runtime, double runlength, double quality, long seed, String additionalRunData)
 	{
 		this(execConfig, runConfig, runResult, runtime,runlength, quality, seed, additionalRunData, 0.0);
 	}
@@ -158,13 +158,13 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 	 * @param seed 				The Reported seed
 	 */
 	@Deprecated
-	public ExistingAlgorithmRun(AlgorithmExecutionConfiguration execConfig, AlgorithmRunConfiguration runConfig, RunResult runResult, double runtime, double runlength, double quality, long seed)
+	public ExistingAlgorithmRunResult(AlgorithmExecutionConfiguration execConfig, AlgorithmRunConfiguration runConfig, RunStatus runResult, double runtime, double runlength, double quality, long seed)
 	{
 		this(execConfig, runConfig, runResult, runtime,runlength, quality, seed, "", 0.0);
 	}
 	
 	@Deprecated
-	public static ExistingAlgorithmRun getRunFromString( AlgorithmRunConfiguration runConfig, String result)
+	public static ExistingAlgorithmRunResult getRunFromString( AlgorithmRunConfiguration runConfig, String result)
 	{
 		return getRunFromString(runConfig, result, 0);
 	}
@@ -177,7 +177,7 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 	 * @deprecated  the constructor that doesn't take a result string is preferred. 
 	 */
 	@Deprecated
-	public static ExistingAlgorithmRun getRunFromString( AlgorithmRunConfiguration runConfig, String result, double wallClockTime) {
+	public static ExistingAlgorithmRunResult getRunFromString( AlgorithmRunConfiguration runConfig, String result, double wallClockTime) {
 		
 		//this.rawResultLine = resultLine;
 		//this.runCompleted = true;
@@ -185,12 +185,12 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 		
 		try
 		{
-			RunResult acResult;
+			RunStatus acResult;
 			try {
-				acResult = RunResult.getAutomaticConfiguratorResultForCode(Integer.valueOf(resultLine[0]));
+				acResult = RunStatus.getAutomaticConfiguratorResultForCode(Integer.valueOf(resultLine[0]));
 			} catch(NumberFormatException e)
 			{
-				acResult = RunResult.getAutomaticConfiguratorResultForKey(resultLine[0]);
+				acResult = RunStatus.getAutomaticConfiguratorResultForKey(resultLine[0]);
 			}
 			
 			
@@ -205,7 +205,7 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 			}
 			
 			
-			return new ExistingAlgorithmRun(runConfig, acResult, runtime, runLength, quality, resultSeed, additionalRunData,wallClockTime);
+			return new ExistingAlgorithmRunResult(runConfig, acResult, runtime, runLength, quality, resultSeed, additionalRunData,wallClockTime);
 			
 			
 		} catch(ArrayIndexOutOfBoundsException e)
@@ -234,9 +234,9 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 
 	}
 	
-	public static ExistingAlgorithmRun getAbortResult(AlgorithmRunConfiguration rc, String message)
+	public static ExistingAlgorithmRunResult getAbortResult(AlgorithmRunConfiguration rc, String message)
 	{
-		return new ExistingAlgorithmRun(rc, RunResult.ABORT, 0, 0, 0, 0, "ERROR:" +message,0);
+		return new ExistingAlgorithmRunResult(rc, RunStatus.ABORT, 0, 0, 0, 0, "ERROR:" +message,0);
 	}
 
 	@Override
@@ -245,11 +245,6 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 		
 	}
 
-	@Override
-	public boolean isRunResultWellFormed() {
-		// TODO Auto-generated method stub
-		return false;
-	}
 
 
 }

@@ -1,4 +1,4 @@
-package ca.ubc.cs.beta.aeatk.algorithmrun.kill;
+package ca.ubc.cs.beta.aeatk.algorithmrunresult.kill;
 
 import net.jcip.annotations.ThreadSafe;
 

@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
 
@@ -41,7 +41,7 @@ public class ObjectiveHelper {
 	 * @param capSlack 		The amount of slack that is permitted to runs
 	 * @return the computed objective
 	 */
-	public double computeObjective(List<? extends AlgorithmRun> runs, final double capSlack)
+	public double computeObjective(List<? extends AlgorithmRunResult> runs, final double capSlack)
 	{
 		
 		List<ProblemInstance> instances = new ArrayList<ProblemInstance>(runs.size());
@@ -50,15 +50,15 @@ public class ObjectiveHelper {
 		
 		
 		double remainingCapSlack = capSlack;
-		for(AlgorithmRun run : runs)
+		for(AlgorithmRunResult run : runs)
 		{
-			ProblemInstance pi = run.getRunConfig().getProblemInstanceSeedPair().getProblemInstance();
+			ProblemInstance pi = run.getAlgorithmRunConfiguration().getProblemInstanceSeedPair().getProblemInstance();
 			
 			instances.add(pi);
 			map.putIfAbsent(pi,new ArrayList<ProblemInstanceSeedPair>());
 			performance.putIfAbsent(pi,new ArrayList<Double>());
 		
-			map.get(pi).add(run.getRunConfig().getProblemInstanceSeedPair());
+			map.get(pi).add(run.getAlgorithmRunConfiguration().getProblemInstanceSeedPair());
 			
 			double obj = runObj.getObjective(run);
 			obj -= remainingCapSlack;
@@ -90,7 +90,7 @@ public class ObjectiveHelper {
 		return interObjective.aggregate(intraInstanceObjectiveValues, cutoffTime);
 	}
 
-	public double computeObjective(List<? extends AlgorithmRun> runs) {
+	public double computeObjective(List<? extends AlgorithmRunResult> runs) {
 		return computeObjective(runs,0);
 	}
 

@@ -1,4 +1,4 @@
-package ca.ubc.cs.beta.aeatk.algorithmrunner;
+package ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.algorithmrunner;
 
 import java.util.List;
 import java.util.concurrent.BlockingQueue;

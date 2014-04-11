@@ -2,8 +2,8 @@ package ca.ubc.cs.beta.aeatk.targetalgorithmevaluator;
 
 import java.util.List;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 
 /**
  * Executes Target Algorithm Runs (Converts between RunConfig objects to AlgorithmRun objects)
@@ -44,7 +44,7 @@ public interface TargetAlgorithmEvaluator {
 	 * @throws ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.exceptions.TargetAlgorithmAbortException
 	 * @throws ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.exceptions.TargetAlgorithmEvaluatorShutdownException
 	 */
-	public List<AlgorithmRun> evaluateRun(AlgorithmRunConfiguration runConfig);
+	public List<AlgorithmRunResult> evaluateRun(AlgorithmRunConfiguration runConfig);
 
 	/**
 	 * Evaluate a list of run configurations
@@ -61,7 +61,7 @@ public interface TargetAlgorithmEvaluator {
 	 * @throws ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.exceptions.TargetAlgorithmAbortException
 	 * @throws ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.exceptions.TargetAlgorithmEvaluatorShutdownException
 	 */
-	public List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs);
+	public List<AlgorithmRunResult> evaluateRun(List<AlgorithmRunConfiguration> runConfigs);
 
 	/**
 	 * Evaluate a list of run configurations
@@ -76,7 +76,7 @@ public interface TargetAlgorithmEvaluator {
 	 * @throws ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.exceptions.TargetAlgorithmAbortException
 	 * @throws ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.exceptions.TargetAlgorithmEvaluatorShutdownException
 	 */
-	public List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver observer);
+	public List<AlgorithmRunResult> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver observer);
 	
 	
 	/**
@@ -221,7 +221,7 @@ public interface TargetAlgorithmEvaluator {
 	 * @see ca.ubc.cs.beta.aeatk.state.StateFactory
 	 * @param runs
 	 */
-	public void seek(List<AlgorithmRun> runs);
+	public void seek(List<AlgorithmRunResult> runs);
 
 	/**
 	 * Returns a String that ought to be useful to the user to reproduce the results of a given run for a given

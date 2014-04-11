@@ -5,7 +5,7 @@ import java.util.Queue;
 
 import org.mangosdk.spi.ProviderFor;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunStatus;
 import ca.ubc.cs.beta.aeatk.misc.associatedvalue.AssociatedValue;
 import ca.ubc.cs.beta.aeatk.options.AbstractOptions;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.AbstractTargetAlgorithmEvaluatorFactory;
@@ -24,7 +24,7 @@ public class PreloadedResponseTargetAlgorithmEvaluatorFactory extends AbstractTa
 	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(AbstractOptions obs) {
 		
 		
-		Queue<AssociatedValue<RunResult, Double>> myQueue = new LinkedList<AssociatedValue<RunResult, Double>>();
+		Queue<AssociatedValue<RunStatus, Double>> myQueue = new LinkedList<AssociatedValue<RunStatus, Double>>();
 	
 		PreloadedResponseTargetAlgorithmEvaluatorOptions opts = (PreloadedResponseTargetAlgorithmEvaluatorOptions) obs;
 		
@@ -43,10 +43,10 @@ public class PreloadedResponseTargetAlgorithmEvaluatorFactory extends AbstractTa
 			{
 				throw new IllegalArgumentException("Invalid Preloaded Response: " + response);
 			}
-			RunResult result = RunResult.getAutomaticConfiguratorResultForKey(val[0].trim());
+			RunStatus result = RunStatus.getAutomaticConfiguratorResultForKey(val[0].trim());
 			double value = Double.valueOf(val[1].trim());
 			
-			myQueue.add(new AssociatedValue<RunResult,Double>(result, value));
+			myQueue.add(new AssociatedValue<RunStatus,Double>(result, value));
 		}
 		
 		

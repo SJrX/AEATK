@@ -6,7 +6,7 @@ import java.util.Collections;
 import java.util.LinkedHashSet;
 import java.util.List;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.eventsystem.EventManager;
 
 public class CompositeTerminationCondition implements TerminationCondition {
@@ -65,7 +65,7 @@ public class CompositeTerminationCondition implements TerminationCondition {
 		}
 	}
 	@Override
-	public void notifyRun(AlgorithmRun run) {
+	public void notifyRun(AlgorithmRunResult run) {
 		for(TerminationCondition c : conditions)
 		{
 			c.notifyRun(run);

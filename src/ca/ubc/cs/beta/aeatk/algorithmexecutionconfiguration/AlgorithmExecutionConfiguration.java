@@ -11,14 +11,14 @@ import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
-import ca.ubc.cs.beta.aeatk.json.serializers.AlgorithmExecutionConfigJson;
+import ca.ubc.cs.beta.aeatk.json.serializers.AlgorithmExecutionConfigurationJson;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace;
 /**
  * Immutable Object contains all the information related to executing a target algorithm run
  * @author seramage
  *
  */
-@JsonSerialize(using=AlgorithmExecutionConfigJson.AlgorithmExecutionConfigSerializer.class)
+@JsonSerialize(using=AlgorithmExecutionConfigurationJson.AlgorithmExecutionConfigSerializer.class)
 public class AlgorithmExecutionConfiguration implements Serializable {
 
 	/**

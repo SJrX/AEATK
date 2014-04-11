@@ -10,8 +10,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.concurrent.threadfactory.SequentiallyNamedThreadFactory;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
@@ -58,7 +58,7 @@ public class TerminateAllRunsOnFileDeleteTargetAlgorithmEvaluatorDecorator exten
 	}
 	
 	@Override
-	public final List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
+	public final List<AlgorithmRunResult> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
 		return tae.evaluateRun(runConfigs, new TerminateAllRunOnFileDeleteTargetAlgorithmEvaluatorObserver(obs));
 	}
 	
@@ -75,7 +75,7 @@ public class TerminateAllRunsOnFileDeleteTargetAlgorithmEvaluatorDecorator exten
 			private final TargetAlgorithmEvaluatorCallback handler = oHandler;
 
 			@Override
-			public void onSuccess(List<AlgorithmRun> runs) {		
+			public void onSuccess(List<AlgorithmRunResult> runs) {		
 					handler.onSuccess(runs);
 			}
 
@@ -99,13 +99,13 @@ public class TerminateAllRunsOnFileDeleteTargetAlgorithmEvaluatorDecorator exten
 		}
 		
 		@Override
-		public void currentStatus(List<? extends AlgorithmRun> runs) 
+		public void currentStatus(List<? extends AlgorithmRunResult> runs) 
 		{
 			
 			if(TerminateAllRunsOnFileDeleteTargetAlgorithmEvaluatorDecorator.this.terminate.get())
 			{
 				
-				for(AlgorithmRun run : runs)
+				for(AlgorithmRunResult run : runs)
 				{
 					run.kill();
 				}

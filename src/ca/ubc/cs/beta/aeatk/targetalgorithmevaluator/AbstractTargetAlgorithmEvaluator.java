@@ -6,8 +6,8 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import net.jcip.annotations.ThreadSafe;
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.CommandLineAlgorithmRun;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.functionality.OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator;
 
@@ -39,7 +39,7 @@ public abstract class AbstractTargetAlgorithmEvaluator implements TargetAlgorith
 	 * @return	list of the exact same size as input containing the <code>AlgorithmRun</code> objects in the same order as runConfigs
 	 * @throws TargetAlgorithmAbortException
 	 */
-	public abstract List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver runStatusObserver);
+	public abstract List<AlgorithmRunResult> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver runStatusObserver);
 	
 	/**
 	 * Evaluates the given configuration, and when complete the handler is invoked
@@ -58,13 +58,13 @@ public abstract class AbstractTargetAlgorithmEvaluator implements TargetAlgorith
 	
 	
 	@Override
-	public final List<AlgorithmRun> evaluateRun(AlgorithmRunConfiguration run) 
+	public final List<AlgorithmRunResult> evaluateRun(AlgorithmRunConfiguration run) 
 	{
 		return evaluateRun(Collections.singletonList(run), null);
 	}
 	
 	@Override
-	public final List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs)
+	public final List<AlgorithmRunResult> evaluateRun(List<AlgorithmRunConfiguration> runConfigs)
 	{
 		return evaluateRun(runConfigs, null);
 	}
@@ -96,12 +96,12 @@ public abstract class AbstractTargetAlgorithmEvaluator implements TargetAlgorith
 	}
 
 	@Override
-	public void seek(List<AlgorithmRun> runs) 
+	public void seek(List<AlgorithmRunResult> runs) 
 	{
 		runCount.set(runs.size());	
 	}
 
-	protected void addRuns(List<AlgorithmRun> runs)
+	protected void addRuns(List<AlgorithmRunResult> runs)
 	{
 		runCount.addAndGet(runs.size());
 	}

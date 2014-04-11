@@ -16,8 +16,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.misc.jcommander.JCommanderHelper;
 import ca.ubc.cs.beta.aeatk.misc.version.VersionTracker;
 import ca.ubc.cs.beta.aeatk.options.AbstractOptions;
@@ -191,7 +191,7 @@ public class SatisfiabilityChecker
 					private long lastUpdate = 0;
 					
 					@Override
-					public synchronized void currentStatus(List<? extends AlgorithmRun> runs) {
+					public synchronized void currentStatus(List<? extends AlgorithmRunResult> runs) {
 						
 						if(System.currentTimeMillis() - lastUpdate < 5000)
 						{
@@ -203,7 +203,7 @@ public class SatisfiabilityChecker
 						double currentTime = 0; 
 						double maxTime = 0;
 						int completed = 0;
-						for(AlgorithmRun run : runs)
+						for(AlgorithmRunResult run : runs)
 						{
 							if(run.isRunCompleted())
 							{
@@ -211,7 +211,7 @@ public class SatisfiabilityChecker
 								completed++;
 							} else
 							{
-								maxTime += run.getRunConfig().getCutoffTime();
+								maxTime += run.getAlgorithmRunConfiguration().getCutoffTime();
 							}
 						
 							currentTime += run.getRuntime();
@@ -232,7 +232,7 @@ public class SatisfiabilityChecker
 				{
 
 					@Override
-					public void onSuccess(List<AlgorithmRun> runs) 
+					public void onSuccess(List<AlgorithmRunResult> runs) 
 					{
 						File f = new File(mainOptions.outputFile);
 						
@@ -242,11 +242,11 @@ public class SatisfiabilityChecker
 						}
 							
 						
-						Map<ProblemInstance, AlgorithmRun> instanceToRunMap = new HashMap<ProblemInstance, AlgorithmRun>();
+						Map<ProblemInstance, AlgorithmRunResult> instanceToRunMap = new HashMap<ProblemInstance, AlgorithmRunResult>();
 						
-						for(AlgorithmRun run : runs)
+						for(AlgorithmRunResult run : runs)
 						{
-							instanceToRunMap.put(run.getRunConfig().getProblemInstanceSeedPair().getProblemInstance(), run);
+							instanceToRunMap.put(run.getAlgorithmRunConfiguration().getProblemInstanceSeedPair().getProblemInstance(), run);
 						}
 						
 						log.info("Writing output to {}", f.getAbsoluteFile());
@@ -256,8 +256,8 @@ public class SatisfiabilityChecker
 							
 								for(ProblemInstance pi : instances)
 								{
-									AlgorithmRun run = instanceToRunMap.get(pi);
-									fwrite.append(pi.getInstanceName() + " " + (run.getRunResult().isDecided() ? run.getRunResult() : "UNKNOWN") + "\n");
+									AlgorithmRunResult run = instanceToRunMap.get(pi);
+									fwrite.append(pi.getInstanceName() + " " + (run.getRunStatus().isDecided() ? run.getRunStatus() : "UNKNOWN") + "\n");
 								}
 							} finally
 							{

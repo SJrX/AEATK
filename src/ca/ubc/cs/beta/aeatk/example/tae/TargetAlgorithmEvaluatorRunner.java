@@ -10,9 +10,9 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunStatus;
 import ca.ubc.cs.beta.aeatk.misc.jcommander.JCommanderHelper;
 import ca.ubc.cs.beta.aeatk.misc.version.VersionTracker;
 import ca.ubc.cs.beta.aeatk.options.AbstractOptions;
@@ -224,7 +224,7 @@ public class TargetAlgorithmEvaluatorRunner
 		{
 			private long lastUpdate = 0;
 			@Override
-			public void currentStatus(List<? extends AlgorithmRun> runs) 
+			public void currentStatus(List<? extends AlgorithmRunResult> runs) 
 			{
 				//As we print to standard out we want to make sure that a frequency that is too high doesn't spam the console
 				if(System.currentTimeMillis() - lastUpdate < 1000)
@@ -234,9 +234,9 @@ public class TargetAlgorithmEvaluatorRunner
 				
 				for(int i=0; i < runs.size(); i++)
 				{
-					AlgorithmRun run = runs.get(i);
+					AlgorithmRunResult run = runs.get(i);
 					//Log messages with more than 2 arguments, must use pass them as an array.
-					Object[] logArguments = { i, run.getRunConfig().getProblemInstanceSeedPair().getProblemInstance(), run.getRunResult(), run.getRuntime()};
+					Object[] logArguments = { i, run.getAlgorithmRunConfiguration().getProblemInstanceSeedPair().getProblemInstance(), run.getRunStatus(), run.getRuntime()};
 					log.info("Run {} on {} has status =>  {}, {}", logArguments);
 					if(run.getRuntime() > killTime)
 					{
@@ -252,7 +252,7 @@ public class TargetAlgorithmEvaluatorRunner
 		
 		
 		//Invoke the runs with the observer
-		List<AlgorithmRun> runResults = tae.evaluateRun(Collections.singletonList(runConfig), runStatus); 
+		List<AlgorithmRunResult> runResults = tae.evaluateRun(Collections.singletonList(runConfig), runStatus); 
 		
 		 
 		log.info("Run Completed");
@@ -261,14 +261,14 @@ public class TargetAlgorithmEvaluatorRunner
 		{
 			//AlgorithmRun objects can be viewed as an "answer" to the RunConfig "question"
 			//They are IMMUTABLE.
-			AlgorithmRun run = runResults.get(i);
+			AlgorithmRunResult run = runResults.get(i);
 		
 			//This is the same RunConfig as above
 			//But in general you should always use the information in the AlgorithmRun
-			AlgorithmRunConfiguration resultRunConfig = run.getRunConfig();
+			AlgorithmRunConfiguration resultRunConfig = run.getAlgorithmRunConfiguration();
 
 			//Object representing whether the run reported SAT, UNSAT, TIMEOUT, etc...
-			RunResult runResult = run.getRunResult();
+			RunStatus runResult = run.getRunStatus();
 		
 			double runtime = run.getRuntime();
 			double runLength = run.getRunLength();

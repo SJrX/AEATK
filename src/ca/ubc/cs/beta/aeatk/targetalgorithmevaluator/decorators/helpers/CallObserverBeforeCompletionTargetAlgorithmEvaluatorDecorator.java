@@ -3,8 +3,8 @@ package ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.helpers;
 import java.util.ArrayList;
 import java.util.List;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
@@ -24,18 +24,18 @@ public class CallObserverBeforeCompletionTargetAlgorithmEvaluatorDecorator exten
 	}
 
 	@Override
-	public final List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
+	public final List<AlgorithmRunResult> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
 		
 		
 		
-		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs, obs);
+		List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs, obs);
 		
 		if(obs != null)
 		{
-			List<AlgorithmRun> kruns = new ArrayList<AlgorithmRun>();
+			List<AlgorithmRunResult> kruns = new ArrayList<AlgorithmRunResult>();
 			
 			
-			for(AlgorithmRun run : runs)
+			for(AlgorithmRunResult run : runs)
 			{
 				kruns.add(run);
 			}
@@ -57,13 +57,13 @@ public class CallObserverBeforeCompletionTargetAlgorithmEvaluatorDecorator exten
 			private final TargetAlgorithmEvaluatorCallback handler = oHandler;
 
 			@Override
-			public void onSuccess(List<AlgorithmRun> runs) {
+			public void onSuccess(List<AlgorithmRunResult> runs) {
 				if(obs != null)
 				{
-					List<AlgorithmRun> kruns = new ArrayList<AlgorithmRun>();
+					List<AlgorithmRunResult> kruns = new ArrayList<AlgorithmRunResult>();
 					
 					
-					for(AlgorithmRun run : runs)
+					for(AlgorithmRunResult run : runs)
 					{
 						kruns.add(run);
 					}

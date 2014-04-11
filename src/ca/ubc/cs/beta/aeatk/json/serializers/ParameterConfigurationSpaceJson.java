@@ -36,7 +36,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
-public class ParamConfigurationJson
+public class ParameterConfigurationSpaceJson
 {
 
 	public static final String PC_DEFAULT = "pc-default";

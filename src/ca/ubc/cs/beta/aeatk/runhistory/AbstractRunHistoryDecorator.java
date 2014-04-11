@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.exceptions.DuplicateRunException;
 import ca.ubc.cs.beta.aeatk.objectives.OverallObjective;
 import ca.ubc.cs.beta.aeatk.objectives.RunObjective;
@@ -31,7 +31,7 @@ public abstract class AbstractRunHistoryDecorator implements RunHistory {
 	}
 
 	@Override
-	public void append(AlgorithmRun run) throws DuplicateRunException {
+	public void append(AlgorithmRunResult run) throws DuplicateRunException {
 		rh.append(run);
 	}
 
@@ -128,12 +128,12 @@ public abstract class AbstractRunHistoryDecorator implements RunHistory {
 	}
 
 	@Override
-	public List<AlgorithmRun> getAlgorithmRunsExcludingRedundant() {
+	public List<AlgorithmRunResult> getAlgorithmRunsExcludingRedundant() {
 		return rh.getAlgorithmRunsExcludingRedundant();
 	}
 	
 	@Override
-	public List<AlgorithmRun> getAlgorithmRunsExcludingRedundant(ParameterConfiguration config) {
+	public List<AlgorithmRunResult> getAlgorithmRunsExcludingRedundant(ParameterConfiguration config) {
 		return rh.getAlgorithmRunsExcludingRedundant(config);
 	}
 
@@ -143,12 +143,12 @@ public abstract class AbstractRunHistoryDecorator implements RunHistory {
 	}
 
 	@Override
-	public List<AlgorithmRun> getAlgorithmRunsIncludingRedundant() {
+	public List<AlgorithmRunResult> getAlgorithmRunsIncludingRedundant() {
 		return rh.getAlgorithmRunsIncludingRedundant();
 	}
 	
 	@Override
-	public List<AlgorithmRun> getAlgorithmRunsIncludingRedundant(ParameterConfiguration config) {
+	public List<AlgorithmRunResult> getAlgorithmRunsIncludingRedundant(ParameterConfiguration config) {
 		return rh.getAlgorithmRunsIncludingRedundant(config);
 	}
 

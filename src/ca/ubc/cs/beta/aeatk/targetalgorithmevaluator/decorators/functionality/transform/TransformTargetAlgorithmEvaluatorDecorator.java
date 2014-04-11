@@ -12,9 +12,9 @@ import org.slf4j.LoggerFactory;
 
 import com.beust.jcommander.ParameterException;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.ExistingAlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.ExistingAlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunStatus;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.AbstractForEachRunTargetAlgorithmEvaluatorDecorator;
 import de.congrace.exp4j.Calculable;
@@ -91,11 +91,11 @@ public class TransformTargetAlgorithmEvaluatorDecorator extends AbstractForEachR
 	 * @param run process the run
 	 * @return run that will replace it in the values returned to the client
 	 */
-	protected AlgorithmRun processRun(AlgorithmRun run)
+	protected AlgorithmRunResult processRun(AlgorithmRunResult run)
 	{
 		//Assign the variables according to the current run.
 		int S;
-		switch(run.getRunResult())
+		switch(run.getRunStatus())
 		{
 			case SAT:
 				S=1;
@@ -109,7 +109,7 @@ public class TransformTargetAlgorithmEvaluatorDecorator extends AbstractForEachR
 		}
 		double R = run.getRuntime();
 		double Q = run.getQuality();
-		double C = run.getRunConfig().getCutoffTime();
+		double C = run.getAlgorithmRunConfiguration().getCutoffTime();
 		
 		//Set the variables
 		for(Calculable calculable : calculables)
@@ -125,7 +125,7 @@ public class TransformTargetAlgorithmEvaluatorDecorator extends AbstractForEachR
 		double transformed_quality;
 		
 		Calculable usedCalculable;
-		switch(run.getRunResult())
+		switch(run.getRunStatus())
 		{
 			case SAT:
 				transformedRuntime = SAT_runtime_calculable.calculate();
@@ -153,9 +153,9 @@ public class TransformTargetAlgorithmEvaluatorDecorator extends AbstractForEachR
 		}
 		
 		
-		if(options.transformValidValuesOnly && transformedRuntime >= run.getRunConfig().getCutoffTime())
+		if(options.transformValidValuesOnly && transformedRuntime >= run.getAlgorithmRunConfiguration().getCutoffTime())
 		{
-			return new ExistingAlgorithmRun(run.getExecutionConfig(), run.getRunConfig(), RunResult.TIMEOUT, run.getRunConfig().getCutoffTime(), run.getRunLength(), transformed_quality, run.getResultSeed());
+			return new ExistingAlgorithmRunResult(run.getAlgorithmRunConfiguration(), RunStatus.TIMEOUT, run.getAlgorithmRunConfiguration().getCutoffTime(), run.getRunLength(), transformed_quality, run.getResultSeed());
 			
 		} else
 		{
@@ -172,7 +172,7 @@ public class TransformTargetAlgorithmEvaluatorDecorator extends AbstractForEachR
 				}
 				
 			}
-			return new ExistingAlgorithmRun(run.getExecutionConfig(), run.getRunConfig(), run.getRunResult(), transformedRuntime, run.getRunLength(), transformed_quality, run.getResultSeed());
+			return new ExistingAlgorithmRunResult( run.getAlgorithmRunConfiguration(), run.getRunStatus(), transformedRuntime, run.getRunLength(), transformed_quality, run.getResultSeed());
 			
 		}
 	}

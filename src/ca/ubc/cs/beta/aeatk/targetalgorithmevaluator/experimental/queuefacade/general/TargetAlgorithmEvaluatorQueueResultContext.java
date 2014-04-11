@@ -2,8 +2,8 @@ package ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.experimental.queuefacade.g
 
 import java.util.List;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 
 /**
  * Interface that needs to be implemented / subtyped to provide context
@@ -19,9 +19,9 @@ import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
  */
 public interface TargetAlgorithmEvaluatorQueueResultContext {
 
-	public List<AlgorithmRun> getAlgorithmRuns();
+	public List<AlgorithmRunResult> getAlgorithmRuns();
 	
-	public void setAlgorithmRuns(List<AlgorithmRun> runs);
+	public void setAlgorithmRuns(List<AlgorithmRunResult> runs);
 	
 	public List<AlgorithmRunConfiguration> getRunConfigs();
 	

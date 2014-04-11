@@ -23,9 +23,9 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.ExistingAlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.ExistingAlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.exceptions.DeveloperMadeABooBooException;
 import ca.ubc.cs.beta.aeatk.exceptions.DuplicateRunException;
 import ca.ubc.cs.beta.aeatk.misc.MapList;
@@ -85,7 +85,7 @@ public class StateMergeExecutor {
 			log.debug("Determining Scenario Options");
 			List<ProblemInstance> pis = smo.scenOpts.getTrainingAndTestProblemInstances(smo.experimentDir, 0, 0, true, false, false, false).getTrainingInstances().getInstances();;
 			AlgorithmExecutionConfiguration execConfig = smo.scenOpts.getAlgorithmExecutionConfigSkipExecDirCheck(smo.experimentDir);
-			MapList<Integer, AlgorithmRun> runsPerIteration = new MapList<Integer, AlgorithmRun>(new LinkedHashMap<Integer, List<AlgorithmRun>>());
+			MapList<Integer, AlgorithmRunResult> runsPerIteration = new MapList<Integer, AlgorithmRunResult>(new LinkedHashMap<Integer, List<AlgorithmRunResult>>());
 			
 			if(execConfig.isDeterministicAlgorithm())
 			{
@@ -111,7 +111,7 @@ public class StateMergeExecutor {
 			
 			
 			
-			MapList<Integer, AlgorithmRun> repairedRuns = repairProblemInstances(runsPerIteration, fixedPi,pis);
+			MapList<Integer, AlgorithmRunResult> repairedRuns = repairProblemInstances(runsPerIteration, fixedPi,pis);
 			
 			
 			Random r = new MersenneTwister(smo.seed);
@@ -124,10 +124,10 @@ public class StateMergeExecutor {
 			}
 			ThreadSafeRunHistory rhToFilter = new ThreadSafeRunHistoryWrapper(rh);
 			
-			for(Entry<Integer, List<AlgorithmRun>> itToRun :repairedRuns.entrySet())
+			for(Entry<Integer, List<AlgorithmRunResult>> itToRun :repairedRuns.entrySet())
 			{
 				
-				for(AlgorithmRun run : itToRun.getValue())
+				for(AlgorithmRunResult run : itToRun.getValue())
 				{
 					try {
 						
@@ -255,7 +255,7 @@ public class StateMergeExecutor {
 					}
 					
 					
-					if(maxSet.contains(rd.getRun().getRunConfig().getProblemInstanceSeedPair()))
+					if(maxSet.contains(rd.getRun().getAlgorithmRunConfiguration().getProblemInstanceSeedPair()))
 					{
 						try {
 							rhToSaveToDisk.append(rd.getRun());
@@ -264,7 +264,7 @@ public class StateMergeExecutor {
 						}
 					} else
 					{
-						log.trace("No match for pisp {}", rd.getRun().getRunConfig().getProblemInstanceSeedPair());
+						log.trace("No match for pisp {}", rd.getRun().getAlgorithmRunConfiguration().getProblemInstanceSeedPair());
 					}
 					
 				}
@@ -323,13 +323,13 @@ public class StateMergeExecutor {
 	 * @param fixedPi Map will be populated with new Problem instance objects
 	 * @return new map list with the correct problem instance objects.
 	 */
-	private static MapList<Integer, AlgorithmRun> repairProblemInstances(
-			MapList<Integer, AlgorithmRun> runsPerIteration,
+	private static MapList<Integer, AlgorithmRunResult> repairProblemInstances(
+			MapList<Integer, AlgorithmRunResult> runsPerIteration,
 			Map<String, ProblemInstance> fixedPi, List<ProblemInstance> pis) {
 		
 	
 		
-		MapList<Integer, AlgorithmRun> repairedRuns = new MapList<Integer, AlgorithmRun>(new HashMap<Integer, List<AlgorithmRun>>());
+		MapList<Integer, AlgorithmRunResult> repairedRuns = new MapList<Integer, AlgorithmRunResult>(new HashMap<Integer, List<AlgorithmRunResult>>());
 		int instanceId = 1;
 		Set<String> featureKeys = new HashSet<String>();
 		ProblemInstance firstPi = null;
@@ -338,14 +338,14 @@ public class StateMergeExecutor {
 		Map<Integer, String> piIDMap = new HashMap<Integer, String>();
 		boolean idcollision = false;
 outerLoop:
-		for(Entry<Integer, List<AlgorithmRun>> runsForIt: runsPerIteration.entrySet())
+		for(Entry<Integer, List<AlgorithmRunResult>> runsForIt: runsPerIteration.entrySet())
 		{
 
 			
 			
-			for(AlgorithmRun run : runsForIt.getValue())
+			for(AlgorithmRunResult run : runsForIt.getValue())
 			{
-				ProblemInstance pi = run.getRunConfig().getProblemInstanceSeedPair().getProblemInstance();
+				ProblemInstance pi = run.getAlgorithmRunConfiguration().getProblemInstanceSeedPair().getProblemInstance();
 				
 				if(piIDMap.containsKey(pi.getInstanceID()))
 				{
@@ -387,11 +387,11 @@ outerLoop:
 		
 		}
 		
-		for(Entry<Integer,List<AlgorithmRun>> runsForIt : runsPerIteration.entrySet())
+		for(Entry<Integer,List<AlgorithmRunResult>> runsForIt : runsPerIteration.entrySet())
 		{
-			for(AlgorithmRun run: runsForIt.getValue())
+			for(AlgorithmRunResult run: runsForIt.getValue())
 			{
-				ProblemInstance pi =  run.getRunConfig().getProblemInstanceSeedPair().getProblemInstance();
+				ProblemInstance pi =  run.getAlgorithmRunConfiguration().getProblemInstanceSeedPair().getProblemInstance();
 				
 				ProblemInstance repairedPi;
 				if(fixedPi.containsKey(pi.getInstanceName()))
@@ -435,12 +435,12 @@ outerLoop:
 					instanceId++;
 				}
 				
-				ProblemInstanceSeedPair newPisp = new ProblemInstanceSeedPair(repairedPi, run.getRunConfig().getProblemInstanceSeedPair().getSeed());
-				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(newPisp, run.getRunConfig().getCutoffTime(), run.getRunConfig().getParameterConfiguration(), run.getRunConfig().getAlgorithmExecutionConfiguration());
+				ProblemInstanceSeedPair newPisp = new ProblemInstanceSeedPair(repairedPi, run.getAlgorithmRunConfiguration().getProblemInstanceSeedPair().getSeed());
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(newPisp, run.getAlgorithmRunConfiguration().getCutoffTime(), run.getAlgorithmRunConfiguration().getParameterConfiguration(), run.getAlgorithmRunConfiguration().getAlgorithmExecutionConfiguration());
 				
-				ExistingAlgorithmRun repairedRun = new ExistingAlgorithmRun(run.getExecutionConfig(), rc, run.getRunResult(), run.getRuntime(), run.getRunLength(), run.getQuality(), run.getResultSeed(), run.getAdditionalRunData(), run.getWallclockExecutionTime());
+				ExistingAlgorithmRunResult repairedRun = new ExistingAlgorithmRunResult(rc, run.getRunStatus(), run.getRuntime(), run.getRunLength(), run.getQuality(), run.getResultSeed(), run.getAdditionalRunData(), run.getWallclockExecutionTime());
 
-				Object[] args2 = { runsForIt.getKey(), run.getRunConfig().getProblemInstanceSeedPair().getProblemInstance(), run, repairedPi, repairedRun };
+				Object[] args2 = { runsForIt.getKey(), run.getAlgorithmRunConfiguration().getProblemInstanceSeedPair().getProblemInstance(), run, repairedPi, repairedRun };
 				log.trace("Run Restored on iteration {} : {} => {} repaired: {} => {}",args2);
 				repairedRuns.addToList(runsForIt.getKey(), repairedRun);
 				
@@ -464,7 +464,7 @@ outerLoop:
 	 */
 	private static void extractRunsFromDirectory(StateMergeOptions smo,
 			List<ProblemInstance> pis, AlgorithmExecutionConfiguration execConfig,
-			MapList<Integer, AlgorithmRun> runsPerIteration, String dir)
+			MapList<Integer, AlgorithmRunResult> runsPerIteration, String dir)
 			throws IOException {
 		ThreadSafeRunHistory rh = new ThreadSafeRunHistoryWrapper(new NewRunHistory(smo.scenOpts.getIntraInstanceObjective(), smo.scenOpts.interInstanceObj, smo.scenOpts.getRunObjective()));
 		restoreState(dir, smo.scenOpts, pis, execConfig, rh, smo.restoreScenarioArguments);

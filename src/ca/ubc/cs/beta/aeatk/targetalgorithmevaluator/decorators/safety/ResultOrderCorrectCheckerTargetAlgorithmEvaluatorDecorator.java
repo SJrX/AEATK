@@ -4,8 +4,8 @@ import java.util.Collections;
 import java.util.List;
 
 import net.jcip.annotations.ThreadSafe;
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
@@ -29,8 +29,8 @@ public class ResultOrderCorrectCheckerTargetAlgorithmEvaluatorDecorator extends 
 	
 	
 	@Override
-	public List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
-		List<AlgorithmRun> runs = tae.evaluateRun(Collections.unmodifiableList(runConfigs), obs);
+	public List<AlgorithmRunResult> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
+		List<AlgorithmRunResult> runs = tae.evaluateRun(Collections.unmodifiableList(runConfigs), obs);
 		
 		runOrderIsConsistent(runConfigs, runs);
 		
@@ -45,7 +45,7 @@ public class ResultOrderCorrectCheckerTargetAlgorithmEvaluatorDecorator extends 
 		{
 
 			@Override
-			public void onSuccess(List<AlgorithmRun> runs) 
+			public void onSuccess(List<AlgorithmRunResult> runs) 
 			{
 				try {
 					runOrderIsConsistent(runConfigs,runs);
@@ -69,7 +69,7 @@ public class ResultOrderCorrectCheckerTargetAlgorithmEvaluatorDecorator extends 
 	}
 
 	
-	private void runOrderIsConsistent(List<AlgorithmRunConfiguration> runConfigs, List<AlgorithmRun> runs)
+	private void runOrderIsConsistent(List<AlgorithmRunConfiguration> runConfigs, List<AlgorithmRunResult> runs)
 	{
 		if(runConfigs.size() != runs.size())
 		{
@@ -78,12 +78,12 @@ public class ResultOrderCorrectCheckerTargetAlgorithmEvaluatorDecorator extends 
 		
 		for(int i=0; i < runConfigs.size(); i++)
 		{
-			if(runs.get(i).getRunConfig().equals(runConfigs.get(i)))
+			if(runs.get(i).getAlgorithmRunConfiguration().equals(runConfigs.get(i)))
 			{
 				continue;
 			} else
 			{
-				throw new IllegalStateException("TAE did not return results in the correct order entry (" + i + ") was RunConfig: " + runConfigs.get(i) + " but the resulting run was :" + runs.get(i).getRunConfig());
+				throw new IllegalStateException("TAE did not return results in the correct order entry (" + i + ") was RunConfig: " + runConfigs.get(i) + " but the resulting run was :" + runs.get(i).getAlgorithmRunConfiguration());
 			}
 		}
 	}

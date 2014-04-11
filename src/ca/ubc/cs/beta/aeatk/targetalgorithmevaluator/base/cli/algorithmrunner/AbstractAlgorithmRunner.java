@@ -1,4 +1,4 @@
-package ca.ubc.cs.beta.aeatk.algorithmrunner;
+package ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.algorithmrunner;
 
 import java.util.ArrayList;
 import java.util.Arrays;
@@ -15,12 +15,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
-import ca.ubc.cs.beta.aeatk.algorithmrun.RunningAlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.kill.KillHandler;
-import ca.ubc.cs.beta.aeatk.algorithmrun.kill.StatusVariableKillHandler;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunStatus;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunningAlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.kill.KillHandler;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.kill.StatusVariableKillHandler;
 import ca.ubc.cs.beta.aeatk.concurrent.threadfactory.SequentiallyNamedThreadFactory;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.CommandLineAlgorithmRun;
@@ -38,7 +38,7 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 	 */
 	protected final List<AlgorithmRunConfiguration> runConfigs;
 
-	protected final List<Callable<AlgorithmRun>> runs;
+	protected final List<Callable<AlgorithmRunResult>> runs;
 	
 	private final ExecutorService execService = Executors.newCachedThreadPool(new SequentiallyNamedThreadFactory("Command Line Algorithm Runner (not run) Thread"));
 	
@@ -66,10 +66,10 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 
 
 		this.runConfigs = runConfigs;
-		List<Callable<AlgorithmRun>> runs = new ArrayList<Callable<AlgorithmRun>>(runConfigs.size());
+		List<Callable<AlgorithmRunResult>> runs = new ArrayList<Callable<AlgorithmRunResult>>(runConfigs.size());
 		
 		//maps the run configs to the most recent update we have
-		final ConcurrentHashMap<AlgorithmRunConfiguration,AlgorithmRun> runConfigToLatestUpdatedRunMap = new ConcurrentHashMap<AlgorithmRunConfiguration,AlgorithmRun>(runConfigs.size());
+		final ConcurrentHashMap<AlgorithmRunConfiguration,AlgorithmRunResult> runConfigToLatestUpdatedRunMap = new ConcurrentHashMap<AlgorithmRunConfiguration,AlgorithmRunResult>(runConfigs.size());
 		
 		//Maps runconfigs to the index in the supplied list
 		final ConcurrentHashMap<AlgorithmRunConfiguration, Integer> runConfigToPositionInListMap = new ConcurrentHashMap<AlgorithmRunConfiguration,Integer>(runConfigs.size());
@@ -84,12 +84,12 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 			
 
 			runConfigToPositionInListMap.put(rc, i);
-			runConfigToLatestUpdatedRunMap.put(rc, new RunningAlgorithmRun( rc, 0,0,0, rc.getProblemInstanceSeedPair().getSeed(), 0, killH));
+			runConfigToLatestUpdatedRunMap.put(rc, new RunningAlgorithmRunResult( rc, 0,0,0, rc.getProblemInstanceSeedPair().getSeed(), 0, killH));
 			
 			TargetAlgorithmEvaluatorRunObserver individualRunObserver = new TargetAlgorithmEvaluatorRunObserver()
 			{
 				@Override
-				public void currentStatus(List<? extends AlgorithmRun> runs) {
+				public void currentStatus(List<? extends AlgorithmRunResult> runs) {
 					
 					/**
 					 * If the map already contains something for our runConfig that is completed, but
@@ -97,10 +97,10 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 					 * 
 					 * TAEs should not notify us of an incompleted run after it has been marked completed..
 					 */
-					if(runConfigToLatestUpdatedRunMap.get(runs.get(0).getRunConfig()).isRunCompleted() && !runs.get(0).isRunCompleted())
+					if(runConfigToLatestUpdatedRunMap.get(runs.get(0).getAlgorithmRunConfiguration()).isRunCompleted() && !runs.get(0).isRunCompleted())
 					{
-						StringBuilder sb = new StringBuilder("Current Run Status being notified: " + runs.get(0).getRunConfig());
-						sb.append("\n Current status in table").append(runConfigToLatestUpdatedRunMap.get(runs.get(0).getRunConfig()).getRunConfig());
+						StringBuilder sb = new StringBuilder("Current Run Status being notified: " + runs.get(0).getAlgorithmRunConfiguration());
+						sb.append("\n Current status in table").append(runConfigToLatestUpdatedRunMap.get(runs.get(0).getAlgorithmRunConfiguration()).getAlgorithmRunConfiguration());
 						IllegalStateException e = new IllegalStateException("RACE CONDITION: " + sb.toString());
 						
 						//We are logging this here because this may cause a dead lock somewhere else ( since the runs will never finish ), and the exception never handled.
@@ -109,13 +109,13 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 						throw e;
 					}
 					
-					runConfigToLatestUpdatedRunMap.put(runs.get(0).getRunConfig(), runs.get(0));
+					runConfigToLatestUpdatedRunMap.put(runs.get(0).getAlgorithmRunConfiguration(), runs.get(0));
 					
 					updatedRunMapSemaphore.release();
 				}
 			};
 
-			final Callable<AlgorithmRun> run = new CommandLineAlgorithmRun( rc,individualRunObserver, killH, options, executionIDs); 
+			final Callable<AlgorithmRunResult> run = new CommandLineAlgorithmRun( rc,individualRunObserver, killH, options, executionIDs); 
 			runs.add(run);
 			i++;
 		}
@@ -148,15 +148,15 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 								break;
 							}
 							
-							AlgorithmRun[] runs = new AlgorithmRun[runConfigs.size()];
+							AlgorithmRunResult[] runs = new AlgorithmRunResult[runConfigs.size()];
 							
 							//We will quit if all runs are done
 							boolean outstandingRuns = false;
 							
-							for(Entry<AlgorithmRunConfiguration,AlgorithmRun> entries : runConfigToLatestUpdatedRunMap.entrySet())
+							for(Entry<AlgorithmRunConfiguration,AlgorithmRunResult> entries : runConfigToLatestUpdatedRunMap.entrySet())
 							{
-								AlgorithmRun run = entries.getValue();
-								if(run.getRunResult().equals(RunResult.RUNNING))
+								AlgorithmRunResult run = entries.getValue();
+								if(run.getRunStatus().equals(RunStatus.RUNNING))
 								{
 									outstandingRuns = true;
 								}
@@ -165,7 +165,7 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 							
 	
 							try {
-								List<AlgorithmRun> runList = Arrays.asList(runs);
+								List<AlgorithmRunResult> runList = Arrays.asList(runs);
 								if(obs != null)
 								{
 									obs.currentStatus(runList);
@@ -206,7 +206,7 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 	
 	
 	@Override
-	public abstract List<AlgorithmRun> run();
+	public abstract List<AlgorithmRunResult> run();
 	
 	@Override
 	public void shutdownThreadPool() {

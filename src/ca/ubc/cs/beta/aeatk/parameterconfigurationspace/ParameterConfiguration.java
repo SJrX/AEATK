@@ -16,7 +16,7 @@ import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
-import ca.ubc.cs.beta.aeatk.json.serializers.ParamConfigurationJson;
+import ca.ubc.cs.beta.aeatk.json.serializers.ParameterConfigurationSpaceJson;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -46,7 +46,7 @@ import net.jcip.annotations.NotThreadSafe;
  */
 @NotThreadSafe
 @JsonDeserialize
-@JsonSerialize(using=ParamConfigurationJson.ParamConfigurationSerializer.class)
+@JsonSerialize(using=ParameterConfigurationSpaceJson.ParamConfigurationSerializer.class)
 public class ParameterConfiguration implements Map<String, String>, Serializable {
 
 	/**

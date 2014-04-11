@@ -5,7 +5,7 @@ import java.io.Serializable;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
-import ca.ubc.cs.beta.aeatk.json.serializers.RunConfigJson;
+import ca.ubc.cs.beta.aeatk.json.serializers.AlgorithmRunConfigurationJson;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
 /**
@@ -13,7 +13,7 @@ import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
  *
  * @author Steve Ramage <seramage@cs.ubc.ca>
  */
-@JsonSerialize(using=RunConfigJson.RunConfigSerializer.class)
+@JsonSerialize(using=AlgorithmRunConfigurationJson.RunConfigSerializer.class)
 public class AlgorithmRunConfiguration implements Serializable{
 	
 	

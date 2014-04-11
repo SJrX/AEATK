@@ -13,9 +13,9 @@ import org.junit.Test;
 
 import ca.ubc.cs.beta.TestHelper;
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunStatus;
 import ca.ubc.cs.beta.aeatk.misc.debug.DebugUtil;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace;
@@ -94,22 +94,22 @@ private static TargetAlgorithmEvaluator tae;
 		
 		System.out.println("Performing " + runConfigs.size() + " runs");
 		tae = new RetryCrashedRunsTargetAlgorithmEvaluator(  0, tae);
-		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+		List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs);
 		
 		int crashedRuns = 0;
-		for(AlgorithmRun run : runs)
+		for(AlgorithmRunResult run : runs)
 		{
-			if(run.getRunResult().equals(RunResult.CRASHED))
+			if(run.getRunStatus().equals(RunStatus.CRASHED))
 			{
 				crashedRuns++;
 			} else
 			{
-				ParameterConfiguration config  = run.getRunConfig().getParameterConfiguration();
+				ParameterConfiguration config  = run.getAlgorithmRunConfiguration().getParameterConfiguration();
 				assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
 				assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
 				assertDEquals(config.get("quality"), run.getQuality(), 0.1);
 				assertDEquals(config.get("seed"), run.getResultSeed(), 0.1);
-				assertEquals(config.get("solved"), run.getRunResult().name());
+				assertEquals(config.get("solved"), run.getRunStatus().name());
 			}
 		}
 		
@@ -158,28 +158,28 @@ private static TargetAlgorithmEvaluator tae;
 		//number of runs we need to retry is 1/2, so after the number / log 2, we should have 0,so I Will try 5 more times after that
 		//theoretically this test should only fail once every 1000 times
 		tae = new RetryCrashedRunsTargetAlgorithmEvaluator(  (int) (Math.log(TARGET_RUNS_IN_LOOPS)/Math.log(2)) + 10, tae);
-		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+		List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs);
 		
 		assertEquals(runs.size(), tae.getRunCount());
 
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
 		{
-			AlgorithmRun run = runs.get(i);
+			AlgorithmRunResult run = runs.get(i);
 			
 			//This tests that the order is correct
-			assertDEquals(run.getRunConfig().getParameterConfiguration().get("runlength"),i, 0.1);
+			assertDEquals(run.getAlgorithmRunConfiguration().getParameterConfiguration().get("runlength"),i, 0.1);
 			
-			if(run.getRunResult().equals(RunResult.CRASHED))
+			if(run.getRunStatus().equals(RunStatus.CRASHED))
 			{
 				fail("Expected zero crashes but run " + i + " crashed ");
 			} else
 			{
-				ParameterConfiguration config  = run.getRunConfig().getParameterConfiguration();
+				ParameterConfiguration config  = run.getAlgorithmRunConfiguration().getParameterConfiguration();
 				assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
 				assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
 				assertDEquals(config.get("quality"), run.getQuality(), 0.1);
 				assertDEquals(config.get("seed"), run.getResultSeed(), 0.1);
-				assertEquals(config.get("solved"), run.getRunResult().name());
+				assertEquals(config.get("solved"), run.getRunStatus().name());
 			}
 		}
 		

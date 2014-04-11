@@ -5,8 +5,8 @@ import java.util.List;
 
 import org.slf4j.LoggerFactory;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
@@ -33,18 +33,18 @@ public abstract class AbstractTargetAlgorithmEvaluatorDecorator implements	Targe
 	
 	
 	@Override
-	public final List<AlgorithmRun> evaluateRun(AlgorithmRunConfiguration runConfig) {
+	public final List<AlgorithmRunResult> evaluateRun(AlgorithmRunConfiguration runConfig) {
 		return evaluateRun(Collections.singletonList(runConfig));
 	}
 
 	@Override
-	public final List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs) {
+	public final List<AlgorithmRunResult> evaluateRun(List<AlgorithmRunConfiguration> runConfigs) {
 		return evaluateRun(runConfigs, null);
 	}
 
 
 	@Override
-	public List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver observer) {
+	public List<AlgorithmRunResult> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver observer) {
 		return tae.evaluateRun(runConfigs, observer);
 	}
 
@@ -90,7 +90,7 @@ public abstract class AbstractTargetAlgorithmEvaluatorDecorator implements	Targe
 	}
 
 	@Override
-	public void seek(List<AlgorithmRun> runs) {
+	public void seek(List<AlgorithmRunResult> runs) {
 		tae.seek(runs);
 
 	}

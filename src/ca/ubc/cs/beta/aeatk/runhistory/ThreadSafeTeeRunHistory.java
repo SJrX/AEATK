@@ -9,7 +9,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.exceptions.DuplicateRunException;
 import ca.ubc.cs.beta.aeatk.objectives.OverallObjective;
 import ca.ubc.cs.beta.aeatk.objectives.RunObjective;
@@ -40,7 +40,7 @@ public class ThreadSafeTeeRunHistory implements ThreadSafeRunHistory {
 	}
 
 	@Override
-	public void append(AlgorithmRun run) throws DuplicateRunException {
+	public void append(AlgorithmRunResult run) throws DuplicateRunException {
 		
 		synchronized(mutex)
 		{
@@ -70,7 +70,7 @@ public class ThreadSafeTeeRunHistory implements ThreadSafeRunHistory {
 	}
 
 	@Override
-	public void append(Collection<AlgorithmRun> runs)
+	public void append(Collection<AlgorithmRunResult> runs)
 			throws DuplicateRunException {
 		synchronized(mutex)
 		{
@@ -193,12 +193,12 @@ public class ThreadSafeTeeRunHistory implements ThreadSafeRunHistory {
 	}
 
 	@Override
-	public List<AlgorithmRun> getAlgorithmRunsExcludingRedundant() {
+	public List<AlgorithmRunResult> getAlgorithmRunsExcludingRedundant() {
 		return rh.getAlgorithmRunsExcludingRedundant();
 	}
 	
 	@Override
-	public List<AlgorithmRun> getAlgorithmRunsExcludingRedundant(ParameterConfiguration config) {
+	public List<AlgorithmRunResult> getAlgorithmRunsExcludingRedundant(ParameterConfiguration config) {
 		return rh.getAlgorithmRunsExcludingRedundant(config);
 	}
 
@@ -208,12 +208,12 @@ public class ThreadSafeTeeRunHistory implements ThreadSafeRunHistory {
 	}
 
 	@Override
-	public List<AlgorithmRun> getAlgorithmRunsIncludingRedundant() {
+	public List<AlgorithmRunResult> getAlgorithmRunsIncludingRedundant() {
 		return rh.getAlgorithmRunsIncludingRedundant();
 	}
 	
 	@Override
-	public List<AlgorithmRun> getAlgorithmRunsIncludingRedundant(ParameterConfiguration config) {
+	public List<AlgorithmRunResult> getAlgorithmRunsIncludingRedundant(ParameterConfiguration config) {
 		return rh.getAlgorithmRunsIncludingRedundant(config);
 	}
 

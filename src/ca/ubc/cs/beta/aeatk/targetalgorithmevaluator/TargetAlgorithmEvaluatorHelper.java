@@ -6,8 +6,8 @@ import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicReference;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 
 /**
  * Helper class with utility methods for dealing with Target Algorithm Evaluators
@@ -23,21 +23,21 @@ public final class TargetAlgorithmEvaluatorHelper {
 	 * @param tae - Target Algorithm Evaluator to run asynchronously and wait for the callback to execute with
 	 * @return runs - Algorithm runs
 	 */
-	public static List<AlgorithmRun> evaluateRunSyncToAsync(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluator tae, TargetAlgorithmEvaluatorRunObserver obs)
+	public static List<AlgorithmRunResult> evaluateRunSyncToAsync(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluator tae, TargetAlgorithmEvaluatorRunObserver obs)
 	{
 		if(runConfigs.size() == 0) return Collections.emptyList();
 		
 		final Semaphore b = new Semaphore(0);
 		
 		final AtomicBoolean success = new AtomicBoolean();
-		final AtomicReference<List<AlgorithmRun>> list = new AtomicReference<List<AlgorithmRun>>(); 
+		final AtomicReference<List<AlgorithmRunResult>> list = new AtomicReference<List<AlgorithmRunResult>>(); 
 		final AtomicReference<RuntimeException> rt = new AtomicReference<RuntimeException>(); 
 		
 		
 		tae.evaluateRunsAsync(runConfigs, new TargetAlgorithmEvaluatorCallback(){
 
 			@Override
-			public void onSuccess(List<AlgorithmRun> runs) {
+			public void onSuccess(List<AlgorithmRunResult> runs) {
 				success.set(true);
 				list.set(runs);
 				b.release();

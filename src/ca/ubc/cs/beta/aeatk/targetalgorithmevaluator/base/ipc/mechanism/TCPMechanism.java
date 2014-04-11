@@ -14,10 +14,10 @@ import java.util.ArrayList;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.ExistingAlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.ExistingAlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunStatus;
 import ca.ubc.cs.beta.aeatk.misc.watch.AutoStartStopWatch;
 import ca.ubc.cs.beta.aeatk.misc.watch.StopWatch;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration.ParameterStringFormat;
@@ -42,7 +42,7 @@ public class TCPMechanism {
 	 * @param udpPacketSize
 	 * @return
 	 */
-	public AlgorithmRun evaluateRun(AlgorithmRunConfiguration rc, String remoteHost, int remotePort) 
+	public AlgorithmRunResult evaluateRun(AlgorithmRunConfiguration rc, String remoteHost, int remotePort) 
 	{
 		
 		
@@ -121,7 +121,7 @@ public class TCPMechanism {
 			{
 				clientSocket.close();
 			}
-			return new ExistingAlgorithmRun( rc, RunResult.CRASHED, 0, 0, 0, 0, "No response from server: " + remoteHost + ":" + remotePort);
+			return new ExistingAlgorithmRunResult( rc, RunStatus.CRASHED, 0, 0, 0, 0, "No response from server: " + remoteHost + ":" + remotePort);
 		} catch (IOException e) {
 			log.error("Error creating socket, trying connection again in 10 seconds",e);
 			

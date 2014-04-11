@@ -2,11 +2,11 @@ package ca.ubc.cs.beta.aeatk.json.serializers;
 
 import java.io.IOException;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.ExistingAlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
-import ca.ubc.cs.beta.aeatk.json.serializers.RunConfigJson.RunConfigDeserializer;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.ExistingAlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunStatus;
+import ca.ubc.cs.beta.aeatk.json.serializers.AlgorithmRunConfigurationJson.RunConfigDeserializer;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
@@ -17,7 +17,7 @@ import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
 import com.fasterxml.jackson.databind.ser.std.StdSerializer;
 
-public class AlgorithmRunJson  {
+public class AlgorithmRunResultJson  {
 
 	public static final String R_WALLCLOCK_TIME = "r-wallclock-time";
 	public static final String R_ADDL_RUN_DATA = "r-addl-run-data";
@@ -28,24 +28,24 @@ public class AlgorithmRunJson  {
 	public static final String R_RUN_RESULT = "r-run-result";
 	public static final String R_RC = "r-rc";
 	
-	public static class AlgorithmRunDeserializer extends StdDeserializer<AlgorithmRun>
+	public static class AlgorithmRunDeserializer extends StdDeserializer<AlgorithmRunResult>
 	{
 
 		private RunConfigDeserializer rcd = new RunConfigDeserializer();
 		
 		protected AlgorithmRunDeserializer() {
-			super(AlgorithmRun.class);
+			super(AlgorithmRunResult.class);
 		}
 
 		@Override
-		public AlgorithmRun deserialize(JsonParser jp, DeserializationContext ctxt)
+		public AlgorithmRunResult deserialize(JsonParser jp, DeserializationContext ctxt)
 				throws IOException, JsonProcessingException {
 		
 			if(jp.getCurrentToken()==JsonToken.START_OBJECT)
 			{
 				jp.nextToken();
 			}
-			RunResult runResult = null;;
+			RunStatus runResult = null;;
 			double runtime = -1;
 			double quality = -1;
 			double runlength = -1;
@@ -79,7 +79,7 @@ public class AlgorithmRunJson  {
 					seed = jp.getValueAsLong();
 					break;
 				case R_RUN_RESULT:
-					runResult = RunResult.getAutomaticConfiguratorResultForKey(jp.getValueAsString());
+					runResult = RunStatus.getAutomaticConfiguratorResultForKey(jp.getValueAsString());
 					break;
 				case R_QUALITY:
 					quality = jp.getValueAsDouble();
@@ -100,30 +100,30 @@ public class AlgorithmRunJson  {
 			}
 			
 				
-			return new ExistingAlgorithmRun( rc, runResult, runtime, runlength, quality, seed, addlRunData, wallclock);
+			return new ExistingAlgorithmRunResult( rc, runResult, runtime, runlength, quality, seed, addlRunData, wallclock);
 		}
 
 	}
 	
-	public static class AlgorithmRunSerializer extends StdSerializer<AlgorithmRun>	{
+	public static class AlgorithmRunSerializer extends StdSerializer<AlgorithmRunResult>	{
 
 		
 
 		protected AlgorithmRunSerializer() {
-			super(AlgorithmRun.class);
+			super(AlgorithmRunResult.class);
 		}
 
 		//Unlike most everything else 
 		//We won't cache these because AlgorithmRun equality is based on the RunConfig, not the AlgorithmRun
 		@Override
-		public void serialize(AlgorithmRun value, JsonGenerator jgen,
+		public void serialize(AlgorithmRunResult value, JsonGenerator jgen,
 				SerializerProvider provider) throws IOException,
 				JsonProcessingException 
 		{
 			jgen.writeStartObject();
 			
-			jgen.writeObjectField(R_RC,value.getRunConfig());
-			jgen.writeObjectField(R_RUN_RESULT, value.getRunResult());
+			jgen.writeObjectField(R_RC,value.getAlgorithmRunConfiguration());
+			jgen.writeObjectField(R_RUN_RESULT, value.getRunStatus());
 			jgen.writeObjectField(R_RUNTIME,value.getRuntime());
 			jgen.writeObjectField(R_RUN_LENGTH,value.getRunLength());
 			jgen.writeObjectField(R_QUALITY,value.getQuality());

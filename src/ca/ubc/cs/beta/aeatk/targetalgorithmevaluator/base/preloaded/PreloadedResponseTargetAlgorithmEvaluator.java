@@ -4,10 +4,10 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.Queue;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.ExistingAlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.ExistingAlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunStatus;
 import ca.ubc.cs.beta.aeatk.misc.associatedvalue.AssociatedValue;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.AbstractSyncTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
@@ -15,12 +15,12 @@ import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRun
 public class PreloadedResponseTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorithmEvaluator {
 	
 	
-	private final Queue<AssociatedValue<RunResult, Double>> myQueue;
+	private final Queue<AssociatedValue<RunStatus, Double>> myQueue;
 	
 	private final PreloadedResponseTargetAlgorithmEvaluatorOptions opts;
 	
 	
-	public PreloadedResponseTargetAlgorithmEvaluator(Queue<AssociatedValue<RunResult, Double>> myQueue, PreloadedResponseTargetAlgorithmEvaluatorOptions opts) {
+	public PreloadedResponseTargetAlgorithmEvaluator(Queue<AssociatedValue<RunStatus, Double>> myQueue, PreloadedResponseTargetAlgorithmEvaluatorOptions opts) {
 		
 		this.myQueue = 	myQueue;
 		this.opts = opts;
@@ -49,16 +49,16 @@ public class PreloadedResponseTargetAlgorithmEvaluator extends AbstractSyncTarge
 	}
 	
 	@Override
-	public synchronized List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs,
+	public synchronized List<AlgorithmRunResult> evaluateRun(List<AlgorithmRunConfiguration> runConfigs,
 			TargetAlgorithmEvaluatorRunObserver obs) {
-		List<AlgorithmRun> runs = new ArrayList<AlgorithmRun>();
+		List<AlgorithmRunResult> runs = new ArrayList<AlgorithmRunResult>();
 		for(AlgorithmRunConfiguration rc : runConfigs)
 		{
 	
-			AssociatedValue<RunResult, Double> v = myQueue.poll();
+			AssociatedValue<RunStatus, Double> v = myQueue.poll();
 			if(v == null) throw new IllegalStateException("Error out of existing runs");
 
-			runs.add(new ExistingAlgorithmRun(rc, v.getAssociatedValue() , v.getValue() , opts.runLength ,opts.quality, rc.getProblemInstanceSeedPair().getSeed(), opts.additionalRunData));
+			runs.add(new ExistingAlgorithmRunResult(rc, v.getAssociatedValue() , v.getValue() , opts.runLength ,opts.quality, rc.getProblemInstanceSeedPair().getSeed(), opts.additionalRunData));
 		}
 
 		return runs;

@@ -18,13 +18,13 @@ import net.jcip.annotations.ThreadSafe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.ExistingAlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
-import ca.ubc.cs.beta.aeatk.algorithmrun.RunningAlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.kill.KillHandler;
-import ca.ubc.cs.beta.aeatk.algorithmrun.kill.StatusVariableKillHandler;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.ExistingAlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunStatus;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunningAlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.kill.KillHandler;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.kill.StatusVariableKillHandler;
 import ca.ubc.cs.beta.aeatk.concurrent.threadfactory.SequentiallyNamedThreadFactory;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
@@ -69,7 +69,7 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 
 
 	@Override
-	public List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
+	public List<AlgorithmRunResult> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
 		 
 		return evaluateRunConfigs(runConfigs, obs);
 		
@@ -132,7 +132,7 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 	 * @param asyncReleaseLatch	latch that we will decrement if we sleep (this is used for async evaluation)
 	 * @return
 	 */
-	private List<AlgorithmRun> evaluateRunConfigs(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs)
+	private List<AlgorithmRunResult> evaluateRunConfigs(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs)
 	{
 		try {
 			threadsWaiting.incrementAndGet();
@@ -152,18 +152,18 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 			
 			log.trace("Scheduling runs synchronously for configs {}", configIDs);
 			
-			final List<AlgorithmRun> runsFromWrappedTAE = Collections.unmodifiableList(tae.evaluateRun(runConfigs, null));
+			final List<AlgorithmRunResult> runsFromWrappedTAE = Collections.unmodifiableList(tae.evaluateRun(runConfigs, null));
 			double timeToSleep = Double.NEGATIVE_INFINITY;
 			//Stores a mapping of Run Config objects to Algorithm Run Objects
 			//The kill handlers may modify these.
-			final LinkedHashMap<AlgorithmRunConfiguration, AlgorithmRun> runConfigToAlgorithmRunMap = new LinkedHashMap<AlgorithmRunConfiguration, AlgorithmRun>();
+			final LinkedHashMap<AlgorithmRunConfiguration, AlgorithmRunResult> runConfigToAlgorithmRunMap = new LinkedHashMap<AlgorithmRunConfiguration, AlgorithmRunResult>();
 			final LinkedHashMap<AlgorithmRunConfiguration, KillHandler> runConfigToKillHandlerMap = new LinkedHashMap<AlgorithmRunConfiguration, KillHandler>();
 			
-			for(AlgorithmRun run : runsFromWrappedTAE)
+			for(AlgorithmRunResult run : runsFromWrappedTAE)
 			{
 				timeToSleep = Math.max(timeToSleep, Math.max(run.getRuntime(), run.getWallclockExecutionTime()));
-				runConfigToKillHandlerMap.put(run.getRunConfig(), new StatusVariableKillHandler() );
-				runConfigToAlgorithmRunMap.put(run.getRunConfig(), new RunningAlgorithmRun( run.getRunConfig(), 0,0,0, run.getRunConfig().getProblemInstanceSeedPair().getSeed(),0, null));
+				runConfigToKillHandlerMap.put(run.getAlgorithmRunConfiguration(), new StatusVariableKillHandler() );
+				runConfigToAlgorithmRunMap.put(run.getAlgorithmRunConfiguration(), new RunningAlgorithmRunResult( run.getAlgorithmRunConfiguration(), 0,0,0, run.getAlgorithmRunConfiguration().getProblemInstanceSeedPair().getSeed(),0, null));
 				
 			}
 			
@@ -182,15 +182,15 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 			} else
 			{
 				//Build a new list of run results based on how the map changed
-				List<AlgorithmRun> completedRuns = new ArrayList<AlgorithmRun>(runsFromWrappedTAE.size());
-				for(AlgorithmRun run : runsFromWrappedTAE)
+				List<AlgorithmRunResult> completedRuns = new ArrayList<AlgorithmRunResult>(runsFromWrappedTAE.size());
+				for(AlgorithmRunResult run : runsFromWrappedTAE)
 				{
 					
-					AlgorithmRun newRun = runConfigToAlgorithmRunMap.get(run.getRunConfig());
+					AlgorithmRunResult newRun = runConfigToAlgorithmRunMap.get(run.getAlgorithmRunConfiguration());
 					if(!newRun.isRunCompleted())
 					{
 						log.error("Expected all runs to be returned would be done by now, however this run isn't {}.  ", newRun );
-						for(AlgorithmRun runFromTAE : runsFromWrappedTAE)
+						for(AlgorithmRunResult runFromTAE : runsFromWrappedTAE)
 						{
 							log.error("Response from TAE was this run {}", runFromTAE);
 						}
@@ -210,7 +210,7 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 		}
 	}
 
-	private void sleepAndNotifyObservers(TimeSimulator timeSimulator, long startTimeInMs, double maxRuntime, TargetAlgorithmEvaluatorRunObserver observer, List<AlgorithmRun> runsFromWrappedTAE, List<AlgorithmRunConfiguration> runConfigs, final LinkedHashMap<AlgorithmRunConfiguration, KillHandler> khs, final LinkedHashMap<AlgorithmRunConfiguration, AlgorithmRun> runResults)
+	private void sleepAndNotifyObservers(TimeSimulator timeSimulator, long startTimeInMs, double maxRuntime, TargetAlgorithmEvaluatorRunObserver observer, List<AlgorithmRunResult> runsFromWrappedTAE, List<AlgorithmRunConfiguration> runConfigs, final LinkedHashMap<AlgorithmRunConfiguration, KillHandler> khs, final LinkedHashMap<AlgorithmRunConfiguration, AlgorithmRunResult> runResults)
 	{
 		
 		long sleepTimeInMS = (long) maxRuntime * 1000;
@@ -257,16 +257,16 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 			
 	}
 	
-	private void updateRunsAndNotifyObserver(long startTimeInMs, long currentTimeInMs, double maxRuntime, TargetAlgorithmEvaluatorRunObserver observer, List<AlgorithmRun> runsFromWrappedTAE, List<AlgorithmRunConfiguration> runConfigs, final LinkedHashMap<AlgorithmRunConfiguration, KillHandler> killHandlers, final LinkedHashMap<AlgorithmRunConfiguration, AlgorithmRun> runConfigToAlgorithmRunMap)
+	private void updateRunsAndNotifyObserver(long startTimeInMs, long currentTimeInMs, double maxRuntime, TargetAlgorithmEvaluatorRunObserver observer, List<AlgorithmRunResult> runsFromWrappedTAE, List<AlgorithmRunConfiguration> runConfigs, final LinkedHashMap<AlgorithmRunConfiguration, KillHandler> killHandlers, final LinkedHashMap<AlgorithmRunConfiguration, AlgorithmRunResult> runConfigToAlgorithmRunMap)
 	{
 
-		List<AlgorithmRun> kars = new ArrayList<AlgorithmRun>(runsFromWrappedTAE.size());
+		List<AlgorithmRunResult> kars = new ArrayList<AlgorithmRunResult>(runsFromWrappedTAE.size());
 		//Update the table
 		
-		for(AlgorithmRun run : runsFromWrappedTAE)
+		for(AlgorithmRunResult run : runsFromWrappedTAE)
 		{
 		
-			AlgorithmRunConfiguration rc  = run.getRunConfig();
+			AlgorithmRunConfiguration rc  = run.getAlgorithmRunConfiguration();
 			
 			double currentRuntime = (currentTimeInMs - startTimeInMs) / 1000.0;
 			if(runConfigToAlgorithmRunMap.get(rc).isRunCompleted())
@@ -279,14 +279,14 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 			} else if(killHandlers.get(rc).isKilled())
 			{
 				//We should kill this run
-				runConfigToAlgorithmRunMap.put(rc, new ExistingAlgorithmRun( rc, RunResult.KILLED, currentRuntime, 0, 0, rc.getProblemInstanceSeedPair().getSeed(),currentRuntime));
+				runConfigToAlgorithmRunMap.put(rc, new ExistingAlgorithmRunResult( rc, RunStatus.KILLED, currentRuntime, 0, 0, rc.getProblemInstanceSeedPair().getSeed(),currentRuntime));
 			} else
 			{
 				//Update the run
-				runConfigToAlgorithmRunMap.put(rc, new RunningAlgorithmRun( run.getRunConfig(), currentRuntime,0,0, run.getRunConfig().getProblemInstanceSeedPair().getSeed(), currentRuntime, killHandlers.get(rc)));
+				runConfigToAlgorithmRunMap.put(rc, new RunningAlgorithmRunResult( run.getAlgorithmRunConfiguration(), currentRuntime,0,0, run.getAlgorithmRunConfiguration().getProblemInstanceSeedPair().getSeed(), currentRuntime, killHandlers.get(rc)));
 			}
 			
-			AlgorithmRun currentRun = runConfigToAlgorithmRunMap.get(rc);
+			AlgorithmRunResult currentRun = runConfigToAlgorithmRunMap.get(rc);
 			
 			kars.add(currentRun);
 

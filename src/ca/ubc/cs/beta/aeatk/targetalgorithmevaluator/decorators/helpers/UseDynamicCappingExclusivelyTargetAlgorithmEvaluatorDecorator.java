@@ -9,12 +9,12 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.ExistingAlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
-import ca.ubc.cs.beta.aeatk.algorithmrun.RunningAlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.kill.KillHandler;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.ExistingAlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunStatus;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunningAlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.kill.KillHandler;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorHelper;
@@ -43,7 +43,7 @@ public class UseDynamicCappingExclusivelyTargetAlgorithmEvaluatorDecorator
 	
 
 	@Override
-	public final List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
+	public final List<AlgorithmRunResult> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
 		return TargetAlgorithmEvaluatorHelper.evaluateRunSyncToAsync(runConfigs, this, obs);
 	}
 
@@ -81,14 +81,14 @@ public class UseDynamicCappingExclusivelyTargetAlgorithmEvaluatorDecorator
 			private final TargetAlgorithmEvaluatorCallback handler = oHandler;
 
 			@Override
-			public void onSuccess(List<AlgorithmRun> runs) {
-					List<AlgorithmRun> fixedRuns = new ArrayList<AlgorithmRun>(runs.size());
-					for(AlgorithmRun run : runs)
+			public void onSuccess(List<AlgorithmRunResult> runs) {
+					List<AlgorithmRunResult> fixedRuns = new ArrayList<AlgorithmRunResult>(runs.size());
+					for(AlgorithmRunResult run : runs)
 					{
-						RunResult r = run.getRunResult();
+						RunStatus r = run.getRunStatus();
 						double runtime = run.getRuntime();
 						
-						AlgorithmRunConfiguration origRunConfig = transformedRuns.get(run.getRunConfig());
+						AlgorithmRunConfiguration origRunConfig = transformedRuns.get(run.getAlgorithmRunConfiguration());
 						
 						if(runtime > origRunConfig.getCutoffTime())
 						{
@@ -98,7 +98,7 @@ public class UseDynamicCappingExclusivelyTargetAlgorithmEvaluatorDecorator
 								case UNSAT:
 								case KILLED:
 								case TIMEOUT:
-									r= RunResult.TIMEOUT;
+									r= RunStatus.TIMEOUT;
 									runtime = origRunConfig.getCutoffTime();
 								break;
 								default:
@@ -106,7 +106,7 @@ public class UseDynamicCappingExclusivelyTargetAlgorithmEvaluatorDecorator
 							}
 						
 						}
-						fixedRuns.add(new ExistingAlgorithmRun(origRunConfig, r, runtime, run.getRunLength(), run.getQuality(),run.getResultSeed(),run.getAdditionalRunData(), run.getWallclockExecutionTime()));
+						fixedRuns.add(new ExistingAlgorithmRunResult(origRunConfig, r, runtime, run.getRunLength(), run.getQuality(),run.getResultSeed(),run.getAdditionalRunData(), run.getWallclockExecutionTime()));
 					}
 					handler.onSuccess(fixedRuns);
 			}
@@ -121,13 +121,13 @@ public class UseDynamicCappingExclusivelyTargetAlgorithmEvaluatorDecorator
 		{
 
 			@Override
-			public void currentStatus(List<? extends AlgorithmRun> runs) 
+			public void currentStatus(List<? extends AlgorithmRunResult> runs) 
 			{
 
-				List<AlgorithmRun> fixedRuns = new ArrayList<AlgorithmRun>(runs.size());
-				for( final AlgorithmRun run : runs)
+				List<AlgorithmRunResult> fixedRuns = new ArrayList<AlgorithmRunResult>(runs.size());
+				for( final AlgorithmRunResult run : runs)
 				{
-					if(run.getRunResult().equals(RunResult.RUNNING))
+					if(run.getRunStatus().equals(RunStatus.RUNNING))
 					{
 						
 						KillHandler kh = new KillHandler()
@@ -146,21 +146,21 @@ public class UseDynamicCappingExclusivelyTargetAlgorithmEvaluatorDecorator
 							}
 							
 						};
-						if(transformedRuns.get(run.getRunConfig()) == null)
+						if(transformedRuns.get(run.getAlgorithmRunConfiguration()) == null)
 						{
-							log.error("Couldn't find original run config for {} in {} ", run.getRunConfig(), transformedRuns);
+							log.error("Couldn't find original run config for {} in {} ", run.getAlgorithmRunConfiguration(), transformedRuns);
 						}
-						fixedRuns.add(new RunningAlgorithmRun(transformedRuns.get(run.getRunConfig()),run.getRuntime(),run.getRunLength(), run.getQuality(), run.getResultSeed(), run.getWallclockExecutionTime(),kh));
+						fixedRuns.add(new RunningAlgorithmRunResult(transformedRuns.get(run.getAlgorithmRunConfiguration()),run.getRuntime(),run.getRunLength(), run.getQuality(), run.getResultSeed(), run.getWallclockExecutionTime(),kh));
 						
 						
-						if(transformedRuns.get(run.getRunConfig()).getCutoffTime() < run.getRuntime())
+						if(transformedRuns.get(run.getAlgorithmRunConfiguration()).getCutoffTime() < run.getRuntime())
 						{
 							run.kill();
 						}
 						
 					} else
 					{
-						fixedRuns.add(new ExistingAlgorithmRun(transformedRuns.get(run.getRunConfig()), run.getRunResult(), run.getRuntime(), run.getRunLength(), run.getQuality(),run.getResultSeed(),run.getAdditionalRunData(), run.getWallclockExecutionTime()));
+						fixedRuns.add(new ExistingAlgorithmRunResult(transformedRuns.get(run.getAlgorithmRunConfiguration()), run.getRunStatus(), run.getRuntime(), run.getRunLength(), run.getQuality(),run.getResultSeed(),run.getAdditionalRunData(), run.getWallclockExecutionTime()));
 					}
 				}
 				

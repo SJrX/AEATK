@@ -6,7 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.exceptions.DuplicateRunException;
 import ca.ubc.cs.beta.aeatk.objectives.OverallObjective;
 import ca.ubc.cs.beta.aeatk.objectives.RunObjective;
@@ -28,14 +28,14 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 	}
 	
 	@Override
-	public void append(Collection<AlgorithmRun> runs)
+	public void append(Collection<AlgorithmRunResult> runs)
 			throws DuplicateRunException {
 
 	
 		lockWrite();
 		
 		try {
-			for(AlgorithmRun run : runs)
+			for(AlgorithmRunResult run : runs)
 			{
 				//log.debug("Atomically appending run {} " + run.getRunConfig());
 				runHistory.append(run);
@@ -50,7 +50,7 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 	
 	
 	@Override
-	public void append(AlgorithmRun run) throws DuplicateRunException {
+	public void append(AlgorithmRunResult run) throws DuplicateRunException {
 		
 		
 		lockWrite();
@@ -331,7 +331,7 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 	}
 
 	@Override
-	public List<AlgorithmRun> getAlgorithmRunsExcludingRedundant(ParameterConfiguration config) {
+	public List<AlgorithmRunResult> getAlgorithmRunsExcludingRedundant(ParameterConfiguration config) {
 		lockRead();
 		try {
 			return runHistory.getAlgorithmRunsExcludingRedundant(config);
@@ -355,7 +355,7 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 	}
 	
 	@Override
-	public List<AlgorithmRun> getAlgorithmRunsExcludingRedundant() {
+	public List<AlgorithmRunResult> getAlgorithmRunsExcludingRedundant() {
 		lockRead();
 		try {
 			return runHistory.getAlgorithmRunsExcludingRedundant();
@@ -366,7 +366,7 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 	}
 	
 	@Override
-	public List<AlgorithmRun> getAlgorithmRunsIncludingRedundant(ParameterConfiguration config) {
+	public List<AlgorithmRunResult> getAlgorithmRunsIncludingRedundant(ParameterConfiguration config) {
 		lockRead();
 		try {
 			return runHistory.getAlgorithmRunsIncludingRedundant(config);
@@ -390,7 +390,7 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 	}
 	
 	@Override
-	public List<AlgorithmRun> getAlgorithmRunsIncludingRedundant() {
+	public List<AlgorithmRunResult> getAlgorithmRunsIncludingRedundant() {
 		lockRead();
 		try {
 			return runHistory.getAlgorithmRunsIncludingRedundant();

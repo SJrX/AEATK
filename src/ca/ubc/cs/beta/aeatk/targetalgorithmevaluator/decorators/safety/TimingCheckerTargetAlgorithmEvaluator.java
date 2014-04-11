@@ -10,8 +10,8 @@ import net.jcip.annotations.ThreadSafe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
@@ -84,9 +84,9 @@ public class TimingCheckerTargetAlgorithmEvaluator extends	AbstractTargetAlgorit
 	}
 
 	
-	protected synchronized AlgorithmRun processRun(AlgorithmRun run) {
+	protected synchronized AlgorithmRunResult processRun(AlgorithmRunResult run) {
 		
-		double runtimeOverhead = run.getRuntime() - run.getRunConfig().getCutoffTime();
+		double runtimeOverhead = run.getRuntime() - run.getAlgorithmRunConfiguration().getCutoffTime();
 		
 		totalRuntime += Math.max(run.getRuntime(), 0);
 		totalRuntimeOverhead += Math.max(runtimeOverhead, 0);
@@ -96,21 +96,21 @@ public class TimingCheckerTargetAlgorithmEvaluator extends	AbstractTargetAlgorit
 		{
 			runtimeDeltaToRequireLogging = runtimeOverhead + 1;
 			
-			Object[] args = {run.getRuntime(), run.getRunConfig().getCutoffTime(), runtimeOverhead, runtimeDeltaToRequireLogging};
+			Object[] args = {run.getRuntime(), run.getAlgorithmRunConfiguration().getCutoffTime(), runtimeOverhead, runtimeDeltaToRequireLogging};
 			log.warn("Algorithm Run Result reported a runtime of {} (secs) that exceeded it's cutoff time of {} (secs) by {} (secs). Next warning at {} (secs)  ", args);
 		}
 		
-		double wallClockOverhead = run.getWallclockExecutionTime() - run.getRunConfig().getCutoffTime();
+		double wallClockOverhead = run.getWallclockExecutionTime() - run.getAlgorithmRunConfiguration().getCutoffTime();
 		
 		totalWalltime += Math.max(run.getWallclockExecutionTime(), 0);
 		totalWallClockOverhead += Math.max(wallClockOverhead, 0);
 		
 		
 		
-		if(wallClockOverhead > Math.min(1.5*run.getRunConfig().getAlgorithmExecutionConfiguration().getAlgorithmMaximumCutoffTime(), wallClockDeltaToRequireLogging))
+		if(wallClockOverhead > Math.min(1.5*run.getAlgorithmRunConfiguration().getAlgorithmExecutionConfiguration().getAlgorithmMaximumCutoffTime(), wallClockDeltaToRequireLogging))
 		{
 			wallClockDeltaToRequireLogging = wallClockOverhead + 1;
-			Object[] args = {run.getWallclockExecutionTime(), run.getRunConfig().getCutoffTime(), wallClockOverhead, wallClockDeltaToRequireLogging};
+			Object[] args = {run.getWallclockExecutionTime(), run.getAlgorithmRunConfiguration().getCutoffTime(), wallClockOverhead, wallClockDeltaToRequireLogging};
 			log.warn("Algorithm Run Result reported wallclock time of {} (secs) that exceeded it's cutoff time of {} (secs) by {} (secs). Next warning at {} (secs)  ", args);
 		}
 		
@@ -129,7 +129,7 @@ public class TimingCheckerTargetAlgorithmEvaluator extends	AbstractTargetAlgorit
 	
 
 	@Override
-	public final List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
+	public final List<AlgorithmRunResult> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
 		return processRuns(tae.evaluateRun(processRunConfigs(runConfigs), new WarnOnExceededCutoffRunObserver(obs)));
 	}
 
@@ -145,7 +145,7 @@ public class TimingCheckerTargetAlgorithmEvaluator extends	AbstractTargetAlgorit
 			private final TargetAlgorithmEvaluatorCallback handler = oHandler;
 
 			@Override
-			public void onSuccess(List<AlgorithmRun> runs) {
+			public void onSuccess(List<AlgorithmRunResult> runs) {
 					runs = processRuns(runs);			
 					handler.onSuccess(runs);
 			}
@@ -160,7 +160,7 @@ public class TimingCheckerTargetAlgorithmEvaluator extends	AbstractTargetAlgorit
 
 	}
 
-	protected final List<AlgorithmRun> processRuns(List<AlgorithmRun> runs)
+	protected final List<AlgorithmRunResult> processRuns(List<AlgorithmRunResult> runs)
 	{
 		for(int i=0; i < runs.size(); i++)
 		{
@@ -192,7 +192,7 @@ public class TimingCheckerTargetAlgorithmEvaluator extends	AbstractTargetAlgorit
 		}
 		private ConcurrentHashMap<AlgorithmRunConfiguration, Boolean> warnCreated = new ConcurrentHashMap<AlgorithmRunConfiguration, Boolean>();
 		@Override
-		public void currentStatus(List<? extends AlgorithmRun> runs) 
+		public void currentStatus(List<? extends AlgorithmRunResult> runs) 
 		{
 			
 			try 
@@ -201,17 +201,17 @@ public class TimingCheckerTargetAlgorithmEvaluator extends	AbstractTargetAlgorit
 			} finally
 			{
 			
-				for(AlgorithmRun run : runs)
+				for(AlgorithmRunResult run : runs)
 				{
 					if(!run.isRunCompleted())
 					{
 						//If the run has taken more 3 minutes, and it is more than 3 times the cutoff time we warn.
-						if(run.getWallclockExecutionTime() > 3 * run.getRunConfig().getCutoffTime() && run.getWallclockExecutionTime() > 180)
+						if(run.getWallclockExecutionTime() > 3 * run.getAlgorithmRunConfiguration().getCutoffTime() && run.getWallclockExecutionTime() > 180)
 						{
-							if(warnCreated.putIfAbsent(run.getRunConfig(), Boolean.TRUE) == null)
+							if(warnCreated.putIfAbsent(run.getAlgorithmRunConfiguration(), Boolean.TRUE) == null)
 							{
 								log.warn("We have been waiting for {} seconds for a run that should have taken at most {} seconds.\n "
-										+ "The sample call for the run that is delayed is: cd \"{}\" " + CommandLineAlgorithmRun.COMMAND_SEPERATOR + "  {} ",run.getWallclockExecutionTime(), run.getRunConfig().getCutoffTime(), new File(run.getRunConfig().getAlgorithmExecutionConfiguration().getAlgorithmExecutionDirectory()).getAbsolutePath(), CommandLineAlgorithmRun.getTargetAlgorithmExecutionCommandAsString(run.getRunConfig()));
+										+ "The sample call for the run that is delayed is: cd \"{}\" " + CommandLineAlgorithmRun.COMMAND_SEPERATOR + "  {} ",run.getWallclockExecutionTime(), run.getAlgorithmRunConfiguration().getCutoffTime(), new File(run.getAlgorithmRunConfiguration().getAlgorithmExecutionConfiguration().getAlgorithmExecutionDirectory()).getAbsolutePath(), CommandLineAlgorithmRun.getTargetAlgorithmExecutionCommandAsString(run.getAlgorithmRunConfiguration()));
 							}
 							
 						}

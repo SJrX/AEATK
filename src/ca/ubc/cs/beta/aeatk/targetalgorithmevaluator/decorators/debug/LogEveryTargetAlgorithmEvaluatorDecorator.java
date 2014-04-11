@@ -5,8 +5,8 @@ import net.jcip.annotations.ThreadSafe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.AbstractForEachRunTargetAlgorithmEvaluatorDecorator;
 
@@ -40,11 +40,11 @@ public class LogEveryTargetAlgorithmEvaluatorDecorator extends
 	}
 
 	
-	protected synchronized AlgorithmRun processRun(AlgorithmRun run)
+	protected synchronized AlgorithmRunResult processRun(AlgorithmRunResult run)
 	{
 		if(logRCOnly)
 		{
-			log.debug("Run {} Completed: {} ", context, run.getRunConfig());
+			log.debug("Run {} Completed: {} ", context, run.getAlgorithmRunConfiguration());
 		} else
 		{
 			log.debug("Run {} Completed: {} : {} ", context, run, run.getAdditionalRunData());

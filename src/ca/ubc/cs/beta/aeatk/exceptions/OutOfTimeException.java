@@ -1,18 +1,18 @@
 package ca.ubc.cs.beta.aeatk.exceptions;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 
 
 public class OutOfTimeException extends SMACException {
 
 	
-	private final AlgorithmRun run;
+	private final AlgorithmRunResult run;
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 3562273461188581045L;
 
-	public OutOfTimeException(AlgorithmRun run) {
+	public OutOfTimeException(AlgorithmRunResult run) {
 		super("SMAC is out of time.");
 		this.run = run;
 	}
@@ -23,7 +23,7 @@ public class OutOfTimeException extends SMACException {
 		// TODO Auto-generated constructor stub
 	}
 
-	public AlgorithmRun getAlgorithmRun()
+	public AlgorithmRunResult getAlgorithmRun()
 	{
 		return run;
 	}

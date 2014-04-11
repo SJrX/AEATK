@@ -3,7 +3,7 @@ package ca.ubc.cs.beta.aeatk.targetalgorithmevaluator;
 import java.util.List;
 import java.util.concurrent.CountDownLatch;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 
 /**
  * TAECallback that has a wait method() that lets you block until it is complete
@@ -22,7 +22,7 @@ public class WaitableTAECallback implements TargetAlgorithmEvaluatorCallback {
 		this.handler = handler;
 	}
 	@Override
-	public void onSuccess(List<AlgorithmRun> runs) {
+	public void onSuccess(List<AlgorithmRunResult> runs) {
 		
 		handler.onSuccess(runs);
 		completeCount.countDown();

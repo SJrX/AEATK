@@ -2,7 +2,7 @@ package ca.ubc.cs.beta.aeatk.termination;
 
 import java.util.Collection;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.eventsystem.EventManager;
 
 public interface TerminationCondition {
@@ -36,7 +36,7 @@ public interface TerminationCondition {
 	 * 
 	 * @param run
 	 */
-	public void notifyRun(AlgorithmRun run);
+	public void notifyRun(AlgorithmRunResult run);
 	
 	/**
 	 * Get the current tuner time

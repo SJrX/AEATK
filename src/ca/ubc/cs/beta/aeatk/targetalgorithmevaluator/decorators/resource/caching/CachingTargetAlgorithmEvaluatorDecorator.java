@@ -22,11 +22,11 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import net.jcip.annotations.ThreadSafe;
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
-import ca.ubc.cs.beta.aeatk.algorithmrun.RunningAlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.kill.KillHandler;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunStatus;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunningAlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.kill.KillHandler;
 import ca.ubc.cs.beta.aeatk.concurrent.ReducableSemaphore;
 import ca.ubc.cs.beta.aeatk.concurrent.threadfactory.SequentiallyNamedThreadFactory;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
@@ -235,7 +235,7 @@ public class CachingTargetAlgorithmEvaluatorDecorator extends AbstractTargetAlgo
 	 * Populated: When entries are completed: {@link SubmissionOnCompleteHandler#onSuccess()}
 	 * Cleanup: Entries are never removed
 	 */
-	private final ConcurrentHashMap<AlgorithmRunConfiguration, AlgorithmRun> completedRunsMap = new ConcurrentHashMap<AlgorithmRunConfiguration, AlgorithmRun>();
+	private final ConcurrentHashMap<AlgorithmRunConfiguration, AlgorithmRunResult> completedRunsMap = new ConcurrentHashMap<AlgorithmRunConfiguration, AlgorithmRunResult>();
 	
 	
 	/**
@@ -253,7 +253,7 @@ public class CachingTargetAlgorithmEvaluatorDecorator extends AbstractTargetAlgo
 	 * Updated: When entries are killed with a higher runtime
 	 * 
 	 */
-	private final ConcurrentHashMap<AlgorithmRunConfiguration, AlgorithmRun> killedRunsMap = new ConcurrentHashMap<AlgorithmRunConfiguration, AlgorithmRun>();
+	private final ConcurrentHashMap<AlgorithmRunConfiguration, AlgorithmRunResult> killedRunsMap = new ConcurrentHashMap<AlgorithmRunConfiguration, AlgorithmRunResult>();
 	
 	
 	/**
@@ -281,7 +281,7 @@ public class CachingTargetAlgorithmEvaluatorDecorator extends AbstractTargetAlgo
 	 * Populated: When entries are running
 	 * Updated: When Entries are Running (NOT WHEN THEY ARE COMPLETE HOWEVER)
 	 */
-	private final ConcurrentHashMap<AlgorithmRunConfiguration, AlgorithmRun> runConfigToLiveLatestStatusMap = new ConcurrentHashMap<AlgorithmRunConfiguration, AlgorithmRun>();
+	private final ConcurrentHashMap<AlgorithmRunConfiguration, AlgorithmRunResult> runConfigToLiveLatestStatusMap = new ConcurrentHashMap<AlgorithmRunConfiguration, AlgorithmRunResult>();
 	
 	
 	/**
@@ -355,7 +355,7 @@ public class CachingTargetAlgorithmEvaluatorDecorator extends AbstractTargetAlgo
 			//Sanitation of inputs
 			if(rcs.isEmpty())
 			{
-				callback.onSuccess(Collections.<AlgorithmRun> emptyList());
+				callback.onSuccess(Collections.<AlgorithmRunResult> emptyList());
 				return;
 			}
 			
@@ -420,7 +420,7 @@ public class CachingTargetAlgorithmEvaluatorDecorator extends AbstractTargetAlgo
 				}
 				
 				//Just because are responsible for submitting, doesn't mean we created these guys. 
-				runConfigToLiveLatestStatusMap.putIfAbsent(rc, new RunningAlgorithmRun(rc, 0, 0, 0, rc.getProblemInstanceSeedPair().getSeed(), 0, new NullKillHandler()));
+				runConfigToLiveLatestStatusMap.putIfAbsent(rc, new RunningAlgorithmRunResult(rc, 0, 0, 0, rc.getProblemInstanceSeedPair().getSeed(), 0, new NullKillHandler()));
 				
 				
 				//Flag our interest in a run, iff there is already at least one person interested.
@@ -512,7 +512,7 @@ public class CachingTargetAlgorithmEvaluatorDecorator extends AbstractTargetAlgo
 	}
 
 	@Override
-	public List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
+	public List<AlgorithmRunResult> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
 		//Convert the synchronous request into an asynchronous request
 		return TargetAlgorithmEvaluatorHelper.evaluateRunSyncToAsync(runConfigs, this, obs);
 	}
@@ -773,7 +773,7 @@ public class CachingTargetAlgorithmEvaluatorDecorator extends AbstractTargetAlgo
 		}
 
 		@Override
-		public void onSuccess(List<AlgorithmRun> runs) 
+		public void onSuccess(List<AlgorithmRunResult> runs) 
 		{
 
 			try 
@@ -785,12 +785,12 @@ public class CachingTargetAlgorithmEvaluatorDecorator extends AbstractTargetAlgo
 				}
 				
 				
-				for(AlgorithmRun run : runs)
+				for(AlgorithmRunResult run : runs)
 				{
 					
-					AlgorithmRunConfiguration rc = run.getRunConfig();
+					AlgorithmRunConfiguration rc = run.getAlgorithmRunConfiguration();
 					
-					if(run.getRunResult().equals(RunResult.KILLED))
+					if(run.getRunStatus().equals(RunStatus.KILLED))
 					{
 						log.debug("Inserting killed run: {}", run);
 						
@@ -921,17 +921,17 @@ public class CachingTargetAlgorithmEvaluatorDecorator extends AbstractTargetAlgo
 	{
 
 		@Override
-		public void currentStatus(List<? extends AlgorithmRun> runs)
+		public void currentStatus(List<? extends AlgorithmRunResult> runs)
 		{
 			
 			try 
 			{
 				Set<EvaluationRequestToken> updateTokens = new HashSet<EvaluationRequestToken>();
-				for(AlgorithmRun run : runs)
+				for(AlgorithmRunResult run : runs)
 				{
-					AlgorithmRunConfiguration rc = run.getRunConfig();
+					AlgorithmRunConfiguration rc = run.getAlgorithmRunConfiguration();
 										
-					runConfigToLiveLatestStatusMap.put(rc, new RunningAlgorithmRun(rc, run.getRuntime(), run.getRunLength(), run.getQuality(), run.getResultSeed(), run.getWallclockExecutionTime(), new NullKillHandler()));
+					runConfigToLiveLatestStatusMap.put(rc, new RunningAlgorithmRunResult(rc, run.getRuntime(), run.getRunLength(), run.getQuality(), run.getResultSeed(), run.getWallclockExecutionTime(), new NullKillHandler()));
 					
 					for(EvaluationRequestToken token : runConfigToTokenMap.get(rc))
 					{
@@ -1046,18 +1046,18 @@ public class CachingTargetAlgorithmEvaluatorDecorator extends AbstractTargetAlgo
 					
 					List<AlgorithmRunConfiguration> rcs = allRunConfigsForTokenMap.get(token);
 					
-					List<AlgorithmRun> runs = new ArrayList<AlgorithmRun>(rcs.size());
+					List<AlgorithmRunResult> runs = new ArrayList<AlgorithmRunResult>(rcs.size());
 					
 					for(AlgorithmRunConfiguration rc : rcs)
 					{
 						
-						AlgorithmRun krun;
+						AlgorithmRunResult krun;
 						
 						boolean rcCompleted = completedRunConfigs.contains(rc);
 						if(!rcCompleted)
 						{
 							//We should use the live version
-							AlgorithmRun liveRun = runConfigToLiveLatestStatusMap.get(rc);
+							AlgorithmRunResult liveRun = runConfigToLiveLatestStatusMap.get(rc);
 							
 							
 							if(liveRun == null)
@@ -1066,13 +1066,13 @@ public class CachingTargetAlgorithmEvaluatorDecorator extends AbstractTargetAlgo
 								return;
 							}
 							
-							krun = new RunningAlgorithmRun(liveRun.getRunConfig(), liveRun.getRuntime(), liveRun.getRunLength(), liveRun.getQuality(), liveRun.getResultSeed(), liveRun.getWallclockExecutionTime(), new ExternalCallerKillHandler(token, rc));
+							krun = new RunningAlgorithmRunResult(liveRun.getAlgorithmRunConfiguration(), liveRun.getRuntime(), liveRun.getRunLength(), liveRun.getQuality(), liveRun.getResultSeed(), liveRun.getWallclockExecutionTime(), new ExternalCallerKillHandler(token, rc));
 						} else
 						{
 							
 							
 							
-							AlgorithmRun run = completedRunsMap.get(rc);
+							AlgorithmRunResult run = completedRunsMap.get(rc);
 							
 							if(run != null)
 							{
@@ -1145,7 +1145,7 @@ public class CachingTargetAlgorithmEvaluatorDecorator extends AbstractTargetAlgo
 					{
 						List<AlgorithmRunConfiguration> rcs = allRunConfigsForTokenMap.get(token);
 						
-						List<AlgorithmRun> runs = new ArrayList<AlgorithmRun>(rcs.size());
+						List<AlgorithmRunResult> runs = new ArrayList<AlgorithmRunResult>(rcs.size());
 						
 						for(AlgorithmRunConfiguration rc : rcs)
 						{
@@ -1167,7 +1167,7 @@ public class CachingTargetAlgorithmEvaluatorDecorator extends AbstractTargetAlgo
 								}
 							}
 						
-							AlgorithmRun run = completedRunsMap.get(rc);
+							AlgorithmRunResult run = completedRunsMap.get(rc);
 							
 							
 							if(run == null)
@@ -1419,7 +1419,7 @@ public class CachingTargetAlgorithmEvaluatorDecorator extends AbstractTargetAlgo
 	{
 
 		@Override
-		public void currentStatus(List<? extends AlgorithmRun> runs)
+		public void currentStatus(List<? extends AlgorithmRunResult> runs)
 		{
 			//NOOP
 		}

@@ -1,13 +1,13 @@
-package ca.ubc.cs.beta.aeatk.algorithmrunner;
+package ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.algorithmrunner;
 
 import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunStatus;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluatorOptions;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.exceptions.TargetAlgorithmAbortException;
@@ -27,14 +27,14 @@ class SingleThreadedAlgorithmRunner extends AbstractAlgorithmRunner
 	}
 
 	@Override
-	public List<AlgorithmRun> run() 	
+	public List<AlgorithmRunResult> run() 	
 	{
 		
-		List<AlgorithmRun> runsToReturn = new ArrayList<AlgorithmRun>();
+		List<AlgorithmRunResult> runsToReturn = new ArrayList<AlgorithmRunResult>();
 
-		for(Callable<AlgorithmRun> run : runs)
+		for(Callable<AlgorithmRunResult> run : runs)
 		{
-			AlgorithmRun result;
+			AlgorithmRunResult result;
 			try {
 				result = run.call();
 			} catch (Exception e) {
@@ -42,7 +42,7 @@ class SingleThreadedAlgorithmRunner extends AbstractAlgorithmRunner
 				throw new IllegalStateException("Unexpected exception occurred on call to Callable<AlgorithmRun>", e);
 			}
 			
-			if(result.getRunResult().equals(RunResult.ABORT))
+			if(result.getRunStatus().equals(RunStatus.ABORT))
 			{
 				throw new TargetAlgorithmAbortException(result);
 			}

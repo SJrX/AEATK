@@ -28,9 +28,9 @@ import org.junit.Test;
 
 import ca.ubc.cs.beta.TestHelper;
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunStatus;
 import ca.ubc.cs.beta.aeatk.misc.debug.DebugUtil;
 import ca.ubc.cs.beta.aeatk.misc.watch.AutoStartStopWatch;
 import ca.ubc.cs.beta.aeatk.misc.watch.StopWatch;
@@ -244,7 +244,7 @@ private static TargetAlgorithmEvaluator tae;
 
 						AtomicBoolean bool = new AtomicBoolean();
 						@Override
-						public void onSuccess(List<AlgorithmRun> runs) {
+						public void onSuccess(List<AlgorithmRunResult> runs) {
 				
 							if(!bool.compareAndSet(false, true))
 							{
@@ -260,7 +260,7 @@ private static TargetAlgorithmEvaluator tae;
 							int i=0;
 							for(AlgorithmRunConfiguration rc : submitList)
 							{
-								if(!rc.equals(runs.get(i).getRunConfig()))
+								if(!rc.equals(runs.get(i).getAlgorithmRunConfiguration()))
 								{
 									throw new IllegalStateException("Runs are coming back out of order: " + rcs + " runs: " + runs);
 								}
@@ -396,7 +396,7 @@ private static TargetAlgorithmEvaluator tae;
 			{
 
 				@Override
-				public void onSuccess(List<AlgorithmRun> runs) {
+				public void onSuccess(List<AlgorithmRunResult> runs) {
 					
 					//We don't check the results because we don't know what matches it
 					//Other tests will check the result better 
@@ -555,7 +555,7 @@ private static TargetAlgorithmEvaluator tae;
 			{
 
 				@Override
-				public void onSuccess(List<AlgorithmRun> runs) {
+				public void onSuccess(List<AlgorithmRunResult> runs) {
 					
 					//We don't check the results because we don't know what matches it
 					//Other tests will check the result better 
@@ -579,7 +579,7 @@ private static TargetAlgorithmEvaluator tae;
 
 				@Override
 				public void currentStatus(
-						List<? extends AlgorithmRun> runs) {
+						List<? extends AlgorithmRunResult> runs) {
 					System.out.println("Observer: "+ id + ":" + runs);
 					
 				}
@@ -699,16 +699,16 @@ private static TargetAlgorithmEvaluator tae;
 			{
 
 				@Override
-				public void onSuccess(List<AlgorithmRun> runs) {
+				public void onSuccess(List<AlgorithmRunResult> runs) {
 					
 					//We don't check the results because we don't know what matches it
 					//Other tests will check the result better 
 					
-					for(AlgorithmRun run : runs)
+					for(AlgorithmRunResult run : runs)
 					{
 						if(id==1)
 						{
-							if(run.getRunResult().equals(RunResult.KILLED))
+							if(run.getRunStatus().equals(RunStatus.KILLED))
 							{
 								fail("Unexpected kill");
 							}
@@ -735,12 +735,12 @@ private static TargetAlgorithmEvaluator tae;
 
 				@Override
 				public void currentStatus(
-						List<? extends AlgorithmRun> runs) {
+						List<? extends AlgorithmRunResult> runs) {
 					System.out.println("Observer: "+ id + ":" + runs);
 					
 					if(id==0)
 					{
-						for(AlgorithmRun run : runs)
+						for(AlgorithmRunResult run : runs)
 						{
 							run.kill();
 						}
@@ -859,22 +859,22 @@ private static TargetAlgorithmEvaluator tae;
 			
 			final int id = i;
 			
-			final Set<AlgorithmRun> killedRuns = Collections.newSetFromMap(new ConcurrentHashMap<AlgorithmRun, Boolean>());
+			final Set<AlgorithmRunResult> killedRuns = Collections.newSetFromMap(new ConcurrentHashMap<AlgorithmRunResult, Boolean>());
 
 			final TargetAlgorithmEvaluatorCallback cb = new TargetAlgorithmEvaluatorCallback()
 			{
 
 				@Override
-				public void onSuccess(List<AlgorithmRun> runs) {
+				public void onSuccess(List<AlgorithmRunResult> runs) {
 					
 					//We don't check the results because we don't know what matches it
 					//Other tests will check the result better 
 					
-					for(AlgorithmRun run : runs)
+					for(AlgorithmRunResult run : runs)
 					{
 						if(id % 7 == 0)
 						{
-							if(run.getRunResult().equals(RunResult.KILLED))
+							if(run.getRunStatus().equals(RunStatus.KILLED))
 							{
 								fail("Unexpected kill " + id + ":" + run);
 							}
@@ -882,7 +882,7 @@ private static TargetAlgorithmEvaluator tae;
 							
 						} else
 						{
-							if(run.getRunResult().equals(RunResult.KILLED))
+							if(run.getRunStatus().equals(RunStatus.KILLED))
 							{
 								if (!killedRuns.contains(run))
 								{
@@ -911,7 +911,7 @@ private static TargetAlgorithmEvaluator tae;
 
 				AtomicBoolean created = new AtomicBoolean(false);
 				@Override
-				public synchronized void currentStatus(	List<? extends AlgorithmRun> runs) {
+				public synchronized void currentStatus(	List<? extends AlgorithmRunResult> runs) {
 					
 					
 					
@@ -923,7 +923,7 @@ private static TargetAlgorithmEvaluator tae;
 
 						if(created.compareAndSet(false, true))
 						{
-							for(AlgorithmRun run : runs)
+							for(AlgorithmRunResult run : runs)
 							{
 								if(r.nextDouble() > 0.5)
 								{
@@ -932,7 +932,7 @@ private static TargetAlgorithmEvaluator tae;
 							}
 						}
 						
-						for(AlgorithmRun run : runs)
+						for(AlgorithmRunResult run : runs)
 						{
 							if(killedRuns.contains(run))
 							{
@@ -943,9 +943,9 @@ private static TargetAlgorithmEvaluator tae;
 					
 					
 					
-					for(AlgorithmRun run : runs)
+					for(AlgorithmRunResult run : runs)
 					{
-						if(run.getRunResult().equals(RunResult.KILLED))
+						if(run.getRunStatus().equals(RunStatus.KILLED))
 						{
 							if(!killedRuns.contains(run))
 							{

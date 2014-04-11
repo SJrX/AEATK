@@ -15,8 +15,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import static ca.ubc.cs.beta.aeatk.state.legacy.LegacyStateFactory.*;
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunStatus;
 import ca.ubc.cs.beta.aeatk.exceptions.StateSerializationException;
 import ca.ubc.cs.beta.aeatk.misc.watch.AutoStartStopWatch;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
@@ -163,7 +163,7 @@ public class LegacyStateSerializer implements StateSerializer {
 					Integer instanceIdx = runData.getInstanceidx();
 					Integer iteration = runData.getIteration();
 					
-					AlgorithmRun run = runData.getRun();
+					AlgorithmRunResult run = runData.getRun();
 					//Comments are just for dev reference when comparing code with LegacyStateDeserializer
 					runResults.append(i+","); //0
 					runResults.append(thetaIdx+","); //1
@@ -171,21 +171,21 @@ public class LegacyStateSerializer implements StateSerializer {
 					runResults.append(runHistory.getRunObjective().getObjective(run)+","); //3
 					int isCensored = 0;
 					
-					if((run.getRunResult().equals(RunResult.TIMEOUT) && run.getRunConfig().hasCutoffLessThanMax()) || run.getRunResult().equals(RunResult.KILLED))
+					if((run.getRunStatus().equals(RunStatus.TIMEOUT) && run.getAlgorithmRunConfiguration().hasCutoffLessThanMax()) || run.getRunStatus().equals(RunStatus.KILLED))
 					{
 						isCensored = 1;
 					}
 					runResults.append(isCensored + ","); //Censored 4
-					runResults.append(run.getRunConfig().getCutoffTime()+","); //5
+					runResults.append(run.getAlgorithmRunConfiguration().getCutoffTime()+","); //5
 					runResults.append(run.getResultSeed()+","); //6
 					runResults.append(run.getRuntime()+","); //7
 					runResults.append(run.getRunLength()+","); //8
-					runResults.append(String.valueOf(run.getRunResult().getResultCode())+","); //9
+					runResults.append(String.valueOf(run.getRunStatus().getResultCode())+","); //9
 					runResults.append(run.getQuality()+","); //10
 					runResults.append(iteration+","); //11
 					cumulativeSum += run.getRuntime(); 
 					runResults.append(cumulativeSum+","); //12
-					runResults.append(run.getRunResult().name()+","); //13
+					runResults.append(run.getRunStatus().name()+","); //13
 					runResults.append(run.getAdditionalRunData()+",");//14
 					runResults.append(run.getWallclockExecutionTime()+","); //15;
 					runResults.append("\n");

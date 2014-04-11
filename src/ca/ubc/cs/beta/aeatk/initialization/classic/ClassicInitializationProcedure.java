@@ -7,8 +7,8 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.exceptions.DuplicateRunException;
 import ca.ubc.cs.beta.aeatk.exceptions.OutOfTimeException;
 import ca.ubc.cs.beta.aeatk.initialization.InitializationProcedure;
@@ -107,13 +107,13 @@ public class ClassicInitializationProcedure implements InitializationProcedure {
 		return incumbent;
 	}
 	
-	protected List<AlgorithmRun> evaluateRun(AlgorithmRunConfiguration runConfig)
+	protected List<AlgorithmRunResult> evaluateRun(AlgorithmRunConfiguration runConfig)
 	{
 		return evaluateRun(Collections.singletonList(runConfig));
 	}
 	
 	
-	protected List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs)
+	protected List<AlgorithmRunResult> evaluateRun(List<AlgorithmRunConfiguration> runConfigs)
 	{
 	
 		if(termCond.haveToStop())
@@ -127,11 +127,11 @@ public class ClassicInitializationProcedure implements InitializationProcedure {
 			log.debug("Initialization: Scheduling run for config{} ({}) on instance {} with seed {} and captime {}", args);
 		}
 		
-		List<AlgorithmRun> completedRuns = tae.evaluateRun(runConfigs);
+		List<AlgorithmRunResult> completedRuns = tae.evaluateRun(runConfigs);
 		
-		for(AlgorithmRun run : completedRuns)
+		for(AlgorithmRunResult run : completedRuns)
 		{
-			AlgorithmRunConfiguration rc = run.getRunConfig();
+			AlgorithmRunConfiguration rc = run.getAlgorithmRunConfiguration();
 			Object[] args = {  runHistory.getThetaIdx(rc.getParameterConfiguration())!=-1?" "+runHistory.getThetaIdx(rc.getParameterConfiguration()):"", rc.getParameterConfiguration(), rc.getProblemInstanceSeedPair().getProblemInstance().getInstanceID(),  rc.getProblemInstanceSeedPair().getSeed(), rc.getCutoffTime(), run.getResultLine(),  run.getWallclockExecutionTime()};
 			log.debug("Initialization: Completed run for config{} ({}) on instance {} with seed {} and captime {} => Result: {}, wallclock time: {} seconds", args);
 		}
@@ -146,9 +146,9 @@ public class ClassicInitializationProcedure implements InitializationProcedure {
 	 * 
 	 * @return the input parameter (unmodified, simply for syntactic convience)
 	 */
-	protected List<AlgorithmRun> updateRunHistory(List<AlgorithmRun> runs)
+	protected List<AlgorithmRunResult> updateRunHistory(List<AlgorithmRunResult> runs)
 	{
-		for(AlgorithmRun run : runs)
+		for(AlgorithmRunResult run : runs)
 		{
 			try {
 					runHistory.append(run);

@@ -11,9 +11,9 @@ import net.jcip.annotations.ThreadSafe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunStatus;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
@@ -52,10 +52,10 @@ public class RetryCrashedRunsTargetAlgorithmEvaluator extends
 	
 
 	@Override
-	public List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
-		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs, obs);
+	public List<AlgorithmRunResult> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
+		List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs, obs);
 		
-		runs = new ArrayList<AlgorithmRun>(runs);
+		runs = new ArrayList<AlgorithmRunResult>(runs);
 		
 		
 		for(int i=1; i <= retryCount; i++)
@@ -65,10 +65,10 @@ public class RetryCrashedRunsTargetAlgorithmEvaluator extends
 			
 			for(int j =0; j < runs.size(); j++)
 			{
-				AlgorithmRun run = runs.get(j); 
-				if(run.getRunResult().equals(RunResult.CRASHED))
+				AlgorithmRunResult run = runs.get(j); 
+				if(run.getRunStatus().equals(RunStatus.CRASHED))
 				{
-					crashedRuns.put(run.getRunConfig(),j);
+					crashedRuns.put(run.getAlgorithmRunConfiguration(),j);
 					crashedRunsExist = true;
 				}
 			}
@@ -87,12 +87,12 @@ public class RetryCrashedRunsTargetAlgorithmEvaluator extends
 			crashRCs.addAll(crashedRuns.keySet());
 			
 			
-			List<AlgorithmRun> retriedRuns = tae.evaluateRun(crashRCs, obs);
+			List<AlgorithmRunResult> retriedRuns = tae.evaluateRun(crashRCs, obs);
 			
 			
-			for(AlgorithmRun run : retriedRuns)
+			for(AlgorithmRunResult run : retriedRuns)
 			{
-				runs.set(crashedRuns.get(run.getRunConfig()), run);
+				runs.set(crashedRuns.get(run.getAlgorithmRunConfiguration()), run);
 			}
 		}	
 		
@@ -110,7 +110,7 @@ public class RetryCrashedRunsTargetAlgorithmEvaluator extends
 	}
 
 	@Override
-	public void seek(List<AlgorithmRun> runs)
+	public void seek(List<AlgorithmRunResult> runs)
 	{
 		tae.seek(runs);
 		runCount.addAndGet(runs.size());

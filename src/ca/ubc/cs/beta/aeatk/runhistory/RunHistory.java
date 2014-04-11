@@ -5,7 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.exceptions.DuplicateRunException;
 import ca.ubc.cs.beta.aeatk.objectives.OverallObjective;
 import ca.ubc.cs.beta.aeatk.objectives.RunObjective;
@@ -29,7 +29,7 @@ public interface RunHistory {
 	 * @param run	run to log
 	 * @throws DuplicateRunException  - If a previous run has a duplicate config,instance and seed. NOTE: An exception will prevent the run from being logged, but the state of the RunHistory will still be consistent
 	 */
-	public void append(AlgorithmRun run) throws DuplicateRunException;
+	public void append(AlgorithmRunResult run) throws DuplicateRunException;
 		
 	/**
 	 * Get the Run Objective we are opitimizing
@@ -197,7 +197,7 @@ public interface RunHistory {
 	 * 
 	 * @return list of runs that we have recorded 
 	 */
-	public List<AlgorithmRun> getAlgorithmRunsExcludingRedundant();
+	public List<AlgorithmRunResult> getAlgorithmRunsExcludingRedundant();
 	
 	/**
 	 * Returns a new list containing all the runs we have done.
@@ -207,7 +207,7 @@ public interface RunHistory {
 	 * 
 	 * @return list of runs that we have recorded 
 	 */
-	public List<AlgorithmRun> getAlgorithmRunsIncludingRedundant();
+	public List<AlgorithmRunResult> getAlgorithmRunsIncludingRedundant();
 	
 	/**
 	 * Returns the total number of runs for a configuration, ignoring early capped runs that have been replaced with better capped data.
@@ -228,14 +228,14 @@ public interface RunHistory {
 	 * @param config
 	 * @return 	list of algorithms for the configuration
 	 */
-	public List<AlgorithmRun> getAlgorithmRunsExcludingRedundant(ParameterConfiguration config);
+	public List<AlgorithmRunResult> getAlgorithmRunsExcludingRedundant(ParameterConfiguration config);
 
 	/**
 	 * Returns an unmodifiable list of run data for challenger, containing early capped runs.
 	 * @param config
 	 * @return 	list of algorithms for the configuration
 	 */
-	public List<AlgorithmRun> getAlgorithmRunsIncludingRedundant(ParameterConfiguration config);
+	public List<AlgorithmRunResult> getAlgorithmRunsIncludingRedundant(ParameterConfiguration config);
 	
 
 	/**

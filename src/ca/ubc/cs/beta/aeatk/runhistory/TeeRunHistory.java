@@ -3,7 +3,7 @@ package ca.ubc.cs.beta.aeatk.runhistory;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.exceptions.DuplicateRunException;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
 
@@ -26,7 +26,7 @@ public class TeeRunHistory extends AbstractRunHistoryDecorator{
 	}
 
 	@Override
-	public void append(AlgorithmRun run) throws DuplicateRunException {
+	public void append(AlgorithmRunResult run) throws DuplicateRunException {
 		rh.append(run);
 		
 		try {

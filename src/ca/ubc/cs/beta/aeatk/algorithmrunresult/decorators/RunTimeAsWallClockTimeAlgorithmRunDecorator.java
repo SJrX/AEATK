@@ -1,6 +1,6 @@
-package ca.ubc.cs.beta.aeatk.algorithmrun.decorators;
+package ca.ubc.cs.beta.aeatk.algorithmrunresult.decorators;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 
 /**
  * Reports the Wallclock time of an algorithm run as opposed to response time
@@ -9,7 +9,7 @@ import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
  */
 public class RunTimeAsWallClockTimeAlgorithmRunDecorator extends AbstractAlgorithmRunDecorator {
 
-	public RunTimeAsWallClockTimeAlgorithmRunDecorator(AlgorithmRun run) {
+	public RunTimeAsWallClockTimeAlgorithmRunDecorator(AlgorithmRunResult run) {
 		super(run);
 	}
 

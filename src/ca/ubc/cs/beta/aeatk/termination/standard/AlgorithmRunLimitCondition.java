@@ -5,7 +5,7 @@ import java.util.Collections;
 import java.util.concurrent.atomic.AtomicLong;
 
 import net.jcip.annotations.ThreadSafe;
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.eventsystem.EventHandler;
 import ca.ubc.cs.beta.aeatk.eventsystem.EventManager;
 import ca.ubc.cs.beta.aeatk.eventsystem.events.basic.AlgorithmRunCompletedEvent;
@@ -38,7 +38,7 @@ public class AlgorithmRunLimitCondition extends AbstractTerminationCondition imp
 	}
 	
 	@Override
-	public void notifyRun(AlgorithmRun run)
+	public void notifyRun(AlgorithmRunResult run)
 	{
 		algorithmRuns.incrementAndGet();
 	}

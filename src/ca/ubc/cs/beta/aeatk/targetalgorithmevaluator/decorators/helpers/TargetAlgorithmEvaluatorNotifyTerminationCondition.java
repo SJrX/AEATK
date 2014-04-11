@@ -1,6 +1,6 @@
 package ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.helpers;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.eventsystem.EventManager;
 import ca.ubc.cs.beta.aeatk.eventsystem.events.basic.AlgorithmRunCompletedEvent;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
@@ -29,7 +29,7 @@ public class TargetAlgorithmEvaluatorNotifyTerminationCondition extends
 	 * @param run process the run
 	 * @return run that will replace it in the values returned to the client
 	 */
-	protected synchronized AlgorithmRun processRun(AlgorithmRun run)
+	protected synchronized AlgorithmRunResult processRun(AlgorithmRunResult run)
 	{
 		termCond.notifyRun(run);
 		evtManager.fireEvent(new AlgorithmRunCompletedEvent(termCond, run));

@@ -1,4 +1,4 @@
-package ca.ubc.cs.beta.aeatk.algorithmrun;
+package ca.ubc.cs.beta.aeatk.algorithmrunresult;
 
 import java.io.Serializable;
 
@@ -8,7 +8,10 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
-import ca.ubc.cs.beta.aeatk.json.serializers.AlgorithmRunJson;
+import ca.ubc.cs.beta.aeatk.json.serializers.AlgorithmRunResultJson;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
+import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
+import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
 
 /**
  * Represents an execution of a target algorithm. 
@@ -19,40 +22,38 @@ import ca.ubc.cs.beta.aeatk.json.serializers.AlgorithmRunJson;
  * 
  * @author Steve Ramage <seramage@cs.ubc.ca>
  */
-@JsonSerialize(using=AlgorithmRunJson.AlgorithmRunSerializer.class)
-@JsonDeserialize(using=AlgorithmRunJson.AlgorithmRunDeserializer.class)
-public interface AlgorithmRun extends Serializable {
+@JsonSerialize(using=AlgorithmRunResultJson.AlgorithmRunSerializer.class)
+@JsonDeserialize(using=AlgorithmRunResultJson.AlgorithmRunDeserializer.class)
+public interface AlgorithmRunResult extends Serializable {
 
 	/**
 	 * Returns the AlgorithmExecutionConfig of the run
-	 * @deprecated It is now accessible via {@link #getRunConfig()}
+	 * @deprecated It is now accessible via {@link #getAlgorithmRunConfiguration()}
 	 * @return AlgorithmExecutionConfig of the run
 	 * 
 	 */
-	@Deprecated
-	public AlgorithmExecutionConfiguration getExecutionConfig();
-
+	
 	/**
 	 * Return the run configuration associated with the AlgorithmRun
 	 * @return run configuration of this run
 	 */
-	public AlgorithmRunConfiguration getRunConfig();
+	public AlgorithmRunConfiguration getAlgorithmRunConfiguration();
 
 	/**
-	 * Get the Run Result
+	 * Get the Run Status
 	 * 
 	 * <b>Implementation Notes:</b>
 	 * 
-	 *  The Run Result should be TIMEOUT if the cutoff time is zero, and implementations may not do anything else but return this run. 
+	 *  The Run Status should be TIMEOUT if the cutoff time is zero, and implementations may not do anything else but return this run. 
 	 *  
-	 *  The Run Result should NEVER be RUNNING, unless this is an appropriate subtype that supports Killing.
+	 *  The Run Status should NEVER be RUNNING, unless this is an appropriate subtype that supports Killing.
 	 *  
-	 *  If the result is RUNNING then isRunComplete() should return <code>false</code> otherwise it should return </code>true</code>
+	 *  If the status is RUNNING then isRunComplete() should return <code>false</code> otherwise it should return </code>true</code>
 	 *  
 	 * @return RunResult for run
 	 * @throws IllegalStateException if the run has not completed
 	 */
-	public RunResult getRunResult();
+	public RunStatus getRunStatus();
 
 	/**
 	 * Get reported runtime of run 
@@ -150,13 +151,6 @@ public interface AlgorithmRun extends Serializable {
 	public boolean isRunCompleted();
 
 	/**
-	 * Returns whether this run gave us intelligible output
-	 * @return <code>true</code> if this run returned something parsable, <code>false</code> otherwise
-	 * @deprecated No longer really used, as all runs are immutable and bad runs just report CRASHED
-	 */
-	public boolean isRunResultWellFormed();
-
-	/**
 	 * Returns the raw output of the line we matched (if any), this is for debug purposes only
 	 * and there is no requirement that this actually return any particular string.
 	 * <p>
@@ -187,5 +181,24 @@ public interface AlgorithmRun extends Serializable {
 	
 	public boolean isCensoredEarly();
 	
-
+	/**
+	 * Shortcut method for returning the Parameter Configuration that this AlgorithmRunResult contains 
+	 */
+	public ParameterConfiguration getParameterConfiguration();
+	
+	/**
+	 * Shortcut method for returning the AlgorithmExecutionConfiguration that this AlgorithmRunResult contains 
+	 */
+	public AlgorithmExecutionConfiguration getAlgorithmExecutionConfiguration();
+	
+	/**
+	 * Shortcut method for returning the problem instance seed pair that this AlgorithmRunResult contains
+	 */
+	public ProblemInstanceSeedPair getProblemInstanceSeedPair();
+	
+	/**
+	 * Shortcut method for returning the problem instance for that this AlgorithmRunResult contains
+	 * @return
+	 */
+	public ProblemInstance getProblemInstance();
 }

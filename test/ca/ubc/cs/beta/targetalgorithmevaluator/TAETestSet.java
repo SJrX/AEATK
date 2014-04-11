@@ -43,10 +43,9 @@ import org.junit.Test;
 
 import ca.ubc.cs.beta.TestHelper;
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
-import ca.ubc.cs.beta.aeatk.algorithmrunner.AutomaticConfiguratorFactory;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunStatus;
 import ca.ubc.cs.beta.aeatk.concurrent.threadfactory.SequentiallyNamedThreadFactory;
 import ca.ubc.cs.beta.aeatk.exceptions.IllegalWrapperOutputException;
 import ca.ubc.cs.beta.aeatk.misc.debug.DebugUtil;
@@ -69,6 +68,7 @@ import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.WaitableTAECallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.CommandLineAlgorithmRun;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluatorFactory;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluatorOptions;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.algorithmrunner.AutomaticConfiguratorFactory;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.preloaded.PreloadedResponseTargetAlgorithmEvaluatorOptions;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.random.RandomResponseTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.random.RandomResponseTargetAlgorithmEvaluatorFactory;
@@ -200,17 +200,17 @@ public class TAETestSet {
 		}
 		
 		System.out.println("Performing " + runConfigs.size() + " runs");
-		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+		List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs);
 		
 		
-		for(AlgorithmRun run : runs)
+		for(AlgorithmRunResult run : runs)
 		{
-			ParameterConfiguration config  = run.getRunConfig().getParameterConfiguration();
+			ParameterConfiguration config  = run.getAlgorithmRunConfiguration().getParameterConfiguration();
 			assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
 			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
 			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
 			assertDEquals(config.get("seed"), run.getResultSeed(), 0.1);
-			assertEquals(config.get("solved"), run.getRunResult().name());
+			assertEquals(config.get("solved"), run.getRunStatus().name());
 			//This executor should not have any additional run data
 			assertEquals("",run.getAdditionalRunData());
 
@@ -266,7 +266,7 @@ public class TAETestSet {
 		PrintStream out = System.out;
 		System.setOut(new PrintStream(bout));
 		
-		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+		List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs);
 		
 		System.setOut(out);
 		System.out.println(bout.toString());
@@ -279,14 +279,14 @@ public class TAETestSet {
 		assertTrue(bout.toString().contains("exceeded it's cutoff time of 0.01 (secs) by 7.99 (secs)"));
 		
 		
-		for(AlgorithmRun run : runs)
+		for(AlgorithmRunResult run : runs)
 		{
-			ParameterConfiguration config  = run.getRunConfig().getParameterConfiguration();
+			ParameterConfiguration config  = run.getAlgorithmRunConfiguration().getParameterConfiguration();
 			assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
 			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
 			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
 			assertDEquals(config.get("seed"), run.getResultSeed(), 0.1);
-			assertEquals(config.get("solved"), run.getRunResult().name());
+			assertEquals(config.get("solved"), run.getRunStatus().name());
 			//This executor should not have any additional run data
 			assertEquals("",run.getAdditionalRunData());
 
@@ -382,7 +382,7 @@ public class TAETestSet {
 			tae.evaluateRunsAsync(runConfigs.subList(10*i, 10*(i+1)), new TargetAlgorithmEvaluatorCallback() {
 
 				@Override
-				public void onSuccess(List<AlgorithmRun> runs) {
+				public void onSuccess(List<AlgorithmRunResult> runs) {
 					// TODO Auto-generated method stub
 					
 				}
@@ -481,17 +481,17 @@ public class TAETestSet {
 		
 		System.out.println("Performing " + runConfigs.size() + " runs");
 		TargetAlgorithmEvaluator tae = new EqualTargetAlgorithmEvaluatorTester(TAETestSet.tae, new EchoTargetAlgorithmEvaluator());
-		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+		List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs);
 		
 		
-		for(AlgorithmRun run : runs)
+		for(AlgorithmRunResult run : runs)
 		{
-			ParameterConfiguration config  = run.getRunConfig().getParameterConfiguration();
+			ParameterConfiguration config  = run.getAlgorithmRunConfiguration().getParameterConfiguration();
 			assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
 			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
 			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
 			assertDEquals(config.get("seed"), run.getResultSeed(), 0.1);
-			assertEquals(config.get("solved"), run.getRunResult().name());
+			assertEquals(config.get("solved"), run.getRunStatus().name());
 			//This executor should not have any additional run data
 			assertEquals("",run.getAdditionalRunData());
 
@@ -541,17 +541,17 @@ public class TAETestSet {
 		}
 		
 		System.out.println("Performing " + runConfigs.size() + " runs");
-		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+		List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs);
 		
 		int i=0; 
-		for(AlgorithmRun run : runs)
+		for(AlgorithmRunResult run : runs)
 		{
-			ParameterConfiguration config  = run.getRunConfig().getParameterConfiguration();
+			ParameterConfiguration config  = run.getAlgorithmRunConfiguration().getParameterConfiguration();
 			assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
 			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
 			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
 			assertDEquals(config.get("seed"), run.getResultSeed(), 0.1);
-			assertEquals(config.get("solved"), run.getRunResult().name());
+			assertEquals(config.get("solved"), run.getRunStatus().name());
 			//This executor should not have any additional run data
 			
 			try {
@@ -709,18 +709,18 @@ public class TAETestSet {
 		
 			
 			
-		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+		List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs);
 		
-		for(AlgorithmRun run : runs)
+		for(AlgorithmRunResult run : runs)
 		{
 			
 			if(run.getRuntime() >= cutoffTime)
 			{
-				assertEquals(RunResult.TIMEOUT, run.getRunResult());
+				assertEquals(RunStatus.TIMEOUT, run.getRunStatus());
 			} else
 			{
-				assertEquals(run.getRunResult(), RunResult.valueOf(run.getRunConfig().getParameterConfiguration().get("solved")));
-				assertDEquals(run.getRunConfig().getParameterConfiguration().get("runtime"), run.getRuntime(),0.05);
+				assertEquals(run.getRunStatus(), RunStatus.valueOf(run.getAlgorithmRunConfiguration().getParameterConfiguration().get("solved")));
+				assertDEquals(run.getAlgorithmRunConfiguration().getParameterConfiguration().get("runtime"), run.getRuntime(),0.05);
 			}
 			
 			
@@ -947,10 +947,10 @@ public class TAETestSet {
 		runConfigs.add(rc);
 		
 		TargetAlgorithmEvaluator tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE();
-		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
-		for(AlgorithmRun run : runs)
+		List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs);
+		for(AlgorithmRunResult run : runs)
 		{
-			assertEquals(RunResult.CRASHED,run.getRunResult());
+			assertEquals(RunStatus.CRASHED,run.getRunStatus());
 		}
 			
 		
@@ -986,7 +986,7 @@ public class TAETestSet {
 		
 		
 		
-		for(String alias : RunResult.SAT.getAliases())
+		for(String alias : RunStatus.SAT.getAliases())
 		{
 			
 			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
@@ -997,17 +997,17 @@ public class TAETestSet {
 		
 		
 		System.out.println("Performing " + runConfigs.size() + " runs");
-		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+		List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs);
 		
 		
-		for(AlgorithmRun run : runs)
+		for(AlgorithmRunResult run : runs)
 		{
-			ParameterConfiguration config  = run.getRunConfig().getParameterConfiguration();
+			ParameterConfiguration config  = run.getAlgorithmRunConfiguration().getParameterConfiguration();
 			assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
 			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
 			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
 			assertDEquals(config.get("seed"), run.getResultSeed(), 0.1);
-			assertEquals(RunResult.getAutomaticConfiguratorResultForKey(config.get("solved")), RunResult.SAT);
+			assertEquals(RunStatus.getAutomaticConfiguratorResultForKey(config.get("solved")), RunStatus.SAT);
 			assertEquals("",run.getAdditionalRunData()); //No Additional Run Data Expected
 
 		}
@@ -1044,7 +1044,7 @@ public class TAETestSet {
 		
 		
 		
-		for(String alias : RunResult.UNSAT.getAliases())
+		for(String alias : RunStatus.UNSAT.getAliases())
 		{
 			
 			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
@@ -1055,17 +1055,17 @@ public class TAETestSet {
 		
 		
 		System.out.println("Performing " + runConfigs.size() + " runs");
-		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+		List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs);
 		
 		
-		for(AlgorithmRun run : runs)
+		for(AlgorithmRunResult run : runs)
 		{
-			ParameterConfiguration config  = run.getRunConfig().getParameterConfiguration();
+			ParameterConfiguration config  = run.getAlgorithmRunConfiguration().getParameterConfiguration();
 			assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
 			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
 			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
 			assertDEquals(config.get("seed"), run.getResultSeed(), 0.1);
-			assertEquals(RunResult.getAutomaticConfiguratorResultForKey(config.get("solved")), RunResult.UNSAT);
+			assertEquals(RunStatus.getAutomaticConfiguratorResultForKey(config.get("solved")), RunStatus.UNSAT);
 			
 			assertEquals("",run.getAdditionalRunData()); //No Additional Run Data Expected
 
@@ -1103,7 +1103,7 @@ public class TAETestSet {
 		
 		
 		
-		for(String alias : RunResult.UNSAT.getAliases())
+		for(String alias : RunStatus.UNSAT.getAliases())
 		{
 			
 			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
@@ -1112,7 +1112,7 @@ public class TAETestSet {
 			runConfigs.add(rc);
 		}
 
-		List<AlgorithmRun> runs;
+		List<AlgorithmRunResult> runs;
 		System.out.println("Performing " + runConfigs.size() + " runs");
 		try {
 			runs = tae.evaluateRun(runConfigs);
@@ -1179,7 +1179,7 @@ public class TAETestSet {
 		
 		
 		
-		for(String alias : RunResult.UNSAT.getAliases())
+		for(String alias : RunStatus.UNSAT.getAliases())
 		{
 			
 			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
@@ -1198,7 +1198,7 @@ public class TAETestSet {
 		PrintStream oldOut = System.out;
 		
 		System.setOut(pw);
-		List<AlgorithmRun> runs = new ArrayList<AlgorithmRun>();
+		List<AlgorithmRunResult> runs = new ArrayList<AlgorithmRunResult>();
 		try {
 		runs = tae.evaluateRun(runConfigs);
 		} finally
@@ -1213,9 +1213,9 @@ public class TAETestSet {
 		assertTrue(bout.toString().contains("Most likely the Algorithm did not report a result string as one of"));
 		
 		
-		for(AlgorithmRun run : runs)
+		for(AlgorithmRunResult run : runs)
 		{
-			assertEquals( RunResult.CRASHED, run.getRunResult());
+			assertEquals( RunStatus.CRASHED, run.getRunStatus());
 		}
 		
 	}
@@ -1255,7 +1255,7 @@ public class TAETestSet {
 		
 		
 		
-		for(String alias : RunResult.UNSAT.getAliases())
+		for(String alias : RunStatus.UNSAT.getAliases())
 		{
 			
 			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
@@ -1274,7 +1274,7 @@ public class TAETestSet {
 		PrintStream oldOut = System.out;
 		
 		System.setOut(pw);
-		List<AlgorithmRun> runs = new ArrayList<AlgorithmRun>();
+		List<AlgorithmRunResult> runs = new ArrayList<AlgorithmRunResult>();
 		try {
 		runs = tae.evaluateRun(runConfigs);
 		} finally
@@ -1289,9 +1289,9 @@ public class TAETestSet {
 		
 		
 		
-		for(AlgorithmRun run : runs)
+		for(AlgorithmRunResult run : runs)
 		{
-			assertEquals(RunResult.CRASHED, run.getRunResult());
+			assertEquals(RunStatus.CRASHED, run.getRunStatus());
 		}
 		
 		assertTrue(bout.toString().contains("Most likely one of the values of runLength, runtime, quality could not be parsed as a Double, or the seed could not be parsed as a valid long"));
@@ -1329,7 +1329,7 @@ public class TAETestSet {
 		
 		
 		
-		for(String alias : RunResult.UNSAT.getAliases())
+		for(String alias : RunStatus.UNSAT.getAliases())
 		{
 			
 			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
@@ -1348,7 +1348,7 @@ public class TAETestSet {
 		PrintStream oldOut = System.out;
 		
 		System.setOut(pw);
-		List<AlgorithmRun> runs = new ArrayList<AlgorithmRun>();
+		List<AlgorithmRunResult> runs = new ArrayList<AlgorithmRunResult>();
 		try {
 		runs = tae.evaluateRun(runConfigs);
 		} finally
@@ -1361,9 +1361,9 @@ public class TAETestSet {
 		
 		assertEquals(runs.size(), runConfigs.size());
 		
-		for(AlgorithmRun run : runs)
+		for(AlgorithmRunResult run : runs)
 		{
-			assertEquals( RunResult.CRASHED, run.getRunResult());
+			assertEquals( RunStatus.CRASHED, run.getRunStatus());
 		}
 		
 		assertTrue(bout.toString().contains("Most likely the algorithm did not specify all of the required outputs that is <solved>,<runtime>,<runlength>,<quality>,<seed>"));
@@ -1415,7 +1415,7 @@ public class TAETestSet {
 		System.out.println("Suppressing Output");
 		PrintStream out = System.out;
 		System.setOut(new PrintStream(new NullOutputStream()));
-		List<AlgorithmRun> runs;
+		List<AlgorithmRunResult> runs;
 		try {
 		 runs = tae.evaluateRun(runConfigs);
 		} finally{
@@ -1423,14 +1423,14 @@ public class TAETestSet {
 		}
 		
 		
-		for(AlgorithmRun run : runs)
+		for(AlgorithmRunResult run : runs)
 		{
-			ParameterConfiguration config  = run.getRunConfig().getParameterConfiguration();
+			ParameterConfiguration config  = run.getAlgorithmRunConfiguration().getParameterConfiguration();
 			assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
 			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
 			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
 			assertDEquals(config.get("seed"), run.getResultSeed(), 0.1);
-			assertEquals(config.get("solved"), run.getRunResult().name());
+			assertEquals(config.get("solved"), run.getRunStatus().name());
 			//This executor should not have any additional run data
 			assertEquals("",run.getAdditionalRunData());
 
@@ -1475,17 +1475,17 @@ public class TAETestSet {
 		}
 		
 		System.out.println("Performing " + runConfigs.size() + " runs");
-		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+		List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs);
 		
 		
-		for(AlgorithmRun run : runs)
+		for(AlgorithmRunResult run : runs)
 		{
-			ParameterConfiguration config  = run.getRunConfig().getParameterConfiguration();
+			ParameterConfiguration config  = run.getAlgorithmRunConfiguration().getParameterConfiguration();
 			assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
 			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
 			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
 			assertDEquals(config.get("seed"), run.getResultSeed(), 0.1);
-			assertEquals(config.get("solved"), run.getRunResult().name());
+			assertEquals(config.get("solved"), run.getRunStatus().name());
 			//This executor should not have any additional run data
 			assertEquals("",run.getAdditionalRunData());
 
@@ -1533,17 +1533,17 @@ public class TAETestSet {
 		
 		for(int i =0; i < this.TARGET_RUNS_IN_LOOPS; i++)
 		{
-			List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+			List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs);
 			
 			
-			for(AlgorithmRun run : runs)
+			for(AlgorithmRunResult run : runs)
 			{
-				ParameterConfiguration config  = run.getRunConfig().getParameterConfiguration();
+				ParameterConfiguration config  = run.getAlgorithmRunConfiguration().getParameterConfiguration();
 				assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
 				assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
 				assertDEquals(config.get("quality"), run.getQuality(), 0.1);
 				assertDEquals(config.get("seed"), run.getResultSeed(), 0.1);
-				assertEquals(config.get("solved"), run.getRunResult().name());
+				assertEquals(config.get("solved"), run.getRunStatus().name());
 				//This executor should not have any additional run data
 				assertEquals("",run.getAdditionalRunData());
 			}
@@ -1646,18 +1646,18 @@ public class TAETestSet {
 			
 			
 			startOutputCapture();
-			List<AlgorithmRun> runs = tae.evaluateRun(rc);
+			List<AlgorithmRunResult> runs = tae.evaluateRun(rc);
 			String output = stopOutputCapture();
 			//System.out.println("<<<<<\n" + output+"\n<<<<<<");
 			
 			
-			AlgorithmRun run = runs.get(0);
+			AlgorithmRunResult run = runs.get(0);
 			
 			
-			switch(run.getRunResult())
+			switch(run.getRunStatus())
 			{
 				case SAT:
-					if(run.getRunConfig().getProblemInstanceSeedPair().getProblemInstance().getInstanceName().startsWith("SAT"))
+					if(run.getAlgorithmRunConfiguration().getProblemInstanceSeedPair().getProblemInstance().getInstanceName().startsWith("SAT"))
 					{
 						assertFalse(output.contains("Mismatch occured between instance specific information"));
 					} else
@@ -1668,7 +1668,7 @@ public class TAETestSet {
 					break;
 				case UNSAT:
 					
-					if(run.getRunConfig().getProblemInstanceSeedPair().getProblemInstance().getInstanceName().startsWith("UNSAT"))
+					if(run.getAlgorithmRunConfiguration().getProblemInstanceSeedPair().getProblemInstance().getInstanceName().startsWith("UNSAT"))
 					{
 				
 						assertFalse(output.contains("Mismatch occured between instance specific information"));
@@ -1682,12 +1682,12 @@ public class TAETestSet {
 				default:
 					assertFalse(output.contains("Mismatch occured between instance specific information"));	
 			}
-			ParameterConfiguration config  = run.getRunConfig().getParameterConfiguration();
+			ParameterConfiguration config  = run.getAlgorithmRunConfiguration().getParameterConfiguration();
 			assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
 			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
 			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
 			assertDEquals(config.get("seed"), run.getResultSeed(), 0.1);
-			assertEquals(config.get("solved"), run.getRunResult().name());
+			assertEquals(config.get("solved"), run.getRunStatus().name());
 			//This executor should not have any additional run data
 			assertEquals("",run.getAdditionalRunData());
 
@@ -1975,7 +1975,7 @@ public class TAETestSet {
 		
 		
 		try {
-			List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+			List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs);
 			fail("Expected exception to be thrown: " + runs);
 		} catch(IllegalWrapperOutputException e)
 		{
@@ -1995,7 +1995,7 @@ public class TAETestSet {
 		
 		
 		try {
-			List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+			List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs);
 			fail("Expected exception to be thrown: " + runs);
 		} catch(IllegalArgumentException e)
 		{
@@ -2014,7 +2014,7 @@ public class TAETestSet {
 		
 		
 		try {
-			List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+			List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs);
 			fail("Expected exception to be thrown: " + runs);
 		} catch(IllegalArgumentException e)
 		{
@@ -2033,7 +2033,7 @@ public class TAETestSet {
 		
 		
 		try {
-			List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+			List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs);
 			fail("Expected exception to be thrown: " + runs);
 		} catch(IllegalArgumentException e)
 		{
@@ -2057,7 +2057,7 @@ public class TAETestSet {
 		
 		
 		try {
-			List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+			List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs);
 			
 		} catch(IllegalArgumentException e)
 		{
@@ -2077,7 +2077,7 @@ public class TAETestSet {
 		
 		
 		try {
-			List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+			List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs);
 			
 		} catch(IllegalArgumentException e)
 		{
@@ -2132,7 +2132,7 @@ public class TAETestSet {
 		tae = new ResultOrderCorrectCheckerTargetAlgorithmEvaluatorDecorator(tae);
 		try {
 			try {
-				List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+				List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs);
 				fail("Expected Exception to have occured");
 			} catch(IllegalStateException e)
 			{
@@ -2145,7 +2145,7 @@ public class TAETestSet {
 			{
 	
 				@Override
-				public void onSuccess(List<AlgorithmRun> runs) {
+				public void onSuccess(List<AlgorithmRunResult> runs) {
 					taeCompletedSuccessfully.set(true);
 				}
 	
@@ -2181,7 +2181,7 @@ public class TAETestSet {
 			tae = new ResultOrderCorrectCheckerTargetAlgorithmEvaluatorDecorator(tae);
 			
 			try {
-				List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+				List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs);
 				System.out.println("GOOD: Completed");
 			} catch(IllegalStateException e)
 			{
@@ -2194,7 +2194,7 @@ public class TAETestSet {
 			{
 	
 				@Override
-				public void onSuccess(List<AlgorithmRun> runs) {
+				public void onSuccess(List<AlgorithmRunResult> runs) {
 					taeCompletedSuccessfully.set(true);
 				}
 	
@@ -2281,7 +2281,7 @@ public class TAETestSet {
 			{
 				for(int i=0; i < 10; i++)
 				{
-					List<AlgorithmRun> runs = tae.evaluateRun(runConfigs);
+					List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs);
 				}
 			
 				finishedRuns.set(true);
@@ -2378,7 +2378,7 @@ public class TAETestSet {
 		{
 
 			@Override
-			public void onSuccess(List<AlgorithmRun> runs) {
+			public void onSuccess(List<AlgorithmRunResult> runs) {
 
 				System.out.println(runs);
 				
@@ -2465,21 +2465,21 @@ public class TAETestSet {
 
 			private boolean killedByDecorator = false;
 			@Override
-			public void currentStatus(List<? extends AlgorithmRun> runs) 
+			public void currentStatus(List<? extends AlgorithmRunResult> runs) 
 			{
 				
 				double sum = 0;
 			
 			
-				for(AlgorithmRun run : runs)
+				for(AlgorithmRunResult run : runs)
 				{
-					if(run.getRunConfig().getProblemInstanceSeedPair().getSeed() % 100 % 19 != 0)
+					if(run.getAlgorithmRunConfiguration().getProblemInstanceSeedPair().getSeed() % 100 % 19 != 0)
 					{
 						run.kill();
 					}
 					
 
-					if(run.getRunResult() == RunResult.KILLED && !killedByDecorator)
+					if(run.getRunStatus() == RunStatus.KILLED && !killedByDecorator)
 					{
 						if(run.getAdditionalRunData().equals(BoundedTargetAlgorithmEvaluator.KILLED_BY_DECORATOR_ADDL_RUN_INFO))
 						{
@@ -2497,13 +2497,13 @@ public class TAETestSet {
 		};
 		
 		StopWatch watch2 = new AutoStartStopWatch();
-		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs, obs);
+		List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs, obs);
 		
 		int killedCount = 0;
-		for(AlgorithmRun run : runs)
+		for(AlgorithmRunResult run : runs)
 		{
 			
-			if(run.getRunResult().equals(RunResult.KILLED))
+			if(run.getRunStatus().equals(RunStatus.KILLED))
 			{
 				killedCount++;
 			}
@@ -2649,7 +2649,7 @@ public class TAETestSet {
 		tae.evaluateRunsAsync(runConfigs.subList(0,4), new TargetAlgorithmEvaluatorCallback() {
 
 			@Override
-			public void onSuccess(List<AlgorithmRun> runs) {
+			public void onSuccess(List<AlgorithmRunResult> runs) {
 				// TODO Auto-generated method stub
 				
 			}
@@ -2665,7 +2665,7 @@ public class TAETestSet {
 		tae.evaluateRunsAsync(runConfigs.subList(4,5), new TargetAlgorithmEvaluatorCallback() {
 
 			@Override
-			public void onSuccess(List<AlgorithmRun> runs) {
+			public void onSuccess(List<AlgorithmRunResult> runs) {
 				// TODO Auto-generated method stub
 				
 			}
@@ -2746,7 +2746,7 @@ public class TAETestSet {
 			{
 
 				@Override
-				public void onSuccess(List<AlgorithmRun> runs) {
+				public void onSuccess(List<AlgorithmRunResult> runs) {
 					// TODO Auto-generated method stub
 					
 				}
@@ -2847,12 +2847,12 @@ public class TAETestSet {
 			int numCompleted = 0;
 			int calls = 0;
 			@Override
-			public void currentStatus(List<? extends AlgorithmRun> runs) {
+			public void currentStatus(List<? extends AlgorithmRunResult> runs) {
 				//if(Math.random() > 0.95)
 				//System.out.println("Called");
 				calls++;
 				int complete = 0;
-				for(AlgorithmRun run : runs)
+				for(AlgorithmRunResult run : runs)
 				{
 					if(run.isRunCompleted())
 					{
@@ -3262,7 +3262,7 @@ public class TAETestSet {
 		{
 
 			@Override
-			public void currentStatus(List<? extends AlgorithmRun> runs) {
+			public void currentStatus(List<? extends AlgorithmRunResult> runs) {
 				count.incrementAndGet();
 				
 			}
@@ -3319,15 +3319,15 @@ public class TAETestSet {
 		
 		
 		
-		List<AlgorithmRun> runs = tae10.evaluateRun(runConfigs);
-		for(AlgorithmRun run : runs)
+		List<AlgorithmRunResult> runs = tae10.evaluateRun(runConfigs);
+		for(AlgorithmRunResult run : runs)
 		{
 			assertEquals("Expected quality to be 10", 10, run.getQuality(), 0.01);
 		}
 		
 		
 		runs = tae5.evaluateRun(runConfigs);
-		for(AlgorithmRun run : runs)
+		for(AlgorithmRunResult run : runs)
 		{
 			assertEquals("Expected quality to be 5", 5, run.getQuality(), 0.01);
 		}
@@ -3337,7 +3337,7 @@ public class TAETestSet {
 		tae10.evaluateRunsAsync(runConfigs, new TargetAlgorithmEvaluatorCallback() {
 			
 			@Override
-			public void onSuccess(List<AlgorithmRun> runs) {
+			public void onSuccess(List<AlgorithmRunResult> runs) {
 				solQual.set((int) runs.get(0).getQuality());
 				s.release();
 				
@@ -3356,7 +3356,7 @@ public class TAETestSet {
 		tae5.evaluateRunsAsync(runConfigs, new TargetAlgorithmEvaluatorCallback() {
 			
 			@Override
-			public void onSuccess(List<AlgorithmRun> runs) {
+			public void onSuccess(List<AlgorithmRunResult> runs) {
 				solQual.set((int) runs.get(0).getQuality());
 				s.release();
 				
@@ -3595,9 +3595,9 @@ public class TAETestSet {
 		{
 
 			@Override
-			public void currentStatus(List<? extends AlgorithmRun> runs) 
+			public void currentStatus(List<? extends AlgorithmRunResult> runs) 
 			{
-				for(AlgorithmRun run : runs)
+				for(AlgorithmRunResult run : runs)
 				{
 					System.out.println("Runtime: " + run.getRuntime() + " walltime: " + run.getWallclockExecutionTime());
 					
@@ -3686,15 +3686,15 @@ public class TAETestSet {
 		{
 
 			@Override
-			public void currentStatus(List<? extends AlgorithmRun> runs) 
+			public void currentStatus(List<? extends AlgorithmRunResult> runs) 
 			{
-				AlgorithmRun run = runs.get(0);
+				AlgorithmRunResult run = runs.get(0);
 				
 					System.out.println("Runtime: " + run.getRuntime() + " walltime: " + run.getWallclockExecutionTime());
 					
 					if(run.getRuntime() > 4)
 					{
-						for(AlgorithmRun krun : runs)
+						for(AlgorithmRunResult krun : runs)
 						{
 							krun.kill();
 						}
@@ -3711,15 +3711,15 @@ public class TAETestSet {
 		
 		
 		
-		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs,obs);
+		List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs,obs);
 		
 		
 		
 		
-		for(AlgorithmRun run : runs)
+		for(AlgorithmRunResult run : runs)
 		{
 			System.out.println(run);
-			if(run.getRunResult().equals(RunResult.CRASHED))
+			if(run.getRunStatus().equals(RunStatus.CRASHED))
 			{
 				fail("Run shouldn't be crashed");
 			}
@@ -3792,15 +3792,15 @@ public class TAETestSet {
 		{
 
 			@Override
-			public void currentStatus(List<? extends AlgorithmRun> runs) 
+			public void currentStatus(List<? extends AlgorithmRunResult> runs) 
 			{
-				AlgorithmRun run = runs.get(0);
+				AlgorithmRunResult run = runs.get(0);
 				
 					System.out.println("Runtime: " + run.getRuntime() + " walltime: " + run.getWallclockExecutionTime());
 					
 					if(run.getRuntime() > 4)
 					{
-						for(AlgorithmRun krun : runs)
+						for(AlgorithmRunResult krun : runs)
 						{
 							krun.kill();
 						}
@@ -3815,12 +3815,12 @@ public class TAETestSet {
 			
 		};		
 		
-		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs,obs);
+		List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs,obs);
 	
-		for(AlgorithmRun run : runs)
+		for(AlgorithmRunResult run : runs)
 		{
 			System.out.println(run);
-			if(run.getRunResult().equals(RunResult.CRASHED))
+			if(run.getRunStatus().equals(RunStatus.CRASHED))
 			{
 				fail("Run shouldn't be crashed");
 			}
@@ -3888,9 +3888,9 @@ public class TAETestSet {
 		{
 
 			@Override
-			public void currentStatus(List<? extends AlgorithmRun> runs) 
+			public void currentStatus(List<? extends AlgorithmRunResult> runs) 
 			{
-				for(AlgorithmRun run : runs)
+				for(AlgorithmRunResult run : runs)
 				{
 					System.out.println("Runtime: " + run.getRuntime() + " walltime: " + run.getWallclockExecutionTime());
 					
@@ -4115,9 +4115,9 @@ public class TAETestSet {
 		{
 
 			@Override
-			public void currentStatus(List<? extends AlgorithmRun> runs) 
+			public void currentStatus(List<? extends AlgorithmRunResult> runs) 
 			{
-				for(AlgorithmRun run : runs)
+				for(AlgorithmRunResult run : runs)
 				{
 					System.out.println("Runtime: " + run.getRuntime() + " walltime: " + run.getWallclockExecutionTime());
 					
@@ -4221,21 +4221,21 @@ public class TAETestSet {
 
 			private boolean killedByDecorator = false;
 			@Override
-			public void currentStatus(List<? extends AlgorithmRun> runs) 
+			public void currentStatus(List<? extends AlgorithmRunResult> runs) 
 			{
 				
 				double sum = 0;
 			
 			
-				for(AlgorithmRun run : runs)
+				for(AlgorithmRunResult run : runs)
 				{
-					if(run.getRunConfig().getProblemInstanceSeedPair().getSeed() % 100 % 11 != 0)
+					if(run.getAlgorithmRunConfiguration().getProblemInstanceSeedPair().getSeed() % 100 % 11 != 0)
 					{
 						run.kill();
 					}
 					
 
-					if(run.getRunResult() == RunResult.KILLED && !killedByDecorator)
+					if(run.getRunStatus() == RunStatus.KILLED && !killedByDecorator)
 					{
 						if(run.getAdditionalRunData().equals(BoundedTargetAlgorithmEvaluator.KILLED_BY_DECORATOR_ADDL_RUN_INFO))
 						{
@@ -4256,7 +4256,7 @@ public class TAETestSet {
 		tae.evaluateRunsAsync(runConfigs, new TargetAlgorithmEvaluatorCallback() {
 			
 			@Override
-			public void onSuccess(List<AlgorithmRun> runs) {
+			public void onSuccess(List<AlgorithmRunResult> runs) {
 				System.out.println("Completed: " + runs);
 				
 			}

@@ -18,9 +18,9 @@ import org.junit.Test;
 
 import ca.ubc.cs.beta.TestHelper;
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunStatus;
 import ca.ubc.cs.beta.aeatk.misc.debug.DebugUtil;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace;
@@ -170,7 +170,7 @@ public class DynamicCappingTestSet {
 		{
 			
 			@Override
-			public void currentStatus(List<? extends AlgorithmRun> runs) {
+			public void currentStatus(List<? extends AlgorithmRunResult> runs) {
 				
 				if(evaluateDone.get())
 				{
@@ -178,7 +178,7 @@ public class DynamicCappingTestSet {
 				}
 				double runtimeSum = 0.0;
 				double walltimeSum = 0.0;
-				for(AlgorithmRun run : runs)
+				for(AlgorithmRunResult run : runs)
 				{
 					runtimeSum += run.getRuntime();
 					walltimeSum += run.getWallclockExecutionTime();
@@ -188,7 +188,7 @@ public class DynamicCappingTestSet {
 				if(runtimeSum > 3)
 				{
 					System.out.println("Trying to kill");
-					for(AlgorithmRun run : runs)
+					for(AlgorithmRunResult run : runs)
 					{
 						run.kill();
 					}
@@ -200,19 +200,19 @@ public class DynamicCappingTestSet {
 		};
 		
 		long startTime  = System.currentTimeMillis();
-		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs,obs);
+		List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs,obs);
 		evaluateDone.set(true);
 		long endTime = System.currentTimeMillis();
 		//System.setOut(out);
 		//System.out.println(bout.toString());
 		
-		for(AlgorithmRun run : runs)
+		for(AlgorithmRunResult run : runs)
 		{
 			System.out.println(run.getResultLine());
 			
-			ParameterConfiguration config  = run.getRunConfig().getParameterConfiguration();
+			ParameterConfiguration config  = run.getAlgorithmRunConfiguration().getParameterConfiguration();
 			
-			if(run.getRunResult().isSuccessfulAndCensored())
+			if(run.getRunStatus().isSuccessfulAndCensored())
 			{
 				continue;
 			}
@@ -220,7 +220,7 @@ public class DynamicCappingTestSet {
 			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
 			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
 			assertDEquals(config.get("seed"), run.getResultSeed(), 0.1);
-			assertEquals(config.get("solved"), run.getRunResult().name());
+			assertEquals(config.get("solved"), run.getRunStatus().name());
 			//This executor should not have any additional run data
 			assertEquals("",run.getAdditionalRunData());
 			
@@ -284,19 +284,19 @@ public class DynamicCappingTestSet {
 		{
 			
 			@Override
-			public void currentStatus(List<? extends AlgorithmRun> runs) {
+			public void currentStatus(List<? extends AlgorithmRunResult> runs) {
 				
 				if(runs.size() != runConfigs.size())
 				{
 					failed.set("Expected that runConfigs.size(): " + runConfigs.size() + " is always equal to runs.size():" + runs.size());
-					for(AlgorithmRun run : runs)
+					for(AlgorithmRunResult run : runs)
 					{
 						run.kill();
 					}
 				}
 				
 				double runtimeSum = 0.0; 
-				for(AlgorithmRun run : runs)
+				for(AlgorithmRunResult run : runs)
 				{
 					runtimeSum += run.getRuntime();
 				}
@@ -307,12 +307,12 @@ public class DynamicCappingTestSet {
 					System.out.flush();
 					System.out.println("Issuing kill order on " + runtimeSum);
 				
-					for(AlgorithmRun run : runs)
+					for(AlgorithmRunResult run : runs)
 					{
 						System.out.println(run);
 					}
 					System.out.flush();
-					for(AlgorithmRun run : runs)
+					for(AlgorithmRunResult run : runs)
 					{
 					
 						run.kill();
@@ -328,18 +328,18 @@ public class DynamicCappingTestSet {
 		}
 		
 		long startTime  = System.currentTimeMillis();
-		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs,obs);
+		List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs,obs);
 		long endTime = System.currentTimeMillis();
 		//System.setOut(out);
 		//System.out.println(bout.toString());
 		
-		for(AlgorithmRun run : runs)
+		for(AlgorithmRunResult run : runs)
 		{
 			System.out.println(run.getResultLine());
 			
-			ParameterConfiguration config  = run.getRunConfig().getParameterConfiguration();
+			ParameterConfiguration config  = run.getAlgorithmRunConfiguration().getParameterConfiguration();
 			
-			if(run.getRunResult().isSuccessfulAndCensored())
+			if(run.getRunStatus().isSuccessfulAndCensored())
 			{
 				continue;
 			}
@@ -347,7 +347,7 @@ public class DynamicCappingTestSet {
 			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
 			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
 			assertDEquals(config.get("seed"), run.getResultSeed(), 0.1);
-			assertEquals(config.get("solved"), run.getRunResult().name());
+			assertEquals(config.get("solved"), run.getRunStatus().name());
 			//This executor should not have any additional run data
 			assertEquals("",run.getAdditionalRunData());
 			
@@ -416,12 +416,12 @@ public class DynamicCappingTestSet {
 			
 			private final AtomicBoolean shown = new AtomicBoolean(false);
 			@Override
-			public void currentStatus(List<? extends AlgorithmRun> runs) {
+			public void currentStatus(List<? extends AlgorithmRunResult> runs) {
 				
 				//System.out.println(runs.get(0).getWallclockExecutionTime());
 				double runtimeSum = 0.0; 
 				double walltimeSum = 0.0;
-				for(AlgorithmRun run : runs)
+				for(AlgorithmRunResult run : runs)
 				{
 					runtimeSum += run.getRuntime();
 					walltimeSum += run.getWallclockExecutionTime();
@@ -434,12 +434,12 @@ public class DynamicCappingTestSet {
 				{
 					if(!shown.getAndSet(true))
 					{
-						for(AlgorithmRun run : runs)
+						for(AlgorithmRunResult run : runs)
 						{
 							System.out.println(run.toString());
 						}
 					}
-					for(AlgorithmRun run : runs)
+					for(AlgorithmRunResult run : runs)
 					{
 						run.kill();
 					}
@@ -450,33 +450,33 @@ public class DynamicCappingTestSet {
 		};
 		
 		long startTime  = System.currentTimeMillis();
-		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs,obs);
+		List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs,obs);
 		long endTime = System.currentTimeMillis();
 		//System.setOut(out);
 		//System.out.println(bout.toString());
 		
 		long runtimeSum = 0;
 		long wallclockTime = 0;
-		for(AlgorithmRun run : runs)
+		for(AlgorithmRunResult run : runs)
 		{
 			System.out.println("Result: " + run);
 			
-			ParameterConfiguration config  = run.getRunConfig().getParameterConfiguration();
+			ParameterConfiguration config  = run.getAlgorithmRunConfiguration().getParameterConfiguration();
 			
 			runtimeSum+= run.getRuntime();
 			wallclockTime += run.getWallclockExecutionTime();
 			
-			if(run.getRunResult().isSuccessfulAndCensored())
+			if(run.getRunStatus().isSuccessfulAndCensored())
 			{
 				
-				assertEquals(RunResult.KILLED, run.getRunResult());
+				assertEquals(RunStatus.KILLED, run.getRunStatus());
 				continue;
 			}
 			assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
 			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
 			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
 			assertDEquals(config.get("seed"), run.getResultSeed(), 0.1);
-			assertEquals(config.get("solved"), run.getRunResult().name());
+			assertEquals(config.get("solved"), run.getRunStatus().name());
 			//This executor should not have any additional run data
 			assertEquals("",run.getAdditionalRunData());
 			
@@ -547,7 +547,7 @@ public class DynamicCappingTestSet {
 			{
 				
 				@Override
-				public void currentStatus(List<? extends AlgorithmRun> runs) {
+				public void currentStatus(List<? extends AlgorithmRunResult> runs) {
 					
 					if(evaluateDone.get())
 					{
@@ -561,7 +561,7 @@ public class DynamicCappingTestSet {
 			};
 			
 			long startTime  = System.currentTimeMillis();
-			List<AlgorithmRun> runs = tae.evaluateRun(runConfigs,obs);
+			List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs,obs);
 			evaluateDone.set(true);
 			System.out.println("DONE");
 			System.out.flush();
@@ -639,7 +639,7 @@ public class DynamicCappingTestSet {
 			{
 				
 				@Override
-				public void currentStatus(List<? extends AlgorithmRun> runs) {
+				public void currentStatus(List<? extends AlgorithmRunResult> runs) {
 					
 					if(evaluateDone.get())
 					{
@@ -661,7 +661,7 @@ public class DynamicCappingTestSet {
 			{
 
 				@Override
-				public void onSuccess(List<AlgorithmRun> runs) {
+				public void onSuccess(List<AlgorithmRunResult> runs) {
 					System.out.println("Done");
 					evaluateDone.set(true);
 				}

@@ -12,8 +12,8 @@ import org.slf4j.LoggerFactory;
 
 import com.beust.jcommander.ParameterException;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.AbstractSyncTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.ipc.mechanism.TCPMechanism;
@@ -106,10 +106,10 @@ public class IPCTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorithmEval
 	}
 
 	@Override
-	public synchronized List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs,
+	public synchronized List<AlgorithmRunResult> evaluateRun(List<AlgorithmRunConfiguration> runConfigs,
 			TargetAlgorithmEvaluatorRunObserver runStatusObserver) {
 		
-		List<AlgorithmRun> completedRuns = new ArrayList<AlgorithmRun>();
+		List<AlgorithmRunResult> completedRuns = new ArrayList<AlgorithmRunResult>();
 		
 		for(AlgorithmRunConfiguration rc : runConfigs)
 		{
@@ -118,7 +118,7 @@ public class IPCTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorithmEval
 			{
 			case UDP:
 				UDPMechanism udp = new UDPMechanism();
-				AlgorithmRun run = udp.evaluateRun(rc, this.options.remotePort, this.options.remoteHost, this.options.udpPacketSize);
+				AlgorithmRunResult run = udp.evaluateRun(rc, this.options.remotePort, this.options.remoteHost, this.options.udpPacketSize);
 				completedRuns.add(run);
 				break;
 			case TCP:

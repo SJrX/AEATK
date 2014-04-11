@@ -22,12 +22,12 @@ import org.junit.Test;
 import com.google.common.collect.Sets;
 
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.ExistingAlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
-import ca.ubc.cs.beta.aeatk.algorithmrun.RunningAlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.kill.KillHandler;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.ExistingAlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunStatus;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunningAlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.kill.KillHandler;
 import ca.ubc.cs.beta.aeatk.exceptions.DuplicateRunException;
 import ca.ubc.cs.beta.aeatk.misc.debug.DebugUtil;
 import ca.ubc.cs.beta.aeatk.objectives.OverallObjective;
@@ -109,7 +109,7 @@ public class RunHistoryTester {
 		
 		
 		
-		AlgorithmRun run = ExistingAlgorithmRun.getRunFromString( runConfig, "0, 1 , 0 , 0, " + pisp.getSeed());
+		AlgorithmRunResult run = ExistingAlgorithmRunResult.getRunFromString( runConfig, "0, 1 , 0 , 0, " + pisp.getSeed());
 		
 		
 		
@@ -122,7 +122,7 @@ public class RunHistoryTester {
 			
 			
 			
-			run = ExistingAlgorithmRun.getRunFromString( runConfig, "0, 2 , 0 , 0, " + pisp.getSeed());
+			run = ExistingAlgorithmRunResult.getRunFromString( runConfig, "0, 2 , 0 , 0, " + pisp.getSeed());
 			r.append(run);
 			
 			assertEquals(2.0,r.getEmpiricalCost(defaultConfig, r.getProblemInstancesRan(defaultConfig), 500),0.01);
@@ -157,7 +157,7 @@ public class RunHistoryTester {
 		
 		AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(pisp, defaultConfig,execConfig);
 		try {
-			runHistory.append(new ExistingAlgorithmRun( rc, RunResult.SAT, 0, 0, 0, pisp.getSeed(),0));
+			runHistory.append(new ExistingAlgorithmRunResult( rc, RunStatus.SAT, 0, 0, 0, pisp.getSeed(),0));
 		} catch (DuplicateRunException e) {
 			e.printStackTrace();
 			fail("Unexpected duplicated run exception");
@@ -165,7 +165,7 @@ public class RunHistoryTester {
 		
 		//Get a duplicate
 		try {
-			runHistory.append(new ExistingAlgorithmRun( rc, RunResult.SAT, 0, 0, 0, pisp.getSeed()));
+			runHistory.append(new ExistingAlgorithmRunResult( rc, RunStatus.SAT, 0, 0, 0, pisp.getSeed()));
 			fail("Expected duplicate run exception");
 		} catch (DuplicateRunException e) {
 			
@@ -174,7 +174,7 @@ public class RunHistoryTester {
 		
 		//Duplicates should be thrown for the same runconfig even with different results
 		try {
-			runHistory.append(new ExistingAlgorithmRun( rc, RunResult.UNSAT, 1, 1, 1, pisp.getSeed()));
+			runHistory.append(new ExistingAlgorithmRunResult( rc, RunStatus.UNSAT, 1, 1, 1, pisp.getSeed()));
 			fail("Expected duplicate run exception");
 		} catch (DuplicateRunException e) {
 			
@@ -212,7 +212,7 @@ public class RunHistoryTester {
 		
 		AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(pisp, defaultConfig,execConfig);
 		try {
-			runHistory.append(new ExistingAlgorithmRun( rc, RunResult.SAT, 0, 0, 0, pisp.getSeed(),0));
+			runHistory.append(new ExistingAlgorithmRunResult( rc, RunStatus.SAT, 0, 0, 0, pisp.getSeed(),0));
 		} catch (DuplicateRunException e) {
 			e.printStackTrace();
 			fail("Unexpected duplicated run exception");
@@ -222,7 +222,7 @@ public class RunHistoryTester {
 		 rc = new AlgorithmRunConfiguration(pisp, defaultConfig,execConfig);
 		//Get a duplicate
 		try {
-			runHistory.append(new ExistingAlgorithmRun( rc, RunResult.SAT, 0, 0, 0, pisp.getSeed()));
+			runHistory.append(new ExistingAlgorithmRunResult( rc, RunStatus.SAT, 0, 0, 0, pisp.getSeed()));
 			fail("Expected error exception for handling different exec configurations");
 		} catch (IllegalArgumentException e) {
 			
@@ -254,7 +254,7 @@ public class RunHistoryTester {
 		AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(ilws.getInstances().get(0), insc.getNextSeed(ilws.getInstances().get(0))), execConfig.getAlgorithmMaximumCutoffTime(), space.getDefaultConfiguration(), execConfig); 
 	
 		try {
-			runHistory.append(new RunningAlgorithmRun( rc, 0, 0, 0, 0, 0, new KillHandler() {
+			runHistory.append(new RunningAlgorithmRunResult( rc, 0, 0, 0, 0, 0, new KillHandler() {
 
 				@Override
 				public void kill() {
@@ -280,9 +280,9 @@ public class RunHistoryTester {
 	 * @return
 	 */
 	@Ignore
-	private List<AlgorithmRun> getInterestingRuns()
+	private List<AlgorithmRunResult> getInterestingRuns()
 	{
-		List<AlgorithmRun> runs = new ArrayList<AlgorithmRun>();
+		List<AlgorithmRunResult> runs = new ArrayList<AlgorithmRunResult>();
 		//runs.add(new ExistingAlgorithmRun)
 		return runs;
 		
@@ -290,7 +290,7 @@ public class RunHistoryTester {
 	
 	private final ThreadSafeRunHistory rh = new ThreadSafeRunHistoryWrapper(new NewRunHistory(OverallObjective.MEAN, OverallObjective.MEAN, RunObjective.RUNTIME));
 	
-	public void appendRun(AlgorithmRun run)
+	public void appendRun(AlgorithmRunResult run)
 	{
 		try {
 			rh.append(run);
@@ -325,7 +325,7 @@ public class RunHistoryTester {
 		
 		InstanceSeedGenerator inscgen = new RandomInstanceSeedGenerator(pis, 0);
 		pis.add(new ProblemInstance("Test1",1));
-		appendRun(new ExistingAlgorithmRun(execConfig, new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(pis.get(0), 0), cutoffTime, incumbent,execConfig), RunResult.SAT, 5, 0, 0, 0));
+		appendRun(new ExistingAlgorithmRunResult(execConfig, new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(pis.get(0), 0), cutoffTime, incumbent,execConfig), RunStatus.SAT, 5, 0, 0, 0));
 		
 		
 		
@@ -434,7 +434,7 @@ public class RunHistoryTester {
 				ProblemInstanceSeedPair pisp = RunHistoryHelper.getRandomInstanceSeedWithFewestRunsFor(r,insc,defaultConfig, ilws.getInstances(), rand, false);
 				
 				AlgorithmRunConfiguration runConfig = new AlgorithmRunConfiguration(pisp, 1, defaultConfig,execConfig);
-				AlgorithmRun run = ExistingAlgorithmRun.getRunFromString( runConfig, "0, 1 , 0 , 0, " + pisp.getSeed());
+				AlgorithmRunResult run = ExistingAlgorithmRunResult.getRunFromString( runConfig, "0, 1 , 0 , 0, " + pisp.getSeed());
 				
 				
 				
@@ -473,7 +473,7 @@ public class RunHistoryTester {
 				ProblemInstanceSeedPair pisp = RunHistoryHelper.getRandomInstanceSeedWithFewestRunsFor(r, insc,defaultConfig, ilws.getInstances(), rand, false);
 				
 				AlgorithmRunConfiguration runConfig = new AlgorithmRunConfiguration(pisp, 1, defaultConfig,execConfig);
-				AlgorithmRun run = ExistingAlgorithmRun.getRunFromString( runConfig, "0, 1 , 0 , 0, " + pisp.getSeed());
+				AlgorithmRunResult run = ExistingAlgorithmRunResult.getRunFromString( runConfig, "0, 1 , 0 , 0, " + pisp.getSeed());
 				
 				r.append(run);
 				//System.out.println(r.getEmpiricalCost(defaultConfig, r.getInstancesRan(defaultConfig), 300));
@@ -518,7 +518,7 @@ public class RunHistoryTester {
 		ProblemInstanceSeedPair pisp = new ProblemInstanceSeedPair(ilws.getInstances().get(0), insc.getNextSeed(ilws.getInstances().get(0)));
 		AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(pisp, 2, defaultConfig, execConfig);
 		try {
-			runHistory.append(new ExistingAlgorithmRun(execConfig, rc, RunResult.TIMEOUT, 2, 0, 0, pisp.getSeed()));
+			runHistory.append(new ExistingAlgorithmRunResult(execConfig, rc, RunStatus.TIMEOUT, 2, 0, 0, pisp.getSeed()));
 		} catch (DuplicateRunException e) {
 			e.printStackTrace();
 			fail("Unexpected duplicated run exception");
@@ -538,7 +538,7 @@ public class RunHistoryTester {
 		
 		rc = new AlgorithmRunConfiguration(pisp, 4, defaultConfig, execConfig);
 		try {
-			runHistory.append(new ExistingAlgorithmRun(execConfig, rc, RunResult.TIMEOUT, 4, 0, 0, pisp.getSeed()));
+			runHistory.append(new ExistingAlgorithmRunResult(execConfig, rc, RunStatus.TIMEOUT, 4, 0, 0, pisp.getSeed()));
 		} catch (DuplicateRunException e) {
 			e.printStackTrace();
 			fail("Unexpected duplicated run exception");
@@ -559,7 +559,7 @@ public class RunHistoryTester {
 		
 		rc = new AlgorithmRunConfiguration(pisp, 8, defaultConfig, execConfig);
 		try {
-			runHistory.append(new ExistingAlgorithmRun(execConfig, rc, RunResult.SAT, 6, 0, 0, pisp.getSeed()));
+			runHistory.append(new ExistingAlgorithmRunResult(execConfig, rc, RunStatus.SAT, 6, 0, 0, pisp.getSeed()));
 		} catch (DuplicateRunException e) {
 			e.printStackTrace();
 			fail("Unexpected duplicated run exception");
@@ -624,7 +624,7 @@ public class RunHistoryTester {
 		
 		
 		try {
-			runHistory.append(new ExistingAlgorithmRun(execConfig, rc, RunResult.TIMEOUT, 2, 0, 0, pisp.getSeed()));
+			runHistory.append(new ExistingAlgorithmRunResult(execConfig, rc, RunStatus.TIMEOUT, 2, 0, 0, pisp.getSeed()));
 		} catch (DuplicateRunException e) {
 			e.printStackTrace();
 			fail("Unexpected duplicated run exception");
@@ -643,7 +643,7 @@ public class RunHistoryTester {
 		
 		rc = new AlgorithmRunConfiguration(pisp, 4, defaultConfig, execConfig);
 		try {
-			runHistory.append(new ExistingAlgorithmRun(execConfig, rc, RunResult.TIMEOUT, 4, 0, 0, pisp.getSeed()));
+			runHistory.append(new ExistingAlgorithmRunResult(execConfig, rc, RunStatus.TIMEOUT, 4, 0, 0, pisp.getSeed()));
 		} catch (DuplicateRunException e) {
 			e.printStackTrace();
 			fail("Unexpected duplicated run exception");
@@ -663,7 +663,7 @@ public class RunHistoryTester {
 		
 		rc = new AlgorithmRunConfiguration(pisp, 8, defaultConfig, execConfig);
 		try {
-			runHistory.append(new ExistingAlgorithmRun(execConfig, rc, RunResult.KILLED, 1, 0, 0, pisp.getSeed()));
+			runHistory.append(new ExistingAlgorithmRunResult(execConfig, rc, RunStatus.KILLED, 1, 0, 0, pisp.getSeed()));
 		} catch (DuplicateRunException e) {
 			e.printStackTrace();
 			fail("Unexpected duplicated run exception");
@@ -730,7 +730,7 @@ public class RunHistoryTester {
 		ProblemInstanceSeedPair pisp = new ProblemInstanceSeedPair(ilws.getInstances().get(0), insc.getNextSeed(ilws.getInstances().get(0)));
 		AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(pisp, 2, defaultConfig, execConfig);
 		try {
-			runHistory.append(new ExistingAlgorithmRun(execConfig, rc, RunResult.TIMEOUT, 2, 0, 0, pisp.getSeed()));
+			runHistory.append(new ExistingAlgorithmRunResult(execConfig, rc, RunStatus.TIMEOUT, 2, 0, 0, pisp.getSeed()));
 		} catch (DuplicateRunException e) {
 			e.printStackTrace();
 			fail("Unexpected duplicated run exception");
@@ -749,7 +749,7 @@ public class RunHistoryTester {
 		
 		rc = new AlgorithmRunConfiguration(pisp, 4, defaultConfig, execConfig);
 		try {
-			runHistory.append(new ExistingAlgorithmRun(execConfig, rc, RunResult.TIMEOUT, 4, 0, 0, pisp.getSeed()));
+			runHistory.append(new ExistingAlgorithmRunResult(execConfig, rc, RunStatus.TIMEOUT, 4, 0, 0, pisp.getSeed()));
 		} catch (DuplicateRunException e) {
 			e.printStackTrace();
 			fail("Unexpected duplicated run exception");
@@ -770,7 +770,7 @@ public class RunHistoryTester {
 		
 		rc = new AlgorithmRunConfiguration(pisp, 8, defaultConfig, execConfig);
 		try {
-			runHistory.append(new ExistingAlgorithmRun( rc, RunResult.SAT, 3, 0, 0, pisp.getSeed()));
+			runHistory.append(new ExistingAlgorithmRunResult( rc, RunStatus.SAT, 3, 0, 0, pisp.getSeed()));
 		} catch (DuplicateRunException e) {
 			e.printStackTrace();
 			fail("Unexpected duplicated run exception");
@@ -836,26 +836,26 @@ public class RunHistoryTester {
 			ProblemInstance pi1 = ilws.getInstances().get(0);
 			ProblemInstanceSeedPair pisp = new ProblemInstanceSeedPair(pi1, insc.getNextSeed(pi1));
 			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(pisp, 2, defaultConfig, execConfig);
-			runHistory.append(new ExistingAlgorithmRun(execConfig, rc, RunResult.TIMEOUT, 2, 0, 0, pisp.getSeed()));
+			runHistory.append(new ExistingAlgorithmRunResult(execConfig, rc, RunStatus.TIMEOUT, 2, 0, 0, pisp.getSeed()));
 			
 			ProblemInstance pi2 = ilws.getInstances().get(1);
 			pisp = new ProblemInstanceSeedPair(pi2, insc.getNextSeed(pi2));
 			rc = new AlgorithmRunConfiguration(pisp, cutoffTime, defaultConfig, execConfig);
-			runHistory.append(new ExistingAlgorithmRun(execConfig, rc, RunResult.SAT, 10, 0, 0, pisp.getSeed()));
+			runHistory.append(new ExistingAlgorithmRunResult(execConfig, rc, RunStatus.SAT, 10, 0, 0, pisp.getSeed()));
 			
 			pisp = new ProblemInstanceSeedPair(pi2, insc.getNextSeed(pi2));
 			rc = new AlgorithmRunConfiguration(pisp, 40, defaultConfig, execConfig);
-			runHistory.append(new ExistingAlgorithmRun(execConfig, rc, RunResult.SAT, 20, 0, 0, pisp.getSeed()));
+			runHistory.append(new ExistingAlgorithmRunResult(execConfig, rc, RunStatus.SAT, 20, 0, 0, pisp.getSeed()));
 
 			ProblemInstance pi3 = ilws.getInstances().get(2);
 			pisp = new ProblemInstanceSeedPair(pi3, insc.getNextSeed(pi3));
 			rc = new AlgorithmRunConfiguration(pisp, 10, defaultConfig, execConfig);
-			runHistory.append(new ExistingAlgorithmRun(execConfig, rc, RunResult.KILLED, 5, 0, 0, pisp.getSeed()));
+			runHistory.append(new ExistingAlgorithmRunResult(execConfig, rc, RunStatus.KILLED, 5, 0, 0, pisp.getSeed()));
 
 		
 			pisp = new ProblemInstanceSeedPair(pi3, insc.getNextSeed(pi3));
 			rc = new AlgorithmRunConfiguration(pisp, 10, defaultConfig, execConfig);
-			runHistory.append(new ExistingAlgorithmRun(execConfig, rc, RunResult.TIMEOUT, 10, 0, 0, pisp.getSeed()));
+			runHistory.append(new ExistingAlgorithmRunResult(execConfig, rc, RunStatus.TIMEOUT, 10, 0, 0, pisp.getSeed()));
 
 			Set<ProblemInstance> pi12 = Sets.newHashSet(pi1,pi2);
 			

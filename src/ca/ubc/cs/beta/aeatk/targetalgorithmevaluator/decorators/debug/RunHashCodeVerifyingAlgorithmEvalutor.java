@@ -11,7 +11,7 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.exceptions.TrajectoryDivergenceException;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.AbstractForEachRunTargetAlgorithmEvaluatorDecorator;
@@ -52,7 +52,7 @@ public class RunHashCodeVerifyingAlgorithmEvalutor extends AbstractForEachRunTar
 	boolean outOfHashCodesDisplayed = false;
 
 	@Override
-	public synchronized void seek(List<AlgorithmRun> runs)
+	public synchronized void seek(List<AlgorithmRunResult> runs)
 	{
 		super.seek(runs);
 		processRuns(runs);
@@ -60,7 +60,7 @@ public class RunHashCodeVerifyingAlgorithmEvalutor extends AbstractForEachRunTar
 	}
 
 	@Override
-	protected synchronized AlgorithmRun processRun(AlgorithmRun run) {
+	protected synchronized AlgorithmRunResult processRun(AlgorithmRunResult run) {
 		runNumber++;
 		int hashCode = run.hashCode();
 	

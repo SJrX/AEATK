@@ -11,8 +11,8 @@ import net.jcip.annotations.ThreadSafe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
@@ -218,7 +218,7 @@ public class TargetAlgorithmEvaluatorQueueFacade<K extends TargetAlgorithmEvalua
 		}
 
 		@Override
-		public void onSuccess(List<AlgorithmRun> runs) {
+		public void onSuccess(List<AlgorithmRunResult> runs) {
 			context.setAlgorithmRuns(runs);
 			try {
 				queue.put(context);

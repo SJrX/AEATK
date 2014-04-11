@@ -12,7 +12,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.objectives.RunObjective;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
@@ -238,12 +238,12 @@ public class RunHistoryHelper{
 	 * Returns a breakdown of each individual run cost
 	 * @return double[] reporting the response value for every run, under the run objective
 	 */
-	public static double[] getRunResponseValues(List<AlgorithmRun> runs, RunObjective runObj)
+	public static double[] getRunResponseValues(List<AlgorithmRunResult> runs, RunObjective runObj)
 	{
 
 		double[] responseValues = new double[runs.size()];
 		int i=0;
-		for(AlgorithmRun run : runs)
+		for(AlgorithmRunResult run : runs)
 		{
 			responseValues[i] = runObj.getObjective(run);
 			i++;
@@ -256,11 +256,11 @@ public class RunHistoryHelper{
 	 * 
 	 * @return boolean array signifying whether a run was capped
 	 */
-	public final static boolean[] getCensoredEarlyFlagForRuns(List<AlgorithmRun> runs)
+	public final static boolean[] getCensoredEarlyFlagForRuns(List<AlgorithmRunResult> runs)
 	{
 		boolean[] censored = new boolean[runs.size()];
 		int i = 0;
-		for(AlgorithmRun run : runs)
+		for(AlgorithmRunResult run : runs)
 		{
 			censored[i] = run.isCensoredEarly(); 
 			i++;

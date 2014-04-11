@@ -13,10 +13,11 @@ import org.junit.Test;
 
 
 
+
 import ca.ubc.cs.beta.TestHelper;
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.probleminstance.InstanceListWithSeeds;
@@ -64,7 +65,7 @@ public class AlgoExecutionInstanceSpecificInfoTest {
 			while(inst.hasNextSeed(pi))
 			{
 				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(pi, inst.getNextSeed(pi)), 300, defaultConfig,execConfig);
-				AlgorithmRun run = tae.evaluateRun(rc).get(0);
+				AlgorithmRunResult run = tae.evaluateRun(rc).get(0);
 				
 				try {
 				assertEquals(pi.getInstanceName().hashCode() + 37*pi.getInstanceSpecificInformation().hashCode(), (long) run.getRunLength());
@@ -116,7 +117,7 @@ public class AlgoExecutionInstanceSpecificInfoTest {
 			while(inst.hasNextSeed(pi))
 			{
 				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(pi, inst.getNextSeed(pi)), 300, defaultConfig,execConfig);
-				AlgorithmRun run = tae.evaluateRun(rc).get(0);
+				AlgorithmRunResult run = tae.evaluateRun(rc).get(0);
 				
 				try {
 				assertEquals(Math.abs((long) pi.getInstanceName().hashCode() + 37*pi.getInstanceSpecificInformation().hashCode()), (long) run.getRunLength());

@@ -7,8 +7,8 @@ import net.jcip.annotations.ThreadSafe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunStatus;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.AbstractForEachRunTargetAlgorithmEvaluatorDecorator;
@@ -24,7 +24,7 @@ import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.exceptions.TargetAlgorithmA
 public class SATConsistencyTargetAlgorithmEvaluator extends AbstractForEachRunTargetAlgorithmEvaluatorDecorator
 {
 
-	private final ConcurrentHashMap<ProblemInstance, RunResult> runResults = new ConcurrentHashMap<ProblemInstance, RunResult>();
+	private final ConcurrentHashMap<ProblemInstance, RunStatus> runResults = new ConcurrentHashMap<ProblemInstance, RunStatus>();
 	private final static Logger log =  LoggerFactory.getLogger(SATConsistencyTargetAlgorithmEvaluator.class);
 	private final boolean throwException;
 	
@@ -35,19 +35,19 @@ public class SATConsistencyTargetAlgorithmEvaluator extends AbstractForEachRunTa
 	}
 
 	@Override
-	protected AlgorithmRun processRun(AlgorithmRun run) {
-		RunResult result = run.getRunResult();
+	protected AlgorithmRunResult processRun(AlgorithmRunResult run) {
+		RunStatus result = run.getRunStatus();
 		
 		switch(result)
 		{
 			case SAT:
 			case UNSAT:
-				RunResult previousResult = runResults.putIfAbsent(run.getRunConfig().getProblemInstanceSeedPair().getProblemInstance(), result);
+				RunStatus previousResult = runResults.putIfAbsent(run.getAlgorithmRunConfiguration().getProblemInstanceSeedPair().getProblemInstance(), result);
 				if(previousResult != null)
 				{
 					if(!previousResult.equals(result))
 					{
-						Object[] args = { run.getRunConfig().getProblemInstanceSeedPair().getProblemInstance(), previousResult, result}; 
+						Object[] args = { run.getAlgorithmRunConfiguration().getProblemInstanceSeedPair().getProblemInstance(), previousResult, result}; 
 						log.error("SAT/UNSAT discrepancy detected on problem instance: {}. Previous value: {}, currentValue: {}" , args);
 						if(throwException)
 						{

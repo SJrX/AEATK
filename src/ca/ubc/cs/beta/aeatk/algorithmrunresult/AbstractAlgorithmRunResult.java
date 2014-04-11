@@ -1,11 +1,14 @@
-package ca.ubc.cs.beta.aeatk.algorithmrun;
+package ca.ubc.cs.beta.aeatk.algorithmrunresult;
 
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.exceptions.IllegalWrapperOutputException;
-import ca.ubc.cs.beta.aeatk.json.serializers.AlgorithmRunJson;
+import ca.ubc.cs.beta.aeatk.json.serializers.AlgorithmRunResultJson;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
+import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
+import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
 
 /**
  * This class represents a single run of the target algorithm given by the AlgorithmExecutionConfig object and the RunConfig object
@@ -13,8 +16,8 @@ import ca.ubc.cs.beta.aeatk.json.serializers.AlgorithmRunJson;
  * @author seramage
  *
  */
-@JsonSerialize(using=AlgorithmRunJson.AlgorithmRunSerializer.class)
-public abstract class AbstractAlgorithmRun implements AlgorithmRun
+@JsonSerialize(using=AlgorithmRunResultJson.AlgorithmRunSerializer.class)
+public abstract class AbstractAlgorithmRunResult implements AlgorithmRunResult
 {
 	
 	/**
@@ -28,7 +31,7 @@ public abstract class AbstractAlgorithmRun implements AlgorithmRun
 	/*
 	 * Values reported by the target algorithm
 	 */
-	private final RunResult acResult;
+	private final RunStatus acResult;
 	
 	private final double runtime;
 	private final double runLength;
@@ -212,7 +215,7 @@ public abstract class AbstractAlgorithmRun implements AlgorithmRun
 	 * @param rawResultLine				The Raw result line we got
 	 * @param additionalRunData			Additional Run Data
 	 */
-	protected AbstractAlgorithmRun(AlgorithmRunConfiguration rc, RunResult acResult, double runtime, double runLength, double quality, long resultSeed, String rawResultLine, String additionalRunData, double wallClockTime)
+	protected AbstractAlgorithmRunResult(AlgorithmRunConfiguration rc, RunStatus acResult, double runtime, double runLength, double quality, long resultSeed, String rawResultLine, String additionalRunData, double wallClockTime)
 	{
 		this(rc, acResult, runtime, runLength, quality, resultSeed, rawResultLine, true, additionalRunData,wallClockTime);
 	}
@@ -264,10 +267,10 @@ public abstract class AbstractAlgorithmRun implements AlgorithmRun
 	 * @param runResultWellFormed		whether this run has well formed output
 	 * @param additionalRunData			additional run data from this run
 	 */
-	public AbstractAlgorithmRun(AlgorithmRunConfiguration runConfig, RunResult acResult, double runtime, double runLength, double quality, long resultSeed , String rawResultLine, boolean runResultWellFormed, String additionalRunData, double wallClockTime)
+	public AbstractAlgorithmRunResult(AlgorithmRunConfiguration runConfig, RunStatus acResult, double runtime, double runLength, double quality, long resultSeed , String rawResultLine, boolean runResultWellFormed, String additionalRunData, double wallClockTime)
 	{
 		
-		if(acResult.equals(RunResult.TIMEOUT))
+		if(acResult.equals(RunStatus.TIMEOUT))
 		{
 			System.err.println("Hello");
 		}
@@ -330,40 +333,19 @@ public abstract class AbstractAlgorithmRun implements AlgorithmRun
 		
 		this.wallClockTime = wallClockTime;
 		//this.resultSet = true;
-		/*
-		if(!(this instanceof KillableAlgorithmRun))
-		{
-			
-			if(this.acResult.equals(RunResult.RUNNING))
-			{
-				throw new IllegalStateException("Only " + KillableAlgorithmRun.class.getSimpleName() + " may be set as " + RunResult.RUNNING);
-			}
-		}
-		*/
+		
 		
 	}
 	
-	
-	
-	
-	
-	
-	
 	@Override
-	public final AlgorithmExecutionConfiguration getExecutionConfig()
-	{
-		return runConfig.getAlgorithmExecutionConfiguration();
-	}
-	
-	@Override
-	public final AlgorithmRunConfiguration getRunConfig()
+	public final AlgorithmRunConfiguration getAlgorithmRunConfiguration()
 	{
 		return runConfig;
 	}
 	
 	
 	@Override
-	public final RunResult getRunResult() {
+	public final RunStatus getRunStatus() {
 		
 		return acResult;
 	}
@@ -389,7 +371,7 @@ public abstract class AbstractAlgorithmRun implements AlgorithmRun
 	@Override
 	public final long getResultSeed() {
 
-		return this.getRunConfig().getProblemInstanceSeedPair().getSeed();
+		return this.getAlgorithmRunConfiguration().getProblemInstanceSeedPair().getSeed();
 	}
 	
 	private final String _getResultLine()
@@ -397,9 +379,9 @@ public abstract class AbstractAlgorithmRun implements AlgorithmRun
 		return getResultLine(this);
 	}
 	
-	public static final String getResultLine(AlgorithmRun run)
+	public static final String getResultLine(AlgorithmRunResult run)
 	{
-		String resultLine = run.getRunResult().name() + ", " + run.getRuntime() + ", " + run.getRunLength() + ", " + run.getQuality() + ", " + run.getResultSeed();
+		String resultLine = run.getRunStatus().name() + ", " + run.getRuntime() + ", " + run.getRunLength() + ", " + run.getQuality() + ", " + run.getResultSeed();
 		if(run.getAdditionalRunData().trim().length() > 0)
 		{
 			resultLine += "," + run.getAdditionalRunData();
@@ -414,7 +396,7 @@ public abstract class AbstractAlgorithmRun implements AlgorithmRun
 
 	@Override
 	public final boolean isRunCompleted() {
-		return !acResult.equals(RunResult.RUNNING);
+		return !acResult.equals(RunStatus.RUNNING);
 	}
 
 	
@@ -449,10 +431,10 @@ public abstract class AbstractAlgorithmRun implements AlgorithmRun
 		if(this == o) return true;
 		if(o == null) return false;
 		
-		if(o instanceof AlgorithmRun)
+		if(o instanceof AlgorithmRunResult)
 		{
-			AlgorithmRun aro = (AlgorithmRun) o;
-			return aro.getRunConfig().equals(runConfig);
+			AlgorithmRunResult aro = (AlgorithmRunResult) o;
+			return aro.getAlgorithmRunConfiguration().equals(runConfig);
 		} 
 		return false;
 	}
@@ -464,9 +446,9 @@ public abstract class AbstractAlgorithmRun implements AlgorithmRun
 	}
 	
 	
-	public static String toString(AlgorithmRun run)
+	public static String toString(AlgorithmRunResult run)
 	{
-		return run.getRunConfig().toString() + " ==> <" + run.getResultLine()+ "> W:(" + run.getWallclockExecutionTime() + ")";
+		return run.getAlgorithmRunConfiguration().toString() + " ==> <" + run.getResultLine()+ "> W:(" + run.getWallclockExecutionTime() + ")";
 		
 	}
 	
@@ -496,7 +478,7 @@ public abstract class AbstractAlgorithmRun implements AlgorithmRun
 	@Override
 	public boolean isCensoredEarly()
 	{
-		return ((getRunResult().equals(RunResult.TIMEOUT) && getRunConfig().hasCutoffLessThanMax()) ||  (getRunResult().equals(RunResult.KILLED) && getRuntime() < getRunConfig().getCutoffTime()));
+		return ((getRunStatus().equals(RunStatus.TIMEOUT) && getAlgorithmRunConfiguration().hasCutoffLessThanMax()) ||  (getRunStatus().equals(RunStatus.KILLED) && getRuntime() < getAlgorithmRunConfiguration().getCutoffTime()));
 	}
 	
 
@@ -504,6 +486,35 @@ public abstract class AbstractAlgorithmRun implements AlgorithmRun
 	{
 		return false;
 	}
+	
+
+	@Override
+	public ParameterConfiguration getParameterConfiguration() {
+		
+		return getAlgorithmRunConfiguration().getParameterConfiguration();
+	}
+
+
+	@Override
+	public AlgorithmExecutionConfiguration getAlgorithmExecutionConfiguration() {
+		
+		return getAlgorithmRunConfiguration().getAlgorithmExecutionConfiguration();
+	}
+
+
+	@Override
+	public ProblemInstanceSeedPair getProblemInstanceSeedPair() {
+
+		return getAlgorithmRunConfiguration().getProblemInstanceSeedPair();
+	}
+
+
+	@Override
+	public ProblemInstance getProblemInstance() {
+		return getAlgorithmRunConfiguration().getProblemInstanceSeedPair().getProblemInstance();
+	}
+	
+	
 
 	
 }

@@ -1,49 +1,47 @@
-package ca.ubc.cs.beta.aeatk.algorithmrun.decorators;
+package ca.ubc.cs.beta.aeatk.algorithmrunresult.decorators;
 
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunStatus;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
+import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
+import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
 
 /**
  * Abstract class that wraps another AlgorithmRun
  * @author Steve Ramage 
  *
  */
-public class AbstractAlgorithmRunDecorator implements AlgorithmRun {
+public class AbstractAlgorithmRunDecorator implements AlgorithmRunResult {
 
 	/**
 	 * 
 	 */
 	private static final long serialVersionUID = 6324011218801256306L;
 	
-	private final AlgorithmRun wrappedRun;
+	private final AlgorithmRunResult wrappedRun;
 	
 
 	/**
 	 * Wraps the specified run 
 	 * @param run	run to wrap
 	 */
-	public AbstractAlgorithmRunDecorator(AlgorithmRun run)
+	public AbstractAlgorithmRunDecorator(AlgorithmRunResult run)
 	{
 		this.wrappedRun = run;
 		
 	}
 
+	
 	@Override
-	public AlgorithmExecutionConfiguration getExecutionConfig() {
-
-		return wrappedRun.getExecutionConfig();
+	public AlgorithmRunConfiguration getAlgorithmRunConfiguration() {
+		return wrappedRun.getAlgorithmRunConfiguration();
 	}
 
 	@Override
-	public AlgorithmRunConfiguration getRunConfig() {
-		return wrappedRun.getRunConfig();
-	}
-
-	@Override
-	public RunResult getRunResult() {
-		return wrappedRun.getRunResult();
+	public RunStatus getRunStatus() {
+		return wrappedRun.getRunStatus();
 	}
 
 	@Override
@@ -79,11 +77,7 @@ public class AbstractAlgorithmRunDecorator implements AlgorithmRun {
 		return wrappedRun.isRunCompleted();
 	}
 
-	@Override
-	public boolean isRunResultWellFormed() {
-		return wrappedRun.isRunResultWellFormed();
-	}
-
+	
 	@Override
 	public String rawResultLine() {
 		return wrappedRun.rawResultLine();
@@ -110,6 +104,33 @@ public class AbstractAlgorithmRunDecorator implements AlgorithmRun {
 	@Override
 	public void kill() {
 		wrappedRun.kill();
+	}
+
+
+	@Override
+	public ParameterConfiguration getParameterConfiguration() {
+		
+		return wrappedRun.getParameterConfiguration();
+	}
+
+
+	@Override
+	public AlgorithmExecutionConfiguration getAlgorithmExecutionConfiguration() {
+		
+		return wrappedRun.getAlgorithmExecutionConfiguration();
+	}
+
+
+	@Override
+	public ProblemInstanceSeedPair getProblemInstanceSeedPair() {
+
+		return wrappedRun.getProblemInstanceSeedPair();
+	}
+
+
+	@Override
+	public ProblemInstance getProblemInstance() {
+		return wrappedRun.getProblemInstance();
 	}
 	
 

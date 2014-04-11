@@ -1,14 +1,14 @@
-package ca.ubc.cs.beta.aeatk.algorithmrun;
+package ca.ubc.cs.beta.aeatk.algorithmrunresult;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.kill.KillHandler;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.kill.KillHandler;
 
 /**
  * AlgorithmRun that reports that it's current status is RUNNING.
  * 
  * @author Steve Ramage <seramage@cs.ubc.ca>
  */
-public class RunningAlgorithmRun extends ExistingAlgorithmRun {
+public class RunningAlgorithmRunResult extends ExistingAlgorithmRunResult {
 
 	/**
 	 * 
@@ -16,9 +16,9 @@ public class RunningAlgorithmRun extends ExistingAlgorithmRun {
 	private static final long serialVersionUID = -5427091882882378946L;
 	private final KillHandler handler;
 
-	public RunningAlgorithmRun(
+	public RunningAlgorithmRunResult(
 			AlgorithmRunConfiguration runConfig, double runtime, double runlength, double quality, long seed, double walltime, KillHandler handler) {
-		super( runConfig, RunResult.RUNNING, runtime, runlength, quality, seed, walltime);
+		super( runConfig, RunStatus.RUNNING, runtime, runlength, quality, seed, walltime);
 		this.handler = handler;
 	}
 

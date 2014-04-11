@@ -3,10 +3,10 @@ package ca.ubc.cs.beta.targetalgorithmevaluator;
 import java.util.ArrayList;
 import java.util.List;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.ExistingAlgorithmRun;
-import ca.ubc.cs.beta.aeatk.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.ExistingAlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunStatus;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.AbstractSyncTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
@@ -38,9 +38,9 @@ public class EchoTargetAlgorithmEvaluator  extends AbstractSyncTargetAlgorithmEv
 	public volatile double wallClockTime = 0;
 	
 	@Override
-	public List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
+	public List<AlgorithmRunResult> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
 		
-		List<AlgorithmRun> results = new ArrayList<AlgorithmRun>();
+		List<AlgorithmRunResult> results = new ArrayList<AlgorithmRunResult>();
 		
 		
 		 /* Configuration file generally looks something like this
@@ -77,9 +77,9 @@ public class EchoTargetAlgorithmEvaluator  extends AbstractSyncTargetAlgorithmEv
 				
 			}
 			
-			results.add(ExistingAlgorithmRun.getRunFromString(rc, sb.toString(),wallClockTime));
+			results.add(ExistingAlgorithmRunResult.getRunFromString(rc, sb.toString(),wallClockTime));
 			
-			if(RunResult.valueOf(config.get("solved")).equals(RunResult.ABORT))
+			if(RunStatus.valueOf(config.get("solved")).equals(RunStatus.ABORT))
 			{
 				throw new TargetAlgorithmAbortException("Echoing abort");
 			}

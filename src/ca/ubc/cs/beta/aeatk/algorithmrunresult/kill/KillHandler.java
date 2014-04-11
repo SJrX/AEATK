@@ -1,4 +1,4 @@
-package ca.ubc.cs.beta.aeatk.algorithmrun.kill;
+package ca.ubc.cs.beta.aeatk.algorithmrunresult.kill;
 
 /**
  * Interface that controls being killing {@link KillableAlgorithmRun}

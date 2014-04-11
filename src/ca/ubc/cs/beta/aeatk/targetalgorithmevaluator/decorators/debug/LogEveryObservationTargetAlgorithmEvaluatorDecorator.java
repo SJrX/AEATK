@@ -7,8 +7,8 @@ import net.jcip.annotations.ThreadSafe;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ca.ubc.cs.beta.aeatk.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
@@ -39,7 +39,7 @@ public class LogEveryObservationTargetAlgorithmEvaluatorDecorator extends	Abstra
 
 
 	@Override
-	public final List<AlgorithmRun> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
+	public final List<AlgorithmRunResult> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
 		return tae.evaluateRun(runConfigs, new LoggingTargetAlgorithmEvaluatorObserver(obs));
 	}
 
@@ -65,7 +65,7 @@ public class LogEveryObservationTargetAlgorithmEvaluatorDecorator extends	Abstra
 			this.obs = obs;
 		}
 		@Override
-		public void currentStatus(List<? extends AlgorithmRun> runs) {
+		public void currentStatus(List<? extends AlgorithmRunResult> runs) {
 			log.info("Observed runs : {}" , runs);
 			if(obs != null)
 			{
