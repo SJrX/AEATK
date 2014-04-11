@@ -13,9 +13,6 @@ package ca.ubc.cs.beta.aeatk.fastrf;
 //
 //import org.StructureGraphic.v1.DSTreeNode;
 //
-//import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
-//import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
-//import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
 //import ca.ubc.cs.beta.models.fastrf.Regtree;
 //import ca.ubc.cs.beta.models.fastrf.RegtreeFwd;
 //

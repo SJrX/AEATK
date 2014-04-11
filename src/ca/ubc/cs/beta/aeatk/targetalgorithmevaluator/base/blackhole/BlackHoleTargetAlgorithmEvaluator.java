@@ -16,7 +16,7 @@ import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRun
 /***
  * Blackhole Target Algorithm Evaluator implementation
  * 
- * This {@link ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator} simply never completes
+ * This {@link ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator} simply never completes
  * the runs, it can be useful for unit tests and other edge cases.
  * 
  * 

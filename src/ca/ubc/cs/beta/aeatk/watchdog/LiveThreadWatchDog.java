@@ -15,7 +15,7 @@ import org.slf4j.*;
 import net.jcip.annotations.ThreadSafe;
 import ca.ubc.cs.beta.aeatk.concurrent.threadfactory.SequentiallyNamedThreadFactory;
 import ca.ubc.cs.beta.aeatk.eventsystem.events.AutomaticConfiguratorEvent;
-import ca.ubc.cs.beta.aeatk.misc.returnvalues.ACLibReturnValues;
+import ca.ubc.cs.beta.aeatk.misc.returnvalues.AEATKReturnValues;
 
 @ThreadSafe
 public class LiveThreadWatchDog<K extends AutomaticConfiguratorEvent> implements ThreadWatchDog<K>
@@ -175,7 +175,7 @@ public class LiveThreadWatchDog<K extends AutomaticConfiguratorEvent> implements
 									return;
 								} else
 								{
-									System.exit(ACLibReturnValues.DEADLOCK_DETECTED);
+									System.exit(AEATKReturnValues.DEADLOCK_DETECTED);
 								}
 								
 								

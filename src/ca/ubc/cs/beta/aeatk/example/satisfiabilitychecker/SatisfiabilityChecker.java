@@ -43,7 +43,7 @@ import ec.util.MersenneTwister;
  * <p>
  * From a usage perspective, people should be able to test their wrappers or target algorithms easily
  * <p>
- * From a documentation perspective, this class should serve as an example for using TargetAlgorithmEvaluators and other aspects ACLib.
+ * From a documentation perspective, this class should serve as an example for using TargetAlgorithmEvaluators and other aspects AEATK.
  * 
  * 
  * @author Steve Ramage <seramage@cs.ubc.ca>
@@ -93,7 +93,7 @@ public class SatisfiabilityChecker
 			
 			//AlgorithmExecutionConfig object represents all the information needed to invoke the target algorithm / wrapper.
 			//This includes information such as cutoff time, and the parameter space.
-			//Like most domain objects in ACLib, AlgorithmExecutionConfig is IMMUTABLE. 
+			//Like most domain objects in AEATK, AlgorithmExecutionConfig is IMMUTABLE. 
 			AlgorithmExecutionConfiguration execConfig = mainOptions.getAlgorithmExecutionConfig();
 			
 			
@@ -130,7 +130,7 @@ public class SatisfiabilityChecker
 				
 				
 			
-				//The following is a common convention used in ACLib
+				//The following is a common convention used in AEATK
 				if(execConfig.isDeterministicAlgorithm())
 				{
 					if (mainOptions.seed != -1)

@@ -16,7 +16,7 @@ import com.beust.jcommander.ParameterException;
 import ca.ubc.cs.beta.aeatk.misc.options.CommandLineOnly;
 import ca.ubc.cs.beta.aeatk.misc.options.OptionLevel;
 import ca.ubc.cs.beta.aeatk.misc.options.UsageTextField;
-import ca.ubc.cs.beta.aeatk.misc.returnvalues.ACLibReturnValues;
+import ca.ubc.cs.beta.aeatk.misc.returnvalues.AEATKReturnValues;
 
 @UsageTextField(hiddenSection = true)
 public class RunGroupOptions extends AbstractOptions {
@@ -163,7 +163,7 @@ public class RunGroupOptions extends AbstractOptions {
 			{
 				System.out.println(e.getMessage());
 				System.out.println("Final substitution: " + line);
-				System.exit(ACLibReturnValues.PARAMETER_EXCEPTION);
+				System.exit(AEATKReturnValues.PARAMETER_EXCEPTION);
 			} else
 			{
 				throw e;
@@ -173,7 +173,7 @@ public class RunGroupOptions extends AbstractOptions {
 		if(runGroupExit)
 		{
 			System.out.println("Final substitution: " + line);
-			System.exit(ACLibReturnValues.SUCCESS);
+			System.exit(AEATKReturnValues.SUCCESS);
 		}
 		
 	

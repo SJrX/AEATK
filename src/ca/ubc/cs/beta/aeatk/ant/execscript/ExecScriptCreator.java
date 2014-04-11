@@ -8,7 +8,7 @@ import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 
 import ca.ubc.cs.beta.aeatk.misc.jcommander.JCommanderHelper;
-import ca.ubc.cs.beta.aeatk.misc.returnvalues.ACLibReturnValues;
+import ca.ubc.cs.beta.aeatk.misc.returnvalues.AEATKReturnValues;
 
 public class ExecScriptCreator {
 
@@ -95,13 +95,13 @@ public static void main(String[] args)
 	} catch(ParameterException e)
 	{
 		e.printStackTrace();
-		System.exit(ACLibReturnValues.PARAMETER_EXCEPTION);
+		System.exit(AEATKReturnValues.PARAMETER_EXCEPTION);
 	} catch (IOException e) {
 		e.printStackTrace();
-		System.exit(ACLibReturnValues.OTHER_EXCEPTION);
+		System.exit(AEATKReturnValues.OTHER_EXCEPTION);
 	} 
 	
-	System.exit(ACLibReturnValues.SUCCESS);
+	System.exit(AEATKReturnValues.SUCCESS);
 	
 	
 	

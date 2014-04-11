@@ -1,11 +1,11 @@
 #Place this in the build-resources/private folder
 
-#Folder where ACLib Software will exist
+#Folder where AEATK Software will exist
 software.dir = /path/to/software/
 
 
 #Folder to write build numbers to
 buildnumberpath=/ubc/cs/project/arrow/seramage/software/build-numbers/
 
-#Whether to build the aclib javadoc
+#Whether to build the AEATK javadoc
 build.javadoc = true

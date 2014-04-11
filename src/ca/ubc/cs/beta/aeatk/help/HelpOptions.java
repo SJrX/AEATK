@@ -15,7 +15,7 @@ import com.beust.jcommander.ParameterFile;
  * <br/>
  * <b>Implementation Note:</b> Nothing every actually will check these values. This
  * help options objects really only sets the parameter names. To get this behaviour to fully work
- * you should pass the arguments through {@see ca.ubc.cs.beta.aclib.misc.jcommander.JCommanderHelper#checkForHelpAndVersion}
+ * you should pass the arguments through {@link ca.ubc.cs.beta.aeatk.misc.jcommander.JCommanderHelper#checkForHelpAndVersion}
  * <br/>
  * You might ask why we have these options then, it is so that they are displayed.
  * 

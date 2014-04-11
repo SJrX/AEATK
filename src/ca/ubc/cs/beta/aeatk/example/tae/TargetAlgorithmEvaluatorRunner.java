@@ -36,7 +36,7 @@ import ec.util.MersenneTwister;
  * <p>
  * From a usage perspective, people should be able to test their wrappers or target algorithms easily
  * <p>
- * From a documentation perspective, this class should serve as an example for using TargetAlgorithmEvaluators and other aspects ACLib.
+ * From a documentation perspective, this class should serve as an example for using TargetAlgorithmEvaluators and other aspects AEATK.
  * 
  * 
  * @author Steve Ramage <seramage@cs.ubc.ca>
@@ -87,7 +87,7 @@ public class TargetAlgorithmEvaluatorRunner
 			
 			//AlgorithmExecutionConfig object represents all the information needed to invoke the target algorithm / wrapper.
 			//This includes information such as cutoff time, and the parameter space.
-			//Like most domain objects in ACLib, AlgorithmExecutionConfig is IMMUTABLE. 
+			//Like most domain objects in AEATK, AlgorithmExecutionConfig is IMMUTABLE. 
 			AlgorithmExecutionConfiguration execConfig = mainOptions.getAlgorithmExecutionConfig();
 			
 			
@@ -104,7 +104,7 @@ public class TargetAlgorithmEvaluatorRunner
 				
 				//Create a new problem instance to run (IMMUTABLE)
 				//NOTE: We don't validate the instance name at all, it's entirely up to the target algorithm how to interpret these
-				//commonly we use filenames, but as far as ACLib is concerned this is of no consequence.
+				//commonly we use filenames, but as far as AEATK is concerned this is of no consequence.
 				ProblemInstance pi;
 				if(mainOptions.instanceName == null)
 				{
@@ -136,7 +136,7 @@ public class TargetAlgorithmEvaluatorRunner
 				
 				
 			
-				//The following is a common convention used in ACLib
+				//The following is a common convention used in AEATK
 				if(execConfig.isDeterministicAlgorithm())
 				{
 					if (mainOptions.seed != -1)

@@ -15,7 +15,7 @@ import org.slf4j.LoggerFactory;
 import ca.ubc.cs.beta.aeatk.help.HelpOptions;
 import ca.ubc.cs.beta.aeatk.misc.options.OptionLevel;
 import ca.ubc.cs.beta.aeatk.misc.options.UsageSection;
-import ca.ubc.cs.beta.aeatk.misc.returnvalues.ACLibReturnValues;
+import ca.ubc.cs.beta.aeatk.misc.returnvalues.AEATKReturnValues;
 import ca.ubc.cs.beta.aeatk.misc.spi.SPIClassLoaderHelper;
 import ca.ubc.cs.beta.aeatk.misc.version.VersionTracker;
 import ca.ubc.cs.beta.aeatk.options.AbstractOptions;
@@ -99,7 +99,7 @@ public final class JCommanderHelper
 				if(possibleValues.contains(helpName))
 				{
 					OptionsToUsage.usage(UsageSectionGenerator.getUsageSections(options, taeOpts), true, levelToDisplay);
-					System.exit(ACLibReturnValues.SUCCESS);
+					System.exit(AEATKReturnValues.SUCCESS);
 				}
 			}
 			
@@ -119,7 +119,7 @@ public final class JCommanderHelper
 					}
 					
 					OptionsToUsage.usage(UsageSectionGenerator.getUsageSections(options, taeOpts), false, levelToDisplay);
-					System.exit(ACLibReturnValues.SUCCESS);
+					System.exit(AEATKReturnValues.SUCCESS);
 				}
 			}
 			
@@ -135,7 +135,7 @@ public final class JCommanderHelper
 					System.out.println(VersionTracker.getVersionInformation());
 					
 					
-					System.exit(ACLibReturnValues.SUCCESS);
+					System.exit(AEATKReturnValues.SUCCESS);
 				}
 			}
 			
@@ -190,7 +190,7 @@ public final class JCommanderHelper
 			
 			if(quit)
 			{
-				System.exit(ACLibReturnValues.PARAMETER_EXCEPTION);
+				System.exit(AEATKReturnValues.PARAMETER_EXCEPTION);
 			}
 		}
 		checkForHelpAndVersion(args, mainOptions, taeOptions);

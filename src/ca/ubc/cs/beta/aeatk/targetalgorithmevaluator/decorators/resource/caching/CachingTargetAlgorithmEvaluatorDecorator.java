@@ -51,9 +51,9 @@ import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.AbstractTargetAl
  * <b>Client Usage Notes:</b>
  * <br/>
  * 1) You may have issues with runs being submitted that are killed and the observer seeing some weird effects, like runs that are killed and have a lower response value.
- * You should use the {@link ca.ubc.cs.beta.aclib.targetalgorithmevaulator.decorators.helpers.StrictlyIncreasingRuntimesTargetAlgorithmEvaluatorDecorator} to correct this
+ * You should use the {@link ca.ubc.cs.beta.aeatk.targetalgorithmevaulator.decorators.helpers.StrictlyIncreasingRuntimesTargetAlgorithmEvaluatorDecorator} to correct this
  * <br/>
- * 2) You can get a higher cache hit rate if you use {@link ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.ExclusivelyTargetAlgorithmEvaluatorDecorator}
+ * 2) You can get a higher cache hit rate if you use {@link ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.helpers.ExclusivelyTargetAlgorithmEvaluatorDecorator}
  * to ensure that runs map to the same RunConfig
  * <br/>
  * 

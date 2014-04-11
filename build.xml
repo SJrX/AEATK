@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<project name="ACLib" default="compile">
+<project name="AEATK" default="compile">
 	<property name="private.buildfile" value="build-resources/private/user-antbuild.properties"/>
 	<property file="${private.buildfile}"/>
 	<property file="build-resources/antbuild.properties"/>
@@ -7,7 +7,7 @@
 	<!-- If you don't specify a buildnumber file we will use this -->
 	<property name="buildnumberpath" value="build/classes/"/>
 
-	<property name="version.file" value="aclib-version.txt"/>
+	<property name="version.file" value="aeatk-version.txt"/>
 	<property name="version.file.dev" value="version/${version.file}"/>
 	<fail message="No Software Directory specified, a private build file should exist in ${private.buildfile} this should specify at the very least 'software.dir'">
 		<condition>
@@ -175,8 +175,8 @@ dirty: ${git.dirty}</echo>
 		<echo file="build/classes/${version.file}">${version.string} (${git.shortcommit})</echo>
 		
 		
-		<!--<jar destfile="dist/aclib-v${version.major}_${version.minor}_${build.number}.jar" basedir="build/classes"/>-->
-		<jar destfile="dist/aclib.jar">
+		<!--<jar destfile="dist/aeatk-v${version.major}_${version.minor}_${build.number}.jar" basedir="build/classes"/>-->
+		<jar destfile="dist/aeatk.jar">
 			<fileset dir="build/classes">
 				<include name="**/*"/>
 			</fileset>
@@ -186,7 +186,7 @@ dirty: ${git.dirty}</echo>
 		</jar>
 		
 		
-		<jar destfile="dist/aclib-src.jar">
+		<jar destfile="dist/aeatk-src.jar">
 			<fileset dir="src/">
 				 <include name="**/*.java"/>
 			</fileset>

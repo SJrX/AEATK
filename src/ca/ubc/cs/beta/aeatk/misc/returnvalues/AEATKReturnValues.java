@@ -11,7 +11,7 @@ package ca.ubc.cs.beta.aeatk.misc.returnvalues;
  * 
  * @author Steve Ramage 
  */
-public final class ACLibReturnValues {
+public final class AEATKReturnValues {
 
 	
 	/**
@@ -36,7 +36,7 @@ public final class ACLibReturnValues {
 	
 	
 	
-	private ACLibReturnValues()
+	private AEATKReturnValues()
 	{
 		throw new IllegalArgumentException();
 	}

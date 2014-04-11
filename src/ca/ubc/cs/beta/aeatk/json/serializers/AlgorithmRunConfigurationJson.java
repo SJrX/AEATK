@@ -14,7 +14,7 @@ import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.json.serializers.AlgorithmExecutionConfigurationJson.AlgorithmExecutionConfigDeserializer;
 import ca.ubc.cs.beta.aeatk.json.serializers.ParameterConfigurationSpaceJson.ParamConfigurationDeserializer;
 import ca.ubc.cs.beta.aeatk.json.serializers.ProblemInstanceJson.ProblemInstanceSeedPairDeserializer;
-import ca.ubc.cs.beta.aeatk.misc.version.ACLibVersionInfo;
+import ca.ubc.cs.beta.aeatk.misc.version.AEATKVersionInfo;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
 
@@ -125,7 +125,7 @@ public class AlgorithmRunConfigurationJson  {
 				if(!warnSampleIdx.getAndSet(true))
 				{
 					Logger log = LoggerFactory.getLogger(getClass());
-					log.warn("This version of " + (new ACLibVersionInfo()).getProductName() + " does not support sample ids");
+					log.warn("This version of " + (new AEATKVersionInfo()).getProductName() + " does not support sample ids");
 				}
 			}
 			

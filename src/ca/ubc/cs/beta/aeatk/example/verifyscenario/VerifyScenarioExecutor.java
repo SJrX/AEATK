@@ -21,7 +21,7 @@ import com.beust.jcommander.ParameterException;
 
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.misc.jcommander.JCommanderHelper;
-import ca.ubc.cs.beta.aeatk.misc.returnvalues.ACLibReturnValues;
+import ca.ubc.cs.beta.aeatk.misc.returnvalues.AEATKReturnValues;
 import ca.ubc.cs.beta.aeatk.misc.string.SplitQuotedString;
 import ca.ubc.cs.beta.aeatk.misc.version.VersionTracker;
 import ca.ubc.cs.beta.aeatk.options.scenario.ScenarioOptions;
@@ -112,7 +112,7 @@ public class VerifyScenarioExecutor {
 		{
 			log.info("Error occured: {}", e.getMessage());
 			log.debug("Exception",e);
-			System.exit(ACLibReturnValues.PARAMETER_EXCEPTION);
+			System.exit(AEATKReturnValues.PARAMETER_EXCEPTION);
 		}
 	}
 	
