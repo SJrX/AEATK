@@ -163,7 +163,7 @@ public class NewRunHistory implements RunHistory {
 		}
 		ParamConfiguration config = run.getRunConfig().getParamConfiguration();
 		ProblemInstanceSeedPair pisp = run.getRunConfig().getProblemInstanceSeedPair();
-		ProblemInstance pi = pisp.getInstance();
+		ProblemInstance pi = pisp.getProblemInstance();
 		long seed = run.getResultSeed();
 		
 		Double runResult = runObj.getObjective(run);

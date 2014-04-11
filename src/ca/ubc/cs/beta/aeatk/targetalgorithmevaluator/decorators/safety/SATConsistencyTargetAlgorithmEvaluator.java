@@ -42,12 +42,12 @@ public class SATConsistencyTargetAlgorithmEvaluator extends AbstractForEachRunTa
 		{
 			case SAT:
 			case UNSAT:
-				RunResult previousResult = runResults.putIfAbsent(run.getRunConfig().getProblemInstanceSeedPair().getInstance(), result);
+				RunResult previousResult = runResults.putIfAbsent(run.getRunConfig().getProblemInstanceSeedPair().getProblemInstance(), result);
 				if(previousResult != null)
 				{
 					if(!previousResult.equals(result))
 					{
-						Object[] args = { run.getRunConfig().getProblemInstanceSeedPair().getInstance(), previousResult, result}; 
+						Object[] args = { run.getRunConfig().getProblemInstanceSeedPair().getProblemInstance(), previousResult, result}; 
 						log.error("SAT/UNSAT discrepancy detected on problem instance: {}. Previous value: {}, currentValue: {}" , args);
 						if(throwException)
 						{

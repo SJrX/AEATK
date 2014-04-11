@@ -148,7 +148,7 @@ public class UnbiasChallengerInitializationProcedure implements InitializationPr
 			
 			for(ProblemInstanceSeedPair pisp : selectedPisps)
 			{
-				selectedPis.add(pisp.getInstance());
+				selectedPis.add(pisp.getProblemInstance());
 			}
 			
 			Set<ParamConfiguration> thetas = getParameterConfigurations(rand, Collections.singleton(this.initialIncumbent));		

@@ -22,7 +22,7 @@ import ca.ubc.cs.beta.instancespecificinfo.*;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-	CachingTAETestSet.class,
+	
 	TestExistingAlgorithmRun.class,
 	AcquisitionFunctionTester.class,
 	EventManagerTester.class,
@@ -38,6 +38,7 @@ import ca.ubc.cs.beta.instancespecificinfo.*;
 	RetryCrashedTAETester.class,
 	RunObjectiveTester.class,
 	CPUTimeTest.class
+	/*CachingTAETestSet.class,*/
 })
 
 public class ACLibTestSuite {

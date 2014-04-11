@@ -372,7 +372,7 @@ public class RunHistoryTester {
 				for(int i=0; i < numberOfPispsToGenerate; i++)
 				{
 					ProblemInstanceSeedPair pisp = pisps.get(i);
-					piCount.get(pisp.getInstance()).incrementAndGet();
+					piCount.get(pisp.getProblemInstance()).incrementAndGet();
 				}
 				
 				

@@ -1657,7 +1657,7 @@ public class TAETestSet {
 			switch(run.getRunResult())
 			{
 				case SAT:
-					if(run.getRunConfig().getProblemInstanceSeedPair().getInstance().getInstanceName().startsWith("SAT"))
+					if(run.getRunConfig().getProblemInstanceSeedPair().getProblemInstance().getInstanceName().startsWith("SAT"))
 					{
 						assertFalse(output.contains("Mismatch occured between instance specific information"));
 					} else
@@ -1668,7 +1668,7 @@ public class TAETestSet {
 					break;
 				case UNSAT:
 					
-					if(run.getRunConfig().getProblemInstanceSeedPair().getInstance().getInstanceName().startsWith("UNSAT"))
+					if(run.getRunConfig().getProblemInstanceSeedPair().getProblemInstance().getInstanceName().startsWith("UNSAT"))
 					{
 				
 						assertFalse(output.contains("Mismatch occured between instance specific information"));

@@ -89,7 +89,7 @@ public class ReindexSeedRunHistoryDecorator extends AbstractRunHistoryDecorator 
 		{
 		
 			
-			List<ProblemInstanceSeedPair> possiblePisps = new ArrayList<ProblemInstanceSeedPair>(mpi.getList(pisp.getInstance()));
+			List<ProblemInstanceSeedPair> possiblePisps = new ArrayList<ProblemInstanceSeedPair>(mpi.getList(pisp.getProblemInstance()));
 			Collections.shuffle(possiblePisps, rand);
 			for(ProblemInstanceSeedPair newPisp : possiblePisps)
 			{
@@ -109,7 +109,7 @@ public class ReindexSeedRunHistoryDecorator extends AbstractRunHistoryDecorator 
 			
 			
 			
-			ProblemInstanceSeedPair newPisp = new ProblemInstanceSeedPair(pisp.getInstance(), nextSeed.incrementAndGet()); 
+			ProblemInstanceSeedPair newPisp = new ProblemInstanceSeedPair(pisp.getProblemInstance(), nextSeed.incrementAndGet()); 
 			
 			
 			RunConfig newRc = new RunConfig(newPisp, run.getRunConfig().getCutoffTime(), run.getRunConfig().getParamConfiguration(), run.getRunConfig().getAlgorithmExecutionConfig());

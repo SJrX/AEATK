@@ -31,7 +31,7 @@ public class ProblemInstanceSeedPair implements Comparable<ProblemInstanceSeedPa
 		this.seed = seed;
 	}
 	
-	public ProblemInstance getInstance()
+	public ProblemInstance getProblemInstance()
 	{
 		return pi;
 	}

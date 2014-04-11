@@ -83,14 +83,14 @@ public class AnalyticTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorith
 					time+=calc.calculate();
 				}
 				
-				String instInfo = rc.getProblemInstanceSeedPair().getInstance().getInstanceSpecificInformation();
+				String instInfo = rc.getProblemInstanceSeedPair().getProblemInstance().getInstanceSpecificInformation();
 				if(instInfo.startsWith("Analytic-Instance-Cost:"))
 				{
 					try {
 						time += Double.valueOf(instInfo.replace("Analytic-Instance-Cost:", ""));
 					} catch(NumberFormatException e)
 					{
-						throw new NumberFormatException("Couldn't parse analytic instance cost from instance: " + rc.getProblemInstanceSeedPair().getInstance());
+						throw new NumberFormatException("Couldn't parse analytic instance cost from instance: " + rc.getProblemInstanceSeedPair().getProblemInstance());
 					}
 				}
 								

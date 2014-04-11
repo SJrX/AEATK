@@ -246,7 +246,7 @@ public class SatisfiabilityChecker
 						
 						for(AlgorithmRun run : runs)
 						{
-							instanceToRunMap.put(run.getRunConfig().getProblemInstanceSeedPair().getInstance(), run);
+							instanceToRunMap.put(run.getRunConfig().getProblemInstanceSeedPair().getProblemInstance(), run);
 						}
 						
 						log.info("Writing output to {}", f.getAbsoluteFile());

@@ -45,8 +45,8 @@ public class UDPMechanism {
 			//outStream.println("Request:" + Arrays.deepToString(args) + " to: " + port);
 			
 			ArrayList<String> list = new ArrayList<String>();
-			list.add(rc.getProblemInstanceSeedPair().getInstance().getInstanceName());
-			list.add(rc.getProblemInstanceSeedPair().getInstance().getInstanceSpecificInformation());
+			list.add(rc.getProblemInstanceSeedPair().getProblemInstance().getInstanceName());
+			list.add(rc.getProblemInstanceSeedPair().getProblemInstance().getInstanceSpecificInformation());
 			list.add(String.valueOf(rc.getCutoffTime()));
 			list.add(String.valueOf(Integer.MAX_VALUE));
 			list.add(String.valueOf(rc.getProblemInstanceSeedPair().getSeed()));

@@ -49,25 +49,25 @@ public class VerifySATTargetAlgorithmEvaluator extends
 		switch(run.getRunResult())
 		{
 			case SAT:
-				if(unsatResponses.contains(run.getRunConfig().getProblemInstanceSeedPair().getInstance().getInstanceSpecificInformation()))
+				if(unsatResponses.contains(run.getRunConfig().getProblemInstanceSeedPair().getProblemInstance().getInstanceSpecificInformation()))
 				{
-					Object[] args = { run.getRunResult(), run.getRunConfig().getProblemInstanceSeedPair().getInstance().getInstanceSpecificInformation(), run};
+					Object[] args = { run.getRunResult(), run.getRunConfig().getProblemInstanceSeedPair().getProblemInstance().getInstanceSpecificInformation(), run};
 					log.error("Mismatch occured between instance specific information and target algorithm for run (Saw: <{}>, Expected: <{}>): {} ", args);
-				} else if(run.getRunConfig().getProblemInstanceSeedPair().getInstance().getInstanceSpecificInformation().equals("UNKNOWN"))
+				} else if(run.getRunConfig().getProblemInstanceSeedPair().getProblemInstance().getInstanceSpecificInformation().equals("UNKNOWN"))
 				{
-					Object[] args = { run.getRunResult(), run.getRunConfig().getProblemInstanceSeedPair().getInstance().getInstanceSpecificInformation(), run};
+					Object[] args = { run.getRunResult(), run.getRunConfig().getProblemInstanceSeedPair().getProblemInstance().getInstanceSpecificInformation(), run};
 					log.warn("Mismatch occured between instance specific information and target algorithm for run (Saw: <{}>, Expected: <{}>): {} ", args);
 				}
 				break;
 				
 			case UNSAT:
-				if(satResponses.contains(run.getRunConfig().getProblemInstanceSeedPair().getInstance().getInstanceSpecificInformation()))
+				if(satResponses.contains(run.getRunConfig().getProblemInstanceSeedPair().getProblemInstance().getInstanceSpecificInformation()))
 				{
-					Object[] args = { run.getRunResult(), run.getRunConfig().getProblemInstanceSeedPair().getInstance().getInstanceSpecificInformation(), run};
+					Object[] args = { run.getRunResult(), run.getRunConfig().getProblemInstanceSeedPair().getProblemInstance().getInstanceSpecificInformation(), run};
 					log.error("Mismatch occured between instance specific information and target algorithm for run (Saw: <{}>, Expected: <{}> ): {} ", args);
-				}else if(run.getRunConfig().getProblemInstanceSeedPair().getInstance().getInstanceSpecificInformation().equals("UNKNOWN"))
+				}else if(run.getRunConfig().getProblemInstanceSeedPair().getProblemInstance().getInstanceSpecificInformation().equals("UNKNOWN"))
 				{
-					Object[] args = { run.getRunResult(), run.getRunConfig().getProblemInstanceSeedPair().getInstance().getInstanceSpecificInformation(), run};
+					Object[] args = { run.getRunResult(), run.getRunConfig().getProblemInstanceSeedPair().getProblemInstance().getInstanceSpecificInformation(), run};
 					log.warn("Mismatch occured between instance specific information and target algorithm for run (Saw: <{}>, Expected: <{}>): {} ", args);
 				}
 				break;

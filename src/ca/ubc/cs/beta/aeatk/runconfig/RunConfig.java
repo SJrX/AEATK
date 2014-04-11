@@ -149,7 +149,7 @@ public class RunConfig implements Serializable{
 	@Override
 	public String toString()
 	{
-		int instID = this.getProblemInstanceSeedPair().getInstance().getInstanceID();
+		int instID = this.getProblemInstanceSeedPair().getProblemInstance().getInstanceID();
 		long seed = this.getProblemInstanceSeedPair().getSeed();
 		String confID = this.params.getFriendlyIDHex();
 		StringBuilder sb = new StringBuilder();
@@ -164,7 +164,7 @@ public class RunConfig implements Serializable{
 	 */
 	public String getFriendlyRunInfo()
 	{
-		int instID = this.getProblemInstanceSeedPair().getInstance().getInstanceID();
+		int instID = this.getProblemInstanceSeedPair().getProblemInstance().getInstanceID();
 		long seed = this.getProblemInstanceSeedPair().getSeed();
 		String confID = this.params.getFriendlyIDHex();
 		return "Run for Instance (" + instID + ") Config (" +confID + ") Seed: (" + seed +")";   

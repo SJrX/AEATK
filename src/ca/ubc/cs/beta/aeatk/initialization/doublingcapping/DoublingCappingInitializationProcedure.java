@@ -367,7 +367,7 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 				try {
 					for(AlgorithmRun run : currentResults)
 					{
-						this.insc.take(run.getRunConfig().getProblemInstanceSeedPair().getInstance(), run.getRunConfig().getProblemInstanceSeedPair().getSeed());
+						this.insc.take(run.getRunConfig().getProblemInstanceSeedPair().getProblemInstance(), run.getRunConfig().getProblemInstanceSeedPair().getSeed());
 					}
 					this.runHistory.append(currentResults);
 				} catch (DuplicateRunException e) {

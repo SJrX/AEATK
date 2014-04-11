@@ -52,7 +52,7 @@ public class ObjectiveHelper {
 		double remainingCapSlack = capSlack;
 		for(AlgorithmRun run : runs)
 		{
-			ProblemInstance pi = run.getRunConfig().getProblemInstanceSeedPair().getInstance();
+			ProblemInstance pi = run.getRunConfig().getProblemInstanceSeedPair().getProblemInstance();
 			
 			instances.add(pi);
 			map.putIfAbsent(pi,new ArrayList<ProblemInstanceSeedPair>());

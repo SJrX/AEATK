@@ -291,7 +291,7 @@ public class ProblemInstanceJson  {
 			
 			if(firstWrite)
 			{
-				jgen.writeObjectField(PISP_PI, value.getInstance());
+				jgen.writeObjectField(PISP_PI, value.getProblemInstance());
 				jgen.writeObjectField(PISP_SEED, value.getSeed());
 			} 
 			

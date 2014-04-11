@@ -236,7 +236,7 @@ public class TargetAlgorithmEvaluatorRunner
 				{
 					AlgorithmRun run = runs.get(i);
 					//Log messages with more than 2 arguments, must use pass them as an array.
-					Object[] logArguments = { i, run.getRunConfig().getProblemInstanceSeedPair().getInstance(), run.getRunResult(), run.getRuntime()};
+					Object[] logArguments = { i, run.getRunConfig().getProblemInstanceSeedPair().getProblemInstance(), run.getRunResult(), run.getRuntime()};
 					log.info("Run {} on {} has status =>  {}, {}", logArguments);
 					if(run.getRuntime() > killTime)
 					{
@@ -291,7 +291,7 @@ public class TargetAlgorithmEvaluatorRunner
 			String configString = resultRunConfig.getParamConfiguration().getFormattedParamString(StringFormat.NODB_OR_STATEFILE_SYNTAX);
 			
 			//Log messages with more than 2 parameters must have them passed as an array.
-			Object[] logArguments = { i, resultRunConfig.getProblemInstanceSeedPair().getInstance(), configString, runResult, runtime, runLength, quality, resultSeed, additionalData};
+			Object[] logArguments = { i, resultRunConfig.getProblemInstanceSeedPair().getProblemInstance(), configString, runResult, runtime, runLength, quality, resultSeed, additionalData};
 			log.info("Run {} on {} with config: {} had the result => {}, {}, {}, {}, {}, {}", logArguments);
 		}
 	}

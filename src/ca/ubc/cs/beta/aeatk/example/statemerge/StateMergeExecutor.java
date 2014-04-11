@@ -345,7 +345,7 @@ outerLoop:
 			
 			for(AlgorithmRun run : runsForIt.getValue())
 			{
-				ProblemInstance pi = run.getRunConfig().getProblemInstanceSeedPair().getInstance();
+				ProblemInstance pi = run.getRunConfig().getProblemInstanceSeedPair().getProblemInstance();
 				
 				if(piIDMap.containsKey(pi.getInstanceID()))
 				{
@@ -391,7 +391,7 @@ outerLoop:
 		{
 			for(AlgorithmRun run: runsForIt.getValue())
 			{
-				ProblemInstance pi =  run.getRunConfig().getProblemInstanceSeedPair().getInstance();
+				ProblemInstance pi =  run.getRunConfig().getProblemInstanceSeedPair().getProblemInstance();
 				
 				ProblemInstance repairedPi;
 				if(fixedPi.containsKey(pi.getInstanceName()))
@@ -440,7 +440,7 @@ outerLoop:
 				
 				ExistingAlgorithmRun repairedRun = new ExistingAlgorithmRun(run.getExecutionConfig(), rc, run.getRunResult(), run.getRuntime(), run.getRunLength(), run.getQuality(), run.getResultSeed(), run.getAdditionalRunData(), run.getWallclockExecutionTime());
 
-				Object[] args2 = { runsForIt.getKey(), run.getRunConfig().getProblemInstanceSeedPair().getInstance(), run, repairedPi, repairedRun };
+				Object[] args2 = { runsForIt.getKey(), run.getRunConfig().getProblemInstanceSeedPair().getProblemInstance(), run, repairedPi, repairedRun };
 				log.trace("Run Restored on iteration {} : {} => {} repaired: {} => {}",args2);
 				repairedRuns.addToList(runsForIt.getKey(), repairedRun);
 				

@@ -828,8 +828,8 @@ outerloop:
 		String[] execCmdArray = SplitQuotedString.splitQuotedString(cmd);
 		
 		ArrayList<String> list = new ArrayList<String>(Arrays.asList(execCmdArray));
-		list.add(runConfig.getProblemInstanceSeedPair().getInstance().getInstanceName());
-		list.add(runConfig.getProblemInstanceSeedPair().getInstance().getInstanceSpecificInformation());
+		list.add(runConfig.getProblemInstanceSeedPair().getProblemInstance().getInstanceName());
+		list.add(runConfig.getProblemInstanceSeedPair().getProblemInstance().getInstanceSpecificInformation());
 		list.add(String.valueOf(runConfig.getCutoffTime()));
 		list.add(String.valueOf(Integer.MAX_VALUE));
 		list.add(String.valueOf(runConfig.getProblemInstanceSeedPair().getSeed()));
@@ -873,8 +873,8 @@ outerloop:
 		String[] execCmdArray = SplitQuotedString.splitQuotedString(cmd);
 		
 		ArrayList<String> list = new ArrayList<String>(Arrays.asList(execCmdArray));
-		list.add(runConfig.getProblemInstanceSeedPair().getInstance().getInstanceName());
-		list.add(runConfig.getProblemInstanceSeedPair().getInstance().getInstanceSpecificInformation());
+		list.add(runConfig.getProblemInstanceSeedPair().getProblemInstance().getInstanceName());
+		list.add(runConfig.getProblemInstanceSeedPair().getProblemInstance().getInstanceSpecificInformation());
 		list.add(String.valueOf(runConfig.getCutoffTime()));
 		list.add(String.valueOf(Integer.MAX_VALUE));
 		list.add(String.valueOf(runConfig.getProblemInstanceSeedPair().getSeed()));
