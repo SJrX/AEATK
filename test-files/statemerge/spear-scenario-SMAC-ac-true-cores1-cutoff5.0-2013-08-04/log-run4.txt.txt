@@ -1,12 +1,12 @@
-17:30:11.821 [main] INFO  c.u.c.b.aclib.logging.LoggingOptions - Logging to: /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/smac-output/spear-scenario-SMAC-ac-true-cores1-cutoff5.0-2013-08-04/log-run4.txt
+17:30:11.821 [main] INFO  c.u.c.b.aeatk.logging.LoggingOptions - Logging to: /disks/paxos/ubc/cs/research/arrow/seramage/software/smac-v2.06.00b-development-571/smac-output/spear-scenario-SMAC-ac-true-cores1-cutoff5.0-2013-08-04/log-run4.txt
 17:30:11.891 [main] INFO  c.u.c.b.a.m.version.VersionTracker - Version of Automatic Configurator Library is v2.06.00-development-594 (64db2a93ec00) 
 17:30:11.891 [main] INFO  c.u.c.b.a.m.version.VersionTracker - Version of Random Forest Library is v1.05.01-development-95 (4a8077e95b21) 
 17:30:11.891 [main] INFO  c.u.c.b.a.m.version.VersionTracker - Version of SMAC is v2.06.00b-development-571 (9acad50ea89d) 
-17:30:11.891 [main] INFO  c.u.c.b.smac.executors.SMACExecutor - Parsing (default) options from file: /home/sjr/.aclib/tae.opt 
-17:30:11.891 [main] INFO  c.u.c.b.smac.executors.SMACExecutor - Parsing (default) options from file: /home/sjr/.aclib/smac.opt 
-17:30:11.891 [main] INFO  c.u.c.b.smac.executors.SMACExecutor - Parsing (default) options from file: /home/sjr/.aclib/help.opt 
+17:30:11.891 [main] INFO  c.u.c.b.smac.executors.SMACExecutor - Parsing (default) options from file: /home/sjr/.aeatk/tae.opt 
+17:30:11.891 [main] INFO  c.u.c.b.smac.executors.SMACExecutor - Parsing (default) options from file: /home/sjr/.aeatk/smac.opt 
+17:30:11.891 [main] INFO  c.u.c.b.smac.executors.SMACExecutor - Parsing (default) options from file: /home/sjr/.aeatk/help.opt 
 17:30:11.892 [main] INFO  c.u.c.b.a.m.j.JCommanderHelper - Call String:
-17:30:11.892 [main] INFO  c.u.c.b.a.m.j.JCommanderHelper - java -cp /home/sjr/software/smac-development/conf/:/home/sjr/software/smac-development/patches/:/home/sjr/software/smac-development/aclib.jar:/home/sjr/software/smac-development/aclib-src.jar:/home/sjr/software/smac-development/commons-collections-3.2.1.jar:/home/sjr/software/smac-development/commons-collections-3.2.1-sources.jar:/home/sjr/software/smac-development/commons-io-2.1.jar:/home/sjr/software/smac-development/commons-math-2.2.jar:/home/sjr/software/smac-development/commons-math3-3.2.jar:/home/sjr/software/smac-development/DomainInter.jar:/home/sjr/software/smac-development/exp4j-0.3.10.jar:/home/sjr/software/smac-development/fastrf.jar:/home/sjr/software/smac-development/fastrf-src.jar:/home/sjr/software/smac-development/guava-14.0.1.jar:/home/sjr/software/smac-development/Jama-1.0.2.jar:/home/sjr/software/smac-development/jcip-annotations.jar:/home/sjr/software/smac-development/jcip-annotations-src.jar:/home/sjr/software/smac-development/jcommander.jar:/home/sjr/software/smac-development/jmatharray.jar:/home/sjr/software/smac-development/logback-access-1.0.0.jar:/home/sjr/software/smac-development/logback-classic-1.0.0.jar:/home/sjr/software/smac-development/logback-core-1.0.0.jar:/home/sjr/software/smac-development/numerics4j-1.3.jar:/home/sjr/software/smac-development/opencsv-2.3.jar:/home/sjr/software/smac-development/slf4j-api-1.6.4.jar:/home/sjr/software/smac-development/smac.jar:/home/sjr/software/smac-development/smac-src.jar:/home/sjr/software/smac-development/spi-0.2.4.jar:/home/sjr/software/smac-development/patches/ ca.ubc.cs.beta.smac.executors.SMACExecutor --scenario-file ./example_scenarios/spear/spear-scenario.txt --seed 4 --validation false --instance-file ./example_scenarios/spear/instances-test.txt 
+17:30:11.892 [main] INFO  c.u.c.b.a.m.j.JCommanderHelper - java -cp /home/sjr/software/smac-development/conf/:/home/sjr/software/smac-development/patches/:/home/sjr/software/smac-development/aeatk.jar:/home/sjr/software/smac-development/aeatk-src.jar:/home/sjr/software/smac-development/commons-collections-3.2.1.jar:/home/sjr/software/smac-development/commons-collections-3.2.1-sources.jar:/home/sjr/software/smac-development/commons-io-2.1.jar:/home/sjr/software/smac-development/commons-math-2.2.jar:/home/sjr/software/smac-development/commons-math3-3.2.jar:/home/sjr/software/smac-development/DomainInter.jar:/home/sjr/software/smac-development/exp4j-0.3.10.jar:/home/sjr/software/smac-development/fastrf.jar:/home/sjr/software/smac-development/fastrf-src.jar:/home/sjr/software/smac-development/guava-14.0.1.jar:/home/sjr/software/smac-development/Jama-1.0.2.jar:/home/sjr/software/smac-development/jcip-annotations.jar:/home/sjr/software/smac-development/jcip-annotations-src.jar:/home/sjr/software/smac-development/jcommander.jar:/home/sjr/software/smac-development/jmatharray.jar:/home/sjr/software/smac-development/logback-access-1.0.0.jar:/home/sjr/software/smac-development/logback-classic-1.0.0.jar:/home/sjr/software/smac-development/logback-core-1.0.0.jar:/home/sjr/software/smac-development/numerics4j-1.3.jar:/home/sjr/software/smac-development/opencsv-2.3.jar:/home/sjr/software/smac-development/slf4j-api-1.6.4.jar:/home/sjr/software/smac-development/smac.jar:/home/sjr/software/smac-development/smac-src.jar:/home/sjr/software/smac-development/spi-0.2.4.jar:/home/sjr/software/smac-development/patches/ ca.ubc.cs.beta.smac.executors.SMACExecutor --scenario-file ./example_scenarios/spear/spear-scenario.txt --seed 4 --validation false --instance-file ./example_scenarios/spear/instances-test.txt 
 17:30:11.892 [main] DEBUG c.u.c.b.smac.executors.SMACExecutor - ==========Enviroment Variables===========
 COLORFGBG=15;0
 DBUS_SESSION_BUS_ADDRESS=unix:abstract=/tmp/dbus-lIeA2rCkWT,guid=806855aea2d898f3a8e7eecd51fc1152
@@ -74,7 +74,7 @@ file.encoding.pkg=sun.io
 file.separator=/
 java.awt.graphicsenv=sun.awt.X11GraphicsEnvironment
 java.awt.printerjob=sun.print.PSPrinterJob
-java.class.path=/home/sjr/software/smac-development/conf/:/home/sjr/software/smac-development/patches/:/home/sjr/software/smac-development/aclib.jar:/home/sjr/software/smac-development/aclib-src.jar:/home/sjr/software/smac-development/commons-collections-3.2.1.jar:/home/sjr/software/smac-development/commons-collections-3.2.1-sources.jar:/home/sjr/software/smac-development/commons-io-2.1.jar:/home/sjr/software/smac-development/commons-math-2.2.jar:/home/sjr/software/smac-development/commons-math3-3.2.jar:/home/sjr/software/smac-development/DomainInter.jar:/home/sjr/software/smac-development/exp4j-0.3.10.jar:/home/sjr/software/smac-development/fastrf.jar:/home/sjr/software/smac-development/fastrf-src.jar:/home/sjr/software/smac-development/guava-14.0.1.jar:/home/sjr/software/smac-development/Jama-1.0.2.jar:/home/sjr/software/smac-development/jcip-annotations.jar:/home/sjr/software/smac-development/jcip-annotations-src.jar:/home/sjr/software/smac-development/jcommander.jar:/home/sjr/software/smac-development/jmatharray.jar:/home/sjr/software/smac-development/logback-access-1.0.0.jar:/home/sjr/software/smac-development/logback-classic-1.0.0.jar:/home/sjr/software/smac-development/logback-core-1.0.0.jar:/home/sjr/software/smac-development/numerics4j-1.3.jar:/home/sjr/software/smac-development/opencsv-2.3.jar:/home/sjr/software/smac-development/slf4j-api-1.6.4.jar:/home/sjr/software/smac-development/smac.jar:/home/sjr/software/smac-development/smac-src.jar:/home/sjr/software/smac-development/spi-0.2.4.jar:/home/sjr/software/smac-development/patches/
+java.class.path=/home/sjr/software/smac-development/conf/:/home/sjr/software/smac-development/patches/:/home/sjr/software/smac-development/aeatk.jar:/home/sjr/software/smac-development/aeatk-src.jar:/home/sjr/software/smac-development/commons-collections-3.2.1.jar:/home/sjr/software/smac-development/commons-collections-3.2.1-sources.jar:/home/sjr/software/smac-development/commons-io-2.1.jar:/home/sjr/software/smac-development/commons-math-2.2.jar:/home/sjr/software/smac-development/commons-math3-3.2.jar:/home/sjr/software/smac-development/DomainInter.jar:/home/sjr/software/smac-development/exp4j-0.3.10.jar:/home/sjr/software/smac-development/fastrf.jar:/home/sjr/software/smac-development/fastrf-src.jar:/home/sjr/software/smac-development/guava-14.0.1.jar:/home/sjr/software/smac-development/Jama-1.0.2.jar:/home/sjr/software/smac-development/jcip-annotations.jar:/home/sjr/software/smac-development/jcip-annotations-src.jar:/home/sjr/software/smac-development/jcommander.jar:/home/sjr/software/smac-development/jmatharray.jar:/home/sjr/software/smac-development/logback-access-1.0.0.jar:/home/sjr/software/smac-development/logback-classic-1.0.0.jar:/home/sjr/software/smac-development/logback-core-1.0.0.jar:/home/sjr/software/smac-development/numerics4j-1.3.jar:/home/sjr/software/smac-development/opencsv-2.3.jar:/home/sjr/software/smac-development/slf4j-api-1.6.4.jar:/home/sjr/software/smac-development/smac.jar:/home/sjr/software/smac-development/smac-src.jar:/home/sjr/software/smac-development/spi-0.2.4.jar:/home/sjr/software/smac-development/patches/
 java.class.version=51.0
 java.endorsed.dirs=/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/endorsed
 java.ext.dirs=/usr/lib/jvm/java-7-openjdk-amd64/jre/lib/ext:/usr/java/packages/lib/ext
@@ -140,7 +140,7 @@ help = [HelpOptions]
 		 showHelp = false
 		 helpLevel = BASIC
 		 showVersion = false
-		 helpDefaults = /home/sjr/.aclib/help.opt
+		 helpDefaults = /home/sjr/.aeatk/help.opt
 
  initialChallengeRuns = 1
  initialIncumbent = DEFAULT
@@ -249,7 +249,7 @@ scenarioConfig = [ScenarioOptions]
 						 observeWalltimeScale = 0.95
 						 observeWalltimeDelay = 5.0
 						 synchronousObserver = true
-						 taeDefaults = /home/sjr/.aclib/tae.opt
+						 taeDefaults = /home/sjr/.aeatk/tae.opt
 
 				paramFileDelegate = [ParamConfigurationSpaceOptions]
 						 paramFile = example_scenarios/spear/spear-params-mixed.pcs
@@ -264,7 +264,7 @@ seedOptions = [SeedOptions]
 		 numRun = 4
 		 initialSeedMap = {}
 
- smacDefaults = /home/sjr/.aclib/smac.opt
+ smacDefaults = /home/sjr/.aeatk/smac.opt
 stateOpts = [StateFactoryOptions]
 		 stateSerializer = LEGACY
 		 statedeSerializer = LEGACY

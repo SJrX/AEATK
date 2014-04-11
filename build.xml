@@ -162,7 +162,7 @@ dirty: ${git.dirty}</echo>
 	 		
 	        <junit fork="yes" printsummary="true" showoutput="false"> 
 				<classpath refid="test.classpath"/>			
-	 			<test name="ca.ubc.cs.beta.ACLibTestSuite"/>
+	 			<test name="ca.ubc.cs.beta.AEATKTestSuite"/>
 	            <formatter type="plain" usefile="false" />
 			</junit>
 	</target>

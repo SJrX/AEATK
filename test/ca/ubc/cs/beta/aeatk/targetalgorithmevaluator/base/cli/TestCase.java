@@ -1,4 +1,4 @@
-package ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli;
+package ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli;
 
 import java.io.BufferedReader;
 import java.io.InputStreamReader;

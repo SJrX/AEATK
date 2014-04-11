@@ -1,4 +1,4 @@
-package ca.ubc.cs.beta.aclib.algorithmrun;
+package ca.ubc.cs.beta.aeatk.algorithmrun;
 
 import static org.junit.Assert.*;
 
