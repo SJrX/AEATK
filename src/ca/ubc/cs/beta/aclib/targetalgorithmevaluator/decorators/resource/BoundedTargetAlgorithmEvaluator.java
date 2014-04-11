@@ -25,12 +25,9 @@ import ca.ubc.cs.beta.aclib.algorithmrun.ExistingAlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aclib.algorithmrun.RunningAlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillHandler;
-import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableAlgorithmRun;
-import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableWrappedAlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.kill.StatusVariableKillHandler;
 import ca.ubc.cs.beta.aclib.concurrent.FairMultiPermitSemaphore;
 import ca.ubc.cs.beta.aclib.concurrent.threadfactory.SequentiallyNamedThreadFactory;
-import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
@@ -122,7 +119,7 @@ public class BoundedTargetAlgorithmEvaluator extends
 			final Set<AlgorithmRun> completedRuns = Collections.newSetFromMap(new ConcurrentHashMap<AlgorithmRun, Boolean>());
 			
 			//=== Stores outstanding runs 
-			final Map<RunConfig, KillableAlgorithmRun> outstandingRuns  = new ConcurrentHashMap<RunConfig, KillableAlgorithmRun>();
+			final Map<RunConfig, AlgorithmRun> outstandingRuns  = new ConcurrentHashMap<RunConfig, AlgorithmRun>();
 			
 			//=== Stores the kill handlers for each run
 			//Kill Handlers will keep track of which runs have been requested to be killed
@@ -202,7 +199,7 @@ public class BoundedTargetAlgorithmEvaluator extends
 							killInterceptedCount++;
 						
 							AlgorithmRun completedRun = new ExistingAlgorithmRun(possibleRC,RunResult.KILLED, 0,0,0,possibleRC.getProblemInstanceSeedPair().getSeed(),KILLED_BY_DECORATOR_ADDL_RUN_INFO,0);
-							outstandingRuns.put(possibleRC, new KillableWrappedAlgorithmRun(completedRun));
+							outstandingRuns.put(possibleRC, completedRun);
 							completedRuns.add(completedRun);
 							
 							continue;
@@ -300,7 +297,7 @@ public class BoundedTargetAlgorithmEvaluator extends
 		private final FairMultiPermitSemaphore availableRuns;
 		private final List<RunConfig> runConfigs;
 		private final TargetAlgorithmEvaluatorRunObserver callerRunObserver;
-		private final Map<RunConfig, KillableAlgorithmRun> outstandingRuns;
+		private final Map<RunConfig, AlgorithmRun> outstandingRuns;
 		private final Map<RunConfig, Integer> orderOfRuns;
 		private final Map<RunConfig, KillHandler> killHandlers;
 		private final AtomicBoolean completedCallbackFired;
@@ -311,7 +308,7 @@ public class BoundedTargetAlgorithmEvaluator extends
 		private AtomicLong lastUpdate;
 		
 		
-		BoundedTargetAlgorithmEvaluatorMapUpdateObserver(FairMultiPermitSemaphore availableRuns, int numRunConfigToRun,  List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver callerRunObserver, Map<RunConfig, KillableAlgorithmRun> outstandingRuns, Map<RunConfig, Integer> orderOfRuns, Map<RunConfig, KillHandler> killHandlers, AtomicBoolean onSuccessFired, ExecutorService cachedThreadPool, AtomicInteger completedCount, AtomicInteger releaseCount, AtomicLong lastUpdate )
+		BoundedTargetAlgorithmEvaluatorMapUpdateObserver(FairMultiPermitSemaphore availableRuns, int numRunConfigToRun,  List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver callerRunObserver, Map<RunConfig, AlgorithmRun> outstandingRuns, Map<RunConfig, Integer> orderOfRuns, Map<RunConfig, KillHandler> killHandlers, AtomicBoolean onSuccessFired, ExecutorService cachedThreadPool, AtomicInteger completedCount, AtomicInteger releaseCount, AtomicLong lastUpdate )
 		{
 			this.numRunConfigToRun = numRunConfigToRun;
 			
@@ -334,7 +331,7 @@ public class BoundedTargetAlgorithmEvaluator extends
 		 * Updates the table of runs 
 		 */
 		@Override
-		public void currentStatus(List<? extends KillableAlgorithmRun> runs) {
+		public void currentStatus(List<? extends AlgorithmRun> runs) {
 			
 			
 			
@@ -353,7 +350,7 @@ public class BoundedTargetAlgorithmEvaluator extends
 					return;
 				}
 				int completedRuns = 0;
-				for(KillableAlgorithmRun run : runs)
+				for(AlgorithmRun run : runs)
 				{
 					outstandingRuns.put(run.getRunConfig(),run);
 					if(run.isRunCompleted())
@@ -386,7 +383,7 @@ public class BoundedTargetAlgorithmEvaluator extends
 				this.availableRuns.releasePermits(releasesNeeded);
 				
 				
-				final List<KillableAlgorithmRun> allRunsForCaller = new ArrayList<KillableAlgorithmRun>();
+				final List<AlgorithmRun> allRunsForCaller = new ArrayList<AlgorithmRun>();
 				
 				if(runConfigs.size() != outstandingRuns.size())
 				{
@@ -400,7 +397,7 @@ public class BoundedTargetAlgorithmEvaluator extends
 				
 				for(int i=0; i < runConfigs.size(); i++)
 				{
-					KillableAlgorithmRun algoRun = outstandingRuns.get(runConfigs.get(i));
+					AlgorithmRun algoRun = outstandingRuns.get(runConfigs.get(i));
 					allRunsForCaller.set(orderOfRuns.get(runConfigs.get(i)),algoRun);
 				}
 				

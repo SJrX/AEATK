@@ -7,7 +7,6 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
-import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -19,13 +18,10 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import ca.ubc.cs.beta.aclib.json.serializers.ParamConfigurationJson;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import net.jcip.annotations.NotThreadSafe;
-import net.jcip.annotations.ThreadSafe;
 
 
 /**

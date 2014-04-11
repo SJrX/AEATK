@@ -2,7 +2,6 @@ package ca.ubc.cs.beta.aclib.targetalgorithmevaluator;
 
 import java.util.Map;
 
-import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 
 /**

@@ -23,8 +23,6 @@ import ca.ubc.cs.beta.aclib.algorithmrun.ExistingAlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aclib.algorithmrun.RunningAlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillHandler;
-import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableAlgorithmRun;
-import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableWrappedAlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.kill.StatusVariableKillHandler;
 import ca.ubc.cs.beta.aclib.concurrent.threadfactory.SequentiallyNamedThreadFactory;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
@@ -173,7 +171,7 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 			timeToSleep = timeToSleep / this.timeScalingFactor;
 			
 			Object[] args = {  oRigTimeToSleep, timeScalingFactor, timeToSleep,  configIDs, getNicelyFormattedWakeUpTime(timeToSleep), threadsWaiting.get()}; 
-			log.trace("Simulating {} elapsed with time scaling factor {} for a total of {} seconds of running for configs ({}) . Wake-up estimated in/at: {}  ( ~({}) threads currently waiting )", args);
+			log.debug("Simulating {} elapsed with time scaling factor {} for a total of {} seconds of running for configs ({}) . Wake-up estimated in/at: {}  ( ~({}) threads currently waiting )", args);
 			
 			sleepAndNotifyObservers(timeSim, startTimeInMS,  oRigTimeToSleep, obs, runsFromWrappedTAE, runConfigs, runConfigToKillHandlerMap, runConfigToAlgorithmRunMap);
 			
@@ -262,7 +260,7 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 	private void updateRunsAndNotifyObserver(long startTimeInMs, long currentTimeInMs, double maxRuntime, TargetAlgorithmEvaluatorRunObserver observer, List<AlgorithmRun> runsFromWrappedTAE, List<RunConfig> runConfigs, final LinkedHashMap<RunConfig, KillHandler> killHandlers, final LinkedHashMap<RunConfig, AlgorithmRun> runConfigToAlgorithmRunMap)
 	{
 
-		List<KillableAlgorithmRun> kars = new ArrayList<KillableAlgorithmRun>(runsFromWrappedTAE.size());
+		List<AlgorithmRun> kars = new ArrayList<AlgorithmRun>(runsFromWrappedTAE.size());
 		//Update the table
 		
 		for(AlgorithmRun run : runsFromWrappedTAE)
@@ -289,14 +287,9 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 			}
 			
 			AlgorithmRun currentRun = runConfigToAlgorithmRunMap.get(rc);
-			if( currentRun instanceof KillableAlgorithmRun)
-			{
-				kars.add((KillableAlgorithmRun) currentRun);
-			} else
-			{
-				kars.add(new KillableWrappedAlgorithmRun(currentRun));
-			}
 			
+			kars.add(currentRun);
+
 		}	
 		
 		if(observer != null)

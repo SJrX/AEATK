@@ -44,7 +44,6 @@ import org.junit.Test;
 import ca.ubc.cs.beta.TestHelper;
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
-import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableAlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrunner.AutomaticConfiguratorFactory;
 import ca.ubc.cs.beta.aclib.concurrent.threadfactory.SequentiallyNamedThreadFactory;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
@@ -2466,13 +2465,13 @@ public class TAETestSet {
 
 			private boolean killedByDecorator = false;
 			@Override
-			public void currentStatus(List<? extends KillableAlgorithmRun> runs) 
+			public void currentStatus(List<? extends AlgorithmRun> runs) 
 			{
 				
 				double sum = 0;
 			
 			
-				for(KillableAlgorithmRun run : runs)
+				for(AlgorithmRun run : runs)
 				{
 					if(run.getRunConfig().getProblemInstanceSeedPair().getSeed() % 100 % 19 != 0)
 					{
@@ -2848,7 +2847,7 @@ public class TAETestSet {
 			int numCompleted = 0;
 			int calls = 0;
 			@Override
-			public void currentStatus(List<? extends KillableAlgorithmRun> runs) {
+			public void currentStatus(List<? extends AlgorithmRun> runs) {
 				//if(Math.random() > 0.95)
 				//System.out.println("Called");
 				calls++;
@@ -3263,7 +3262,7 @@ public class TAETestSet {
 		{
 
 			@Override
-			public void currentStatus(List<? extends KillableAlgorithmRun> runs) {
+			public void currentStatus(List<? extends AlgorithmRun> runs) {
 				count.incrementAndGet();
 				
 			}
@@ -3596,9 +3595,9 @@ public class TAETestSet {
 		{
 
 			@Override
-			public void currentStatus(List<? extends KillableAlgorithmRun> runs) 
+			public void currentStatus(List<? extends AlgorithmRun> runs) 
 			{
-				for(KillableAlgorithmRun run : runs)
+				for(AlgorithmRun run : runs)
 				{
 					System.out.println("Runtime: " + run.getRuntime() + " walltime: " + run.getWallclockExecutionTime());
 					
@@ -3687,15 +3686,15 @@ public class TAETestSet {
 		{
 
 			@Override
-			public void currentStatus(List<? extends KillableAlgorithmRun> runs) 
+			public void currentStatus(List<? extends AlgorithmRun> runs) 
 			{
-				KillableAlgorithmRun run = runs.get(0);
+				AlgorithmRun run = runs.get(0);
 				
 					System.out.println("Runtime: " + run.getRuntime() + " walltime: " + run.getWallclockExecutionTime());
 					
 					if(run.getRuntime() > 4)
 					{
-						for(KillableAlgorithmRun krun : runs)
+						for(AlgorithmRun krun : runs)
 						{
 							krun.kill();
 						}
@@ -3793,15 +3792,15 @@ public class TAETestSet {
 		{
 
 			@Override
-			public void currentStatus(List<? extends KillableAlgorithmRun> runs) 
+			public void currentStatus(List<? extends AlgorithmRun> runs) 
 			{
-				KillableAlgorithmRun run = runs.get(0);
+				AlgorithmRun run = runs.get(0);
 				
 					System.out.println("Runtime: " + run.getRuntime() + " walltime: " + run.getWallclockExecutionTime());
 					
 					if(run.getRuntime() > 4)
 					{
-						for(KillableAlgorithmRun krun : runs)
+						for(AlgorithmRun krun : runs)
 						{
 							krun.kill();
 						}
@@ -3889,9 +3888,9 @@ public class TAETestSet {
 		{
 
 			@Override
-			public void currentStatus(List<? extends KillableAlgorithmRun> runs) 
+			public void currentStatus(List<? extends AlgorithmRun> runs) 
 			{
-				for(KillableAlgorithmRun run : runs)
+				for(AlgorithmRun run : runs)
 				{
 					System.out.println("Runtime: " + run.getRuntime() + " walltime: " + run.getWallclockExecutionTime());
 					
@@ -4116,9 +4115,9 @@ public class TAETestSet {
 		{
 
 			@Override
-			public void currentStatus(List<? extends KillableAlgorithmRun> runs) 
+			public void currentStatus(List<? extends AlgorithmRun> runs) 
 			{
-				for(KillableAlgorithmRun run : runs)
+				for(AlgorithmRun run : runs)
 				{
 					System.out.println("Runtime: " + run.getRuntime() + " walltime: " + run.getWallclockExecutionTime());
 					
@@ -4222,13 +4221,13 @@ public class TAETestSet {
 
 			private boolean killedByDecorator = false;
 			@Override
-			public void currentStatus(List<? extends KillableAlgorithmRun> runs) 
+			public void currentStatus(List<? extends AlgorithmRun> runs) 
 			{
 				
 				double sum = 0;
 			
 			
-				for(KillableAlgorithmRun run : runs)
+				for(AlgorithmRun run : runs)
 				{
 					if(run.getRunConfig().getProblemInstanceSeedPair().getSeed() % 100 % 11 != 0)
 					{

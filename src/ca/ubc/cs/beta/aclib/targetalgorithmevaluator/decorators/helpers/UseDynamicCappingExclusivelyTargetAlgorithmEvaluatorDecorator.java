@@ -14,8 +14,6 @@ import ca.ubc.cs.beta.aclib.algorithmrun.ExistingAlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aclib.algorithmrun.RunningAlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillHandler;
-import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableAlgorithmRun;
-import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableWrappedAlgorithmRun;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
@@ -123,11 +121,11 @@ public class UseDynamicCappingExclusivelyTargetAlgorithmEvaluatorDecorator
 		{
 
 			@Override
-			public void currentStatus(List<? extends KillableAlgorithmRun> runs) 
+			public void currentStatus(List<? extends AlgorithmRun> runs) 
 			{
 
-				List<KillableAlgorithmRun> fixedRuns = new ArrayList<KillableAlgorithmRun>(runs.size());
-				for( final KillableAlgorithmRun run : runs)
+				List<AlgorithmRun> fixedRuns = new ArrayList<AlgorithmRun>(runs.size());
+				for( final AlgorithmRun run : runs)
 				{
 					if(run.getRunResult().equals(RunResult.RUNNING))
 					{
@@ -162,7 +160,7 @@ public class UseDynamicCappingExclusivelyTargetAlgorithmEvaluatorDecorator
 						
 					} else
 					{
-						fixedRuns.add(new KillableWrappedAlgorithmRun(new ExistingAlgorithmRun(transformedRuns.get(run.getRunConfig()), run.getRunResult(), run.getRuntime(), run.getRunLength(), run.getQuality(),run.getResultSeed(),run.getAdditionalRunData(), run.getWallclockExecutionTime())));
+						fixedRuns.add(new ExistingAlgorithmRun(transformedRuns.get(run.getRunConfig()), run.getRunResult(), run.getRuntime(), run.getRunLength(), run.getQuality(),run.getResultSeed(),run.getAdditionalRunData(), run.getWallclockExecutionTime()));
 					}
 				}
 				

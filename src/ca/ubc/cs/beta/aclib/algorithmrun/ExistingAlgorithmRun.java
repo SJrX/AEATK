@@ -17,8 +17,8 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -7798477429606839878L;
-	private transient Logger log = LoggerFactory.getLogger(this.getClass());
+	private static final long serialVersionUID = 2L;
+	private static transient Logger log = LoggerFactory.getLogger(ExistingAlgorithmRun.class);
 	
 	/**
 	 * 
@@ -33,9 +33,7 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 	 */
 	public ExistingAlgorithmRun(RunConfig runConfig, RunResult runResult, double runtime, double runLength, double quality, long resultSeed, String additionalRunData, double wallclockTime)
 	{
-		super( runConfig);
-		this.setResult(runResult, runtime, runLength, quality, resultSeed, "<Existing Run>", additionalRunData);
-		this.setWallclockExecutionTime(wallclockTime);
+		super( runConfig,runResult, runtime, runLength, quality, resultSeed, "<Existing Run>", additionalRunData, wallclockTime);
 	}
 	
 	/**
@@ -51,9 +49,7 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 
 	public ExistingAlgorithmRun( RunConfig runConfig, RunResult runResult, double runtime, double runLength, double quality, long resultSeed,  double wallclockTime)
 	{
-		super( runConfig);
-		this.setResult(runResult, runtime, runLength, quality, resultSeed, "<Existing Run>", "");
-		this.setWallclockExecutionTime(wallclockTime);
+		super(runConfig,runResult, runtime, runLength, quality, resultSeed, "<Existing Run>", "", wallclockTime);
 	}
 	
 	
@@ -109,9 +105,7 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 	@Deprecated
 	public ExistingAlgorithmRun(AlgorithmExecutionConfig execConfig, RunConfig runConfig, RunResult runResult, double runtime, double runLength, double quality, long resultSeed, String additionalRunData, double wallclockTime)
 	{
-		super( runConfig);
-		this.setResult(runResult, runtime, runLength, quality, resultSeed, "<Existing Run>", additionalRunData);
-		this.setWallclockExecutionTime(wallclockTime);
+		super(runConfig,runResult, runtime, runLength, quality, resultSeed, "<Existing Run>", additionalRunData, wallclockTime);
 	}
 	
 	/**
@@ -128,9 +122,9 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 	@Deprecated
 	public ExistingAlgorithmRun(AlgorithmExecutionConfig execConfig, RunConfig runConfig, RunResult runResult, double runtime, double runLength, double quality, long resultSeed,  double wallclockTime)
 	{
-		super( runConfig);
-		this.setResult(runResult, runtime, runLength, quality, resultSeed, "<Existing Run>", "");
-		this.setWallclockExecutionTime(wallclockTime);
+		
+		super(runConfig,runResult, runtime, runLength, quality, resultSeed, "<Existing Run>", "", wallclockTime);
+		
 	}
 	
 	
@@ -170,19 +164,10 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 		this(execConfig, runConfig, runResult, runtime,runlength, quality, seed, "", 0.0);
 	}
 	
-
-	
-	/**
-	 * Default Constructor (sets Wallclock time to zero)
-	 * @param execConfig		execution configuration of the object
-	 * @param runConfig			run configuration we are executing
-	 * @param result			result string to parse. The format of this is currently everything after the : in the result line of {@link CommandLineAlgorithmRun}. We support both the String for the RunResult, as well as the Status Code
-	 * @deprecated  the constructor that doesn't take a result string is preferred.
-	 */
 	@Deprecated
-	public ExistingAlgorithmRun(AlgorithmExecutionConfig execConfig, RunConfig runConfig, String result)
+	public static ExistingAlgorithmRun getRunFromString( RunConfig runConfig, String result)
 	{
-		this( runConfig, result, 0.0);
+		return getRunFromString(runConfig, result, 0);
 	}
 	
 	/**
@@ -193,8 +178,8 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 	 * @deprecated  the constructor that doesn't take a result string is preferred. 
 	 */
 	@Deprecated
-	public ExistingAlgorithmRun( RunConfig runConfig, String result, double wallClockTime) {
-		super( runConfig);
+	public static ExistingAlgorithmRun getRunFromString( RunConfig runConfig, String result, double wallClockTime) {
+		
 		//this.rawResultLine = resultLine;
 		//this.runCompleted = true;
 		String[] resultLine = result.split(",");
@@ -221,7 +206,7 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 			}
 			
 			
-			this.setResult(acResult, runtime, runLength, quality, resultSeed, result, additionalRunData);
+			return new ExistingAlgorithmRun(runConfig, acResult, runtime, runLength, quality, resultSeed, additionalRunData,wallClockTime);
 			
 			
 		} catch(ArrayIndexOutOfBoundsException e)
@@ -232,26 +217,40 @@ public class ExistingAlgorithmRun extends AbstractAlgorithmRun {
 			log.debug("Malformed Run Result for Execution (ArrayIndexOutOfBoundsException): {}, Instance: {}, Result: {}", args);
 			log.debug("Exception:",e);
 
-			this.setAbortResult(e.getMessage());
+			
+			
+			return getAbortResult(runConfig, e.getMessage());
 		}catch(NumberFormatException e)
 		{
 			//There was a problem with the output, we just set this flag
 			log.debug("Malformed Run Result for Execution (NumberFormatException):  Instance: {}, Result: {}", runConfig, result);
 			log.debug("Exception:",e);
 
-			this.setAbortResult( e.getMessage());
+			return getAbortResult(runConfig, e.getMessage());
 			
 			
 		}
-		this.setWallclockExecutionTime(wallClockTime);
+		
 		
 
 	}
+	
+	public static ExistingAlgorithmRun getAbortResult(RunConfig rc, String message)
+	{
+		return new ExistingAlgorithmRun(rc, RunResult.ABORT, 0, 0, 0, 0, "ERROR:" +message,0);
+	}
 
 	@Override
-	public void run() {
-		//NO OP
-
+	public void kill() {
+		// TODO Auto-generated method stub
+		
 	}
+
+	@Override
+	public boolean isRunResultWellFormed() {
+		// TODO Auto-generated method stub
+		return false;
+	}
+
 
 }

@@ -29,7 +29,6 @@ import org.junit.Test;
 import ca.ubc.cs.beta.TestHelper;
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
-import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableAlgorithmRun;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.configspace.ParamFileHelper;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
@@ -580,7 +579,7 @@ private static TargetAlgorithmEvaluator tae;
 
 				@Override
 				public void currentStatus(
-						List<? extends KillableAlgorithmRun> runs) {
+						List<? extends AlgorithmRun> runs) {
 					System.out.println("Observer: "+ id + ":" + runs);
 					
 				}
@@ -736,12 +735,12 @@ private static TargetAlgorithmEvaluator tae;
 
 				@Override
 				public void currentStatus(
-						List<? extends KillableAlgorithmRun> runs) {
+						List<? extends AlgorithmRun> runs) {
 					System.out.println("Observer: "+ id + ":" + runs);
 					
 					if(id==0)
 					{
-						for(KillableAlgorithmRun run : runs)
+						for(AlgorithmRun run : runs)
 						{
 							run.kill();
 						}
@@ -912,7 +911,7 @@ private static TargetAlgorithmEvaluator tae;
 
 				AtomicBoolean created = new AtomicBoolean(false);
 				@Override
-				public synchronized void currentStatus(	List<? extends KillableAlgorithmRun> runs) {
+				public synchronized void currentStatus(	List<? extends AlgorithmRun> runs) {
 					
 					
 					
@@ -933,7 +932,7 @@ private static TargetAlgorithmEvaluator tae;
 							}
 						}
 						
-						for(KillableAlgorithmRun run : runs)
+						for(AlgorithmRun run : runs)
 						{
 							if(killedRuns.contains(run))
 							{
@@ -944,7 +943,7 @@ private static TargetAlgorithmEvaluator tae;
 					
 					
 					
-					for(KillableAlgorithmRun run : runs)
+					for(AlgorithmRun run : runs)
 					{
 						if(run.getRunResult().equals(RunResult.KILLED))
 						{

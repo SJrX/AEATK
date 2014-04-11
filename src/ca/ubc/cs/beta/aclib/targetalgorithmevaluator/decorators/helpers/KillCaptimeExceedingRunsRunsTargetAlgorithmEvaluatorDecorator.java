@@ -13,7 +13,6 @@ import com.beust.jcommander.ParameterException;
 import net.jcip.annotations.ThreadSafe;
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
-import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableAlgorithmRun;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
@@ -80,10 +79,10 @@ public class KillCaptimeExceedingRunsRunsTargetAlgorithmEvaluatorDecorator exten
 		}
 		
 		@Override
-		public void currentStatus(List<? extends KillableAlgorithmRun> runs) 
+		public void currentStatus(List<? extends AlgorithmRun> runs) 
 		{
 			
-			for(KillableAlgorithmRun run : runs)
+			for(AlgorithmRun run : runs)
 			{
 				
 				if(run.getRunResult().equals(RunResult.RUNNING))

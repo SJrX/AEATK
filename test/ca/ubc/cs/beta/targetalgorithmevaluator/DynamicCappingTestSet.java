@@ -18,7 +18,6 @@ import org.junit.Test;
 import ca.ubc.cs.beta.TestHelper;
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
-import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableAlgorithmRun;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
@@ -170,7 +169,7 @@ public class DynamicCappingTestSet {
 		{
 			
 			@Override
-			public void currentStatus(List<? extends KillableAlgorithmRun> runs) {
+			public void currentStatus(List<? extends AlgorithmRun> runs) {
 				
 				if(evaluateDone.get())
 				{
@@ -188,7 +187,7 @@ public class DynamicCappingTestSet {
 				if(runtimeSum > 3)
 				{
 					System.out.println("Trying to kill");
-					for(KillableAlgorithmRun run : runs)
+					for(AlgorithmRun run : runs)
 					{
 						run.kill();
 					}
@@ -284,12 +283,12 @@ public class DynamicCappingTestSet {
 		{
 			
 			@Override
-			public void currentStatus(List<? extends KillableAlgorithmRun> runs) {
+			public void currentStatus(List<? extends AlgorithmRun> runs) {
 				
 				if(runs.size() != runConfigs.size())
 				{
 					failed.set("Expected that runConfigs.size(): " + runConfigs.size() + " is always equal to runs.size():" + runs.size());
-					for(KillableAlgorithmRun run : runs)
+					for(AlgorithmRun run : runs)
 					{
 						run.kill();
 					}
@@ -307,12 +306,12 @@ public class DynamicCappingTestSet {
 					System.out.flush();
 					System.out.println("Issuing kill order on " + runtimeSum);
 				
-					for(KillableAlgorithmRun run : runs)
+					for(AlgorithmRun run : runs)
 					{
 						System.out.println(run);
 					}
 					System.out.flush();
-					for(KillableAlgorithmRun run : runs)
+					for(AlgorithmRun run : runs)
 					{
 					
 						run.kill();
@@ -416,7 +415,7 @@ public class DynamicCappingTestSet {
 			
 			private final AtomicBoolean shown = new AtomicBoolean(false);
 			@Override
-			public void currentStatus(List<? extends KillableAlgorithmRun> runs) {
+			public void currentStatus(List<? extends AlgorithmRun> runs) {
 				
 				//System.out.println(runs.get(0).getWallclockExecutionTime());
 				double runtimeSum = 0.0; 
@@ -434,12 +433,12 @@ public class DynamicCappingTestSet {
 				{
 					if(!shown.getAndSet(true))
 					{
-						for(KillableAlgorithmRun run : runs)
+						for(AlgorithmRun run : runs)
 						{
 							System.out.println(run.toString());
 						}
 					}
-					for(KillableAlgorithmRun run : runs)
+					for(AlgorithmRun run : runs)
 					{
 						run.kill();
 					}
@@ -469,7 +468,7 @@ public class DynamicCappingTestSet {
 			if(run.getRunResult().isSuccessfulAndCensored())
 			{
 				
-				assertEquals(run.getRunResult(), RunResult.KILLED);
+				assertEquals(RunResult.KILLED, run.getRunResult());
 				continue;
 			}
 			assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
@@ -547,7 +546,7 @@ public class DynamicCappingTestSet {
 			{
 				
 				@Override
-				public void currentStatus(List<? extends KillableAlgorithmRun> runs) {
+				public void currentStatus(List<? extends AlgorithmRun> runs) {
 					
 					if(evaluateDone.get())
 					{
@@ -639,7 +638,7 @@ public class DynamicCappingTestSet {
 			{
 				
 				@Override
-				public void currentStatus(List<? extends KillableAlgorithmRun> runs) {
+				public void currentStatus(List<? extends AlgorithmRun> runs) {
 					
 					if(evaluateDone.get())
 					{

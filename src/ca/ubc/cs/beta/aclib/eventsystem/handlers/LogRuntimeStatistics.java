@@ -1,12 +1,9 @@
 package ca.ubc.cs.beta.aclib.eventsystem.handlers;
 
 import java.text.DecimalFormat;
-import java.text.NumberFormat;
 import java.util.Collection;
-import java.util.Collections;
 import java.util.HashSet;
 import java.util.Set;
-import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;

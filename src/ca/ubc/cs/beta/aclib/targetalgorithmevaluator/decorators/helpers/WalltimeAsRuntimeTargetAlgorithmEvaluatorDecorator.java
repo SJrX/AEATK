@@ -9,7 +9,6 @@ import org.slf4j.LoggerFactory;
 import ca.ubc.cs.beta.aclib.algorithmrun.AbstractAlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
-import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableAlgorithmRun;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
@@ -74,7 +73,7 @@ public class WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator extends
 			if(run.getRuntime() == 0 && run.getWallclockExecutionTime() > startAt)
 			{
 		
-				return new WalltimeAsRuntimeKillableAlgorithmRun(run);
+				return new WalltimeAsRuntimeAlgorithmRun(run);
 			}
 		}
 		return run;
@@ -121,12 +120,12 @@ public class WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator extends
 		}
 		
 		@Override
-		public void currentStatus(List<? extends KillableAlgorithmRun> runs) 
+		public void currentStatus(List<? extends AlgorithmRun> runs) 
 		{
 			
-			List<KillableAlgorithmRun> myRuns = new ArrayList<KillableAlgorithmRun>(runs.size());
+			List<AlgorithmRun> myRuns = new ArrayList<AlgorithmRun>(runs.size());
 			
-			for(KillableAlgorithmRun run : runs)
+			for(AlgorithmRun run : runs)
 			{
 				
 				if(run.getRunResult().equals(RunResult.RUNNING))
@@ -134,7 +133,7 @@ public class WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator extends
 					if(run.getRuntime() == 0 && run.getWallclockExecutionTime() > startAt)
 					{
 				
-						myRuns.add(new WalltimeAsRuntimeKillableAlgorithmRun(run));
+						myRuns.add(new WalltimeAsRuntimeAlgorithmRun(run));
 						
 					} else
 					{
@@ -154,7 +153,7 @@ public class WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator extends
 		
 	}
 	
-	private class WalltimeAsRuntimeKillableAlgorithmRun implements KillableAlgorithmRun
+	private class WalltimeAsRuntimeAlgorithmRun implements AlgorithmRun
 	{
 		/**
 		 * 
@@ -162,12 +161,12 @@ public class WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator extends
 		private static final long serialVersionUID = 9082975671200245863L;
 		
 		AlgorithmRun wrappedRun;
-		KillableAlgorithmRun wrappedKillableRun;  
-		public WalltimeAsRuntimeKillableAlgorithmRun(AlgorithmRun r)
+		AlgorithmRun wrappedKillableRun;  
+		public WalltimeAsRuntimeAlgorithmRun(AlgorithmRun r)
 		{
-			if(r instanceof KillableAlgorithmRun)
+			if(r instanceof AlgorithmRun)
 			{
-				wrappedKillableRun = (KillableAlgorithmRun) r;
+				wrappedKillableRun = (AlgorithmRun) r;
 			}
 			this.wrappedRun = r;
 		}
@@ -217,17 +216,6 @@ public class WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator extends
 		@Override
 		public String getAdditionalRunData() {
 			return wrappedRun.getAdditionalRunData();
-		}
-
-		@Override
-		public void run() {
-			wrappedRun.run();
-			
-		}
-
-		@Override
-		public Object call() {
-			return wrappedRun.call();
 		}
 
 		@Override

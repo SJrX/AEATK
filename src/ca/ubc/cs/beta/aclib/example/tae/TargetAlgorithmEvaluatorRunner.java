@@ -11,7 +11,6 @@ import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
-import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableAlgorithmRun;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration.StringFormat;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
@@ -224,7 +223,7 @@ public class TargetAlgorithmEvaluatorRunner
 		{
 			private long lastUpdate = 0;
 			@Override
-			public void currentStatus(List<? extends KillableAlgorithmRun> runs) 
+			public void currentStatus(List<? extends AlgorithmRun> runs) 
 			{
 				//As we print to standard out we want to make sure that a frequency that is too high doesn't spam the console
 				if(System.currentTimeMillis() - lastUpdate < 1000)
@@ -234,7 +233,7 @@ public class TargetAlgorithmEvaluatorRunner
 				
 				for(int i=0; i < runs.size(); i++)
 				{
-					KillableAlgorithmRun run = runs.get(i);
+					AlgorithmRun run = runs.get(i);
 					//Log messages with more than 2 arguments, must use pass them as an array.
 					Object[] logArguments = { i, run.getRunConfig().getProblemInstanceSeedPair().getInstance(), run.getRunResult(), run.getRuntime()};
 					log.info("Run {} on {} has status =>  {}, {}", logArguments);

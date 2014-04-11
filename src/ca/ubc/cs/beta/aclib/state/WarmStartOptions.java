@@ -1,12 +1,10 @@
 package ca.ubc.cs.beta.aclib.state;
 
-import java.io.File;
 import java.util.List;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.misc.options.CommandLineOnly;
@@ -14,12 +12,9 @@ import ca.ubc.cs.beta.aclib.misc.options.OptionLevel;
 import ca.ubc.cs.beta.aclib.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aclib.options.AbstractOptions;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
-import ca.ubc.cs.beta.aclib.runhistory.NewRunHistory;
 import ca.ubc.cs.beta.aclib.runhistory.RunHistory;
 import ca.ubc.cs.beta.aclib.state.converter.AutoAsMaxConverter;
 import ca.ubc.cs.beta.aclib.state.legacy.LegacyStateFactory;
-import ca.ubc.cs.beta.aclib.state.nullFactory.NullStateFactory;
-
 import com.beust.jcommander.Parameter;
 
 @UsageTextField(hiddenSection=true)

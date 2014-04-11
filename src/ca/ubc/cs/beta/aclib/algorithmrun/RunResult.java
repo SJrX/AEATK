@@ -1,6 +1,5 @@
 package ca.ubc.cs.beta.aclib.algorithmrun;
 
-import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
 import java.util.Set;

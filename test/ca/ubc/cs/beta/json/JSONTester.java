@@ -14,7 +14,6 @@ import com.fasterxml.jackson.core.type.TypeReference;
 
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.configspace.ParamFileHelper;
-import ca.ubc.cs.beta.aclib.json.AbstractJSONConverter;
 import ca.ubc.cs.beta.aclib.json.JSONConverter;
 
 public class JSONTester {

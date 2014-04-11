@@ -16,16 +16,15 @@ import java.util.Collections;
 import java.util.Map.Entry;
 import java.util.Queue;
 import java.util.Set;
-import java.util.TreeSet;
 import java.util.UUID;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
-import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -34,15 +33,13 @@ import org.slf4j.LoggerFactory;
 import org.slf4j.Marker;
 import org.slf4j.MarkerFactory;
 
-import com.beust.jcommander.ParameterException;
 import com.google.common.util.concurrent.AtomicDouble;
 
-import ca.ubc.cs.beta.aclib.algorithmrun.AbstractAlgorithmRun;
+import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
+import ca.ubc.cs.beta.aclib.algorithmrun.ExistingAlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aclib.algorithmrun.RunningAlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillHandler;
-import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableAlgorithmRun;
-import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableWrappedAlgorithmRun;
 import ca.ubc.cs.beta.aclib.concurrent.threadfactory.SequentiallyNamedThreadFactory;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration.StringFormat;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
@@ -50,6 +47,7 @@ import ca.ubc.cs.beta.aclib.misc.associatedvalue.Pair;
 import ca.ubc.cs.beta.aclib.misc.logback.MarkerFilter;
 import ca.ubc.cs.beta.aclib.misc.logging.LoggingMarker;
 import ca.ubc.cs.beta.aclib.misc.string.SplitQuotedString;
+import ca.ubc.cs.beta.aclib.misc.watch.StopWatch;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.exceptions.TargetAlgorithmAbortException;
@@ -59,7 +57,7 @@ import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.exceptions.TargetAlgorithmA
  * @author sjr
  *
  */
-public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
+public class CommandLineAlgorithmRun implements Callable<AlgorithmRun>{
 
 	
 	private static final long serialVersionUID = -70897405824987641L;
@@ -166,8 +164,35 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	 * 
 	 */
 	private final transient CommandLineTargetAlgorithmEvaluatorOptions options;
+
+	private final RunConfig runConfig;
 	
 	private static transient final AtomicBoolean jvmShutdownDetected = new AtomicBoolean(false);
+	
+	
+	/**
+	 * Watch that can be used to time algorithm runs 
+	 */
+	private	final StopWatch wallClockTimer = new StopWatch();
+	
+	
+	protected void startWallclockTimer()
+	{
+		wallClockTimer.start();
+	}
+	
+	private AtomicDouble wallClockTime = new AtomicDouble();
+	
+	protected void stopWallclockTimer()
+	{
+		wallClockTime.set(wallClockTimer.stop() / 1000.0);
+	}
+	
+	protected long getCurrentWallClockTime()
+	{
+		return this.wallClockTimer.time();
+	}
+	
 	
 	private static final Set<Pair<CommandLineAlgorithmRun, Process>> outstandingRuns  = Collections.newSetFromMap(new ConcurrentHashMap<Pair<CommandLineAlgorithmRun, Process>,Boolean>());
 	static
@@ -198,6 +223,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	
 	
 	
+	private volatile AlgorithmRun completedAlgorithmRun;
 	/**
 	 * Default Constructor
 	 * @param execConfig		execution configuration of the object
@@ -206,18 +232,11 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	 */ 
 	public CommandLineAlgorithmRun( RunConfig runConfig, TargetAlgorithmEvaluatorRunObserver obs, KillHandler handler, CommandLineTargetAlgorithmEvaluatorOptions options, BlockingQueue<Integer> executionIDs) 
 	{
-		super( runConfig);
+		//super( runConfig);
 	
 
-		if(runConfig.getCutoffTime() <= 0 || handler.isKilled())
-		{
-			
-			log.trace("Cap time is less than or equal to zero for {} setting run as timeout", runConfig);
-			String rawResultLine = "[DIDN'T BOTHER TO RUN ALGORITHM AS THE CAPTIME IS NOT POSITIVE]";
-			
-			this.setResult(RunResult.TIMEOUT, 0, 0, 0, runConfig.getProblemInstanceSeedPair().getSeed(), rawResultLine,"");
-		}
 		
+		this.runConfig = runConfig;
 		this.runObserver = obs;
 		this.killHandler = handler;
 		this.observerFrequency = options.observerFrequency;
@@ -237,15 +256,36 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	private volatile boolean wasKilled = false;
 	
 	@Override
-	public synchronized void run() 
+	public synchronized AlgorithmRun call() 
 	{
-		if(this.isRunCompleted())
+		
+
+		if(runConfig.getCutoffTime() <= 0 || killHandler.isKilled())
 		{
-			return;
+			
+			log.trace("Cap time is less than or equal to zero for {} setting run as timeout", runConfig);
+			
+			RunResult rr = RunResult.KILLED;
+			if(runConfig.getCutoffTime() <= 0)
+			{
+				rr = RunResult.TIMEOUT;
+			}
+				AlgorithmRun run = new ExistingAlgorithmRun(runConfig, rr, 0, 0, 0, runConfig.getProblemInstanceSeedPair().getSeed(), "",0);
+			try {
+				runObserver.currentStatus(Collections.singletonList((AlgorithmRun) run));
+			} catch(RuntimeException t)
+			{
+				log.error("Error occured while notify observer ", t);
+				throw t;
+			}
+			
+			return run;
+			
 		}
 		
+		
 		//Notify observer first to trigger kill handler
-		runObserver.currentStatus(Collections.singletonList((KillableAlgorithmRun) new RunningAlgorithmRun(getRunConfig(),  0,  0,0, getRunConfig().getProblemInstanceSeedPair().getSeed(), 0, killHandler)));
+		runObserver.currentStatus(Collections.singletonList((AlgorithmRun) new RunningAlgorithmRun(runConfig,  0,  0,0, runConfig.getProblemInstanceSeedPair().getSeed(), 0, killHandler)));
 		
 		
 		if(jvmShutdownDetected.get())
@@ -253,9 +293,9 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 			
 			String rawResultLine = "JVM Shutdown Detected";
 			
-			this.setResult(RunResult.KILLED, 0, 0, 0, runConfig.getProblemInstanceSeedPair().getSeed(), rawResultLine,"JVM Shutdown Detected, algorithm not executed");
-			runObserver.currentStatus(Collections.singletonList(new KillableWrappedAlgorithmRun(this)));
-			return;
+			AlgorithmRun run = new ExistingAlgorithmRun(runConfig, RunResult.KILLED, 0, 0, 0, runConfig.getProblemInstanceSeedPair().getSeed(),"JVM Shutdown Detected, algorithm not executed",0);
+			runObserver.currentStatus(Collections.singletonList(run));
+			return run;
 		}
 		
 		if(killHandler.isKilled())
@@ -264,9 +304,9 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 			log.trace("Run was killed", runConfig);
 			String rawResultLine = "Kill detected before target algorithm invoked";
 			
-			this.setResult(RunResult.KILLED, 0, 0, 0, runConfig.getProblemInstanceSeedPair().getSeed(), rawResultLine,"Kill detected before target algorithm invoked");
-			runObserver.currentStatus(Collections.singletonList(new KillableWrappedAlgorithmRun(this)));
-			return;
+			AlgorithmRun run = new ExistingAlgorithmRun(runConfig,RunResult.KILLED, 0, 0, 0, runConfig.getProblemInstanceSeedPair().getSeed(), "Kill detected before target algorithm invoked", 0);
+			runObserver.currentStatus(Collections.singletonList(run));
+			return run;
 		}
 		
 		final Process proc;
@@ -291,8 +331,8 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 			} catch(InterruptedException e)
 			{
 				Thread.currentThread().interrupt();
-				this.setResult(RunResult.ABORT, 0, 0, 0, 0, "", "Target CLI Thread was Interrupted");
-				return;
+				AlgorithmRun run = ExistingAlgorithmRun.getAbortResult(runConfig, "Target CLI Thread was Interrupted");
+				return run;
 			}
 			 
 			
@@ -305,9 +345,9 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 					log.trace("Run was killed", runConfig);
 					String rawResultLine = "Kill detected before target algorithm invoked";
 					
-					this.setResult(RunResult.KILLED, 0, 0, 0, runConfig.getProblemInstanceSeedPair().getSeed(), rawResultLine,"Kill detected before target algorithm invoked");
-					runObserver.currentStatus(Collections.singletonList(new KillableWrappedAlgorithmRun(this)));;
-					return;
+					AlgorithmRun run = new ExistingAlgorithmRun(runConfig, RunResult.KILLED, 0, 0, 0, runConfig.getProblemInstanceSeedPair().getSeed(),"Kill detected before target algorithm invoked",0);
+					runObserver.currentStatus(Collections.singletonList(run));;
+					return run;
 				}
 				
 				int port = 0;
@@ -388,7 +428,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 					@Override
 					public void run() {
 						
-						Thread.currentThread().setName("Command Line Target Algorithm Evaluator Thread (Standard Error Processor)" + getRunConfig() );
+						Thread.currentThread().setName("Command Line Target Algorithm Evaluator Thread (Standard Error Processor)" + runConfig );
 						try {
 							try { 
 								BufferedReader procIn = new BufferedReader(new InputStreamReader(innerProcess.getErrorStream()));
@@ -465,14 +505,14 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 	
 					@Override
 					public void run() {
-						Thread.currentThread().setName("Command Line Target Algorithm Evaluator Thread (Observer)" + getRunConfig());
+						Thread.currentThread().setName("Command Line Target Algorithm Evaluator Thread (Observer)" + runConfig);
 	
 						while(true)
 						{
 						
 							double currentTime = getCurrentWallClockTime() / 1000.0;
 							
-							runObserver.currentStatus(Collections.singletonList((KillableAlgorithmRun) new RunningAlgorithmRun(getRunConfig(),  Math.max(0,currentRuntime.get()),  0,0, getRunConfig().getProblemInstanceSeedPair().getSeed(), currentTime, killHandler)));
+							runObserver.currentStatus(Collections.singletonList((AlgorithmRun) new RunningAlgorithmRun(runConfig,  Math.max(0,currentRuntime.get()),  0,0, runConfig.getProblemInstanceSeedPair().getSeed(), currentTime, killHandler)));
 							try {
 								
 								
@@ -482,7 +522,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 								if(killHandler.isKilled())
 								{
 									wasKilled = true;
-									log.trace("Trying to kill run: {} latest time: {} " , getRunConfig(), currentRuntime.get());
+									log.trace("Trying to kill run: {} latest time: {} " , runConfig, currentRuntime.get());
 
 
 									killProcess(proc);
@@ -529,25 +569,26 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 						killProcess(proc);
 					}
 					
-					if(!this.isRunCompleted())
+					if(completedAlgorithmRun == null)
 					{
 						if(wasKilled)
 						{
 							double currentTime = Math.max(0,currentRuntime.get());
-							this.setResult(RunResult.KILLED, currentTime, 0,0, getRunConfig().getProblemInstanceSeedPair().getSeed(), "Killed Manually", "" );
+							completedAlgorithmRun = new ExistingAlgorithmRun(runConfig, RunResult.KILLED, currentTime, 0,0, runConfig.getProblemInstanceSeedPair().getSeed(), "Killed Manually", this.getCurrentWallClockTime() / 1000.0 );
 							
 						} else if(jvmShutdownDetected.get())
 						{
 							double currentTime = Math.max(0,currentRuntime.get());
-							this.setResult(RunResult.KILLED, currentTime, 0,0, getRunConfig().getProblemInstanceSeedPair().getSeed(), "JVM Shutdown Detected", "" );							
+							completedAlgorithmRun = new ExistingAlgorithmRun(runConfig,  RunResult.KILLED, currentTime, 0,0, runConfig.getProblemInstanceSeedPair().getSeed(), "JVM Shutdown Detected", this.getCurrentWallClockTime()  / 1000.0);							
 						} else
 						{
-							this.setCrashResult("ERROR: Wrapper did not output anything that matched the expected output (\"Result of algorithm run:...\"). Please try executing the wrapper directly" );
+							double currentTime = Math.max(0,currentRuntime.get());
+							completedAlgorithmRun = new ExistingAlgorithmRun(runConfig, RunResult.CRASHED, currentTime, 0,0, runConfig.getProblemInstanceSeedPair().getSeed(), "ERROR: Wrapper did not output anything that matched the expected output (\"Result of algorithm run:...\"). Please try executing the wrapper directly", this.getCurrentWallClockTime() );
 						}
 				}
 					
 					
-					switch(this.getRunResult())
+					switch(completedAlgorithmRun.getRunResult())
 					{
 						case ABORT:
 						case CRASHED:
@@ -596,7 +637,7 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 				}
 
 	
-				runObserver.currentStatus(Collections.singletonList(new KillableWrappedAlgorithmRun(this)));
+				runObserver.currentStatus(Collections.singletonList(completedAlgorithmRun));
 				log.debug("Run {} is completed", this);
 				
 			} finally
@@ -608,13 +649,14 @@ public class CommandLineAlgorithmRun extends AbstractAlgorithmRun {
 						executionIDs.put(token);
 					} catch (InterruptedException e) {
 						Thread.currentThread().interrupt();
-						return;
 					}
 				}
 				
 				
 			}
 
+			return completedAlgorithmRun;
+			
 		} catch (IOException e1) 
 		{
 
@@ -676,15 +718,15 @@ outerloop:
 						if(matched && matchFound)
 						{
 							log.error("Second output of matching line detected, there is a problem with your wrapper. You can try turning with log all process output enabled to debug: {} ", line);
-							this.setAbortResult("duplicate lines matched");
+							completedAlgorithmRun = ExistingAlgorithmRun.getAbortResult(runConfig, "duplicate lines matched");
 							continue;
 						}
 						matchFound = matchFound | matched; 
 					}
 					
-					if(this.isRunCompleted() && wasKilled)
+					if(completedAlgorithmRun != null && wasKilled)
 					{
-						log.warn("Run was killed but we somehow completed this might be a race condition but our result is: {}. This is a warning just so that developers can see this having occurred and judge the correctness" , this.getResultLine());
+						log.warn("Run was killed but we somehow completed this might be a race condition but our result is: {}. This is a warning just so that developers can see this having occurred and judge the correctness" ,completedAlgorithmRun.getResultLine());
 					}
 					
 					
@@ -942,11 +984,14 @@ outerloop:
 					log.info("Algorithm Reported: {}" , line);
 				}
 				
-				this.setResult(acResult, runtimeD, runLengthD, qualityD, resultSeedD, rawResultLine, additionalRunData);
+				completedAlgorithmRun = new ExistingAlgorithmRun(runConfig, acResult, runtimeD, runLengthD, qualityD, resultSeedD,  additionalRunData, this.getCurrentWallClockTime() / 1000.0);
 				return true;
 			} catch(NumberFormatException e)
 			{	 //Numeric value is probably at fault
-				this.setCrashResult("Output:" + fullLine + "\n Exception Message: " + e.getMessage() + "\n Name:" + e.getClass().getCanonicalName());
+				
+				completedAlgorithmRun = new ExistingAlgorithmRun(runConfig, RunResult.CRASHED, runConfig.getAlgorithmExecutionConfig().getAlgorithmCutoffTime(), 0, 0, 0, "ERROR: Couldn't parse output from wrapper (invalid number format): " + e.getMessage(), this.getCurrentWallClockTime() / 1000.0);
+				
+				//this.setCrashResult("Output:" + fullLine + "\n Exception Message: " + e.getMessage() + "\n Name:" + e.getClass().getCanonicalName());
 				Object[] args = { getTargetAlgorithmExecutionCommandAsString( runConfig), fullLine};
 				log.error("Target Algorithm Call failed:{}\nResponse:{}\nComment: Most likely one of the values of runLength, runtime, quality could not be parsed as a Double, or the seed could not be parsed as a valid long", args);
 				log.error("Exception that occured trying to parse result was: ", e);
@@ -955,8 +1000,9 @@ outerloop:
 					
 			} catch(IllegalArgumentException e)
 			{ 	//The RunResult probably doesn't match anything
-				this.setCrashResult("Output:" + fullLine + "\n Exception Message: " + e.getMessage() + "\n Name:" + e.getClass().getCanonicalName());
+				//this.setCrashResult("Output:" + fullLine + "\n Exception Message: " + e.getMessage() + "\n Name:" + e.getClass().getCanonicalName());
 				
+				completedAlgorithmRun = new ExistingAlgorithmRun(runConfig, RunResult.CRASHED, runConfig.getAlgorithmExecutionConfig().getAlgorithmCutoffTime(), 0, 0, 0, "ERROR: Couldn't parse output from wrapper (not enough arguments): " + e.getMessage(), this.getCurrentWallClockTime() / 1000.0);
 				
 				ArrayList<String> validValues = new ArrayList<String>();
 				for(RunResult r : RunResult.values())
@@ -978,7 +1024,10 @@ outerloop:
 				return true;
 			} catch(ArrayIndexOutOfBoundsException e)
 			{	//There aren't enough commas in the output
-				this.setCrashResult("Output:" + fullLine + "\n Exception Message: " + e.getMessage() + "\n Name:" + e.getClass().getCanonicalName());
+				
+				completedAlgorithmRun = new ExistingAlgorithmRun(runConfig, RunResult.CRASHED, runConfig.getAlgorithmExecutionConfig().getAlgorithmCutoffTime(), 0, 0, 0, "ERROR: Couldn't parse output from wrapper (problem with arguments): " + e.getMessage(), this.getCurrentWallClockTime() / 1000.0);
+				
+				//this.setCrashResult("Output:" + fullLine + "\n Exception Message: " + e.getMessage() + "\n Name:" + e.getClass().getCanonicalName());
 				Object[] args = { getTargetAlgorithmExecutionCommandAsString(runConfig), fullLine};
 				log.error("Target Algorithm Call failed:{}\nResponse:{}\nComment: Most likely the algorithm did not specify all of the required outputs that is <solved>,<runtime>,<runlength>,<quality>,<seed>", args);
 				log.error("Exception that occured trying to parse result was: ", e);

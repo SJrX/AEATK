@@ -1,6 +1,5 @@
 package ca.ubc.cs.beta.aclib.trajectoryfile;
 
-import java.awt.dnd.DragGestureEvent;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.FileReader;

@@ -1,8 +1,6 @@
 package ca.ubc.cs.beta.aclib.algorithmrun;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillHandler;
-import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableAlgorithmRun;
-import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 
 /**
@@ -10,7 +8,7 @@ import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
  * 
  * @author Steve Ramage <seramage@cs.ubc.ca>
  */
-public class RunningAlgorithmRun extends ExistingAlgorithmRun implements KillableAlgorithmRun {
+public class RunningAlgorithmRun extends ExistingAlgorithmRun {
 
 	/**
 	 * 
@@ -28,11 +26,12 @@ public class RunningAlgorithmRun extends ExistingAlgorithmRun implements Killabl
 	/**
 	 * @deprecated  the constructor that doesn't take a result string is preferred.
 	 */
+	/*
 	public RunningAlgorithmRun(AlgorithmExecutionConfig execConfig,
 			RunConfig runConfig, String result, KillHandler handler) {
 		super(execConfig, runConfig, result);
 		this.handler = handler;
-	}
+	}*/
 
 	@Override
 	public void kill() {

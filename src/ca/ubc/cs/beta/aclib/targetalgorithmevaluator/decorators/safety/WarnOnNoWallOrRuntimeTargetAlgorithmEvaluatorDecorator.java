@@ -3,17 +3,13 @@ package ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.safety;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.google.common.base.Stopwatch;
-
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableAlgorithmRun;
 import ca.ubc.cs.beta.aclib.concurrent.threadfactory.SequentiallyNamedThreadFactory;
 import ca.ubc.cs.beta.aclib.misc.watch.AutoStartStopWatch;
 import ca.ubc.cs.beta.aclib.misc.watch.StopWatch;
@@ -143,7 +139,7 @@ public class WarnOnNoWallOrRuntimeTargetAlgorithmEvaluatorDecorator extends Abst
 		}
 		
 		@Override
-		public synchronized void currentStatus(List<? extends KillableAlgorithmRun> runs) 
+		public synchronized void currentStatus(List<? extends AlgorithmRun> runs) 
 		{
 			
 			if(obs != null)
@@ -153,7 +149,7 @@ public class WarnOnNoWallOrRuntimeTargetAlgorithmEvaluatorDecorator extends Abst
 			
 			if(!observed)
 			{
-				for(KillableAlgorithmRun run : runs)
+				for(AlgorithmRun run : runs)
 				{
 					if(run.getWallclockExecutionTime() > 0) 
 					{

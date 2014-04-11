@@ -5,6 +5,7 @@ import java.util.Arrays;
 import java.util.List;
 import java.util.Map.Entry;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
@@ -18,10 +19,8 @@ import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
 import ca.ubc.cs.beta.aclib.algorithmrun.RunningAlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillHandler;
-import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableAlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.kill.StatusVariableKillHandler;
 import ca.ubc.cs.beta.aclib.concurrent.threadfactory.SequentiallyNamedThreadFactory;
-import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli.CommandLineAlgorithmRun;
@@ -39,7 +38,7 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 	 */
 	protected final List<RunConfig> runConfigs;
 
-	protected final List<AlgorithmRun> runs;
+	protected final List<Callable<AlgorithmRun>> runs;
 	
 	private final ExecutorService execService = Executors.newCachedThreadPool(new SequentiallyNamedThreadFactory("Command Line Algorithm Runner (not run) Thread"));
 	
@@ -67,10 +66,10 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 
 
 		this.runConfigs = runConfigs;
-		List<AlgorithmRun> runs = new ArrayList<AlgorithmRun>(runConfigs.size());
+		List<Callable<AlgorithmRun>> runs = new ArrayList<Callable<AlgorithmRun>>(runConfigs.size());
 		
 		//maps the run configs to the most recent update we have
-		final ConcurrentHashMap<RunConfig,KillableAlgorithmRun> runConfigToLatestUpdatedRunMap = new ConcurrentHashMap<RunConfig,KillableAlgorithmRun>(runConfigs.size());
+		final ConcurrentHashMap<RunConfig,AlgorithmRun> runConfigToLatestUpdatedRunMap = new ConcurrentHashMap<RunConfig,AlgorithmRun>(runConfigs.size());
 		
 		//Maps runconfigs to the index in the supplied list
 		final ConcurrentHashMap<RunConfig, Integer> runConfigToPositionInListMap = new ConcurrentHashMap<RunConfig,Integer>(runConfigs.size());
@@ -90,7 +89,7 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 			TargetAlgorithmEvaluatorRunObserver individualRunObserver = new TargetAlgorithmEvaluatorRunObserver()
 			{
 				@Override
-				public void currentStatus(List<? extends KillableAlgorithmRun> runs) {
+				public void currentStatus(List<? extends AlgorithmRun> runs) {
 					
 					/**
 					 * If the map already contains something for our runConfig that is completed, but
@@ -116,7 +115,7 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 				}
 			};
 
-			final AlgorithmRun run = new CommandLineAlgorithmRun( rc,individualRunObserver, killH, options, executionIDs); 
+			final Callable<AlgorithmRun> run = new CommandLineAlgorithmRun( rc,individualRunObserver, killH, options, executionIDs); 
 			runs.add(run);
 			i++;
 		}
@@ -149,14 +148,14 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 								break;
 							}
 							
-							KillableAlgorithmRun[] runs = new KillableAlgorithmRun[runConfigs.size()];
+							AlgorithmRun[] runs = new AlgorithmRun[runConfigs.size()];
 							
 							//We will quit if all runs are done
 							boolean outstandingRuns = false;
 							
-							for(Entry<RunConfig,KillableAlgorithmRun> entries : runConfigToLatestUpdatedRunMap.entrySet())
+							for(Entry<RunConfig,AlgorithmRun> entries : runConfigToLatestUpdatedRunMap.entrySet())
 							{
-								KillableAlgorithmRun run = entries.getValue();
+								AlgorithmRun run = entries.getValue();
 								if(run.getRunResult().equals(RunResult.RUNNING))
 								{
 									outstandingRuns = true;
@@ -166,7 +165,7 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 							
 	
 							try {
-								List<KillableAlgorithmRun> runList = Arrays.asList(runs);
+								List<AlgorithmRun> runList = Arrays.asList(runs);
 								if(obs != null)
 								{
 									obs.currentStatus(runList);

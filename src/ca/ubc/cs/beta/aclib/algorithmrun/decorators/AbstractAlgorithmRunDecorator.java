@@ -71,10 +71,7 @@ public class AbstractAlgorithmRunDecorator implements AlgorithmRun {
 		return wrappedRun.getResultLine();
 	}
 
-	@Override
-	public void run() {
-		wrappedRun.run();
-	}
+	
 
 	@Override
 	public boolean isRunCompleted() {
@@ -92,10 +89,7 @@ public class AbstractAlgorithmRunDecorator implements AlgorithmRun {
 		return wrappedRun.rawResultLine();
 	}
 
-	@Override
-	public Object call() {
-		return wrappedRun.call();
-	}
+	
 
 	@Override
 	public double getWallclockExecutionTime() {
@@ -111,6 +105,11 @@ public class AbstractAlgorithmRunDecorator implements AlgorithmRun {
 	@Override
 	public boolean isCensoredEarly() {
 		return wrappedRun.isCensoredEarly();
+	}
+
+	@Override
+	public void kill() {
+		wrappedRun.kill();
 	}
 	
 

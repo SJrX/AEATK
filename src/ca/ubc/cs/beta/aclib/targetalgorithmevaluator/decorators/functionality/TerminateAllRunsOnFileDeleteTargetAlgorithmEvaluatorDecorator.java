@@ -1,9 +1,7 @@
 package ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.functionality;
 
 import java.io.File;
-import java.util.ArrayList;
 import java.util.List;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.ScheduledExecutorService;
 import java.util.concurrent.TimeUnit;
@@ -13,8 +11,6 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
-import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableAlgorithmRun;
 import ca.ubc.cs.beta.aclib.concurrent.threadfactory.SequentiallyNamedThreadFactory;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
@@ -103,13 +99,13 @@ public class TerminateAllRunsOnFileDeleteTargetAlgorithmEvaluatorDecorator exten
 		}
 		
 		@Override
-		public void currentStatus(List<? extends KillableAlgorithmRun> runs) 
+		public void currentStatus(List<? extends AlgorithmRun> runs) 
 		{
 			
 			if(TerminateAllRunsOnFileDeleteTargetAlgorithmEvaluatorDecorator.this.terminate.get())
 			{
 				
-				for(KillableAlgorithmRun run : runs)
+				for(AlgorithmRun run : runs)
 				{
 					run.kill();
 				}

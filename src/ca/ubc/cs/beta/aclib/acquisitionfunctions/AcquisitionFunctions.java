@@ -1,6 +1,4 @@
 package ca.ubc.cs.beta.aclib.acquisitionfunctions;
-
-import com.beust.jcommander.ParameterException;
 /**
  * Enumeration that outlines the various expected improvement functions
  * @author sjr

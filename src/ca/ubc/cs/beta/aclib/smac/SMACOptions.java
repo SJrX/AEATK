@@ -14,7 +14,6 @@ import ca.ubc.cs.beta.aclib.help.HelpOptions;
 import ca.ubc.cs.beta.aclib.initialization.InitializationMode;
 import ca.ubc.cs.beta.aclib.initialization.classic.ClassicInitializationProcedureOptions;
 import ca.ubc.cs.beta.aclib.initialization.doublingcapping.DoublingCappingInitializationProcedureOptions;
-import ca.ubc.cs.beta.aclib.initialization.table.UnbiasChallengerInitializationProcedure;
 import ca.ubc.cs.beta.aclib.initialization.table.UnbiasChallengerInitializationProcedureOptions;
 import ca.ubc.cs.beta.aclib.logging.ComplexLoggingOptions;
 import ca.ubc.cs.beta.aclib.misc.file.HomeFileUtils;
@@ -36,8 +35,6 @@ import ca.ubc.cs.beta.aclib.random.SeedableRandomPoolConstants;
 import ca.ubc.cs.beta.aclib.state.StateFactory;
 import ca.ubc.cs.beta.aclib.state.StateFactoryOptions;
 import ca.ubc.cs.beta.aclib.state.WarmStartOptions;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorOptions;
-
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParameterFile;
 import com.beust.jcommander.ParametersDelegate;

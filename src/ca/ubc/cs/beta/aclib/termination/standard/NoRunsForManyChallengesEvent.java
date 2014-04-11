@@ -3,10 +3,6 @@ package ca.ubc.cs.beta.aclib.termination.standard;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.concurrent.atomic.AtomicLong;
-import java.util.logging.Logger;
-
-import org.slf4j.LoggerFactory;
-
 import net.jcip.annotations.ThreadSafe;
 
 import ca.ubc.cs.beta.aclib.eventsystem.EventHandler;
@@ -14,7 +10,6 @@ import ca.ubc.cs.beta.aclib.eventsystem.EventManager;
 import ca.ubc.cs.beta.aclib.eventsystem.events.AutomaticConfiguratorEvent;
 import ca.ubc.cs.beta.aclib.eventsystem.events.ac.ChallengeStartEvent;
 import ca.ubc.cs.beta.aclib.eventsystem.events.basic.AlgorithmRunCompletedEvent;
-import ca.ubc.cs.beta.aclib.eventsystem.events.model.ModelBuildEndEvent;
 import ca.ubc.cs.beta.aclib.termination.ValueMaxStatus;
 
 @ThreadSafe

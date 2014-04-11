@@ -1,11 +1,12 @@
 package ca.ubc.cs.beta.aclib.algorithmrunner;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
+import java.util.concurrent.Callable;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
-import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluatorOptions;
@@ -28,19 +29,28 @@ class SingleThreadedAlgorithmRunner extends AbstractAlgorithmRunner
 	@Override
 	public List<AlgorithmRun> run() 	
 	{
-		for(AlgorithmRun run : runs)
+		
+		List<AlgorithmRun> runsToReturn = new ArrayList<AlgorithmRun>();
+
+		for(Callable<AlgorithmRun> run : runs)
 		{
-			run.run();
-			
-			if(run.getRunResult().equals(RunResult.ABORT))
-			{
-				throw new TargetAlgorithmAbortException(run);
+			AlgorithmRun result;
+			try {
+				result = run.call();
+			} catch (Exception e) {
+				//log.error("Not sure what happened", e);
+				throw new IllegalStateException("Unexpected exception occurred on call to Callable<AlgorithmRun>", e);
 			}
+			
+			if(result.getRunResult().equals(RunResult.ABORT))
+			{
+				throw new TargetAlgorithmAbortException(result);
+			}
+			
+			runsToReturn.add(result);
 		}
 			
-		return runs;
-	
-		
+		return runsToReturn;	
 	}
 
 	

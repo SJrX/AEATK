@@ -5,11 +5,8 @@ import java.util.Collections;
 import java.util.Map;
 import java.util.Map.Entry;
 
-import ca.ubc.cs.beta.aclib.json.serializers.ParamConfigurationJson;
 import ca.ubc.cs.beta.aclib.json.serializers.ProblemInstanceJson;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**

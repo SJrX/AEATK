@@ -4,7 +4,6 @@ package ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.safety;
 import java.util.List;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableAlgorithmRun;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
@@ -57,7 +56,7 @@ public class SynchronousObserverTargetAlgorithmEvaluatorDecorator extends
 		}
 		
 		@Override
-		public synchronized void currentStatus(List<? extends KillableAlgorithmRun> runs) 
+		public synchronized void currentStatus(List<? extends AlgorithmRun> runs) 
 		{
 			if(obs != null)
 			{

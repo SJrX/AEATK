@@ -23,11 +23,9 @@ import com.google.common.util.concurrent.AtomicDouble;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
 import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
-import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableAlgorithmRun;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
 import ca.ubc.cs.beta.aclib.exceptions.DuplicateRunException;
-import ca.ubc.cs.beta.aclib.exceptions.OutOfTimeException;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
 import ca.ubc.cs.beta.aclib.initialization.InitializationProcedure;
 import ca.ubc.cs.beta.aclib.misc.MapList;
@@ -41,8 +39,6 @@ import ca.ubc.cs.beta.aclib.seedgenerator.InstanceSeedGenerator;
 import ca.ubc.cs.beta.aclib.seedgenerator.SetInstanceSeedGenerator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.StrictlyIncreasingRuntimesTargetAlgorithmEvaluatorDecorator;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.resource.caching.CachingTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.experimental.queuefacade.basic.BasicTargetAlgorithmEvaluatorQueue;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.experimental.queuefacade.basic.BasicTargetAlgorithmEvaluatorQueueResultContext;
 import ca.ubc.cs.beta.aclib.termination.TerminationCondition;
@@ -312,7 +308,7 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
  		TargetAlgorithmEvaluatorRunObserver phaseTwoObs = new TargetAlgorithmEvaluatorRunObserver()
 		{
 			@Override
-			public void currentStatus(	List<? extends KillableAlgorithmRun> runs)
+			public void currentStatus(	List<? extends AlgorithmRun> runs)
 			{
 				List<AlgorithmRun> objRuns = new ArrayList<AlgorithmRun>(runs);
 				
@@ -320,7 +316,7 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 				double myPerformance = objHelp.computeObjective(runs);
 				if(myPerformance > bestPerformance.get())
 				{
-					for(KillableAlgorithmRun run : runs)
+					for(AlgorithmRun run : runs)
 					{
 						run.kill();
 					}
@@ -426,11 +422,11 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 		{
 
 			@Override
-			public void currentStatus(List<? extends KillableAlgorithmRun> runs) {
+			public void currentStatus(List<? extends AlgorithmRun> runs) {
 				if(allRunsCompleted.get())
 				{
 					log.trace("Phase One completed killing in progress runs {}", runs);
-					for(KillableAlgorithmRun run : runs)
+					for(AlgorithmRun run : runs)
 					{
 						run.kill();
 					}

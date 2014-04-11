@@ -3,9 +3,7 @@ package ca.ubc.cs.beta.runhistory;
 import static org.junit.Assert.*;
 
 import java.util.ArrayList;
-import java.util.Collection;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
@@ -111,7 +109,7 @@ public class RunHistoryTester {
 		
 		
 		
-		AlgorithmRun run = new ExistingAlgorithmRun(execConfig, runConfig, "0, 1 , 0 , 0, " + pisp.getSeed());
+		AlgorithmRun run = ExistingAlgorithmRun.getRunFromString( runConfig, "0, 1 , 0 , 0, " + pisp.getSeed());
 		
 		
 		
@@ -124,7 +122,7 @@ public class RunHistoryTester {
 			
 			
 			
-			run = new ExistingAlgorithmRun(execConfig, runConfig, "0, 2 , 0 , 0, " + pisp.getSeed());
+			run = ExistingAlgorithmRun.getRunFromString( runConfig, "0, 2 , 0 , 0, " + pisp.getSeed());
 			r.append(run);
 			
 			assertEquals(2.0,r.getEmpiricalCost(defaultConfig, r.getProblemInstancesRan(defaultConfig), 500),0.01);
@@ -436,7 +434,7 @@ public class RunHistoryTester {
 				ProblemInstanceSeedPair pisp = RunHistoryHelper.getRandomInstanceSeedWithFewestRunsFor(r,insc,defaultConfig, ilws.getInstances(), rand, false);
 				
 				RunConfig runConfig = new RunConfig(pisp, 1, defaultConfig,execConfig);
-				AlgorithmRun run = new ExistingAlgorithmRun(execConfig, runConfig, "0, 1 , 0 , 0, " + pisp.getSeed());
+				AlgorithmRun run = ExistingAlgorithmRun.getRunFromString( runConfig, "0, 1 , 0 , 0, " + pisp.getSeed());
 				
 				
 				
@@ -475,9 +473,7 @@ public class RunHistoryTester {
 				ProblemInstanceSeedPair pisp = RunHistoryHelper.getRandomInstanceSeedWithFewestRunsFor(r, insc,defaultConfig, ilws.getInstances(), rand, false);
 				
 				RunConfig runConfig = new RunConfig(pisp, 1, defaultConfig,execConfig);
-				AlgorithmRun run = new ExistingAlgorithmRun(execConfig, runConfig, "0, 1 , 0 , 0, " + pisp.getSeed());
-				
-				
+				AlgorithmRun run = ExistingAlgorithmRun.getRunFromString( runConfig, "0, 1 , 0 , 0, " + pisp.getSeed());
 				
 				r.append(run);
 				//System.out.println(r.getEmpiricalCost(defaultConfig, r.getInstancesRan(defaultConfig), 300));

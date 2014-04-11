@@ -1,8 +1,6 @@
 package ca.ubc.cs.beta.aclib.algorithmrun;
 
 import java.io.Serializable;
-import java.util.concurrent.Callable;
-
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 //import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -14,7 +12,7 @@ import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 /**
  * Represents an execution of a target algorithm. 
  * 
- * All implementations should be effectively immutable (except for the run()) method that is.
+ * All implementations should be immutable
  * 
  * NOTE: The following invariants exist, and implementations that don't follow this may have unexpected results
  * 
@@ -22,7 +20,7 @@ import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
  */
 @JsonSerialize(using=AlgorithmRunJson.AlgorithmRunSerializer.class)
 @JsonDeserialize(using=AlgorithmRunJson.AlgorithmRunDeserializer.class)
-public interface AlgorithmRun extends Runnable, Serializable,  Callable<Object> {
+public interface AlgorithmRun extends Serializable {
 
 	/**
 	 * Returns the AlgorithmExecutionConfig of the run
@@ -104,6 +102,12 @@ public interface AlgorithmRun extends Runnable, Serializable,  Callable<Object> 
 	
 	
 	/**
+	 * If this run is currently RUNNING request that it should be killed, 
+	 * otherwise do nothing.
+	 */
+	public void kill();
+	
+	/**
 	 * Returns a (comma free) String from the algorithm run with additional data
 	 * 
 	 * This data generally has no meaning for SMAC but should be saved and restored in the run history file
@@ -120,7 +124,7 @@ public interface AlgorithmRun extends Runnable, Serializable,  Callable<Object> 
 	 * 
 	 * If this method successfully returns it's guaranteed that isRunCompleted() is true
 	 */
-	public void run();
+	//public void run();
 	
 	/**
 	 * Runs this Algorithm Run
@@ -131,7 +135,7 @@ public interface AlgorithmRun extends Runnable, Serializable,  Callable<Object> 
 	 * 
 	 * @return null (always)
 	 */
-	public Object call();
+	//public Object call();
 	
 
 	/**
@@ -147,8 +151,7 @@ public interface AlgorithmRun extends Runnable, Serializable,  Callable<Object> 
 	/**
 	 * Returns whether this run gave us intelligible output
 	 * @return <code>true</code> if this run returned something parsable, <code>false</code> otherwise
-	 * @throws IllegalStateException if the run has not completed
-	 * NOTE: This method will probably go away in favor of having algorithms just use CRASHED as the result
+	 * @deprecated No longer really used, as all runs are immutable and bad runs just report CRASHED
 	 */
 	public boolean isRunResultWellFormed();
 

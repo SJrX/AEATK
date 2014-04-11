@@ -4,8 +4,6 @@ import java.util.ArrayList;
 import java.util.List;
 
 import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableAlgorithmRun;
-import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableWrappedAlgorithmRun;
 import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
@@ -34,12 +32,12 @@ public class CallObserverBeforeCompletionTargetAlgorithmEvaluatorDecorator exten
 		
 		if(obs != null)
 		{
-			List<KillableAlgorithmRun> kruns = new ArrayList<KillableAlgorithmRun>();
+			List<AlgorithmRun> kruns = new ArrayList<AlgorithmRun>();
 			
 			
 			for(AlgorithmRun run : runs)
 			{
-				kruns.add(new KillableWrappedAlgorithmRun(run));
+				kruns.add(run);
 			}
 			obs.currentStatus(kruns);
 		}
@@ -62,12 +60,12 @@ public class CallObserverBeforeCompletionTargetAlgorithmEvaluatorDecorator exten
 			public void onSuccess(List<AlgorithmRun> runs) {
 				if(obs != null)
 				{
-					List<KillableAlgorithmRun> kruns = new ArrayList<KillableAlgorithmRun>();
+					List<AlgorithmRun> kruns = new ArrayList<AlgorithmRun>();
 					
 					
 					for(AlgorithmRun run : runs)
 					{
-						kruns.add(new KillableWrappedAlgorithmRun(run));
+						kruns.add(run);
 					}
 					obs.currentStatus(kruns);
 				}

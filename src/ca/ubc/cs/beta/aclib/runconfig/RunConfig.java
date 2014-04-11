@@ -1,15 +1,11 @@
 package ca.ubc.cs.beta.aclib.runconfig;
 
-import java.io.File;
 import java.io.Serializable;
 
-import com.fasterxml.jackson.annotation.JsonIdentityInfo;
-import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
 import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
-import ca.ubc.cs.beta.aclib.json.serializers.ProblemInstanceJson;
 import ca.ubc.cs.beta.aclib.json.serializers.RunConfigJson;
 import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
 /**
