@@ -25,9 +25,9 @@ import org.slf4j.LoggerFactory;
 import au.com.bytecode.opencsv.CSVReader;
 import ca.ubc.cs.beta.aeatk.exceptions.FeatureNotFoundException;
 import ca.ubc.cs.beta.aeatk.misc.csvhelpers.ConfigCSVFileHelper;
-import ca.ubc.cs.beta.aeatk.seedgenerator.InstanceSeedGenerator;
-import ca.ubc.cs.beta.aeatk.seedgenerator.RandomInstanceSeedGenerator;
-import ca.ubc.cs.beta.aeatk.seedgenerator.SetInstanceSeedGenerator;
+import ca.ubc.cs.beta.aeatk.probleminstance.seedgenerator.InstanceSeedGenerator;
+import ca.ubc.cs.beta.aeatk.probleminstance.seedgenerator.RandomInstanceSeedGenerator;
+import ca.ubc.cs.beta.aeatk.probleminstance.seedgenerator.SetInstanceSeedGenerator;
 
 import com.beust.jcommander.ParameterException;
 

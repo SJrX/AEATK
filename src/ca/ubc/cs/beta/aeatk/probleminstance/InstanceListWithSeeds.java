@@ -5,7 +5,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 
-import ca.ubc.cs.beta.aeatk.seedgenerator.InstanceSeedGenerator;
+import ca.ubc.cs.beta.aeatk.probleminstance.seedgenerator.InstanceSeedGenerator;
 
 /**
  * Value object that stores various information determined from parsing an instance file

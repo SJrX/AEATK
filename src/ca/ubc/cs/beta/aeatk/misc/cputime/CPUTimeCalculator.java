@@ -150,7 +150,7 @@ private static final Logger log = LoggerFactory.getLogger(CPUTime.class);
 			CountDownLatch latch = new CountDownLatch(1);
 			boolean accepted = latches.offer(latch);
 
-			execService.submit(threadUpdate);
+			execService.execute(threadUpdate);
 
 			if(accepted)
 			{
@@ -176,7 +176,7 @@ private static final Logger log = LoggerFactory.getLogger(CPUTime.class);
 			CountDownLatch latch = new CountDownLatch(1);
 			boolean accepted = latches.offer(latch);
 
-			execService.submit(threadUpdate);
+			execService.execute(threadUpdate);
 			if(accepted)
 			{
 				try {

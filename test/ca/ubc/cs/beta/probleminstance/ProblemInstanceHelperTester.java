@@ -13,9 +13,9 @@ import com.beust.jcommander.ParameterException;
 import ca.ubc.cs.beta.aeatk.probleminstance.InstanceListWithSeeds;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceHelper;
-import ca.ubc.cs.beta.aeatk.seedgenerator.InstanceSeedGenerator;
-import ca.ubc.cs.beta.aeatk.seedgenerator.RandomInstanceSeedGenerator;
-import ca.ubc.cs.beta.aeatk.seedgenerator.SetInstanceSeedGenerator;
+import ca.ubc.cs.beta.aeatk.probleminstance.seedgenerator.InstanceSeedGenerator;
+import ca.ubc.cs.beta.aeatk.probleminstance.seedgenerator.RandomInstanceSeedGenerator;
+import ca.ubc.cs.beta.aeatk.probleminstance.seedgenerator.SetInstanceSeedGenerator;
 import static org.junit.Assert.*;
 import static ca.ubc.cs.beta.TestHelper.*;
 

@@ -43,7 +43,7 @@ public class WarnOnNoWallOrRuntimeTargetAlgorithmEvaluatorDecorator extends Abst
 		super(tae);
 		
 		//=== 
-		execService.submit(new Runnable()
+		execService.execute(new Runnable()
 		{
 
 			@Override

@@ -14,7 +14,6 @@ import ca.ubc.cs.beta.probleminstance.BuggyFeatureFilesTester;
 import ca.ubc.cs.beta.probleminstance.ProblemInstanceHelperTester;
 import ca.ubc.cs.beta.runhistory.RunHistoryTester;
 import ca.ubc.cs.beta.state.legacy.LegacyStateDeserializerTester;
-import ca.ubc.cs.beta.targetalgorithmevaluator.CachingTAETestSet;
 import ca.ubc.cs.beta.targetalgorithmevaluator.DynamicCappingTestSet;
 import ca.ubc.cs.beta.targetalgorithmevaluator.RetryCrashedTAETester;
 import ca.ubc.cs.beta.targetalgorithmevaluator.TAETestSet;

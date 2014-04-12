@@ -199,7 +199,7 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 			
 		};
 		
-		execService.submit(runStatusWatchingThread);
+		execService.execute(runStatusWatchingThread);
 		
 		
 	}

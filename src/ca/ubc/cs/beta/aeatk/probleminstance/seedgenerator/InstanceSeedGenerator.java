@@ -1,4 +1,4 @@
-package ca.ubc.cs.beta.aeatk.seedgenerator;
+package ca.ubc.cs.beta.aeatk.probleminstance.seedgenerator;
 
 import java.io.Serializable;
 import java.util.Collection;

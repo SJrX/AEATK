@@ -17,9 +17,9 @@ import ca.ubc.cs.beta.aeatk.objectives.RunObjective;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
+import ca.ubc.cs.beta.aeatk.probleminstance.seedgenerator.InstanceSeedGenerator;
+import ca.ubc.cs.beta.aeatk.probleminstance.seedgenerator.SetInstanceSeedGenerator;
 import ca.ubc.cs.beta.aeatk.random.RandomUtil;
-import ca.ubc.cs.beta.aeatk.seedgenerator.InstanceSeedGenerator;
-import ca.ubc.cs.beta.aeatk.seedgenerator.SetInstanceSeedGenerator;
 
 public class RunHistoryHelper{
 

@@ -80,7 +80,7 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractAsyncTargetAlgo
 		
 		if(runConfigs.size() == 0)
 		{
-			taeCallback.onSuccess(Collections.EMPTY_LIST);
+			taeCallback.onSuccess(Collections.<AlgorithmRunResult> emptyList());
 			return;
 		}
 		
@@ -95,7 +95,7 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractAsyncTargetAlgo
 		}
 		
 		
-		this.asyncExecService.submit(new Runnable()
+		this.asyncExecService.execute(new Runnable()
 		{
 
 			@Override
@@ -127,6 +127,11 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractAsyncTargetAlgo
 				} catch(Throwable e)
 				{
 					taeCallback.onFailure(new IllegalStateException("Unexpected Throwable:", e));
+					if(e instanceof Error)
+					{
+						throw e;
+					}
+					
 					return;
 				}
 				
@@ -140,6 +145,11 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractAsyncTargetAlgo
 				} catch(Throwable e)
 				{
 					taeCallback.onFailure(new IllegalStateException("Unexpected Throwable:", e));
+					
+					if(e instanceof Error)
+					{
+						throw e;
+					}
 				}
 				
 				

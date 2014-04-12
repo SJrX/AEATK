@@ -74,7 +74,7 @@ public class PrePostCommandTargetAlgorithmEvaluator extends	AbstractTargetAlgori
 					
 				};
 				
-				execService.submit(standardErrorReader);
+				execService.execute(standardErrorReader);
 				
 				if(options.logOutput)
 				{
@@ -102,7 +102,7 @@ public class PrePostCommandTargetAlgorithmEvaluator extends	AbstractTargetAlgori
 						
 					};
 				
-					execService.submit(standardOutReader);
+					execService.execute(standardOutReader);
 				}	
 			
 				cLatch.await();
