@@ -167,6 +167,11 @@ public class EqualTargetAlgorithmEvaluatorTester implements
 		throw new UnsupportedOperationException(this.getClass().getCanonicalName() + " does NOT support waiting or observing the number of outstanding evaluations, you should probably wrap this TargetAlgorithmEvaluator with an instance of " + OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator.class );
 	}
 	
+	@Override
+	public final void close()
+	{
+		this.notifyShutdown();
+	}
 }
 
 /***

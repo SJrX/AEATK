@@ -194,4 +194,9 @@ public abstract class AbstractTargetAlgorithmEvaluator implements TargetAlgorith
 		return this.getClass().getSimpleName();
 	}
 
+	@Override
+	public final void close()
+	{
+		this.notifyShutdown();
+	}
 }

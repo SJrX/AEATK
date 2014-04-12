@@ -191,6 +191,11 @@ public abstract class AbstractTargetAlgorithmEvaluatorDecorator implements	Targe
 		return tae.getNumberOfOutstandingRuns();
 	}
 	
+	@Override
+	public final void close()
+	{
+		this.notifyShutdown();
+	}
 	
 
 }

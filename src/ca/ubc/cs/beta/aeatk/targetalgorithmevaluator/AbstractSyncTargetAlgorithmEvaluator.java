@@ -46,7 +46,13 @@ public abstract class AbstractSyncTargetAlgorithmEvaluator extends
 					handler.onFailure(e);
 				} catch(Throwable t)
 				{
-					log.error("Uncaught throwable occured ", t);
+					
+					handler.onFailure(new IllegalStateException("Unexpected throwable detected",t));
+					
+					if(t instanceof Error)
+					{
+						throw t;
+					}
 				}
 			}
 			

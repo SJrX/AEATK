@@ -28,7 +28,7 @@ import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
  * @author Steve Ramage <seramage@cs.ubc.ca>
  * 
  */
-public interface TargetAlgorithmEvaluator {
+public interface TargetAlgorithmEvaluator extends AutoCloseable{
  
 	/**
 	 * Evaluate a run configuration
@@ -284,6 +284,14 @@ public interface TargetAlgorithmEvaluator {
 	 * or experience for the user 
 	 */
 	public boolean areRunsObservable();
+	
+	/**
+	 * This method exists to allow TargetAlgorithmEvaluators to be used in try-with-resources in Java 7.
+	 * This method MUST be the same as invoking {@link #notifyShutdown()}
+	 */
+	@Override
+	public void close();
+	
 	
 	
 }
