@@ -334,7 +334,7 @@ public class CommandLineAlgorithmRun implements Callable<AlgorithmRunResult>{
 				AlgorithmRunResult run = ExistingAlgorithmRunResult.getAbortResult(runConfig, "Target CLI Thread was Interrupted");
 				return run;
 			}
-			 
+			
 			
 			try 
 			{
@@ -343,7 +343,6 @@ public class CommandLineAlgorithmRun implements Callable<AlgorithmRunResult>{
 				if(killHandler.isKilled())
 				{
 					log.trace("Run was killed", runConfig);
-					String rawResultLine = "Kill detected before target algorithm invoked";
 					
 					AlgorithmRunResult run = new ExistingAlgorithmRunResult(runConfig, RunStatus.KILLED, 0, 0, 0, runConfig.getProblemInstanceSeedPair().getSeed(),"Kill detected before target algorithm invoked",0);
 					runObserver.currentStatus(Collections.singletonList(run));;
@@ -780,7 +779,7 @@ outerloop:
 		String[] execCmdArray = getTargetAlgorithmExecutionCommand(runConfig);
 		
 		
-		if(options.logAllCallStrings)
+		if(options.logAllCallStrings())
 		{
 			log.info( "Call (with token {}) : cd \"{}\" " + COMMAND_SEPERATOR + "  {} ", token, new File(runConfig.getAlgorithmExecutionConfiguration().getAlgorithmExecutionDirectory()).getAbsolutePath(), getTargetAlgorithmExecutionCommandAsString( runConfig));
 		}
@@ -929,13 +928,18 @@ outerloop:
 		
 		if(options.logAllProcessOutput)
 		{
-			log.debug("[PROCESS]  {}" ,line);
+			log.info("[PROCESS] {}" ,line);
 		}
 		
 
 		if (matcher.find() || matcher2.find())
 		{
 		
+			if(options.logAllCallResults() && !options.logAllProcessOutput)
+			{
+				log.info("[PROCESS] {}", line);
+			}
+			
 			String fullLine = line.trim();
 			String additionalRunData = "";
 			try

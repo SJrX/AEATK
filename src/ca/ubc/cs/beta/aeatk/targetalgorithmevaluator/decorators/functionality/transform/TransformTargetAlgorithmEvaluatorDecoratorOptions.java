@@ -18,7 +18,7 @@ public class TransformTargetAlgorithmEvaluatorDecoratorOptions extends AbstractO
 	 * Transforms
 	 */
 	
-	@UsageTextField(defaultValues="Identity transform.", level=OptionLevel.ADVANCED)
+	@UsageTextField(defaultValues="false.", level=OptionLevel.ADVANCED)
 	@Parameter(names="--tae-transform", description="Set to true if you'd like to transform the result, if false the other transforms have no effect")
 	public boolean transform = false;
 	

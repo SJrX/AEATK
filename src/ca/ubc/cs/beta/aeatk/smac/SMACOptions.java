@@ -97,7 +97,7 @@ public class SMACOptions extends AbstractOptions {
 	@Parameter(names={"--experiment-dir","--experimentDir","-e"}, description="root directory for experiments Folder")
 	public String experimentDir = System.getProperty("user.dir") + File.separator + "";
 	
-	@UsageTextField(level=OptionLevel.ADVANCED)
+	@UsageTextField(level=OptionLevel.ADVANCED, defaultValues="EXPONENTIAL if minimizing runtime, EI otherwise.")
 	@Parameter(names={"--acq-func","--acquisition-function", "--ei-func","--expected-improvement-function","--expectedImprovementFunction"}, description="acquisition function to use during local search")
 	public AcquisitionFunctions expFunc = null;
 	
@@ -214,8 +214,8 @@ public class SMACOptions extends AbstractOptions {
 	public boolean shutdownTAEWhenDone = true;
 	public boolean intermediarySaves = true; 
 
-	@UsageTextField(defaultValues="Number of cores normally used", level=OptionLevel.INTERMEDIATE)
-	@Parameter(names="--validation-cores", description="Number of cores to use when validating (only applicable when using local command line cores). Essentially this changes the value of --cli-cores and --cores after SMAC has run.", validateWith=FixedPositiveInteger.class)
+	@UsageTextField(defaultValues="The value of --cores", level=OptionLevel.INTERMEDIATE)
+	@Parameter(names="--validation-cores", description="Number of cores to use when validating (only applicable when using local command line cores). Essentially this changes the value of --cli-cores and --cores after SMAC has run. The use of this parameter is undefined if the TargetAlgorithmEvaluator being used is not the CLI", validateWith=FixedPositiveInteger.class)
 	public Integer validationCores = null;
 	
 	

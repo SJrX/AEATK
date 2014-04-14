@@ -33,6 +33,34 @@ public class CommandLineTargetAlgorithmEvaluatorOptions extends AbstractOptions 
 	public boolean logAllCallStrings = false;
 	
 	@UsageTextField(level=OptionLevel.INTERMEDIATE)
+	@Parameter(names={"--cli-log-all-results","--cli-log-all-call-results", "--log-all-call-results", "--log-all-results"}, description="log all the result lines")
+	public boolean logAllResultLines = false;
+	
+	@UsageTextField(level=OptionLevel.INTERMEDIATE)
+	@Parameter(names={"--cli-log-all-calls","--cli-log-all-call-strings-and-results","--log-all-calls", "--log-all-call-strings-and-results"}, description="log all the call strings and result lines")
+	public boolean logAllCallsAndResultLines = false;
+	
+	
+	public boolean logAllCallStrings()
+	{
+		//boolean logAllCallStrings = this.logAllCallStrings == null ? false : this.logAllCallStrings;
+		//boolean logAllCallResults = this.logAllResultLines == null ? false : this.logAllResultLines;
+		//boolean logAllCallsAndResultLines = this.logAllCallStrings == null ? false : this.logAllCallsAndResultLines;
+
+		return logAllCallStrings || logAllCallsAndResultLines;
+				
+	}
+	
+	public boolean logAllCallResults()
+	{
+		//boolean logAllCallStrings = this.logAllCallStrings == null ? false : this.logAllCallStrings;
+		//boolean logAllCallResults = this.logAllResultLines == null ? false : this.logAllResultLines;
+		//boolean logAllCallsAndResultLines = this.logAllCallStrings == null ? false : this.logAllCallsAndResultLines;
+		return logAllResultLines| logAllCallsAndResultLines;
+		
+	}
+
+	@UsageTextField(level=OptionLevel.INTERMEDIATE)
 	@Parameter(names={"--cli-log-all-process-output","--log-all-process-output","--logAllProcessOutput"}, description="log all process output")
 	public boolean logAllProcessOutput = false;
 	
