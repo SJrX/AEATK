@@ -68,8 +68,8 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	@Parameter(names={"--leak-memory-amount","--leakMemoryAmount"}, hidden=true, description="amount of memory in bytes to leak")
 	public int leakMemoryAmount = 1024;
 
-	@UsageTextField(level=OptionLevel.INTERMEDIATE, defaultValues="Auto detected")
-	@Parameter(names={"--verify-sat","--verify-SAT","--verifySAT"}, description="Checks SAT/UNSAT/UNKNOWN responses of algorithm with the value stored as instance specific information, logging an error if there is a discrepancy. Auto detects based on the value of the instance specific information of every problem instance. If every instance has an instance specific information in the following set {SAT, UNSAT, UNKNOWN, SATISFIABLE, UNSATISFIABLE}, this will be set to true, otherwise it will be false.")
+	@UsageTextField(level=OptionLevel.INTERMEDIATE, defaultValues="Auto detected (see description)")
+	@Parameter(names={"--verify-sat","--verify-SAT","--verifySAT"}, description="Checks SAT/UNSAT/UNKNOWN responses of algorithm with the value stored as instance specific information, logging an error if there is a discrepancy. The default value is auto-detected based on the value of the instance specific information of every problem instance. If every instance has an instance specific information in the following set {SAT, UNSAT, UNKNOWN, SATISFIABLE, UNSATISFIABLE}, this will be set to true, otherwise it will be false.")
 	public Boolean verifySAT = null;
 
 	@UsageTextField(level=OptionLevel.INTERMEDIATE)
