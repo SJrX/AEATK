@@ -80,9 +80,15 @@ class ConcurrentAlgorithmRunner extends AbstractAlgorithmRunner {
 					AlgorithmRunResult run;
 					try {
 						run = futRuns.get();
+					
 					} catch (ExecutionException e) 
 					{
-						 throw new IllegalStateException("Unexpected exception occurred on call to Callable<AlgorithmRun>", e);
+						
+						if(e.getCause() instanceof TargetAlgorithmAbortException)
+						{
+							throw (TargetAlgorithmAbortException) e.getCause();
+						}
+						 throw new IllegalStateException("Unexpected exception occurred while trying to run algorithm", e);
 					}
 					if (run.getRunStatus().equals(RunStatus.ABORT))
 					{

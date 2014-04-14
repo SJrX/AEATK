@@ -37,9 +37,12 @@ class SingleThreadedAlgorithmRunner extends AbstractAlgorithmRunner
 			AlgorithmRunResult result;
 			try {
 				result = run.call();
+			} catch(TargetAlgorithmAbortException e)
+			{
+				throw e;
 			} catch (Exception e) {
 				//log.error("Not sure what happened", e);
-				throw new IllegalStateException("Unexpected exception occurred on call to Callable<AlgorithmRun>", e);
+				throw new IllegalStateException("Unexpected exception occurred while trying to run algorithm", e);
 			}
 			
 			if(result.getRunStatus().equals(RunStatus.ABORT))
