@@ -61,18 +61,40 @@ public class RunGroupOptions extends AbstractOptions {
 		{
 			File f = new File(replacementMap.get("scenarioFile"));
 			
+			
+			
 			if(f != null)
 			{
 				
 				if(f.getName().lastIndexOf(".") >= 0)
 				{
-					replacementMap.put("SCENARIO_NAME", f.getName().substring(0,f.getName().lastIndexOf(".")));
+					
+					
+					if(f.getName().trim().equals("scenario.txt"))
+					{
+						
+						try {
+							String parentName = f.getCanonicalFile().getParentFile().getName();
+							replacementMap.put("SCENARIO_NAME", parentName);
+							replacementMap.put("SCENARIO_FILE", parentName);
+						} catch(RuntimeException e)
+						{
+							//Don't care if the file doesn't exist or whatever else happens here
+						} catch (IOException e) {
+							//Don't care if the file doesn't exist or whatever else happens here
+						}
+					} else
+					{
+						replacementMap.put("SCENARIO_NAME", f.getName().substring(0,f.getName().lastIndexOf(".")));
+						replacementMap.put("SCENARIO_FILE", f.getName());
+					}
 				} else
 				{
 					replacementMap.put("SCENARIO_NAME", f.getName());
+					replacementMap.put("SCENARIO_FILE", f.getName());
 				}
 				
-				replacementMap.put("SCENARIO_FILE", f.getName());
+				
 			}
 		}
 		replacementMap.put("DATETIME", (new SimpleDateFormat("yyyy-MM-dd--HH-mm-ss-SSS").format(new Date())));

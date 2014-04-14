@@ -159,6 +159,11 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	@Parameter(names={"--tae-warn-if-no-response-from-tae"}, description="If greater than 0, it is the number of seconds to wait for the TAE to respond before issuing a warning", validateWith=NonNegativeInteger.class)
 	public int warnIfNoResponseFromTAE = 120;
 	
+	
+	@UsageTextField(level=OptionLevel.DEVELOPER)
+	@Parameter(names={"--tae-stop-processing-on-shutdown"}, description="If true, then once JVM Shutdown is triggered either within the application or externally all further requests will be silently dropped. This is recommended since otherwise applications may see unexpected results as the TAE may be unable to continue processing.")
+	public boolean taeStopProcessingOnShutdown = true;
+	
 	/**
 	 * Checks if the problem instances are compatible with the verify sat option
 	 * @param instances 

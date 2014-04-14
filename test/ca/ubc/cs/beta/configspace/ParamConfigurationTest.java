@@ -26,7 +26,7 @@ import ca.ubc.cs.beta.TestHelper;
 import ca.ubc.cs.beta.aeatk.misc.debug.DebugUtil;
 import ca.ubc.cs.beta.aeatk.misc.watch.AutoStartStopWatch;
 import ca.ubc.cs.beta.aeatk.misc.watch.StopWatch;
-import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParamConfigurationStringFormatException;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationStringFormatException;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParamFileHelper;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace;
@@ -158,7 +158,7 @@ public class ParamConfigurationTest {
 	/**
 	 * Tests what happens when we specify a value for a parameter that is not in it's domain
 	 */
-	@Test(expected=ParamConfigurationStringFormatException.class)
+	@Test(expected=ParameterConfigurationStringFormatException.class)
 	public void testParamNotInvalidValue()
 	{
 		
@@ -184,7 +184,7 @@ public class ParamConfigurationTest {
 	/**
 	 * Tests what happens if we specify a parameter that does not appear in the file
 	 */
-	@Test(expected=ParamConfigurationStringFormatException.class)
+	@Test(expected=ParameterConfigurationStringFormatException.class)
 	public void testParamNotInParameterFile()
 	{
 		ParameterConfigurationSpace p = getConfigSpaceForFile("paramFiles/daisy-chain-param.txt");
@@ -1479,7 +1479,7 @@ public class ParamConfigurationTest {
 	
 	@Test
 	/**
-	 * Related to bug 1728
+	 * Related to bug 1720
 	 */
 	public void testDefaultConfigurationToAndFromString()
 	{
@@ -1493,20 +1493,88 @@ public class ParamConfigurationTest {
 	}
 
 	/**
-	 * Related to bug 1728
+	 * Related to bug 1720 & 2009
 	 */
-	@Test(expected=ParamConfigurationStringFormatException.class)
+	@Test
 	public void testFromStringMissingActiveParam()
 	{
 
-		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("foo {a,b,c} [a]\nbar{e,d,f} [f]\n cat {g,h,i} [h] \nbar | foo in { c }");		
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("foo {a,b,c} [a]\nbar{e,d,f} [f]\n cat {2,3,4} [2] \nbar | foo in { c }");		
 	
+
+		ParameterConfiguration duplicateConfig = configSpace.getParameterConfigurationFromString("-foo 'a' -bar 'e' -cat 2", ParameterStringFormat.NODB_SYNTAX);
+		duplicateConfig = configSpace.getParameterConfigurationFromString("-foo 'a' -bar 'e' -cat 3", ParameterStringFormat.NODB_SYNTAX);
+		duplicateConfig = configSpace.getParameterConfigurationFromString("-foo 'a' -bar 'e' -cat 4", ParameterStringFormat.NODB_SYNTAX);
+		
 		//==== Parameter value for cat is missing, should tank
-		ParameterConfiguration duplicateConfig = configSpace.getParameterConfigurationFromString("-foo 'a' -bar 'e'", ParameterStringFormat.NODB_SYNTAX);
+		try {
+			 duplicateConfig = configSpace.getParameterConfigurationFromString("-foo 'a' -bar 'e'", ParameterStringFormat.NODB_SYNTAX);
+			fail("Expected exception on corrupted string");
+		} catch(ParameterConfigurationStringFormatException e)
+		{
+			//Good
+		}
+
+		duplicateConfig = configSpace.getParameterConfigurationFromString("foo='a',bar='e',cat='2'", ParameterStringFormat.STATEFILE_SYNTAX);
+		duplicateConfig = configSpace.getParameterConfigurationFromString("foo='a',bar='e',cat='3'", ParameterStringFormat.STATEFILE_SYNTAX);
+		duplicateConfig = configSpace.getParameterConfigurationFromString("foo='a',bar='e',cat='4'", ParameterStringFormat.STATEFILE_SYNTAX);
+		
+		
+		try {
+			duplicateConfig = configSpace.getParameterConfigurationFromString("foo='a',bar='e'", ParameterStringFormat.STATEFILE_SYNTAX);
+			fail("Expected exception on corrupted string");
+		} catch(ParameterConfigurationStringFormatException e)
+		{
+			//Good
+		}
+		
 	}
 	
+	
 	/**
-	 * Related to bug 1728
+	 * Related to bug 2009 & 1720
+	 * 
+	 */
+	@Test
+	public void testFromStringMissingActiveParamContinuous()
+	{
+
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("foo {a,b,c} [a]\nbar{e,d,f} [f]\n cat [2,4] [2] \nbar | foo in { c }");		
+	
+		ParameterConfiguration duplicateConfig = configSpace.getParameterConfigurationFromString("-foo 'a' -bar 'e' -cat 2", ParameterStringFormat.NODB_SYNTAX);
+		duplicateConfig = configSpace.getParameterConfigurationFromString("-foo 'a' -bar 'e' -cat 3", ParameterStringFormat.NODB_SYNTAX);
+		duplicateConfig = configSpace.getParameterConfigurationFromString("-foo 'a' -bar 'e' -cat 4", ParameterStringFormat.NODB_SYNTAX);
+		
+		//==== Parameter value for cat is missing, should tank
+		try {
+			 duplicateConfig = configSpace.getParameterConfigurationFromString("-foo 'a' -bar 'e'", ParameterStringFormat.NODB_SYNTAX);
+			fail("Expected exception on corrupted string");
+		} catch(ParameterConfigurationStringFormatException e)
+		{
+			//Good
+		}
+
+		duplicateConfig = configSpace.getParameterConfigurationFromString("foo='a',bar='e',cat='2'", ParameterStringFormat.STATEFILE_SYNTAX);
+		duplicateConfig = configSpace.getParameterConfigurationFromString("foo='a',bar='e',cat='3'", ParameterStringFormat.STATEFILE_SYNTAX);
+		duplicateConfig = configSpace.getParameterConfigurationFromString("foo='a',bar='e',cat='4'", ParameterStringFormat.STATEFILE_SYNTAX);
+		
+		
+		try {
+			duplicateConfig = configSpace.getParameterConfigurationFromString("foo='a',bar='e'", ParameterStringFormat.STATEFILE_SYNTAX);
+			fail("Expected exception on corrupted string");
+		} catch(ParameterConfigurationStringFormatException e)
+		{
+			//Good
+		}
+		
+		
+		
+		
+	}
+	
+	
+	/**
+	 * Related to bug 1720
 	 */
 	@Test
 	public void testFromStringMissingInactive()

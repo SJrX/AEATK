@@ -4,9 +4,9 @@ import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
 import java.util.Collections;
-import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.TreeMap;
 
 import ca.ubc.cs.beta.aeatk.misc.jcommander.converter.BinaryDigitBooleanConverter;
 import ca.ubc.cs.beta.aeatk.misc.jcommander.converter.StringToDoubleConverterWithMax;
@@ -74,7 +74,7 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 	
 	
 	@Parameter(names="-T", description="additional context needed for target algorithm execution (see TAE documentation for possible values, generally rare)", variableArity = true)
-	public Map<String, String> additionalContext = new HashMap<String, String>();
+	public Map<String, String> additionalContext = new TreeMap<String, String>();
 	
 	@ParametersDelegate
 	public TargetAlgorithmEvaluatorOptions taeOpts = new TargetAlgorithmEvaluatorOptions();

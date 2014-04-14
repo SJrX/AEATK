@@ -270,10 +270,6 @@ public abstract class AbstractAlgorithmRunResult implements AlgorithmRunResult
 	public AbstractAlgorithmRunResult(AlgorithmRunConfiguration runConfig, RunStatus acResult, double runtime, double runLength, double quality, long resultSeed , String rawResultLine, boolean runResultWellFormed, String additionalRunData, double wallClockTime)
 	{
 		
-		if(acResult.equals(RunStatus.TIMEOUT))
-		{
-			System.err.println("Hello");
-		}
 		if(Double.isNaN(runtime) || runtime < 0)
 		{
 			throw new IllegalWrapperOutputException("Runtime is NaN or negative", rawResultLine);

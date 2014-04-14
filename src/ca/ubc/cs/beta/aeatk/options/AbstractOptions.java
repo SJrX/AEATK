@@ -298,7 +298,12 @@ public abstract class AbstractOptions implements Serializable {
 		}
 		return list;
 	}
+	
 
+	/**
+	 * Converts all options into a Map<String, String> as best as possible for RunGroup naming.
+	 * @param opts
+	 */
 	public void populateOptionsMap(Map<String, String> opts)
 	{
 		for(Field f : this.getClass().getDeclaredFields())
@@ -347,6 +352,9 @@ public abstract class AbstractOptions implements Serializable {
 					{
 						AbstractOptions abs = (AbstractOptions) o;
 						abs.populateOptionsMap(opts);
+					} else if(o instanceof Map)
+					{
+						//Skip Maps
 					}
 					else 
 					{

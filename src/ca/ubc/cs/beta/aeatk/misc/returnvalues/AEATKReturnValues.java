@@ -32,9 +32,8 @@ public final class AEATKReturnValues {
 	
 	public static final int OTHER_EXCEPTION = 255;
 
-	
-	
-	
+	public static final int UNCAUGHT_EXCEPTION = 128;
+
 	
 	private AEATKReturnValues()
 	{

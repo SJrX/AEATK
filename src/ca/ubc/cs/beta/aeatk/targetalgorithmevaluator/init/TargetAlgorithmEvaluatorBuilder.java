@@ -32,6 +32,7 @@ import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.prepostcommand.P
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.BoundedTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.AbortOnCrashTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.AbortOnFirstRunCrashTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.JVMShutdownBlockerTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.ResultOrderCorrectCheckerTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.SATConsistencyTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.SynchronousObserverTargetAlgorithmEvaluatorDecorator;
@@ -187,6 +188,15 @@ public class TargetAlgorithmEvaluatorBuilder {
 		}
 		
 		
+		if(options.taeStopProcessingOnShutdown)
+		{
+			log.trace("[TAE] Processing of runs and results will stop on JVM Shutdown");
+			tae = new JVMShutdownBlockerTargetAlgorithmEvaluatorDecorator(tae);
+		} else
+		{
+			log.debug("[TAE] Processing of runs and results will continue on JVM Shutdown");
+		}
+	
 		if(!ignoreBound && options.boundRuns)
 		{
 

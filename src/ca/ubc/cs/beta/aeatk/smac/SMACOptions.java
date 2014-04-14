@@ -169,7 +169,7 @@ public class SMACOptions extends AbstractOptions {
 
 
 	@ParametersDelegate
-	public RunGroupOptions runGroupOptions = new RunGroupOptions("%SCENARIO_NAME-%executionMode-ac-%adaptiveCapping-cutoff%cutoffTime"); 
+	public RunGroupOptions runGroupOptions = new RunGroupOptions("%SCENARIO_NAME"); 
 
 	@ParametersDelegate
 	public ScenarioOptions scenarioConfig = new ScenarioOptions();

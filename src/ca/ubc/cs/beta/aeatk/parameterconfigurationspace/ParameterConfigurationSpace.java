@@ -20,6 +20,7 @@ import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
+import java.util.TreeSet;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
@@ -1335,6 +1336,8 @@ public class ParameterConfigurationSpace implements Serializable {
 			
 			double[] valueArray;
 			
+			Set<String> namesSpecified = new HashSet<String>();
+			
 			ParameterConfiguration defaultConfig = this.getDefaultConfiguration();
 			
 			switch(f)
@@ -1357,6 +1360,7 @@ public class ParameterConfigurationSpace implements Serializable {
 						if(!paramSplit[1].trim().equals("NaN"))
 						{
 							config.put(paramSplit[0].trim(),paramSplit[1].replaceAll("'","").trim());
+							namesSpecified.add(paramSplit[0].trim());
 						}
 					
 						
@@ -1370,6 +1374,7 @@ public class ParameterConfigurationSpace implements Serializable {
 				case STATEFILE_SYNTAX:
 					valueArray = new double[numberOfParameters];
 					config = new ParameterConfiguration(this, valueArray,categoricalSize, parameterDomainContinuous, paramKeyIndexMap);
+					
 					tmpParamString = " " + paramString.replaceAll("'","");
 					params = tmpParamString.split(",");
 					for(String param : params)
@@ -1379,6 +1384,7 @@ public class ParameterConfigurationSpace implements Serializable {
 						if(!paramSplit[1].trim().equals("NaN"))
 						{
 							config.put(paramSplit[0].trim(),paramSplit[1].trim());
+							namesSpecified.add(paramSplit[0].trim());
 						}
 					}
 					
@@ -1401,6 +1407,7 @@ public class ParameterConfigurationSpace implements Serializable {
 						valueArray[i] = Double.valueOf(params[i]);
 					}
 					config = new ParameterConfiguration(this, valueArray,categoricalSize, parameterDomainContinuous, paramKeyIndexMap);
+					namesSpecified.addAll(config.keySet());
 					break;
 
 				case SURROGATE_EXECUTOR:
@@ -1410,7 +1417,7 @@ public class ParameterConfigurationSpace implements Serializable {
 					tmpParamString = paramString.trim().replaceAll("-P", "");
 					
 					params = tmpParamString.split(" "); 
-					Set<String> namesSpecified = new HashSet<String>();
+					
 					
 					for(int i=0; i < params.length; i++)
 					{
@@ -1426,12 +1433,7 @@ public class ParameterConfigurationSpace implements Serializable {
 						}
 					}
 					
-				
-					
-					if(namesSpecified.equals(config.getActiveParameters()))
-					{
-						break;
-					} else
+					if(!namesSpecified.equals(config.getActiveParameters()))
 					{
 						Set<String> missingButRequired = new HashSet<String>();
 						Set<String> specifiedButNotActive = new HashSet<String>();
@@ -1444,6 +1446,7 @@ public class ParameterConfigurationSpace implements Serializable {
 						throw new IllegalArgumentException("Param String specified some combination of inactive parameters and/or missed active parameters. \nRequired Parameters: " + config.getActiveParameters().size() + "\nSpecified Parameters: " + namesSpecified.size() + "\nRequired But Missing: " + missingButRequired.toString() + "\nSpecified But Not Required" + specifiedButNotActive.toString());
 					}
 					
+					break;
 				case NODB_OR_STATEFILE_SYNTAX:
 					try {
 						return getParameterConfigurationFromString(paramString, ParameterStringFormat.STATEFILE_SYNTAX, rand);
@@ -1476,33 +1479,25 @@ public class ParameterConfigurationSpace implements Serializable {
 			}
 			
 			
-			Set<String> missingParameters = new HashSet<String>();
-			for(String name : config.keySet())
+			Set<String> unSetActiveParameters = new TreeSet<String>(config.getActiveParameters());
+			unSetActiveParameters.removeAll(namesSpecified);
+			
+			if(unSetActiveParameters.size() > 0)
 			{
-				if(config.get(name) == null)
-				{
-					 missingParameters.add(name);
-				}
+				throw new ParameterConfigurationStringMissingParameterException("Error processing Parameter Configuration String \""+ paramString+ "\" in format: "+ f + ". The string specified is missing one or more required parameters: " + unSetActiveParameters.toString());
 			}
-			
-			if(missingParameters.size() > 0)
-			{
-				throw new ParamConfigurationStringFormatException("Error processing Parameter Configuration String \""+ paramString+ "\" in format: "+ f + ". The string specified is missing one or more required parameters: " + missingParameters.toString());
-			}
-			
-			
-			
+
 			return config;
 		} catch(IllegalStateException e)
 		{
 			throw e;
-		} catch(ParamConfigurationStringFormatException e)
+		} catch(ParameterConfigurationStringFormatException e)
 		{
 			throw e;
 		
 		} catch(RuntimeException e )
 		{
-			throw new ParamConfigurationStringFormatException("Error processing Parameter Configuration String \""+ paramString+ "\" in format: "+ f + " please check the arguments (and nested exception) and try again", e);
+			throw new ParameterConfigurationStringFormatException("Error processing Parameter Configuration String \""+ paramString+ "\" in format: "+ f + " please check the arguments (and nested exception) and try again", e);
 		}
 		
 		

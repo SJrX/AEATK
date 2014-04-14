@@ -638,7 +638,7 @@ public class CommandLineAlgorithmRun implements Callable<AlgorithmRunResult>{
 
 	
 				runObserver.currentStatus(Collections.singletonList(completedAlgorithmRun));
-				log.debug("Run {} is completed", this);
+				log.debug("Run {} is completed", completedAlgorithmRun);
 				
 			} finally
 			{

@@ -14,9 +14,11 @@ import org.slf4j.LoggerFactory;
 
 import au.com.bytecode.opencsv.CSVReader;
 import ca.ubc.cs.beta.aeatk.misc.csvhelpers.ConfigCSVFileHelper;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationStringFormatException;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration.ParameterStringFormat;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationStringMissingParameterException;
 
 public class TrajectoryFileParser {
 
@@ -37,6 +39,10 @@ public class TrajectoryFileParser {
 		{
 			detailed = true;
 		}
+		
+		ParameterConfiguration defaultConfiguration = configSpace.getDefaultConfiguration();
+		
+		
 		for(int i=0; i < configs.getNumberOfDataRows(); i++)
 		{		
 			String time = configs.getStringDataValue(i, 0).replaceAll("\"", "");
@@ -64,8 +70,17 @@ public class TrajectoryFileParser {
 			//3 is the theta Idx of it
 			double overhead = Double.valueOf(dataRow[4]);
 			
-			ParameterConfiguration configObj = configSpace.getParameterConfigurationFromString(sb.toString(), ParameterStringFormat.STATEFILE_SYNTAX);
-			
+			ParameterConfiguration configObj;
+			try
+			{
+				configObj = configSpace.getParameterConfigurationFromString(sb.toString(), ParameterStringFormat.STATEFILE_SYNTAX);
+			} catch(ParameterConfigurationStringMissingParameterException e)
+			{
+				//This hack here relies on the fact that multiple values specified will over write each other in sequential order.
+				 configObj = configSpace.getParameterConfigurationFromString(defaultConfiguration.getFormattedParameterString(ParameterStringFormat.STATEFILE_SYNTAX) + "," + sb.toString(), ParameterStringFormat.STATEFILE_SYNTAX);
+				 log.warn("Detected incomplete parameter settings on line {}: {}. Imputed with default values to be: {}. The algorithm may behave differently with these imputed values than if they were not set. ", i+2 /* lines start with 1 and not 0, and there is a header row */, sb.toString(), configObj.getFormattedParameterString(ParameterStringFormat.STATEFILE_SYNTAX) );
+			}
+		
 			TrajectoryFileEntry tfe = new TrajectoryFileEntry(configObj,tunerTime, wallTime, empiricalPerformance, overhead );
 			
 			skipList.put(Double.valueOf(time), tfe);
