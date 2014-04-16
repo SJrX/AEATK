@@ -152,7 +152,7 @@ exec java -Xmx"$SMACMEM"m -cp "$DIR/conf/:$jarconcat" $EXEC "$@"
 	sb.append("done").append("\n");
 	sb.append("jarconcat=${jarconcat:1}\n");
 	sb.append("\n");
-	sb.append("exec java -Xmx\"$SMACMEM\"m -cp \"$DIR/conf/:$DIR/patches/:$jarconcat:$DIR/patches/\" $EXEC \"$@\"").append("\n");
+	sb.append("exec java -Xmx\"$SMACMEM\"m -cp \"$DIR/conf/:$DIR/patches/:$jarconcat:$DIR/patches/\" ca.ubc.cs.beta.aeatk.ant.execscript.Launcher $EXEC \"$@\"").append("\n");
 	
 	return sb.toString();
 }
@@ -196,7 +196,7 @@ exec java -Xmx"$SMACMEM"m -cp "$DIR/conf/:$jarconcat" $EXEC "$@"
 			sb.append("echo Starting "+ nameOfProgram + " with %SMACMEM% MB of RAM").append("\r\n");
 		}
 		//sb.append("@echo on").append("\n");
-		sb.append("java -Xmx%SMACMEM%m -cp \"%DIR%conf\\;%DIR%patches\\;%jarconcat%%DIR%patches\\ \" %EXEC% %*").append("\r\n");
+		sb.append("java -Xmx%SMACMEM%m -cp \"%DIR%conf\\;%DIR%patches\\;%jarconcat%%DIR%patches\\ \" ca.ubc.cs.beta.aeatk.ant.execscript.Launcher %EXEC% %*").append("\r\n");
 
 		return sb.toString();
 	}

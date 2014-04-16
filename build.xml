@@ -83,8 +83,12 @@ dirty: ${git.dirty}</echo>
 	<target name="compile" depends="init" description="Compiles the source">
 		<javac srcdir="src" destdir="build/classes" debug="true" includeantruntime="false" target="1.7" source="1.7" >
 		<classpath refid="compile.classpath"/>
-		</javac>		
+		</javac>
+		<delete file="build/classes/ca/ubc/cs/beta/aeatk/ant/execscript/Launcher.class" />
+		<javac srcdir="src" destdir="build/classes" includes="ca/ubc/cs/beta/aeatk/ant/execscript/Launcher.java" debug="true" includeantruntime="false" target="1.5" source="1.5" />
+		
 	</target>	
+	
 	
 	<target name="compile-test" depends="compile">
 		<path id="test.compile.classpath">
