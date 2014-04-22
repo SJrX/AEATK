@@ -2,6 +2,8 @@ package ca.ubc.cs.beta.aeatk.concurrent;
 
 import java.util.concurrent.Semaphore;
 
+import net.jcip.annotations.ThreadSafe;
+
 /**
  * A standard semaphore that exposes the reducePermits() method so that resources can be
  * taken
@@ -9,6 +11,7 @@ import java.util.concurrent.Semaphore;
  * @author Steve Ramage <seramage@cs.ubc.ca>
  *
  */
+@ThreadSafe
 public class ReducableSemaphore extends Semaphore
 {
 

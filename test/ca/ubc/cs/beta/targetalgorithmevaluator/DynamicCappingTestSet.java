@@ -53,7 +53,7 @@ public class DynamicCappingTestSet {
 	@BeforeClass
 	public static void beforeClass()
 	{
-		File paramFile = TestHelper.getTestFile("paramFiles/paramEchoParamFile.txt");
+		File paramFile = TestHelper.getTestFile("paramFiles/paramEchoParamFileWalltime.txt");
 		configSpace = new ParameterConfigurationSpace(paramFile);
 	}
 	Random r;

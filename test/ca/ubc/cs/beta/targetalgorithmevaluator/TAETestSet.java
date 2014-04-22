@@ -2703,6 +2703,10 @@ public class TAETestSet {
 		b.append(System.getProperty("java.class.path"));
 		b.append(" ");
 		b.append(TrueSleepyParamEchoExecutor.class.getCanonicalName());
+		
+		File paramFile = TestHelper.getTestFile("paramFiles/paramEchoParamFileWalltime.txt");
+		ParameterConfigurationSpace configSpace = new ParameterConfigurationSpace(paramFile);
+		
 		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
 		
 		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
@@ -2779,112 +2783,123 @@ public class TAETestSet {
 	{
 		
 	
-		//Check that a submission of run 10 runs on a bound of <5 take 5,1,1,1,1, 5,1,1,1,1 takes 6 seconds and not 10.
 		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		StringBuilder b = new StringBuilder();
 		b.append("java -cp ");
 		b.append(System.getProperty("java.class.path"));
 		b.append(" ");
 		b.append(TrueSleepyParamEchoExecutor.class.getCanonicalName());
-		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
 		
-		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
-		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
-		
-		options.logAllCallStrings = true;
-		options.logAllProcessOutput = true;
-		options.concurrentExecution = true;
-		options.observerFrequency = 50;
-		options.cores = 100;
-		
-		tae = fact.getTargetAlgorithmEvaluator( options);	
-		TargetAlgorithmEvaluator cliTAE = tae;
-		
-
-		tae = new BoundedTargetAlgorithmEvaluator(tae,100);
-		tae = new BoundedTargetAlgorithmEvaluator(tae,100);
-		tae = new BoundedTargetAlgorithmEvaluator(tae,100);
-		tae = new BoundedTargetAlgorithmEvaluator(tae,100);
-
-		
-		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(4);
-		for(int i=0; i < 100; i++)
+		try 
 		{
-			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
+			//Check that a submission of run 10 runs on a bound of <5 take 5,1,1,1,1, 5,1,1,1,1 takes 6 seconds and not 10.
 			
-			config.put("runtime", String.valueOf(1 + (i%10)));
+			File paramFile = TestHelper.getTestFile("paramFiles/paramEchoParamFileWalltime.txt");
+			ParameterConfigurationSpace configSpace = new ParameterConfigurationSpace(paramFile);
 			
-			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
+			AlgorithmExecutionConfiguration execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
+			
+			
+			CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
+			CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
+			
+			options.logAllCallStrings = true;
+			options.logAllProcessOutput = true;
+			options.concurrentExecution = true;
+			options.observerFrequency = 50;
+			options.cores = 100;
+			
+			tae = fact.getTargetAlgorithmEvaluator( options);	
+			TargetAlgorithmEvaluator cliTAE = tae;
+			
+	
+			tae = new BoundedTargetAlgorithmEvaluator(tae,100);
+			tae = new BoundedTargetAlgorithmEvaluator(tae,100);
+			tae = new BoundedTargetAlgorithmEvaluator(tae,100);
+			tae = new BoundedTargetAlgorithmEvaluator(tae,100);
+	
+			
+			List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(4);
+			for(int i=0; i < 100; i++)
 			{
-				//Only want good configurations
-				i--;
-				continue;
-			} else
-			{
-				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config, execConfig);
-				runConfigs.add(rc);
-			}
-		}
-		
-		
-		
-		StopWatch watch = new AutoStartStopWatch();
-		System.out.println(watch.stop());
-		ByteArrayOutputStream bout = new ByteArrayOutputStream();
-		PrintStream pout = new PrintStream(bout);
-		
-		
-		
-		
-		System.out.println("Turning off STDOUT");
-		final PrintStream origOut = System.out;
-		System.setOut(pout);
-		
-		tae.evaluateRun(runConfigs, new TargetAlgorithmEvaluatorRunObserver()
-		{
-
-			final long startTime = System.currentTimeMillis();
-			int numCompleted = 0;
-			int calls = 0;
-			@Override
-			public void currentStatus(List<? extends AlgorithmRunResult> runs) {
-				//if(Math.random() > 0.95)
-				//System.out.println("Called");
-				calls++;
-				int complete = 0;
-				for(AlgorithmRunResult run : runs)
+				ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
+				
+				config.put("runtime", String.valueOf(1 + (i%10)));
+				
+				if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
 				{
-					if(run.isRunCompleted())
-					{
-						complete++;
-					}
+					//Only want good configurations
+					i--;
+					continue;
+				} else
+				{
+					AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config, execConfig);
+					runConfigs.add(rc);
 				}
-				if(numCompleted < complete)
-				{
-					numCompleted = complete;
-					origOut.println("Status: " + numCompleted + " out of " + runs.size() + " calls: " + calls);
+			}
+			
+			
+			
+			StopWatch watch = new AutoStartStopWatch();
+			System.out.println(watch.stop());
+			ByteArrayOutputStream bout = new ByteArrayOutputStream();
+			PrintStream pout = new PrintStream(bout);
+			
+			
+			
+			
+			System.out.println("Turning off STDOUT");
+			final PrintStream origOut = System.out;
+			System.setOut(pout);
+			
+			tae.evaluateRun(runConfigs, new TargetAlgorithmEvaluatorRunObserver()
+			{
+	
+				final long startTime = System.currentTimeMillis();
+				int numCompleted = 0;
+				int calls = 0;
+				@Override
+				public void currentStatus(List<? extends AlgorithmRunResult> runs) {
+					//if(Math.random() > 0.95)
+					//System.out.println("Called");
+					calls++;
+					int complete = 0;
+					for(AlgorithmRunResult run : runs)
+					{
+						if(run.isRunCompleted())
+						{
+							complete++;
+						}
+					}
+					if(numCompleted < complete)
+					{
+						numCompleted = complete;
+						origOut.println("Status: " + numCompleted + " out of " + runs.size() + " calls: " + calls);
+						
+					}
+					
 					
 				}
-				
+					
 				
 			}
-				
+			);
 			
-		}
-		);
-		
-		System.setOut(origOut);
-		System.out.println("Outputting Everything...");
-		String output = bout.toString();
-		System.out.println(output);
-		
-
-		System.out.println(watch.stop());
-		if(output.contains("ERROR"))
-		{
-			fail("Output contained some error this is unexpected: " + output );
-		}
+			System.setOut(origOut);
+			System.out.println("Outputting Everything...");
+			String output = bout.toString();
+			System.out.println(output);
+			
 	
+			System.out.println(watch.stop());
+			if(output.contains("ERROR"))
+			{
+				fail("Output contained some error this is unexpected: " + output );
+			}
+		} finally
+		{ 	//Tests need to be cleaned up, reset the execConfig object
+			execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), TAETestSet.configSpace, false, false, 0.01);
+		}
 	}
 	
 	
@@ -3429,7 +3444,7 @@ public class TAETestSet {
 		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		
 		StringBuilder b = new StringBuilder();
-		b.append("\"test-files/testexecutor/fi\\letest.py\"");
+		b.append("\"test-files/testexecutor/fi_letest.py\"");
 		System.out.println(b);
 		
 		

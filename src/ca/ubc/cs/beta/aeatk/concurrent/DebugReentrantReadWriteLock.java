@@ -2,6 +2,9 @@ package ca.ubc.cs.beta.aeatk.concurrent;
 
 import java.util.concurrent.locks.ReentrantReadWriteLock;
 
+import net.jcip.annotations.ThreadSafe;
+
+@ThreadSafe
 public class DebugReentrantReadWriteLock extends ReentrantReadWriteLock {
 
 	/**
