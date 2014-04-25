@@ -4,6 +4,7 @@ import ca.ubc.cs.beta.TestHelper;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration.ParameterStringFormat;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationStringFormatException;
 
 public class TrueSleepyParamEchoExecutor {
 
@@ -29,13 +30,25 @@ public class TrueSleepyParamEchoExecutor {
 			}
 			
 			
-			
 			ParameterConfigurationSpace configSpace = new ParameterConfigurationSpace(TestHelper.getTestFile("paramFiles/paramEchoParamFileWalltime.txt"));
+			ParameterConfiguration config;
+			try {
 			
 			
 			
 			
-			ParameterConfiguration config = configSpace.getParameterConfigurationFromString(sb.toString(), ParameterStringFormat.NODB_SYNTAX);
+			
+			config = configSpace.getParameterConfigurationFromString(sb.toString(), ParameterStringFormat.NODB_SYNTAX);
+			} catch(ParameterConfigurationStringFormatException e)
+			{
+				
+				configSpace = new ParameterConfigurationSpace(TestHelper.getTestFile("paramFiles/paramEchoParamFile.txt"));
+				
+				
+				
+				
+				 config = configSpace.getParameterConfigurationFromString(sb.toString(), ParameterStringFormat.NODB_SYNTAX);
+			}
 			
 			String result = config.get("solved");
 			String runtime = config.get("runtime");
