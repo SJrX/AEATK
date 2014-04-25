@@ -238,24 +238,7 @@ public class OptionsToLaTeX {
 		Map<String, String> map = new HashMap<String, String>();
 				
 		map.put("\\'{e}","é");
-		/*
-		map.put("\\`{o}","ò");
-		map.put("\\'{o}","ó");
-		map.put("\\^{o}","ô");
-		map.put("\\\"{o}","ö");
-		map.put("\\H{o}","ő");
-		map.put("\\~{o}","õ");
-		map.put("\\c{c}","ç");
-		map.put("\\k{a}","ą");
-		map.put("\\l","ł");
-		map.put("\\={o}","ō");
-		map.put("\\b{o}","o");
-		map.put("\\.{o}","ȯ");
-		map.put("\\d{u}","ụ");
-		map.put("\\r{a}","å");
-		map.put("\\u{o}","ŏ");
-		map.put("\\v{s}","š");
-*/
+		
 		for(Entry<String, String> replacements : map.entrySet())
 		{
 			result = result.replaceAll(replacements.getValue(), Matcher.quoteReplacement(replacements.getKey()));
