@@ -51,7 +51,7 @@ public class ConsoleOnlyLoggingOptions extends AbstractOptions implements Loggin
 		} else
 		{
 			
-			String newXML = this.getClass().getPackage().getName().replace(".", File.separator) + File.separator+  "consoleonly-logback.xml";
+			String newXML = this.getClass().getPackage().getName().replace(".", "/") + "/"+  "consoleonly-logback.xml";
 			
 			
 			System.setProperty(LOGBACK_CONFIGURATION_FILE_PROPERTY, newXML);

@@ -100,7 +100,7 @@ public class ComplexLoggingOptions  extends AbstractOptions implements LoggingOp
 		} else
 		{
 			
-			String newXML = this.getClass().getPackage().getName().replace(".", File.separator) + File.separator+  "complex-logback.xml";
+			String newXML = this.getClass().getPackage().getName().replace(".", "/") + "/"+  "complex-logback.xml";
 			
 			
 			

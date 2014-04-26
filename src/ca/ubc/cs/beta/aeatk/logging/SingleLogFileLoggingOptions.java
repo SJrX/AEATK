@@ -95,7 +95,7 @@ public class SingleLogFileLoggingOptions  extends AbstractOptions implements Log
 		} else
 		{
 			
-			String newXML = this.getClass().getPackage().getName().replace(".", File.separator) + File.separator+  "singlefile-logback.xml";
+			String newXML = this.getClass().getPackage().getName().replace(".","/") + "/"+  "singlefile-logback.xml";
 			
 			
 			
