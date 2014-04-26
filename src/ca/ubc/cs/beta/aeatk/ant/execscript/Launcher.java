@@ -61,7 +61,8 @@ public class Launcher {
 			System.err.println("Unable to run program, most likely you need to upgrade to Java >=7.\n"
 					+ " Current Java Virtual Machine Name is: " +  System.getProperty("java.vm.name") + "\n Version: (" + System.getProperty("java.version") + ")\n"
 					+ " Location: " + System.getProperty("java.home") + "\n"  
-					+ "Please check your PATH and JAVA_HOME environment variables to ensure that it is the correct version");
+					+ "Please check your PATH and JAVA_HOME environment variables to ensure that it is the correct version.\n"
+					+ "For more information see: https://www.java.com/en/download/help/download_options.xml");
 			System.err.println("================================================================================");
 			
 		} catch(LinkageError e)

@@ -140,15 +140,17 @@ dirty: ${git.dirty}</echo>
 	
 	<target name="setjavaprop">
 		<property name="build.javadoc" value="true"/>
-	</target>	
+	</target>
+	
 	<target name="doc" depends="javadoc-internal,nodoc"/>
+	
 	<target name="javadoc-internal"  if="build.javadoc">
 		<path id="doc.classpath">
 			<fileset dir="doclib" id="doclib">
 				<include name="*.jar"/>
 				<exclude name="*sources.jar"/>
 			</fileset>
-			<fileset dir="${software.dir}/fastrf-${git.branch}/" id="fastrf">
+			<fileset dir="${fastrf.location}" id="fastrf">
                 <include name="fastrf.jar"/>
 				<include name="fastrf-src.jar"/>
 	       </fileset>
