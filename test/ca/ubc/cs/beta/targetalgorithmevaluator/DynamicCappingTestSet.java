@@ -15,25 +15,25 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
+
 import ca.ubc.cs.beta.TestHelper;
-import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
-import ca.ubc.cs.beta.aclib.algorithmrun.kill.KillableAlgorithmRun;
-import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
-import ca.ubc.cs.beta.aclib.configspace.ParamConfigurationSpace;
-import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
-import ca.ubc.cs.beta.aclib.misc.debug.DebugUtil;
-import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstance;
-import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceSeedPair;
-import ca.ubc.cs.beta.aclib.random.SeedableRandomPool;
-import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.WaitableTAECallback;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluatorFactory;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluatorOptions;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers.WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator;
+import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunStatus;
+import ca.ubc.cs.beta.aeatk.misc.debug.DebugUtil;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace;
+import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
+import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
+import ca.ubc.cs.beta.aeatk.random.SeedableRandomPool;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.WaitableTAECallback;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluatorFactory;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluatorOptions;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.helpers.WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator;
 
 @SuppressWarnings("unused")
 public class DynamicCappingTestSet {
@@ -41,9 +41,9 @@ public class DynamicCappingTestSet {
 	
 	private static TargetAlgorithmEvaluator tae;
 	
-	private static AlgorithmExecutionConfig execConfig;
+	private static AlgorithmExecutionConfiguration execConfig;
 	
-	private static ParamConfigurationSpace configSpace;
+	private static ParameterConfigurationSpace configSpace;
 	
 	private static final int TARGET_RUNS_IN_LOOPS = 10;
 	
@@ -53,8 +53,8 @@ public class DynamicCappingTestSet {
 	@BeforeClass
 	public static void beforeClass()
 	{
-		File paramFile = TestHelper.getTestFile("paramFiles/paramEchoParamFile.txt");
-		configSpace = new ParamConfigurationSpace(paramFile);
+		File paramFile = TestHelper.getTestFile("paramFiles/paramEchoParamFileWalltime.txt");
+		configSpace = new ParameterConfigurationSpace(paramFile);
 	}
 	Random r;
 	
@@ -88,9 +88,9 @@ public class DynamicCappingTestSet {
 		b.append(System.getProperty("java.class.path"));
 		b.append(" ");
 		b.append(ParamEchoExecutor.class.getCanonicalName());
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 		
-		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
+		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE();
 		
 		this.r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		
@@ -132,18 +132,18 @@ public class DynamicCappingTestSet {
 		b.append(System.getProperty("java.class.path"));
 		b.append(" ");
 		b.append(TrueSleepyParamEchoExecutor.class.getCanonicalName());
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
 		
-		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);
+		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE();
 		tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
 		
 		assertTrue(tae.areRunsObservable());
 		
 		
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(1);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(1);
 		for(int i=0; i < 1; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			config.put("runtime", "100");
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
 			{
@@ -152,7 +152,7 @@ public class DynamicCappingTestSet {
 				continue;
 			} else
 			{
-				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config);
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config,execConfig);
 				runConfigs.add(rc);
 			}
 		}
@@ -170,7 +170,7 @@ public class DynamicCappingTestSet {
 		{
 			
 			@Override
-			public void currentStatus(List<? extends KillableAlgorithmRun> runs) {
+			public void currentStatus(List<? extends AlgorithmRunResult> runs) {
 				
 				if(evaluateDone.get())
 				{
@@ -178,7 +178,7 @@ public class DynamicCappingTestSet {
 				}
 				double runtimeSum = 0.0;
 				double walltimeSum = 0.0;
-				for(AlgorithmRun run : runs)
+				for(AlgorithmRunResult run : runs)
 				{
 					runtimeSum += run.getRuntime();
 					walltimeSum += run.getWallclockExecutionTime();
@@ -188,7 +188,7 @@ public class DynamicCappingTestSet {
 				if(runtimeSum > 3)
 				{
 					System.out.println("Trying to kill");
-					for(KillableAlgorithmRun run : runs)
+					for(AlgorithmRunResult run : runs)
 					{
 						run.kill();
 					}
@@ -200,19 +200,19 @@ public class DynamicCappingTestSet {
 		};
 		
 		long startTime  = System.currentTimeMillis();
-		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs,obs);
+		List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs,obs);
 		evaluateDone.set(true);
 		long endTime = System.currentTimeMillis();
 		//System.setOut(out);
 		//System.out.println(bout.toString());
 		
-		for(AlgorithmRun run : runs)
+		for(AlgorithmRunResult run : runs)
 		{
 			System.out.println(run.getResultLine());
 			
-			ParamConfiguration config  = run.getRunConfig().getParamConfiguration();
+			ParameterConfiguration config  = run.getAlgorithmRunConfiguration().getParameterConfiguration();
 			
-			if(run.getRunResult().isSuccessfulAndCensored())
+			if(run.getRunStatus().isSuccessfulAndCensored())
 			{
 				continue;
 			}
@@ -220,7 +220,7 @@ public class DynamicCappingTestSet {
 			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
 			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
 			assertDEquals(config.get("seed"), run.getResultSeed(), 0.1);
-			assertEquals(config.get("solved"), run.getRunResult().name());
+			assertEquals(config.get("solved"), run.getRunStatus().name());
 			//This executor should not have any additional run data
 			assertEquals("",run.getAdditionalRunData());
 			
@@ -239,7 +239,7 @@ public class DynamicCappingTestSet {
 	
 
 	/**
-	 * Tests whether warnings are generated for Algorithms exceeding there runtime
+	 * Generates a bunch of runs for the RunConfig object 
 	 */
 	@Test
 	public void testDynamicAdaptiveCappingMultiRunSingleCore()
@@ -250,18 +250,18 @@ public class DynamicCappingTestSet {
 		b.append(System.getProperty("java.class.path"));
 		b.append(" ");
 		b.append(TrueSleepyParamEchoExecutor.class.getCanonicalName());
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
 		
-		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig);	
+		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE();	
 		tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
 		
 		assertTrue(tae.areRunsObservable());
 		
 		
-		final List<RunConfig> runConfigs = new ArrayList<RunConfig>(10);
+		final List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(10);
 		for(int i=0; i < 10; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			config.put("runtime", ""+(i+1));
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
 			{
@@ -270,7 +270,7 @@ public class DynamicCappingTestSet {
 				continue;
 			} else
 			{
-				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config);
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config,execConfig);
 				runConfigs.add(rc);
 			}
 		}
@@ -284,19 +284,19 @@ public class DynamicCappingTestSet {
 		{
 			
 			@Override
-			public void currentStatus(List<? extends KillableAlgorithmRun> runs) {
+			public void currentStatus(List<? extends AlgorithmRunResult> runs) {
 				
 				if(runs.size() != runConfigs.size())
 				{
 					failed.set("Expected that runConfigs.size(): " + runConfigs.size() + " is always equal to runs.size():" + runs.size());
-					for(KillableAlgorithmRun run : runs)
+					for(AlgorithmRunResult run : runs)
 					{
 						run.kill();
 					}
 				}
 				
 				double runtimeSum = 0.0; 
-				for(AlgorithmRun run : runs)
+				for(AlgorithmRunResult run : runs)
 				{
 					runtimeSum += run.getRuntime();
 				}
@@ -307,12 +307,12 @@ public class DynamicCappingTestSet {
 					System.out.flush();
 					System.out.println("Issuing kill order on " + runtimeSum);
 				
-					for(KillableAlgorithmRun run : runs)
+					for(AlgorithmRunResult run : runs)
 					{
 						System.out.println(run);
 					}
 					System.out.flush();
-					for(KillableAlgorithmRun run : runs)
+					for(AlgorithmRunResult run : runs)
 					{
 					
 						run.kill();
@@ -328,18 +328,18 @@ public class DynamicCappingTestSet {
 		}
 		
 		long startTime  = System.currentTimeMillis();
-		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs,obs);
+		List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs,obs);
 		long endTime = System.currentTimeMillis();
 		//System.setOut(out);
 		//System.out.println(bout.toString());
 		
-		for(AlgorithmRun run : runs)
+		for(AlgorithmRunResult run : runs)
 		{
 			System.out.println(run.getResultLine());
 			
-			ParamConfiguration config  = run.getRunConfig().getParamConfiguration();
+			ParameterConfiguration config  = run.getAlgorithmRunConfiguration().getParameterConfiguration();
 			
-			if(run.getRunResult().isSuccessfulAndCensored())
+			if(run.getRunStatus().isSuccessfulAndCensored())
 			{
 				continue;
 			}
@@ -347,7 +347,7 @@ public class DynamicCappingTestSet {
 			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
 			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
 			assertDEquals(config.get("seed"), run.getResultSeed(), 0.1);
-			assertEquals(config.get("solved"), run.getRunResult().name());
+			assertEquals(config.get("solved"), run.getRunStatus().name());
 			//This executor should not have any additional run data
 			assertEquals("",run.getAdditionalRunData());
 			
@@ -356,7 +356,7 @@ public class DynamicCappingTestSet {
 		
 		tae.notifyShutdown();
 		
-		assertTrue("Should have taken less than five seconds to run, it took " + (endTime - startTime)/1000.0 + " seconds", (endTime - startTime) < (long) 6000);
+		assertTrue("Should have taken less than ten seconds to run, it took " + (endTime - startTime)/1000.0 + " seconds", (endTime - startTime) < (long) 10000);
 	}
 	
 
@@ -372,23 +372,23 @@ public class DynamicCappingTestSet {
 		b.append(System.getProperty("java.class.path"));
 		b.append(" ");
 		b.append(TrueSleepyParamEchoExecutor.class.getCanonicalName());
-		execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
 		
 		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
 		
 		CommandLineTargetAlgorithmEvaluatorOptions opt = fact.getOptionObject();
 		opt.logAllCallStrings = true;
 		opt.cores = 4;
-		tae = fact.getTargetAlgorithmEvaluator(execConfig, opt);
+		tae = fact.getTargetAlgorithmEvaluator( opt);
 		
 		tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
 		
 		assertTrue(tae.areRunsObservable());
 		
-		List<RunConfig> runConfigs = new ArrayList<RunConfig>(10);
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(10);
 		for(int i=0; i < 10; i++)
 		{
-			ParamConfiguration config = configSpace.getRandomConfiguration(r);
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 			
 			config.put("runtime", ""+(i+1));
 			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
@@ -398,7 +398,7 @@ public class DynamicCappingTestSet {
 				continue;
 			} else
 			{
-				RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config);
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config,execConfig);
 				runConfigs.add(rc);
 			}
 		}
@@ -416,12 +416,12 @@ public class DynamicCappingTestSet {
 			
 			private final AtomicBoolean shown = new AtomicBoolean(false);
 			@Override
-			public void currentStatus(List<? extends KillableAlgorithmRun> runs) {
+			public void currentStatus(List<? extends AlgorithmRunResult> runs) {
 				
 				//System.out.println(runs.get(0).getWallclockExecutionTime());
 				double runtimeSum = 0.0; 
 				double walltimeSum = 0.0;
-				for(AlgorithmRun run : runs)
+				for(AlgorithmRunResult run : runs)
 				{
 					runtimeSum += run.getRuntime();
 					walltimeSum += run.getWallclockExecutionTime();
@@ -434,12 +434,12 @@ public class DynamicCappingTestSet {
 				{
 					if(!shown.getAndSet(true))
 					{
-						for(KillableAlgorithmRun run : runs)
+						for(AlgorithmRunResult run : runs)
 						{
 							System.out.println(run.toString());
 						}
 					}
-					for(KillableAlgorithmRun run : runs)
+					for(AlgorithmRunResult run : runs)
 					{
 						run.kill();
 					}
@@ -450,33 +450,33 @@ public class DynamicCappingTestSet {
 		};
 		
 		long startTime  = System.currentTimeMillis();
-		List<AlgorithmRun> runs = tae.evaluateRun(runConfigs,obs);
+		List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs,obs);
 		long endTime = System.currentTimeMillis();
 		//System.setOut(out);
 		//System.out.println(bout.toString());
 		
 		long runtimeSum = 0;
 		long wallclockTime = 0;
-		for(AlgorithmRun run : runs)
+		for(AlgorithmRunResult run : runs)
 		{
 			System.out.println("Result: " + run);
 			
-			ParamConfiguration config  = run.getRunConfig().getParamConfiguration();
+			ParameterConfiguration config  = run.getAlgorithmRunConfiguration().getParameterConfiguration();
 			
 			runtimeSum+= run.getRuntime();
 			wallclockTime += run.getWallclockExecutionTime();
 			
-			if(run.getRunResult().isSuccessfulAndCensored())
+			if(run.getRunStatus().isSuccessfulAndCensored())
 			{
 				
-				assertEquals(run.getRunResult(), RunResult.KILLED);
+				assertEquals(RunStatus.KILLED, run.getRunStatus());
 				continue;
 			}
 			assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
 			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
 			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
 			assertDEquals(config.get("seed"), run.getResultSeed(), 0.1);
-			assertEquals(config.get("solved"), run.getRunResult().name());
+			assertEquals(config.get("solved"), run.getRunStatus().name());
 			//This executor should not have any additional run data
 			assertEquals("",run.getAdditionalRunData());
 			
@@ -513,18 +513,18 @@ public class DynamicCappingTestSet {
 			b.append(System.getProperty("java.class.path"));
 			b.append(" ");
 			b.append(TrueSleepyParamEchoExecutor.class.getCanonicalName());
-			execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
+			execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
 			
-			tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(execConfig, 50);	
+			tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(50);	
 			tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
 			
 			assertTrue(tae.areRunsObservable());
 			
 			
-			List<RunConfig> runConfigs = new ArrayList<RunConfig>(1);
+			List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(1);
 			for(int i=0; i < 1; i++)
 			{
-				ParamConfiguration config = configSpace.getRandomConfiguration(r);
+				ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 				config.put("runtime", "1");
 				if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
 				{
@@ -533,7 +533,7 @@ public class DynamicCappingTestSet {
 					continue;
 				} else
 				{
-					RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config);
+					AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config,execConfig);
 					runConfigs.add(rc);
 				}
 			}
@@ -547,7 +547,7 @@ public class DynamicCappingTestSet {
 			{
 				
 				@Override
-				public void currentStatus(List<? extends KillableAlgorithmRun> runs) {
+				public void currentStatus(List<? extends AlgorithmRunResult> runs) {
 					
 					if(evaluateDone.get())
 					{
@@ -561,7 +561,7 @@ public class DynamicCappingTestSet {
 			};
 			
 			long startTime  = System.currentTimeMillis();
-			List<AlgorithmRun> runs = tae.evaluateRun(runConfigs,obs);
+			List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs,obs);
 			evaluateDone.set(true);
 			System.out.println("DONE");
 			System.out.flush();
@@ -599,13 +599,13 @@ public class DynamicCappingTestSet {
 			b.append(System.getProperty("java.class.path"));
 			b.append(" ");
 			b.append(TrueSleepyParamEchoExecutor.class.getCanonicalName());
-			execConfig = new AlgorithmExecutionConfig(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
+			execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
 			CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
 			
 			CommandLineTargetAlgorithmEvaluatorOptions opt = fact.getOptionObject();
 			opt.cores = 1;
 			opt.observerFrequency = 50;
-			tae = fact.getTargetAlgorithmEvaluator(execConfig, opt);
+			tae = fact.getTargetAlgorithmEvaluator( opt);
 			
 				
 			tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
@@ -613,10 +613,10 @@ public class DynamicCappingTestSet {
 			assertTrue(tae.areRunsObservable());
 			
 			
-			List<RunConfig> runConfigs = new ArrayList<RunConfig>(1);
+			List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(1);
 			for(int i=0; i < 1; i++)
 			{
-				ParamConfiguration config = configSpace.getRandomConfiguration(r);
+				ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 				config.put("runtime", "1");
 				if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
 				{
@@ -625,7 +625,7 @@ public class DynamicCappingTestSet {
 					continue;
 				} else
 				{
-					RunConfig rc = new RunConfig(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config);
+					AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config,execConfig);
 					runConfigs.add(rc);
 				}
 			}
@@ -639,7 +639,7 @@ public class DynamicCappingTestSet {
 			{
 				
 				@Override
-				public void currentStatus(List<? extends KillableAlgorithmRun> runs) {
+				public void currentStatus(List<? extends AlgorithmRunResult> runs) {
 					
 					if(evaluateDone.get())
 					{
@@ -661,7 +661,7 @@ public class DynamicCappingTestSet {
 			{
 
 				@Override
-				public void onSuccess(List<AlgorithmRun> runs) {
+				public void onSuccess(List<AlgorithmRunResult> runs) {
 					System.out.println("Done");
 					evaluateDone.set(true);
 				}

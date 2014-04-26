@@ -10,11 +10,11 @@ import java.util.concurrent.atomic.AtomicReference;
 import org.junit.Before;
 import org.junit.Test;
 
-import ca.ubc.cs.beta.aclib.eventsystem.EventManager;
-import ca.ubc.cs.beta.aclib.eventsystem.EventHandler;
-import ca.ubc.cs.beta.aclib.eventsystem.events.AutomaticConfiguratorEvent;
-import ca.ubc.cs.beta.aclib.eventsystem.events.basic.EventHandlerRuntimeExceptionEvent;
-import ca.ubc.cs.beta.aclib.eventsystem.exceptions.EventManagerShutdownException;
+import ca.ubc.cs.beta.aeatk.eventsystem.EventHandler;
+import ca.ubc.cs.beta.aeatk.eventsystem.EventManager;
+import ca.ubc.cs.beta.aeatk.eventsystem.events.AutomaticConfiguratorEvent;
+import ca.ubc.cs.beta.aeatk.eventsystem.events.basic.EventHandlerRuntimeExceptionEvent;
+import ca.ubc.cs.beta.aeatk.eventsystem.exceptions.EventManagerShutdownException;
 
 public class EventManagerTester {
 

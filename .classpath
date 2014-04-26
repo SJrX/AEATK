@@ -4,7 +4,7 @@
 	<classpathentry kind="src" path="test-files"/>
 	<classpathentry kind="src" path="test"/>
 	<classpathentry kind="src" path="version"/>
-	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.6"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.launching.JRE_CONTAINER/org.eclipse.jdt.internal.debug.ui.launcher.StandardVMType/JavaSE-1.7"/>
 	<classpathentry kind="lib" path="lib/commons-collections-3.2.1.jar"/>
 	<classpathentry kind="lib" path="lib/commons-math-2.2.jar"/>
 	<classpathentry kind="lib" path="lib/opencsv-2.3.jar"/>
@@ -17,6 +17,9 @@
 	<classpathentry kind="lib" path="lib/commons-math3-3.2.jar"/>
 	<classpathentry kind="lib" path="lib/commons-io-2.1.jar"/>
 	<classpathentry kind="lib" path="lib/slf4j-api-1.7.5.jar"/>
+	<classpathentry kind="lib" path="lib/jackson-annotations-2.3.1.jar"/>
+	<classpathentry kind="lib" path="lib/jackson-core-2.3.1.jar" sourcepath="/home/sjr/git/jackson-core/src/main/java"/>
+	<classpathentry kind="lib" path="lib/jackson-databind-2.3.1.jar" sourcepath="/home/sjr/git/jackson-databind/src/main/java"/>
 	<classpathentry combineaccessrules="false" kind="src" path="/RandomForests"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.junit.JUNIT_CONTAINER/4"/>
 	<classpathentry kind="src" path=".apt_generated">

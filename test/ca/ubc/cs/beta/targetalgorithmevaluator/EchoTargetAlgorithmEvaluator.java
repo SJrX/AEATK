@@ -3,16 +3,15 @@ package ca.ubc.cs.beta.targetalgorithmevaluator;
 import java.util.ArrayList;
 import java.util.List;
 
-import ca.ubc.cs.beta.aclib.algorithmrun.AlgorithmRun;
-import ca.ubc.cs.beta.aclib.algorithmrun.ExistingAlgorithmRun;
-import ca.ubc.cs.beta.aclib.algorithmrun.RunResult;
-import ca.ubc.cs.beta.aclib.configspace.ParamConfiguration;
-import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
-import ca.ubc.cs.beta.aclib.runconfig.RunConfig;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.AbstractSyncTargetAlgorithmEvaluator;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.exceptions.TargetAlgorithmAbortException;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.ExistingAlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunStatus;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.AbstractSyncTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.exceptions.TargetAlgorithmAbortException;
 
 /**
  * Faster way of echoing results back
@@ -26,13 +25,12 @@ public class EchoTargetAlgorithmEvaluator  extends AbstractSyncTargetAlgorithmEv
 
 	private final boolean quickEval;
 	
-	public EchoTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig)
+	public EchoTargetAlgorithmEvaluator()
 	{
-		this(execConfig, new EchoTargetAlgorithmEvaluatorOptions());
+		this( new EchoTargetAlgorithmEvaluatorOptions());
 	}
 	
-	public EchoTargetAlgorithmEvaluator(AlgorithmExecutionConfig execConfig, EchoTargetAlgorithmEvaluatorOptions options) {
-		super(execConfig);
+	public EchoTargetAlgorithmEvaluator( EchoTargetAlgorithmEvaluatorOptions options) {
 		this.quickEval = options.quickEval;		
 	}
     
@@ -40,9 +38,9 @@ public class EchoTargetAlgorithmEvaluator  extends AbstractSyncTargetAlgorithmEv
 	public volatile double wallClockTime = 0;
 	
 	@Override
-	public List<AlgorithmRun> evaluateRun(List<RunConfig> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
+	public List<AlgorithmRunResult> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
 		
-		List<AlgorithmRun> results = new ArrayList<AlgorithmRun>();
+		List<AlgorithmRunResult> results = new ArrayList<AlgorithmRunResult>();
 		
 		
 		 /* Configuration file generally looks something like this
@@ -53,11 +51,11 @@ public class EchoTargetAlgorithmEvaluator  extends AbstractSyncTargetAlgorithmEv
 				 * quality [0, 1000000] [0]
 				 * seed [ -1,4294967295][1]i
 		*/		 
-		for(RunConfig rc : runConfigs)
+		for(AlgorithmRunConfiguration rc : runConfigs)
 		{
 			StringBuilder sb = new StringBuilder();
 			
-			ParamConfiguration config = rc.getParamConfiguration();
+			ParameterConfiguration config = rc.getParameterConfiguration();
 			
 			sb.append(config.get("solved")).append(",");
 			sb.append(config.get("runtime")).append(",");
@@ -79,9 +77,9 @@ public class EchoTargetAlgorithmEvaluator  extends AbstractSyncTargetAlgorithmEv
 				
 			}
 			
-			results.add(new ExistingAlgorithmRun(execConfig, rc, sb.toString(),wallClockTime));
+			results.add(ExistingAlgorithmRunResult.getRunFromString(rc, sb.toString(),wallClockTime));
 			
-			if(RunResult.valueOf(config.get("solved")).equals(RunResult.ABORT))
+			if(RunStatus.valueOf(config.get("solved")).equals(RunStatus.ABORT))
 			{
 				throw new TargetAlgorithmAbortException("Echoing abort");
 			}

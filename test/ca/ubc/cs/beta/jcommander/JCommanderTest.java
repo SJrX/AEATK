@@ -6,8 +6,8 @@ import java.io.File;
 
 import org.junit.Test;
 
-import ca.ubc.cs.beta.aclib.misc.jcommander.JCommanderHelper;
-import ca.ubc.cs.beta.aclib.options.scenario.ScenarioOptions;
+import ca.ubc.cs.beta.aeatk.misc.jcommander.JCommanderHelper;
+import ca.ubc.cs.beta.aeatk.options.scenario.ScenarioOptions;
 
 public class JCommanderTest {
 
