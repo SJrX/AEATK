@@ -2,11 +2,10 @@ package ca.ubc.cs.beta.targetalgorithmevaluator;
 
 import org.mangosdk.spi.ProviderFor;
 
-import ca.ubc.cs.beta.aclib.execconfig.AlgorithmExecutionConfig;
-import ca.ubc.cs.beta.aclib.options.AbstractOptions;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.AbstractTargetAlgorithmEvaluatorFactory;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluator;
-import ca.ubc.cs.beta.aclib.targetalgorithmevaluator.TargetAlgorithmEvaluatorFactory;
+import ca.ubc.cs.beta.aeatk.options.AbstractOptions;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.AbstractTargetAlgorithmEvaluatorFactory;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorFactory;
 
 @ProviderFor(TargetAlgorithmEvaluatorFactory.class)
 public class EchoTargetAlgorithmEvaluatorFactory extends AbstractTargetAlgorithmEvaluatorFactory  {
@@ -17,9 +16,8 @@ public class EchoTargetAlgorithmEvaluatorFactory extends AbstractTargetAlgorithm
 	}
 
 	@Override
-	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(
-			AlgorithmExecutionConfig execConfig, AbstractOptions options) {
-		return new EchoTargetAlgorithmEvaluator(execConfig, (EchoTargetAlgorithmEvaluatorOptions) options);
+	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(AbstractOptions options) {
+		return new EchoTargetAlgorithmEvaluator( (EchoTargetAlgorithmEvaluatorOptions) options);
 	}
 
 	@Override

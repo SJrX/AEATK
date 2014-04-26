@@ -1,7 +1,7 @@
 #Used for getting specific results out from a target wrapper
 #Some invalid values are specified so that we can test code
 
-solved { SAT, UNSAT, TIMEOUT, CRASHED, ABORT, INVALID, SATISFIABLE, UNSATISFIABLE } [SAT]
+solved { SAT, UNSAT, TIMEOUT, CRASHED, ABORT, INVALID, SATISFIABLE, UNSATISFIABLE, SUCCESS } [SAT]
 runtime [0,1000] [0]
 runlength [0,1000000][0]
 quality [0, 1000000] [0]

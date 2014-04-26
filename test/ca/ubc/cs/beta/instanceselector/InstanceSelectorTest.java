@@ -8,8 +8,8 @@ import java.io.IOException;
 
 import org.junit.BeforeClass;
 
-import ca.ubc.cs.beta.aclib.probleminstance.InstanceListWithSeeds;
-import ca.ubc.cs.beta.aclib.probleminstance.ProblemInstanceHelper;
+import ca.ubc.cs.beta.aeatk.probleminstance.InstanceListWithSeeds;
+import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceHelper;
 
 
 public class InstanceSelectorTest {

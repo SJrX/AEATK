@@ -6,12 +6,12 @@
 \usepackage{graphicx}
 %%\usepackage{hyperref}
 \usepackage{listings}
-
+\usepackage{tablefootnote}
 \usepackage{amssymb}
 \usepackage{textcomp}
 \usepackage{mathrsfs}
 \usepackage{color}
-
+\usepackage{longtable}
 
 \newcommand{\note}[1]{}
 % comment the next line to turn off notes
@@ -20,7 +20,7 @@
 
 \begin{document}
 
-\title{Manual for EALib }
+\title{Manual for AEATK }
 \author{
 Steve~Ramage\\
 Department of Computer Science\\
@@ -36,33 +36,36 @@ Vancouver, BC\ \ V6T~1Z4, Canada\\
 
 \section{Introduction}
 
+AEATK is the Algorithm Execution \& Abstraction Toolkit and it is a collection of software packages that aid users that would like to study the empirical study of algorithms. In this version the most mature packages are those that relate to handling algorithm execution as well as some related abstractions. There is also some support for modelling of algorithm performance through the use of Random Forests, but this code is very rough around the edges and isn't particularly well supported as of yet.
+
 \subsection{Document Overview}
 
-This document is the manual for EALib. At a high level EALib contains Java classes for three primarily purposes:
+This document is the manual for AEATK. At a high level AEATK contains Java classes for three primarily purposes:
 
 \begin{enumerate}
-\item Classes whose primary role are as domain objects related to algorithm configuration (i.e., Problem Instances, Parameter Configuration Spaces, Algorithm Runs).
+\item Classes whose primary role are as domain objects related common abstractions necessary to study an algorithms empirical performance (i.e., Problem Instances, Parameter Configuration Spaces, Algorithm Runs).
 
-\item Classes whose primary role is to facilitate evaluating or measuring various aspects of a program or \emph{Target Algorithm}'s execution. These classes are referred to as \texttt{Target Algorithm Evaluators}. 
+\item Classes whose primary role is to facilitate evaluating or measuring performance of an algorithm under study (a \textit{Target Algorithm}), such as runtime or solution quality. These classes are referred to as \textit{Target Algorithm Evaluators}. 
 
-\item Classes whose primary role is to parse and validate command line arguments to programs written with EALib, and to facilitate easy conversion between the files and input arguments to their domain representations. This aspect of EALib is heavily coupled to JCommander \footnote{See: http://www.jcommander.org}.
+\item Classes whose primary role is to parse command line arguments and support configuration of an AEATK program \textit{Unfortunately configuration is overloaded term, by this it is meant managing the settings of a AEATK based program}. For example the utilities that parse instance files, feature files, or scenario files. This functionality is achieved through the use of a modified version of JCommander \footnote{See: http://www.jcommander.org}. 
 
 \end{enumerate}
 
-The former two groups are designed to \emph{Thread Safe} and used in highly concurrent environments.
+Classes in the first two groups are designed to be \emph{Thread Safe}, see also \ref{sec:design-principles} for more information about the design goals of the classes.
 
 \subsection{System Requirements}
 
-EALib requires at a minimum Java 6 to run, all other dependencies are included within EALib.
+AEATK version 2.08 requires at a minimum Java 7 to run, all other dependencies are included within AEATK.
 
 \subsection{License}
 
-EALib will be released under a dual usage license. Academic \& non-commercial usage is permitted free of charge. Please contact us to discuss commercial usage.
-
+AEATK will be released under a dual usage license. Academic \& non-commercial usage is permitted free of charge. Please contact us to discuss commercial usage.
 
 \subsection{Audience Background}
 
-It is expected that users of EALib will be comfortable with Java. Additionally   some knowledge of Design Patterns, and Java Concurrency programming will be helpful. Additionally some of the documentation is described using UML diagrams. 
+It is expected that users of AEATK will be comfortable with Java.  Beyond that AEATK is designed to be as simple as possible to use, and no further background is necessary. 
+
+For those who are maintaining and extending AEATK knowledge of Design Patterns and Java Concurrency programming will be very helpful.
 
 Some recommended reading is:
 
@@ -75,21 +78,21 @@ Some recommended reading is:
 \item[Effective Java $2^{nd}$ Edition] Bloch, Joshua. (2008) ISBN: 978-0321356680 
 \end{description}
 
-
-At a bare minimum, one should be acquianted with what \emph{Thread Safety} is (as a concept), most of EALib can be used without knowing more than this. The only time more advanced knowledge is needed is when using some of the advanced features of the Target Algorithm Evaluators.
+At a bare minimum, one should be acquianted with what \emph{Thread Safety} is (as a concept), most of AEATK can be used without knowing more than this. The only time more advanced knowledge is needed is when using some of the advanced features of the Target Algorithm Evaluators.
 
 As far as Design Patterns are concerned, familiarity with the Decorator, Observer,and Factory pattern are the most important.
 
-Effective Java is recommended only because it is likely to help the reader gain insights into why certain things in EALib are designed the way they are, and to make changes in a way that isn't likely to cause problems later.
+Effective Java is recommended only because it is likely to help the reader gain insights into why certain things in AEATK are designed the way they are, make changes that aren't likely to cause problems later, and will largely help in writing their own programs in the future.
 
 \subsubsection{UML}
+
 Finally this document does use some UML in places, especially class diagrams. So it would be good if readers were familiar with how to read them. Here is an example for reference:
 
 \begin{center}
 \includegraphics[scale=0.65]{img/UML/ClassDiagram.png}
 \end{center}
 
-The different arrow types mean different things as follows.
+The different arrow types between the classes above have different semantic meanings outlined in the following table:
 
 \begin{tabular}{c | l | l}
 Relationship Type & Description & Example\\
@@ -107,17 +110,17 @@ Dependency & One class uses another class & MyClass depends on DependClass.\\
 \vspace{5pt}
 One thing to keep in mind, is that these are logical distinctions and do not necessarily map to code. For example many dependency relationships are indeed stored as fields, but they aren't necessarily meant to be thought of as associations.
 
-
-
-
 \subsection{Software Dependencies}
 
-EALib is designed to introduce very little dependencies into codes that use aspect of it, (in other words it should be easy to use one part of EALib, without requiring others). One exception however is that almost all aspects of EALib are coupled to SLF4J \footnote{http://www.slf4j.org}, which is used for logging.
+AEATK is designed to introduce very little additional coupling into code that uses parts of it, (in other words it should be easy to use one part of AEATK, without requiring others). One exception however is that almost all aspects of AEATK are coupled to SLF4J \footnote{http://www.slf4j.org}, which is used for logging.
 
-SLF4J is simply a front end and does not provide any logging functionality on it's own, EALib also includes logback \footnote{http://logback.qos.ch/} by default to do it's logging although this aspect can be replaced with log4j, java.util.logging, etc.
+SLF4J is simply a front end and does not provide any logging functionality on it's own, AEATK also includes logback \footnote{http://logback.qos.ch/} by default to do it's logging although this aspect can be replaced with log4j, java.util.logging, etc.
 
-Different aspects of EALib depend on other libraries as follows:
 
+Different aspects of AEATK depend on other libraries as follows :
+\\
+
+\begin{minipage}{12cm}
 \begin{tabular}{c c }
 Name & Description  \\
 
@@ -126,25 +129,25 @@ Name & Description  \\
 Apache Commons Collections & Provides some new convenient collection types \\
 Apache Commons I/O & Provides a Null Output Stream used for testing \\
 Apache Commons Math & Provides Probability Distributions and other mathematical operations \\
-Logback & 	Provides a default logging implementation for EALib \\
-slf4J & Logging API that EALib links to \\
+Logback & 	Provides a default logging implementation for AEATK \\
+slf4J & Logging API that AEATK links to \\
 Spi & Provides an easy way to utilize the Service Provider Interface . \\
-exp4j & Provides support for converting strings to formula, and evaluating them. \\
+exp4j & Provides support for converting strings to mathematical expressions and evaluating them. \\
 JCIP Annotations & Documents classes thread safety properties \\
 OpenCSV & Used for parsing CSV Files \\
-JCommander & Used for parsing Command line options\footnote{the version included is a custom and modified build of JCommander available here: https://github.com/SJrX/jcommander} \\
+JCommander & Used for parsing Command line options\footnote{The version included is a custom and modified build of JCommander available here: https://github.com/SJrX/jcommander} \\
 Guava & Used to provide an AtomicDouble class. \\ 
 Numerics & Used to provide additional probability distributions and mathematical operations \\
-Jama & Used to provide PCA Functionality used by the model. \\
-
+JAMA & Used to provide principal component analysis used by the model. \\
 
 
 \end{tabular}
+\end{minipage}
 
 
 \subsection{Design Principles and Conventions}
-
-Certain conventions exist within EALib for a variety of reasons:
+\label{sec:design-principles}
+Certain conventions exist within AEATK for a variety of reasons:
 
 \begin{enumerate}
 
@@ -156,21 +159,21 @@ Certain conventions exist within EALib for a variety of reasons:
 
 \subsection{Order}
 
-This document is primarily intended to be read in order, and there are few optional sections (even if the dependency isn't immediately apparent from the topics.
+This document is primarily intended to be read in order, and there are few optional sections (even if the dependency isn't immediately apparent from the topics).
 
 \subsection{Discrepancies and Errata}
 
-This document's primary aim is to serve as an introduction to EALib and provide a high level overview of it's features and functionality. This document is not a complete description of the system, and in some cases only provides a brief description, and may be incorrect. The authoritative place to look is generally the code, and specifically the javadoc in the code. 
+This document's primary aim is to serve as an introduction to AEATK and provide a high level overview of it's features and functionality. This document is not a complete description of the system, and in some cases only provides a brief description, and may even be incorrect. The authoritative place to look is generally the code, and specifically the javadoc in the code. Please contact the author if you notice any discrepancies so that they can be corrected.
 
 \subsection{Examples}
-
-Within EALib there are several example applications that can be run out of the box and provide may provide some guidance on various features within EALib. The example applications are as follows
+\label{sec:examples}
+Within AEATK there are several example applications that can be run out of the box and provide may provide some guidance on how to use various features within AEATK. The example applications are as follows:
 
 \subsubsection{Algorithm Test Utility}
 
 This utility is used to test that a wrapper executes correctly, it is the best written example and almost every line is commented. It is the actual utility used in SMAC, and generally represents the best way of doing something, (in other words if it has a feature you want then you are best following the way it does it, even as opposed to another utility such as SMAC which may use older methods).
 
-The location of the utility is at:\\ \texttt{ca.ubc.cs.beta.aclib.example.tae.TargetAlgorithmEvaluatorRunner}.
+The location of the utility is at:\\ \texttt{ca.ubc.cs.beta.aeatk.example.tae.TargetAlgorithmEvaluatorRunner}.
 
 It has examples for the following:
 
@@ -186,16 +189,16 @@ It has examples for the following:
 
 \subsubsection{State Merge Utility}
 
-This utility is used to merge various state files (files that store a series of runs, generally but not exclusively for an automatic configurator). Unfortunately some aspects of this, use less refined parts of EALib but it is still instructional.
+This utility is used to merge various state files (files that store a series of runs in a portable format, generally but not exclusively for an automatic configurator). Unfortunately some aspects of this, use less refined parts of AEATK but it is still instructional.
 
 
-The location of the utility is at:\\ \texttt{ca.ubc.cs.beta.aclib.example.statemerge.StateMergeExecutor}.
+The location of the utility is at:\\ \texttt{ca.ubc.cs.beta.aeatk.example.statemerge.StateMergeExecutor}.
 
 It has examples for the following:
 
 \begin{enumerate}
 \item Using and manipulating State Files.
-\item Using the Random Forests built into EALib
+\item Using the Random Forests built into AEATK
 \item Parsing scenario files and getting domain objects.
 \item Using JCommander to delegates and options.
 \item Using JCommander to generate usage screens, and parse help options.
@@ -205,46 +208,86 @@ It has examples for the following:
 
 {\Large \textsc{Warning:}} The code for accessing models is actually really poor at this point. A rewrite is planned soon, but if you are unfortunate enough to have to deal with models presently than my advice to you is to simply copy and paste the \texttt{StateMergeModelBuilder} class, and hope it does what you want.
 
-\subsubsection{Virtual Best Solver}
+\subsubsection{Verify Scenario Utility}
 
-\textbf{TO DO}
+This utility is used to verify that a scenario file is correct. It primarily checks that all files can be read, and will verify that the instances exist on disk in a place that the wrapper is likely to find them. It does have some limitations but it does provide an easy way to verify that a scenario doesn't have a typo or something.
+
+The location of the utility is at:\\ \texttt{ca.ubc.cs.beta.aeatk.example.verifyscenario.VerifyScenarioExecutor}.
+\\
+It has examples for the following:
+
+\begin{enumerate}
+\item Reading Scenario Files.
+\item Reading Instance Files.
+\item Reading Configuration Files.
+\item Using JCommander.
+\end{enumerate}
+
+\subsubsection{Satisfiable Checker Utility}
+
+This utility is used to verify the satisfiability of a particular instance with respect to a solver. It takes an instance file, and description of a solver and then runs the solver on every instance, outputting for each either SAT, UNSAT or UNKNOWN.
+
+The location of the utility is at:\\ \texttt{ca.ubc.cs.beta.aeatk.example.satisfiabilitychecker.SatisfiabilityChecker}
+\\
+It has examples for the following:
+
+\begin{enumerate}
+\item Target Algorithm Evaluator Observation.
+\item Asynchronous Target Algorithm Execution.
+\end{enumerate}
+
+
 
 \subsubsection{Random Target Algorithm Evaluator}
 
 If you are looking for inspiration on how to implement your own Target Algorithm Evaluator, the place to start is probably looking at the classes in the package: \\
-\texttt{ca.ubc.cs.beta.aclib.targetalgorithmevaluator.base.random}.
+\texttt{ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.random}.
 
 This target algorithm evaluator simply provides random responses to requests. Depending on what you are doing it may be all you need, unfortunately there are some limitations:
 
 \begin{enumerate}
 \item Because random results are generated instantaneously out of thin air, there is no delay and no support for observation. While if you look carefully you can see that it can simulate delays and observations, this handled by another set of decorators, and unfortunately these two decorators are perhaps the two most complicated decorators currently.
 \item It isn't a realistic example of a TAE that should have high concurrent performance, it essentially creates a thread for every asynchronous execution which scales poorly.
-\item It doesn't provide any guidance for thread safety which is important for TAEs.
+\item It doesn't provide any guidance for thread safety which can be important for Target Algorithm Evaluator performance and correctness.
 \end{enumerate}
 
-As a rule if you would like to or need to implement a TargetAlgorithmEvaluator then you either need to be very familiar with Thread Safety, but in some cases you can simply follow the Random example. If your TargetAlgorithmEvaluator needs to maintain any state, or invokes any \texttt{native} methods, it should make the \texttt{evaluateRuns()} method \texttt{synchronized}.
+As a rule if you would like your \texttt{TargetAlgorithmEvaluator} to handle requests one at a time, and not support observation then you don't need to worry about any thread safety issues. In this case, if your \texttt{TargetAlgorithmEvaluator} needs to maintain any state, or invokes any \texttt{native} methods, it should make the \texttt{evaluateRuns()} method \texttt{synchronized}. Following this all applications will be able to use your \texttt{TargetAlgorithmEvaluator} without issue. If you would like to handle things concurrently, depending on what it is you are evaluating you will either be forced to use non-blocking I/O \footnote{There are no examples of this presently} or multiple threads.
 
-Final note is that you will also need to see {\Large \textbf{INSERT SECTION}} for information about how to create a project and load it into another EALib project.
+Final note is that you will also need to see {\Large \textbf{INSERT SECTION}} for information about how to create a project and load it into another AEATK project.
 
 
 \section{Wrapper Format}
 \label{wrapper}
-A \emph{wrapper} is a small script that sits between an EALib program and the target algorithm being evaluated. This allows users to easily supply scripts to execute their target algorithms without having to write a bunch of Java. 
+A \emph{wrapper} is a small script that sits between an AEATK program and the target algorithm being evaluated. This allows users to easily supply scripts to execute their target algorithms without having to write a bunch of Java. 
 
-EALib grew organically around the wrapper format used by Automatic Configurators such as ParamILS and SMAC, and it plays a key part to the abstractions in EALib, so it is good to be familiar with it. The conventions follow two parts governing invocation and output.
+AEATK grew organically around the wrapper format used by Automatic Configurators such as ParamILS and SMAC, and it plays a key part to the abstractions in AEATK, so it is good to be familiar with it. The conventions follow two parts governing invocation and output.
 
 \subfile{wrapper}
 
-
 \subsection{Glossary}
 
+\begin{description}
 
+\item[Capped Run] A run that has timed out.
+\item[Censored Run] A run that has timed out.
+\item[Configuration] A particular setting of parameters to a Target Algorithm.
+\item[Configuration Space] The space or set of all possible legal settings of parameters to a Target Algorithm.
+\item[Early Censored Run] A run that timed out, and was \emph{requested} to have a cutoff time less than the cutoff time of the execution config.
+
+\item[Instance] The particular instance or object that the target algorithm is being invoked on (for instance given a sorting algorithm, which particular list of data to use).
+\item[Kappa($\kappa$)] The cutoff time of a run.
+\item[Kappa Max ($\kappa_{\text{MAX}}$)] The cutoff time used in the algorithm execution config object.
+\item[Observer] An object that is notified with updates about Target Algorithm performance as it is running.
+\item[Target Algorithm] The algorithm that is being invoked, modelled, or manipulated by AEATK.
+\item[Target Algorithm Evaluator] The object responsible for returning measurements of an algorithms performance on a given configuration and seed
+
+\end{description}
 
 \section{Domain Objects}
-
+\label{sec:domain}
 \subsection{Introduction}
 
-Domain objects represent various abstractions in EALib. They primarily are designed to be lightweight and are entirely focused on representing the information needed in the \ref{wrapper} section.
+Domain objects represent various abstractions in AEATK. They primarily are designed to be lightweight and are entirely focused on representing the information needed for invoking the target algorithm as outlined in section \ref{wrapper}.
 
 \subsection{Parameter Configuration Spaces}
 
@@ -258,10 +301,9 @@ Parameter Configuration Spaces are represented by two objects. \textbf{ParamConf
 The set of allowable parameter configuration spaces is complicated, one can read "The PCS File Format" for a full detailed specification of what is allowed to be represented. In short Parameter Configurations support name / value pairs like a standard Map with the following caveat:
 
 \begin{itemize}
-\item Parameter settings inherit from \texttt{Map} but they don't implement all the methods, additionally some of the semantics are different for example you cannot remove a key, the size of the map is always constant, and all the values have to come from the domain of the key. \footnote{In retrospect ParamConfiguration shouldn't inherit from Map}.
+\item Parameter settings inherit from \texttt{Map} but they don't implement all the methods, additionally some of the semantics are different for example you cannot remove a key, the size of the map is always constant, and all the values have to come from the domain of the key\footnote{In retrospect maybe ParamConfiguration shouldn't inherit from Map}.
 \item Some parameters can be conditional on the values of other parameters, the Map always contains active and inactive parameters however.
-\item Parameter Settings can be Forbidden.
-\item When getting Random Configurations from a Space, you will never get forbidden configurations generated.
+\item Parameter Settings can be forbidden (disallowed). These forbidden assignments will never be generated randomly or considered as neighbours, but otherwise are representable in the space.
 \item \texttt{ParamConfiguration} objects have an ID, but this ID is used only for the local process and by convention is written in hex, and it simply represents that particular instance in memory, nothing prevents two objects with different IDs from being equal. Whenever a put() method is called on the Map, the ID is regenerated. 
 
 \end{itemize}
@@ -269,24 +311,25 @@ The set of allowable parameter configuration spaces is complicated, one can read
 \subsubsection{Construction}
 \begin{description}
 \item[ParamConfigurationSpace] are constructed directly , the primary input is the name of the file on disk that contains the specification according to the PCS File Format guide. Other constructors allow for hard coding the PCS file in memory. The \texttt{ParamFileHelper} method has some other methods that can construct instances.
-\item[ParamConfiguration] are constructed from the \texttt{ParamConfiguration} class, namely the methods \texttt{getDefaultConfiguration()}, \texttt{getRandomConfiguration()}, \texttt{getConfigurationFromString()} among others. The only constructor visible is the copy constructor.
+\item[ParamConfiguration] are constructed from the \texttt{ParamConfigurationSpace} class, namely the methods \texttt{getDefaultConfiguration()}, \texttt{getRandomConfiguration()}, \texttt{getConfigurationFromString()} among others. The only constructor visible is the copy constructor.
 \end{description}
 
 \subsubsection{Equality}
 \begin{description}
 \item[ParamConfigurationSpace] has equality defined as the absolute filename of the source file being equal. This isn't ideal, and when no file exists it is just a randomly generated string that gets used which is less than ideal at present.
-\item[ParamConfiguration] has equality defined as the active parameters have equal values and both coming from equal \texttt{ParamConfigurationSpace} objects.
+\item[ParamConfiguration] has equality defined as the \emph{active} parameters have equal values and both coming from equal \texttt{ParamConfigurationSpace} objects.
 \end{description}
 
 \subsubsection{Mutability and Thread Safety}
 
 \begin{description}
 \item[ParamConfigurationSpace] is immutable and consequently thread safe.
-\item[ParamConfiguration] is mutable and is not technically thread safe. If objects are merely constructed from the \texttt{ParamConfigurationSpace} object however and then never modified again, then additional synchronization is generally not needed and the objects can be passed around without issue. 
+\item[ParamConfiguration] is mutable and is not thread safe, technically. If objects are simply constructed in one thread, and never mutated again then they should be thread safe, and no additional synchronization is needed.
 \end{description}
 
+\subsection{Serializability}
 
-
+\textbf{Note}: Java serialization is supported by these objects, however it is meant primarily as a persistence format for sharing between the same versions of AEATK. There is no effort put into or guarantee made about forward or backward compatibility of serialized objects, and it is \emph{very} likely that it will break over time.
 
 \subsection{Problem Instance}
 
@@ -303,7 +346,7 @@ A \texttt{ProblemInstanceSeedPair} object is a container for a \texttt{ProblemIn
 
 
 \begin{itemize}
-\item The instance name is generally a file name but this is only a convention and nothing in EALib mandates that the instance exists.
+\item The instance name is generally a file name but this is only a convention and nothing in AEATK mandates that the instance exists.
 \item Instances can have features, for using machine learning models, associated with them. At this point only continuous features are supported.
 \item \textsc{WARNING} Instances currently also have the concept of an instance id. Relying on this is highly discouraged as it is generally brittle (it prevents you from merging different instance sets, or generating instances on the fly). Currently SMAC relies on this feature, but in general it only causes headaches, and will be removed eventually.
 
@@ -328,39 +371,14 @@ A \texttt{ProblemInstanceSeedPair} object is a container for a \texttt{ProblemIn
 \item[ProblemInstanceSeedPair] is immutable and consequently thread safe.
 \end{description}
 
+\subsubsection{Serializability}
 
-\subsection{Run Configurations}
-
-\texttt{RunConfiguration} objects represent the logical view of what is being executed, that is ignoring the details of where the algorithm is on disk, what are the details that an EALib program cares about. It is a container object for the previous objects.
-
-\begin{center}
-\includegraphics[scale=0.75]{img/UML/RunConfig_2.png}
-\end{center}
-
-\begin{itemize}
-\item In future versions, the \texttt{RunConfiguration} object will also point to the \texttt{AlgorithmExecutionConfiguration} object.
-\item One common source of confusion is what capping is. In EALib a run is considered 'capped' if it's cutoff time is less than cutoff time in the \texttt{AlgorithmExecutionConfig} and it reported \textbf{TIMEOUT} or \textbf{KILLED}. Another meaning is that it just needs to be \textbf{TIMEOUT} or \textbf{KILLED}.
-\end{itemize}
-
-\subsubsection{Construction}
-\begin{description}
-\item[RunConfiguration] objects can be constructed directly with all needed information passed in a publicly available constructor.
-\end{description}
+\textbf{Note}: Java serialization is supported by these objects, however it is meant primarily as a persistence format for sharing between the same versions of AEATK. There is no effort put into or guarantee made about forward or backward compatibility of serialized objects, and it is \emph{very} likely that it will break over time.
 
 
-\subsubsection{Equality}
-\begin{description}
-\item[RunConfig] has equality defined as all the fields being equal.
-\end{description}
+\subsubsection{Algorithm Execution Configuration}
 
-\subsubsection{Mutability and Thread Safety}
-\begin{description}
-\item[RunConfig] immutable and consequently thread safe, subject to the proviso of the \texttt{ParamConfiguration} object.
-\end{description}
-
-\subsection{Algorithm Execution Configuration}
-
-\texttt{AlgorithmExecutionConfiguration} objects represent the ``physical'' information about executing an algorithm, namely where the algorithm is, and what type it is.
+\texttt{AlgorithmExecutionConfiguration} objects represent the ``physical'' information about executing an algorithm, namely where the algorithm is, and what type it is. It also includes a map with additional information for particular target algorithm evaluators. Individual \texttt{TargetAlgorithmEvaluator} implementations may require certain keys be set in this map \footnote{For example, the executable and execution directory should actually be attributes in the map, that the CLI \texttt{TargetAlgorithmEvaluator} uses}. 
 
 \begin{center}
 \includegraphics[scale=0.75]{img/UML/ExecConfig.png}
@@ -368,7 +386,7 @@ A \texttt{ProblemInstanceSeedPair} object is a container for a \texttt{ProblemIn
 
 \begin{itemize}
 \item Currently the object also has an \texttt{executeOnCluster} property which doesn't serve any useful purpose at all.
-\item the \texttt{getParamFile()} method reflects a previous name of the \texttt{ParamConfigurationSpace} class.
+\item the \texttt{getParamFile()} method reflects a previous name of the \texttt{ParamConfigurationSpace} class, and will be replaced at some later time.
 \end{itemize}
 
 \subsubsection{Construction}
@@ -387,6 +405,43 @@ A \texttt{ProblemInstanceSeedPair} object is a container for a \texttt{ProblemIn
 \item[AlgorithmExecutionConfig] immutable and consequently thread safe, subject to the proviso of the \texttt{ParamConfiguration} object.
 \end{description}
 
+\subsubsection{Serializability}
+
+\textbf{Note}: Java serialization is supported by these objects, however it is meant primarily as a persistence format for sharing between the same versions of AEATK. There is no effort put into or guarantee made about forward or backward compatibility of serialized objects, and it is \emph{very} likely that it will break over time.
+
+\subsection{Run Configurations}
+
+\texttt{RunConfiguration}\footnote{Previous versions of AEATK referred to these as RunConfig objects} objects represent the logical view of what is being executed, that is ignoring the details of where the algorithm is on disk, what are the details that an AEATK program cares about. It is a container object for the previous objects.
+
+\begin{center}
+\includegraphics[scale=0.75]{img/UML/RunConfig_2.png}
+\end{center}
+
+\begin{itemize}
+\item One common source of confusion is what capping is. In AEATK a run is considered 'capped' if it's cutoff time is less than cutoff time in the \texttt{AlgorithmExecutionConfig} and it reported \textbf{TIMEOUT} or \textbf{KILLED}. Another meaning used elsewhere is that it just needs to be \textbf{TIMEOUT} or \textbf{KILLED}, regardless of the cutoff time. There has been a move to the latter meaning, where the former is refered to as ``Censored Early''.
+\end{itemize}
+
+\subsubsection{Construction}
+\begin{description}
+\item[RunConfiguration] objects can be constructed directly with all needed information passed in a publicly available constructor.
+\end{description}
+
+
+\subsubsection{Equality}
+\begin{description}
+\item[RunConfiguration] has equality defined as all the fields being equal.
+\end{description}
+
+\subsubsection{Mutability and Thread Safety}
+\begin{description}
+\item[RunConfiguration] immutable and consequently thread safe, subject to the proviso of the \texttt{ParamConfiguration} object.
+\end{description}
+
+\subsection{Serializability}
+
+\textbf{Note}: Java serialization is supported by these objects, however it is meant primarily as a persistence format for sharing between the same versions of AEATK. There is no effort put into or guarantee made about forward or backward compatibility of serialized objects, and it is \emph{very} likely that it will break over time.
+
+
 \subsection{Algorithm Run} 
 
 \texttt{AlgorithmRun} objects represent the output of a wrapper execution, and provide accessor methods to obtain those methods. It subtypes \texttt{java.util.Runnable}, but this is primarily an internal detail used during construction.
@@ -402,22 +457,28 @@ A \texttt{ProblemInstanceSeedPair} object is a container for a \texttt{ProblemIn
 
 \subsubsection{Construction}
 \begin{description}
-\item[AlgorithmRun] objects are interfaces and there is no standard way of constructing them. In general these objects are retrieved from a \texttt{TargetAlgorithmEvaluator} \ref{sec:tae}. One subtype \texttt{ExistingAlgorithmRun} has a publicly accessible constructor.
+\item[AlgorithmRun] objects are interfaces and there is no standard way of constructing them. In general these objects are retrieved from a \texttt{TargetAlgorithmEvaluator} see section \ref{sec:tae}. One subtype \texttt{ExistingAlgorithmRun} has a publicly accessible constructor.
 \end{description}
 \subsubsection{Equality}
 \begin{description}
-\item[AlgorithmRun] has equality defined as the \texttt{AlgorithmExecutionConfiguration} and the \texttt{RunConfiguration} object being equal. In particular note that it does not depend at all on the output. 
+\item[AlgorithmRun] has equality defined as the \texttt{AlgorithmExecutionConfiguration} 
+and the \\
+\texttt{RunConfiguration} object being equal. In particular note that it does not depend at all on the output. 
 \end{description}
 
 \subsubsection{Mutability and Thread Safety}
 \begin{description}
-\item[AlgorithmExecutionConfig] immutable and consequently thread safe, subject to the proviso of the \texttt{ParamConfiguration} object.
+\item[AlgorithmExecutionConfig] immutable and consequently thread safe, subject to the proviso of the \\
+\texttt{ParamConfiguration} object.
 \end{description}
 
+\subsection{Serializability}
+
+\textbf{Note}: Java serialization is supported by these objects, however it is meant primarily as a persistence format for sharing between the same versions of AEATK. There is no effort put into or guarantee made about forward or backward compatibility of serialized objects, and it is \emph{very} likely that it will break over time.
 
 \section{Options \& JCommander}
 
-EALib utilizes JCommander which makes handling command line arguments incredibly easy. While technically your application doesn't need to use JCommander, it is generally recommended as it is very powerful. You should read http://jcommander.org/ for an introduction to JCommander.
+AEATK utilizes JCommander which makes handling command line arguments incredibly easy. While technically your application doesn't need to use JCommander, it is generally recommended as it is very powerful. You should read http://jcommander.org/ for an introduction to JCommander.
 
 
 
@@ -425,13 +486,13 @@ EALib utilizes JCommander which makes handling command line arguments incredibly
 
 \subsection{Modifications to JCommander}
 
-{\Large \textsc{Warning} }:The version of JCommander used in EALib is modified, and probably slightly out of date the official version, the source for our build of JCommander is available from https://github.com/SJrX/jcommander.
+{\Large \textsc{Warning} }:The version of JCommander used in AEATK is modified, and probably slightly out of date the official version, the source for our build of JCommander is available from https://github.com/SJrX/jcommander.
 
 Differences:
 \begin{enumerate}
-\item Our version supports a new annotation type \texttt{@ParameterFile}, on \texttt{@Parameter} parameters, this signifies that the parameter value should be read as a file (in Java Properties File Format \footnote{See: http://docs.oracle.com/javase/tutorial/essential/environment/properties.html}). The property file is first escaped so that \textbackslash isn't interpreted as an escape character. 
+\item Our version supports a new annotation type \texttt{@ParameterFile}, on \texttt{@Parameter} parameters, this signifies that the parameter value should be read as a file (in Java Properties File Format \footnote{See: http://docs.oracle.com/javase/tutorial/essential/environment/properties.html}). The property file is first escaped so that \textbackslash $~$ isn't interpreted as an escape character. 
 
-\item Boolean variables generally have arity 1, which means you must specify true and false for those parameters.
+\item Boolean variables generally have arity 1, which means you must always specify true and false for those parameters.
 \end{enumerate}
 
 \subsection{Example}
@@ -489,7 +550,7 @@ class MyOptions extends AbstractOptions{
 The \texttt{@UsageTextField} option is another annotation that is used for additional information when ever we need to display these options for users, for example in a usage screen or in a \LaTeX manual. 
 
 \begin{enumerate} 
-\item When tagged on a class, you can set the title and description that will be displayed, you can also set a class (in the above Foo.class), that will be called if the application is supplied without any arguments. This class has to be a subtype of:\\ \texttt{ca.ubc.cs.beta.aclib.misc.options.NoArgumentHandler}
+\item When tagged on a class, you can set the title and description that will be displayed, you can also set a class (in the above Foo.class), that will be called if the application is supplied without any arguments. This class has to be a subtype of:\\ \texttt{ca.ubc.cs.beta.aeatk.misc.options.NoArgumentHandler}
 
 \item You can use it to set the level at which the option will be displayed, for instance --debug will only be displayed if the user is requesting ADVANCED or DEVELOPER options.
 
@@ -499,7 +560,7 @@ The \texttt{@UsageTextField} option is another annotation that is used for addit
 
 \subsection{Type restrictions}
 
-All Option objects as subtypes in EALib, are restricted to be subtypes of the type \texttt{AbstractOptions}.
+All Option objects as subtypes in AEATK, are restricted to be subtypes of the type \texttt{AbstractOptions}.
 \begin{center}
 \includegraphics[scale=0.75]{img/UML/AbstractOptions.png}
 \end{center}
@@ -514,7 +575,7 @@ The built in AbstractOptions objects do implement \texttt{java.io.Serializable} 
 
 \subsection{Parsing Existing File Formats}
 
-There are many existing file formats used by various projects written in EALib some of them are the following.
+There are many existing file formats used by various projects written in AEATK some of them are the following.
 
 \begin{description}
 \item[PCS Files] which control the specification of the parameter space represented by the \texttt{ParamConfigurationSpace} object.
@@ -539,13 +600,14 @@ It is important to note that you aren't actually coupled to using JCommander or 
 
 \section{Target Algorithm Evaluator}
 \label{sec:tae}
-Target Algorithm Evaluation is probably the main reason you are using EALib to begin with. At a basic level it is the interface your code will use to invoke a wrapper, or as far as Domain Objects \ref{sec:domain} are concerned allow you to convert a \texttt{RunConfiguration} object to a \texttt{AlgorithmRun} object.
+Target Algorithm Evaluation is probably the main reason you are using AEATK to begin with. At a basic level it is the interface your code will use to invoke a wrapper, or as far as Domain Objects (Section \ref{sec:domain}) are concerned allow you to convert a \texttt{RunConfiguration} object to an \texttt{AlgorithmRun} object.
+
 \begin{center}
 \includegraphics[scale=0.75]{img/UML/TAEBasic.png}
 \end{center}
 They are designed to be simple to use, very flexible and to work in highly concurrent applications.
 
-You may find it handy to refer to refer to the examples outlined in \ref{sec:examples} as well as the Javadoc for the TargetAlgorithmEvaluator interface.
+You may find it handy to refer to refer to the examples outlined in section \ref{sec:examples} as well as the Javadoc for the \texttt{TargetAlgorithmEvaluator} interface.
 
 \subsection{Execution Methods}
 
@@ -553,9 +615,9 @@ Target Algorithm Evaluators support many different execution methods, that are u
 
 \subsubsection{Standard Execution}
 
-Standard Execution is simply invoking the \texttt{evaluateRun(List<RunConfiguration>)} method, and when it returns it gives you a list of the associated \texttt{AlgorithmRun} objects.
+Standard execution is achieved by simply invoking the \texttt{evaluateRun(List<RunConfiguration>)} method and when it returns it gives you a list of the associated \texttt{AlgorithmRun} objects.
 
-Here is a sequence diagram just for warm up:
+The corresponding sequence diagram for this is as follows, and should be what you expect:
 
 \begin{center}
 \includegraphics[scale=0.75]{img/UML/TAESequence1.png}
@@ -563,14 +625,13 @@ Here is a sequence diagram just for warm up:
 
 \subsubsection{Asynchronous Execution}
 
-Standard Execution requires a thread for every concurrent request which can be VERY expensive. A different method that is invoked is the \texttt{evaluateRunAsync(List<RunConfiguration>, TargetAlgorithmEvaluatorCallback)} method where an instance of \texttt{TargetAlgorithmEvaluatorCallback} is provided with the list of runs to complete.
+Standard execution requires a thread for every group of requests, which depending on how many groups you have can become very expensive. Depending on the workflow you might be able to group the requests together into one large request, but this can make processing more annoying. Another way to deal with this is to execute runs asynchronously via the  \texttt{evaluateRunAsync(List<RunConfiguration>,\\
+ TargetAlgorithmEvaluatorCallback)} method, supplying an instance of \\ \texttt{TargetAlgorithmEvaluatorCallback}. When the runs are completed the \texttt{TargetAlgorithmEvaluator} will invoke the \texttt{onSuccess()} method of the object. If a failure or \texttt{RuntimeException} occurs the \texttt{onFailure()} method is invoked instead.
 
 \begin{center}
 \includegraphics[scale=0.75]{img/UML/TAECallback.png}
 \end{center}
 
-
-If the runs complete successfully the \texttt{onSuccess()} method is called, if a RuntimeException occurs then \texttt{onFailure()} is called.
 
 
 \begin{center}
@@ -646,7 +707,7 @@ class Observer extends TargetAlgorithmEvaluatorRunObserver {
 \subsubsection{TAE Queues}
 
 While \ref{sec:async-exec} is the best performing mechanism, it does introduce much complexity 
-on to you the developer. EALib supports one final execution mechanism that can provide asynchronous execution without the thread safety worries.
+on to you the developer. AEATK supports one final execution mechanism that can provide asynchronous execution without the thread safety worries.
 
 \begin{center}
 \includegraphics[scale=0.60]{img/UML/TAEQueue.png}
@@ -662,7 +723,7 @@ The \texttt{BasicTargetAlgorithmEvaluatorQueue} doesn't allow client code to sup
 
 \subsection{Target Algorithm Evaluator Decoration}
 
-One might wonder how failures and other common tasks are handled in EALib, is it up the actual \texttt{TargetAlgorithmEvaluator} or is it up to the client code. The answer is that it is generally handled by a decorator.
+One might wonder how failures and other common tasks are handled in AEATK, is it up the actual \texttt{TargetAlgorithmEvaluator} or is it up to the client code. The answer is that it is generally handled by a decorator.
 
 \subsubsection{Example}
  \label{sec:decoration-example}
@@ -675,17 +736,17 @@ One might wonder how failures and other common tasks are handled in EALib, is it
 
 \subsection{Decorator Types}
 
-EALib includes over 20 decorators currently, and by default the \texttt{TargetAlgorithmEvaluator} returned by \texttt{getTargetAlgorithmEvaluator()} is decorated more than 6 times.
+AEATK includes over 20 decorators currently, and by default the \texttt{TargetAlgorithmEvaluator} returned by \texttt{getTargetAlgorithmEvaluator()} is decorated more than 6 times.
 
 Different Decorators serve different purposes and can loosely be broken into different types. Please look at the javadoc for a full listing of all them:
 
 \begin{description}
-\item[Debugging Decorators] can help debugging by logging every run to screen or double check invariants. See the \texttt{ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.debug} package.
-\item[Safety Decorators] check that the target algorithm or the client program is behaving correctly, for instance checking that the target algorithm always gives the same satisfiability response for an instance. See the\\ \texttt{ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.safety} package.
-\item[Helpful Decorators] can transform the results of runs or do other processing, such as retrying crashed runs, generate reports of \texttt{TargetAlgorithmEvaluator} utilization. See the \\ \texttt{ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.helpers} package.
-\item[Functionality Decorators] provide functionality for \texttt{TargetAlgorithmEvaluator} implementations so that they don't have to. For instance the \texttt{getNumberOfOutstandingEvaluations()} method is actually not implemented by any \texttt{TargetAlgorithmEvaluator} implementations, but by a single decorator. See the \\ \texttt{ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.functionality} package.
+\item[Debugging Decorators] can help debugging by logging every run to screen or double check invariants. See the \texttt{ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.debug} package.
+\item[Safety Decorators] check that the target algorithm or the client program is behaving correctly, for instance checking that the target algorithm always gives the same satisfiability response for an instance. See the\\ \texttt{ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety} package.
+\item[Helpful Decorators] can transform the results of runs or do other processing, such as retrying crashed runs, generate reports of \texttt{TargetAlgorithmEvaluator} utilization. See the \\ \texttt{ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.helpers} package.
+\item[Functionality Decorators] provide functionality for \texttt{TargetAlgorithmEvaluator} implementations so that they don't have to. For instance the \texttt{getNumberOfOutstandingEvaluations()} method is actually not implemented by any \texttt{TargetAlgorithmEvaluator} implementations, but by a single decorator. See the \\ \texttt{ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.functionality} package.
 \item[Resource Management Decorators] allow you to limit different parts of your application to only emitting a certain number of runs at any given time. See the \\
-\texttt{ca.ubc.cs.beta.aclib.targetalgorithmevaluator.decorators.resource} package.
+\texttt{ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource} package.
 \end{description}
 
 Many of the decorators above can be applied automatically on the command line, others are applied internally when constructed, and others by the application itself depending on it's needs.
@@ -707,7 +768,7 @@ In general as a client you don't need to worry about this too much, the decorato
 
 \subsubsection{Built-in}
 
-EALib includes several built-in Target Algorithm Evaluators. They are:
+AEATK includes several built-in Target Algorithm Evaluators. They are:
 
 \begin{description}
 \item[CLI] which invokes the wrapper directly.
@@ -719,13 +780,13 @@ EALib includes several built-in Target Algorithm Evaluators. They are:
 
 \subsubsection{Plugins}
 
-EALib also supports plugins, that is other TAEs can be created and dropped into existing EALib based applications. This is done via dropping the required files in a subdirectory of the \texttt{plugins/} directory. The \texttt{plugins/} folder must be located next to the \texttt{ealib.jar} file on the classpath.
+AEATK also supports plugins, that is other TAEs can be created and dropped into existing AEATK based applications. This is done via dropping the required files in a subdirectory of the \texttt{plugins/} directory. The \texttt{plugins/} folder must be located next to the \texttt{AEATK.jar} file on the classpath.
 
-One existing plugin (and perhaps the only reason they exist) is the \texttt{MYSQLDB} plugin which allows any EALib application to distribute the jobs to a cluster via a MySQL database. The usage and evaluation of it is outside the scope of this document.
+One existing plugin (and perhaps the only reason they exist) is the \texttt{MYSQLDB} plugin which allows any AEATK application to distribute the jobs to a cluster via a MySQL database. The usage and evaluation of it is outside the scope of this document.
 
 \subsubsection{Implementing Your Own TargetAlgorithmEvaluator}
 
-Implementing your own Target Algorithm Evaluator and using it as a plugin in any EALib application is fairly simple but involves a few steps.
+Implementing your own Target Algorithm Evaluator and using it as a plugin in any AEATK application is fairly simple but involves a few steps.
 
 \textsc{Note}: This section is primarily about implementing new \texttt{TargetAlgorithmEvaluator}, if you would simply like a decorator to do something in your application, you can simply write it directly. Consider subtyping \texttt{AbstractTargetAlgorithmEvaluatorDecorator}.
 
@@ -738,7 +799,7 @@ The first is that you need to actually provide the necessary classes of which th
 
 \begin{itemize}
 \item You must have something that implements the \texttt{TargetAlgorithmEvaluator} interface.
-\item You must have something that implements the \texttt{TargetAlgorithmEvaluatorFactory} interface, further it must have a no-argument constructor. The \texttt{getName()} method should return a string with no whitespace, that is in all capitals and is unique (for instance \textbf{CLI}). This name will be used to select your TAE on the command line. Additionally the constructor, the \texttt{getName()} and \texttt{getOptionsObject()}, cannot use or create a logger \footnote{If you try EALib will not load your TAE. The reason for this is that logging is configurable and at the point where we are asking for the name and options, we haven't configured anything}
+\item You must have something that implements the \texttt{TargetAlgorithmEvaluatorFactory} interface, further it must have a no-argument constructor. The \texttt{getName()} method should return a string with no whitespace, that is in all capitals and is unique (for instance \textbf{CLI}). This name will be used to select your TAE on the command line. Additionally the constructor, the \texttt{getName()} and \texttt{getOptionsObject()}, cannot use or create a logger \footnote{If you try AEATK will not load your TAE. The reason for this is that logging is configurable and at the point where we are asking for the name and options, we haven't configured anything}
 
 \item If you would like to have any options on your implementation you will need to subtype \texttt{AbstractOptions}.
 \end{itemize}
@@ -814,7 +875,7 @@ and then calls \texttt{processRuns()} and \texttt{processRun()} after the result
 
 \subsection{If I have many runs to do, how should I group batches?}
 
-\subsection{I would like to use an EALib program as a plugin in another, is there a way for me to inject the TAE into it}.
+\subsection{I would like to use an AEATK program as a plugin in another, is there a way for me to inject the TAE into it}.
 
 
 

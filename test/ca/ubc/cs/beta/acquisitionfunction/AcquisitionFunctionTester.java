@@ -8,8 +8,7 @@ import java.util.List;
 
 import org.junit.Test;
 
-import ca.ubc.cs.beta.aclib.acquisitionfunctions.AcquisitionFunction;
-import ca.ubc.cs.beta.aclib.acquisitionfunctions.AcquisitionFunctions;
+import ca.ubc.cs.beta.aeatk.acquisitionfunctions.AcquisitionFunctions;
 
 public class AcquisitionFunctionTester {
 
@@ -24,6 +23,7 @@ public class AcquisitionFunctionTester {
 		
 		for(AcquisitionFunctions f : AcquisitionFunctions.values())
 		{
+			if(f.equals(AcquisitionFunctions.LCBEIRR)) continue;
 			double f_min_samples = 1.0;
 			double[] predmean = { 1.0, 10}; 
 			double[] predvar = { 0.001, 0.001}; 
@@ -46,6 +46,8 @@ public class AcquisitionFunctionTester {
 		
 		for(AcquisitionFunctions f : AcquisitionFunctions.values())
 		{
+			
+			if(f.equals(AcquisitionFunctions.LCBEIRR)) continue;
 			double f_min_samples = 1.0;
 			double[] predmean = { 2.0, 2.0}; 
 			double[] predvar = { 0.1, 0.001}; 
