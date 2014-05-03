@@ -821,7 +821,7 @@ outerloop:
 		AlgorithmExecutionConfiguration execConfig = runConfig.getAlgorithmExecutionConfiguration();
 				
 		String cmd = execConfig.getAlgorithmExecutable();
-		cmd = cmd.replace(AlgorithmExecutionConfiguration.MAGIC_VALUE_ALGORITHM_EXECUTABLE_PREFIX,"");
+		//cmd = cmd.replace(AlgorithmExecutionConfiguration.MAGIC_VALUE_ALGORITHM_EXECUTABLE_PREFIX,"");
 		
 		
 		String[] execCmdArray = SplitQuotedString.splitQuotedString(cmd);
@@ -866,7 +866,7 @@ outerloop:
 				
 		AlgorithmExecutionConfiguration execConfig = runConfig.getAlgorithmExecutionConfiguration();
 		String cmd = execConfig.getAlgorithmExecutable();
-		cmd = cmd.replace(AlgorithmExecutionConfiguration.MAGIC_VALUE_ALGORITHM_EXECUTABLE_PREFIX,"");
+		//cmd = cmd.replace(AlgorithmExecutionConfiguration.MAGIC_VALUE_ALGORITHM_EXECUTABLE_PREFIX,"");
 		
 		
 		String[] execCmdArray = SplitQuotedString.splitQuotedString(cmd);
@@ -1046,7 +1046,7 @@ outerloop:
 
 	
 	
-	private static int getPID(Process p)
+	public static int getPID(Process p)
 	{
 		int pid = 0;
 		
