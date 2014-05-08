@@ -2,8 +2,8 @@
 
 
 #Without this we may kill every process
-if [ "$#" -ne 2 ]; then
-    echo "Must supply 2 arguments"
+if [ "$#" -lt 2 ]; then
+    echo "Must supply 2 or more arguments, first argument should be environment variable, second should be the key"
     exit 2
 fi
 

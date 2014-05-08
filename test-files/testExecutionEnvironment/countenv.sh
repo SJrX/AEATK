@@ -6,6 +6,7 @@ if [ "$#" -ne 1 ]; then
     exit 2
 fi
 
+
 fgrep -l "$1=" /proc/*/environ -s | grep -v self | grep -v $$ | wc -l 
 
 

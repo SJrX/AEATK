@@ -77,27 +77,28 @@ public class CommandLineTargetAlgorithmEvaluatorOptions extends AbstractOptions 
 	public boolean paramArgumentsContainQuotes = false;
 	
 	@UsageTextField(level=OptionLevel.ADVANCED)
-	@Parameter(names={"--cli-kill-by-environment-cmd"}, description="If not null, this script will be executed with two arguments, the first a key, the second a value. They represent environment name and value, and the script should find every process with that name and value set and terminate it. Do not assume that the key is static as it may change based on existing environment variables. Example scripts may be available in example_scripts/env_kill/")
+	@Parameter(names={"--cli-kill-by-environment-cmd"}, description="If not null, this script will be executed with three arguments, the first a key, the second a value, the third our best guess at a pid (-1 means we couldn't guess). They represent environment name and value, and the script should find every process with that name and value set and terminate it. Do not assume that the key is static as it may change based on existing environment variables. Example scripts may be available in example_scripts/env_kill/")
 	public String pgEnvKillCommand = null;
 	
 	
+	/*
 	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names={"--cli-pg-nice-kill-cmd"}, description="Command to execute to try and ask the process group to terminate nicely (generally a SIGTERM in Unix). Note %pid will be replaced with the PID we determine.")
-	public String pgNiceKillCommand = "bash -c \"kill -s TERM -%pid\"";
+	//public String pgNiceKillCommand = "bash -c \"kill -s TERM -%pid\"";
 	
 	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names={"--cli-pg-force-kill-cmd"}, description="Command to execute to try and ask the process group to terminate nicely (generally a SIGKILL in Unix). Note %pid will be replaced with the PID we determine.")
-	public String pgForceKillCommand = "bash -c \"kill -s KILL -%pid\"";
+	//public String pgForceKillCommand = "bash -c \"kill -s KILL -%pid\"";
 	
 	
 	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names={"--cli-proc-nice-kill-cmd"}, description="Command to execute to try and ask the process to terminate nicely (generally a SIGTERM in Unix). Note %pid will be replaced with the PID we determine.")
-	public String procNiceKillCommand = "kill -s TERM %pid";
+	//public String procNiceKillCommand = "kill -s TERM %pid";
 	
 	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names={"--cli-proc-force-kill-cmd"}, description="Command to execute to try and ask the process to terminate nicely (generally a SIGTERM in Unix). Note %pid will be replaced with the PID we determine.")
-	public String procForceKillCommand = "kill -s KILL %pid";
-	
+	//public String procForceKillCommand = "kill -s KILL %pid";
+	*/
 	
 	@UsageTextField(defaultValues="~/.aeatk/cli-tae.opt", level=OptionLevel.ADVANCED)
 	@Parameter(names={"--cli-default-file"}, description="file that contains default settings for CLI Target Algorithm Evaluator (it is recommended that you use this file to set the kill commands)")

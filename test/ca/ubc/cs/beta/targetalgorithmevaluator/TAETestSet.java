@@ -3562,8 +3562,7 @@ public class TAETestSet {
 		
 		System.out.println(b);
 		
-		
-		
+
 		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 1500);
 		
 		
@@ -3575,6 +3574,7 @@ public class TAETestSet {
 		options.logAllProcessOutput = true;
 		options.concurrentExecution = true;
 		options.observerFrequency = 2000;
+		options.pgEnvKillCommand = (new File("")).getAbsolutePath() + File.separator + "test-files"+File.separator + "testExecutionEnvironment" + File.separator + "killenv.sh";
 		
 		
 		tae = fact.getTargetAlgorithmEvaluator( options);	
@@ -3846,13 +3846,16 @@ public class TAETestSet {
 	
 	
 	
-	@Test
+	
+	/*
+	 * Feel free to delete this
+	 *
 	public void testProcessGroupKilled()
 	{
 		
 		/**
 		 * This tests to see if a wrapper (that sets the process group) => chained shutsdown correctly
-		 */
+		 *
 		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		StringBuilder b = new StringBuilder();
 		
@@ -3958,7 +3961,7 @@ public class TAETestSet {
 		
 		/***
 		 * This checks to see if a runsolver => chained shuts down correctly.
-		 */
+		 *
 
 		b = new StringBuilder();
 		
@@ -4018,7 +4021,7 @@ public class TAETestSet {
 		
 		/***
 		 * This tests to see if a wrapper => runsolver => chained shutsdown correctly
-		 */
+		 *
 		
 		b = new StringBuilder();
 		
@@ -4071,11 +4074,11 @@ public class TAETestSet {
 		
 		
 		
-	}
+	}*/
 	
 	
 	@Test
-	public void testProcessEnviromnentKilled()
+	public void testProcessEnvironmentKilled()
 	{
 		
 		/**
@@ -4160,13 +4163,13 @@ public class TAETestSet {
 			//It outputs a line from the wc command and we expect all zeros.
 			//If this test fails, then it may be because a previous run failed,
 			//so check that shell script for the exact line and maybe killall the other processes
-			Process proc = Runtime.getRuntime().exec((new File("")).getAbsolutePath() + File.separator + "test-files"+File.separator + "testExecutionEnvironment" + File.separator + "countenv.sh " + CommandLineAlgorithmRun.EXECUTION_UUID_ENVIRONMENT_VARIABLE_DEFAULT);
+			Process proc = Runtime.getRuntime().exec((new File("")).getAbsolutePath() + File.separator + "test-files"+File.separator + "testExecutionEnvironment" + File.separator + "countenv.sh " + CommandLineAlgorithmRun.EXECUTION_UUID_ENVIRONMENT_VARIABLE_DEFAULT );
 			
 			BufferedReader reader = new BufferedReader(new InputStreamReader(proc.getInputStream()));
 			
 			String line = reader.readLine();
 			System.out.println(line);
-			assertTrue("Expected that there would be zero matching process", line.matches("^\\s*0\\s*$"));
+			assertTrue("Expected that there would be zero matching process: got: " + line , line.matches("^\\s*0\\s*$"));
 		} catch (IOException e) {
 
 			e.printStackTrace();

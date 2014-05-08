@@ -5,8 +5,8 @@
 #Author Steve Ramage <seramage@cs.ubc.ca>
 
 #Without this we may kill every process
-if [ "$#" -ne 2 ]; then
-    echo "Must supply 2 arguments"
+if [ "$#" -lt 2 ]; then
+    echo "Must supply 2 or more arguments the first should be the environment variable key of the process we will terminate, the second should be the value of the key"
     exit 2
 fi
 
