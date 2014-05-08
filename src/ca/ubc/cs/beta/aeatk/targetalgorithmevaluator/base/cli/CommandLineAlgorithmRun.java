@@ -1104,6 +1104,10 @@ outerloop:
 		}
 	}
 	
+	private String replacePid(String input, int pid)
+	{
+		return input.replaceAll("%pid", String.valueOf(pid));
+	}
 	
 	AtomicBoolean killPreviouslyCalled = new AtomicBoolean(false);
 	private void killProcess(Process p)
@@ -1167,6 +1171,101 @@ outerloop:
 					log.error("Error while executing {} execute Kill Environment Command",e);
 					
 				}
+			} else
+			{
+				try 
+				{
+					if(pid > 0)
+					{
+						String command = replacePid(options.pgNiceKillCommand,pid);
+						log.trace("Trying to send SIGTERM to process group id: {} with command \"{}\"", pid,command);
+						try {
+							
+							
+							int retValPGroup = executeKillCommand(command);
+							
+							if(retValPGroup > 0)
+							{
+								log.trace("SIGTERM to process group failed with error code {}", retValPGroup);
+								
+								
+								int retVal = executeKillCommand(replacePid(options.procNiceKillCommand,pid));
+								
+								if(retVal > 0)
+								{
+									Object[] args = {  pid,retVal};
+									log.trace("SIGTERM to process id: {} attempted failed with return code {}",args);
+								} else
+								{
+									log.trace("SIGTERM delivered successfully to process id: {}", pid, pid);
+								}
+							} else
+							{
+								log.trace("SIGTERM delivered successfully to process group id: {} ", pid);
+							}
+						} catch (IOException e) {
+							log.error("Couldn't SIGTERM process or process group ", e);
+						}
+						
+					
+						
+						
+						int totalSleepTime = 0;
+						int currSleepTime = 25;
+						while(true)
+						{
+							
+							if(exited(p))
+							{
+								return;
+							}
+							
+							Thread.sleep(currSleepTime);
+							totalSleepTime += currSleepTime;
+							currSleepTime *=1.5;
+							if(totalSleepTime > 3000)
+							{
+								break;
+							}
+							
+						}
+												
+						log.trace("Trying to send SIGKILL to process group id: {}", pid);
+						try {
+							
+							int retVal = executeKillCommand(replacePid(options.pgForceKillCommand,pid));
+							
+							if(retVal > 0)
+							{
+								log.trace("SIGKILL to pid: {} attempted failed with return code {}",pid, retVal);
+								
+								int retVal3 = executeKillCommand(replacePid(options.procForceKillCommand,pid));
+								
+								if(retVal3 > 0)
+								{
+									Object[] args = {  pid,retVal};
+									log.trace("SIGKILL to process id: {} attempted failed with return code {}",args);
+								} else
+								{
+									log.trace("SIGKILL delivered successfully to process id: {}", pid, pid);
+								}
+							} else
+							{
+								log.trace("SIGKILL delivered successfully to pid: {} ", pid);
+							}
+						} catch (IOException e) {
+							log.error("Couldn't SIGKILL process or process group ", e);
+							
+						}
+					
+						
+						
+					}
+				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
+					return;
+				}
+				
 			}
 			
 			
@@ -1186,16 +1285,43 @@ outerloop:
 					log.debug("Process with pid {} and {} signaled non-zero exit status: {}", pid, uuid.toString(), p.exitValue() );
 				}
 			}
-			if(exited(p))
-			{
-				return;
-			}
+		
 			
 		} finally
 		{
 			this.processEnded.set(true);
 			this.stopWallclockTimer();
 			
+		}
+		
+	}
+	
+	private int executeKillCommand(String command) throws IOException, InterruptedException
+	{
+		log.trace("Executing termination command: {}");
+		ProcessBuilder pb = new ProcessBuilder();
+		pb.redirectErrorStream(true);
+		pb.command(SplitQuotedString.splitQuotedString(command));
+		Process p2 = pb.start();
+		
+		
+		try (BufferedReader read = new BufferedReader(new InputStreamReader(p2.getInputStream())))
+		{
+			String line = null;
+			
+			while((line = read.readLine()) != null)
+			{
+				log.trace("Kill For environment {}: command \"{}\" output> {}", uuid.toString(), command, line);
+			}
+		
+		}
+		
+		try 
+		{
+			return p2.waitFor();
+		} finally
+		{
+			p2.destroy();
 		}
 		
 	}

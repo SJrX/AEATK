@@ -3847,15 +3847,13 @@ public class TAETestSet {
 	
 	
 	
-	/*
-	 * Feel free to delete this
-	 *
+	@Test
 	public void testProcessGroupKilled()
 	{
 		
 		/**
 		 * This tests to see if a wrapper (that sets the process group) => chained shutsdown correctly
-		 *
+		 */
 		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		StringBuilder b = new StringBuilder();
 		
@@ -3961,7 +3959,7 @@ public class TAETestSet {
 		
 		/***
 		 * This checks to see if a runsolver => chained shuts down correctly.
-		 *
+		 */
 
 		b = new StringBuilder();
 		
@@ -4021,7 +4019,7 @@ public class TAETestSet {
 		
 		/***
 		 * This tests to see if a wrapper => runsolver => chained shutsdown correctly
-		 *
+		 */
 		
 		b = new StringBuilder();
 		
@@ -4074,7 +4072,7 @@ public class TAETestSet {
 		
 		
 		
-	}*/
+	}
 	
 	
 	@Test
