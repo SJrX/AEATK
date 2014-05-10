@@ -135,7 +135,7 @@ public class TargetAlgorithmEvaluatorBuilder {
 		{
 			log.debug("[TAE] Automatically retrying CRASHED runs {} times " , options.retryCount);
 			tae = new RetryCrashedRunsTargetAlgorithmEvaluator(options.retryCount, tae);
-		}
+		} 
 		
 		
 		
