@@ -9,9 +9,11 @@ import java.util.concurrent.atomic.AtomicInteger;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import ca.ubc.cs.beta.aeatk.json.serializers.AlgorithmExecutionConfigurationJson;
+import ca.ubc.cs.beta.aeatk.json.serializers.ParameterConfigurationSpaceJson;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace;
 /**
  * Immutable Object contains all the information related to executing a target algorithm run
@@ -19,6 +21,7 @@ import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSp
  *
  */
 @JsonSerialize(using=AlgorithmExecutionConfigurationJson.AlgorithmExecutionConfigSerializer.class)
+@JsonDeserialize(using=AlgorithmExecutionConfigurationJson.AlgorithmExecutionConfigDeserializer.class)
 public class AlgorithmExecutionConfiguration implements Serializable {
 
 	/**
@@ -92,12 +95,12 @@ public class AlgorithmExecutionConfiguration implements Serializable {
 	
 	public int hashCode()
 	{
-		return algorithmExecutable.hashCode() ^ algorithmExecutionDirectory.hashCode() ^ paramFile.hashCode() ^ (deterministicAlgorithm ? 0 : 1);
+		return algorithmExecutable.hashCode() ^ algorithmExecutionDirectory.hashCode() ^ paramFile.hashCode() ^ (deterministicAlgorithm ? 0 : 1) ^ taeContext.hashCode();
 	}
 	
 	public String toString()
 	{
-		return "algoExec:" + algorithmExecutable + "\nAlgorithmExecutionDirectory:" + algorithmExecutionDirectory + "\n"+paramFile +  "\nDetermininstic:" + deterministicAlgorithm + "\nID:" + myID;
+		return "algoExec:" + algorithmExecutable + "\nAlgorithmExecutionDirectory:" + algorithmExecutionDirectory + "\n"+paramFile +  "\nDetermininstic:" + deterministicAlgorithm + "\nID:" + myID + " MapSize:" + taeContext.size();
 	}
 	
 	public boolean equals(Object o)
@@ -106,7 +109,7 @@ public class AlgorithmExecutionConfiguration implements Serializable {
 		if (o instanceof AlgorithmExecutionConfiguration)
 		{
 			AlgorithmExecutionConfiguration co = (AlgorithmExecutionConfiguration) o;
-			return (co.algorithmExecutable.equals(algorithmExecutable) && co.algorithmExecutionDirectory.equals(algorithmExecutionDirectory) && co.paramFile.equals(paramFile)) && co.deterministicAlgorithm == deterministicAlgorithm ;
+			return (co.algorithmExecutable.equals(algorithmExecutable) && co.algorithmExecutionDirectory.equals(algorithmExecutionDirectory) && co.paramFile.equals(paramFile)) && co.deterministicAlgorithm == deterministicAlgorithm  && co.taeContext.equals(taeContext);
 		} 
 		return false;
 	}
@@ -120,7 +123,7 @@ public class AlgorithmExecutionConfiguration implements Serializable {
 	}
 	
 	
-	public final static String MAGIC_VALUE_ALGORITHM_EXECUTABLE_PREFIX = "Who am I, Alan Turing?...also from X-Men?";
+	//public final static String MAGIC_VALUE_ALGORITHM_EXECUTABLE_PREFIX = "Who am I, Alan Turing?...also from X-Men?";
 	
 	
 	

@@ -412,7 +412,9 @@ public class CommandLineAlgorithmRun implements Callable<AlgorithmRunResult>{
 				
 				this.startWallclockTimer();
 				proc = runProcess(port, token);
-
+				
+				try 
+				{
 				outstandingRuns.add(new Pair<CommandLineAlgorithmRun, Process>(this, proc));
 
 				final Process innerProcess = proc; 
@@ -430,54 +432,52 @@ public class CommandLineAlgorithmRun implements Callable<AlgorithmRunResult>{
 						Thread.currentThread().setName("Command Line Target Algorithm Evaluator Thread (Standard Error Processor)" + runConfig );
 						try {
 							try { 
-								BufferedReader procIn = new BufferedReader(new InputStreamReader(innerProcess.getErrorStream()));
-								
-							
-								do{
-									
-									String line;
-									boolean read = false;
-									while(procIn.ready())
-									{
-										read = true;
-										line = procIn.readLine();
+								try (BufferedReader procIn = new BufferedReader(new InputStreamReader(innerProcess.getErrorStream())))
+								{
+									do{
 										
-										if(line == null)
+										String line;
+										boolean read = false;
+										while(procIn.ready())
 										{
+											read = true;
+											line = procIn.readLine();
 											
-											return;
+											if(line == null)
+											{
+												
+												return;
+											}
+											log.warn("[PROCESS-ERR]  {}", line);
+											
 										}
-										log.warn("[PROCESS-ERR]  {}", line);
+									
+										
+										if(!read)
+										{
+											Thread.sleep(50);
+										}
+										
+									} while(!processEnded.get());
+									
+									
+									StringBuilder sb = new StringBuilder();
+									
+									//In case something else has come in
+									if(procIn.ready())
+									{
+										//Probably not the most efficient way to read
+										char[] input = new char[10000];
+										procIn.read(input);
+										sb.append(String.valueOf(input));
 										
 									}
-								
 									
-									if(!read)
+									if(sb.toString().trim().length() > 0)
 									{
-										Thread.sleep(50);
+										log.warn("[PROCESS-ERR] {}", sb.toString().trim());
 									}
-									
-								} while(!processEnded.get());
-								
-								
-								StringBuilder sb = new StringBuilder();
-								
-								//In case something else has come in
-								if(procIn.ready())
-								{
-									//Probably not the most efficient way to read
-									char[] input = new char[10000];
-									procIn.read(input);
-									sb.append(String.valueOf(input));
-									
 								}
-								
-								if(sb.toString().trim().length() > 0)
-								{
-									log.warn("[PROCESS-ERR] {}", sb.toString().trim());
-								}
-							
-								procIn.close();
 							} finally
 							{
 								
@@ -584,7 +584,7 @@ public class CommandLineAlgorithmRun implements Callable<AlgorithmRunResult>{
 							double currentTime = Math.max(0,currentRuntime.get());
 							completedAlgorithmRun = new ExistingAlgorithmRunResult(runConfig, RunStatus.CRASHED, currentTime, 0,0, runConfig.getProblemInstanceSeedPair().getSeed(), "ERROR: Wrapper did not output anything that matched the expected output (\"Result of algorithm run:...\"). Please try executing the wrapper directly", this.getCurrentWallClockTime() );
 						}
-				}
+					}
 					
 					
 					switch(completedAlgorithmRun.getRunStatus())
@@ -635,7 +635,15 @@ public class CommandLineAlgorithmRun implements Callable<AlgorithmRunResult>{
 					}
 				}
 
-	
+				} finally
+				{
+					if(proc != null)
+					{
+						proc.destroy();
+					}
+					
+				}
+				
 				runObserver.currentStatus(Collections.singletonList(completedAlgorithmRun));
 				log.debug("Run {} is completed", completedAlgorithmRun);
 				
@@ -681,75 +689,80 @@ public class CommandLineAlgorithmRun implements Callable<AlgorithmRunResult>{
 		int i=0; 
 			try {
 				boolean matchFound = false;
-outerloop:
-				do{
-				
-					String line;
-					boolean read = false;
-					//TODO This ready call doesn't guarantee we can read a line
+				try
+				{
+outerloop:		
+					do{
 					
-					while(procIn.ready())
-					{
-						read = true;
-						line = procIn.readLine();
 						
-						if(line == null)
+						String line;
+						boolean read = false;
+						//TODO This ready call doesn't guarantee we can read a line
+						
+						while(procIn.ready())
 						{
-							log.trace("Process has ended");
+							read = true;
+							line = procIn.readLine();
+							
+							if(line == null)
+							{
+								log.trace("Process has ended");
+								processEnded.set(true);
+								break outerloop;
+							}
+							outputQueue.add(line);
+							if (outputQueue.size() > MAX_LINES_TO_SAVE)
+							{
+								outputQueue.poll();
+							}
+							
+						
+							
+							if(wasKilled)
+							{
+								continue;
+							}
+							boolean matched = processLine(line);
+							
+							
+							if(matched && matchFound)
+							{
+								log.error("Second output of matching line detected, there is a problem with your wrapper. You can try turning with log all process output enabled to debug: {} ", line);
+								completedAlgorithmRun = ExistingAlgorithmRunResult.getAbortResult(runConfig, "duplicate lines matched");
+								continue;
+							}
+							matchFound = matchFound | matched; 
+						}
+						
+						if(completedAlgorithmRun != null && wasKilled)
+						{
+							log.warn("Run was killed but we somehow completed this might be a race condition but our result is: {}. This is a warning just so that developers can see this having occurred and judge the correctness" ,completedAlgorithmRun.getResultLine());
+						}
+						
+						
+						
+						if(!procIn.ready() && exited(p))
+						{
+							//I assume that if the stream isn't ready and the process has exited that 
+							//we have processed everything
 							processEnded.set(true);
-							break outerloop;
-						}
-						outputQueue.add(line);
-						if (outputQueue.size() > MAX_LINES_TO_SAVE)
-						{
-							outputQueue.poll();
+							break;
 						}
 						
-					
-						
-						if(wasKilled)
+						if(!read)
 						{
-							continue;
+							if(++i % 12000 == 0)
+							{
+								log.trace("Slept for 5 minutes waiting for pid {}  &&  (matching line found?: {} ) " ,getPID(p), matchFound);
+							}
+							Thread.sleep(25);
 						}
-						boolean matched = processLine(line);
 						
-						
-						if(matched && matchFound)
-						{
-							log.error("Second output of matching line detected, there is a problem with your wrapper. You can try turning with log all process output enabled to debug: {} ", line);
-							completedAlgorithmRun = ExistingAlgorithmRunResult.getAbortResult(runConfig, "duplicate lines matched");
-							continue;
-						}
-						matchFound = matchFound | matched; 
-					}
-					
-					if(completedAlgorithmRun != null && wasKilled)
-					{
-						log.warn("Run was killed but we somehow completed this might be a race condition but our result is: {}. This is a warning just so that developers can see this having occurred and judge the correctness" ,completedAlgorithmRun.getResultLine());
-					}
-					
-					
-					
-					if(!procIn.ready() && exited(p))
-					{
-						//I assume that if the stream isn't ready and the process has exited that 
-						//we have processed everything
-						processEnded.set(true);
-						break;
-					}
-					
-					if(!read)
-					{
-						if(++i % 12000 == 0)
-						{
-							log.trace("Slept for 5 minutes waiting for pid {}  &&  (matching line found?: {} ) " ,getPID(p), matchFound);
-						}
-						Thread.sleep(25);
-					}
-					
-				} while(!processEnded.get());
-				
-				procIn.close();
+					} while(!processEnded.get());
+				} finally
+				{
+					procIn.close();
+				} 
 			} catch (IOException e) {
 				
 				if(!processEnded.get())
@@ -821,7 +834,7 @@ outerloop:
 		AlgorithmExecutionConfiguration execConfig = runConfig.getAlgorithmExecutionConfiguration();
 				
 		String cmd = execConfig.getAlgorithmExecutable();
-		cmd = cmd.replace(AlgorithmExecutionConfiguration.MAGIC_VALUE_ALGORITHM_EXECUTABLE_PREFIX,"");
+		//cmd = cmd.replace(AlgorithmExecutionConfiguration.MAGIC_VALUE_ALGORITHM_EXECUTABLE_PREFIX,"");
 		
 		
 		String[] execCmdArray = SplitQuotedString.splitQuotedString(cmd);
@@ -866,7 +879,7 @@ outerloop:
 				
 		AlgorithmExecutionConfiguration execConfig = runConfig.getAlgorithmExecutionConfiguration();
 		String cmd = execConfig.getAlgorithmExecutable();
-		cmd = cmd.replace(AlgorithmExecutionConfiguration.MAGIC_VALUE_ALGORITHM_EXECUTABLE_PREFIX,"");
+		//cmd = cmd.replace(AlgorithmExecutionConfiguration.MAGIC_VALUE_ALGORITHM_EXECUTABLE_PREFIX,"");
 		
 		
 		String[] execCmdArray = SplitQuotedString.splitQuotedString(cmd);
@@ -1046,7 +1059,7 @@ outerloop:
 
 	
 	
-	private static int getPID(Process p)
+	public static int getPID(Process p)
 	{
 		int pid = 0;
 		
@@ -1096,7 +1109,6 @@ outerloop:
 		return input.replaceAll("%pid", String.valueOf(pid));
 	}
 	
-	
 	AtomicBoolean killPreviouslyCalled = new AtomicBoolean(false);
 	private void killProcess(Process p)
 	{
@@ -1112,90 +1124,73 @@ outerloop:
 		
 		try 
 		{
-			
-			if(options.pgEnvKillCommand != null)
+			int pid = getPID(p);
+			if(options.pgEnvKillCommand != null && options.pgEnvKillCommand.trim().length() > 1)
 			{
 				try {
 					
-					String killEnvCmd = options.pgEnvKillCommand + " " + envVariableForChildren + " " + uuid.toString();
-					Process p2 = Runtime.getRuntime().exec(SplitQuotedString.splitQuotedString(killEnvCmd));
+					String killEnvCmd = options.pgEnvKillCommand + " " + envVariableForChildren + " " + uuid.toString() + " " + pid; 
+					ProcessBuilder pb = new ProcessBuilder();
 					
-					BufferedReader read = new BufferedReader(new InputStreamReader(p2.getErrorStream()));
-					String line = null;
+					pb.redirectErrorStream(true);
+					pb.command(SplitQuotedString.splitQuotedString(killEnvCmd));
 					
-					while((line = read.readLine()) != null)
+					Process p2 = pb.start();
+					
+					try 
 					{
-						log.trace("Kill environment {} error> {}", uuid.toString(), line);
-					}
-					read.close();
-					read = new BufferedReader(new InputStreamReader(p2.getInputStream()));
-					line = null;
-					
-					while((line = read.readLine()) != null)
+						try(BufferedReader read = new BufferedReader(new InputStreamReader(p2.getInputStream())))
+						{
+							String line = null;
+							
+							while((line = read.readLine()) != null)
+							{
+								log.trace("Kill environment {} output> {}", uuid.toString(), line);
+							}
+						}
+					} finally
 					{
-						log.trace("Kill environment {}  output> {}", uuid.toString(), line);
+						p2.destroy();
+						
+						try 
+						{
+							if(p2.waitFor() > 0)
+							{
+								log.warn("Kill script execution returned non-zero exit status: {} ", p2.exitValue());
+							}
+						} catch(InterruptedException e)
+						{
+							Thread.currentThread().interrupt();
+							//Continue;
+						}
+							
 					}
-					
-					read.close();
-					
-					
-					p2.destroy();
 				} catch(IOException e)
 				{
 					
 					log.error("Error while executing {} execute Kill Environment Command",e);
 					
 				}
-			}
-			
-			
-			if(exited(p))
+			} else
 			{
-				return;
-			}
-		
-			try 
-			{
-				int pid = getPID(p);
-				try
+				try 
 				{
-					
 					if(pid > 0)
 					{
 						String command = replacePid(options.pgNiceKillCommand,pid);
 						log.trace("Trying to send SIGTERM to process group id: {} with command \"{}\"", pid,command);
 						try {
 							
-							Process p2 = Runtime.getRuntime().exec(SplitQuotedString.splitQuotedString(command));
 							
-							
-							BufferedReader read = new BufferedReader(new InputStreamReader(p2.getErrorStream()));
-							String line = null;
-							
-							while((line = read.readLine()) != null)
-							{
-								log.trace("Kill error output> {}", line);
-							}
-							read.close();
-							read = new BufferedReader(new InputStreamReader(p2.getInputStream()));
-							line = null;
-							
-							
-							while((line = read.readLine()) != null)
-							{
-								log.trace("Kill output Input> {}", line);
-							}
-							
-							read.close();
-							int retValPGroup = p2.waitFor();
+							int retValPGroup = executeKillCommand(command);
 							
 							if(retValPGroup > 0)
 							{
 								log.trace("SIGTERM to process group failed with error code {}", retValPGroup);
-								Process p3 = Runtime.getRuntime().exec(SplitQuotedString.splitQuotedString(replacePid(options.procNiceKillCommand,pid)));
-								int retVal = p3.waitFor();
 								
-								p3.destroy();
+								
+								int retVal = executeKillCommand(replacePid(options.procNiceKillCommand,pid));
+								
 								if(retVal > 0)
 								{
 									Object[] args = {  pid,retVal};
@@ -1204,14 +1199,10 @@ outerloop:
 								{
 									log.trace("SIGTERM delivered successfully to process id: {}", pid, pid);
 								}
-									
-								
-								
 							} else
 							{
 								log.trace("SIGTERM delivered successfully to process group id: {} ", pid);
 							}
-							p2.destroy();
 						} catch (IOException e) {
 							log.error("Couldn't SIGTERM process or process group ", e);
 						}
@@ -1241,15 +1232,14 @@ outerloop:
 												
 						log.trace("Trying to send SIGKILL to process group id: {}", pid);
 						try {
-							Process p2 = Runtime.getRuntime().exec(SplitQuotedString.splitQuotedString(replacePid(options.pgForceKillCommand,pid)));
-							int retVal = p2.waitFor();
+							
+							int retVal = executeKillCommand(replacePid(options.pgForceKillCommand,pid));
 							
 							if(retVal > 0)
 							{
 								log.trace("SIGKILL to pid: {} attempted failed with return code {}",pid, retVal);
 								
-								Process p3 = Runtime.getRuntime().exec(SplitQuotedString.splitQuotedString(replacePid(options.procForceKillCommand,pid)));
-								int retVal3 = p3.waitFor();
+								int retVal3 = executeKillCommand(replacePid(options.procForceKillCommand,pid));
 								
 								if(retVal3 > 0)
 								{
@@ -1259,13 +1249,10 @@ outerloop:
 								{
 									log.trace("SIGKILL delivered successfully to process id: {}", pid, pid);
 								}
-								
-								p3.destroy();
 							} else
 							{
 								log.trace("SIGKILL delivered successfully to pid: {} ", pid);
 							}
-							p2.destroy();
 						} catch (IOException e) {
 							log.error("Couldn't SIGKILL process or process group ", e);
 							
@@ -1274,29 +1261,67 @@ outerloop:
 						
 						
 					}
-					
-					p.destroy();
-					p.waitFor();
-				} finally{
-					
-					if(exited(p))
-					{
-						log.debug("Process pid: {} terminated successfully with return code {}", pid, p.exitValue());
-					} else
-					{
-						log.warn("Process pid: {} was not terminated ", pid);
-					}
-					
-				}	
+				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
+					return;
+				}
+				
+			}
+			
+			
+			p.destroy();
+			try {
+				p.waitFor();
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
-				return;
+				log.error("This shouldn't be possible", e);
+				
 			}
+			
+			if(p.exitValue() > 0)
+			{
+				if(p.exitValue() != 143 && p.exitValue() != 137 &&  p.exitValue() != 130) //
+				{
+					log.debug("Process with pid {} and {} signaled non-zero exit status: {}", pid, uuid.toString(), p.exitValue() );
+				}
+			}
+		
+			
 		} finally
 		{
 			this.processEnded.set(true);
 			this.stopWallclockTimer();
 			
+		}
+		
+	}
+	
+	private int executeKillCommand(String command) throws IOException, InterruptedException
+	{
+		log.trace("Executing termination command: {}");
+		ProcessBuilder pb = new ProcessBuilder();
+		pb.redirectErrorStream(true);
+		pb.command(SplitQuotedString.splitQuotedString(command));
+		Process p2 = pb.start();
+		
+		
+		try (BufferedReader read = new BufferedReader(new InputStreamReader(p2.getInputStream())))
+		{
+			String line = null;
+			
+			while((line = read.readLine()) != null)
+			{
+				log.trace("Kill For environment {}: command \"{}\" output> {}", uuid.toString(), command, line);
+			}
+		
+		}
+		
+		try 
+		{
+			return p2.waitFor();
+		} finally
+		{
+			p2.destroy();
 		}
 		
 	}

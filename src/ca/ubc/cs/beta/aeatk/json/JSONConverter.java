@@ -31,7 +31,7 @@ public abstract class JSONConverter<K>
 		this.magic = ref;
 		
 		
-		System.out.println("My Type:" + this.magic.getType());
+		//System.out.println("My Type:" + this.magic.getType());
 	}
 	/**
 	 * Retrieves a JSON representation of the object

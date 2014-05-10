@@ -176,7 +176,7 @@ public class TargetAlgorithmEvaluatorLoader {
 						
 					} catch(AbstractMethodError e)
 					{
-						System.err.println("Error occurred while processing " + tae.getName());
+						System.err.println("Error occurred while processing " + tae.getName() + " if you are running in eclipse, maybe do a full clean");
 						throw e;
 					}
 					
@@ -198,7 +198,7 @@ public class TargetAlgorithmEvaluatorLoader {
 					System.err.println(e.getCause().getCause().getMessage());					
 				}else
 				{	
-					System.err.println("Error occured while retrieving Target Algorithm Evaluator");
+					System.err.println("Error occured while retrieving Target Algorithm Evaluator if you are running in eclipse, maybe do a full clean");
 				}
 				e.printStackTrace();
 				try {
@@ -211,7 +211,7 @@ public class TargetAlgorithmEvaluatorLoader {
 		
 		if(noTAEsFound)
 		{
-			System.err.println("WARNING: I could not find ANY Target Algorithm Evaluators on the classpath. If you made this JAR yourself chances are you did not setup SPI correctly. See the SMAC Manual Developer Reference for more information" );
+			System.err.println("WARNING: I could not find ANY Target Algorithm Evaluators on the classpath. If you made this JAR yourself chances are you did not setup SPI correctly. See the AEATK Manual / Developer Reference for more information" );
 		}
 		//Options can be modified in the map, but the map keys and values itself can't be
 		return Collections.unmodifiableMap(taeOptionsMap);

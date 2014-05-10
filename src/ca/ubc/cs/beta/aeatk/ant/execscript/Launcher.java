@@ -40,12 +40,15 @@ public class Launcher {
 				m.invoke(null, (Object) new String[0]);
 			}
 			
+			return;
 		} catch (ClassNotFoundException e) {
 			System.err.println("================================================================================");
 			System.err.println("Unable to run program, please contact the author with this full message:\n");
 			System.err.println("DEV NOTE: Most likely the shell script created points to the wrong class, \n which in this case we couldn't find.");
 			e.printStackTrace();
 			System.err.println("================================================================================");
+			
+			System.exit(128);
 			
 		} catch (NoSuchMethodException e) {
 			System.err.println("================================================================================");
@@ -54,7 +57,7 @@ public class Launcher {
 			e.printStackTrace();
 			
 			System.err.println("================================================================================");
-			
+			System.exit(128);
 		} catch(UnsupportedClassVersionError e)
 		{
 			System.err.println("================================================================================");
@@ -64,7 +67,7 @@ public class Launcher {
 					+ "Please check your PATH and JAVA_HOME environment variables to ensure that it is the correct version.\n"
 					+ "For more information see: https://www.java.com/en/download/help/download_options.xml");
 			System.err.println("================================================================================");
-			
+			System.exit(128);
 		} catch(LinkageError e)
 			{
 				System.err.println("================================================================================");
@@ -77,6 +80,7 @@ public class Launcher {
 				e.printStackTrace();
 				System.err.println("================================================================================");
 				
+				System.exit(128);
 			}
 		catch (SecurityException e) {
 			System.err.println("================================================================================");
@@ -84,7 +88,7 @@ public class Launcher {
 			System.err.println("DEV NOTE: This would seem to be because a SecurityManager is precluding us from using reflection, or some weird class loader magic");
 			e.printStackTrace();
 			System.err.println("================================================================================");
-			
+			System.exit(128);
 		} catch(IllegalArgumentException e)
 		{
 			System.err.println("================================================================================");
@@ -94,6 +98,7 @@ public class Launcher {
 			System.err.println("DEV NOTE: No argument specified to the launcher, the first argument must be a class");
 			e.printStackTrace();
 			System.err.println("================================================================================");
+			System.exit(128);
 		} catch (IllegalAccessException e) {
 			System.err.println("================================================================================");
 			System.err.println("Unable to run program, this seems to be a problem with this build of this software");
@@ -102,7 +107,7 @@ public class Launcher {
 			System.err.println("DEV NOTE: Can't seem to invoke main method, is it private?");
 			e.printStackTrace();
 			System.err.println("================================================================================");
-			
+			System.exit(128);
 		} catch (InvocationTargetException e) {
 			System.err.println("================================================================================");
 			System.err.println("Unable to run program, this seems to be a problem with this build of this software");
@@ -111,7 +116,7 @@ public class Launcher {
 			System.err.println("DEV NOTE: Can't seem to invoke main method, is it private?");
 			e.printStackTrace();
 			System.err.println("================================================================================");
-			
+			System.exit(128);
 		}
 	}
 }
