@@ -25,7 +25,8 @@ import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.AbstractTargetAl
 /**
  * This decorator changes cap times of submitted runs to be that of the execution configuration, and then uses an observer to enforce the time limit.
  * 
- * The primary benefit of this, is that it allows better use of caching{@link ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.caching.CachingTargetAlgorithmEvaluatorDecorator}
+ * The primary benefit of this, is that it allows better use of caching {@link ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.caching.CachingTargetAlgorithmEvaluatorDecorator} 
+ * additionally also some TAEs internally do this, such as the MySQL TAE.
  * 
  * @author Steve Ramage <seramage@cs.ubc.ca>
  *

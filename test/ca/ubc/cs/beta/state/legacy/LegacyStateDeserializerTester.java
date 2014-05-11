@@ -19,6 +19,7 @@ import java.util.Set;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
+import org.junit.Ignore;
 import org.junit.Test;
 
 import ca.ubc.cs.beta.TestHelper;
@@ -734,6 +735,7 @@ public class LegacyStateDeserializerTester {
 	 */
 	@SuppressWarnings("deprecation")
 	@Test
+	@Ignore 
 	public void stateSerializationMemHeavy() throws DuplicateRunException
 	{
 	

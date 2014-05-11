@@ -9,6 +9,7 @@ import java.util.concurrent.Callable;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Future;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 
@@ -39,9 +40,7 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 	protected final List<AlgorithmRunConfiguration> runConfigs;
 
 	protected final List<Callable<AlgorithmRunResult>> runs;
-	
-	private final ExecutorService execService = Executors.newCachedThreadPool(new SequentiallyNamedThreadFactory("Command Line Algorithm Runner (not run) Thread"));
-	
+
 	private static final Logger log = LoggerFactory.getLogger(AbstractAlgorithmRunner.class); 
 	
 	//Set to true if we should terminate the observers
@@ -50,6 +49,7 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 	private final Semaphore shutdownRunnerCompleted = new Semaphore(0);
 	private final Semaphore updatedRunMapSemaphore = new Semaphore(0);
 	
+	private final Future<?>  runStatusWatchingFuture;
 	/**
 	 * Standard Constructor
 	 * 
@@ -57,7 +57,7 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 	 * @param runConfigs	run configurations of the target algorithm
 	 * @param obs 
 	 */
-	public AbstractAlgorithmRunner(final List<AlgorithmRunConfiguration> runConfigs, final TargetAlgorithmEvaluatorRunObserver obs, final CommandLineTargetAlgorithmEvaluatorOptions options, BlockingQueue<Integer> executionIDs)
+	public AbstractAlgorithmRunner(final List<AlgorithmRunConfiguration> runConfigs, final TargetAlgorithmEvaluatorRunObserver obs, final CommandLineTargetAlgorithmEvaluatorOptions options, BlockingQueue<Integer> executionIDs, ExecutorService executorService)
 	{
 		if(runConfigs == null)
 		{
@@ -131,14 +131,17 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 			@Override
 			public void run() {
 				
+				long startOfTimer=0;
 				try {
 					while(true)
 					{
 						try {
 							
-							
+							long lastUpdate = System.currentTimeMillis();
 							//This will release either because some run updated
 							//or because we are done
+							
+							
 							updatedRunMapSemaphore.acquire();
 							
 							updatedRunMapSemaphore.drainPermits();
@@ -152,6 +155,15 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 							
 							//We will quit if all runs are done
 							boolean outstandingRuns = false;
+							
+							long delta = System.currentTimeMillis() - startOfTimer;
+							
+							
+							
+							if(delta < options.observerFrequency)
+							{
+								Thread.sleep(Math.max(1, options.observerFrequency - delta + 20));
+							}
 							
 							for(Entry<AlgorithmRunConfiguration,AlgorithmRunResult> entries : runConfigToLatestUpdatedRunMap.entrySet())
 							{
@@ -170,6 +182,8 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 								{
 									obs.currentStatus(runList);
 								}
+								startOfTimer = System.currentTimeMillis();
+								
 							} catch(RuntimeException e)
 							{
 								log.error("Error occured while notifying observer ", e);
@@ -181,14 +195,18 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 								
 								break;
 							}
-							
-							if(execService.isShutdown()) 
+
+							if(shutdownRunnerRequested.get())
 							{
 								break;
 							}
+							
+							
+							
 						} catch (InterruptedException e) 
 						{
 							Thread.currentThread().interrupt();
+							break;
 						}
 					}
 				} finally
@@ -199,18 +217,18 @@ abstract class AbstractAlgorithmRunner implements AlgorithmRunner {
 			
 		};
 		
-		execService.execute(runStatusWatchingThread);
-		
+		runStatusWatchingFuture = executorService.submit(runStatusWatchingThread);
 		
 	}
 	
 	
 	@Override
-	public abstract List<AlgorithmRunResult> run();
+	public abstract List<AlgorithmRunResult> run(ExecutorService p);
 	
 	@Override
 	public void shutdownThreadPool() {
-		this.execService.shutdown();
+	
+		runStatusWatchingFuture.cancel(true);
 		try {
 			//Want to force that the observer is done
 			shutdownRunnerRequested.set(true);

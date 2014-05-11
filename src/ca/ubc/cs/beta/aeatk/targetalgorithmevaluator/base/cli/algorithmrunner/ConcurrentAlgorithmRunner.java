@@ -42,17 +42,14 @@ class ConcurrentAlgorithmRunner extends AbstractAlgorithmRunner {
 	 * @param executionIDs 
 	 */
 
-	public ConcurrentAlgorithmRunner(List<AlgorithmRunConfiguration> runConfigs, int numberOfConcurrentExecutions, TargetAlgorithmEvaluatorRunObserver obs, CommandLineTargetAlgorithmEvaluatorOptions options, BlockingQueue<Integer> executionIDs) {
-		super( runConfigs, obs, options,executionIDs);
+	public ConcurrentAlgorithmRunner(List<AlgorithmRunConfiguration> runConfigs, int numberOfConcurrentExecutions, TargetAlgorithmEvaluatorRunObserver obs, CommandLineTargetAlgorithmEvaluatorOptions options, BlockingQueue<Integer> executionIDs, ExecutorService execService) {
+		super( runConfigs, obs, options,executionIDs, execService);
 		this.numberOfConcurrentExecutions = numberOfConcurrentExecutions;
 	}
 
 	@Override
-	public synchronized List<AlgorithmRunResult> run() {
-		
-		log.debug("Creating Thread Pool Supporting " + numberOfConcurrentExecutions);
-		
-		ExecutorService p = Executors.newFixedThreadPool(numberOfConcurrentExecutions, new SequentiallyNamedThreadFactory("Command Line Target Algorithm Evaluator (ConcurrentRunner)"));
+	public synchronized List<AlgorithmRunResult> run(ExecutorService p) {
+		//
 		/*
 		 * Runs all algorithms in the thread pool
 		 * Tells it to shutdown
@@ -61,62 +58,54 @@ class ConcurrentAlgorithmRunner extends AbstractAlgorithmRunner {
 		 */
 		try {
 			
-	
+			List<AlgorithmRunResult> results = new ArrayList<AlgorithmRunResult>();
+			List<Callable<AlgorithmRunResult>> runsToDo = runs;
 			
-			try {
+			
+			List<Future<AlgorithmRunResult>> futures = p.invokeAll(runsToDo);
+			
+			
+			//p.invokeAll(runs);
+			
+			
+			for(Future<AlgorithmRunResult> futRuns : futures)
+			{
+				AlgorithmRunResult run;
+				try {
+					run = futRuns.get();
 				
-				List<AlgorithmRunResult> results = new ArrayList<AlgorithmRunResult>();
-				List<Callable<AlgorithmRunResult>> runsToDo = runs;
-				
-				
-				List<Future<AlgorithmRunResult>> futures = p.invokeAll(runsToDo);
-				
-				
-				//p.invokeAll(runs);
-				
-				
-				for(Future<AlgorithmRunResult> futRuns : futures)
+				} catch (ExecutionException e) 
 				{
-					AlgorithmRunResult run;
-					try {
-						run = futRuns.get();
 					
-					} catch (ExecutionException e) 
+					if(e.getCause() instanceof TargetAlgorithmAbortException)
 					{
-						
-						if(e.getCause() instanceof TargetAlgorithmAbortException)
-						{
-							throw (TargetAlgorithmAbortException) e.getCause();
-						}
-						 throw new IllegalStateException("Unexpected exception occurred while trying to run algorithm", e);
+						throw (TargetAlgorithmAbortException) e.getCause();
 					}
-					if (run.getRunStatus().equals(RunStatus.ABORT))
-					{
-						throw new TargetAlgorithmAbortException(run);
-					}
-					
-					
-					results.add(run);
-					
-					
-					
+					 throw new IllegalStateException("Unexpected exception occurred while trying to run algorithm", e);
+				}
+				if (run.getRunStatus().equals(RunStatus.ABORT))
+				{
+					throw new TargetAlgorithmAbortException(run);
 				}
 				
-				return results;
+				
+				results.add(run);
 				
 				
-			} catch (InterruptedException e) {
-				//TODO We probably need to actually abort properly
-				//We can't just let something else do it, I think.
-				//Additionally runs are in an invalid state at this point
-				Thread.currentThread().interrupt();
-				throw new IllegalStateException("Interrupted while processing runs");
+				
 			}
-		} finally
-		{
 			
-			p.shutdownNow();
+			return results;
+			
+			
+		} catch (InterruptedException e) {
+			//TODO We probably need to actually abort properly
+			//We can't just let something else do it, I think.
+			//Additionally runs are in an invalid state at this point
+			Thread.currentThread().interrupt();
+			throw new IllegalStateException("Interrupted while processing runs");
 		}
+		
 		
 	}
 

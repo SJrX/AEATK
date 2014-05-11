@@ -37,6 +37,8 @@ public class OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator extends
 	
 	private final Object lock = new Object();
 	
+	private final AtomicInteger runCount = new AtomicInteger();
+	
 	public OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator(
 			TargetAlgorithmEvaluator tae) {
 		super(tae);
@@ -51,6 +53,7 @@ public class OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator extends
 			preRun(runConfigs);
 			List<AlgorithmRunResult> runs =  tae.evaluateRun(runConfigs, obs);
 			postRun(runConfigs);
+			runCount.addAndGet(runs.size());
 			return runs;
 		} finally
 		{
@@ -108,7 +111,9 @@ public class OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator extends
 			@Override
 			public void onSuccess(List<AlgorithmRunResult> runs) {
 				postRun(runConfigs);
+				runCount.addAndGet(runs.size());
 				handler.onSuccess(runs);
+				
 				//Release happens after because it is still outstanding at this point until the callback has fired.
 				synchronized (this) {
 					if(!bool.get())
@@ -182,6 +187,11 @@ public class OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator extends
 		return 1 - outstandingRunBlocks.availablePermits();
 	}
 	
+	@Override
+	public int getRunCount()
+	{
+		return 	runCount.get();
+	}
 	
 	/***
 	 * Additional template methods

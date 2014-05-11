@@ -46,8 +46,24 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 
 	@UsageTextField(level=OptionLevel.INTERMEDIATE)
 	@Parameter(names={"--retry-crashed-count","--retryCrashedRunCount","--retryTargetAlgorithmRunCount"}, description="number of times to retry an algorithm run before reporting crashed (NOTE: The original crashes DO NOT count towards any time limits, they are in effect lost). Additionally this only retries CRASHED runs, not ABORT runs, this is by design as ABORT is only for cases when we shouldn't bother further runs", validateWith=NonNegativeInteger.class)
-	public int retryCount = 1;
+	public int retryCount = 0;
+	
+	@UsageTextField(level=OptionLevel.DEVELOPER)
+	@Parameter(names={"--cache-runs"}, description="If true we will cache runs internally, so that subsequent requests are not re-executed [EXPERIMENTAL]")
+	public boolean cacheRuns;
+	
+	@UsageTextField(level=OptionLevel.DEVELOPER)
+	@Parameter(names={"--cache-runs-debug"}, description="If true we will print the state of the cache every so often for debug purposes.")
+	public boolean cacheDebug = false;
 
+	@UsageTextField(level=OptionLevel.DEVELOPER)
+	@Parameter(names={"-use-dynamic-cutoffs"}, description="If true then we change all cutoffs to the maximum cutoff time and dynamically kill runs that exceed there cutoff time. This is useful because cache hits require the cutoff time to match")
+	public boolean useDynamicCappingExclusively = false;
+	
+	@UsageTextField(level=OptionLevel.DEVELOPER)
+	@Parameter(names={"--cache-runs-strictly-increasing-observer"}, description="If true then we will enforce that all runtimes seen externally always have strictly increasing times. (Internally if the run is restarted for some reason, the observed time may in fact go down).")
+	public boolean reportStrictlyIncreasingRuntimes = false;
+	
 	@UsageTextField(level=OptionLevel.INTERMEDIATE)
 	@Parameter(names={"--bound-runs","--boundRuns"}, description="[DEPRECATED] (Use the option on the TAE instead if available) if true, permit only --cores number of runs to be evaluated concurrently. ")
 	public boolean boundRuns = false;

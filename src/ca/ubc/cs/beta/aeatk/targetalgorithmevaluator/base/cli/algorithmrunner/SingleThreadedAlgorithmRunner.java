@@ -4,6 +4,7 @@ import java.util.ArrayList;
 import java.util.List;
 import java.util.concurrent.BlockingQueue;
 import java.util.concurrent.Callable;
+import java.util.concurrent.ExecutorService;
 
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
@@ -21,13 +22,13 @@ class SingleThreadedAlgorithmRunner extends AbstractAlgorithmRunner
 	 * @param runConfigs	run configurations to execute
 	 * @param obs 
 	 */
-	public SingleThreadedAlgorithmRunner(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs, CommandLineTargetAlgorithmEvaluatorOptions options, BlockingQueue<Integer> executionIDs) {
-		super( runConfigs,obs, options, executionIDs);
+	public SingleThreadedAlgorithmRunner(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs, CommandLineTargetAlgorithmEvaluatorOptions options, BlockingQueue<Integer> executionIDs, ExecutorService execService) {
+		super( runConfigs,obs, options, executionIDs, execService);
 		
 	}
 
 	@Override
-	public List<AlgorithmRunResult> run() 	
+	public List<AlgorithmRunResult> run(ExecutorService p) 	
 	{
 		
 		List<AlgorithmRunResult> runsToReturn = new ArrayList<AlgorithmRunResult>();

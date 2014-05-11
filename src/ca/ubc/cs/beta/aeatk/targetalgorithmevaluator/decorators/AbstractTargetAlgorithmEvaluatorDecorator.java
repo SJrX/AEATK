@@ -65,20 +65,6 @@ public abstract class AbstractTargetAlgorithmEvaluatorDecorator implements	Targe
 		tae.evaluateRunsAsync(runConfigs, callback, observer);
 	}
 
-	
-	public void waitForOutstandingEvaluations()
-	{
-		tae.waitForOutstandingEvaluations();
-	}
-	
-	
-	public int getNumberOfOutstandingEvaluations()
-	{
-		return tae.getNumberOfOutstandingBatches();
-	}
-	
-	
-	
 	@Override
 	public int getRunCount() {
 		return tae.getRunCount();
@@ -179,7 +165,18 @@ public abstract class AbstractTargetAlgorithmEvaluatorDecorator implements	Targe
 		return this.getClass().getSimpleName() + "( 0x" + Integer.toHexString(System.identityHashCode(this)) + " ) ==> [ " + tae.toString() + " ]";
 	}
 
-
+	@Override
+	public void waitForOutstandingEvaluations()
+	{
+		tae.waitForOutstandingEvaluations();
+	}
+	
+	@Override
+	public int getNumberOfOutstandingEvaluations()
+	{
+		return tae.getNumberOfOutstandingBatches();
+	}
+	
 	@Override
 	public int getNumberOfOutstandingBatches() {
 		return tae.getNumberOfOutstandingBatches();

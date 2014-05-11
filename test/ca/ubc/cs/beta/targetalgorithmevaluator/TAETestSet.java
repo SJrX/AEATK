@@ -1717,7 +1717,7 @@ public class TAETestSet {
 		opts.checkSATConsistency = true;
 		opts.checkSATConsistencyException = false;
 		opts.boundRuns = false;
-		
+		opts.retryCount = 0;
 		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).preloadedResponses="[TIMEOUT=4],[CRASHED=2],[TIMEOUT=3],[CRASHED=1],[SAT=1],[SAT=2],[UNSAT=2],[UNSAT=3],[TIMEOUT=4],[CRASHED=2],[TIMEOUT=3],[CRASHED=1],[SAT=1],[SAT=2],[UNSAT=2],[UNSAT=3]";
 		TargetAlgorithmEvaluator tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts,  false, taeOptionsMap);
 		
@@ -2222,6 +2222,86 @@ public class TAETestSet {
 		
 	}
 	
+	
+	@Test
+	/**
+	 * This tests that the CLI TAE Frequency is being respected more or less.
+	 * 
+	 * This is related to issue https://mantis.sjrx.net/view.php?id=2040
+	 * 
+	 * 
+	 * 
+	 */
+	public void testObserverFrequency()
+	{
+	
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path").replaceAll("jar:.*", "jar:"));
+		b.append(" ");
+		b.append(ParamEchoExecutor.class.getCanonicalName());
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
+		
+		final List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
+		for(int i=0; i < 100; i++)
+		{
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
+				runConfigs.add(rc);
+			}
+		}
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		
+		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
+		
+		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
+		
+		options.concurrentExecution = true;
+		options.cores = 100;
+		options.logAllCallStrings = true;
+		options.observerFrequency = 250;
+		
+		
+		tae = fact.getTargetAlgorithmEvaluator( options);		
+		tae = new BoundedTargetAlgorithmEvaluator(tae,100);
+		
+
+		final AtomicInteger obsCount = new AtomicInteger(0);
+		TargetAlgorithmEvaluatorRunObserver tObs = new TargetAlgorithmEvaluatorRunObserver()
+		{
+
+			@Override
+			public void currentStatus(List<? extends AlgorithmRunResult> runs) {
+				obsCount.incrementAndGet();
+				
+			}
+			
+		};
+		
+		StopWatch stopWatch = new AutoStartStopWatch();
+		List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs,tObs);
+		
+		stopWatch.stop();
+		System.out.println(obsCount.get() + " vs " + stopWatch.time() / 1000.0);
+		
+		long msPerObs = stopWatch.time() / obsCount.get();
+		
+		
+		assertTrue("Expected milli-seconds per observation to be greater than set 250 got: " + msPerObs ,msPerObs>=250 );
+		//obsCount.get() / stopWatch.time() 
+		
+	
+	}
+	
 	@Test
 	/**
 	 * This tests for that the CLI will return eventually
@@ -2237,7 +2317,7 @@ public class TAETestSet {
 		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		StringBuilder b = new StringBuilder();
 		b.append("java -cp ");
-		b.append(System.getProperty("java.class.path"));
+		b.append(System.getProperty("java.class.path").replaceAll("jar:.*", "jar:"));
 		b.append(" ");
 		b.append(ParamEchoExecutor.class.getCanonicalName());
 		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
@@ -2296,7 +2376,7 @@ public class TAETestSet {
 		
 			//This 45 second sleep is probably incredibly sensitive.
 
-		for(int i=0; i < 60; i++)
+		for(int i=0; i < 600; i++)
 		{
 			try {
 				Thread.sleep(1000);
@@ -2541,7 +2621,7 @@ public class TAETestSet {
 		options.logAllCallStrings = true;
 		options.logAllProcessOutput = true;
 		options.concurrentExecution = true;
-		options.observerFrequency = 2000;
+		options.observerFrequency = 50;
 		options.cores = 2;
 		
 		tae = fact.getTargetAlgorithmEvaluator( options);	
@@ -2608,7 +2688,7 @@ public class TAETestSet {
 		options.logAllCallStrings = true;
 		options.logAllProcessOutput = true;
 		options.concurrentExecution = true;
-		options.observerFrequency = 2000;
+		options.observerFrequency = 50;
 		options.cores = 4;
 		
 		tae = fact.getTargetAlgorithmEvaluator( options);	
@@ -2715,7 +2795,7 @@ public class TAETestSet {
 		options.logAllCallStrings = true;
 		options.logAllProcessOutput = true;
 		options.concurrentExecution = true;
-		options.observerFrequency = 2000;
+		options.observerFrequency = 50;
 		options.cores = 2;
 		
 		tae = new OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator( fact.getTargetAlgorithmEvaluator( options));	

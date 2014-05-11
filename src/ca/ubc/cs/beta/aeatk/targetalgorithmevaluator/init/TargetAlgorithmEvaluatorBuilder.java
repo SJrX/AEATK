@@ -13,6 +13,10 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.beust.jcommander.Parameter;
+
+import ca.ubc.cs.beta.aeatk.misc.options.OptionLevel;
+import ca.ubc.cs.beta.aeatk.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aeatk.options.AbstractOptions;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorOptions;
@@ -24,12 +28,16 @@ import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.debug.UncleanShu
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.functionality.OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.functionality.TerminateAllRunsOnFileDeleteTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.functionality.transform.TransformTargetAlgorithmEvaluatorDecorator;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.helpers.CallObserverBeforeCompletionTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.helpers.KillCaptimeExceedingRunsRunsTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.helpers.OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator;
-import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.helpers.RetryCrashedRunsTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.helpers.RetryCrashedRunsTargetAlgorithmEvaluatorDecorator;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.helpers.StrictlyIncreasingRuntimesTargetAlgorithmEvaluatorDecorator;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.helpers.UseDynamicCappingExclusivelyTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.helpers.WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.prepostcommand.PrePostCommandTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.BoundedTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.caching.CachingTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.AbortOnCrashTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.AbortOnFirstRunCrashTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.JVMShutdownBlockerTargetAlgorithmEvaluatorDecorator;
@@ -130,11 +138,12 @@ public class TargetAlgorithmEvaluatorBuilder {
 		{
 			log.debug("[TAE] Not Checking for unclean shutdown");
 		}
-		
+
+		//This TAE should come before the AbortOnCrashTAE
 		if(options.retryCount >0)
 		{
 			log.debug("[TAE] Automatically retrying CRASHED runs {} times " , options.retryCount);
-			tae = new RetryCrashedRunsTargetAlgorithmEvaluator(options.retryCount, tae);
+			tae = new RetryCrashedRunsTargetAlgorithmEvaluatorDecorator(options.retryCount, tae);
 		} 
 		
 		
@@ -143,17 +152,9 @@ public class TargetAlgorithmEvaluatorBuilder {
 		{
 			log.trace("[TAE] Treating all crashes as aborts");
 			tae = new AbortOnCrashTargetAlgorithmEvaluator(tae);
-		}
-		
-		
-		if(options.abortOnFirstRunCrash)
+		} else if(options.abortOnFirstRunCrash)
 		{
 			tae = new AbortOnFirstRunCrashTargetAlgorithmEvaluator(tae);
-			
-			if(options.abortOnCrash)
-			{
-				log.warn("[TAE] Configured to treat all crashes as aborts, it is redundant to also treat the first as an abort");
-			}
 		}
 		
 		if(options.ttaedo.transform)
@@ -217,18 +218,49 @@ public class TargetAlgorithmEvaluatorBuilder {
 			log.trace("[TAE] Ignoring Bound");
 		}
 	
+		
+	
+		
 
+	
+		if(options.observeWalltimeIfNoRuntime)
+		{
+			log.debug("[TAE] Using walltime as observer runtime if no runtime is reported, scale {} , delay {} (secs)", options.observeWalltimeScale, options.observeWalltimeDelay);
+			tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae, options.observeWalltimeScale, options.observeWalltimeDelay);
+		}
+		
+		
+		if(options.cacheRuns)
+		{
+			log.debug("[TAE] Caching TAE enabled");
+			tae = new CachingTargetAlgorithmEvaluatorDecorator(tae, options.cacheDebug);
+			
+			
+		}
+		
+		if(options.useDynamicCappingExclusively)
+		{
+			log.debug("[TAE] Use Dynamic Capping Exclusively");
+			tae = new UseDynamicCappingExclusivelyTargetAlgorithmEvaluatorDecorator(tae);
+		}
+		
+		if(options.reportStrictlyIncreasingRuntimes)
+		{
+			log.debug("[TAE] Reporting strictly increasing runtimes");
+			tae = new StrictlyIncreasingRuntimesTargetAlgorithmEvaluatorDecorator(tae);
+		}
+		
+		
 		if(options.checkResultOrderConsistent)
 		{
 			log.trace("[TAE] Checking that TAE honours the ordering requirement of runs");
 			tae = new ResultOrderCorrectCheckerTargetAlgorithmEvaluatorDecorator(tae);
 		}
 		
-		if(options.observeWalltimeIfNoRuntime)
-		{
-			log.debug("[TAE] Using walltime as observer runtime if no runtime is reported, scale {} , delay {} (secs)", options.observeWalltimeScale, options.observeWalltimeDelay);
-			tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae, options.observeWalltimeScale, options.observeWalltimeDelay);
-		}
+		
+		
+		
+		
 		
 		//==== Run Hash Code Verification should generally be one of the last
 		// things we add since it is very sensitive to the actual runs being run. (i.e. a retried run or a change in the run may change a hashCode in a way the logs don't reveal
@@ -312,6 +344,8 @@ public class TargetAlgorithmEvaluatorBuilder {
 			tae = new WarnOnNoWallOrRuntimeTargetAlgorithmEvaluatorDecorator(tae, options.warnIfNoResponseFromTAE);
 		}
 		
+		tae = new CallObserverBeforeCompletionTargetAlgorithmEvaluatorDecorator(tae);
+		
 		if(options.synchronousObserver)
 		{
 			log.trace("[TAE] Synchronizing notifications to the observer");
@@ -320,6 +354,8 @@ public class TargetAlgorithmEvaluatorBuilder {
 		{
 			log.debug("[TAE] Skipping synchronization of observers, this may cause weird threading issues");
 		}
+		
+		
 		
 		//==== Doesn't change anything and so is safe after RunHashCode
 		if(options.logRequestResponses)
