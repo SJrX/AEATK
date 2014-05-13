@@ -397,10 +397,11 @@ public class CachingTargetAlgorithmEvaluatorDecorator extends AbstractRunResched
 			
 
 			Set<AlgorithmRunConfiguration> outstandingRunsForTokenSet = Collections.newSetFromMap(new ConcurrentHashMap<AlgorithmRunConfiguration, Boolean>());
+			AtomicInteger outstandingRunsCountForToken = new AtomicInteger(rcs.size());
 			outstandingRunsForTokenSet.addAll(runConfigs);
 			
 			outstandingRunsForTokenMap.put(evalToken, outstandingRunsForTokenSet);
-			outstandingRunsCountForTokenMap.put(evalToken,  new AtomicInteger(rcs.size()));
+			outstandingRunsCountForTokenMap.put(evalToken,  outstandingRunsCountForToken);
 			allRunConfigsForTokenMap.put(evalToken, runConfigs);
 			killedRunsForToken.put(evalToken, Collections.newSetFromMap(new ConcurrentHashMap<AlgorithmRunConfiguration, Boolean>()));
 			
@@ -470,11 +471,12 @@ public class CachingTargetAlgorithmEvaluatorDecorator extends AbstractRunResched
 				submissionQueue.add(runConfigsCurrentThreadSubmits);
 			}
 			
-			//notifyObserverOfToken(evalToken);
 			
-			
-			
-			log.trace("Token {} submitted with outstanding runs: {} map size {}: {}", evalToken, outstandingRunsCountForTokenMap.get(evalToken).get(),this.outstandingRunsForTokenMap.get(evalToken).size(),this.outstandingRunsForTokenMap.get(evalToken));
+			log.trace("Token {} submitted with outstanding runs: {} map size {}: {}", 
+					evalToken,
+					outstandingRunsCountForToken.get(),
+					outstandingRunsForTokenSet.size(),
+					outstandingRunsForTokenSet);
 			/**
 			 * Wait until everything is submitted
 			 */
@@ -490,7 +492,11 @@ public class CachingTargetAlgorithmEvaluatorDecorator extends AbstractRunResched
 			}
 			
 			
-			log.trace("Token {} has completed submission: {} map size{} :{}", evalToken, outstandingRunsCountForTokenMap.get(evalToken).get(),this.outstandingRunsForTokenMap.get(evalToken).size(),this.outstandingRunsForTokenMap.get(evalToken));
+			log.trace("Token {} has completed submission: {} map size{} :{}", 
+					evalToken,
+					outstandingRunsCountForToken.get(),
+					outstandingRunsForTokenSet.size(),
+					outstandingRunsForTokenSet);
 			
 			for(AlgorithmRunConfiguration rc : runConfigs)
 			{

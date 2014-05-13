@@ -68,7 +68,6 @@ import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.WaitableTAECallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.CommandLineAlgorithmRun;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluatorFactory;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluatorOptions;
-import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.algorithmrunner.AutomaticConfiguratorFactory;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.preloaded.PreloadedResponseTargetAlgorithmEvaluatorOptions;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.random.RandomResponseTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.random.RandomResponseTargetAlgorithmEvaluatorFactory;
@@ -2301,6 +2300,103 @@ public class TAETestSet {
 		
 	
 	}
+	
+	@Test
+	/**
+	 * This tests for that the CLI will return eventually
+	 * This is related to issue https://mantis.sjrx.net/view.php?id=1675
+	 * 
+	 * This test roughly tries to simulate a deadlock, if you look at the commit 0702803124e3513b8b5479b8ae5391d2df5ba38a the changes will show you where the deadlocks were
+	 * occurring.
+	 * 
+	 */
+	public void testDeadLockinCommandLineTargetAlgorithmEvaluatorSimpleRuns()
+	{
+	
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path").replaceAll("jar:.*", "jar:"));
+		b.append(" ");
+		b.append(ParamEchoExecutor.class.getCanonicalName());
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
+		
+		final List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
+		for(int i=0; i < 100; i++)
+		{
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
+				runConfigs.add(rc);
+			}
+		}
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		
+		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
+		
+		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
+		
+		options.concurrentExecution = true;
+		options.cores = 4;
+		options.logAllCallStrings = true;
+		
+		tae = fact.getTargetAlgorithmEvaluator( options);		
+		tae = new BoundedTargetAlgorithmEvaluator(tae,4);
+		
+		
+		
+		
+		final AtomicBoolean finishedRuns = new AtomicBoolean(false);
+		Runnable run = new Runnable()
+		{
+			public void run()
+			{
+				for(int i=0; i < 10; i++)
+				{
+					List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs);
+				}
+			
+				finishedRuns.set(true);
+			}
+		};
+		
+		
+		Executors.newSingleThreadExecutor(new SequentiallyNamedThreadFactory("DeadLock JUnit Test")).submit(run);
+		
+		
+		
+		
+			//This 45 second sleep is probably incredibly sensitive.
+
+		for(int i=0; i < 600; i++)
+		{
+			try {
+				Thread.sleep(1000);
+				if(finishedRuns.get())
+				{
+					break;
+				}
+				
+				if(i == 40)
+				{
+					System.err.println("IF THIS TEST IS STILL OUTPUTTING THEN THE 45 SECOND SLEEP IS TOO LITTLE");
+				}
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				return;
+			}
+		}
+		assertTrue("Deadlock probably occured", finishedRuns.get());	
+	}
+	
+	
 	
 	@Test
 	/**

@@ -21,8 +21,8 @@ import ca.ubc.cs.beta.aeatk.concurrent.threadfactory.SequentiallyNamedThreadFact
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.AbstractAsyncTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
-import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.algorithmrunner.AlgorithmRunner;
-import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.algorithmrunner.AutomaticConfiguratorFactory;
+
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.algorithmrunner.ConcurrentAlgorithmRunner;
 
 /**
  * Evalutes Given Run Configurations
@@ -44,7 +44,7 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractAsyncTargetAlgo
 	private final ExecutorService asyncExecService;
 	
 	private final ExecutorService commandLineAlgorithmRunExecutorService;
-	private final ExecutorService observerExecutorService = Executors.newCachedThreadPool(new SequentiallyNamedThreadFactory("Command Line Target Algorithm Evaluator Observer Threads", true));
+	private final ExecutorService observerExecutorService = Executors.newCachedThreadPool(new SequentiallyNamedThreadFactory("CLI TAE Observer Threads", true));
 	
 	private final Semaphore asyncExecutions;
 	
@@ -60,23 +60,28 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractAsyncTargetAlgo
 	{
 		
 		this.observerFrequency = options.observerFrequency;
-		this.concurrentExecution = options.concurrentExecution;
 		if(observerFrequency < 50) throw new ParameterException("Observer Frequency can't be less than 50 ms");
-		log.trace("Concurrent Execution {}", options.concurrentExecution);
+		
 		this.options = options;
 		
 		executionIDs = new ArrayBlockingQueue<Integer>(options.cores);
-		this.asyncExecService = Executors.newFixedThreadPool(options.cores, new SequentiallyNamedThreadFactory("Command Line Target Algorithm Evaluator Request Processor"));
+		this.asyncExecService = Executors.newFixedThreadPool(options.cores, new SequentiallyNamedThreadFactory("CLI TAE Asynchronous Request Processing"));
 		
-		this.commandLineAlgorithmRunExecutorService = Executors.newCachedThreadPool(new SequentiallyNamedThreadFactory("Command Line Target Algorithm Evaluator (ConcurrentRunner)", true));
+		this.commandLineAlgorithmRunExecutorService = Executors.newCachedThreadPool(new SequentiallyNamedThreadFactory("CLI TAE Master Dispatch Thread", true));
 		
 		
 		this.asyncExecutions = new Semaphore(options.cores,true);
 		
+		int numCPUs = Runtime.getRuntime().availableProcessors();
+
+		if(options.cores > numCPUs)
+		{
+			log.warn("Number of cores requested is seemingly greater than the number of available cores. This may affect runtime measurements");
+		}
+		
 		for(int i = 0; i < options.cores ; i++)
 		{
 			executionIDs.add(Integer.valueOf(i));
-			
 		}
 	}
 	
@@ -109,7 +114,7 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractAsyncTargetAlgo
 			public void run() {
 				
 
-				AlgorithmRunner runner =null;
+				ConcurrentAlgorithmRunner runner =null;
 				
 				List<AlgorithmRunResult> runs = null;
 				
@@ -120,12 +125,7 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractAsyncTargetAlgo
 						runs =  runner.run(commandLineAlgorithmRunExecutorService);
 					} finally
 					{
-						asyncExecutions.release();
-						if(runner != null)
-						{
-							runner.shutdownThreadPool();
-						}
-						
+						asyncExecutions.release();	
 					}
 				} catch(RuntimeException e)
 				{
@@ -173,32 +173,20 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractAsyncTargetAlgo
 		
 	}
 	
-
-
-	private final boolean concurrentExecution; 
 	
 	/**
 	 * Helper method which selects the AlgorithmRunner to use
 	 * @param runConfigs 	runConfigs to evaluate
 	 * @return	AlgorithmRunner to use
 	 */
-	private AlgorithmRunner getAlgorithmRunner(List<AlgorithmRunConfiguration> runConfigs,TargetAlgorithmEvaluatorRunObserver obs)
+	private ConcurrentAlgorithmRunner getAlgorithmRunner(List<AlgorithmRunConfiguration> runConfigs,TargetAlgorithmEvaluatorRunObserver obs)
 	{
-		
-		
-		if(concurrentExecution && options.cores > 1)
+		int cores = options.cores;
+		if(!options.concurrentExecution)
 		{
-
-			log.trace("Using concurrent algorithm runner");
-
-			return AutomaticConfiguratorFactory.getConcurrentAlgorithmRunner(runConfigs,obs, options,executionIDs, this.observerExecutorService);
-			
-		} else
-		{
-			log.trace("Using single-threaded algorithm runner");
-
-			return AutomaticConfiguratorFactory.getSingleThreadedAlgorithmRunner(runConfigs,obs, options,executionIDs, this.observerExecutorService);
+			cores = 1;
 		}
+		return new ConcurrentAlgorithmRunner(runConfigs, cores, obs, options,executionIDs, this.observerExecutorService);
 	}
 
 	

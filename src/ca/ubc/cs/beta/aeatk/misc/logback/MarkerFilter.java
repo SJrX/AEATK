@@ -17,6 +17,7 @@ public class MarkerFilter extends Filter<ILoggingEvent> {
 	public FilterReply decide(ILoggingEvent event) {
 		
 		if(event.getMarker() == null) return FilterReply.ACCEPT;
+		
 		FilterReply r = filterDecisions.get(event.getMarker().getName());
 		if(r != null)
 		{

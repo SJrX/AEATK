@@ -162,7 +162,7 @@ private static TargetAlgorithmEvaluator tae;
 		RandomResponseTargetAlgorithmEvaluatorFactory rfact = new RandomResponseTargetAlgorithmEvaluatorFactory();
 		
 		
-		
+		/*
 		
 		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
 		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
@@ -175,10 +175,12 @@ private static TargetAlgorithmEvaluator tae;
 		
 		TargetAlgorithmEvaluator tae = fact.getTargetAlgorithmEvaluator( options);	
 		TargetAlgorithmEvaluator cliTAE = tae;
+		*/
 		
 		RandomResponseTargetAlgorithmEvaluatorOptions opts = rfact.getOptionObject();
 		opts.cores = 20000;
 		opts.simulateDelay = true;
+		
 		
 		opts.maxResponse = 4;
 		tae = rfact.getTargetAlgorithmEvaluator(opts);
