@@ -67,7 +67,7 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractAsyncTargetAlgo
 		executionIDs = new ArrayBlockingQueue<Integer>(options.cores);
 		this.asyncExecService = Executors.newFixedThreadPool(options.cores, new SequentiallyNamedThreadFactory("CLI TAE Asynchronous Request Processing"));
 		
-		this.commandLineAlgorithmRunExecutorService = Executors.newCachedThreadPool(new SequentiallyNamedThreadFactory("CLI TAE Master Dispatch Thread", true));
+		this.commandLineAlgorithmRunExecutorService = Executors.newFixedThreadPool(options.cores,new SequentiallyNamedThreadFactory("CLI TAE Master Dispatch Thread", true));
 		
 		
 		this.asyncExecutions = new Semaphore(options.cores,true);

@@ -14,7 +14,7 @@ public class RunningAlgorithmRunResult extends ExistingAlgorithmRunResult {
 	 * 
 	 */
 	private static final long serialVersionUID = -5427091882882378946L;
-	private final KillHandler handler;
+	private transient final KillHandler handler;
 
 	public RunningAlgorithmRunResult(
 			AlgorithmRunConfiguration runConfig, double runtime, double runlength, double quality, long seed, double walltime, KillHandler handler) {
@@ -22,6 +22,7 @@ public class RunningAlgorithmRunResult extends ExistingAlgorithmRunResult {
 		this.handler = handler;
 	}
 
+	/*
 	@Deprecated
 	/**
 	 * @deprecated  the constructor that doesn't take a result string is preferred.
@@ -35,7 +36,10 @@ public class RunningAlgorithmRunResult extends ExistingAlgorithmRunResult {
 
 	@Override
 	public void kill() {
-		handler.kill();
+		if(handler != null)
+		{
+			handler.kill();
+		}
 		
 	}
 
