@@ -134,9 +134,12 @@ exec java -Xmx"$SMACMEM"m -cp "$DIR/conf/:$jarconcat" $EXEC "$@"
 	sb.append("#!/usr/bin/env bash").append("\n"); 
 	sb.append("SMAC_MEMORY_INPUT=$SMAC_MEMORY").append("\n");
 	sb.append("SMACMEM=").append(ram).append("\n");
+	
 	sb.append("test \"$SMAC_MEMORY_INPUT\" -ge 1 2>&- && SMACMEM=$SMAC_MEMORY_INPUT").append("\n"); 
 	sb.append("EXEC=").append(javaClassName).append("\n"); 
 	sb.append("DIR=\"$( cd \"$( dirname \"${BASH_SOURCE[0]}\" )\" && pwd )\"").append("\n");
+	sb.append("LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$DIR/lib/native/:$DIR/lib/:$DIR/\n");
+	sb.append("DYLD_FALLBACK_LIBRARY_PATH=$DYLD_FALLBACK_LIBRARY_PATH:$DIR/lib/native/:$DIR/lib/:$DIR/\n");
 	
 	if(printMem) {
 		sb.append("echo \"Starting ").append(nameOfProgram).append(" with $SMACMEM MB of RAM\"").append("\n"); 
