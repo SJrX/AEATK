@@ -65,7 +65,7 @@ public class StopWatch implements Serializable {
 	{
 		if(startTime < 0)
 		{
-			throw new IllegalStateException("Watch hasn't been started");
+			return 0;
 		}
 		return Math.min(endTime, System.currentTimeMillis()) - startTime;
 	}
