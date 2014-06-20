@@ -179,6 +179,10 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	@UsageTextField(level=OptionLevel.DEVELOPER)
 	@Parameter(names={"--tae-stop-processing-on-shutdown"}, description="If true, then once JVM Shutdown is triggered either within the application or externally all further requests will be silently dropped. This is recommended since otherwise applications may see unexpected results as the TAE may be unable to continue processing.")
 	public boolean taeStopProcessingOnShutdown = true;
+
+	@UsageTextField(level=OptionLevel.ADVANCED, defaultValues="Do not use forking TAE.")
+	@Parameter(names={"--fork-to-tae"}, description="If not null, runs will also be submitted to this other TAE at the same time. The first TAE that returns an answer is used.", validateWith=TAEValidator.class)
+	public String forkToTAE = null;
 	
 	/**
 	 * Checks if the problem instances are compatible with the verify sat option

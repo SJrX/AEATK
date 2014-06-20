@@ -28,7 +28,6 @@ public abstract class AbstractTargetAlgorithmEvaluatorDecorator implements	Targe
 	public AbstractTargetAlgorithmEvaluatorDecorator(TargetAlgorithmEvaluator tae)
 	{
 		this.tae = tae;
-		
 	}
 	
 	

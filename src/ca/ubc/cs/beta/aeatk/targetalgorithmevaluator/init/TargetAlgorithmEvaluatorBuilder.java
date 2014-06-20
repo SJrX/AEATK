@@ -13,10 +13,6 @@ import java.util.regex.Pattern;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
-import com.beust.jcommander.Parameter;
-
-import ca.ubc.cs.beta.aeatk.misc.options.OptionLevel;
-import ca.ubc.cs.beta.aeatk.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aeatk.options.AbstractOptions;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorOptions;
@@ -37,6 +33,7 @@ import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.helpers.UseDynam
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.helpers.WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.prepostcommand.PrePostCommandTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.BoundedTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.ForkingTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.caching.CachingTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.AbortOnCrashTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.AbortOnFirstRunCrashTargetAlgorithmEvaluator;
@@ -47,6 +44,8 @@ import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.Synchrono
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.TimingCheckerTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.VerifySATTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.WarnOnNoWallOrRuntimeTargetAlgorithmEvaluatorDecorator;
+
+import com.beust.jcommander.ParameterException;
 
 
 public class TargetAlgorithmEvaluatorBuilder {
@@ -115,9 +114,13 @@ public class TargetAlgorithmEvaluatorBuilder {
 			throw new IllegalArgumentException("taeOptionsMap must be non-null and contain the option objects for all target algorithm evaluators");
 		}
 		
+		boolean taeLoaded = false;
+		
 	
 		if(tae == null)
 		{
+			taeLoaded = true;
+			
 			String taeKey = options.targetAlgorithmEvaluator;
 			tae = TargetAlgorithmEvaluatorLoader.getTargetAlgorithmEvaluator( taeKey,taeOptionsMap);
 		} 
@@ -137,6 +140,20 @@ public class TargetAlgorithmEvaluatorBuilder {
 		} else
 		{
 			log.debug("[TAE] Not Checking for unclean shutdown");
+		}
+		
+		if(options.forkToTAE != null)
+		{
+			if(taeLoaded && options.targetAlgorithmEvaluator.equals(options.forkToTAE))
+			{
+				throw new ParameterException("Cannot use "+options.forkToTAE+" as fork when main TAE is "+options.targetAlgorithmEvaluator+".");
+			}
+			log.warn("EXPERIMENTAL - Observers not supported with forking.");
+			log.info("[TAE] EXPERIMENTAL - Forking all runs to {}.",options.forkToTAE);
+			
+			TargetAlgorithmEvaluator slaveTAE = TargetAlgorithmEvaluatorLoader.getTargetAlgorithmEvaluator(options.forkToTAE, taeOptionsMap);
+			
+			tae = new ForkingTargetAlgorithmEvaluatorDecorator(tae, slaveTAE);
 		}
 
 		//This TAE should come before the AbortOnCrashTAE
