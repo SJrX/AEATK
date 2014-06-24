@@ -77,7 +77,7 @@ public class ForkingTargetAlgorithmEvaluatorDecorator extends AbstractAsyncTarge
 			}
 		};
 		
-		List<AlgorithmRunConfiguration> slaveRunConfigurations;
+		final List<AlgorithmRunConfiguration> slaveRunConfigurations;
 		
 		final Map<AlgorithmRunConfiguration, AlgorithmRunConfiguration> newToOldRunConfigurationMap = new ConcurrentHashMap<>();
 		
@@ -123,10 +123,12 @@ public class ForkingTargetAlgorithmEvaluatorDecorator extends AbstractAsyncTarge
 						{
 							if(run.isCensoredEarly())
 							{
-								break;
+								return;
 							}
 							
-							fixedRuns.add(new ExistingAlgorithmRunResult(newToOldRunConfigurationMap.get(run.getAdditionalRunData()),run.getRunStatus(), run.getRuntime(), run.getRunLength(), run.getQuality(), run.getResultSeed(), run.getAdditionalRunData(), run.getWallclockExecutionTime()));
+							AlgorithmRunConfiguration oldRC = newToOldRunConfigurationMap.get(run.getAlgorithmRunConfiguration());
+							
+							fixedRuns.add(new ExistingAlgorithmRunResult(oldRC,run.getRunStatus(), run.getRuntime(), run.getRunLength(), run.getQuality(), run.getResultSeed(), run.getAdditionalRunData(), run.getWallclockExecutionTime()));
 						}
 						
 						if(fForkCompletionFlag.compareAndSet(false, true))
@@ -180,7 +182,7 @@ public class ForkingTargetAlgorithmEvaluatorDecorator extends AbstractAsyncTarge
 				
 				if(!fForkCompletionFlag.get())
 				{ //Only submit if the job isn't done.
-					fSlaveTAE.evaluateRunsAsync(runConfigs, slaveForkCallback, forkObserver);
+					fSlaveTAE.evaluateRunsAsync(slaveRunConfigurations, slaveForkCallback, forkObserver);
 				}
 			}
 		});
