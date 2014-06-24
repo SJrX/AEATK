@@ -97,6 +97,10 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	@Parameter(names={"--check-sat-consistency-exception","--checkSATConsistencyException"}, description="Throw an exception if runs on the same problem instance disagree with respect to SAT/UNSAT")
 	public boolean checkSATConsistencyException = true;
 	
+	@UsageTextField(level=OptionLevel.ADVANCED)
+	@Parameter(names={"--call-observer-before-completion"}, description="Ensure that the TAE observer is called on runs before completion")
+	public boolean callObserverBeforeCompletion = true;
+	
 	@ParametersDelegate
 	public PrePostCommandOptions prePostOptions = new PrePostCommandOptions();
 
