@@ -359,7 +359,10 @@ public class TargetAlgorithmEvaluatorBuilder {
 			tae = new WarnOnNoWallOrRuntimeTargetAlgorithmEvaluatorDecorator(tae, options.warnIfNoResponseFromTAE);
 		}
 		
-		tae = new CallObserverBeforeCompletionTargetAlgorithmEvaluatorDecorator(tae);
+		if(options.callObserverBeforeCompletion)
+		{
+		    tae = new CallObserverBeforeCompletionTargetAlgorithmEvaluatorDecorator(tae);
+		}
 		
 		if(options.synchronousObserver)
 		{
