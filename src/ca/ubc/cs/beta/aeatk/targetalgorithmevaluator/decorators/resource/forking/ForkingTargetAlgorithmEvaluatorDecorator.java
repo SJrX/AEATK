@@ -12,6 +12,8 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import com.beust.jcommander.ParameterException;
+
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.algorithmrunresult.ExistingAlgorithmRunResult;
@@ -44,9 +46,10 @@ public class ForkingTargetAlgorithmEvaluatorDecorator extends AbstractAsyncTarge
 		fSlaveTAE = aSlaveTAE;
 		this.fOptions = fOptions;
 		
-		
-		
-		
+		if(fOptions.fPolicy == null)
+		{
+			throw new ParameterException("If you are using the --fork-to-tae option you must also set the --fork-to-tae-policy option");
+		}
 	}
 	
 	public void evaluateRunsAsync(final List<AlgorithmRunConfiguration> runConfigs, final TargetAlgorithmEvaluatorCallback callback, final TargetAlgorithmEvaluatorRunObserver observer)
