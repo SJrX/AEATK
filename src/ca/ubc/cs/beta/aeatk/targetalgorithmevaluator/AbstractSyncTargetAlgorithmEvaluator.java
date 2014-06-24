@@ -21,10 +21,23 @@ import ca.ubc.cs.beta.aeatk.concurrent.threadfactory.SequentiallyNamedThreadFact
 public abstract class AbstractSyncTargetAlgorithmEvaluator extends
 		AbstractTargetAlgorithmEvaluator {
 
-	ExecutorService execService = Executors.newCachedThreadPool(new SequentiallyNamedThreadFactory("Abstract Blocking TAE Async Processing Thread"));
-	private final Logger log = LoggerFactory.getLogger(getClass());
+    
+    private final ExecutorService execService;
+	
+	
 	public AbstractSyncTargetAlgorithmEvaluator() {
 		super();
+		execService = Executors.newCachedThreadPool(new SequentiallyNamedThreadFactory(this.getClass().getSimpleName() + " Abstract Blocking TAE Async Processing Thread"));
+	}
+	
+	/**
+	 * Construct an abstract synchronous target algorithm evaluator, limiting the number of threads ever created to given limit.
+	 * @param aThreads - limit on threads ever created.
+	 */
+	public AbstractSyncTargetAlgorithmEvaluator(int aThreads)
+	{
+	    super();
+	    execService = Executors.newFixedThreadPool(aThreads, new SequentiallyNamedThreadFactory(this.getClass().getSimpleName() + " Abstract Blocking TAE Async Processing Thread"));
 	}
 
 	@Override
