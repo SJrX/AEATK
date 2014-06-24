@@ -2,6 +2,9 @@ package ca.ubc.cs.beta.runhistory;
 
 import static org.junit.Assert.*;
 
+import java.io.File;
+import java.io.IOException;
+import java.nio.file.Files;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.HashSet;
@@ -43,6 +46,7 @@ import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aeatk.probleminstance.seedgenerator.InstanceSeedGenerator;
 import ca.ubc.cs.beta.aeatk.probleminstance.seedgenerator.RandomInstanceSeedGenerator;
 import ca.ubc.cs.beta.aeatk.random.SeedableRandomPool;
+import ca.ubc.cs.beta.aeatk.runhistory.FileSharingRunHistoryDecorator;
 import ca.ubc.cs.beta.aeatk.runhistory.NewRunHistory;
 import ca.ubc.cs.beta.aeatk.runhistory.RunHistory;
 import ca.ubc.cs.beta.aeatk.runhistory.RunHistoryHelper;
@@ -87,6 +91,49 @@ public class RunHistoryTester {
 	public static void after()
 	{
 		pool.logUsage();
+	}
+	
+	@Test
+	public void testRunHistorySavingToFile()
+	{
+		
+		Random rand = new MersenneTwister();
+		InstanceListWithSeeds ilws = ProblemInstanceHelperTester.getInstanceListWithSeeds("classicFormatValid.txt", false);
+		
+		InstanceSeedGenerator insc = ilws.getSeedGen();
+		RunHistory r = new NewRunHistory( OverallObjective.MEAN, OverallObjective.MEAN, RunObjective.RUNTIME);
+		
+		
+		File f;
+		try {
+			f = Files.createTempDirectory("runhistoryTest").toFile();
+			
+			r = new FileSharingRunHistoryDecorator(r, f, 1, pis, 1);
+			
+			System.out.println(f.getAbsolutePath());
+			
+			for(int i=0; i < 10; i++)
+			{
+				ParameterConfiguration defaultConfig = configSpace.getDefaultConfiguration();
+				
+				ProblemInstanceSeedPair pisp = RunHistoryHelper.getRandomInstanceSeedWithFewestRunsFor(r, insc, defaultConfig, ilws.getInstances(), rand, false);
+				
+				AlgorithmRunConfiguration runConfig = new AlgorithmRunConfiguration(pisp, 1, defaultConfig,execConfig);
+				
+				AlgorithmRunResult run = ExistingAlgorithmRunResult.getRunFromString( runConfig, "0, 1 , 0 , 0, " + pisp.getSeed());
+
+				r.append(run);
+			}
+		} catch (IOException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		} catch (DuplicateRunException e) {
+			// TODO Auto-generated catch block
+			e.printStackTrace();
+		}
+		
+	
+		
 	}
 	/**
 	 * Trying to replace a capped run causes an UnsupportedOperationException

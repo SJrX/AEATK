@@ -65,6 +65,10 @@ import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCal
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorOptions;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.WaitableTAECallback;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.analytic.AnalyticFunctions;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.analytic.AnalyticTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.analytic.AnalyticTargetAlgorithmEvaluatorFactory;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.analytic.AnalyticTargetAlgorithmEvaluatorOptions;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.blackhole.BlackHoleTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.blackhole.BlackHoleTargetAlgorithmEvaluatorOptions;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.CommandLineAlgorithmRun;
@@ -86,8 +90,10 @@ import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.helpers.Outstand
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.helpers.WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.prepostcommand.PrePostCommandErrorException;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.BoundedTargetAlgorithmEvaluator;
-import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.ForkingTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.caching.CachingTargetAlgorithmEvaluatorDecorator;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.forking.ForkingTargetAlgorithmEvaluatorDecorator;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.forking.ForkingTargetAlgorithmEvaluatorDecoratorPolicyOptions;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.forking.ForkingTargetAlgorithmEvaluatorDecoratorPolicyOptions.ForkingPolicy;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.AbortOnCrashTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.AbortOnFirstRunCrashTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.ResultOrderCorrectCheckerTargetAlgorithmEvaluatorDecorator;
@@ -175,6 +181,76 @@ public class TAETestSet {
 	 * This just tests to see if {@link ForkingTargetAlgorithmEvaluatorDecorator} does what it should.
 	 */
 	@Test
+	public void testForkWithQuickPolicy()
+	{
+
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(ParamEchoExecutor.class.getCanonicalName());
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("x [-5,10] [0]\n y [-0,15] [0]\n");
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 15);
+		
+		AnalyticTargetAlgorithmEvaluatorFactory ataef = new AnalyticTargetAlgorithmEvaluatorFactory();
+		
+		AnalyticTargetAlgorithmEvaluatorOptions options = ataef.getOptionObject();
+		
+		options.func = AnalyticFunctions.BRANINS;
+		
+		tae = ataef.getTargetAlgorithmEvaluator(options);
+		
+		tae = new SimulatedDelayTargetAlgorithmEvaluatorDecorator(tae, 1, 1);
+		
+		options = ataef.getOptionObject();
+		
+		options.func = AnalyticFunctions.BRANINS;
+		
+		TargetAlgorithmEvaluator slaveTAE  = ataef.getTargetAlgorithmEvaluator(options);
+		
+		ForkingTargetAlgorithmEvaluatorDecoratorPolicyOptions fOptions = new ForkingTargetAlgorithmEvaluatorDecoratorPolicyOptions();
+		fOptions.fPolicy = ForkingPolicy.DUPLICATE_ON_SLAVE_QUICK;
+		tae = new ForkingTargetAlgorithmEvaluatorDecorator(slaveTAE, tae, fOptions);
+		
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
+		for(int i=0; i < 1; i++)
+		{
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 15, config, execConfig);
+				runConfigs.add(rc);
+			}
+		}
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs);
+		
+		
+		for(AlgorithmRunResult run : runs)
+		{
+			ParameterConfiguration config  = run.getAlgorithmRunConfiguration().getParameterConfiguration();
+			assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
+			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
+			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
+			assertDEquals(config.get("seed"), run.getResultSeed(), 0.1);
+			assertEquals(config.get("solved"), run.getRunStatus().name());
+			//This executor should not have any additional run data
+			assertEquals("",run.getAdditionalRunData());
+
+		}
+	}
+	
+	/**
+	 * This just tests to see if {@link ForkingTargetAlgorithmEvaluatorDecorator} does what it should.
+	 */
+	@Test
 	public void testFork()
 	{
 
@@ -188,7 +264,9 @@ public class TAETestSet {
 		
 		TargetAlgorithmEvaluator slaveTAE = new BlackHoleTargetAlgorithmEvaluator(new BlackHoleTargetAlgorithmEvaluatorOptions());
 		
-		tae = new ForkingTargetAlgorithmEvaluatorDecorator(slaveTAE, tae);
+		ForkingTargetAlgorithmEvaluatorDecoratorPolicyOptions fOptions = new ForkingTargetAlgorithmEvaluatorDecoratorPolicyOptions();
+		fOptions.fPolicy = ForkingPolicy.DUPLICATE_ON_SLAVE;
+		tae = new ForkingTargetAlgorithmEvaluatorDecorator(slaveTAE, tae, fOptions);
 		
 		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
@@ -223,6 +301,7 @@ public class TAETestSet {
 
 		}
 	}
+	
 	
 	/**
 	 * This just tests to see if ParamEchoExecutor does what it should

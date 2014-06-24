@@ -1,6 +1,9 @@
-package ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource;
+package ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.forking;
 
+import java.util.ArrayList;
 import java.util.List;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -11,6 +14,7 @@ import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.ExistingAlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.concurrent.threadfactory.SequentiallyNamedThreadFactory;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
@@ -29,23 +33,31 @@ public class ForkingTargetAlgorithmEvaluatorDecorator extends AbstractAsyncTarge
 	
 	private final static Logger log = LoggerFactory.getLogger(ForkingTargetAlgorithmEvaluatorDecorator.class);
 	
-	private final ExecutorService fSlaveSubmitterThreadPool = Executors.newFixedThreadPool(3,new SequentiallyNamedThreadFactory("Forking TAE Slave Submitter",true));
+	private final ExecutorService fSlaveSubmitterThreadPool = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors()+1,new SequentiallyNamedThreadFactory("Forking TAE Slave Submitter",true));
 	
 	private final TargetAlgorithmEvaluator fSlaveTAE;
+
+	private final ForkingTargetAlgorithmEvaluatorDecoratorPolicyOptions fOptions;
 	
-	public ForkingTargetAlgorithmEvaluatorDecorator(TargetAlgorithmEvaluator aMasterTAE, TargetAlgorithmEvaluator aSlaveTAE) {
+	public ForkingTargetAlgorithmEvaluatorDecorator(TargetAlgorithmEvaluator aMasterTAE, TargetAlgorithmEvaluator aSlaveTAE, ForkingTargetAlgorithmEvaluatorDecoratorPolicyOptions fOptions) {
 		super(aMasterTAE);
 		fSlaveTAE = aSlaveTAE;
+		this.fOptions = fOptions;
+		
+		
+		
+		
 	}
 	
 	public void evaluateRunsAsync(final List<AlgorithmRunConfiguration> runConfigs, final TargetAlgorithmEvaluatorCallback callback, final TargetAlgorithmEvaluatorRunObserver observer)
 	{
 		final AtomicBoolean fForkCompletionFlag = new AtomicBoolean(false);
 		
-		final TargetAlgorithmEvaluatorCallback forkCallback = new TargetAlgorithmEvaluatorCallback() {
+		
+		final TargetAlgorithmEvaluatorCallback masterForkCallback = new TargetAlgorithmEvaluatorCallback() {
 			
 			@Override
-			public synchronized void onSuccess(List<AlgorithmRunResult> runs) {
+			public void onSuccess(List<AlgorithmRunResult> runs) {
 				if(fForkCompletionFlag.compareAndSet(false, true))
 				{
 					callback.onSuccess(runs);
@@ -53,7 +65,7 @@ public class ForkingTargetAlgorithmEvaluatorDecorator extends AbstractAsyncTarge
 			}
 			
 			@Override
-			public synchronized void onFailure(RuntimeException e) {
+			public void onFailure(RuntimeException e) {
 				if(fForkCompletionFlag.compareAndSet(false, true))
 				{
 					callback.onFailure(e);
@@ -64,6 +76,85 @@ public class ForkingTargetAlgorithmEvaluatorDecorator extends AbstractAsyncTarge
 				}
 			}
 		};
+		
+		List<AlgorithmRunConfiguration> slaveRunConfigurations;
+		
+		final Map<AlgorithmRunConfiguration, AlgorithmRunConfiguration> newToOldRunConfigurationMap = new ConcurrentHashMap<>();
+		
+		switch(fOptions.fPolicy)
+		{
+			case DUPLICATE_ON_SLAVE:
+				slaveRunConfigurations = runConfigs;
+				break;
+			case DUPLICATE_ON_SLAVE_QUICK:
+				slaveRunConfigurations = new ArrayList<>();
+				for(AlgorithmRunConfiguration rc : runConfigs)
+				{
+					AlgorithmRunConfiguration newRC = new AlgorithmRunConfiguration(rc.getProblemInstanceSeedPair(), Math.min(fOptions.duplicateOnSlaveQuickTimeout, rc.getCutoffTime()), rc.getParameterConfiguration(), rc.getAlgorithmExecutionConfiguration());
+					newToOldRunConfigurationMap.put(newRC, rc);
+					slaveRunConfigurations.add(newRC);
+				}
+				break;
+			default:
+				throw new IllegalStateException("Unexpected policy implemented, which is not supported: " + fOptions.fPolicy);
+			
+		}
+		
+		final TargetAlgorithmEvaluatorCallback slaveForkCallback = new TargetAlgorithmEvaluatorCallback() {
+			
+			@Override
+			public void onSuccess(List<AlgorithmRunResult> runs) {
+				
+				switch(fOptions.fPolicy)
+				{
+					case DUPLICATE_ON_SLAVE:
+						
+						if(fForkCompletionFlag.compareAndSet(false, true))
+						{
+							callback.onSuccess(runs);
+						}
+						
+						break;
+						
+					case DUPLICATE_ON_SLAVE_QUICK:
+
+						List<AlgorithmRunResult> fixedRuns = new ArrayList<>(runs.size());
+						for(AlgorithmRunResult run : runs)
+						{
+							if(run.isCensoredEarly())
+							{
+								break;
+							}
+							
+							fixedRuns.add(new ExistingAlgorithmRunResult(newToOldRunConfigurationMap.get(run.getAdditionalRunData()),run.getRunStatus(), run.getRuntime(), run.getRunLength(), run.getQuality(), run.getResultSeed(), run.getAdditionalRunData(), run.getWallclockExecutionTime()));
+						}
+						
+						if(fForkCompletionFlag.compareAndSet(false, true))
+						{
+							callback.onSuccess(fixedRuns);
+						}
+						
+						break;
+					default:
+						throw new IllegalStateException("Unexpected policy implemented, which is not supported: " + fOptions.fPolicy);
+				}
+				
+				
+			}
+			
+			@Override
+			public void onFailure(RuntimeException e) {
+				if(fForkCompletionFlag.compareAndSet(false, true))
+				{
+					callback.onFailure(e);
+				}
+				else
+				{
+					log.error("Received run failures after callback already notified.",e);
+				}
+			}
+		};
+		
 		
 		
 		final TargetAlgorithmEvaluatorRunObserver forkObserver = new TargetAlgorithmEvaluatorRunObserver() {
@@ -86,13 +177,17 @@ public class ForkingTargetAlgorithmEvaluatorDecorator extends AbstractAsyncTarge
 		fSlaveSubmitterThreadPool.execute(new Runnable() {
 			@Override
 			public void run() {
-				fSlaveTAE.evaluateRunsAsync(runConfigs, forkCallback, forkObserver);
+				
+				if(!fForkCompletionFlag.get())
+				{ //Only submit if the job isn't done.
+					fSlaveTAE.evaluateRunsAsync(runConfigs, slaveForkCallback, forkObserver);
+				}
 			}
 		});
 		
 		
 		//Do this here and not in another thread to honor any (blocking) contracts the master TAE has.
-		this.tae.evaluateRunsAsync(runConfigs, forkCallback, forkObserver);
+		this.tae.evaluateRunsAsync(runConfigs, masterForkCallback, forkObserver);
 	}
 
 	

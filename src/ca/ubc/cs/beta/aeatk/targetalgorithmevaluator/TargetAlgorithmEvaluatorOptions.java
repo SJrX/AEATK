@@ -20,6 +20,7 @@ import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceHelper;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.functionality.transform.TransformTargetAlgorithmEvaluatorDecoratorOptions;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.prepostcommand.PrePostCommandOptions;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.forking.ForkingTargetAlgorithmEvaluatorDecoratorOptions;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.init.TargetAlgorithmEvaluatorBuilder;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.init.TargetAlgorithmEvaluatorLoader;
 
@@ -167,6 +168,9 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	@ParametersDelegate
 	public TransformTargetAlgorithmEvaluatorDecoratorOptions ttaedo = new TransformTargetAlgorithmEvaluatorDecoratorOptions();
 	
+	@ParametersDelegate
+	public ForkingTargetAlgorithmEvaluatorDecoratorOptions tForkOptions = new ForkingTargetAlgorithmEvaluatorDecoratorOptions();
+	
 	@UsageTextField(level=OptionLevel.DEVELOPER)
 	@Parameter(names={"--kill-runs-on-file-delete"}, description="All runs will be forcibly killed if the file is deleted. This option may cause the application to enter an infinite loop if the file is deleted, so care is needed. As a rule, you need to set this and some other option to point to the same file, if there is another option, then the application will probably shutdown nicely, if not, then it will probably infinite loop." )
 	public String fileToWatch = null;
@@ -180,9 +184,7 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	@Parameter(names={"--tae-stop-processing-on-shutdown"}, description="If true, then once JVM Shutdown is triggered either within the application or externally all further requests will be silently dropped. This is recommended since otherwise applications may see unexpected results as the TAE may be unable to continue processing.")
 	public boolean taeStopProcessingOnShutdown = true;
 
-	@UsageTextField(level=OptionLevel.ADVANCED, defaultValues="Do not use forking TAE.")
-	@Parameter(names={"--fork-to-tae"}, description="If not null, runs will also be submitted to this other TAE at the same time. The first TAE that returns an answer is used.", validateWith=TAEValidator.class)
-	public String forkToTAE = null;
+	
 	
 	/**
 	 * Checks if the problem instances are compatible with the verify sat option

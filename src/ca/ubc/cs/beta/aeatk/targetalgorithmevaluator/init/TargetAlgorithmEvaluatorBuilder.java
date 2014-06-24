@@ -33,8 +33,8 @@ import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.helpers.UseDynam
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.helpers.WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.prepostcommand.PrePostCommandTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.BoundedTargetAlgorithmEvaluator;
-import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.ForkingTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.caching.CachingTargetAlgorithmEvaluatorDecorator;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.forking.ForkingTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.AbortOnCrashTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.AbortOnFirstRunCrashTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.JVMShutdownBlockerTargetAlgorithmEvaluatorDecorator;
@@ -142,18 +142,18 @@ public class TargetAlgorithmEvaluatorBuilder {
 			log.debug("[TAE] Not Checking for unclean shutdown");
 		}
 		
-		if(options.forkToTAE != null)
+		if(options.tForkOptions.forkToTAE != null)
 		{
-			if(taeLoaded && options.targetAlgorithmEvaluator.equals(options.forkToTAE))
+			if(taeLoaded && options.targetAlgorithmEvaluator.equals(options.tForkOptions.forkToTAE))
 			{
-				throw new ParameterException("Cannot use "+options.forkToTAE+" as fork when main TAE is "+options.targetAlgorithmEvaluator+".");
+				throw new ParameterException("Cannot use "+options.tForkOptions.forkToTAE+" as fork when main TAE is "+options.targetAlgorithmEvaluator+".");
 			}
 			log.warn("EXPERIMENTAL - Observers not supported with forking.");
-			log.info("[TAE] EXPERIMENTAL - Forking all runs to {}.",options.forkToTAE);
+			log.info("[TAE] EXPERIMENTAL - Forking all runs to {} with policy {} .",options.tForkOptions.forkToTAE, options.tForkOptions.fPolicyOptions.fPolicy);
 			
-			TargetAlgorithmEvaluator slaveTAE = TargetAlgorithmEvaluatorLoader.getTargetAlgorithmEvaluator(options.forkToTAE, taeOptionsMap);
+			TargetAlgorithmEvaluator slaveTAE = TargetAlgorithmEvaluatorLoader.getTargetAlgorithmEvaluator(options.tForkOptions.forkToTAE, taeOptionsMap);
 			
-			tae = new ForkingTargetAlgorithmEvaluatorDecorator(tae, slaveTAE);
+			tae = new ForkingTargetAlgorithmEvaluatorDecorator(tae, slaveTAE, options.tForkOptions.fPolicyOptions);
 		}
 
 		//This TAE should come before the AbortOnCrashTAE
@@ -162,8 +162,6 @@ public class TargetAlgorithmEvaluatorBuilder {
 			log.debug("[TAE] Automatically retrying CRASHED runs {} times " , options.retryCount);
 			tae = new RetryCrashedRunsTargetAlgorithmEvaluatorDecorator(options.retryCount, tae);
 		} 
-		
-		
 		
 		if(options.abortOnCrash)
 		{
