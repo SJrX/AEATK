@@ -1,5 +1,6 @@
 package ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.analytic;
 
+import java.util.Arrays;
 import java.util.List;
 
 public enum AnalyticFunctions {
@@ -50,7 +51,7 @@ public enum AnalyticFunctions {
 			{
 				if(xVals.length < 2)
 				{
-					throw new IllegalArgumentException(this +" function requires at least two parameters, x0, x1");
+					throw new IllegalArgumentException(this +" function requires at least two parameters, x0, x1. Got: " + Arrays.toString(xVals));
 				}
 				double x = xVals[0];
 				double y = xVals[1];

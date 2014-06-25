@@ -190,7 +190,7 @@ public class TAETestSet {
 		b.append(System.getProperty("java.class.path"));
 		b.append(" ");
 		b.append(ParamEchoExecutor.class.getCanonicalName());
-		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("x [-5,10] [0]\n y [-0,15] [0]\n");
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("x0 [-5,10] [0]\n x1 [-0,15] [0]\n");
 		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 15);
 		
 		AnalyticTargetAlgorithmEvaluatorFactory ataef = new AnalyticTargetAlgorithmEvaluatorFactory();
@@ -201,7 +201,7 @@ public class TAETestSet {
 		
 		tae = ataef.getTargetAlgorithmEvaluator(options);
 		
-		tae = new SimulatedDelayTargetAlgorithmEvaluatorDecorator(tae, 1, 1);
+		tae = new SimulatedDelayTargetAlgorithmEvaluatorDecorator(tae, 1000, 3);
 		
 		options = ataef.getOptionObject();
 		
@@ -211,40 +211,73 @@ public class TAETestSet {
 		
 		ForkingTargetAlgorithmEvaluatorDecoratorPolicyOptions fOptions = new ForkingTargetAlgorithmEvaluatorDecoratorPolicyOptions();
 		fOptions.fPolicy = ForkingPolicy.DUPLICATE_ON_SLAVE_QUICK;
-		tae = new ForkingTargetAlgorithmEvaluatorDecorator(slaveTAE, tae, fOptions);
+		tae = new ForkingTargetAlgorithmEvaluatorDecorator(tae,slaveTAE, fOptions);
 		
 		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
 		for(int i=0; i < 1; i++)
 		{
 			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
-			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT"))
-			{
-				//Only want good configurations
-				i--;
-				continue;
-			} else
-			{
-				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 15, config, execConfig);
-				runConfigs.add(rc);
-			}
+
+			config.put("x0", "2.656650319997154");
+			config.put("x1", "8.192989379593786");
+			
+			//config.put("x0", "3.1415");
+			//config.put("x1", "2.275");
+			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), 1L), 15, config, execConfig);
+			runConfigs.add(rc);
+			
 		}
 		
 		System.out.println("Performing " + runConfigs.size() + " runs");
+		AutoStartStopWatch watch = new AutoStartStopWatch();
 		List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs);
 		
+		watch.stop();
 		
+		assertTrue("Run should have taken less than 1 second", watch.time() < 1000);
+		
+		System.out.println("Runs: " + runs);
 		for(AlgorithmRunResult run : runs)
 		{
 			ParameterConfiguration config  = run.getAlgorithmRunConfiguration().getParameterConfiguration();
-			assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
-			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
-			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
-			assertDEquals(config.get("seed"), run.getResultSeed(), 0.1);
-			assertEquals(config.get("solved"), run.getRunStatus().name());
-			//This executor should not have any additional run data
-			assertEquals("",run.getAdditionalRunData());
+			
+			System.out.println(config.get("x0") + "," + config.get("x1") + "=>" + run.getRuntime());
 
 		}
+		
+		
+		 runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
+		for(int i=0; i < 1; i++)
+		{
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
+
+			config.put("x0", "2.756650319997154");
+			config.put("x1", "8.192989379593786");
+			
+			//config.put("x0", "3.1415");
+			//config.put("x1", "2.275");
+			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), 1L), 15, config, execConfig);
+			runConfigs.add(rc);
+			
+		}
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		watch = new AutoStartStopWatch();
+		runs = tae.evaluateRun(runConfigs);
+		
+		watch.stop();
+		
+		assertTrue("Run should have taken more than 1 second", watch.time() > 1000);
+		
+		System.out.println("Runs: " + runs);
+		for(AlgorithmRunResult run : runs)
+		{
+			ParameterConfiguration config  = run.getAlgorithmRunConfiguration().getParameterConfiguration();
+			
+			System.out.println(config.get("x0") + "," + config.get("x1") + "=>" + run.getRuntime());
+
+		}
+		
 	}
 	
 	/**

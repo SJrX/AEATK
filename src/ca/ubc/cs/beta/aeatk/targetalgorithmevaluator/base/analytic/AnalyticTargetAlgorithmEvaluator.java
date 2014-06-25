@@ -70,6 +70,7 @@ public class AnalyticTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorith
 					}
 				}
 				
+				
 				double time = func.evaluate(vals);
 				
 				for(String key : rc.getParameterConfiguration().keySet())
