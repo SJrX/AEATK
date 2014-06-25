@@ -197,7 +197,11 @@ public class TimingCheckerTargetAlgorithmEvaluator extends	AbstractTargetAlgorit
 			
 			try 
 			{
-				this.obs.currentStatus(runs);
+			    
+				if (obs!= null)
+				{
+				    this.obs.currentStatus(runs);
+				}
 			} finally
 			{
 			
