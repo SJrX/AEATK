@@ -6,27 +6,33 @@ import java.io.File;
 import java.io.FileFilter;
 import java.io.FileOutputStream;
 import java.io.IOException;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
+import java.util.concurrent.ConcurrentHashMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.fasterxml.jackson.core.JsonFactory;
-import com.fasterxml.jackson.core.JsonGenerationException;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.Version;
-import com.fasterxml.jackson.databind.JsonMappingException;
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.deser.std.StdValueInstantiator;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 
 import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.exceptions.DuplicateRunException;
-import ca.ubc.cs.beta.aeatk.json.JSONConverter;
+import ca.ubc.cs.beta.aeatk.json.serializers.ImprovedObjectMapper;
 import ca.ubc.cs.beta.aeatk.objectives.OverallObjective;
 import ca.ubc.cs.beta.aeatk.objectives.RunObjective;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
@@ -55,13 +61,14 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 
 	private final JsonGenerator g;
 	
+	private final List<ProblemInstance> pis;
 	public FileSharingRunHistoryDecorator(RunHistory runHistory, File directory, int outputID, List<ProblemInstance> pis, int secondsBetweenUpdates)
 	{
 		this.runHistory = runHistory;
 		this.outputDir = directory;
 		
 		this.MSBetweenUpdates = secondsBetweenUpdates * 1000;
-		sharedFileName = directory + File.separator + JSON_FILE_PREFIX+outputID + JSON_FILE_SUFFIX;
+		sharedFileName = new File(directory + File.separator + JSON_FILE_PREFIX+outputID + JSON_FILE_SUFFIX).getAbsolutePath();
 		File f = new File(sharedFileName);
 		
 		try {
@@ -70,23 +77,35 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 			
 			factory.setCodec(map);
 			
+
 			g = factory.createGenerator(fout);
 			
 			SimpleModule sModule = new SimpleModule("MyModule", new Version(1, 0, 0, null));
+			
+						
 			map.registerModule(sModule);
 			
-			g.writeObject(pis);
+			List<ProblemInstance> myPis = new ArrayList<>(pis);
+			g.writeObject(myPis);
 			g.flush();
-			
+			this.pis = Collections.unmodifiableList(myPis);
 			//map.writeValue(fout, pis);
 		} catch (IOException e) {
 			throw new IllegalStateException("Couldn't create shared model output file :" + sharedFileName);
 		}
+		
+		
 	}
 	
 	@Override
-	public void append(Collection<AlgorithmRunResult> runs)
-			throws DuplicateRunException {
+	public void append(Collection<AlgorithmRunResult> runs) {
+
+		this.append(runs, true);
+	}
+	
+
+	
+	private void append(Collection<AlgorithmRunResult> runs, boolean write)	 {
 
 	
 		lockWrite();
@@ -94,18 +113,28 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 		try {
 			for(AlgorithmRunResult run : runs)
 			{
-				//log.debug("Atomically appending run {} " + run.getRunConfig());
-				
-				runHistory.append(run);
-	
 				
 				try {
-					g.writeObject(run);
-					g.flush();
-					//map.writeValue(fout, run);
-					//fout.flush();
-				} catch (IOException e) {
-					throw new IllegalStateException("Couldn't save data as JSON", e);
+					runHistory.append(run);
+				} catch (DuplicateRunException e1) {
+					//We will drop this silently because
+					//The client can't realistically be expected to know if
+					//the run already exists or not.
+					continue;
+				}
+
+				if(write)
+				{
+					try {
+						g.writeObject(run);
+						g.flush();
+						//map.writeValue(fout, run);
+						//fout.flush();
+					} catch (IOException e) {
+						throw new IllegalStateException("Couldn't save data as JSON", e);
+					}
+					
+					reReadFiles();
 				}
 				
 			}
@@ -120,6 +149,9 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 
 	
 	private long lastUpdateTime = 0;
+	/**
+	 * Rereads matching files in the directory every so often.
+	 */
 	private final void reReadFiles()
 	{
 	
@@ -133,23 +165,33 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 			try 
 			{
 				
-				this.outputDir.listFiles(new FileFilter()
+				File[] matchingFiles = this.outputDir.listFiles(new FileFilter()
 				{
 					@Override
 					public boolean accept(File pathname) {
-						return pathname.getName().startsWith(JSON_FILE_PREFIX) && pathname.getName().endsWith(JSON_FILE_SUFFIX);
+						if(pathname.getName().startsWith(JSON_FILE_PREFIX) && pathname.getName().endsWith(JSON_FILE_SUFFIX))
+						{
+							if (pathname.getAbsolutePath().equals(sharedFileName))
+							{
+								return false;
+							} else
+							{
+								return true;
+							}
+						} else
+						{
+							return false;
+						}
 					}
 				});
-			
 				
-			
-			
-			
-			
-			
-			
-			
-			
+				for(File match : matchingFiles)
+				{
+					log.debug("Matching files: {} my file: {} ", match.getAbsolutePath(), sharedFileName);
+					
+					readRunsFromFile(match);
+				}
+				
 			} finally
 			{
 				lastUpdateTime = System.currentTimeMillis();
@@ -160,6 +202,100 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 		}
 		
 	}
+	
+	
+	private final ConcurrentHashMap<File, Integer> importedRuns = new ConcurrentHashMap<>();
+	
+	private void readRunsFromFile(File match) {
+		
+		importedRuns.putIfAbsent(match, 0);
+		
+		int previousRuns = importedRuns.get(match);
+		
+		
+		
+		if(previousRuns == -1)
+		{
+			//Blacklisted
+			return;
+		}
+		JsonFactory jfactory = new JsonFactory();
+		
+		
+		System.err.println("Starting...");
+		
+		try {
+			
+			ImprovedObjectMapper map = new ImprovedObjectMapper(jfactory);
+			SimpleModule sModule = new SimpleModule("MyModule", new Version(1, 0, 0, null));
+			map.registerModule(sModule);
+
+			
+			//map.readValue(jParser)
+			
+			JsonParser jParser = jfactory.createParser(match);
+			
+			
+			//jParser.
+			
+			List<ProblemInstance> pis = new ArrayList<ProblemInstance>(Arrays.asList(map.readValue(jParser, ProblemInstance[].class)));
+
+			if(!pis.equals(this.pis))
+			{
+				log.warn("Instances in file {} do match our instances, ignoring file.\nMine   : {}\nTheirs : {}", match,this.pis, pis);
+				
+				importedRuns.put(match, -1);
+				return;
+			}
+			
+			
+			
+			
+			//System.out.print("Trying to read run: ");
+			List<AlgorithmRunResult> runResult = new ArrayList<AlgorithmRunResult>();
+		
+			
+			MappingIterator<AlgorithmRunResult> it =  map.readValues(jParser, new TypeReference<AlgorithmRunResult>() {/*Who Cares*/} );
+			
+			while(it.hasNext())
+			{					
+		
+				runResult.add(it.nextValue());
+			}
+	
+			
+			
+			
+			for(AlgorithmRunResult run : runResult.subList(previousRuns, runResult.size()))
+			{
+				
+				try {
+					runHistory.append(run);
+				} catch (DuplicateRunException e) {
+					//Doesn't matter here
+				}
+				
+			}
+
+			importedRuns.put(match, runResult.size());
+
+			
+			
+		
+		} catch (JsonParseException e) {
+			log.error("Error occurred reading file " + match.getAbsolutePath() + " no longer looking at it, {}", e);
+			importedRuns.put(match, -1);
+		} catch (IOException e) {
+			log.error("Error occurred reading file " + match.getAbsolutePath() + " no longer looking at it, {}", e);
+			importedRuns.put(match, -1);
+			
+		}
+		
+		
+		
+		
+	}
+
 	@Override
 	public void append(AlgorithmRunResult run) throws DuplicateRunException {
 		this.append(Collections.singleton(run));

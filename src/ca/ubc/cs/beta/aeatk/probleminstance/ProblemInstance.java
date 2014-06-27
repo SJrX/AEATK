@@ -7,6 +7,7 @@ import java.util.Map.Entry;
 
 import ca.ubc.cs.beta.aeatk.json.serializers.ProblemInstanceJson;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
@@ -14,6 +15,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
  * @author Steve Ramage <seramage@cs.ubc.ca>
  */
 @JsonSerialize(using=ProblemInstanceJson.ProblemInstanceSerializer.class)
+@JsonDeserialize(using=ProblemInstanceJson.ProblemInstanceDeserializer.class)
 public class ProblemInstance implements Serializable{
 
 	/**
@@ -158,7 +160,7 @@ public class ProblemInstance implements Serializable{
 	{
 		if (instanceName == null)
 		{
-			throw new IllegalArgumentException("Instance cannot be null");
+			throw new IllegalArgumentException("Instance name cannot be null");
 		}
 		this.instanceName = instanceName;
 		this.instanceId = id;

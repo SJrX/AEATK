@@ -12,16 +12,6 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 
-
-
-
-
-
-
-
-
-
-
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace;
 
@@ -60,15 +50,13 @@ public class ParameterConfigurationSpaceJson
 	public static final String PCS_ID = "@pcs-id";
 	
 
-	private static final String JACKSON_PC_CONTEXT = "PC_CONTEXT";
-	
-	private static final String JACKSON_PCS_CONTEXT = "PCS_CONTEXT";
-	
+
 	public static class ParamConfigurationDeserializer extends StdDeserializer<ParameterConfiguration>
 	{
 		
-		private final ParamConfigurationSpaceDeserializer pcsd = new ParamConfigurationSpaceDeserializer();
-
+		
+		private final Map<Integer, ParameterConfiguration> cache =  new ConcurrentHashMap<>();
+		
 		protected ParamConfigurationDeserializer() {
 			super(ParameterConfiguration.class);
 		}
@@ -77,23 +65,13 @@ public class ParameterConfigurationSpaceJson
 		public ParameterConfiguration deserialize(JsonParser jp, DeserializationContext ctxt)
 				throws IOException, JsonProcessingException {
 		
-			
+		
+		
 			if(jp.getCurrentToken()==JsonToken.START_OBJECT)
 			{
 				jp.nextToken();
 			}
 			
-			
-			@SuppressWarnings("unchecked")
-			Map<Integer, ParameterConfiguration> cache = (Map<Integer, ParameterConfiguration>) ctxt.getAttribute(JACKSON_PC_CONTEXT);
-			
-			if(cache == null)
-			{
-				cache = new ConcurrentHashMap<Integer, ParameterConfiguration>();
-				ctxt.setAttribute(JACKSON_PC_CONTEXT, cache);
-			}
-			
-		
 			ParameterConfigurationSpace configSpace = null;
 			Map<String, String> settings = new HashMap<>();
 			int pc_id = 0;
@@ -119,7 +97,7 @@ public class ParameterConfigurationSpaceJson
 					
 						
 					case PC_PCS:
-						configSpace = pcsd.deserialize(jp, ctxt);
+						configSpace = JsonDeserializerHelper.getDeserializedVersion(jp, ctxt, ParameterConfigurationSpace.class);
 						
 						if(configSpace == null)
 						{
@@ -231,6 +209,8 @@ public class ParameterConfigurationSpaceJson
 	{
 
 		
+		private final Map<Integer, ParameterConfigurationSpace> cache =  new ConcurrentHashMap<>();
+		
 		protected ParamConfigurationSpaceDeserializer() {
 			super(ParameterConfigurationSpace.class);
 		
@@ -244,17 +224,6 @@ public class ParameterConfigurationSpaceJson
 			{
 				throw new JsonParseException("Expected start object", jp.getCurrentLocation());
 			}
-			
-			@SuppressWarnings("unchecked")
-			Map<Integer, ParameterConfigurationSpace> cache = (Map<Integer, ParameterConfigurationSpace>) ctxt.getAttribute(JACKSON_PCS_CONTEXT);
-			
-			if(cache == null)
-			{
-				cache = new ConcurrentHashMap<Integer, ParameterConfigurationSpace>();
-				ctxt.setAttribute(JACKSON_PCS_CONTEXT, cache);
-			}
-			
-			
 			
 			String pcsText = null;
 			String pcsFilename = null;
@@ -306,13 +275,6 @@ public class ParameterConfigurationSpaceJson
 				}
 			}
 			
-			
-			
-			
-			
-			
-			
-			
 			if(cache.get(pcs_id) != null)
 			{
 				return cache.get(pcs_id);
@@ -328,8 +290,6 @@ public class ParameterConfigurationSpaceJson
 				{
 					cache.put(pcs_id, configSpace);
 				}
-				
-				
 				
 				return configSpace;
 			}

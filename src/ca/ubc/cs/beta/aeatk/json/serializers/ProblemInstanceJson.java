@@ -40,30 +40,20 @@ public class ProblemInstanceJson  {
 	public static final String PISP_ID = "@pisp-id";
 	
 	
-	
-	private static final String JACKSON_PI_CONTEXT = "PI_CONTEXT";
-	
-	private static final String JACKSON_PISP_CONTEXT = "PISP_CONTEXT";
 	public static class ProblemInstanceDeserializer extends StdDeserializer<ProblemInstance>
 	{
 
+		
+		private final Map<Integer, ProblemInstance> cache =  new ConcurrentHashMap<>();
+		
 		protected ProblemInstanceDeserializer() {
+			
 			super(ProblemInstance.class);
+			System.out.println("TEST");
 		}
 
 		@Override
 		public ProblemInstance deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException {
-			
-			
-			@SuppressWarnings("unchecked")
-			Map<Integer, ProblemInstance> cache = (Map<Integer, ProblemInstance>) ctxt.getAttribute(JACKSON_PI_CONTEXT);
-			
-			if(cache == null)
-			{
-				cache = new ConcurrentHashMap<Integer, ProblemInstance>();
-				ctxt.setAttribute(JACKSON_PI_CONTEXT, cache);
-			}
-			
 			
 		
 			if(jp.getCurrentToken()==JsonToken.START_OBJECT)
@@ -93,10 +83,14 @@ public class ProblemInstanceJson  {
 				{
 					continue;
 				}
+				
+				//System.out.println(jp.getCurrentName() + "=>" + jp.getCurrentToken());
+				
 				switch(jp.getCurrentName())
 				{
 					case PI_NAME:
 						instanceName = jp.getValueAsString();
+					
 						break;
 					case PI_INSTANCE_SPECIFIC_INFO:
 						instanceSpecificInformation = jp.getValueAsString();
@@ -105,8 +99,9 @@ public class ProblemInstanceJson  {
 						instanceDeprecatedId = jp.getValueAsInt();
 						break;
 					case PI_FEATURES:
-						JsonNode node = jp.getCodec().readTree(jp);
 						
+						JsonNode node = jp.getCodec().readTree(jp);
+							
 						Iterator<Entry<String, JsonNode>> i = node.fields();
 						
 						while(i.hasNext())
@@ -114,13 +109,14 @@ public class ProblemInstanceJson  {
 							Entry<String, JsonNode> ent = i.next();
 							features.put(ent.getKey(), ent.getValue().asDouble());
 						}
-						
+					
 						break;
 						
 					case PI_ID:
 						pi_id = jp.getValueAsInt();
 						break;
 				default:
+					System.out.println("Not sure what this is:" + jp.getCurrentName());
 					break;
 					
 				}
@@ -183,9 +179,10 @@ public class ProblemInstanceJson  {
 	
 	public static class ProblemInstanceSeedPairDeserializer extends StdDeserializer<ProblemInstanceSeedPair>
 	{
-		
-		ProblemInstanceDeserializer pid = new ProblemInstanceDeserializer();
+	
 
+		private final Map<Integer, ProblemInstanceSeedPair> cache =  new ConcurrentHashMap<>();
+		
 		protected ProblemInstanceSeedPairDeserializer() {
 			super(ProblemInstanceSeedPair.class);
 		}
@@ -194,17 +191,6 @@ public class ProblemInstanceJson  {
 		public ProblemInstanceSeedPair deserialize(JsonParser jp, DeserializationContext ctxt) throws IOException, JsonProcessingException 
 		{
 
-			@SuppressWarnings("unchecked")
-			Map<Integer, ProblemInstanceSeedPair> cache = (Map<Integer, ProblemInstanceSeedPair>) ctxt.getAttribute(JACKSON_PISP_CONTEXT);
-			
-			if(cache == null)
-			{
-				cache = new ConcurrentHashMap<Integer, ProblemInstanceSeedPair>();
-				ctxt.setAttribute(JACKSON_PISP_CONTEXT, cache);
-			}
-			
-			
-		
 			if(jp.getCurrentToken() == JsonToken.START_OBJECT)
 			{
 				jp.nextToken();
@@ -234,7 +220,7 @@ public class ProblemInstanceJson  {
 				switch(jp.getCurrentName())
 				{
 					case PISP_PI:
-						pi = pid.deserialize(jp, ctxt);
+						pi = JsonDeserializerHelper.getDeserializedVersion(jp, ctxt, ProblemInstance.class);
 						break;
 					case PISP_SEED:
 						seed = jp.getValueAsLong();
@@ -272,7 +258,7 @@ public class ProblemInstanceJson  {
 	public static class ProblemInstanceSeedPairSerializer extends JsonSerializer<ProblemInstanceSeedPair>	{
 
 
-		private final ConcurrentHashMap<ProblemInstanceSeedPair, Integer> map = new ConcurrentHashMap<ProblemInstanceSeedPair, Integer>();
+		private final ConcurrentHashMap<ProblemInstanceSeedPair, Integer> map = new ConcurrentHashMap<>();
 		
 		private final AtomicInteger idMap = new AtomicInteger(1);
 		

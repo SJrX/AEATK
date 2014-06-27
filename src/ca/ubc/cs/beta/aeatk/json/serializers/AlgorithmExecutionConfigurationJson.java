@@ -9,7 +9,7 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
-import ca.ubc.cs.beta.aeatk.json.serializers.ParameterConfigurationSpaceJson.ParamConfigurationSpaceDeserializer;
+
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace;
 
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -38,30 +38,24 @@ public class AlgorithmExecutionConfigurationJson  {
 	
 	public static final String ALGO_EXEC_CONFIG_ID = "@algo-exec-config-id";
 
-	private static final String JACKSON_ALGO_CONTEXT = "ALGO_CONTEXT";
 	
 	public static class AlgorithmExecutionConfigDeserializer extends StdDeserializer<AlgorithmExecutionConfiguration>
 	{
 
-		private final ParamConfigurationSpaceDeserializer pcsd = new ParamConfigurationSpaceDeserializer();
+		//private final ParamConfigurationSpaceDeserializer pcsd = new ParamConfigurationSpaceDeserializer();
 		
 		protected AlgorithmExecutionConfigDeserializer() {
 			super(AlgorithmExecutionConfiguration.class);
 		}
 
+		private final Map<Integer, AlgorithmExecutionConfiguration> cache =  new ConcurrentHashMap<>();
+		
 		@Override
 		public AlgorithmExecutionConfiguration deserialize(JsonParser jp, DeserializationContext ctxt)
 				throws IOException, JsonProcessingException {
 			
-			@SuppressWarnings("unchecked")
-			Map<Integer, AlgorithmExecutionConfiguration> cache = (Map<Integer, AlgorithmExecutionConfiguration>) ctxt.getAttribute(JACKSON_ALGO_CONTEXT);
 			
-			if(cache == null)
-			{
-				cache = new ConcurrentHashMap<Integer, AlgorithmExecutionConfiguration>();
-				ctxt.setAttribute(JACKSON_ALGO_CONTEXT, cache);
-			}
-			
+		
 			
 		
 			if(jp.getCurrentToken() == JsonToken.START_OBJECT)
@@ -90,6 +84,8 @@ public class AlgorithmExecutionConfigurationJson  {
 				{
 					continue;
 				}
+				
+				//System.out.println(jp.getCurrentName() + "=>" + jp.getCurrentToken());
 				switch(jp.getCurrentName())
 				{
 					case ALGO_EXEC:
@@ -99,7 +95,7 @@ public class AlgorithmExecutionConfigurationJson  {
 						algoDir = jp.getValueAsString();
 						break;
 					case PCS_FILE:
-						pcs = pcsd.deserialize(jp, ctxt);
+						pcs = JsonDeserializerHelper.getDeserializedVersion(jp, ctxt, ParameterConfigurationSpace.class);
 						break;
 						
 					case ALGO_DETERMINISTIC:
@@ -157,7 +153,7 @@ public class AlgorithmExecutionConfigurationJson  {
 			super(AlgorithmExecutionConfiguration.class);
 		}
 
-		private final ConcurrentHashMap<AlgorithmExecutionConfiguration, Integer> map = new ConcurrentHashMap<AlgorithmExecutionConfiguration, Integer>();
+		private final ConcurrentHashMap<AlgorithmExecutionConfiguration, Integer> map = new ConcurrentHashMap<>();
 		
 		private final AtomicInteger idMap = new AtomicInteger(1);
 		
