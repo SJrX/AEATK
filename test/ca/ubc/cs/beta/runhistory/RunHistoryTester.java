@@ -4,8 +4,11 @@ import static org.junit.Assert.*;
 
 import java.io.File;
 import java.io.IOException;
+import java.lang.reflect.InvocationTargetException;
+import java.lang.reflect.Method;
 import java.nio.file.Files;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -137,7 +140,7 @@ public class RunHistoryTester {
 		InstanceSeedGenerator insc = new RandomInstanceSeedGenerator(pis, rand.nextLong());
 		InstanceListWithSeeds ilws = new InstanceListWithSeeds(insc, pis);
 		
-		testSharedRunHistoryObjects(pis, ilws, insc,rand, 1,1);
+		testSharedRunHistoryObjects(pis, ilws, insc,rand, 10,120);
 		
 	
 		
@@ -162,6 +165,145 @@ public class RunHistoryTester {
 		
 	}
 
+	@Test
+	public void testRunHistoryFailureAtomic()
+	{
+		
+		RunHistory r = new NewRunHistory( OverallObjective.MEAN, OverallObjective.MEAN, RunObjective.RUNTIME);
+		RunHistory r2 = new NewRunHistory( OverallObjective.MEAN, OverallObjective.MEAN, RunObjective.RUNTIME);
+		
+		Random rand = pool.getRandom(DebugUtil.getCurrentMethodName());
+		InstanceListWithSeeds ilws = ProblemInstanceHelperTester.getInstanceListWithSeeds("classicFormatValid.txt", false);
+		
+		InstanceSeedGenerator insc = ilws.getSeedGen();
+		
+		checkAllMethodsEqual(r, r2);
+		
+		
+		ParameterConfiguration defaultConfig = configSpace.getDefaultConfiguration();
+		ProblemInstanceSeedPair pisp = RunHistoryHelper.getRandomInstanceSeedWithFewestRunsFor(r, insc, defaultConfig, ilws.getInstances(), rand, false);
+		
+		AlgorithmRunConfiguration runConfig = new AlgorithmRunConfiguration(pisp, 1, defaultConfig,execConfig);
+		
+		AlgorithmRunResult run = new ExistingAlgorithmRunResult( runConfig,RunStatus.SAT, rand.nextDouble(), 0 , 0,  pisp.getSeed());
+		
+		
+
+		
+		try 
+		{
+			r.append(run);
+			r2.append(run);
+		} catch(DuplicateRunException nc)
+		{
+			fail("Shouldn't have got this exception here");
+		}
+		checkAllMethodsEqual(r,r2);
+		
+		
+		System.out.println(r.getAlgorithmRunData());
+		System.out.println(r.getAlgorithmRunsExcludingRedundant());
+		System.out.println(r2.getAlgorithmRunsExcludingRedundant());
+		try {
+		r2.append(run);
+		fail("This test should have failed");
+		} catch(DuplicateRunException eh)
+		{
+			//Got it
+		}
+		
+		checkAllMethodsEqual(r,r2);
+		
+		
+		for(int i=0; i < 10; i++)
+		{
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(rand);
+			AlgorithmRunResult run2 = getNewRun(rand, ilws, insc, r2, config);
+			
+			try {
+				r.append(run2);
+				r2.append(run2);
+			} catch (DuplicateRunException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				fail("Unexpected Exception");
+			}
+
+
+			
+		
+			checkAllMethodsEqual(r,r2);
+			
+			try {
+				r2.append(run);
+				fail("This test should have failed");
+				} catch(DuplicateRunException eh)
+				{
+					//Got it
+				}
+			checkAllMethodsEqual(r,r2);
+		}
+		System.out.println(r.getAlgorithmRunsExcludingRedundant());
+		
+	}
+
+	private void checkAllMethodsEqual(RunHistory r, RunHistory r2) {
+	
+		for(Method m : r.getClass().getMethods())
+		{
+			if(m.getName().startsWith("get"))
+			{
+				
+				/*
+				System.out.print(m.getName() + "=>" );
+				
+				for(Class<?> c :  m.getParameterTypes())
+				{
+					System.out.print(c.getSimpleName() + ",");
+				}
+				System.out.println();
+				*/
+				
+				if(m.getParameterTypes().length == 0)
+				{
+					
+					try {
+						Object o1 = m.invoke(r, new Object[0]);
+						Object o2 = m.invoke(r2, new Object[0]);
+						
+
+						try 
+						{
+							if ((o1 instanceof Object[]) &&(o2 instanceof Object[]))
+							{
+								
+								assertTrue("Expected " + m.getName() + " to return the same thing on both runhistory objects", Arrays.deepEquals((Object[]) o1, (Object[]) o2));
+							} else
+							{
+								assertEquals("Expected " + m.getName() + " to return the same thing on both runhistory objects", o1, o2);
+							}
+						} catch(AssertionError e)
+						{
+							throw e;
+						}
+					} catch (IllegalAccessException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (IllegalArgumentException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (InvocationTargetException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					
+					
+					
+				}
+			}
+		}
+		
+	}
 
 	/**
 	 * @param insc 
@@ -182,7 +324,7 @@ public class RunHistoryTester {
 			
 			r2 = new FileSharingRunHistoryDecorator(r2,f,2,pis,1); 
 			
-			System.out.println(f.getAbsolutePath());
+			//System.out.println(f.getAbsolutePath());
 			
 			for(int i=0; i < DEFAULTS; i++)
 			{
@@ -206,7 +348,7 @@ public class RunHistoryTester {
 			
 			
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(1200);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -216,14 +358,14 @@ public class RunHistoryTester {
 			AlgorithmRunResult run = getNewRun(rand, ilws, insc, r2, configSpace.getDefaultConfiguration());
 
 			
-			System.out.println(run);
+			//System.out.println(run);
 			
 			r.append(run);
 			r2.append(run);
 		
 			
 			try {
-				Thread.sleep(1000);
+				Thread.sleep(1200);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

@@ -1,6 +1,8 @@
 package ca.ubc.cs.beta.aeatk.json.serializers;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
@@ -8,6 +10,7 @@ import java.util.Map.Entry;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
 
@@ -15,7 +18,9 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.DeserializationContext;
+import com.fasterxml.jackson.databind.JsonMappingException;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.JsonSerializer;
 import com.fasterxml.jackson.databind.SerializerProvider;
@@ -44,12 +49,12 @@ public class ProblemInstanceJson  {
 	{
 
 		
-		private final Map<Integer, ProblemInstance> cache =  new ConcurrentHashMap<>();
+		private static final Map<ObjectCodec, Map<Integer, ProblemInstance>> cacheMap = Collections.synchronizedMap(new IdentityHashMap<ObjectCodec, Map<Integer, ProblemInstance>>()); 	
 		
 		protected ProblemInstanceDeserializer() {
 			
 			super(ProblemInstance.class);
-			System.out.println("TEST");
+			//System.out.println("TEST");
 		}
 
 		@Override
@@ -122,7 +127,7 @@ public class ProblemInstanceJson  {
 				}
 			}
 			
-			
+			final Map<Integer, ProblemInstance> cache =   JsonDeserializerHelper.getCache(cacheMap, jp.getCodec());
 			
 			if( cache.get(pi_id) != null)
 			{
@@ -181,7 +186,7 @@ public class ProblemInstanceJson  {
 	{
 	
 
-		private final Map<Integer, ProblemInstanceSeedPair> cache =  new ConcurrentHashMap<>();
+		private static final Map<ObjectCodec, Map<Integer, ProblemInstanceSeedPair>> cacheMap = Collections.synchronizedMap(new IdentityHashMap<ObjectCodec, Map<Integer, ProblemInstanceSeedPair>>());
 		
 		protected ProblemInstanceSeedPairDeserializer() {
 			super(ProblemInstanceSeedPair.class);
@@ -202,6 +207,7 @@ public class ProblemInstanceJson  {
 			
 			int pisp_id = -1;
 			
+			boolean readFullValue = false;
 			while(jp.nextValue() != null)
 			{
 		
@@ -217,13 +223,17 @@ public class ProblemInstanceJson  {
 				}
 				
 				
+				
+				
 				switch(jp.getCurrentName())
 				{
 					case PISP_PI:
 						pi = JsonDeserializerHelper.getDeserializedVersion(jp, ctxt, ProblemInstance.class);
+						readFullValue = true;
 						break;
 					case PISP_SEED:
 						seed = jp.getValueAsLong();
+						readFullValue = true;
 						break;
 					case PISP_ID:
 						pisp_id = jp.getValueAsInt();
@@ -234,12 +244,27 @@ public class ProblemInstanceJson  {
 			}
 			
 			
-			
+			final Map<Integer, ProblemInstanceSeedPair> cache =   JsonDeserializerHelper.getCache(cacheMap, jp.getCodec());
 			if( cache.get(pisp_id) != null)
 			{
 				return cache.get(pisp_id);
 			} else
 			{
+				
+				
+				if(!readFullValue)
+				{
+					/*
+					System.out.println(cache.get(Integer.valueOf(pisp_id)));
+					System.out.println(cache.entrySet());
+
+					for(Entry<?,?> cacheEntry : cache.entrySet())
+					{
+						System.out.println(cacheEntry.getKey() + "(" + cacheEntry.getKey().getClass().getSimpleName() + ") " + " equals: " + cacheEntry.getKey().equals(pisp_id) + " =>" + cacheEntry.getValue());
+					}
+					*/
+					throw new JsonMappingException("Short Object form for " + ProblemInstanceSeedPair.class.getSimpleName() + " detected, but no previously cached version found for ID:" + pisp_id + " cache contains: " + cache.keySet() + " entries ");
+				}
 				ProblemInstanceSeedPair pisp = new ProblemInstanceSeedPair(pi, seed);
 				
 				if(pisp_id >0)

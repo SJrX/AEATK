@@ -1,6 +1,8 @@
 package ca.ubc.cs.beta.aeatk.json.serializers;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -11,7 +13,6 @@ import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
-
 import ca.ubc.cs.beta.aeatk.misc.version.AEATKVersionInfo;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
@@ -20,6 +21,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
@@ -47,7 +49,7 @@ public class AlgorithmRunConfigurationJson  {
 		private static final AtomicBoolean warnSampleIdx = new AtomicBoolean(false);
 		
 		
-		private final Map<Integer, AlgorithmRunConfiguration> cache =  new ConcurrentHashMap<>();
+		private static final Map<ObjectCodec, Map<Integer, AlgorithmRunConfiguration>> cacheMap = Collections.synchronizedMap(new IdentityHashMap<ObjectCodec, Map<Integer, AlgorithmRunConfiguration>>());
 		
 		protected RunConfigDeserializer() {
 			super(AlgorithmRunConfiguration.class);
@@ -63,6 +65,8 @@ public class AlgorithmRunConfigurationJson  {
 				jp.nextToken();
 			}
 							
+			final Map<Integer, AlgorithmRunConfiguration> cache =   JsonDeserializerHelper.getCache(cacheMap, jp.getCodec());
+			
 			ProblemInstanceSeedPair pisp = null;
 			AlgorithmExecutionConfiguration execConfig = null;
 			ParameterConfiguration config = null;

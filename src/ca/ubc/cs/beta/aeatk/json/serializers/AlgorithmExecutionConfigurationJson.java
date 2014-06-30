@@ -1,6 +1,8 @@
 package ca.ubc.cs.beta.aeatk.json.serializers;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
@@ -9,13 +11,14 @@ import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
-
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace;
 
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.SerializerProvider;
@@ -39,6 +42,9 @@ public class AlgorithmExecutionConfigurationJson  {
 	public static final String ALGO_EXEC_CONFIG_ID = "@algo-exec-config-id";
 
 	
+	
+	private static final Map<ObjectCodec, Map<Integer, AlgorithmExecutionConfiguration>> cacheMap = Collections.synchronizedMap(new IdentityHashMap<ObjectCodec, Map<Integer, AlgorithmExecutionConfiguration>>());
+
 	public static class AlgorithmExecutionConfigDeserializer extends StdDeserializer<AlgorithmExecutionConfiguration>
 	{
 
@@ -48,7 +54,7 @@ public class AlgorithmExecutionConfigurationJson  {
 			super(AlgorithmExecutionConfiguration.class);
 		}
 
-		private final Map<Integer, AlgorithmExecutionConfiguration> cache =  new ConcurrentHashMap<>();
+	
 		
 		@Override
 		public AlgorithmExecutionConfiguration deserialize(JsonParser jp, DeserializationContext ctxt)
@@ -57,7 +63,8 @@ public class AlgorithmExecutionConfigurationJson  {
 			
 		
 			
-		
+			final Map<Integer, AlgorithmExecutionConfiguration> cache =  JsonDeserializerHelper.getCache(cacheMap, jp.getCodec());
+					 
 			if(jp.getCurrentToken() == JsonToken.START_OBJECT)
 			{
 				jp.nextToken();

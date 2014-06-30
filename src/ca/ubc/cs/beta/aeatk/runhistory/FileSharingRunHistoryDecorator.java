@@ -13,6 +13,7 @@ import java.util.Collections;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 
@@ -32,7 +33,6 @@ import com.fasterxml.jackson.databind.module.SimpleModule;
 
 import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.exceptions.DuplicateRunException;
-import ca.ubc.cs.beta.aeatk.json.serializers.ImprovedObjectMapper;
 import ca.ubc.cs.beta.aeatk.objectives.OverallObjective;
 import ca.ubc.cs.beta.aeatk.objectives.RunObjective;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
@@ -62,6 +62,9 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 	private final JsonGenerator g;
 	
 	private final List<ProblemInstance> pis;
+
+	private final ConcurrentHashMap<File, Integer> importedRuns = new ConcurrentHashMap<>();
+	
 	public FileSharingRunHistoryDecorator(RunHistory runHistory, File directory, int outputID, List<ProblemInstance> pis, int secondsBetweenUpdates)
 	{
 		this.runHistory = runHistory;
@@ -69,7 +72,7 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 		
 		this.MSBetweenUpdates = secondsBetweenUpdates * 1000;
 		sharedFileName = new File(directory + File.separator + JSON_FILE_PREFIX+outputID + JSON_FILE_SUFFIX).getAbsolutePath();
-		File f = new File(sharedFileName);
+		final File f = new File(sharedFileName);
 		
 		try {
 			
@@ -81,8 +84,6 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 			g = factory.createGenerator(fout);
 			
 			SimpleModule sModule = new SimpleModule("MyModule", new Version(1, 0, 0, null));
-			
-						
 			map.registerModule(sModule);
 			
 			List<ProblemInstance> myPis = new ArrayList<>(pis);
@@ -93,6 +94,39 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 		} catch (IOException e) {
 			throw new IllegalStateException("Couldn't create shared model output file :" + sharedFileName);
 		}
+		
+		if(log.isDebugEnabled())
+		{
+			Thread t = new Thread(new Runnable(){
+
+				@Override
+				public void run() {
+					
+					
+					
+					Thread.currentThread().setName("FileSharingRunHistory Logger (" + f.getName() + ")");
+					List<String> addedRunsStr = new ArrayList<String>();
+					int total = 0;
+					
+					for(Entry<File, Integer> ent : importedRuns.entrySet())
+					{
+						addedRunsStr.add(ent.getKey().getName() + "=>" + ent.getValue());
+						int values = ent.getValue();
+						if(values > 0)
+						{
+							total += values;
+						}
+					}
+					
+					log.debug("At shutdown RunHistory writing to {} had atleast {} runs added to it {}", f, total, addedRunsStr  );
+					
+				}
+				
+			});
+			
+			Runtime.getRuntime().addShutdownHook(t);
+		}
+		
 		
 		
 	}
@@ -187,7 +221,7 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 				
 				for(File match : matchingFiles)
 				{
-					log.debug("Matching files: {} my file: {} ", match.getAbsolutePath(), sharedFileName);
+					log.trace("Matching files: {} my file: {} ", match.getAbsolutePath(), sharedFileName);
 					
 					readRunsFromFile(match);
 				}
@@ -204,7 +238,6 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 	}
 	
 	
-	private final ConcurrentHashMap<File, Integer> importedRuns = new ConcurrentHashMap<>();
 	
 	private void readRunsFromFile(File match) {
 		
@@ -222,11 +255,11 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 		JsonFactory jfactory = new JsonFactory();
 		
 		
-		System.err.println("Starting...");
+		//System.err.println("Starting...");
 		
 		try {
 			
-			ImprovedObjectMapper map = new ImprovedObjectMapper(jfactory);
+			ObjectMapper map = new ObjectMapper(jfactory);
 			SimpleModule sModule = new SimpleModule("MyModule", new Version(1, 0, 0, null));
 			map.registerModule(sModule);
 

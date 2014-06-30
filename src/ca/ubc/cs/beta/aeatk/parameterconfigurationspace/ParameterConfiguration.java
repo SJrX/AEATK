@@ -45,7 +45,7 @@ import net.jcip.annotations.NotThreadSafe;
  *
  */
 @NotThreadSafe
-@JsonDeserialize
+@JsonDeserialize(using=ParameterConfigurationSpaceJson.ParamConfigurationDeserializer.class)
 @JsonSerialize(using=ParameterConfigurationSpaceJson.ParamConfigurationSerializer.class)
 public class ParameterConfiguration implements Map<String, String>, Serializable {
 

@@ -2,7 +2,9 @@ package ca.ubc.cs.beta.aeatk.json.serializers;
 
 import java.io.IOException;
 import java.io.StringReader;
+import java.util.Collections;
 import java.util.HashMap;
+import java.util.IdentityHashMap;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.Map;
@@ -11,7 +13,8 @@ import java.util.TreeMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
-
+import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace;
 
@@ -20,6 +23,7 @@ import com.fasterxml.jackson.core.JsonParseException;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.SerializerProvider;
@@ -55,7 +59,8 @@ public class ParameterConfigurationSpaceJson
 	{
 		
 		
-		private final Map<Integer, ParameterConfiguration> cache =  new ConcurrentHashMap<>();
+		private static final Map<ObjectCodec, Map<Integer, ParameterConfiguration>> cacheMap = Collections.synchronizedMap(new IdentityHashMap<ObjectCodec, Map<Integer, ParameterConfiguration>>());
+		
 		
 		protected ParamConfigurationDeserializer() {
 			super(ParameterConfiguration.class);
@@ -75,6 +80,9 @@ public class ParameterConfigurationSpaceJson
 			ParameterConfigurationSpace configSpace = null;
 			Map<String, String> settings = new HashMap<>();
 			int pc_id = 0;
+			
+			final Map<Integer, ParameterConfiguration> cache =  JsonDeserializerHelper.getCache(cacheMap, jp.getCodec());
+			
 			while(jp.nextValue() != null)
 			{
 				
@@ -209,7 +217,8 @@ public class ParameterConfigurationSpaceJson
 	{
 
 		
-		private final Map<Integer, ParameterConfigurationSpace> cache =  new ConcurrentHashMap<>();
+		private static final Map<ObjectCodec, Map<Integer, ParameterConfigurationSpace>> cacheMap = Collections.synchronizedMap(new IdentityHashMap<ObjectCodec, Map<Integer, ParameterConfigurationSpace>>());
+		
 		
 		protected ParamConfigurationSpaceDeserializer() {
 			super(ParameterConfigurationSpace.class);
@@ -230,6 +239,8 @@ public class ParameterConfigurationSpaceJson
 			Map<String, String> subspace = new TreeMap<String,String>();
 			
 			int pcs_id = 0;
+			
+			final Map<Integer, ParameterConfigurationSpace> cache =   JsonDeserializerHelper.getCache(cacheMap, jp.getCodec());
 			
 			while(jp.nextValue() != null)
 			{
