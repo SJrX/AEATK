@@ -13,13 +13,13 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import ca.ubc.cs.beta.aeatk.json.serializers.AlgorithmExecutionConfigurationJson;
-import ca.ubc.cs.beta.aeatk.json.serializers.ParameterConfigurationSpaceJson;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace;
 /**
  * Immutable Object contains all the information related to executing a target algorithm run
  * @author seramage
  *
  */
+@SuppressWarnings("unused")
 @JsonSerialize(using=AlgorithmExecutionConfigurationJson.AlgorithmExecutionConfigSerializer.class)
 @JsonDeserialize(using=AlgorithmExecutionConfigurationJson.AlgorithmExecutionConfigDeserializer.class)
 public class AlgorithmExecutionConfiguration implements Serializable {

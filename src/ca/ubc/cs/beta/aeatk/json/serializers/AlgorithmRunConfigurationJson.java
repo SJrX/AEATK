@@ -1,6 +1,8 @@
 package ca.ubc.cs.beta.aeatk.json.serializers;
 
 import java.io.IOException;
+import java.util.Collections;
+import java.util.IdentityHashMap;
 import java.util.Map;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicBoolean;
@@ -11,9 +13,6 @@ import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
-import ca.ubc.cs.beta.aeatk.json.serializers.AlgorithmExecutionConfigurationJson.AlgorithmExecutionConfigDeserializer;
-import ca.ubc.cs.beta.aeatk.json.serializers.ParameterConfigurationSpaceJson.ParamConfigurationDeserializer;
-import ca.ubc.cs.beta.aeatk.json.serializers.ProblemInstanceJson.ProblemInstanceSeedPairDeserializer;
 import ca.ubc.cs.beta.aeatk.misc.version.AEATKVersionInfo;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
@@ -22,6 +21,7 @@ import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
 import com.fasterxml.jackson.core.JsonToken;
+import com.fasterxml.jackson.core.ObjectCodec;
 import com.fasterxml.jackson.databind.DeserializationContext;
 import com.fasterxml.jackson.databind.SerializerProvider;
 import com.fasterxml.jackson.databind.deser.std.StdDeserializer;
@@ -41,18 +41,16 @@ public class AlgorithmRunConfigurationJson  {
 
 	public static final String RC_ID = "@rc-id";
 	
-	public static final String JACKSON_RC_CONTEXT = "RC_CONTEXT";
-	
 	public static class RunConfigDeserializer extends StdDeserializer<AlgorithmRunConfiguration>
 	{
-		
-		private final ProblemInstanceSeedPairDeserializer pispd = new ProblemInstanceSeedPairDeserializer();
-		private final AlgorithmExecutionConfigDeserializer aecd = new AlgorithmExecutionConfigDeserializer();
-		private final ParamConfigurationDeserializer pcd = new ParamConfigurationDeserializer();
 		
 		
 		
 		private static final AtomicBoolean warnSampleIdx = new AtomicBoolean(false);
+		
+		
+		private static final Map<ObjectCodec, Map<Integer, AlgorithmRunConfiguration>> cacheMap = Collections.synchronizedMap(new IdentityHashMap<ObjectCodec, Map<Integer, AlgorithmRunConfiguration>>());
+		
 		protected RunConfigDeserializer() {
 			super(AlgorithmRunConfiguration.class);
 		}
@@ -66,15 +64,8 @@ public class AlgorithmRunConfigurationJson  {
 			{
 				jp.nextToken();
 			}
-						
-			@SuppressWarnings("unchecked")
-			Map<Integer, AlgorithmRunConfiguration> cache = (Map<Integer, AlgorithmRunConfiguration>) ctxt.getAttribute(JACKSON_RC_CONTEXT);
-			
-			if(cache == null)
-			{
-				cache = new ConcurrentHashMap<Integer, AlgorithmRunConfiguration>();
-				ctxt.setAttribute(JACKSON_RC_CONTEXT, cache);
-			}
+							
+			final Map<Integer, AlgorithmRunConfiguration> cache =   JsonDeserializerHelper.getCache(cacheMap, jp.getCodec());
 			
 			ProblemInstanceSeedPair pisp = null;
 			AlgorithmExecutionConfiguration execConfig = null;
@@ -96,16 +87,16 @@ public class AlgorithmRunConfigurationJson  {
 				switch(jp.getCurrentName())
 				{
 					case RC_PC:
-						config = pcd.deserialize(jp, ctxt);
+						config = JsonDeserializerHelper.getDeserializedVersion(jp, ctxt, ParameterConfiguration.class);;
 						break;
 					case RC_PISP:
-						pisp = pispd.deserialize(jp, ctxt);
+						pisp = JsonDeserializerHelper.getDeserializedVersion(jp, ctxt, ProblemInstanceSeedPair.class); 
 						break;
 					case RC_CUTOFF:
 						cutoffTime = jp.getValueAsDouble();
 						break;
 					case RC_ALGO_EXEC_CONFIG:
-						execConfig = aecd.deserialize(jp, ctxt);
+						execConfig = JsonDeserializerHelper.getDeserializedVersion(jp, ctxt, AlgorithmExecutionConfiguration.class);
 						break;
 					case RC_SAMPLE_IDX:
 						sampleIdx = jp.getIntValue();
@@ -160,7 +151,7 @@ public class AlgorithmRunConfigurationJson  {
 		}
 
 
-		private final ConcurrentHashMap<AlgorithmRunConfiguration, Integer> map = new ConcurrentHashMap<AlgorithmRunConfiguration, Integer>();
+		private final ConcurrentHashMap<AlgorithmRunConfiguration, Integer> map = new ConcurrentHashMap<>();
 		
 		private final AtomicInteger idMap = new AtomicInteger(1);
 		

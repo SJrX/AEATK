@@ -42,7 +42,7 @@ public class BlackHoleTargetAlgorithmEvaluator extends AbstractAsyncTargetAlgori
 
 	@Override
 	public void notifyShutdown() {
-			
+		//NO SHUTDOWN NEEDED;
 	}
 
 	@Override

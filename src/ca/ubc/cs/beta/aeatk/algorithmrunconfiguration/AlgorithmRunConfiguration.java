@@ -2,6 +2,7 @@ package ca.ubc.cs.beta.aeatk.algorithmrunconfiguration;
 
 import java.io.Serializable;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
@@ -14,6 +15,7 @@ import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
  * @author Steve Ramage <seramage@cs.ubc.ca>
  */
 @JsonSerialize(using=AlgorithmRunConfigurationJson.RunConfigSerializer.class)
+@JsonDeserialize(using=AlgorithmRunConfigurationJson.RunConfigDeserializer.class)
 public class AlgorithmRunConfiguration implements Serializable{
 	
 	

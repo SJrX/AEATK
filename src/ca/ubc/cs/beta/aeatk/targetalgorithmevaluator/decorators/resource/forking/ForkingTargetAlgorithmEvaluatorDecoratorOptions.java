@@ -3,7 +3,6 @@ package ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.forkin
 import com.beust.jcommander.Parameter;
 import com.beust.jcommander.ParametersDelegate;
 
-import ca.ubc.cs.beta.aeatk.misc.jcommander.validator.FixedPositiveInteger;
 import ca.ubc.cs.beta.aeatk.misc.jcommander.validator.TAEValidator;
 import ca.ubc.cs.beta.aeatk.misc.options.OptionLevel;
 import ca.ubc.cs.beta.aeatk.misc.options.UsageTextField;
