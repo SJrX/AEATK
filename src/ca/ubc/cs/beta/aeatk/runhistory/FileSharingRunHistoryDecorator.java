@@ -28,6 +28,7 @@ import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.core.type.TypeReference;
 import com.fasterxml.jackson.databind.MappingIterator;
 import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.deser.std.StdValueInstantiator;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 
@@ -65,12 +66,18 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 
 	private final ConcurrentHashMap<File, Integer> importedRuns = new ConcurrentHashMap<>();
 	
-	public FileSharingRunHistoryDecorator(RunHistory runHistory, File directory, int outputID, List<ProblemInstance> pis, int secondsBetweenUpdates)
+	public FileSharingRunHistoryDecorator(RunHistory runHistory, File directory, int outputID, List<ProblemInstance> pis, int MSecondsBetweenUpdates)
 	{
 		this.runHistory = runHistory;
 		this.outputDir = directory;
 		
-		this.MSBetweenUpdates = secondsBetweenUpdates * 1000;
+		if(MSecondsBetweenUpdates < 0)
+		{
+			throw new IllegalArgumentException("Seconds between updates must be positive, not:" + MSecondsBetweenUpdates);
+		}
+		
+		this.MSBetweenUpdates = MSecondsBetweenUpdates;
+		
 		sharedFileName = new File(directory + File.separator + JSON_FILE_PREFIX+outputID + JSON_FILE_SUFFIX).getAbsolutePath();
 		final File f = new File(sharedFileName);
 		
@@ -84,6 +91,8 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 			g = factory.createGenerator(fout);
 			
 			SimpleModule sModule = new SimpleModule("MyModule", new Version(1, 0, 0, null));
+			map.configure(SerializationFeature.INDENT_OUTPUT, true);
+			  
 			map.registerModule(sModule);
 			
 			List<ProblemInstance> myPis = new ArrayList<>(pis);
@@ -277,7 +286,7 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 			{
 				log.warn("Instances in file {} do match our instances, ignoring file.\nMine   : {}\nTheirs : {}", match,this.pis, pis);
 				
-				importedRuns.put(match, -1);
+				//importedRuns.put(match, -1);
 				return;
 			}
 			
@@ -298,29 +307,45 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 	
 			
 			
+			int newValue = previousRuns; 
 			
-			for(AlgorithmRunResult run : runResult.subList(previousRuns, runResult.size()))
-			{
+			try {
 				
-				try {
-					runHistory.append(run);
-				} catch (DuplicateRunException e) {
-					//Doesn't matter here
+			
+				for(AlgorithmRunResult run : runResult.subList(previousRuns, runResult.size()))
+				{
+					
+					try {
+						runHistory.append(run);
+						newValue++;
+					} catch (DuplicateRunException e) {
+						//Doesn't matter here
+					}
+					
 				}
-				
-			}
 
-			importedRuns.put(match, runResult.size());
+			} finally
+			{
+				importedRuns.put(match,newValue);
+			}
 
 			
 			
 		
 		} catch (JsonParseException e) {
-			log.error("Error occurred reading file " + match.getAbsolutePath() + " no longer looking at it, {}", e);
-			importedRuns.put(match, -1);
+			
+			//We will just retry later
+			
+			
+			log.debug("Error occurred reading file " + match.getAbsolutePath() + ":", e);
+			//importedRuns.put(match, -1);
 		} catch (IOException e) {
-			log.error("Error occurred reading file " + match.getAbsolutePath() + " no longer looking at it, {}", e);
-			importedRuns.put(match, -1);
+			//We will just retry later
+			
+			log.debug("Error occurred reading file " + match.getAbsolutePath() + ":", e);
+			
+			//log.error("Error occurred reading file " + match.getAbsolutePath() + " no longer looking at it, {}", e);
+			//importedRuns.put(match, -1);
 			
 		}
 		

@@ -140,9 +140,9 @@ public class RunHistoryTester {
 		InstanceSeedGenerator insc = new RandomInstanceSeedGenerator(pis, rand.nextLong());
 		InstanceListWithSeeds ilws = new InstanceListWithSeeds(insc, pis);
 		
-		testSharedRunHistoryObjects(pis, ilws, insc,rand, 10,120);
+		//testSharedRunHistoryObjects(pis, ilws, insc,rand, 10,120);
 		
-	
+		testSharedRunHistoryObjects(pis, ilws, insc,rand, 10, 120);
 		
 	}
 
@@ -165,145 +165,7 @@ public class RunHistoryTester {
 		
 	}
 
-	@Test
-	public void testRunHistoryFailureAtomic()
-	{
-		
-		RunHistory r = new NewRunHistory( OverallObjective.MEAN, OverallObjective.MEAN, RunObjective.RUNTIME);
-		RunHistory r2 = new NewRunHistory( OverallObjective.MEAN, OverallObjective.MEAN, RunObjective.RUNTIME);
-		
-		Random rand = pool.getRandom(DebugUtil.getCurrentMethodName());
-		InstanceListWithSeeds ilws = ProblemInstanceHelperTester.getInstanceListWithSeeds("classicFormatValid.txt", false);
-		
-		InstanceSeedGenerator insc = ilws.getSeedGen();
-		
-		checkAllMethodsEqual(r, r2);
-		
-		
-		ParameterConfiguration defaultConfig = configSpace.getDefaultConfiguration();
-		ProblemInstanceSeedPair pisp = RunHistoryHelper.getRandomInstanceSeedWithFewestRunsFor(r, insc, defaultConfig, ilws.getInstances(), rand, false);
-		
-		AlgorithmRunConfiguration runConfig = new AlgorithmRunConfiguration(pisp, 1, defaultConfig,execConfig);
-		
-		AlgorithmRunResult run = new ExistingAlgorithmRunResult( runConfig,RunStatus.SAT, rand.nextDouble(), 0 , 0,  pisp.getSeed());
-		
-		
-
-		
-		try 
-		{
-			r.append(run);
-			r2.append(run);
-		} catch(DuplicateRunException nc)
-		{
-			fail("Shouldn't have got this exception here");
-		}
-		checkAllMethodsEqual(r,r2);
-		
-		
-		System.out.println(r.getAlgorithmRunData());
-		System.out.println(r.getAlgorithmRunsExcludingRedundant());
-		System.out.println(r2.getAlgorithmRunsExcludingRedundant());
-		try {
-		r2.append(run);
-		fail("This test should have failed");
-		} catch(DuplicateRunException eh)
-		{
-			//Got it
-		}
-		
-		checkAllMethodsEqual(r,r2);
-		
-		
-		for(int i=0; i < 10; i++)
-		{
-			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(rand);
-			AlgorithmRunResult run2 = getNewRun(rand, ilws, insc, r2, config);
-			
-			try {
-				r.append(run2);
-				r2.append(run2);
-			} catch (DuplicateRunException e) {
-				// TODO Auto-generated catch block
-				e.printStackTrace();
-				fail("Unexpected Exception");
-			}
-
-
-			
-		
-			checkAllMethodsEqual(r,r2);
-			
-			try {
-				r2.append(run);
-				fail("This test should have failed");
-				} catch(DuplicateRunException eh)
-				{
-					//Got it
-				}
-			checkAllMethodsEqual(r,r2);
-		}
-		System.out.println(r.getAlgorithmRunsExcludingRedundant());
-		
-	}
-
-	private void checkAllMethodsEqual(RunHistory r, RunHistory r2) {
 	
-		for(Method m : r.getClass().getMethods())
-		{
-			if(m.getName().startsWith("get"))
-			{
-				
-				/*
-				System.out.print(m.getName() + "=>" );
-				
-				for(Class<?> c :  m.getParameterTypes())
-				{
-					System.out.print(c.getSimpleName() + ",");
-				}
-				System.out.println();
-				*/
-				
-				if(m.getParameterTypes().length == 0)
-				{
-					
-					try {
-						Object o1 = m.invoke(r, new Object[0]);
-						Object o2 = m.invoke(r2, new Object[0]);
-						
-
-						try 
-						{
-							if ((o1 instanceof Object[]) &&(o2 instanceof Object[]))
-							{
-								
-								assertTrue("Expected " + m.getName() + " to return the same thing on both runhistory objects", Arrays.deepEquals((Object[]) o1, (Object[]) o2));
-							} else
-							{
-								assertEquals("Expected " + m.getName() + " to return the same thing on both runhistory objects", o1, o2);
-							}
-						} catch(AssertionError e)
-						{
-							throw e;
-						}
-					} catch (IllegalAccessException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (IllegalArgumentException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					} catch (InvocationTargetException e) {
-						// TODO Auto-generated catch block
-						e.printStackTrace();
-					}
-					
-					
-					
-				}
-			}
-		}
-		
-	}
 
 	/**
 	 * @param insc 
@@ -320,9 +182,9 @@ public class RunHistoryTester {
 		try {
 			f = Files.createTempDirectory("runhistoryTest").toFile();
 			
-			r = new FileSharingRunHistoryDecorator(r, f, 1, pis, 1);
+			r = new FileSharingRunHistoryDecorator(r, f, 1, pis, 125);
 			
-			r2 = new FileSharingRunHistoryDecorator(r2,f,2,pis,1); 
+			r2 = new FileSharingRunHistoryDecorator(r2,f,2,pis,125); 
 			
 			//System.out.println(f.getAbsolutePath());
 			
@@ -376,8 +238,9 @@ public class RunHistoryTester {
 			Set<AlgorithmRunResult> s2 = new HashSet<>(r2.getAlgorithmRunsExcludingRedundant());
 			
 			
+			System.out.println(r.getAlgorithmRunData().size() + " vs. " + r2.getAlgorithmRunData().size());
 			assertEquals("Both RunHistory objects should have the same data", s1, s2);
-			//System.out.println(r.getAlgorithmRunData().size() + " vs. " + r2.getAlgorithmRunData().size());
+			System.out.println(r.getAlgorithmRunData().size() + " vs. " + r2.getAlgorithmRunData().size());
 			
 			for(int i=0; i < RANDOMS; i++)
 			{
@@ -405,7 +268,19 @@ public class RunHistoryTester {
 			s2 = new HashSet<>(r2.getAlgorithmRunsExcludingRedundant());
 			
 			
-			assertEquals("Both RunHistory objects should have the same data", s1, s2);
+			
+			Set<AlgorithmRunResult> inS1NotInS2 = new HashSet<>();
+			Set<AlgorithmRunResult> inS2NotInS1 = new HashSet<>();
+			
+			inS1NotInS2.addAll(s1);
+			inS1NotInS2.removeAll(s2);
+			
+			inS2NotInS1.addAll(s2);
+			inS2NotInS1.removeAll(s1);
+			
+			
+			
+			assertEquals("Both RunHistory objects should have the same data", inS1NotInS2, inS2NotInS1);
 			
 			
 		} catch (IOException e) {
@@ -605,7 +480,145 @@ public class RunHistoryTester {
 	}
 
 	
+	@Test
+	public void testRunHistoryFailureAtomic()
+	{
+		
+		RunHistory r = new NewRunHistory( OverallObjective.MEAN, OverallObjective.MEAN, RunObjective.RUNTIME);
+		RunHistory r2 = new NewRunHistory( OverallObjective.MEAN, OverallObjective.MEAN, RunObjective.RUNTIME);
+		
+		Random rand = pool.getRandom(DebugUtil.getCurrentMethodName());
+		InstanceListWithSeeds ilws = ProblemInstanceHelperTester.getInstanceListWithSeeds("classicFormatValid.txt", false);
+		
+		InstanceSeedGenerator insc = ilws.getSeedGen();
+		
+		checkAllMethodsEqual(r, r2);
+		
+		
+		ParameterConfiguration defaultConfig = configSpace.getDefaultConfiguration();
+		ProblemInstanceSeedPair pisp = RunHistoryHelper.getRandomInstanceSeedWithFewestRunsFor(r, insc, defaultConfig, ilws.getInstances(), rand, false);
+		
+		AlgorithmRunConfiguration runConfig = new AlgorithmRunConfiguration(pisp, 1, defaultConfig,execConfig);
+		
+		AlgorithmRunResult run = new ExistingAlgorithmRunResult( runConfig,RunStatus.SAT, rand.nextDouble(), 0 , 0,  pisp.getSeed());
+		
+		
+
+		
+		try 
+		{
+			r.append(run);
+			r2.append(run);
+		} catch(DuplicateRunException nc)
+		{
+			fail("Shouldn't have got this exception here");
+		}
+		checkAllMethodsEqual(r,r2);
+		
+		
+		System.out.println(r.getAlgorithmRunData());
+		System.out.println(r.getAlgorithmRunsExcludingRedundant());
+		System.out.println(r2.getAlgorithmRunsExcludingRedundant());
+		try {
+		r2.append(run);
+		fail("This test should have failed");
+		} catch(DuplicateRunException eh)
+		{
+			//Got it
+		}
+		
+		checkAllMethodsEqual(r,r2);
+		
+		
+		for(int i=0; i < 10; i++)
+		{
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(rand);
+			AlgorithmRunResult run2 = getNewRun(rand, ilws, insc, r2, config);
+			
+			try {
+				r.append(run2);
+				r2.append(run2);
+			} catch (DuplicateRunException e) {
+				// TODO Auto-generated catch block
+				e.printStackTrace();
+				fail("Unexpected Exception");
+			}
+
+
+			
+		
+			checkAllMethodsEqual(r,r2);
+			
+			try {
+				r2.append(run);
+				fail("This test should have failed");
+				} catch(DuplicateRunException eh)
+				{
+					//Got it
+				}
+			checkAllMethodsEqual(r,r2);
+		}
+		System.out.println(r.getAlgorithmRunsExcludingRedundant());
+		
+	}
+
+	private void checkAllMethodsEqual(RunHistory r, RunHistory r2) {
 	
+		for(Method m : r.getClass().getMethods())
+		{
+			if(m.getName().startsWith("get"))
+			{
+				
+				/*
+				System.out.print(m.getName() + "=>" );
+				
+				for(Class<?> c :  m.getParameterTypes())
+				{
+					System.out.print(c.getSimpleName() + ",");
+				}
+				System.out.println();
+				*/
+				
+				if(m.getParameterTypes().length == 0)
+				{
+					
+					try {
+						Object o1 = m.invoke(r, new Object[0]);
+						Object o2 = m.invoke(r2, new Object[0]);
+						
+
+						try 
+						{
+							if ((o1 instanceof Object[]) &&(o2 instanceof Object[]))
+							{
+								
+								assertTrue("Expected " + m.getName() + " to return the same thing on both runhistory objects", Arrays.deepEquals((Object[]) o1, (Object[]) o2));
+							} else
+							{
+								assertEquals("Expected " + m.getName() + " to return the same thing on both runhistory objects", o1, o2);
+							}
+						} catch(AssertionError e)
+						{
+							throw e;
+						}
+					} catch (IllegalAccessException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (IllegalArgumentException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					} catch (InvocationTargetException e) {
+						// TODO Auto-generated catch block
+						e.printStackTrace();
+					}
+					
+					
+					
+				}
+			}
+		}
+		
+	}
 	
 	
 
