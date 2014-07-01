@@ -89,7 +89,7 @@ public class TrajectoryFileParser {
 	}
 	/**
 	 * Parses a ParamILS Trajectory file, starting from column 5 the values of all parameters should be specified, the order of values must be alphabetical
-	 * @param configs 		CSV Configuration Hleper
+	 * @param configs 		CSV Configuration Helper
 	 * @param configSpace 	Configuration Space to draw examples from
 	 * @return SkipListMap that maps the time of the incumbent to a <cpuOverhead, incumbent> pair.
 	 */
@@ -134,6 +134,55 @@ public class TrajectoryFileParser {
 		return skipList;
 	}
 	
+	
+	/**
+	 * Parses a Corrupted Hybrid ParamILS/SMAC Trajectory File
+	 * @param configs 		CSV Configuration Helper
+	 * @param configSpace 	Configuration Space to draw examples from
+	 * @return SkipListMap that maps the time of the incumbent to a <cpuOverhead, incumbent> pair.
+	 */
+	private static ConcurrentSkipListMap<Double, TrajectoryFileEntry> parseHybridBrokenTrajectoryFile(ConfigCSVFileHelper configs, ParameterConfigurationSpace configSpace, boolean useTunerTimeAsWallTime)
+	{
+		ConcurrentSkipListMap<Double,  TrajectoryFileEntry> skipList = new ConcurrentSkipListMap<Double, TrajectoryFileEntry>();
+		List<String> paramNames = new ArrayList<String>(configSpace.getParameterNames());
+		Collections.sort(paramNames);
+		
+		for(int i=0; i < configs.getNumberOfDataRows(); i++)
+		{
+
+			String time = configs.getStringDataValue(i, 0);
+			
+			
+			String[] dataRow =  configs.getDataRow(i);
+			StringBuilder sb = new StringBuilder();
+			
+			int dataOffset = 5;
+			for(int j=0; j < configs.getDataRow(i).length-dataOffset; j++)
+			{
+				sb.append(dataRow[j+dataOffset]).append("',");
+			}
+			//System.out.println(time + "=>" + sb.toString());
+			double tunerTime = Double.valueOf(dataRow[0]);
+			Double empiricalPerformance = Double.valueOf(dataRow[1]);
+			Double wallTime = Double.valueOf(dataRow[2]);
+			Double overhead = Double.valueOf(dataRow[4]);
+			
+			if(wallTime == -1)
+			{
+				wallTime = tunerTime;
+			}
+		
+			ParameterConfiguration configObj = configSpace.getParameterConfigurationFromString(sb.toString(), ParameterStringFormat.STATEFILE_SYNTAX);
+			
+			TrajectoryFileEntry tfe = new TrajectoryFileEntry(configObj, tunerTime, wallTime, empiricalPerformance, overhead);
+			
+			skipList.put(Double.valueOf(time), tfe);
+			
+		}
+		return skipList;
+	}
+	
+	
 	/**
 	 * Parses a Trajectory File (both SMAC and ParamILS Formats)
 	 * 
@@ -151,9 +200,17 @@ public class TrajectoryFileParser {
 			skipList = TrajectoryFileParser.parseSMACTrajectoryFile(configs, configSpace, useTunerTimeAsWallTime);
 		} catch(ArrayIndexOutOfBoundsException e )
 		{
+			//e.printStackTrace();
 			log.debug("Trajectory File is not in SMAC Format, falling back to ParamILS Format");
 			
-			skipList = TrajectoryFileParser.parseParamILSTrajectoryFile(configs, configSpace, useTunerTimeAsWallTime);
+			try 
+			{
+				skipList = TrajectoryFileParser.parseParamILSTrajectoryFile(configs, configSpace, useTunerTimeAsWallTime);
+			} catch(RuntimeException e2)
+			{
+				log.debug("Trajectory File is not in ParamILS Format, falling back to Hybrid/Broken format");
+				skipList = TrajectoryFileParser.parseHybridBrokenTrajectoryFile(configs, configSpace, useTunerTimeAsWallTime);
+			}
 		}
 		return skipList;
 		
