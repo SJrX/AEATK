@@ -740,7 +740,10 @@ outerloop:
 						
 						if(completedAlgorithmRun != null && wasKilled)
 						{
-							log.warn("Run was killed but we somehow completed this might be a race condition but our result is: {}. This is a warning just so that developers can see this having occurred and judge the correctness" ,completedAlgorithmRun.getResultLine());
+							if(completedAlgorithmRun.getWallclockExecutionTime() > 1)
+							{ //For very short runs this might not matter.
+								log.warn("Run was killed but we somehow completed this might be a race condition but our result is: {}. This is a warning just so that developers can see this having occurred and judge the correctness" ,completedAlgorithmRun.getResultLine());
+							}
 						}
 						
 						

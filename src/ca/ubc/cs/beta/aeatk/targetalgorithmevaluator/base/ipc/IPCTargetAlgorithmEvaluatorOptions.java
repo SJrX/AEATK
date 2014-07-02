@@ -2,9 +2,13 @@ package ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.ipc;
 
 
 import ca.ubc.cs.beta.aeatk.misc.jcommander.validator.ValidPortValidator;
+import ca.ubc.cs.beta.aeatk.misc.jcommander.validator.ValidServerPortValidator;
 import ca.ubc.cs.beta.aeatk.misc.options.OptionLevel;
 import ca.ubc.cs.beta.aeatk.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aeatk.options.AbstractOptions;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.ipc.encoding.CallStringEncodingMechanism;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.ipc.encoding.EncodingMechanism;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.ipc.encoding.JavaSerializationEncodingMechanism;
 
 import com.beust.jcommander.Parameter;
 
@@ -19,6 +23,9 @@ public class IPCTargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	@Parameter(names="--ipc-mechanism", description="Mechanism to use for IPC")
 	public IPCMechanism ipcMechanism = IPCMechanism.UDP;
 	
+	@Parameter(names="--ipc-encoding", description="How the message is encoded")
+	public EncodingMechanismOptions encodingMechanism = EncodingMechanismOptions.CALL_STRING;
+	
 	@Parameter(names="--ipc-remote-host", description="Remote Host for some kinds of IPC mechanisms")
 	public String remoteHost = "127.0.0.1";
 	
@@ -28,11 +35,37 @@ public class IPCTargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	@Parameter(names="--ipc-udp-packetsize", description="Remote Port for some kinds of IPC mechanisms", validateWith=ValidPortValidator.class)
 	public int udpPacketSize = 4096;
 
+	@Parameter(names="--ipc-local-port", description="Local server port for some kinds of IPC mechanisms (if 0, this will be automatically allocated by the operating system)", validateWith=ValidServerPortValidator.class)
+	public int localPort = 0;
+	
 	enum IPCMechanism 
 	{
 		UDP,
-		TCP
+		TCP,
+		REVERSE_TCP
+	}
+	
+	
+	enum EncodingMechanismOptions
+	{
+		CALL_STRING(CallStringEncodingMechanism.class),
+		JAVA_SERIALIZATION(JavaSerializationEncodingMechanism.class);
 		
+		private Class<?> cls;
+		EncodingMechanismOptions(Class<?> cls)
+		{
+			this.cls = cls;
+		}
+		
+		public EncodingMechanism getEncoder()
+		{
+			
+			try {
+				return (EncodingMechanism) cls.newInstance();
+			} catch (InstantiationException | IllegalAccessException e) {
+				throw new IllegalStateException("Couldn't create new instance of serializer (" + this.name() + ")",e);
+			}
+		}
 	}
 	
 	private static final long serialVersionUID = -7900348544680161087L;

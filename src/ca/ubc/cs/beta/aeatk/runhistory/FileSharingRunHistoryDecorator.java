@@ -104,7 +104,7 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 			throw new IllegalStateException("Couldn't create shared model output file :" + sharedFileName);
 		}
 		
-		if(log.isDebugEnabled())
+		if(log.isInfoEnabled())
 		{
 			Thread t = new Thread(new Runnable(){
 
@@ -127,7 +127,7 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 						}
 					}
 					
-					log.debug("At shutdown RunHistory writing to {} had atleast {} runs added to it {}", f, total, addedRunsStr  );
+					log.info("At shutdown RunHistory writing to {} had atleast {} runs added to it {}", f, total, addedRunsStr  );
 					
 				}
 				

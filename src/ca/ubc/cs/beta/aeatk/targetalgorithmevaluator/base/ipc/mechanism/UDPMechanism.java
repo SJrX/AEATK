@@ -1,8 +1,10 @@
 package ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.ipc.mechanism;
 
 
+import java.io.ByteArrayInputStream;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.ObjectOutputStream;
 import java.io.UnsupportedEncodingException;
 import java.net.DatagramPacket;
@@ -17,9 +19,17 @@ import ca.ubc.cs.beta.aeatk.misc.watch.AutoStartStopWatch;
 import ca.ubc.cs.beta.aeatk.misc.watch.StopWatch;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration.ParameterStringFormat;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.ipc.ResponseParser;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.ipc.encoding.EncodingMechanism;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.exceptions.TargetAlgorithmAbortException;
 
 public class UDPMechanism {
+	
+	private EncodingMechanism enc;
+
+	public UDPMechanism(EncodingMechanism enc)
+	{
+		this.enc = enc;
+	}
 
 	/**
 	 * 
@@ -34,80 +44,37 @@ public class UDPMechanism {
 	{
 		try {
 			
-			DatagramSocket clientSocket;
-			clientSocket = new DatagramSocket();
+			try(DatagramSocket clientSocket = new DatagramSocket()) 
+			{
 		
-			InetAddress IPAddress = InetAddress.getByName(remoteAddr);
-			
-			ByteArrayOutputStream bout = new ByteArrayOutputStream();
-			ObjectOutputStream out = new ObjectOutputStream(bout);
-			
-			//outStream.println("Request:" + Arrays.deepToString(args) + " to: " + port);
-			
-			ArrayList<String> list = new ArrayList<String>();
-			list.add(rc.getProblemInstanceSeedPair().getProblemInstance().getInstanceName());
-			list.add(rc.getProblemInstanceSeedPair().getProblemInstance().getInstanceSpecificInformation());
-			list.add(String.valueOf(rc.getCutoffTime()));
-			list.add(String.valueOf(Integer.MAX_VALUE));
-			list.add(String.valueOf(rc.getProblemInstanceSeedPair().getSeed()));
-			
-			ParameterStringFormat f = ParameterStringFormat.NODB_SYNTAX;
-			
-			for(String key : rc.getParameterConfiguration().getActiveParameters()  )
-			{
+				InetAddress IPAddress = InetAddress.getByName(remoteAddr);
 				
-				
-				if(!f.getKeyValueSeperator().equals(" ") || !f.getGlue().equals(" "))
+				byte[] sendData = enc.getOutputBytes(rc);
+				if (sendData.length > udpPacketSize)
 				{
-					throw new IllegalStateException("Key Value seperator or glue is not a space, and this means the way we handle this logic won't work currently");
+					   throw new IllegalStateException("Response is too big to send to client, please adjust packetSize argument in both client and server " + sendData.length + " > " + udpPacketSize);	   
 				}
-				list.add(f.getPreKey() + key);
-				list.add(f.getValueDelimeter() + rc.getParameterConfiguration().get(key)  + f.getValueDelimeter());	
 				
+				DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
+				byte[] receiveData = new byte[udpPacketSize];
+				DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
+				
+				StopWatch watch = new AutoStartStopWatch();
+				clientSocket.send(sendPacket);
+				
+				clientSocket.receive(receivePacket);
+				watch.stop();
+				
+				receiveData = receivePacket.getData();
+				
+				
+				InputStream bin = new ByteArrayInputStream(receiveData);
+				
+				
+				return enc.getInputBytes(rc, bin, watch);
 			}
 			
-			StringBuilder sb = new StringBuilder();
-			for(String s : list)
-			{
-				if(s.matches(".*\\s+.*"))
-				{
-					sb.append("\""+s + "\"");
-				} else
-				{
-					sb.append(s);
-				}
-				sb.append(" ");
-			}
-	
-			byte[] sendData;
-			try {
-				sendData = sb.toString().getBytes("UTF-8");
-			} catch (UnsupportedEncodingException e) {
-				throw new IllegalStateException(e);
-			}
-			
-			if (sendData.length > udpPacketSize)
-			{
-				   throw new IllegalStateException("Response is too big to send to client, please adjust packetSize argument in both client and server " + sendData.length + " > " + udpPacketSize);	   
-			}
-			
-			DatagramPacket sendPacket = new DatagramPacket(sendData, sendData.length, IPAddress, port);
-			byte[] receiveData = new byte[udpPacketSize];
-			DatagramPacket receivePacket = new DatagramPacket(receiveData, receiveData.length);
-			
-			StopWatch watch = new AutoStartStopWatch();
-			clientSocket.send(sendPacket);
-			
-			clientSocket.receive(receivePacket);
-			watch.stop();
-			receiveData = receivePacket.getData();
-			
-			String response = new String(receiveData,"UTF-8");
-		
-			clientSocket.close();
 
-			return ResponseParser.processLine(response, rc, watch.time() / 1000.0);
-			
 		} catch (SocketException e1) {
 			throw new TargetAlgorithmAbortException("TAE Aborted due to socket exception",e1);
 		} catch(IOException e1)

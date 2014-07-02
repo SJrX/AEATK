@@ -38,6 +38,7 @@ public class TimingCheckerTargetAlgorithmEvaluator extends	AbstractTargetAlgorit
 	private double totalRuntime;
 
 	
+	private boolean subsecondOverheadLogged = false;
 	
 	private static final Logger log = LoggerFactory.getLogger(TimingCheckerTargetAlgorithmEvaluator.class);
 	
@@ -107,9 +108,12 @@ public class TimingCheckerTargetAlgorithmEvaluator extends	AbstractTargetAlgorit
 		
 		
 		
-		if(wallClockOverhead > Math.min(1.5*run.getAlgorithmRunConfiguration().getAlgorithmExecutionConfiguration().getAlgorithmMaximumCutoffTime(), wallClockDeltaToRequireLogging))
+		if(wallClockOverhead > Math.min(Math.max(10,1.5*run.getAlgorithmRunConfiguration().getAlgorithmExecutionConfiguration().getAlgorithmMaximumCutoffTime()), wallClockDeltaToRequireLogging))
 		{
+			
 			wallClockDeltaToRequireLogging = wallClockOverhead + 1;
+			
+	
 			Object[] args = {run.getWallclockExecutionTime(), run.getAlgorithmRunConfiguration().getCutoffTime(), wallClockOverhead, wallClockDeltaToRequireLogging};
 			log.warn("Algorithm Run Result reported wallclock time of {} (secs) that exceeded it's cutoff time of {} (secs) by {} (secs). Next warning at {} (secs)  ", args);
 		}

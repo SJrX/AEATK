@@ -36,25 +36,25 @@ public class LogEveryTargetAlgorithmEvaluatorDecorator extends
 	public LogEveryTargetAlgorithmEvaluatorDecorator(TargetAlgorithmEvaluator tae, String context, boolean logRequestResponsesRCOnly) {
 		super(tae);
 		this.logRCOnly = logRequestResponsesRCOnly;
-		this.context = (context != null) ? "(" +context+")" : "";
+		this.context = (context != null) ? "(" +context+") " : "";
 	}
 
 	
-	protected synchronized AlgorithmRunResult processRun(AlgorithmRunResult run)
+	protected AlgorithmRunResult processRun(AlgorithmRunResult run)
 	{
 		if(logRCOnly)
 		{
-			log.debug("Run {} Completed: {} ", context, run.getAlgorithmRunConfiguration());
+			log.debug("Run {}Completed: {} ", context, run.getAlgorithmRunConfiguration());
 		} else
 		{
-			log.debug("Run {} Completed: {} : {} ", context, run, run.getAdditionalRunData());
+			log.debug("Run {}Completed: {} : {} ", context, run, run.getAdditionalRunData());
 		}
 		return run;
 	}
 	
 	protected AlgorithmRunConfiguration processRun(AlgorithmRunConfiguration rc)
 	{
-		log.debug("Run {} Scheduled: {} ", context, rc);
+		log.debug("Run {}Scheduled: {} ", context, rc);
 		return rc;
 	}
 

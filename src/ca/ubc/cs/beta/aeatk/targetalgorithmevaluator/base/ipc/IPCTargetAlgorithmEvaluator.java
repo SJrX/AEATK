@@ -1,6 +1,9 @@
 package ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.ipc;
 
+import java.io.IOException;
 import java.net.InetAddress;
+import java.net.ServerSocket;
+import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
@@ -16,8 +19,10 @@ import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.AbstractSyncTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.ipc.mechanism.ReverseTCPMechanism;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.ipc.mechanism.TCPMechanism;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.ipc.mechanism.UDPMechanism;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.exceptions.TargetAlgorithmAbortException;
 
 /***
  * IPC Based Target Algorithm Evaluator
@@ -35,26 +40,42 @@ public class IPCTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorithmEval
 	
 	private final IPCTargetAlgorithmEvaluatorOptions options;
 			
+	private final ServerSocket serverSocket;
 	public IPCTargetAlgorithmEvaluator (IPCTargetAlgorithmEvaluatorOptions options) {
 		super();
 		
-
-	
-		
 		this.options = options;
-		
+		int localPort = 0;
+	
 		switch(this.options.ipcMechanism)
 		{
 			case TCP:
 				verifyRemoteAddress();
+				serverSocket = null;
 				break;
 			case UDP:
 
 				verifyRemoteAddress();
+				serverSocket = null;
 				break;
+			case REVERSE_TCP:
+				try {
+					serverSocket = new ServerSocket(this.options.localPort);
+					
+					localPort = serverSocket.getLocalPort();
+					log.info("IPC Target Algorithm Evaluator is listening on port {}", localPort);
+				} catch (IOException e) {
+					throw new IllegalStateException("Couldn't start server on local port", e);
+				}
+				
+				break;
+				
 			default:
+			
 				throw new ParameterException("Not implemented:" + this.options.ipcMechanism);
 		}
+		
+		
 		
 	}
 
@@ -74,7 +95,7 @@ public class IPCTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorithmEval
 		}
 		
 		try {
-			InetAddress IPAddress = InetAddress.getByName(this.options.remoteHost);
+			 InetAddress.getByName(this.options.remoteHost);
 
 		} catch(UnknownHostException e)
 		{
@@ -106,7 +127,7 @@ public class IPCTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorithmEval
 	}
 
 	@Override
-	public synchronized List<AlgorithmRunResult> evaluateRun(List<AlgorithmRunConfiguration> runConfigs,
+	public List<AlgorithmRunResult> evaluateRun(List<AlgorithmRunConfiguration> runConfigs,
 			TargetAlgorithmEvaluatorRunObserver runStatusObserver) {
 		
 		List<AlgorithmRunResult> completedRuns = new ArrayList<AlgorithmRunResult>();
@@ -117,15 +138,41 @@ public class IPCTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorithmEval
 			switch(this.options.ipcMechanism)
 			{
 			case UDP:
-				UDPMechanism udp = new UDPMechanism();
+				UDPMechanism udp = new UDPMechanism(this.options.encodingMechanism.getEncoder());
 				AlgorithmRunResult run = udp.evaluateRun(rc, this.options.remotePort, this.options.remoteHost, this.options.udpPacketSize);
 				completedRuns.add(run);
 				break;
 			case TCP:
-				TCPMechanism tcp = new TCPMechanism();
+				TCPMechanism tcp = new TCPMechanism(this.options.encodingMechanism.getEncoder());
 				 run = tcp.evaluateRun(rc, this.options.remoteHost, this.options.remotePort);
 				completedRuns.add(run);
 				break;
+			case REVERSE_TCP:
+				while(true)
+				{
+					ReverseTCPMechanism rtcp = new ReverseTCPMechanism(this.options.encodingMechanism.getEncoder());
+					Socket socket;
+					try {
+						socket = serverSocket.accept();
+						run = rtcp.evaluateRun(socket, rc);
+						completedRuns.add(run);
+						break;
+					} catch (IOException e) {
+						log.error("Error occured during IPC call, trying connection again in 10 seconds",e);
+						
+						try {
+							Thread.sleep(10000);
+						} catch (InterruptedException e1) {
+							Thread.currentThread().interrupt();
+							throw new TargetAlgorithmAbortException(e1);
+						}
+						
+					}
+					
+					
+				}
+			
+			
 			default: 
 				throw new IllegalStateException("Not sure what this was");
 			}

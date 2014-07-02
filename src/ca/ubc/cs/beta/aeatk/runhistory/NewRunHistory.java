@@ -124,6 +124,11 @@ public class NewRunHistory implements RunHistory {
 	
 	private static final DecimalFormat format = new DecimalFormat("#######.####");
 	
+	
+	public NewRunHistory()
+	{
+		this(OverallObjective.MEAN, OverallObjective.MEAN10, RunObjective.RUNTIME);
+	}
 	/**
 	 * Creates NewRunHistory object
 	 * @param intraInstanceObjective	intraInstanceObjective to use when calculating costs
@@ -132,6 +137,22 @@ public class NewRunHistory implements RunHistory {
 	 */
 	public NewRunHistory( OverallObjective intraInstanceObjective,  OverallObjective interInstanceObjective, RunObjective runObj)
 	{
+		
+		if(intraInstanceObjective == null)
+		{
+			throw new IllegalArgumentException("You must supply an intra instance objective");
+		}
+		
+		if(interInstanceObjective == null)
+		{
+			throw new IllegalArgumentException("You must supply an interInstanceObjective");
+			
+		}
+		
+		if(runObj == null)
+		{
+			throw new IllegalArgumentException("You must supply a run objective");
+		}
 		this.perInstanceObjectiveFunction = intraInstanceObjective;
 		this.aggregateInstanceObjectiveFunction = interInstanceObjective;
 		this.runObj = runObj;
