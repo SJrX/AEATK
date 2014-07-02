@@ -120,7 +120,7 @@ public class ForkingTargetAlgorithmEvaluatorDecorator extends AbstractAsyncTarge
 						break;
 						
 					case DUPLICATE_ON_SLAVE_QUICK:
-
+					    
 						List<AlgorithmRunResult> fixedRuns = new ArrayList<>(runs.size());
 						for(AlgorithmRunResult run : runs)
 						{
@@ -133,6 +133,7 @@ public class ForkingTargetAlgorithmEvaluatorDecorator extends AbstractAsyncTarge
 							
 							fixedRuns.add(new ExistingAlgorithmRunResult(oldRC,run.getRunStatus(), run.getRuntime(), run.getRunLength(), run.getQuality(), run.getResultSeed(), run.getAdditionalRunData(), run.getWallclockExecutionTime()));
 						}
+						
 						
 						if(fForkCompletionFlag.compareAndSet(false, true))
 						{
@@ -189,6 +190,7 @@ public class ForkingTargetAlgorithmEvaluatorDecorator extends AbstractAsyncTarge
 				}
 			}
 		});
+		
 		
 		
 		//Do this here and not in another thread to honor any (blocking) contracts the master TAE has.

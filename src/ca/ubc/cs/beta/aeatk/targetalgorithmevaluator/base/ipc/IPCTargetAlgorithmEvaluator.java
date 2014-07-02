@@ -52,11 +52,17 @@ public class IPCTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorithmEval
 			case TCP:
 				verifyRemoteAddress();
 				serverSocket = null;
+				
+				log.info("Target Algorithm Evaluator making TCP connections to {}:{}.",options.remoteHost,options.remotePort);
+				
 				break;
 			case UDP:
 
 				verifyRemoteAddress();
 				serverSocket = null;
+				
+				log.info("Target Algorithm Evaluator making UDP connections to {}:{}.",options.remoteHost,options.remotePort);
+				
 				break;
 			case REVERSE_TCP:
 				try {
@@ -123,7 +129,14 @@ public class IPCTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorithmEval
 
 	@Override
 	protected void subtypeShutdown() {
-		
+		if(serverSocket != null)
+		{
+		    try {
+                serverSocket.close();
+            } catch (IOException e) {
+                log.error("Could not close server socket.",e);
+            }
+		}
 	}
 
 	@Override
@@ -172,7 +185,7 @@ public class IPCTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorithmEval
 					
 				}
 			
-			
+				break;
 			default: 
 				throw new IllegalStateException("Not sure what this was");
 			}

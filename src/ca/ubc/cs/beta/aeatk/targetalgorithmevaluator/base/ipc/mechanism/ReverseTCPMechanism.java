@@ -32,7 +32,7 @@ public class ReverseTCPMechanism {
 
 	private final Logger log = LoggerFactory.getLogger(getClass());
 	private EncodingMechanism enc;
-	public ReverseTCPMechanism(EncodingMechanism inc) 
+	public ReverseTCPMechanism(EncodingMechanism enc) 
 	{
 		this.enc = enc;
 		

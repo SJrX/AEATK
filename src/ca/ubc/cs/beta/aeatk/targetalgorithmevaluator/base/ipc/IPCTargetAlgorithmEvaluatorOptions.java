@@ -46,7 +46,7 @@ public class IPCTargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	}
 	
 	
-	enum EncodingMechanismOptions
+	public enum EncodingMechanismOptions
 	{
 		CALL_STRING(CallStringEncodingMechanism.class),
 		JAVA_SERIALIZATION(JavaSerializationEncodingMechanism.class);
