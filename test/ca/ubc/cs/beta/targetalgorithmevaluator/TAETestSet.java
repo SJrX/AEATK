@@ -195,7 +195,6 @@ public class TAETestSet {
 		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("x0 [-5,10] [0]\n x1 [-0,15] [0]\n");
 		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 15);
 		
-		
 		RandomResponseTargetAlgorithmEvaluatorFactory afact = new RandomResponseTargetAlgorithmEvaluatorFactory();
 		
 		TargetAlgorithmEvaluator tae = afact.getTargetAlgorithmEvaluator();
@@ -222,7 +221,7 @@ public class TAETestSet {
 		
 		List<AlgorithmRunConfiguration> rcs = new ArrayList<AlgorithmRunConfiguration>();
 		
-		for(int i=0; i <1; i++)
+		for(int i=0; i <100; i++)
 		{
 			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance(instanceName), 1L), 15, configSpace.getRandomParameterConfiguration(r), execConfig);
 			rcs.add(rc);
@@ -244,6 +243,9 @@ public class TAETestSet {
 		
 		opt.ipcMechanism = IPCMechanism.REVERSE_TCP;
 		
+		opt.poolConnections = false;
+		
+		opt.execScriptOutput = false;
 		StringBuilder bn = new StringBuilder();
 		bn.append("java -cp ");
 		bn.append(System.getProperty("java.class.path"));
@@ -251,7 +253,7 @@ public class TAETestSet {
 		bn.append(IPCTAEClient.class.getCanonicalName());
 		
 		
-		bn.append(" --tae RANDOM --ipc-tae-client-port ");
+		bn.append(" --log-level DEBUG --tae RANDOM --ipc-tae-client-port ");
 		opt.execScript = bn.toString();
 		//opt.execScriptOutput = true;
 		TargetAlgorithmEvaluator itae = tfact.getTargetAlgorithmEvaluator(opt);

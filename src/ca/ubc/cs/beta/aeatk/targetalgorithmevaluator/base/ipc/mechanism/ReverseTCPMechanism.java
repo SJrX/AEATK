@@ -5,8 +5,10 @@ import java.io.BufferedOutputStream;
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
 import java.io.IOException;
+import java.io.InputStream;
 import java.io.InputStreamReader;
 import java.io.ObjectOutputStream;
+import java.io.OutputStream;
 import java.io.PrintWriter;
 import java.io.UnsupportedEncodingException;
 import java.net.ServerSocket;
@@ -47,20 +49,27 @@ public class ReverseTCPMechanism {
 	 * @param udpPacketSize
 	 * @return
 	 */
-	public AlgorithmRunResult evaluateRun(Socket clientSocket, AlgorithmRunConfiguration rc) throws IOException
+	public AlgorithmRunResult evaluateRun(InputStream in, OutputStream out, AlgorithmRunConfiguration rc) throws IOException
 	{
 		try 
 		{
-			BufferedOutputStream bout = new BufferedOutputStream(clientSocket.getOutputStream()); 
-			StopWatch watch = new AutoStartStopWatch();
+			OutputStream bout = out; 
 			
 			bout.write(enc.getOutputBytes(rc));
+		
+			
 			bout.flush();
-	
-			return enc.getInputBytes(rc, clientSocket.getInputStream(), watch);
+			
+			
+			//AlgorithmRunResult run = rtcp.evaluateRun(in,out, rc);
+			
+			StopWatch watch = new AutoStartStopWatch();
+		
+			return enc.getInputBytes(rc,in, watch);
+		
 		} finally
 		{
-			clientSocket.close();
+			//clientSocket.close();
 		}
 	}
 }

@@ -6,6 +6,7 @@ import java.io.ObjectOutputStream;
 import java.net.ConnectException;
 import java.net.Socket;
 import java.net.SocketException;
+import java.net.UnknownHostException;
 import java.util.List;
 import java.util.Map;
 
@@ -15,6 +16,7 @@ import org.slf4j.LoggerFactory;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.misc.jcommander.JCommanderHelper;
+import ca.ubc.cs.beta.aeatk.misc.watch.AutoStartStopWatch;
 import ca.ubc.cs.beta.aeatk.options.AbstractOptions;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.ipc.IPCTargetAlgorithmEvaluatorOptions;
@@ -35,7 +37,7 @@ public class IPCTAEClient {
     
     private static final long SLEEP_TIME = 2;
     
-    public static void main(String[] args) {
+    public static void main(String[] args) throws UnknownHostException, IOException {
         
         /*
          * Parse arguments.
@@ -73,28 +75,46 @@ public class IPCTAEClient {
              * Get a run to do.
              */
             log.info("IPC TAE Client started sending requests to: {}:{}", parameters.fHost,parameters.fPort);
+            Socket clientSocket = new Socket(parameters.fHost, parameters.fPort);
+            
+            clientSocket.setTcpNoDelay(true);
             while(true)
             {
-                log.debug("Establishing connection to {}:{} ...",parameters.fHost,parameters.fPort);
-                try(Socket clientSocket = new Socket(parameters.fHost, parameters.fPort))
+            	if (clientSocket.isClosed() || !clientSocket.isConnected())
+            	{
+            		clientSocket.close();
+            		log.debug("Establishing connection to {}:{} ...",parameters.fHost,parameters.fPort);
+            		clientSocket = new Socket(parameters.fHost, parameters.fPort);
+            		clientSocket.setTcpNoDelay(true);
+            	}
+                
+            
+                
+                try 
                 {
-                    //Receive the run config.
-                    log.debug("Receiving algorithm run configuration ...");
-                    AlgorithmRunConfiguration runConfig = receiveRunConfig(clientSocket);
+               
+                //Receive the run config.
+                //log.debug("Receiving algorithm run configuration ...");
+                
+                	StringBuilder sb = new StringBuilder();
+                AutoStartStopWatch watch = new AutoStartStopWatch();
+                AlgorithmRunConfiguration runConfig = receiveRunConfig(clientSocket);
+                
+              //Execute it.
+                log.debug("Solving run configuration ...");
+                List<AlgorithmRunResult> results = tae.evaluateRun(runConfig);
+                AlgorithmRunResult result = results.get(0);
+                sb.append("Eval time: " + watch.time()).append(" ");
+                //Send the run result.
+                log.debug("Sending back algorithm run result ...");
+                sendRunResult(result, clientSocket);
+                
+               // sb.append("Send time: " + watch.time()).append(" ");
+                //System.out.print("\n");
+                successfulRun = true;
                     
-                    //Execute it.
-                    log.debug("Solving run configuration ...");
-                    List<AlgorithmRunResult> results = tae.evaluateRun(runConfig);
-                    AlgorithmRunResult result = results.get(0);
-                    
-                    //Send the run result.
-                    log.debug("Sending back algorithm run result ...");
-                    sendRunResult(result, clientSocket);
-                    
-                    successfulRun = true;
-                    
-                }
-                catch (ConnectException e)
+                
+                } catch (ConnectException e)
                 {
                     if(failedConnections > parameters.fRetryAttemps)
                     {
@@ -127,6 +147,7 @@ public class IPCTAEClient {
                 catch (IOException e) {
                     log.error("Unknown problem occured, please check that the --ipc-encoding is set to " + IPCTargetAlgorithmEvaluatorOptions.EncodingMechanismOptions.JAVA_SERIALIZATION+".");
                     log.error("Exception:",e);
+                    clientSocket.close();
                 }
             }
         }
@@ -142,6 +163,7 @@ public class IPCTAEClient {
         ObjectOutputStream oout;
         oout = new ObjectOutputStream(aIPCTAEClSocket.getOutputStream());
         oout.writeObject(aRunResult);
+      
     }
     
     /**
