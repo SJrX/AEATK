@@ -4,9 +4,11 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.InputStreamReader;
+import java.io.OutputStream;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
+import java.net.SocketException;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.LinkedList;
@@ -14,6 +16,7 @@ import java.util.List;
 import java.util.Queue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.LinkedBlockingQueue;
 import java.util.concurrent.atomic.AtomicBoolean;
 
 import net.jcip.annotations.ThreadSafe;
@@ -27,8 +30,11 @@ import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.concurrent.threadfactory.SequentiallyNamedThreadFactory;
 import ca.ubc.cs.beta.aeatk.misc.string.SplitQuotedString;
+import ca.ubc.cs.beta.aeatk.misc.watch.AutoStartStopWatch;
+import ca.ubc.cs.beta.aeatk.misc.watch.StopWatch;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.AbstractSyncTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.ipc.IPCTargetAlgorithmEvaluatorOptions.IPCMechanism;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.ipc.mechanism.ReverseTCPMechanism;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.ipc.mechanism.TCPMechanism;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.ipc.mechanism.UDPMechanism;
@@ -54,7 +60,10 @@ public class IPCTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorithmEval
 	
 	private final Process proc;;
 	
-	private final ExecutorService executors = Executors.newCachedThreadPool(new SequentiallyNamedThreadFactory("IPC Target Algorithm Evaluator Script Watcher", true));
+	private final ExecutorService executors = Executors.newCachedThreadPool(new SequentiallyNamedThreadFactory("IPC Target Algorithm Evaluator Threads ", true));
+	
+	
+	private final LinkedBlockingQueue<Socket> openConnections = new LinkedBlockingQueue<Socket>();
 	
 	public IPCTargetAlgorithmEvaluator (IPCTargetAlgorithmEvaluatorOptions options) {
 		super();
@@ -122,6 +131,45 @@ public class IPCTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorithmEval
 		} else
 		{
 			proc = null;
+			
+		}
+		
+		if(options.poolConnections)
+		{
+			Runnable run = new Runnable()
+			{
+
+				@Override
+				public void run() {
+					while(true)
+					{
+						try {
+							Socket sock = serverSocket.accept();
+							
+							sock.setTcpNoDelay(true);
+							openConnections.put(sock);
+						} catch(SocketException e)
+						{
+							//This doesn't matter it happens when the target algorithm evaluator is shutting down
+							return;
+						} catch (InterruptedException e) {
+							Thread.currentThread().interrupt();
+							return;
+						} catch (IOException e) {
+							log.error("Unknown Error occurred", e);
+							return;
+						}
+						
+						
+						
+					}
+					
+				}
+				
+			};
+			this.executors.execute(run);
+	
+			
 			
 		}
 		
@@ -205,61 +253,150 @@ public class IPCTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorithmEval
 	public List<AlgorithmRunResult> evaluateRun(List<AlgorithmRunConfiguration> runConfigs,
 			TargetAlgorithmEvaluatorRunObserver runStatusObserver) {
 		
-		List<AlgorithmRunResult> completedRuns = new ArrayList<AlgorithmRunResult>();
+		List<AlgorithmRunResult> completedRuns = new ArrayList<AlgorithmRunResult>(runConfigs.size());
 		
 		if(subProcessShutdownDetected.get()) 
 		{
 			log.warn("Exec script has terminated, it is unclear if this run will ever be completed");
 		}
 		 
-		
-		for(AlgorithmRunConfiguration rc : runConfigs)
+		if(this.options.ipcMechanism.equals(IPCMechanism.REVERSE_TCP))
 		{
-
-			switch(this.options.ipcMechanism)
+			while(true)
 			{
-			case UDP:
-				UDPMechanism udp = new UDPMechanism(this.options.encodingMechanism.getEncoder());
-				AlgorithmRunResult run = udp.evaluateRun(rc, this.options.remotePort, this.options.remoteHost, this.options.udpPacketSize);
-				completedRuns.add(run);
-				break;
-			case TCP:
-				TCPMechanism tcp = new TCPMechanism(this.options.encodingMechanism.getEncoder());
-				 run = tcp.evaluateRun(rc, this.options.remoteHost, this.options.remotePort);
-				completedRuns.add(run);
-				break;
-			case REVERSE_TCP:
-				while(true)
-				{
-					ReverseTCPMechanism rtcp = new ReverseTCPMechanism(this.options.encodingMechanism.getEncoder());
-					Socket socket;
+				ReverseTCPMechanism rtcp = new ReverseTCPMechanism(this.options.encodingMechanism.getEncoder());
+				
+
+				Socket socket;
+				try {
+					
+					socket = getConnection();
+					
+					
 					try {
-						socket = serverSocket.accept();
-						run = rtcp.evaluateRun(socket, rc);
-						completedRuns.add(run);
-						break;
-					} catch (IOException e) {
-						log.error("Error occured during IPC call, trying connection again in 10 seconds",e);
 						
-						try {
-							Thread.sleep(10000);
-						} catch (InterruptedException e1) {
-							Thread.currentThread().interrupt();
-							throw new TargetAlgorithmAbortException(e1);
+						InputStream in = socket.getInputStream();
+						OutputStream out = socket.getOutputStream();
+						
+						for(AlgorithmRunConfiguration rc : runConfigs)
+						{
+							//StopWatch watch = new AutoStartStopWatch();
+							
+							AlgorithmRunResult run = rtcp.evaluateRun(in,out, rc);
+							//System.err.println("Get connection took " + watch.time());
+							completedRuns.add(run);
 						}
+					} finally
+					{
+						returnConnection(socket);
+					}
 						
+					break;
+				} catch (IOException e) {
+					log.error("Error occured during IPC call, trying connection again in 10 seconds",e);
+					
+					try {
+						Thread.sleep(10000);
+					} catch (InterruptedException e1) {
+						Thread.currentThread().interrupt();
+						throw new TargetAlgorithmAbortException(e1);
 					}
 					
-					
 				}
-			
-				break;
-			default: 
-				throw new IllegalStateException("Not sure what this was");
+				
+				
+				
+				
 			}
+		
+		} else
+		{
+			for(AlgorithmRunConfiguration rc : runConfigs)
+			{
+	
+				switch(this.options.ipcMechanism)
+				{
+				case UDP:
+					UDPMechanism udp = new UDPMechanism(this.options.encodingMechanism.getEncoder());
+					AlgorithmRunResult run = udp.evaluateRun(rc, this.options.remotePort, this.options.remoteHost, this.options.udpPacketSize);
+					completedRuns.add(run);
+					break;
+				case TCP:
+					TCPMechanism tcp = new TCPMechanism(this.options.encodingMechanism.getEncoder());
+					 run = tcp.evaluateRun(rc, this.options.remoteHost, this.options.remotePort);
+					completedRuns.add(run);
+					break;
+				case REVERSE_TCP:
+					throw new IllegalStateException("Shouldn't be able to get to this branch");
+					
+				default: 
+					throw new IllegalStateException("Not sure what this was");
+				}
+			}
+		
+		
 		}
 		
 		return completedRuns;
+	}
+	
+	private synchronized void returnConnection(Socket socket) throws IOException 
+	{
+		if(options.poolConnections)
+		{
+			try {
+				if(socket.isConnected() && !socket.isClosed())
+				{
+					openConnections.put(socket);
+				} else
+				{
+					log.debug("Stale connection being returned, dropping");
+				}
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				return;
+			}
+		} else
+		{
+			socket.close();
+		}
+	}
+
+
+	private Socket getConnection() throws IOException
+	{
+		
+		Socket socket;
+		if(options.poolConnections)
+		{
+			try {
+				socket = openConnections.take();
+				
+				if(socket.isConnected() && !socket.isClosed())
+				{
+					return socket;
+					
+				} else
+				{	log.debug("Stale connection detected, retrying");
+					return getConnection();
+				}
+			} catch (InterruptedException e) {
+				
+				Thread.currentThread().interrupt();
+				throw new IOException("Could not obtain connection, interrupted", e);
+			}
+			
+			
+		} else
+		{
+			socket = serverSocket.accept();
+			socket.setTcpNoDelay(true);
+			
+		} 
+		
+		
+		return socket;
+		
 	}
 
 	private class IPCStreamReader implements Runnable {

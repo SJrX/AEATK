@@ -48,6 +48,10 @@ public class IPCTargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	@Parameter(names="--ipc-exec-output", description="If true we will log all output from the script")
 	public boolean execScriptOutput;
 	
+	
+	@Parameter(names="--ipc-reverse-tcp-pool-connections", description="If true we will pool all the connections instead of closing them")
+	public boolean poolConnections;
+	
 	@UsageTextField(defaultValues="~/.aeatk/ipc-tae.opt", level=OptionLevel.ADVANCED)
 	@Parameter(names={"--ipc-default-file"}, description="file that contains default settings for IPC Target Algorithm Evaluator (it is recommended that you use this file to set the kill commands)")
 	@ParameterFile(ignoreFileNotExists = true) 
