@@ -1,6 +1,9 @@
 package ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.ipc;
 
 
+import java.io.File;
+
+import ca.ubc.cs.beta.aeatk.misc.file.HomeFileUtils;
 import ca.ubc.cs.beta.aeatk.misc.jcommander.validator.ValidPortValidator;
 import ca.ubc.cs.beta.aeatk.misc.jcommander.validator.ValidServerPortValidator;
 import ca.ubc.cs.beta.aeatk.misc.options.OptionLevel;
@@ -11,6 +14,7 @@ import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.ipc.encoding.EncodingM
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.ipc.encoding.JavaSerializationEncodingMechanism;
 
 import com.beust.jcommander.Parameter;
+import com.beust.jcommander.ParameterFile;
 
 @UsageTextField(title="Inter-Process Communication Target Algorithm Evaluator Options", description="This Target Algorithm Evaluator hands the requests off to another process. The current encoding mechanism is the same as on the command line, except that we do not specify the algo executable field. The current mechanism can only execute one request to the server at a time. A small code change would be required to handle the more general case, so please contact the developers if this is required. ", level=OptionLevel.ADVANCED)
 public class IPCTargetAlgorithmEvaluatorOptions extends AbstractOptions {
@@ -44,7 +48,13 @@ public class IPCTargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	@Parameter(names="--ipc-exec-output", description="If true we will log all output from the script")
 	public boolean execScriptOutput;
 	
-	enum IPCMechanism 
+	@UsageTextField(defaultValues="~/.aeatk/ipc-tae.opt", level=OptionLevel.ADVANCED)
+	@Parameter(names={"--ipc-default-file"}, description="file that contains default settings for IPC Target Algorithm Evaluator (it is recommended that you use this file to set the kill commands)")
+	@ParameterFile(ignoreFileNotExists = true) 
+	public File ipcDefaults = HomeFileUtils.getHomeFile(".aeatk" + File.separator  + "ipc-tae.opt");
+	
+	
+	public enum IPCMechanism 
 	{
 		UDP,
 		TCP,

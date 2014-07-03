@@ -41,11 +41,13 @@ public class IPCTAEClient {
          * Parse arguments.
          */
         IPCTAEClientParameters parameters = new IPCTAEClientParameters();
+        
         Map<String, AbstractOptions> TAEOptionsMap = TargetAlgorithmEvaluatorLoader.getAvailableTargetAlgorithmEvaluators();
         try
         {
 	        try
 	        {
+	        	parameters.fTAEOptions.turnOffCrashes();
 	            JCommanderHelper.parseCheckingForHelpAndVersion(args, parameters, TAEOptionsMap);
 	        } catch (ParameterException aParameterException)
 	        {
@@ -59,6 +61,7 @@ public class IPCTAEClient {
         /*
          * Construct the TAE.
          */
+        
         try(TargetAlgorithmEvaluator tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(parameters.fTAEOptions, false, false, TAEOptionsMap, null))
         {
             

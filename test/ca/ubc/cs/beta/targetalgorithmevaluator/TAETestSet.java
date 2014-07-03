@@ -74,6 +74,11 @@ import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.blackhole.BlackHoleTar
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.CommandLineAlgorithmRun;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluatorFactory;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluatorOptions;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.ipc.IPCTargetAlgorithmEvaluatorFactory;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.ipc.IPCTargetAlgorithmEvaluatorOptions;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.ipc.IPCTargetAlgorithmEvaluatorOptions.EncodingMechanismOptions;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.ipc.IPCTargetAlgorithmEvaluatorOptions.IPCMechanism;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.ipc.reversetcpclient.IPCTAEClient;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.preloaded.PreloadedResponseTargetAlgorithmEvaluatorOptions;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.random.RandomResponseTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.random.RandomResponseTargetAlgorithmEvaluatorFactory;
@@ -177,10 +182,94 @@ public class TAETestSet {
 		pool.logUsage();
 	}
 	
+	@Test
+	public void testIPCClient()
+	{
+		
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(ParamEchoExecutor.class.getCanonicalName());
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("x0 [-5,10] [0]\n x1 [-0,15] [0]\n");
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 15);
+		
+		
+		RandomResponseTargetAlgorithmEvaluatorFactory afact = new RandomResponseTargetAlgorithmEvaluatorFactory();
+		
+		TargetAlgorithmEvaluator tae = afact.getTargetAlgorithmEvaluator();
+		
+		ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
+
+		config.put("x0", "2.656650319997154");
+		config.put("x1", "8.192989379593786");
+		
+		//config.put("x0", "3.1415");
+		//config.put("x1", "2.275");
+		
+		StringBuilder sb = new StringBuilder();
+		
+		for(int i=0; i < 65535; i++)
+		{
+			sb.append(i);
+			if(sb.length() > 25) 
+			{
+				break;
+			}
+		}
+		String instanceName = sb.toString(); 
+		
+		List<AlgorithmRunConfiguration> rcs = new ArrayList<AlgorithmRunConfiguration>();
+		
+		for(int i=0; i <1; i++)
+		{
+			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance(instanceName), 1L), 15, configSpace.getRandomParameterConfiguration(r), execConfig);
+			rcs.add(rc);
+		}
+		
+		StopWatch aWatch = new AutoStartStopWatch(); 
+		List<AlgorithmRunResult> res = tae.evaluateRun(rcs);
+		
+		System.out.println(res);
+		System.out.println("First batch of runs took: " + aWatch.stop() + "ms");
+		
+		tae.notifyShutdown();
+		
+		IPCTargetAlgorithmEvaluatorFactory tfact = new IPCTargetAlgorithmEvaluatorFactory();
+		
+		IPCTargetAlgorithmEvaluatorOptions opt = tfact.getOptionObject();
+		
+		opt.encodingMechanism = EncodingMechanismOptions.JAVA_SERIALIZATION;
+		
+		opt.ipcMechanism = IPCMechanism.REVERSE_TCP;
+		
+		StringBuilder bn = new StringBuilder();
+		bn.append("java -cp ");
+		bn.append(System.getProperty("java.class.path"));
+		bn.append(" ");
+		bn.append(IPCTAEClient.class.getCanonicalName());
+		
+		
+		bn.append(" --tae RANDOM --ipc-tae-client-port ");
+		opt.execScript = bn.toString();
+		//opt.execScriptOutput = true;
+		TargetAlgorithmEvaluator itae = tfact.getTargetAlgorithmEvaluator(opt);
+
+		aWatch = new AutoStartStopWatch();
+		System.out.println(itae.evaluateRun(rcs));
+		System.out.println("Second batch of runs took: " + aWatch.stop() + "ms");
+		
+		itae.notifyShutdown();
+		
+		
+	}
+	
+	@Test
+
 	/**
 	 * This just tests to see if {@link ForkingTargetAlgorithmEvaluatorDecorator} does what it should.
 	 */
-	@Test
 	public void testForkWithQuickPolicy()
 	{
 

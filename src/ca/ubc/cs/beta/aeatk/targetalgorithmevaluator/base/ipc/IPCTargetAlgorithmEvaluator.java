@@ -9,9 +9,12 @@ import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
+import java.util.LinkedList;
 import java.util.List;
+import java.util.Queue;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import net.jcip.annotations.ThreadSafe;
 
@@ -110,7 +113,7 @@ public class IPCTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorithmEval
 				log.debug("Couldn't start process exec script:",e);
 				throw new ParameterException("Could not start IPC Target Algorithm Evaluator execution script, please check your arguments and try again, error was: " + e.getMessage() );
 			}
-			StreamGobbler sg = new StreamGobbler(proc.getInputStream(), options.execScriptOutput);
+			IPCStreamReader sg = new IPCStreamReader(proc.getInputStream(), options.execScriptOutput);
 			
 			this.executors.execute(sg);
 			
@@ -166,8 +169,13 @@ public class IPCTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorithmEval
 		return false;
 	}
 
+	private final AtomicBoolean isShutdown = new AtomicBoolean(false);
+	
+	private final AtomicBoolean subProcessShutdownDetected = new AtomicBoolean(false);
 	@Override
 	protected void subtypeShutdown() {
+		
+		isShutdown.set(true);
 		if(serverSocket != null)
 		{
 		    try {
@@ -198,6 +206,12 @@ public class IPCTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorithmEval
 			TargetAlgorithmEvaluatorRunObserver runStatusObserver) {
 		
 		List<AlgorithmRunResult> completedRuns = new ArrayList<AlgorithmRunResult>();
+		
+		if(subProcessShutdownDetected.get()) 
+		{
+			log.warn("Exec script has terminated, it is unclear if this run will ever be completed");
+		}
+		 
 		
 		for(AlgorithmRunConfiguration rc : runConfigs)
 		{
@@ -248,33 +262,76 @@ public class IPCTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorithmEval
 		return completedRuns;
 	}
 
-	private class StreamGobbler implements Runnable {
+	private class IPCStreamReader implements Runnable {
 	    InputStream is;
 		private boolean output;
 
-	    private StreamGobbler(InputStream is, boolean output) {
+	    private IPCStreamReader(InputStream is, boolean output) {
 	        this.is = is;
 	        this.output = output;
 	    }
 
 	    @Override
 	    public void run() {
+	    	  Queue<String> last10Lines = new LinkedList<String>();
 	        try {
 	            InputStreamReader isr = new InputStreamReader(is);
 	            BufferedReader br = new BufferedReader(isr);
 	            String line = null;
+	          
 	            while ((line = br.readLine()) != null)
 	            {	
 		            if(output)
 		            {
+		            	
+		    			
 		            	log.info("IPC-TAE Client> " + line);
+		            } else
+		            {
+		            	last10Lines.add(line);
+		    			if(last10Lines.size() > 10)
+		    			{
+		    				last10Lines.poll();
+		    			}
 		            }
 		            
 	            }
+	              
 	        }
 	        catch (IOException ioe) {
-	            ioe.printStackTrace();
+	        	//This doesn't matter.
 	        }
+	        if(!isShutdown.get())
+            {
+            	try {
+					proc.waitFor();
+					subProcessShutdownDetected.set(true);
+				} catch (InterruptedException e) {
+					Thread.currentThread().interrupt();
+				}
+            	
+            	try 
+            	{
+            		int retValue = proc.exitValue();
+            		
+            		if(retValue > 0)
+            		{
+            			log.warn("Calling script shutdown with non-zero exit ({}) code, last 10 lines were:", retValue);
+            			for(String aLine : last10Lines)
+            			{
+            				log.warn("> " + aLine);
+            			}
+            		}
+            	
+            	} catch(IllegalThreadStateException e)
+            	{
+            		//Still running
+            	}
+            	
+            	
+            }
+            
+	        
 	    }
 	}
 	
