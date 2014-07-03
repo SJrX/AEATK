@@ -118,6 +118,13 @@ SMACMEM=1024
 test "$SMAC_MEMORY_INPUT" -ge 1 2>&- && SMACMEM=$SMAC_MEMORY_INPUT
 EXEC=ca.ubc.cs.beta.smac.executors.AutomaticConfigurator
 DIR="$( cd "$( dirname "${BASH_SOURCE[0]}" )" && pwd )"
+
+if [ ! -d "$DIR/lib" ]; then
+        DIR="$(dirname "$DIR")"
+fi
+
+
+
 echo "Starting with $SMACMEM MB of RAM"
 
 for f in $DIR/*.jar
@@ -138,8 +145,14 @@ exec java -Xmx"$SMACMEM"m -cp "$DIR/conf/:$jarconcat" $EXEC "$@"
 	sb.append("test \"$SMAC_MEMORY_INPUT\" -ge 1 2>&- && SMACMEM=$SMAC_MEMORY_INPUT").append("\n"); 
 	sb.append("EXEC=").append(javaClassName).append("\n"); 
 	sb.append("DIR=\"$( cd \"$( dirname \"${BASH_SOURCE[0]}\" )\" && pwd )\"").append("\n");
+	
+	sb.append("if [ ! -d \"$DIR/lib\" ]; then").append("\n");
+	sb.append("DIR=\"$(dirname \"$DIR\")\"").append("\n");
+	sb.append("fi").append("\n");
+	
 	sb.append("LD_LIBRARY_PATH=$LD_LIBRARY_PATH:$DIR/lib/native/:$DIR/lib/:$DIR/\n");
 	sb.append("DYLD_FALLBACK_LIBRARY_PATH=$DYLD_FALLBACK_LIBRARY_PATH:$DIR/lib/native/:$DIR/lib/:$DIR/\n");
+	
 	
 	if(printMem) {
 		sb.append("echo \"Starting ").append(nameOfProgram).append(" with $SMACMEM MB of RAM\"").append("\n"); 
@@ -173,6 +186,10 @@ exec java -Xmx"$SMACMEM"m -cp "$DIR/conf/:$jarconcat" $EXEC "$@"
 			set SMACMEM=1024
 			IF NOT "%SMAC_MEMORY%"=="" (set SMACMEM=%SMAC_MEMORY%)
 			set DIR=%~dp0
+			IF EXIST "%DIR%\lib\" GOTO USE_LIB
+			set DIR=%DIR%\..\
+			:USE_LIB
+		
 			set EXEC=ca.ubc.cs.beta.smac.executors.AutomaticConfigurator
 			set jarconcat=
 			SETLOCAL ENABLEDELAYEDEXPANSION
@@ -189,6 +206,11 @@ exec java -Xmx"$SMACMEM"m -cp "$DIR/conf/:$jarconcat" $EXEC "$@"
 		sb.append("set SMACMEM=").append(ram).append("\r\n");
 		sb.append("IF NOT \"%SMAC_MEMORY%\"==\"\" (set SMACMEM=%SMAC_MEMORY%)").append("\r\n");
 		sb.append("set DIR=%~dp0").append("\r\n");
+		sb.append("IF EXIST \"%DIR%\\lib\\\" GOTO USE_LIB").append("\r\n");
+		sb.append("set DIR=%DIR%\\..\\").append("\r\n");
+		sb.append(":USE_LIB").append("\r\n");
+		sb.append("\r\n");
+
 		sb.append("set EXEC="+ javaClassName).append("\r\n");
 		sb.append("set jarconcat=").append("\r\n");
 		sb.append("SETLOCAL ENABLEDELAYEDEXPANSION").append("\r\n");

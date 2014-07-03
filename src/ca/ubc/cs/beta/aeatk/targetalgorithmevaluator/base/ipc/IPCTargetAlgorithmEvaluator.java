@@ -1,12 +1,17 @@
 package ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.ipc;
 
+import java.io.BufferedReader;
 import java.io.IOException;
+import java.io.InputStream;
+import java.io.InputStreamReader;
 import java.net.InetAddress;
 import java.net.ServerSocket;
 import java.net.Socket;
 import java.net.UnknownHostException;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
 
 import net.jcip.annotations.ThreadSafe;
 
@@ -17,6 +22,8 @@ import com.beust.jcommander.ParameterException;
 
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.concurrent.threadfactory.SequentiallyNamedThreadFactory;
+import ca.ubc.cs.beta.aeatk.misc.string.SplitQuotedString;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.AbstractSyncTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.ipc.mechanism.ReverseTCPMechanism;
@@ -41,6 +48,11 @@ public class IPCTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorithmEval
 	private final IPCTargetAlgorithmEvaluatorOptions options;
 			
 	private final ServerSocket serverSocket;
+	
+	private final Process proc;;
+	
+	private final ExecutorService executors = Executors.newCachedThreadPool(new SequentiallyNamedThreadFactory("IPC Target Algorithm Evaluator Script Watcher", true));
+	
 	public IPCTargetAlgorithmEvaluator (IPCTargetAlgorithmEvaluatorOptions options) {
 		super();
 		
@@ -82,6 +94,33 @@ public class IPCTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorithmEval
 		}
 		
 		
+		if(options.execScript != null && options.execScript.trim().length() > 0)
+		{
+			
+			String[] args = SplitQuotedString.splitQuotedString(options.execScript +" " + localPort);
+			
+			ProcessBuilder pb = new ProcessBuilder();
+			pb.redirectErrorStream(true);
+			pb.command(args);
+			Process proc;
+			try {
+				proc = pb.start();
+			} catch (IOException e) {
+				//log.error("Couldn't start client script: {}", options.execScript);
+				log.debug("Couldn't start process exec script:",e);
+				throw new ParameterException("Could not start IPC Target Algorithm Evaluator execution script, please check your arguments and try again, error was: " + e.getMessage() );
+			}
+			StreamGobbler sg = new StreamGobbler(proc.getInputStream(), options.execScriptOutput);
+			
+			this.executors.execute(sg);
+			
+			this.proc = proc;
+			
+		} else
+		{
+			proc = null;
+			
+		}
 		
 	}
 
@@ -137,6 +176,21 @@ public class IPCTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorithmEval
                 log.error("Could not close server socket.",e);
             }
 		}
+		
+		this.executors.shutdownNow();
+		
+		if(this.proc != null)
+		{
+			proc.destroy();
+			try {
+				proc.waitFor();
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+			}	
+		}
+		
+	
+		
 	}
 
 	@Override
@@ -194,4 +248,34 @@ public class IPCTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorithmEval
 		return completedRuns;
 	}
 
+	private class StreamGobbler implements Runnable {
+	    InputStream is;
+		private boolean output;
+
+	    private StreamGobbler(InputStream is, boolean output) {
+	        this.is = is;
+	        this.output = output;
+	    }
+
+	    @Override
+	    public void run() {
+	        try {
+	            InputStreamReader isr = new InputStreamReader(is);
+	            BufferedReader br = new BufferedReader(isr);
+	            String line = null;
+	            while ((line = br.readLine()) != null)
+	            {	
+		            if(output)
+		            {
+		            	log.info("IPC-TAE Client> " + line);
+		            }
+		            
+	            }
+	        }
+	        catch (IOException ioe) {
+	            ioe.printStackTrace();
+	        }
+	    }
+	}
+	
 }

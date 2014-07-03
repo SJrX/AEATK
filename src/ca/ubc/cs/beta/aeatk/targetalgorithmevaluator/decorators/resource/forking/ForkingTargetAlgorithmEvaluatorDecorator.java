@@ -8,6 +8,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
+import java.util.concurrent.atomic.AtomicLong;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -41,6 +42,13 @@ public class ForkingTargetAlgorithmEvaluatorDecorator extends AbstractAsyncTarge
 
 	private final ForkingTargetAlgorithmEvaluatorDecoratorPolicyOptions fOptions;
 	
+	
+	
+	private final AtomicLong masterSolvesFirst = new AtomicLong(0);
+	private final AtomicLong slaveSolvesFirst = new AtomicLong(0);
+	private final AtomicLong slaveSubmits = new AtomicLong(0);
+	
+	private final AtomicLong requests = new AtomicLong(0);
 	public ForkingTargetAlgorithmEvaluatorDecorator(TargetAlgorithmEvaluator aMasterTAE, TargetAlgorithmEvaluator aSlaveTAE, ForkingTargetAlgorithmEvaluatorDecoratorPolicyOptions fOptions) {
 		super(aMasterTAE);
 		fSlaveTAE = aSlaveTAE;
@@ -57,12 +65,15 @@ public class ForkingTargetAlgorithmEvaluatorDecorator extends AbstractAsyncTarge
 		final AtomicBoolean fForkCompletionFlag = new AtomicBoolean(false);
 		
 		
+		requests.addAndGet(runConfigs.size());
+		
 		final TargetAlgorithmEvaluatorCallback masterForkCallback = new TargetAlgorithmEvaluatorCallback() {
 			
 			@Override
 			public void onSuccess(List<AlgorithmRunResult> runs) {
 				if(fForkCompletionFlag.compareAndSet(false, true))
 				{
+					masterSolvesFirst.addAndGet(runConfigs.size());
 					callback.onSuccess(runs);
 				}
 			}
@@ -71,6 +82,7 @@ public class ForkingTargetAlgorithmEvaluatorDecorator extends AbstractAsyncTarge
 			public void onFailure(RuntimeException e) {
 				if(fForkCompletionFlag.compareAndSet(false, true))
 				{
+					masterSolvesFirst.addAndGet(runConfigs.size());
 					callback.onFailure(e);
 				}
 				else
@@ -114,6 +126,7 @@ public class ForkingTargetAlgorithmEvaluatorDecorator extends AbstractAsyncTarge
 						
 						if(fForkCompletionFlag.compareAndSet(false, true))
 						{
+							slaveSolvesFirst.addAndGet(runConfigs.size());
 							callback.onSuccess(runs);
 						}
 						
@@ -137,6 +150,7 @@ public class ForkingTargetAlgorithmEvaluatorDecorator extends AbstractAsyncTarge
 						
 						if(fForkCompletionFlag.compareAndSet(false, true))
 						{
+							slaveSolvesFirst.addAndGet(runConfigs.size());
 							callback.onSuccess(fixedRuns);
 						}
 						
@@ -152,6 +166,7 @@ public class ForkingTargetAlgorithmEvaluatorDecorator extends AbstractAsyncTarge
 			public void onFailure(RuntimeException e) {
 				if(fForkCompletionFlag.compareAndSet(false, true))
 				{
+					slaveSolvesFirst.addAndGet(runConfigs.size());
 					callback.onFailure(e);
 				}
 				else
@@ -186,6 +201,7 @@ public class ForkingTargetAlgorithmEvaluatorDecorator extends AbstractAsyncTarge
 				
 				if(!fForkCompletionFlag.get())
 				{ //Only submit if the job isn't done.
+					slaveSubmits.addAndGet(runConfigs.size());
 					fSlaveTAE.evaluateRunsAsync(slaveRunConfigurations, slaveForkCallback, forkObserver);
 				}
 			}
@@ -228,17 +244,24 @@ public class ForkingTargetAlgorithmEvaluatorDecorator extends AbstractAsyncTarge
 	@Override
 	protected void postDecorateeNotifyShutdown() {
 		//Shutdown the forked slave TAE submitter.
-		fSlaveSubmitterThreadPool.shutdownNow();
-		try {
-			if(!fSlaveSubmitterThreadPool.awaitTermination(60, TimeUnit.MINUTES))
-			{
-				log.error("Slave TAE submitter thread pool did not terminate in 60 minutes.");
+		try
+		{
+			fSlaveSubmitterThreadPool.shutdownNow();
+			try {
+				if(!fSlaveSubmitterThreadPool.awaitTermination(60, TimeUnit.MINUTES))
+				{
+					log.error("Slave TAE submitter thread pool did not terminate in 60 minutes.");
+				}
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
 			}
-		} catch (InterruptedException e) {
-			Thread.currentThread().interrupt();
+			//Shutdown the forked slave TAE.
+			fSlaveTAE.notifyShutdown();
+		} finally
+		{
+			log.info("Fork Target Algorithm Evaluator Statistics: Requests: {}, Master Solves First: {}, Slave Solves First: {}, Slave Submits: {}", this.requests.get(), this.masterSolvesFirst.get(), this.slaveSolvesFirst.get(), this.slaveSubmits.get());
 		}
-		//Shutdown the forked slave TAE.
-		fSlaveTAE.notifyShutdown();
+		
 	}
 	
 	/*

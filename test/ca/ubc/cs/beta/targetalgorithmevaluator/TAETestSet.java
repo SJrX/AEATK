@@ -278,6 +278,8 @@ public class TAETestSet {
 
 		}
 		
+		tae.notifyShutdown();
+		
 	}
 	
 	/**
@@ -333,6 +335,8 @@ public class TAETestSet {
 			assertEquals("",run.getAdditionalRunData());
 
 		}
+		
+		tae.close();
 	}
 	
 	

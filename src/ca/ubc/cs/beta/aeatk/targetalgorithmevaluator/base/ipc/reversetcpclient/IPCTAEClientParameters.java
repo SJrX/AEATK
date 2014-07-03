@@ -1,5 +1,8 @@
 package ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.ipc.reversetcpclient;
 
+import ca.ubc.cs.beta.aeatk.help.HelpOptions;
+import ca.ubc.cs.beta.aeatk.logging.ConsoleOnlyLoggingOptions;
+import ca.ubc.cs.beta.aeatk.logging.LoggingOptions;
 import ca.ubc.cs.beta.aeatk.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aeatk.options.AbstractOptions;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorOptions;
@@ -26,5 +29,12 @@ public class IPCTAEClientParameters extends AbstractOptions{
     
     @ParametersDelegate
     public TargetAlgorithmEvaluatorOptions fTAEOptions = new TargetAlgorithmEvaluatorOptions();
+    
+    @ParametersDelegate
+    public LoggingOptions log = new ConsoleOnlyLoggingOptions();
+    
+    @ParametersDelegate
+    public HelpOptions help = new HelpOptions();
+    
     
 }

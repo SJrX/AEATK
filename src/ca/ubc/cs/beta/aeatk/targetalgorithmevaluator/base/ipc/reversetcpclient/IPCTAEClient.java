@@ -31,7 +31,7 @@ import com.beust.jcommander.ParameterException;
  */
 public class IPCTAEClient {
     
-    private final static Logger log = LoggerFactory.getLogger(IPCTAEClient.class);
+	private static Logger log = null;
     
     private static final long SLEEP_TIME = 2;
     
@@ -44,12 +44,18 @@ public class IPCTAEClient {
         Map<String, AbstractOptions> TAEOptionsMap = TargetAlgorithmEvaluatorLoader.getAvailableTargetAlgorithmEvaluators();
         try
         {
-            JCommanderHelper.parseCheckingForHelpAndVersion(args, parameters, TAEOptionsMap);
-        } catch (ParameterException aParameterException)
+	        try
+	        {
+	            JCommanderHelper.parseCheckingForHelpAndVersion(args, parameters, TAEOptionsMap);
+	        } catch (ParameterException aParameterException)
+	        {
+	            throw aParameterException;
+	        }
+        } finally
         {
-            throw aParameterException;
+        	parameters.log.initializeLogging();
+        	log =  LoggerFactory.getLogger(IPCTAEClient.class);
         }
-        
         /*
          * Construct the TAE.
          */
@@ -63,9 +69,10 @@ public class IPCTAEClient {
             /*
              * Get a run to do.
              */
+            log.info("IPC TAE Client started sending requests to: {}:{}", parameters.fHost,parameters.fPort);
             while(true)
             {
-                log.debug("Establishing connection to {} on port {} ...",parameters.fHost,parameters.fPort);
+                log.debug("Establishing connection to {}:{} ...",parameters.fHost,parameters.fPort);
                 try(Socket clientSocket = new Socket(parameters.fHost, parameters.fPort))
                 {
                     //Receive the run config.

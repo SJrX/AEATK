@@ -38,6 +38,12 @@ public class IPCTargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	@Parameter(names="--ipc-local-port", description="Local server port for some kinds of IPC mechanisms (if 0, this will be automatically allocated by the operating system)", validateWith=ValidServerPortValidator.class)
 	public int localPort = 0;
 	
+	@Parameter(names={"--ipc-exec-on-start-up","--ipc-exec"}, description="This script will be executed on start up of the IPC TAE. A final argument will be appended which is the server port if our IPCMechanism is REVERSE_TCP")
+	public String execScript;
+
+	@Parameter(names="--ipc-exec-output", description="If true we will log all output from the script")
+	public boolean execScriptOutput;
+	
 	enum IPCMechanism 
 	{
 		UDP,

@@ -42,12 +42,15 @@ public class ConsoleOnlyLoggingOptions extends AbstractOptions implements Loggin
 	public void initializeLogging()
 	{
 		System.setProperty("LOGLEVEL", logLevel.name());
+		
 		if(System.getProperty(LOGBACK_CONFIGURATION_FILE_PROPERTY)!= null)
 		{
 			Logger log = LoggerFactory.getLogger(getClass());
+			
 			log.trace("System property for logback.configurationFile has been found already set as {} , logging will follow this file", System.getProperty(LOGBACK_CONFIGURATION_FILE_PROPERTY));
 		} else
 		{
+			
 			
 			String newXML = this.getClass().getPackage().getName().replace(".", "/") + "/"+  "consoleonly-logback.xml";
 			
