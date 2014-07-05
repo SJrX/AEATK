@@ -232,7 +232,7 @@ public class LegacyStateDeserializerTester {
 		assertTrue(output.contains("Cutoff time discrepancy"));
 		assertFalse(output.contains("marking run as TIMEOUT and Censored"));
 		assertTrue(output.contains("marking run as TIMEOUT with runtime 1.0"));
-		for(RunData runData : sd.getRunHistory().getAlgorithmRunData())
+		for(RunData runData : sd.getRunHistory().getAlgorithmRunDataIncludingRedundant())
 		{
 			if(runData.getRun().getRunStatus().equals(RunStatus.TIMEOUT))
 			{
@@ -268,7 +268,7 @@ public class LegacyStateDeserializerTester {
 			assertTrue(output.contains("marking run as TIMEOUT and Censored"));
 			assertFalse(output.contains("marking run as TIMEOUT with runtime"));
 			
-		for(RunData runData : sd.getRunHistory().getAlgorithmRunData())
+		for(RunData runData : sd.getRunHistory().getAlgorithmRunDataIncludingRedundant())
 		{
 			if(runData.getRun().getRunStatus().equals(RunStatus.TIMEOUT))
 			{

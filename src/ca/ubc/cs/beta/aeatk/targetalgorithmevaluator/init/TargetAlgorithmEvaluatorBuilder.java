@@ -33,6 +33,7 @@ import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.helpers.UseDynam
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.helpers.WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.prepostcommand.PrePostCommandTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.BoundedTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.FileCacheTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.caching.CachingTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.forking.ForkingTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.AbortOnCrashTargetAlgorithmEvaluator;
@@ -274,6 +275,11 @@ public class TargetAlgorithmEvaluatorBuilder {
 		
 		
 		
+		if(options.filecache)
+		{
+			log.trace("[TAE] Using a file cache for algorithm runs");
+			tae = new FileCacheTargetAlgorithmEvaluatorDecorator(tae, new File(options.fileCacheSource), new File(options.fileCacheOutput), numRun, options.fileCacheCrashOnMiss);
+		}
 		
 		
 		

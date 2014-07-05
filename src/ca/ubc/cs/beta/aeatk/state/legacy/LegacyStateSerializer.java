@@ -156,7 +156,7 @@ public class LegacyStateSerializer implements StateSerializer {
 				runResults.append("\n");
 				
 	
-				for(RunData runData: runHistory.getAlgorithmRunData())
+				for(RunData runData: runHistory.getAlgorithmRunDataIncludingRedundant())
 				{
 					i++;
 					Integer thetaIdx = runData.getThetaIdx();

@@ -114,7 +114,7 @@ public class LegacyStateDeserializer implements StateDeserializer {
 	{
 			if (configSpace == null) throw new IllegalArgumentException("Config Space cannot be null");
 			if(emptyRunHistory == null) throw new IllegalArgumentException("Run History cannot be null");
-			if(emptyRunHistory.getAlgorithmRunData().size() > 0)
+			if(emptyRunHistory.getAlgorithmRunDataExcludingRedundant().size() > 0)
 			{
 				log.warn("RunHistory object already contains runs this may cause problems restoring runs");
 			}

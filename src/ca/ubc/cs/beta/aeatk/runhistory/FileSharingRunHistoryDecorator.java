@@ -506,10 +506,10 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 	}
 
 	@Override
-	public int[][] getParameterConfigurationInstancesRanByIndex() {
+	public int[][] getParameterConfigurationInstancesRanByIndexExcludingRedundant() {
 		lockRead();
 		try {
-			return runHistory.getParameterConfigurationInstancesRanByIndex();
+			return runHistory.getParameterConfigurationInstancesRanByIndexExcludingRedundant();
 		} finally
 		{
 			unlockRead();
@@ -542,10 +542,10 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 
 
 	@Override
-	public List<RunData> getAlgorithmRunData() {
+	public List<RunData> getAlgorithmRunDataIncludingRedundant() {
 		lockRead();
 		try {
-			return runHistory.getAlgorithmRunData();
+			return runHistory.getAlgorithmRunDataIncludingRedundant();
 		} finally
 		{
 			unlockRead();
@@ -556,6 +556,20 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 	}
 
 
+	@Override
+	public List<RunData> getAlgorithmRunDataExcludingRedundant() {
+		lockRead();
+		try {
+			return runHistory.getAlgorithmRunDataExcludingRedundant();
+		} finally
+		{
+			unlockRead();
+	
+		}
+		
+	
+	}
+	
 
 	@Override
 	public Set<ProblemInstanceSeedPair> getEarlyCensoredProblemInstanceSeedPairs(
