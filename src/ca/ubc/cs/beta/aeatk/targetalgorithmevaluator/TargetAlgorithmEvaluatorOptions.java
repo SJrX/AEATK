@@ -193,7 +193,23 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	@Parameter(names={"--tae-stop-processing-on-shutdown"}, description="If true, then once JVM Shutdown is triggered either within the application or externally all further requests will be silently dropped. This is recommended since otherwise applications may see unexpected results as the TAE may be unable to continue processing.")
 	public boolean taeStopProcessingOnShutdown = true;
 
-	
+	@UsageTextField(level=OptionLevel.ADVANCED)
+    @Parameter(names={"--file-cache"}, description="If true runs will be either written or read from the specified input and output files. If directories are specified, then input will be from all files in the directory, and output will be to a new random file in the directory. Note: This cache is static, we do not re-read from the cache over time")
+    public boolean filecache;
+
+    @UsageTextField(level=OptionLevel.ADVANCED)
+    @Parameter(names={"--file-cache-source"}, description="Where to read files from")
+    public String fileCacheSource;
+
+    @UsageTextField(level=OptionLevel.ADVANCED)
+    @Parameter(names={"--file-cache-output"}, description="Where to write files from")
+    public String fileCacheOutput;
+
+    @UsageTextField(level=OptionLevel.DEVELOPER)
+    @Parameter(names={"--file-cache-crash-on-cache-miss","--file-cache-crash-on-miss"}, description="Application will crash on cache miss, this is for debugging")
+    public boolean fileCacheCrashOnMiss;
+    
+    
 	
 	/**
 	 * Checks if the problem instances are compatible with the verify sat option

@@ -238,9 +238,9 @@ public class RunHistoryTester {
 			Set<AlgorithmRunResult> s2 = new HashSet<>(r2.getAlgorithmRunsExcludingRedundant());
 			
 			
-			System.out.println(r.getAlgorithmRunData().size() + " vs. " + r2.getAlgorithmRunData().size());
+			System.out.println(r.getAlgorithmRunDataExcludingRedundant().size() + " vs. " + r2.getAlgorithmRunDataExcludingRedundant().size());
 			assertEquals("Both RunHistory objects should have the same data", s1, s2);
-			System.out.println(r.getAlgorithmRunData().size() + " vs. " + r2.getAlgorithmRunData().size());
+			System.out.println(r.getAlgorithmRunDataExcludingRedundant().size() + " vs. " + r2.getAlgorithmRunDataExcludingRedundant().size());
 			
 			for(int i=0; i < RANDOMS; i++)
 			{
@@ -516,7 +516,7 @@ public class RunHistoryTester {
 		checkAllMethodsEqual(r,r2);
 		
 		
-		System.out.println(r.getAlgorithmRunData());
+		System.out.println(r.getAlgorithmRunDataExcludingRedundant());
 		System.out.println(r.getAlgorithmRunsExcludingRedundant());
 		System.out.println(r2.getAlgorithmRunsExcludingRedundant());
 		try {
@@ -1315,7 +1315,127 @@ public class RunHistoryTester {
 	
 	}
 	
-	
+	/**
+     * This is a test for bug #2052 
+     * @throws DuplicateRunException 
+     */
+    @Test
+    public void testVerifyOrderConsistent() throws DuplicateRunException
+    {
+            
+            Random rand = pool.getRandom(DebugUtil.getCurrentMethodName());
+            ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("a [0,1] [0.5]\n b[0,1] [0.5]\n");
+            List<ProblemInstance> pis = new ArrayList<ProblemInstance>();
+            
+            
+            
+            Map<String, Double> features = new HashMap<String,Double>();
+            
+            for(int i=1; i < 11; i++)
+            {
+                    features.put("id",(double) i);
+                    pis.add(new ProblemInstance("instance"+i,i,features));
+            }
+            
+            
+            List<ParameterConfiguration> configs = new ArrayList<>();
+            
+            for(int i=0; i < 5; i++)
+            {
+                    configs.add(configSpace.getRandomParameterConfiguration(rand));
+            }
+            
+            List<AlgorithmRunResult> runs = new ArrayList<>();
+            
+            AlgorithmExecutionConfiguration execConfig = new AlgorithmExecutionConfiguration("boo", "foo", configSpace, false, true, 5);
+            
+            
+            
+            
+            
+            runs.add(new ExistingAlgorithmRunResult( new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(pis.get(0), -1),5, configs.get(0), execConfig), RunStatus.SAT, 1, 0, 0,-1));
+            
+            runs.add(new ExistingAlgorithmRunResult( new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(pis.get(1), -1),5, configs.get(0),execConfig), RunStatus.SAT, 2, 0, 0,-1));
+            
+            runs.add(new ExistingAlgorithmRunResult( new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(pis.get(0), -1),1, configs.get(1),execConfig), RunStatus.TIMEOUT, 1, 0, 0,-1));
+            
+            runs.add(new ExistingAlgorithmRunResult( new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(pis.get(2), -1),5, configs.get(0),execConfig), RunStatus.SAT, 3, 0, 0,-1));
+            
+            runs.add(new ExistingAlgorithmRunResult( new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(pis.get(1), -1),2, configs.get(2),execConfig), RunStatus.TIMEOUT, 2, 0, 0,-1));
+            
+            runs.add(new ExistingAlgorithmRunResult( new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(pis.get(3), -1),5, configs.get(0),execConfig), RunStatus.SAT, 3, 0, 0,-1));
+            
+            runs.add(new ExistingAlgorithmRunResult( new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(pis.get(0), -1),2, configs.get(1),execConfig), RunStatus.TIMEOUT, 2, 0, 0,-1));
+            
+            
+            
+            NewRunHistory runHistory = new NewRunHistory( OverallObjective.MEAN, OverallObjective.MEAN, RunObjective.RUNTIME);
+            
+            
+            for(AlgorithmRunResult run : runs)
+            {
+                    System.out.println(run);
+                    runHistory.append(run);
+            }
+            
+            List<AlgorithmRunResult> resultRuns = runHistory.getAlgorithmRunsExcludingRedundant();
+            
+            double[][] thetas = runHistory.getAllConfigurationsRanInValueArrayForm();
+            
+            int[][] thetaPiMatrix = runHistory.getParameterConfigurationInstancesRanByIndexExcludingRedundant();
+            
+            System.out.println(resultRuns);
+            System.out.println(Arrays.deepToString(thetas));
+            System.out.println(Arrays.deepToString(thetaPiMatrix));
+            
+            
+            for(int i=0; i < resultRuns.size(); i++)
+            {
+                    AlgorithmRunResult run = resultRuns.get(i);
+                    
+                    System.out.println("Run: " + i + ":" + run);
+                    
+                    System.out.println(thetaPiMatrix[i][0]);
+                    
+                    System.out.println(runHistory.getThetaIdx(run.getAlgorithmRunConfiguration().getParameterConfiguration()));
+                    
+                    assertEquals(thetaPiMatrix[i][0],runHistory.getThetaIdx(run.getAlgorithmRunConfiguration().getParameterConfiguration()));
+                    
+                    
+                    System.out.println(Arrays.toString(thetaPiMatrix[i]));
+                    
+                    System.out.println(Arrays.toString(thetas[thetaPiMatrix[i][0]-1]));
+                    System.out.println(Arrays.toString(run.getAlgorithmRunConfiguration().getParameterConfiguration().toValueArray()));
+            
+                    
+                     //run.getRunConfig().getProblemInstanceSeedPair().getInstance().getInstanceID()
+                     
+                    System.out.println("Instance ID:" + run.getAlgorithmRunConfiguration().getProblemInstanceSeedPair().getProblemInstance().getInstanceID());
+                    
+                    System.out.println("ThetaPiMatrix:"+(int) thetaPiMatrix[i][1]);
+                    
+                    
+                    assertEquals("Expected Instance ID should match ", run.getAlgorithmRunConfiguration().getProblemInstanceSeedPair().getProblemInstance().getInstanceID(),(int) thetaPiMatrix[i][1]);
+                    
+                    assertTrue("Expected Configuration should match",Arrays.equals(thetas[thetaPiMatrix[i][0]-1], run.getAlgorithmRunConfiguration().getParameterConfiguration().toValueArray()));
+                    assertEquals("Expected Instance ID should match ", run.getAlgorithmRunConfiguration().getProblemInstanceSeedPair().getProblemInstance().getInstanceID(),(int) run.getAlgorithmRunConfiguration().getProblemInstanceSeedPair().getProblemInstance().getFeaturesDouble()[0]);
+                    
+                    System.out.println("\n");
+            }
+            
+            
+            
+
+            assertEquals("Test", resultRuns.size(), thetaPiMatrix.length); 
+            
+            
+            
+            //System.out.println(runHistory.getAlgorithmRunData());
+    
+            //runHistory.getAllConfigurationsRanInValueArrayForm();
+            
+            
+    }
 	
 	
 }

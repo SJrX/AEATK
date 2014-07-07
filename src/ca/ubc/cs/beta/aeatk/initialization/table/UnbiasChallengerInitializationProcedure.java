@@ -227,7 +227,7 @@ public class UnbiasChallengerInitializationProcedure implements InitializationPr
 				this.incumbent = initialIncumbent;
 			}
 			
-			log.debug("Initialization procedure completed ({} total runs, total cpu time used {}), selected incumbent is {} ({})", this.runHistory.getAlgorithmRunData().size(), this.runHistory.getTotalRunCost(), this.runHistory.getThetaIdx(this.incumbent), this.incumbent.getFriendlyIDHex());
+			log.debug("Initialization procedure completed ({} total runs, total cpu time used {}), selected incumbent is {} ({})", this.runHistory.getAlgorithmRunDataExcludingRedundant().size(), this.runHistory.getTotalRunCost(), this.runHistory.getThetaIdx(this.incumbent), this.incumbent.getFriendlyIDHex());
 			
 		} catch(InterruptedException e)
 		{

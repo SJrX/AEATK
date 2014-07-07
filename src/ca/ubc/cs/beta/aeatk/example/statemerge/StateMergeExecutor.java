@@ -142,7 +142,7 @@ public class StateMergeExecutor {
 			
 			
 			int rdi=0;
-			for(RunData rd : rhToFilter.getAlgorithmRunData())
+			for(RunData rd : rhToFilter.getAlgorithmRunDataIncludingRedundant())
 			{
 				rdi++;
 				log.trace("Restored Data Iteration {} => {} ", rd.getIteration(), rd.getRun());
@@ -247,7 +247,7 @@ public class StateMergeExecutor {
 				rhToSaveToDisk = new ThreadSafeRunHistoryWrapper(new NewRunHistory(smo.scenOpts.getIntraInstanceObjective(), smo.scenOpts.interInstanceObj, smo.scenOpts.getRunObjective()));
 				
 				
-				for(RunData rd : rhToFilter.getAlgorithmRunData())
+				for(RunData rd : rhToFilter.getAlgorithmRunDataIncludingRedundant())
 				{
 					while(rd.getIteration() > rhToSaveToDisk.getIteration())
 					{
@@ -275,7 +275,7 @@ public class StateMergeExecutor {
 			}
 			int originalRestored = rdi;
 			rdi=0;
-			for(RunData rd : rhToSaveToDisk.getAlgorithmRunData())
+			for(RunData rd : rhToSaveToDisk.getAlgorithmRunDataIncludingRedundant())
 			{
 				rdi++;
 				log.trace("Will Save Run Iteration {} => {} ", rd.getIteration(), rd.getRun());
@@ -471,7 +471,7 @@ outerLoop:
 		
 		log.trace("Restored state of {} has {} runs for default configuration ", dir, rh.getTotalNumRunsOfConfigExcludingRedundant(execConfig.getParameterConfigurationSpace().getDefaultConfiguration()));
 		double restoredRuntime = 0.0;
-		for(RunData rd : rh.getAlgorithmRunData())
+		for(RunData rd : rh.getAlgorithmRunDataIncludingRedundant())
 		{
 			restoredRuntime+=rd.getRun().getRuntime();
 			

@@ -160,7 +160,11 @@ public interface RunHistory {
 	 * and an instance (in {@link ca.ubc.cs.beta.aeatk.runhistory.RunHistory#getUniqueInstancesRan()}). These represent the run configurations.
 	 * @return array of entries of the form [thetaIdx, instanceIdx]
 	 */
-	public int[][] getParameterConfigurationInstancesRanByIndex();
+	public int[][] getParameterConfigurationInstancesRanByIndexExcludingRedundant();
+	
+	
+
+
 	
 
 	/**
@@ -187,7 +191,15 @@ public interface RunHistory {
 	 * 
 	 * @return	list of run data
 	 */
-	public List<RunData> getAlgorithmRunData();
+	public List<RunData> getAlgorithmRunDataExcludingRedundant();
+
+	/**
+	 * Returns a list of all the Run Data
+	 * 
+	 * @return	list of run data
+	 */
+	public List<RunData> getAlgorithmRunDataIncludingRedundant();
+	
 	
 	/**
 	 * Returns a new list containing all the runs we have done.
@@ -285,6 +297,8 @@ public interface RunHistory {
 	 * @return index into the theta array for this configuration
 	 */
 	public int getOrCreateThetaIdx(ParameterConfiguration config);
+
+	
 
 	
 	

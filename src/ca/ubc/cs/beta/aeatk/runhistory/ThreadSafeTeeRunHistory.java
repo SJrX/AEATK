@@ -171,8 +171,8 @@ public class ThreadSafeTeeRunHistory implements ThreadSafeRunHistory {
 	}
 
 	@Override
-	public int[][] getParameterConfigurationInstancesRanByIndex() {
-		return rh.getParameterConfigurationInstancesRanByIndex();
+	public int[][] getParameterConfigurationInstancesRanByIndexExcludingRedundant() {
+		return rh.getParameterConfigurationInstancesRanByIndexExcludingRedundant();
 	}
 
 	@Override
@@ -188,10 +188,16 @@ public class ThreadSafeTeeRunHistory implements ThreadSafeRunHistory {
 	
 
 	@Override
-	public List<RunData> getAlgorithmRunData() {
-		return rh.getAlgorithmRunData();
+	public List<RunData> getAlgorithmRunDataIncludingRedundant() {
+		return rh.getAlgorithmRunDataIncludingRedundant();
 	}
 
+	@Override
+	public List<RunData> getAlgorithmRunDataExcludingRedundant() {
+		return rh.getAlgorithmRunDataExcludingRedundant();
+	}
+
+	
 	@Override
 	public List<AlgorithmRunResult> getAlgorithmRunsExcludingRedundant() {
 		return rh.getAlgorithmRunsExcludingRedundant();
