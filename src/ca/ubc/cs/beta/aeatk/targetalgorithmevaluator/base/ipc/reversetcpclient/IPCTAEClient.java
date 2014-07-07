@@ -88,30 +88,28 @@ public class IPCTAEClient {
             		clientSocket.setTcpNoDelay(true);
             	}
                 
-            
-                
                 try 
                 {
                
-                //Receive the run config.
-                //log.debug("Receiving algorithm run configuration ...");
-                
+                    //Receive the run config.
+                    //log.debug("Receiving algorithm run configuration ...");
+                    
                 	StringBuilder sb = new StringBuilder();
-                AutoStartStopWatch watch = new AutoStartStopWatch();
-                AlgorithmRunConfiguration runConfig = receiveRunConfig(clientSocket);
-                
-              //Execute it.
-                log.debug("Solving run configuration ...");
-                List<AlgorithmRunResult> results = tae.evaluateRun(runConfig);
-                AlgorithmRunResult result = results.get(0);
-                sb.append("Eval time: " + watch.time()).append(" ");
-                //Send the run result.
-                log.debug("Sending back algorithm run result ...");
-                sendRunResult(result, clientSocket);
-                
-               // sb.append("Send time: " + watch.time()).append(" ");
-                //System.out.print("\n");
-                successfulRun = true;
+                    AutoStartStopWatch watch = new AutoStartStopWatch();
+                    AlgorithmRunConfiguration runConfig = receiveRunConfig(clientSocket);
+                    
+                    //Execute it.
+                    log.debug("Solving run configuration ...");
+                    List<AlgorithmRunResult> results = tae.evaluateRun(runConfig);
+                    AlgorithmRunResult result = results.get(0);
+                    sb.append("Eval time: " + watch.time()).append(" ");
+                    //Send the run result.
+                    log.debug("Sending back algorithm run result ...");
+                    sendRunResult(result, clientSocket);
+                    
+                    // sb.append("Send time: " + watch.time()).append(" ");
+                    //System.out.print("\n");
+                    successfulRun = true;
                     
                 
                 } catch (ConnectException e)

@@ -73,6 +73,11 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	@Parameter(names={"--cores","--numConcurrentAlgoExecs","--maxConcurrentAlgoExecs","--numberOfConcurrentAlgoExecs"}, description=" [DEPRECATED] (Use the TAE option instead if available) maximum number of concurrent target algorithm executions", validateWith=PositiveInteger.class)
 	public int maxConcurrentAlgoExecs = 1;
 	
+	
+	@UsageTextField(level=OptionLevel.DEVELOPER)
+    @Parameter(names={"--exit-on-failure"}, description="If true, when a failure is detected the process will try its best to shutdown, potentially not cleanly")
+    public boolean exitOnFailure = false;
+	
 	@UsageTextField(defaultValues="", level=OptionLevel.DEVELOPER)
 	@Parameter(names={"--run-hashcode-file","--runHashCodeFile"}, description="file containing a list of run hashes one per line: Each line should be: \"Run Hash Codes: (Hash Code) After (n) runs\". The number of runs in this file need not match the number of runs that we execute, this file only ensures that the sequences never diverge. Note the n is completely ignored so the order they are specified in is the order we expect the hash codes in this version. Finally note you can simply point this at a previous log and other lines will be disregarded", converter=ReadableFileConverter.class)
 	public File runHashCodeFile;

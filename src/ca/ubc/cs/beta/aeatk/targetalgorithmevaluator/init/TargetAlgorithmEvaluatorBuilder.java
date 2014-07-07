@@ -37,6 +37,7 @@ import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.caching
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.forking.ForkingTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.AbortOnCrashTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.AbortOnFirstRunCrashTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.ExitOnFailureTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.JVMShutdownBlockerTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.ResultOrderCorrectCheckerTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.SATConsistencyTargetAlgorithmEvaluator;
@@ -132,6 +133,16 @@ public class TargetAlgorithmEvaluatorBuilder {
 		//===== Note the decorators are not in general commutative
 		//Specifically Run Hash codes should only see the same runs the rest of the applications see
 		//Additionally retrying of crashed runs should probably happen before Abort on Crash
+		
+		if(options.exitOnFailure)
+		{
+		    log.warn("[TAE] EXPERIMENTAL - This java process will exit with the first onFailure called.");
+		    if(options.tForkOptions.forkToTAE != null)
+		    {
+		        log.warn("[TAE] The exitOnFailure may not work with forking slave TAE.");
+		    }
+		    tae = new ExitOnFailureTargetAlgorithmEvaluatorDecorator(tae);
+		}
 		
 		if(options.uncleanShutdownCheck)
 		{
@@ -381,6 +392,11 @@ public class TargetAlgorithmEvaluatorBuilder {
 			log.trace("[TAE] Logging every request and response");
 			tae = new LogEveryTargetAlgorithmEvaluatorDecorator(tae,options.logRequestResponsesRCOnly);
 		}
+		
+		if(options.exitOnFailure)
+        {
+            tae = new ExitOnFailureTargetAlgorithmEvaluatorDecorator(tae);
+        }
 		
 		log.debug("Final Target Algorithm Built is {}", tae);
 		return tae;
