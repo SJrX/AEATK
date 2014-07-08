@@ -263,7 +263,7 @@ public class IPCTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorithmEval
 				
 
 				Socket socket;
-				int i =0;
+				int i =1;
 				
 				try {
 					
@@ -300,12 +300,13 @@ public class IPCTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorithmEval
 				} catch (IOException e) {
 				    
 					try {
-						Thread.sleep(1000*i+1);
-						i=Math.min(i+1, 10);
+						Thread.sleep(1000*i);
 					} catch (InterruptedException e1) {
 						Thread.currentThread().interrupt();
 						throw new TargetAlgorithmAbortException(e1);
 					}
+					
+					i=Math.min(i+1, 10);
 					
 				}
 				
