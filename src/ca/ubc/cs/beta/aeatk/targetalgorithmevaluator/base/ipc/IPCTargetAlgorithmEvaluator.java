@@ -159,13 +159,8 @@ public class IPCTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorithmEval
 							log.error("Unknown Error occurred", e);
 							return;
 						}
-						
-						
-						
 					}
-					
 				}
-				
 			};
 			this.executors.execute(run);
 	
@@ -268,24 +263,34 @@ public class IPCTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorithmEval
 				
 
 				Socket socket;
+				int i =0;
+				
 				try {
 					
-					socket = getConnection();
+				    socket = getConnection();
 					
-					
-					try {
-						
-						InputStream in = socket.getInputStream();
-						OutputStream out = socket.getOutputStream();
-						
-						for(AlgorithmRunConfiguration rc : runConfigs)
-						{
-							//StopWatch watch = new AutoStartStopWatch();
-							
-							AlgorithmRunResult run = rtcp.evaluateRun(in,out, rc);
-							//System.err.println("Get connection took " + watch.time());
-							completedRuns.add(run);
-						}
+					try
+					{
+    					try {
+    						
+    					    InputStream in = socket.getInputStream();
+    						OutputStream out = socket.getOutputStream();
+    						
+    						for(AlgorithmRunConfiguration rc : runConfigs)
+    						{
+    							//StopWatch watch = new AutoStartStopWatch();
+    							
+    							AlgorithmRunResult run = rtcp.evaluateRun(in,out, rc);
+    							//System.err.println("Get connection took " + watch.time());
+    							completedRuns.add(run);
+    						}
+    					}
+    					catch(RuntimeException | IOException e)
+    					{
+    					    socket.close();
+    					    log.error("Error occurred during IPC call, tryining again in "+i+" seconds",e);
+    					    throw e;
+    					}
 					} finally
 					{
 						returnConnection(socket);
@@ -293,18 +298,16 @@ public class IPCTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorithmEval
 						
 					break;
 				} catch (IOException e) {
-					log.error("Error occured during IPC call, trying connection again in 10 seconds",e);
-					
+				    
 					try {
-						Thread.sleep(10000);
+						Thread.sleep(1000*i+1);
+						i=Math.min(i+1, 10);
 					} catch (InterruptedException e1) {
 						Thread.currentThread().interrupt();
 						throw new TargetAlgorithmAbortException(e1);
 					}
 					
 				}
-				
-				
 				
 				
 			}
