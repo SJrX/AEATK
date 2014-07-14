@@ -236,35 +236,35 @@ dirty: ${git.dirty}</echo>
 		<delete dir="dist/util/"/>
 		<mkdir dir="dist/util/"/>
 		
-			<java classname="ca.ubc.cs.beta.aeatk.ant.execscript.ExecScriptCreator" failonerror="true" classpathref="build.classpath" fork="true">
+		<java classname="ca.ubc.cs.beta.aeatk.ant.execscript.ExecScriptCreator" failonerror="true" classpathref="build.classpath" fork="true">
+				<arg value="--class"/>
+				<arg value="ca.ubc.cs.beta.aeatk.example.tae.TargetAlgorithmEvaluatorRunner"/>
+				<arg value="--name"/>
+				<arg value="algo-test"/>
+				<arg value="--file-to-write"/>
+				<arg value="dist/util"/>	
+		</java>
+		<java classname="ca.ubc.cs.beta.aeatk.ant.execscript.ExecScriptCreator" failonerror="true" classpathref="build.classpath" fork="true">
+				<arg value="--class"/>
+				<arg value="ca.ubc.cs.beta.aeatk.example.satisfiabilitychecker.SatisfiabilityChecker"/>
+				<arg value="--name"/>
+				<arg value="sat-check"/>
+				<arg value="--file-to-write"/>
+				<arg value="dist/util/"/>	
+				<arg value="--default-mem"/>
+				<arg value="1024"/>
+		</java>
+		
+		<java classname="ca.ubc.cs.beta.aeatk.ant.execscript.ExecScriptCreator" failonerror="true" classpathref="build.classpath" fork="true">
 					<arg value="--class"/>
-					<arg value="ca.ubc.cs.beta.aeatk.example.tae.TargetAlgorithmEvaluatorRunner"/>
+					<arg value="ca.ubc.cs.beta.aeatk.example.verifyscenario.VerifyScenarioExecutor"/>
 					<arg value="--name"/>
-					<arg value="algo-test"/>
-					<arg value="--file-to-write"/>
-					<arg value="dist/util"/>	
-				</java>
-			<java classname="ca.ubc.cs.beta.aeatk.ant.execscript.ExecScriptCreator" failonerror="true" classpathref="build.classpath" fork="true">
-					<arg value="--class"/>
-					<arg value="ca.ubc.cs.beta.aeatk.example.satisfiabilitychecker.SatisfiabilityChecker"/>
-					<arg value="--name"/>
-					<arg value="sat-check"/>
+					<arg value="verify-scenario"/>
 					<arg value="--file-to-write"/>
 					<arg value="dist/util/"/>	
 					<arg value="--default-mem"/>
 					<arg value="1024"/>
-			</java>
-			
-			<java classname="ca.ubc.cs.beta.aeatk.ant.execscript.ExecScriptCreator" failonerror="true" classpathref="build.classpath" fork="true">
-						<arg value="--class"/>
-						<arg value="ca.ubc.cs.beta.aeatk.example.verifyscenario.VerifyScenarioExecutor"/>
-						<arg value="--name"/>
-						<arg value="verify-scenario"/>
-						<arg value="--file-to-write"/>
-						<arg value="dist/util/"/>	
-						<arg value="--default-mem"/>
-						<arg value="1024"/>
-			</java>
+		</java>
 					
 		
 		<java classname="ca.ubc.cs.beta.aeatk.ant.execscript.ExecScriptCreator" failonerror="true" classpathref="build.classpath" fork="true">
