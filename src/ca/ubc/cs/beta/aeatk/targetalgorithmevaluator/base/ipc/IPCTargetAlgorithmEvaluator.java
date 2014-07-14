@@ -263,7 +263,7 @@ public class IPCTargetAlgorithmEvaluator extends AbstractSyncTargetAlgorithmEval
 				
 
 				Socket socket;
-				int i =1;
+				int i = 1;
 				
 				try {
 					

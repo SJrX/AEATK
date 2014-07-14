@@ -1,5 +1,6 @@
 package ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli;
 
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ArrayBlockingQueue;
@@ -21,7 +22,6 @@ import ca.ubc.cs.beta.aeatk.concurrent.threadfactory.SequentiallyNamedThreadFact
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.AbstractAsyncTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
-
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.algorithmrunner.ConcurrentAlgorithmRunner;
 
 /**
@@ -45,6 +45,9 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractAsyncTargetAlgo
 	
 	private final ExecutorService commandLineAlgorithmRunExecutorService;
 	private final ExecutorService observerExecutorService = Executors.newCachedThreadPool(new SequentiallyNamedThreadFactory("CLI TAE Observer Threads", true));
+	
+	private final ExecutorService callbackExecutorService = Executors.newCachedThreadPool(new SequentiallyNamedThreadFactory("CLI TAE Callback Threads", true));
+	
 	
 	private final Semaphore asyncExecutions;
 	
@@ -107,69 +110,90 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractAsyncTargetAlgo
 		}
 		
 		
-		this.asyncExecService.execute(new Runnable()
+		try 
 		{
-
-			@Override
-			public void run() {
-				
-
-				ConcurrentAlgorithmRunner runner =null;
-				
-				List<AlgorithmRunResult> runs = null;
-				
-				try 
-				{
-					try {
-						runner = getAlgorithmRunner(runConfigs,runStatusObserver);
-						runs =  runner.run(commandLineAlgorithmRunExecutorService);
-					} finally
+			this.asyncExecService.execute(new Runnable()
+			{
+	
+				@Override
+				public void run() {
+					
+	
+					ConcurrentAlgorithmRunner runner =null;
+					
+					List<AlgorithmRunResult> runs = null;
+					
+					try 
 					{
-						asyncExecutions.release();	
-					}
-				} catch(RuntimeException e)
-				{
-					taeCallback.onFailure(e);
-					return;
-				} catch(Throwable e)
-				{
-					taeCallback.onFailure(new IllegalStateException("Unexpected Throwable:", e));
-					if(e instanceof Error)
+						try {
+							runner = getAlgorithmRunner(runConfigs,runStatusObserver);
+							runs =  runner.run(commandLineAlgorithmRunExecutorService);
+						} finally
+						{
+							asyncExecutions.release();	
+						}
+					} catch(RuntimeException e)
 					{
-						throw e;
+						taeCallback.onFailure(e);
+						return;
+					} catch(Throwable e)
+					{
+						taeCallback.onFailure(new IllegalStateException("Unexpected Throwable:", e));
+						if(e instanceof Error)
+						{
+							throw e;
+						}
+						
+						return;
 					}
 					
-					return;
-				}
-				
-				addRuns(runs);
-			
-				try {
-					if(runStatusObserver != null)
-					{
-						runStatusObserver.currentStatus(runs);
-					}
-					taeCallback.onSuccess(runs);
-				} catch(RuntimeException e)
-				{
-					taeCallback.onFailure(e);
-				} catch(Throwable e)
-				{
-					taeCallback.onFailure(new IllegalStateException("Unexpected Throwable:", e));
+					addRuns(runs);
 					
-					if(e instanceof Error)
+					final List<AlgorithmRunResult> finalSolutions = runs;
+					
+					Runnable callbackInvokingRunnable = new Runnable()
 					{
-						throw e;
-					}
+
+						@Override
+						public void run() {
+							try {
+								if(runStatusObserver != null)
+								{
+									runStatusObserver.currentStatus(finalSolutions);
+								}
+								taeCallback.onSuccess(finalSolutions);
+							} catch(RuntimeException e)
+							{
+								taeCallback.onFailure(e);
+							} catch(Throwable e)
+							{
+								taeCallback.onFailure(new IllegalStateException("Unexpected Throwable:", e));
+								
+								if(e instanceof Error)
+								{
+									throw e;
+								}
+							}
+							
+						}
+						
+					};
+					
+					callbackExecutorService.execute(callbackInvokingRunnable);
+					
+					
+					
+					
+					
 				}
 				
-				
-				
-				
-				
-			}
-			
-		});
+			});
+		} catch(RuntimeException e)
+		{
+			log.error("Got exception on " + AlgorithmRunConfiguration.class.getSimpleName() + " submission to " + this.getClass().getSimpleName(), e);
+			asyncExecutions.release();
+			throw e;
+		}
 		
 	}
 	
@@ -214,6 +238,7 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractAsyncTargetAlgo
 			this.asyncExecService.shutdown();
 			this.commandLineAlgorithmRunExecutorService.shutdown();
 			this.observerExecutorService.shutdown();
+			this.callbackExecutorService.shutdown();
 			
 			log.debug("Awaiting Termination of existing command line algorithm runs");
 
@@ -221,7 +246,7 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractAsyncTargetAlgo
 			
 			while(!terminated)
 			{
-				log.warn("Termination of target algorithm evaluator failed, outstanding runs must still exist, ");
+				log.warn("Termination of target algorithm evaluator failed, outstanding runs must still exist [asyncExecService]");
 				terminated = this.asyncExecService.awaitTermination(10, TimeUnit.MINUTES);
 			}
 			
@@ -230,7 +255,7 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractAsyncTargetAlgo
 			
 			while(!terminated)
 			{
-				log.warn("Termination of target algorithm evaluator failed (CLI Runs), outstanding runs must still exist, ");
+				log.warn("Termination of target algorithm evaluator failed (CLI Runs), outstanding runs must still exist [commandLineAlgorithmRunExecutorService]");
 				terminated = this.commandLineAlgorithmRunExecutorService.awaitTermination(10, TimeUnit.MINUTES);
 			}
 			
@@ -238,19 +263,25 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractAsyncTargetAlgo
 			
 			while(!terminated)
 			{
-				log.warn("Termination of target algorithm evaluator failed (CLI Runs), outstanding runs must still exist, ");
+				log.warn("Termination of target algorithm evaluator failed (CLI Runs), outstanding runs must still exist [observerExecutorService]");
 				terminated = this.observerExecutorService.awaitTermination(10, TimeUnit.MINUTES);
 			}
 			
+			terminated = this.callbackExecutorService.awaitTermination(10, TimeUnit.SECONDS);
 			
-			
+			while(!terminated)
+			{
+				log.warn("Termination of target algorithm evaluator failed (CLI Runs), outstanding runs must still exist [callbackExecutorService]");
+				terminated = this.callbackExecutorService.awaitTermination(10, TimeUnit.MINUTES);
+			}
 			
 		} catch (InterruptedException e) {
+			log.warn("notifyShutdown() called on " + this.getClass().getSimpleName() + " but was interrupted");
 			Thread.currentThread().interrupt();
 			this.asyncExecService.shutdownNow();
 			this.commandLineAlgorithmRunExecutorService.shutdownNow();
 			this.observerExecutorService.shutdownNow();
-			
+			this.callbackExecutorService.shutdownNow();
 			return;
 			
 		}

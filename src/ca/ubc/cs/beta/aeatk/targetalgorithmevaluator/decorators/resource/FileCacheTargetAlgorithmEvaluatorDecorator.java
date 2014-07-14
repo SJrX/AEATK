@@ -4,10 +4,12 @@ import java.io.File;
 import java.io.FileInputStream;
 import java.io.FileNotFoundException;
 import java.io.FileOutputStream;
+import java.io.FileWriter;
 import java.io.IOException;
 import java.io.ObjectInputStream;
 import java.io.ObjectOutputStream;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.List;
@@ -23,10 +25,17 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import com.beust.jcommander.ParameterException;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonParseException;
+import com.fasterxml.jackson.core.JsonParser;
+import com.fasterxml.jackson.core.Version;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 
 import net.jcip.annotations.ThreadSafe;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorHelper;
@@ -364,19 +373,13 @@ public class FileCacheTargetAlgorithmEvaluatorDecorator extends	AbstractTargetAl
 	private void readFile(File f, ConcurrentHashMap<AlgorithmRunConfiguration, AlgorithmRunResult> cacheLoading) {
 		
 		boolean logError = false;
-		if(f.getAbsolutePath().endsWith(".bin"))
+		if(f.getAbsolutePath().endsWith(".bin") || f.getAbsolutePath().endsWith(".json"))
 		{ 
 			logError = true;
 		}
 		try 
 		{
-			FileInputStream fin = new FileInputStream(f);
-			
-		
-			
-			ObjectInputStream in = new ObjectInputStream(fin);
-			
-			List<AlgorithmRunResult> runs = (List<AlgorithmRunResult>) in.readObject();
+			List<AlgorithmRunResult> runs = getListFromFile(f);
 			
 			for(AlgorithmRunResult run : runs)
 			{
@@ -387,16 +390,68 @@ public class FileCacheTargetAlgorithmEvaluatorDecorator extends	AbstractTargetAl
 			}
 		} catch(IOException e)
 		{
+			
+		
 			if(logError)
 			{
-				log.error("Couldn't read data from file {}", f);
-				log.error("Exception:", e);
+				log.error("Coludn't read file {} ", f);
+				log.error("Couldn't read data from file", e);
 			}
-		} catch (ClassNotFoundException e) {
-			log.error("Couldn't read data from file {}", f);
-			log.error("Exception:", e);
 		}
 		
+		
+	}
+	
+	private List<AlgorithmRunResult> getListFromFile(File f) throws IOException
+	{
+		
+		try
+		{
+			return getListFromJSONFile(f);
+		} catch(IOException  e)
+		{
+			try
+			{
+				return getListFromJavaSerializedFile(f);
+			} catch(Exception e2)
+			{
+				log.trace("Trying to read from JSON file as binary file, exception:", e2);
+				//Ignore the internal exception
+				throw e;
+			}
+		}
+	}
+	
+	private List<AlgorithmRunResult> getListFromJSONFile(File f) throws JsonParseException, IOException
+	{
+		JsonFactory jfactory = new JsonFactory();
+		
+		
+		//System.err.println("Starting...");
+		
+		
+			ObjectMapper map = new ObjectMapper(jfactory);
+			SimpleModule sModule = new SimpleModule("MyModule", new Version(1, 0, 0, null));
+			map.registerModule(sModule);
+
+		
+			JsonParser jParser = jfactory.createParser(f);
+			
+			
+			List<AlgorithmRunResult> runs = new ArrayList<AlgorithmRunResult>(Arrays.asList(map.readValue(jParser, AlgorithmRunResult[].class)));
+
+			return runs;
+	}
+	
+	private List<AlgorithmRunResult> getListFromJavaSerializedFile(File f) throws IOException, ClassNotFoundException
+	{
+		FileInputStream fin = new FileInputStream(f);
+		
+		
+		
+		ObjectInputStream in = new ObjectInputStream(fin);
+		
+		return  (List<AlgorithmRunResult>) in.readObject();
 		
 	}
 
@@ -428,7 +483,7 @@ public class FileCacheTargetAlgorithmEvaluatorDecorator extends	AbstractTargetAl
 					UUID uuid = UUID.randomUUID();
 					if(output.isDirectory())
 					{
-						outFile = new File(output + File.separator + "rundata-"+this.numRun + "-" + uuid.toString()  + ".bin");
+						outFile = new File(output + File.separator + "rundata-"+this.numRun + "-" + uuid.toString()  + ".json");
 					} else
 					{
 						outFile = output;
@@ -450,19 +505,34 @@ public class FileCacheTargetAlgorithmEvaluatorDecorator extends	AbstractTargetAl
 						
 					
 					try {
-						FileOutputStream fout = new FileOutputStream(outFile);
 						
-						ObjectOutputStream tout = new ObjectOutputStream(fout);
 						
-						List<AlgorithmRunResult> runs = new ArrayList<AlgorithmRunResult>(this.learnedRuns.size());
-						for(AlgorithmRunResult run : this.learnedRuns.values())
+						
+						try(FileWriter fWrite = new FileWriter(outFile))
 						{
-							runs.add(run);
+						
+						/*ObjectOutputStream tout = new ObjectOutputStream(fout);
+						*/
+							List<AlgorithmRunResult> runs = new ArrayList<AlgorithmRunResult>(this.learnedRuns.size());
+							for(AlgorithmRunResult run : this.learnedRuns.values())
+							{
+								runs.add(run);
+							}
+							
+							ObjectMapper map = new ObjectMapper();
+							SimpleModule sModule = new SimpleModule("MyModule", new Version(1, 0, 0, null));
+							map.registerModule(sModule);
+							
+							
+							map.writeValue(fWrite, runs);
+							
 						}
 						
+						/*
 						tout.writeObject(runs);
 						
 						tout.close();
+						*/
 					} catch (IOException e) {
 						log.error("Couldn't write data to file: {}", outFile);
 						log.error("Encountered Error while writing data {}",e);

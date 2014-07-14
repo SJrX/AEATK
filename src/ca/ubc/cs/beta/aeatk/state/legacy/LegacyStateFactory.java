@@ -414,18 +414,20 @@ public class LegacyStateFactory implements StateFactory{
 		log.trace("Deleting all saved state files except those applicable to iteration {} ", lastIteration);
 		
 		
-		if(log.isDebugEnabled())
+		
+		for(String filename : filesToDelete)
 		{
-			for(String filename : filesToDelete)
+			log.trace("Deleting file {}", filename);
+			if(!(new File(filename)).delete())
 			{
-				log.trace("Deleting file {}", filename);
-				if(!(new File(filename)).delete())
+				if(log.isDebugEnabled())
 				{
 					log.warn("Could not delete file {} ", filename);
 				}
-				
 			}
+			
 		}
+	
 		
 		
 		

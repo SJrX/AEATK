@@ -3,6 +3,10 @@ package ca.ubc.cs.beta.aeatk.targetalgorithmevaluator;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+
+import org.slf4j.Logger;
+import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
@@ -22,9 +26,22 @@ public abstract class AbstractSyncTargetAlgorithmEvaluator extends
     private final ExecutorService execService;
 	
 	
-	public AbstractSyncTargetAlgorithmEvaluator() {
+    public AbstractSyncTargetAlgorithmEvaluator() {
+		this(false);
+		
+		
+	}
+    
+	public AbstractSyncTargetAlgorithmEvaluator(boolean unlimitedThreads) {
 		super();
-		execService = Executors.newCachedThreadPool(new SequentiallyNamedThreadFactory(this.getClass().getSimpleName() + " Abstract Blocking TAE Async Processing Thread"));
+		if(unlimitedThreads)
+		{
+			execService = Executors.newCachedThreadPool(new SequentiallyNamedThreadFactory(this.getClass().getSimpleName() + " Abstract Blocking TAE Async Processing Thread (Cached)"));
+		} else
+		{
+			execService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(),(new SequentiallyNamedThreadFactory(this.getClass().getSimpleName() + " Abstract Blocking TAE Async Processing Thread (Available Processors " + Runtime.getRuntime().availableProcessors() + ")")));
+		}
+		
 	}
 	
 	/**
@@ -34,7 +51,7 @@ public abstract class AbstractSyncTargetAlgorithmEvaluator extends
 	public AbstractSyncTargetAlgorithmEvaluator(int aThreads)
 	{
 	    super();
-	    execService = Executors.newFixedThreadPool(aThreads, new SequentiallyNamedThreadFactory(this.getClass().getSimpleName() + " Abstract Blocking TAE Async Processing Thread"));
+	    execService = Executors.newFixedThreadPool(aThreads, new SequentiallyNamedThreadFactory(this.getClass().getSimpleName() + " Abstract Blocking TAE Async Processing Thread (Explicit " + aThreads + ")"));
 	}
 
 	@Override
@@ -96,6 +113,41 @@ public abstract class AbstractSyncTargetAlgorithmEvaluator extends
 	public final void notifyShutdown()
 	{
 		execService.shutdown();
-		this.subtypeShutdown();
+		Logger log = LoggerFactory.getLogger(this.getClass());
+		try 
+		{
+			
+			try {
+				boolean shutdown = execService.awaitTermination(120, TimeUnit.SECONDS);
+				if(!shutdown)
+				{
+					log.warn("Outstanding evaluations on Target Algorithm Evaluator did not complete within 120 seconds, will try to interrupt currently executing tasks.");
+				} 
+			} catch (InterruptedException e) {
+				
+				Thread.currentThread().interrupt();
+				log.warn("Interrupted while waiting for TAE shutdown");
+			}
+			
+			execService.shutdownNow();
+				
+			boolean shutdown;
+				
+			try {
+				shutdown = execService.awaitTermination(120, TimeUnit.SECONDS);
+				if(!shutdown)
+				{
+					LoggerFactory.getLogger(this.getClass()).warn("Outstanding evaluations on Target Algorithm Evaluator did not complete within 120 seconds, even after interruption");
+				}
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				log.warn("Interrupted while waiting for TAE shutdown after interruption");
+			
+			}
+				
+		} finally
+		{
+			this.subtypeShutdown();
+		}
 	}
 }

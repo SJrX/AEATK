@@ -19,8 +19,7 @@ import com.beust.jcommander.ParameterFile;
 @UsageTextField(title="Inter-Process Communication Target Algorithm Evaluator Options", description="This Target Algorithm Evaluator hands the requests off to another process. The current encoding mechanism is the same as on the command line, except that we do not specify the algo executable field. The current mechanism can only execute one request to the server at a time. A small code change would be required to handle the more general case, so please contact the developers if this is required. ", level=OptionLevel.ADVANCED)
 public class IPCTargetAlgorithmEvaluatorOptions extends AbstractOptions {
 
-	
-	
+
 	@Parameter(names="--ipc-report-persistent", description="Whether the TAE should be treated as persistent, loosely a TAE is persistent if we could ask it for the same request later and it wouldn't have to redo the work from scratch.")
 	public boolean persistent;
 	
@@ -57,6 +56,9 @@ public class IPCTargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	@ParameterFile(ignoreFileNotExists = true) 
 	public File ipcDefaults = HomeFileUtils.getHomeFile(".aeatk" + File.separator  + "ipc-tae.opt");
 	
+	@UsageTextField(defaultValues="One more than the number of available processors", level=OptionLevel.ADVANCED)
+	@Parameter(names="--ipc-async-threads", description="Number of asynchronous threads to use ")
+	public int asyncThreads = Runtime.getRuntime().availableProcessors() + 1;
 	
 	public enum IPCMechanism 
 	{

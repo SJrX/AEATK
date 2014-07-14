@@ -273,12 +273,8 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 			map.registerModule(sModule);
 
 			
-			//map.readValue(jParser)
-			
 			JsonParser jParser = jfactory.createParser(match);
 			
-			
-			//jParser.
 			
 			List<ProblemInstance> pis = new ArrayList<ProblemInstance>(Arrays.asList(map.readValue(jParser, ProblemInstance[].class)));
 
@@ -293,7 +289,7 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 			
 			
 			
-			//System.out.print("Trying to read run: ");
+		
 			List<AlgorithmRunResult> runResult = new ArrayList<AlgorithmRunResult>();
 		
 			
@@ -304,8 +300,6 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 		
 				runResult.add(it.nextValue());
 			}
-	
-			
 			
 			int newValue = previousRuns; 
 			
@@ -337,12 +331,12 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 			//We will just retry later
 			
 			
-			log.debug("Error occurred reading file " + match.getAbsolutePath() + ":", e);
+			log.debug("Error occurred reading file in shared run history" + match.getAbsolutePath() + ":", e);
 			//importedRuns.put(match, -1);
 		} catch (IOException e) {
 			//We will just retry later
 			
-			log.debug("Error occurred reading file " + match.getAbsolutePath() + ":", e);
+			log.debug("Error occurred reading file in shared run history" + match.getAbsolutePath() + ":", e);
 			
 			//log.error("Error occurred reading file " + match.getAbsolutePath() + " no longer looking at it, {}", e);
 			//importedRuns.put(match, -1);

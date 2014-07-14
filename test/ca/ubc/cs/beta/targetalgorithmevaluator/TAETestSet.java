@@ -258,10 +258,28 @@ public class TAETestSet {
 		//opt.execScriptOutput = true;
 		TargetAlgorithmEvaluator itae = tfact.getTargetAlgorithmEvaluator(opt);
 
+		itae = new OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator(itae);
 		aWatch = new AutoStartStopWatch();
 		System.out.println(itae.evaluateRun(rcs));
 		System.out.println("Second batch of runs took: " + aWatch.stop() + "ms");
 		
+		itae.evaluateRunsAsync(rcs, new TargetAlgorithmEvaluatorCallback() {
+
+			@Override
+			public void onSuccess(List<AlgorithmRunResult> runs) {
+				System.out.println("DONE");
+				
+			}
+
+			@Override
+			public void onFailure(RuntimeException e) {
+				e.printStackTrace();
+				
+			}
+			
+		});
+		
+		itae.waitForOutstandingEvaluations();
 		itae.notifyShutdown();
 		
 		
