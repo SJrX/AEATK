@@ -81,8 +81,9 @@ public class OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator extends
 	
 	private void logRelease(List<AlgorithmRunConfiguration> runConfigs)
 	{
-		outstandingRunBlocks.release();
+	
 		outstandingRuns.addAndGet(-1*runConfigs.size());
+		outstandingRunBlocks.release();
 		
 		/*
 		if(log.isTraceEnabled())

@@ -13,15 +13,19 @@ import java.io.PrintStream;
 import java.io.PrintWriter;
 import java.io.StringWriter;
 import java.lang.Thread.UncaughtExceptionHandler;
+import java.lang.management.ManagementFactory;
+import java.lang.management.ThreadMXBean;
 import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Date;
+import java.util.EnumMap;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
 import java.util.concurrent.CountDownLatch;
@@ -286,7 +290,6 @@ public class TAETestSet {
 	}
 	
 	@Test
-
 	/**
 	 * This just tests to see if {@link ForkingTargetAlgorithmEvaluatorDecorator} does what it should.
 	 */
@@ -446,6 +449,186 @@ public class TAETestSet {
 		}
 		
 		tae.close();
+	}
+	
+	
+	@Test
+	/**
+	 * This just tests to see if {@link ForkingTargetAlgorithmEvaluatorDecorator} does what it should.
+	 * 
+	 * See bug #2055
+	 * 
+	 */
+	public void testForkWithQuickPolicyBoundedThreads()
+	{
+
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(ParamEchoExecutor.class.getCanonicalName());
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("x0 [-5,10] [0]\n x1 [-0,15] [0]\n");
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 15);
+		
+		AnalyticTargetAlgorithmEvaluatorFactory ataef = new AnalyticTargetAlgorithmEvaluatorFactory();
+		
+		AnalyticTargetAlgorithmEvaluatorOptions options = ataef.getOptionObject();
+		
+		options.func = AnalyticFunctions.BRANINS;
+		
+		tae = ataef.getTargetAlgorithmEvaluator(options);
+		
+		options = ataef.getOptionObject();
+		
+		options.func = AnalyticFunctions.BRANINS;
+		
+		
+		RandomResponseTargetAlgorithmEvaluatorFactory rFact = new RandomResponseTargetAlgorithmEvaluatorFactory();
+		
+		RandomResponseTargetAlgorithmEvaluatorOptions rOptions = rFact.getOptionObject();
+		rOptions.sleepInternally = 500;
+		TargetAlgorithmEvaluator slaveTAE  =  rFact.getTargetAlgorithmEvaluator(rOptions);
+		
+		
+		//slaveTAE = new SimulatedDelayTargetAlgorithmEvaluatorDecorator(slaveTAE, 1000, 0.05);
+		
+		slaveTAE = new OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator(slaveTAE);
+		
+		ForkingTargetAlgorithmEvaluatorDecoratorPolicyOptions fOptions = new ForkingTargetAlgorithmEvaluatorDecoratorPolicyOptions();
+		fOptions.fPolicy = ForkingPolicy.DUPLICATE_ON_SLAVE_QUICK;
+		tae = new ForkingTargetAlgorithmEvaluatorDecorator(tae,slaveTAE, fOptions);
+		
+		tae = new OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator(tae);
+		
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
+		for(int i=0; i < 1; i++)
+		{
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
+
+			config.put("x0", "2.656650319997154");
+			config.put("x1", "8.192989379593786");
+			
+			//config.put("x0", "3.1415");
+			//config.put("x1", "2.275");
+			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), 1L), 15, config, execConfig);
+			runConfigs.add(rc);
+			
+		}
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		AutoStartStopWatch watch = new AutoStartStopWatch();
+		List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs);
+		
+		watch.stop();
+		
+		assertTrue("Run should have taken less than 1 second", watch.time() < 1000);
+		
+		System.out.println("Runs: " + runs);
+		for(AlgorithmRunResult run : runs)
+		{
+			ParameterConfiguration config  = run.getAlgorithmRunConfiguration().getParameterConfiguration();
+			
+			System.out.println(config.get("x0") + "," + config.get("x1") + "=>" + run.getRuntime());
+
+		}
+		
+		
+		 runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
+		final int NUM_RUNS_TO_DO = 100;
+		for(int i=0; i < NUM_RUNS_TO_DO; i++)
+		{
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
+
+			//config.put("x0", "2.756650319997154");
+			//config.put("x1", "8.192989379593786");
+			
+			//config.put("x0", "3.1415");
+			//config.put("x1", "2.275");
+			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), 1L), 15, config, execConfig);
+			runConfigs.add(rc);
+			
+		}
+		
+		System.out.println("Number of Threads: " + ManagementFactory.getThreadMXBean().getAllThreadIds().length);
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		watch = new AutoStartStopWatch();
+		for(int i=0; i < NUM_RUNS_TO_DO; i++)
+		{
+			tae.evaluateRunsAsync(runConfigs.subList(i, i+1), new TargetAlgorithmEvaluatorCallback() {
+
+				@Override
+				public void onSuccess(List<AlgorithmRunResult> runs) {
+					EnumMap<RunStatus,AtomicInteger> results = new EnumMap<RunStatus, AtomicInteger>(RunStatus.class);
+					
+					for(RunStatus rs : RunStatus.values())
+					{
+						results.put(rs, new AtomicInteger(0));
+					}
+					
+					for(AlgorithmRunResult run : runs)
+					{
+						results.get(run.getRunStatus()).incrementAndGet();
+					}
+					
+					System.out.println(results);
+					/*for(Entry<RunStatus, AtomicInteger> ent : results.entrySet())
+					{
+						
+					}*/
+				}
+
+				@Override
+				public void onFailure(RuntimeException e) {
+					e.printStackTrace();
+				}
+				
+			});
+			
+		}
+		//runs = tae.evaluateRun(runConfigs);
+		tae.waitForOutstandingEvaluations();
+
+		System.out.println(tae.toString());
+		System.out.println("Runs took : " + watch.time()  + " ms to execute");
+		System.out.println("Number of Threads: " + ManagementFactory.getThreadMXBean().getAllThreadIds().length);
+		//System.out.println(Arrays.deepToString(ManagementFactory.getThreadMXBean().getThreadInfo(ManagementFactory.getThreadMXBean().getAllThreadIds())));
+		System.out.println("Slave TAE outstanding:" + slaveTAE.getNumberOfOutstandingRuns());
+		int numberOfOutstanding = tae.getNumberOfOutstandingRuns();
+		System.out.println("TAE outstanding:" + numberOfOutstanding );
+
+		if(numberOfOutstanding > 0)
+		{
+			fail("Number of outstanding runs should have been zero, but instead got " + numberOfOutstanding);
+		}
+			
+	
+		
+				
+		
+		//watch.stop();
+		
+		//assertTrue("Run should have taken more than 1 second", watch.time() > 1000);
+		
+		System.out.println("Runs: " + runs);
+		/*
+		for(AlgorithmRunResult run : runs)
+		{
+			ParameterConfiguration config  = run.getAlgorithmRunConfiguration().getParameterConfiguration();
+			
+			System.out.println(config.get("x0") + "," + config.get("x1") + "=>" + run.getRuntime());
+
+		}*/
+		
+		
+		slaveTAE.waitForOutstandingEvaluations();
+		System.out.println("Slave TAE took total time: " + watch.stop() + " ms  to execute ");
+		if(watch.time() > 2000)
+		{
+			fail("Expected time should have been less than two seconds, but was " + watch.time() + " ms");
+		}
+		tae.notifyShutdown();
+		
 	}
 	
 	

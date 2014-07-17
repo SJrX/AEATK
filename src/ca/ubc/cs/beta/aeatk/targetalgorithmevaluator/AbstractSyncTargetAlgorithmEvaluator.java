@@ -1,8 +1,10 @@
 package ca.ubc.cs.beta.aeatk.targetalgorithmevaluator;
 
+import java.util.Collections;
 import java.util.List;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
+import java.util.concurrent.Semaphore;
 import java.util.concurrent.TimeUnit;
 
 import org.slf4j.Logger;
@@ -10,12 +12,23 @@ import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.concurrent.ReducableSemaphore;
 import ca.ubc.cs.beta.aeatk.concurrent.threadfactory.SequentiallyNamedThreadFactory;
+
+
 
 /**
  * Abstract TargetAlgorithmEvaluator that implements a basic form of asynchronous execution.
  * <br>
- * <b>Note:</b> Calls will just be made in a separate thread  
+ * <b>Note:</b> Calls will be processed in another thread. Additionally the bounding guarantees
+ * are not very good, we will submit a run when some semaphore is available, even if not enough 
+ * runs are available, implements or {@link #evaluateRun(List, TargetAlgorithmEvaluatorRunObserver)} need to do there own
+ * internal synchronization.
+ * 
+ *  
+ * If you need something better see {@link ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.BoundedTargetAlgorithmEvaluator}.
+ * 
+ * 
  * 
  * @author Steve Ramage <seramage@cs.ubc.ca>
  */
@@ -25,6 +38,10 @@ public abstract class AbstractSyncTargetAlgorithmEvaluator extends
     
     private final ExecutorService execService;
 	
+    /**
+     * 
+     */
+    private final ReducableSemaphore semaphore;
 	
     public AbstractSyncTargetAlgorithmEvaluator() {
 		this(false);
@@ -37,9 +54,12 @@ public abstract class AbstractSyncTargetAlgorithmEvaluator extends
 		if(unlimitedThreads)
 		{
 			execService = Executors.newCachedThreadPool(new SequentiallyNamedThreadFactory(this.getClass().getSimpleName() + " Abstract Blocking TAE Async Processing Thread (Cached)"));
+			semaphore = new ReducableSemaphore(Integer.MAX_VALUE, true);
 		} else
 		{
-			execService = Executors.newFixedThreadPool(Runtime.getRuntime().availableProcessors(),(new SequentiallyNamedThreadFactory(this.getClass().getSimpleName() + " Abstract Blocking TAE Async Processing Thread (Available Processors " + Runtime.getRuntime().availableProcessors() + ")")));
+			int procs = Runtime.getRuntime().availableProcessors();
+			execService = Executors.newFixedThreadPool(procs ,(new SequentiallyNamedThreadFactory(this.getClass().getSimpleName() + " Abstract Blocking TAE Async Processing Thread (Available Processors " + Runtime.getRuntime().availableProcessors() + ")")));
+			semaphore = new ReducableSemaphore(procs,true);
 		}
 		
 	}
@@ -51,35 +71,72 @@ public abstract class AbstractSyncTargetAlgorithmEvaluator extends
 	public AbstractSyncTargetAlgorithmEvaluator(int aThreads)
 	{
 	    super();
+	    if(aThreads <= 0)
+	    {
+	    	throw new IllegalArgumentException("Number of threads must be greater than 0");
+	    }
 	    execService = Executors.newFixedThreadPool(aThreads, new SequentiallyNamedThreadFactory(this.getClass().getSimpleName() + " Abstract Blocking TAE Async Processing Thread (Explicit " + aThreads + ")"));
+	    semaphore = new ReducableSemaphore(aThreads,true);
+	    
+	    
 	}
 
 	@Override
 	public  void evaluateRunsAsync(final List<AlgorithmRunConfiguration> runConfigs,
 			final TargetAlgorithmEvaluatorCallback handler, final TargetAlgorithmEvaluatorRunObserver obs) {
 		
+		if(runConfigs.size() == 0)
+		{
+			obs.currentStatus(Collections.<AlgorithmRunResult> emptyList());
+			handler.onSuccess(Collections.<AlgorithmRunResult> emptyList());
+			return;
+		}
+		
+		
+		try {
+			//Acquired one permit
+			semaphore.acquire();
+			
+			//Acquire N-1 more
+			semaphore.reducePermits(runConfigs.size() - 1);
+			
+			
+		} catch (InterruptedException e1) {
+			Thread.currentThread().interrupt();
+			handler.onFailure(new IllegalStateException(e1));
+			return;
+		}
+		
+		
 		Runnable run = new Runnable()
 		{
 
 			@Override
 			public void run() {
-				
-				try {
-					List<AlgorithmRunResult> runs = AbstractSyncTargetAlgorithmEvaluator.this.evaluateRun(runConfigs, obs);
-					
-					handler.onSuccess(runs);
-				} catch(RuntimeException e)
-				{
-					handler.onFailure(e);
-				} catch(Throwable t)
+				try
 				{
 					
-					handler.onFailure(new IllegalStateException("Unexpected throwable detected",t));
-					
-					if(t instanceof Error)
+					try {
+						List<AlgorithmRunResult> runs = AbstractSyncTargetAlgorithmEvaluator.this.evaluateRun(runConfigs, obs);
+						
+						handler.onSuccess(runs);
+					} catch(RuntimeException e)
 					{
-						throw t;
+						handler.onFailure(e);
+					} catch(Throwable t)
+					{
+						
+						handler.onFailure(new IllegalStateException("Unexpected throwable detected",t));
+						
+						if(t instanceof Error)
+						{
+							throw t;
+						}
 					}
+				} finally
+				{
+					//Release N permits
+					semaphore.release(runConfigs.size());
 				}
 			}
 			
