@@ -1,6 +1,9 @@
 package ca.ubc.cs.beta.targetalgorithmevaluator;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -10,36 +13,26 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.lang.Thread.UncaughtExceptionHandler;
-import java.text.SimpleDateFormat;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.output.NullOutputStream;
-import org.apache.commons.math3.distribution.ExponentialDistribution;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Ignore;
+import org.junit.Rule;
 import org.junit.Test;
+import org.junit.rules.ExpectedException;
 
 import ca.ubc.cs.beta.TestHelper;
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
@@ -53,6 +46,7 @@ import ca.ubc.cs.beta.aeatk.misc.logback.MarkerFilter;
 import ca.ubc.cs.beta.aeatk.misc.logging.LoggingMarker;
 import ca.ubc.cs.beta.aeatk.misc.watch.AutoStartStopWatch;
 import ca.ubc.cs.beta.aeatk.misc.watch.StopWatch;
+import ca.ubc.cs.beta.aeatk.objectives.RunObjective;
 import ca.ubc.cs.beta.aeatk.options.AbstractOptions;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParamFileHelper;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
@@ -62,11 +56,11 @@ import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aeatk.random.SeedableRandomPool;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorFactory;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorOptions;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.WaitableTAECallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.analytic.AnalyticFunctions;
-import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.analytic.AnalyticTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.analytic.AnalyticTargetAlgorithmEvaluatorFactory;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.analytic.AnalyticTargetAlgorithmEvaluatorOptions;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.blackhole.BlackHoleTargetAlgorithmEvaluator;
@@ -83,19 +77,18 @@ import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.preloaded.PreloadedRes
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.random.RandomResponseTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.random.RandomResponseTargetAlgorithmEvaluatorFactory;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.random.RandomResponseTargetAlgorithmEvaluatorOptions;
-import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.AbstractTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.debug.CheckForDuplicateRunConfigDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.debug.EqualTargetAlgorithmEvaluatorTester;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.functionality.OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.functionality.OutstandingEvaluationsWithAccessorTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.functionality.SimulatedDelayTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.functionality.TerminateAllRunsOnFileDeleteTargetAlgorithmEvaluatorDecorator;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.functionality.portfolio.PortfolioTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.helpers.KillCaptimeExceedingRunsRunsTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.helpers.OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.helpers.WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.prepostcommand.PrePostCommandErrorException;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.BoundedTargetAlgorithmEvaluator;
-import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.caching.CachingTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.forking.ForkingTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.forking.ForkingTargetAlgorithmEvaluatorDecoratorPolicyOptions;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.forking.ForkingTargetAlgorithmEvaluatorDecoratorPolicyOptions.ForkingPolicy;
@@ -181,6 +174,90 @@ public class TAETestSet {
 	{
 		pool.logUsage();
 	}
+	
+	
+	@Test
+	public void testPortfolioTargetAlgorithmEvaluatorDecorator()
+	{
+	    //Get analytical ADD tae.
+	    TargetAlgorithmEvaluatorFactory factory = new AnalyticTargetAlgorithmEvaluatorFactory();
+	    
+	    AnalyticTargetAlgorithmEvaluatorOptions options = new AnalyticTargetAlgorithmEvaluatorOptions();
+	    options.func = AnalyticFunctions.ADD;
+	    
+	    TargetAlgorithmEvaluator tae = factory.getTargetAlgorithmEvaluator(options);
+	    
+	    ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("x0 [0,10] [0]");
+	    AlgorithmExecutionConfiguration execConfig = new AlgorithmExecutionConfiguration("", "", configSpace, false, true, 15);
+	    
+	    //Construct portfolio.
+	    ParameterConfiguration config1 = configSpace.getDefaultConfiguration();
+	    config1.put("x0", "2");
+	    
+	    ParameterConfiguration config2 = configSpace.getDefaultConfiguration();
+        config2.put("x0", "5");
+        
+        ParameterConfiguration config3 = configSpace.getDefaultConfiguration();
+        config3.put("x0", "8");
+        
+	    /**
+	     * Test the addition of the default run.
+	     */
+        
+        List<ParameterConfiguration> portfolio = Arrays.asList(config1,config2,config3);
+        
+        TargetAlgorithmEvaluator portfolioTAE = PortfolioTargetAlgorithmEvaluatorDecorator.constructParamConfigPortfolioTargetAlgorithmEvaluatorDecorator(tae, portfolio, RunObjective.RUNTIME, false);
+        
+	    AlgorithmRunConfiguration runConfig = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("test-instance"), 0), 15, configSpace.getDefaultConfiguration(), execConfig);
+	    
+	    List<AlgorithmRunResult> results = portfolioTAE.evaluateRun(runConfig);
+	    AlgorithmRunResult result = results.get(0);
+	    
+	    System.out.println(results);
+	    assertTrue(result.getRuntime() == Double.valueOf(config1.get("x0")));
+	    
+	    portfolioTAE = PortfolioTargetAlgorithmEvaluatorDecorator.constructParamConfigPortfolioTargetAlgorithmEvaluatorDecorator(tae, portfolio, RunObjective.RUNTIME, true);
+        
+        results = portfolioTAE.evaluateRun(runConfig);
+        result = results.get(0);
+        
+        System.out.println(results);
+        assertTrue(result.getRuntime() == Double.valueOf(configSpace.getDefaultValuesMap().get("x0")));
+        
+        /**
+         * Test the breaking at duplicate runs.
+         */
+        
+        ParameterConfiguration configDup3 = configSpace.getDefaultConfiguration();
+        configDup3.put("x0", config3.get("x0"));
+        
+        ParameterConfiguration configDef = configSpace.getDefaultConfiguration();
+        
+        portfolio = Arrays.asList(config1,config2,config3,configDup3);        
+        
+        try
+        {
+            portfolioTAE = PortfolioTargetAlgorithmEvaluatorDecorator.constructParamConfigPortfolioTargetAlgorithmEvaluatorDecorator(tae, portfolio, RunObjective.RUNTIME, true);
+        }
+        catch(IllegalArgumentException e)
+        {
+            System.err.println(e);
+        }
+        
+        
+        portfolio = Arrays.asList(config1,config2,config3,configDef);
+        portfolioTAE = PortfolioTargetAlgorithmEvaluatorDecorator.constructParamConfigPortfolioTargetAlgorithmEvaluatorDecorator(tae, portfolio, RunObjective.RUNTIME, true);
+        try
+        {
+            results = portfolioTAE.evaluateRun(runConfig);
+        }
+        catch(IllegalStateException e)
+        {
+            System.err.println(e);
+        }
+	    
+	}
+	
 	
 	@Test
 	public void testIPCClient()
