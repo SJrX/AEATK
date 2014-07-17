@@ -623,11 +623,19 @@ public class TAETestSet {
 		
 		slaveTAE.waitForOutstandingEvaluations();
 		System.out.println("Slave TAE took total time: " + watch.stop() + " ms  to execute ");
-		if(watch.time() > 2000)
+		try 
+		
 		{
-			fail("Expected time should have been less than two seconds, but was " + watch.time() + " ms");
+			if(watch.time() > 2000)
+			{
+				
+				fail("Expected time should have been less than two seconds, but was " + watch.time() + " ms");
+			}
+		} finally
+		{
+			tae.notifyShutdown();
 		}
-		tae.notifyShutdown();
+		
 		
 	}
 	
