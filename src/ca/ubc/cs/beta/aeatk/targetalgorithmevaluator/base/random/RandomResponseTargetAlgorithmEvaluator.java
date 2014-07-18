@@ -43,6 +43,7 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 	
 	private final Random rand;
 	private final String additionalRunData;
+	private final long sleepInternally;
 	
 	private static final Logger log = LoggerFactory.getLogger(RandomResponseTargetAlgorithmEvaluator.class);
 			
@@ -64,6 +65,7 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 		this.shuffleRuns = options.shuffleResponses;
 		this.persistent = options.persistent;
 		this.additionalRunData = options.additionalRunData;
+		this.sleepInternally = options.sleepInternally;
 
 	}
 
@@ -88,6 +90,15 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 		if(shuffleRuns)
 		{
 			Collections.shuffle(ar, rand);
+		}
+		
+		if(sleepInternally > 0)
+		{
+			try {
+				Thread.sleep(sleepInternally);
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+			}
 		}
 		return ar;
 	}

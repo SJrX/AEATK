@@ -54,5 +54,7 @@ public class RandomResponseTargetAlgorithmEvaluatorOptions extends AbstractOptio
 	//IT CAN BE CAUGHT
 	public boolean shuffleResponses;
 
+	//DO NOT EXPOSE THIS ARGUMENT TO THE COMMAND LINE AS IT'S VERY UGLY
+	public long sleepInternally =0; 
 	
 }

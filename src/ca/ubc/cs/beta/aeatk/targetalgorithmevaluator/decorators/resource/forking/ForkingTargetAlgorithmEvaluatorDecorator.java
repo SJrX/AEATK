@@ -204,6 +204,7 @@ public class ForkingTargetAlgorithmEvaluatorDecorator extends AbstractAsyncTarge
 					slaveSubmits.addAndGet(runConfigs.size());
 					fSlaveTAE.evaluateRunsAsync(slaveRunConfigurations, slaveForkCallback, forkObserver);
 				}
+				
 			}
 		});
 		
@@ -248,15 +249,34 @@ public class ForkingTargetAlgorithmEvaluatorDecorator extends AbstractAsyncTarge
 		{
 			fSlaveSubmitterThreadPool.shutdownNow();
 			try {
+				
+				
+				if(!fSlaveSubmitterThreadPool.awaitTermination(1, TimeUnit.MINUTES))
+				{
+					log.warn("Trying to shutdown slave Target Algorithm Evaluator, no response after 1 minute will wait up to two hours before continuing");
+				}
+				
+				if(!fSlaveSubmitterThreadPool.awaitTermination(59, TimeUnit.MINUTES))
+				{
+					log.warn("Slave TAE submitter thread pool did not terminate after one hour, will wait one more hour");
+				}
+				
 				if(!fSlaveSubmitterThreadPool.awaitTermination(60, TimeUnit.MINUTES))
 				{
-					log.error("Slave TAE submitter thread pool did not terminate in 60 minutes.");
+					log.error("Slave TAE submitter thread pool did not terminate in 120 minutes.");
 				}
+				
 			} catch (InterruptedException e) {
 				Thread.currentThread().interrupt();
 			}
 			//Shutdown the forked slave TAE.
-			fSlaveTAE.notifyShutdown();
+			try 
+			{
+				fSlaveTAE.notifyShutdown();
+			} catch(RuntimeException e)
+			{
+				log.warn("Slave Target Algorithm Evaluator did not shutdown correctly, this may or may not be because of outstanding runs still executing. This message may possibly be benign", e);
+			}
 		} finally
 		{
 			log.info("Fork Target Algorithm Evaluator Statistics: Requests: {}, Master Solves First: {}, Slave Solves First: {}, Slave Submits: {}", this.requests.get(), this.masterSolvesFirst.get(), this.slaveSolvesFirst.get(), this.slaveSubmits.get());
