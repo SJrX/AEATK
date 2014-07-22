@@ -146,6 +146,7 @@ public class PortfolioTargetAlgorithmEvaluatorDecorator extends	AbstractTargetAl
 	    this.fRunObj = aRunObj;
         
 	    this.fSubmitOriginalRun = aSubmitOriginalRun;
+	    
 	}
 	
 	
@@ -227,6 +228,7 @@ public class PortfolioTargetAlgorithmEvaluatorDecorator extends	AbstractTargetAl
 		TargetAlgorithmEvaluatorRunObserver myObs = getPortfolioObserver(aObserver, aOriginalRunConfigs, portfolioRunsPerOriginalRun);
 		
 		log.info("Portfolio request translated runs {} to {} ", aOriginalRunConfigs.size(), portfolioRunConfigs.size() );
+		
 		tae.evaluateRunsAsync(portfolioRunConfigs, myHandler, myObs);
 
 	}
@@ -250,6 +252,11 @@ public class PortfolioTargetAlgorithmEvaluatorDecorator extends	AbstractTargetAl
             @Override
             public void onSuccess(List<AlgorithmRunResult> runs) 
             {   
+                if(runs.size() != aOriginalRunConfigs.size() * aPortfolioRunsPerOriginalRun)
+                {
+                    throw new IllegalArgumentException("Provided "+runs.size()+" runs, not all the "+aOriginalRunConfigs.size()+"*"+aPortfolioRunsPerOriginalRun+" (="+aOriginalRunConfigs.size()*aPortfolioRunsPerOriginalRun+") portfolio runs submitted (from "+aOriginalRunConfigs.size()+" original runs).");
+                }
+                
                 List<AlgorithmRunResult> listToReturn = new ArrayList<>();
                         
                 for(int i=0; i < aOriginalRunConfigs.size(); i ++)
@@ -338,13 +345,19 @@ public class PortfolioTargetAlgorithmEvaluatorDecorator extends	AbstractTargetAl
 	{
 	    return new TargetAlgorithmEvaluatorRunObserver()
         {
+	        
             Set<AlgorithmRunResult> killedRuns = Collections.newSetFromMap(new ConcurrentHashMap<AlgorithmRunResult,Boolean>()); 
             @Override
             public void currentStatus(final List<? extends AlgorithmRunResult> runs) {
                 
+                if(runs.size() != aOriginalRunConfigs.size() * aPortfolioRunsPerOriginalRun)
+                {
+                    throw new IllegalArgumentException("Provided "+runs.size()+" runs, not all the "+aOriginalRunConfigs.size()+"*"+aPortfolioRunsPerOriginalRun+" (="+aOriginalRunConfigs.size()*aPortfolioRunsPerOriginalRun+") portfolio runs submitted (from "+aOriginalRunConfigs.size()+" original runs).");
+                }
+                
                 List<AlgorithmRunResult> kRunsToClient = new ArrayList<AlgorithmRunResult>();
                                 
-                for(int i=0; i < aOriginalRunConfigs.size(); i ++)
+                for(int i=0; i < aOriginalRunConfigs.size(); i++)
                 {
                     /**
                      * See similar line in callback, we basically split the runs into all the runs for the requested run config.
