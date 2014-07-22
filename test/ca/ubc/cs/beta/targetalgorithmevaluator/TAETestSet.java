@@ -83,6 +83,7 @@ import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.functionality.Ou
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.functionality.OutstandingEvaluationsWithAccessorTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.functionality.SimulatedDelayTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.functionality.TerminateAllRunsOnFileDeleteTargetAlgorithmEvaluatorDecorator;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.functionality.portfolio.PortfolioRunKillingPolicy;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.functionality.portfolio.PortfolioTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.helpers.KillCaptimeExceedingRunsRunsTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.helpers.OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator;
@@ -206,7 +207,7 @@ public class TAETestSet {
         
         List<ParameterConfiguration> portfolio = Arrays.asList(config1,config2,config3);
         
-        TargetAlgorithmEvaluator portfolioTAE = PortfolioTargetAlgorithmEvaluatorDecorator.constructParamConfigPortfolioTargetAlgorithmEvaluatorDecorator(tae, portfolio, RunObjective.RUNTIME, false);
+        TargetAlgorithmEvaluator portfolioTAE = PortfolioTargetAlgorithmEvaluatorDecorator.constructParamConfigPortfolioTargetAlgorithmEvaluatorDecorator(tae, portfolio, RunObjective.RUNTIME, false, PortfolioRunKillingPolicy.SLOWERDIES);
         
 	    AlgorithmRunConfiguration runConfig = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("test-instance"), 0), 15, configSpace.getDefaultConfiguration(), execConfig);
 	    
@@ -216,7 +217,7 @@ public class TAETestSet {
 	    System.out.println(results);
 	    assertTrue(result.getRuntime() == Double.valueOf(config1.get("x0")));
 	    
-	    portfolioTAE = PortfolioTargetAlgorithmEvaluatorDecorator.constructParamConfigPortfolioTargetAlgorithmEvaluatorDecorator(tae, portfolio, RunObjective.RUNTIME, true);
+	    portfolioTAE = PortfolioTargetAlgorithmEvaluatorDecorator.constructParamConfigPortfolioTargetAlgorithmEvaluatorDecorator(tae, portfolio, RunObjective.RUNTIME, true, PortfolioRunKillingPolicy.SLOWERDIES);
         
         results = portfolioTAE.evaluateRun(runConfig);
         result = results.get(0);
@@ -237,7 +238,7 @@ public class TAETestSet {
         
         try
         {
-            portfolioTAE = PortfolioTargetAlgorithmEvaluatorDecorator.constructParamConfigPortfolioTargetAlgorithmEvaluatorDecorator(tae, portfolio, RunObjective.RUNTIME, true);
+            portfolioTAE = PortfolioTargetAlgorithmEvaluatorDecorator.constructParamConfigPortfolioTargetAlgorithmEvaluatorDecorator(tae, portfolio, RunObjective.RUNTIME, true, PortfolioRunKillingPolicy.SLOWERDIES);
         }
         catch(IllegalArgumentException e)
         {
@@ -246,7 +247,7 @@ public class TAETestSet {
         
         
         portfolio = Arrays.asList(config1,config2,config3,configDef);
-        portfolioTAE = PortfolioTargetAlgorithmEvaluatorDecorator.constructParamConfigPortfolioTargetAlgorithmEvaluatorDecorator(tae, portfolio, RunObjective.RUNTIME, true);
+        portfolioTAE = PortfolioTargetAlgorithmEvaluatorDecorator.constructParamConfigPortfolioTargetAlgorithmEvaluatorDecorator(tae, portfolio, RunObjective.RUNTIME, true, PortfolioRunKillingPolicy.SLOWERDIES);
         try
         {
             results = portfolioTAE.evaluateRun(runConfig);

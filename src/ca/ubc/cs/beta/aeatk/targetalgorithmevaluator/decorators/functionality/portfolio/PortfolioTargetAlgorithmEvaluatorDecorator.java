@@ -37,7 +37,7 @@ import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.AbstractTargetAl
  *
  */
 public class PortfolioTargetAlgorithmEvaluatorDecorator extends	AbstractTargetAlgorithmEvaluatorDecorator {
-
+    
     private final Logger log = LoggerFactory.getLogger(getClass());
     
 	private final List<Pair<AlgorithmExecutionConfiguration,ParameterConfiguration>> fPortfolio;
@@ -45,19 +45,23 @@ public class PortfolioTargetAlgorithmEvaluatorDecorator extends	AbstractTargetAl
 	
 	private final boolean fSubmitOriginalRun;
 	
+	private final PortfolioRunKillingPolicy fPortfolioRunKillingPolicy;
+	
 	/**
 	 * Construct a portfolio consisting of the given configurations.
 	 * @param aTAE - TAE to use to execute each portfolio run.
 	 * @param aParamConfigs - list of configurations to use.
 	 * @param aRunObj - the VBS portfolio run objective (used to select the best run out of the portfolio runs).
 	 * @param aSubmitOriginalRun - whether to submit the original run in addition to the portfolio runs.
+	 * @param aPortfolioRunKillingPolicy - the killing policy to use on portfolio runs.
 	 * @return a portfolio target algorithm evaluator decorator initialized with the given parameters.
 	 */
 	public static PortfolioTargetAlgorithmEvaluatorDecorator constructParamConfigPortfolioTargetAlgorithmEvaluatorDecorator(
             TargetAlgorithmEvaluator aTAE,
             List<ParameterConfiguration> aParamConfigs,
             RunObjective aRunObj,
-            boolean aSubmitOriginalRun
+            boolean aSubmitOriginalRun,
+            PortfolioRunKillingPolicy aPortfolioRunKillingPolicy
             )
     {
         List<Pair<AlgorithmExecutionConfiguration,ParameterConfiguration>> portfolio = new ArrayList<Pair<AlgorithmExecutionConfiguration,ParameterConfiguration>>();
@@ -67,7 +71,7 @@ public class PortfolioTargetAlgorithmEvaluatorDecorator extends	AbstractTargetAl
             portfolio.add(new Pair<AlgorithmExecutionConfiguration,ParameterConfiguration>(null,paramConfig));
         }
         
-        return new PortfolioTargetAlgorithmEvaluatorDecorator(aTAE, portfolio, aRunObj, aSubmitOriginalRun);
+        return new PortfolioTargetAlgorithmEvaluatorDecorator(aTAE, portfolio, aRunObj, aSubmitOriginalRun,aPortfolioRunKillingPolicy);
     }   
 	
 	/**
@@ -76,13 +80,15 @@ public class PortfolioTargetAlgorithmEvaluatorDecorator extends	AbstractTargetAl
      * @param aParamConfigs - list of solvers to use.
      * @param aRunObj - the VBS portfolio run objective (used to select the best run out of the portfolio runs).
      * @param aSubmitOriginalRun - whether to submit the original run in addition to the portfolio runs.
+     * @param aPortfolioRunKillingPolicy - the killing policy to use on portfolio runs.
      * @return a portfolio target algorithm evaluator decorator initialized with the given parameters.
      */
     public static PortfolioTargetAlgorithmEvaluatorDecorator constructExecConfigPortfolioTargetAlgorithmEvaluatorDecorator(
             TargetAlgorithmEvaluator aTAE,
             List<AlgorithmExecutionConfiguration> aExecConfig,
             RunObjective aRunObj,
-            boolean aSubmitOriginalRun
+            boolean aSubmitOriginalRun,
+            PortfolioRunKillingPolicy aPortfolioRunKillingPolicy
             )
     {
         List<Pair<AlgorithmExecutionConfiguration,ParameterConfiguration>> portfolio = new ArrayList<Pair<AlgorithmExecutionConfiguration,ParameterConfiguration>>();
@@ -92,7 +98,7 @@ public class PortfolioTargetAlgorithmEvaluatorDecorator extends	AbstractTargetAl
             portfolio.add(new Pair<AlgorithmExecutionConfiguration,ParameterConfiguration>(execConfig,execConfig.getParameterConfigurationSpace().getDefaultConfiguration()));
         }
         
-        return new PortfolioTargetAlgorithmEvaluatorDecorator(aTAE, portfolio, aRunObj, aSubmitOriginalRun);
+        return new PortfolioTargetAlgorithmEvaluatorDecorator(aTAE, portfolio, aRunObj, aSubmitOriginalRun, aPortfolioRunKillingPolicy);
     }  
 	
     /**
@@ -101,12 +107,14 @@ public class PortfolioTargetAlgorithmEvaluatorDecorator extends	AbstractTargetAl
      * @param aParamConfigs - list of solvers to use.
      * @param aRunObj - the VBS portfolio run objective (used to select the best run out of the portfolio runs).
      * @param aSubmitOriginalRun - whether to submit the original run in addition to the portfolio runs.
+     * @param aPortfolioRunKillingPolicy - the killing policy to use on portfolio runs.
      */
 	public PortfolioTargetAlgorithmEvaluatorDecorator(
 	        TargetAlgorithmEvaluator aTAE,
 	        List<Pair<AlgorithmExecutionConfiguration,ParameterConfiguration>> aPortfolio,
 	        RunObjective aRunObj,
-	        boolean aSubmitOriginalRun
+	        boolean aSubmitOriginalRun,
+	        PortfolioRunKillingPolicy aPortfolioRunKillingPolicy
 	        )
 	{
 	    super(aTAE);
@@ -146,6 +154,8 @@ public class PortfolioTargetAlgorithmEvaluatorDecorator extends	AbstractTargetAl
 	    this.fRunObj = aRunObj;
         
 	    this.fSubmitOriginalRun = aSubmitOriginalRun;
+	    
+	    this.fPortfolioRunKillingPolicy = aPortfolioRunKillingPolicy;
 	    
 	}
 	
@@ -334,6 +344,7 @@ public class PortfolioTargetAlgorithmEvaluatorDecorator extends	AbstractTargetAl
         };
 	}
 	
+	
     /**
      * @param aOriginalObserver - the original observer. 
      * @param aOriginalRunConfigs - the original runs.
@@ -343,7 +354,8 @@ public class PortfolioTargetAlgorithmEvaluatorDecorator extends	AbstractTargetAl
 	private TargetAlgorithmEvaluatorRunObserver getPortfolioObserver(
             final TargetAlgorithmEvaluatorRunObserver aOriginalObserver, 
             final List<AlgorithmRunConfiguration> aOriginalRunConfigs,
-            final int aPortfolioRunsPerOriginalRun)
+            final int aPortfolioRunsPerOriginalRun
+            )
 	{
 	    return new TargetAlgorithmEvaluatorRunObserver()
         {
@@ -409,13 +421,12 @@ public class PortfolioTargetAlgorithmEvaluatorDecorator extends	AbstractTargetAl
                     {
                         if(krun.getRunStatus().equals(RunStatus.RUNNING))
                         {
-                            if(fRunObj.getObjective(krun) > fRunObj.getObjective(bestSolvedRun))
+                            if(fPortfolioRunKillingPolicy.killRun(krun, bestSolvedRun, fRunObj))
                             {
                                 if(killedRuns.add(krun))
                                 {
                                     log.trace("Run {} seems to be dominated by run {}, killing...", krun, bestSolvedRun);
                                 }
-                                
                                 krun.kill();
                             }
                         }
