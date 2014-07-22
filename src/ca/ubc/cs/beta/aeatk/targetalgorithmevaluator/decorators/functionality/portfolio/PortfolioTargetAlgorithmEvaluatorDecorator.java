@@ -315,6 +315,8 @@ public class PortfolioTargetAlgorithmEvaluatorDecorator extends	AbstractTargetAl
                 
                 log.trace("Best run is {} out of {}", bestRun, runs);
                 
+                String additionalRunData = bestRun.getAdditionalRunData().isEmpty() ? "Returned from from portfolio, configuration: " + bestRun.getAlgorithmRunConfiguration().getParameterConfiguration().getFriendlyID() + " my performance: " : bestRun.getAdditionalRunData(); 
+                
                 return new ExistingAlgorithmRunResult(
                         originalRunConfig,
                         bestRun.getRunStatus(),
@@ -322,7 +324,7 @@ public class PortfolioTargetAlgorithmEvaluatorDecorator extends	AbstractTargetAl
                         bestRun.getRunLength(),
                         bestRun.getQuality(),
                         bestRun.getResultSeed(),
-                        "Returned from from portfolio, configuration: " + bestRun.getAlgorithmRunConfiguration().getParameterConfiguration().getFriendlyID() + " my performance: ",
+                        additionalRunData,
                         bestRun.getWallclockExecutionTime());
             }
             @Override
