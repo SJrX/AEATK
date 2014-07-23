@@ -4,7 +4,7 @@ import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.objectives.RunObjective;
 
 /**
- *  
+ * Strategy enum for how portfolio runs are killed on observation.
  * @author afrechet
  */
 public enum PortfolioRunKillingPolicy 
@@ -36,7 +36,7 @@ public enum PortfolioRunKillingPolicy
                 AlgorithmRunResult aBestSolvedRun,
                 RunObjective aRunObjective) 
         {
-            return true;
+            return !aRun.equals(aBestSolvedRun);
         }
     };
     
