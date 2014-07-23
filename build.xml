@@ -278,6 +278,17 @@ dirty: ${git.dirty}</echo>
 				<arg value="1024"/>
 		</java>
 		
+		<java classname="ca.ubc.cs.beta.aeatk.ant.execscript.ExecScriptCreator" failonerror="true" classpathref="build.classpath" fork="true">
+			<arg value="--class" />
+			<arg value="ca.ubc.cs.beta.aeatk.example.evaluator.TAEEvaluator" />
+			<arg value="--name" />
+			<arg value="TAE-evaluator" />
+			<arg value="--file-to-write" />
+			<arg value="dist/util/" />
+			<arg value="--default-mem"/>
+			<arg value="1024"/>
+		</java>
+		
 		
 		<echo file="dist/git-hashes.txt" append="true">${ant.project.name} ${git.commit} ${git.dirty}${line.separator}</echo>
 		<echo file="dist/git-hashes.tex" append="true">${ant.project.name} &amp; ${version.string} &amp; ${git.commit} &amp; ${git.dirty} \\${line.separator}\hline${line.separator}</echo>
