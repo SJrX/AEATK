@@ -237,7 +237,7 @@ public class PortfolioTargetAlgorithmEvaluatorDecorator extends	AbstractTargetAl
 		TargetAlgorithmEvaluatorCallback myHandler = getPortfolioCallback(aHandler, aOriginalRunConfigs, portfolioRunsPerOriginalRun);
 		TargetAlgorithmEvaluatorRunObserver myObs = getPortfolioObserver(aObserver, aOriginalRunConfigs, portfolioRunsPerOriginalRun);
 		
-		log.info("Portfolio request translated runs {} to {} ", aOriginalRunConfigs.size(), portfolioRunConfigs.size() );
+		log.trace("Portfolio request translated runs {} to {} ", aOriginalRunConfigs.size(), portfolioRunConfigs.size() );
 		
 		tae.evaluateRunsAsync(portfolioRunConfigs, myHandler, myObs);
 
