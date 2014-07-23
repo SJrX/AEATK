@@ -286,11 +286,7 @@ public class PortfolioTargetAlgorithmEvaluatorDecorator extends	AbstractTargetAl
             private AlgorithmRunResult getAlgorithmRunForCallback(final AlgorithmRunConfiguration originalRunConfig, final List<AlgorithmRunResult> runs)
             {
                 //Run with lowest objective
-                AlgorithmRunResult bestRun = runs.get(0);
-                
-                //Run with lowest objective that didn't time out.
-                AlgorithmRunResult bestSolvedRun = null;
-                
+                AlgorithmRunResult bestRun = runs.get(0);                
                 
                 for(AlgorithmRunResult run : runs)
                 {
@@ -298,29 +294,38 @@ public class PortfolioTargetAlgorithmEvaluatorDecorator extends	AbstractTargetAl
                     {
                         bestRun = run;
                     }
-                    
-                    
-                    if(!run.isCensoredEarly())
+                }
+                
+                if (fPortfolioRunKillingPolicy.equals(PortfolioRunKillingPolicy.SLOWERDIES)) {
+
+                    //Run with lowest objective that didn't time out.
+                    AlgorithmRunResult bestSolvedRun = null;
+
+                    for(AlgorithmRunResult run : runs)
                     {
-                        if(bestSolvedRun == null)
+                        if(!run.isCensoredEarly())
                         {
-                            bestSolvedRun = run;
-                        } 
-                        else
-                        {
-                            if(fRunObj.getObjective(run) < fRunObj.getObjective(bestSolvedRun))
+                            if(bestSolvedRun == null)
                             {
                                 bestSolvedRun = run;
+                            } 
+                            else
+                            {
+                                if(fRunObj.getObjective(run) < fRunObj.getObjective(bestSolvedRun))
+                                {
+                                    bestSolvedRun = run;
+                                }
                             }
                         }
                     }
-                }
-                
-                
-                if(bestSolvedRun != null && !bestSolvedRun.equals(bestRun))
-                {
-                    log.error("Best solved run {} doesn't equal best run {} in responses: {} ", bestSolvedRun, bestRun, runs );
-                    throw new IllegalStateException("Values that are killed or timeout are better than those that are solved");
+
+
+                    if(bestSolvedRun != null && !bestSolvedRun.equals(bestRun))
+                    {
+                        log.error("Best solved run {} doesn't equal best run {} in responses: {} ", bestSolvedRun, bestRun, runs );
+                        throw new IllegalStateException("Values that are killed or timeout are better than those that are solved");
+                    }
+
                 }
                 
                 log.trace("Best run is {} out of {}", bestRun, runs);
