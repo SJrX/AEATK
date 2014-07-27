@@ -10,12 +10,15 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ConcurrentSkipListMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -64,7 +67,7 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 	
 	private final List<ProblemInstance> pis;
 
-	private final ConcurrentHashMap<File, Integer> importedRuns = new ConcurrentHashMap<>();
+	private final ConcurrentMap<File, Integer> importedRuns = new ConcurrentSkipListMap<>();
 	
 	public FileSharingRunHistoryDecorator(RunHistory runHistory, File directory, int outputID, List<ProblemInstance> pis, int MSecondsBetweenUpdates)
 	{
@@ -116,6 +119,8 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 					Thread.currentThread().setName("FileSharingRunHistory Logger (" + f.getName() + ")");
 					List<String> addedRunsStr = new ArrayList<String>();
 					int total = 0;
+					
+					
 					
 					for(Entry<File, Integer> ent : importedRuns.entrySet())
 					{
@@ -249,13 +254,13 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 	
 	
 	
+	private final Set<File> filesWithErrors = Collections.synchronizedSet(new HashSet<File>());
+	
 	private void readRunsFromFile(File match) {
 		
 		importedRuns.putIfAbsent(match, 0);
 		
 		int previousRuns = importedRuns.get(match);
-		
-		
 		
 		if(previousRuns == -1)
 		{
@@ -316,7 +321,7 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 					} catch (DuplicateRunException e) {
 						//Doesn't matter here
 					}
-					
+					 
 				}
 
 			} finally
@@ -325,24 +330,21 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 			}
 
 			
-			
+			if(this.filesWithErrors.remove(match))
+			{
+				log.info("Successfully read file: {} after previously logged error", match.getAbsolutePath());
+			}
 		
-		} catch (JsonParseException e) {
+		} catch (RuntimeException | IOException e) {
 			
 			//We will just retry later
 			
-			
-			log.debug("Error occurred reading file in shared run history" + match.getAbsolutePath() + ":", e);
-			//importedRuns.put(match, -1);
-		} catch (IOException e) {
-			//We will just retry later
-			
-			log.debug("Error occurred reading file in shared run history" + match.getAbsolutePath() + ":", e);
-			
-			//log.error("Error occurred reading file " + match.getAbsolutePath() + " no longer looking at it, {}", e);
-			//importedRuns.put(match, -1);
-			
-		}
+			if(this.filesWithErrors.add(match))
+			{
+				log.warn("Error occurred reading file in shared run history " + match.getAbsolutePath() + ". We will keep trying to read this file, but will only log another error after it succeeds once. We may not be able to get it's run data but we should be able to continue", e);
+				
+			}
+		} 
 		
 		
 		
