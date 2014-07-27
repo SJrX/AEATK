@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.Map.Entry;
+import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -49,7 +50,7 @@ public class ProblemInstanceJson  {
 	{
 
 		
-		private static final Map<ObjectCodec, Map<Integer, ProblemInstance>> cacheMap = Collections.synchronizedMap(new IdentityHashMap<ObjectCodec, Map<Integer, ProblemInstance>>()); 	
+		private static final Map<ObjectCodec, Map<Integer, ProblemInstance>> cacheMap = JsonDeserializerHelper.getMap(); 	
 		
 		protected ProblemInstanceDeserializer() {
 			
@@ -186,7 +187,7 @@ public class ProblemInstanceJson  {
 	{
 	
 
-		private static final Map<ObjectCodec, Map<Integer, ProblemInstanceSeedPair>> cacheMap = Collections.synchronizedMap(new IdentityHashMap<ObjectCodec, Map<Integer, ProblemInstanceSeedPair>>());
+		private static final Map<ObjectCodec, Map<Integer, ProblemInstanceSeedPair>> cacheMap = JsonDeserializerHelper.getMap();
 		
 		protected ProblemInstanceSeedPairDeserializer() {
 			super(ProblemInstanceSeedPair.class);

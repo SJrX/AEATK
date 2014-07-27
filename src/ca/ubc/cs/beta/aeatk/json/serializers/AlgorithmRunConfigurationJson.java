@@ -49,7 +49,7 @@ public class AlgorithmRunConfigurationJson  {
 		private static final AtomicBoolean warnSampleIdx = new AtomicBoolean(false);
 		
 		
-		private static final Map<ObjectCodec, Map<Integer, AlgorithmRunConfiguration>> cacheMap = Collections.synchronizedMap(new IdentityHashMap<ObjectCodec, Map<Integer, AlgorithmRunConfiguration>>());
+		private static final Map<ObjectCodec, Map<Integer, AlgorithmRunConfiguration>> cacheMap = JsonDeserializerHelper.getMap();
 		
 		protected RunConfigDeserializer() {
 			super(AlgorithmRunConfiguration.class);

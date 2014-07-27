@@ -169,6 +169,7 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 				if(write)
 				{
 					try {
+						
 						g.writeObject(run);
 						g.flush();
 						//map.writeValue(fout, run);

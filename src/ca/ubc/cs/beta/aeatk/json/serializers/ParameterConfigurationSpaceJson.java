@@ -10,6 +10,7 @@ import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.TreeMap;
+import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -59,7 +60,7 @@ public class ParameterConfigurationSpaceJson
 	{
 		
 		
-		private static final Map<ObjectCodec, Map<Integer, ParameterConfiguration>> cacheMap = Collections.synchronizedMap(new IdentityHashMap<ObjectCodec, Map<Integer, ParameterConfiguration>>());
+		private static final Map<ObjectCodec, Map<Integer, ParameterConfiguration>> cacheMap = JsonDeserializerHelper.getMap();
 		
 		
 		protected ParamConfigurationDeserializer() {
@@ -217,7 +218,7 @@ public class ParameterConfigurationSpaceJson
 	{
 
 		
-		private static final Map<ObjectCodec, Map<Integer, ParameterConfigurationSpace>> cacheMap = Collections.synchronizedMap(new IdentityHashMap<ObjectCodec, Map<Integer, ParameterConfigurationSpace>>());
+		private static final Map<ObjectCodec, Map<Integer, ParameterConfigurationSpace>> cacheMap = JsonDeserializerHelper.getMap();
 		
 		
 		protected ParamConfigurationSpaceDeserializer() {
