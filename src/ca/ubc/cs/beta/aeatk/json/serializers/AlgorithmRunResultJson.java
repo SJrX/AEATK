@@ -6,8 +6,6 @@ import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.algorithmrunresult.ExistingAlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunStatus;
-import ca.ubc.cs.beta.aeatk.json.serializers.AlgorithmRunConfigurationJson.RunConfigDeserializer;
-
 import com.fasterxml.jackson.core.JsonGenerator;
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -28,10 +26,11 @@ public class AlgorithmRunResultJson  {
 	public static final String R_RUN_RESULT = "r-run-result";
 	public static final String R_RC = "r-rc";
 	
+	
 	public static class AlgorithmRunDeserializer extends StdDeserializer<AlgorithmRunResult>
 	{
-
-		private RunConfigDeserializer rcd = new RunConfigDeserializer();
+		
+		
 		
 		protected AlgorithmRunDeserializer() {
 			super(AlgorithmRunResult.class);
@@ -92,7 +91,7 @@ public class AlgorithmRunResultJson  {
 					break;
 				case R_RC:
 					
-					rc = rcd.deserialize(jp, ctxt);
+					rc = JsonDeserializerHelper.getDeserializedVersion(jp, ctxt, AlgorithmRunConfiguration.class);
 				default:
 					break;
 					

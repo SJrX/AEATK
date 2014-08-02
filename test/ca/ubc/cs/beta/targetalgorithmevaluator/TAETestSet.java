@@ -1,6 +1,9 @@
 package ca.ubc.cs.beta.targetalgorithmevaluator;
 
-import static org.junit.Assert.*;
+import static org.junit.Assert.assertEquals;
+import static org.junit.Assert.assertFalse;
+import static org.junit.Assert.assertTrue;
+import static org.junit.Assert.fail;
 
 import java.io.BufferedReader;
 import java.io.ByteArrayOutputStream;
@@ -10,31 +13,21 @@ import java.io.FileReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.PrintStream;
-import java.io.PrintWriter;
-import java.io.StringWriter;
-import java.lang.Thread.UncaughtExceptionHandler;
-import java.text.SimpleDateFormat;
+import java.lang.management.ManagementFactory;
 import java.util.ArrayList;
 import java.util.Arrays;
-import java.util.Date;
+import java.util.EnumMap;
 import java.util.HashMap;
-import java.util.HashSet;
-import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
-import java.util.Set;
 import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.Executor;
-import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.output.NullOutputStream;
-import org.apache.commons.math3.distribution.ExponentialDistribution;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -53,6 +46,7 @@ import ca.ubc.cs.beta.aeatk.misc.logback.MarkerFilter;
 import ca.ubc.cs.beta.aeatk.misc.logging.LoggingMarker;
 import ca.ubc.cs.beta.aeatk.misc.watch.AutoStartStopWatch;
 import ca.ubc.cs.beta.aeatk.misc.watch.StopWatch;
+import ca.ubc.cs.beta.aeatk.objectives.RunObjective;
 import ca.ubc.cs.beta.aeatk.options.AbstractOptions;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParamFileHelper;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
@@ -62,30 +56,43 @@ import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aeatk.random.SeedableRandomPool;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorFactory;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorOptions;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.WaitableTAECallback;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.analytic.AnalyticFunctions;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.analytic.AnalyticTargetAlgorithmEvaluatorFactory;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.analytic.AnalyticTargetAlgorithmEvaluatorOptions;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.blackhole.BlackHoleTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.blackhole.BlackHoleTargetAlgorithmEvaluatorOptions;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.CommandLineAlgorithmRun;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluatorFactory;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluatorOptions;
-import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.algorithmrunner.AutomaticConfiguratorFactory;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.ipc.IPCTargetAlgorithmEvaluatorFactory;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.ipc.IPCTargetAlgorithmEvaluatorOptions;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.ipc.IPCTargetAlgorithmEvaluatorOptions.EncodingMechanismOptions;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.ipc.IPCTargetAlgorithmEvaluatorOptions.IPCMechanism;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.ipc.reversetcpclient.IPCTAEClient;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.preloaded.PreloadedResponseTargetAlgorithmEvaluatorOptions;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.random.RandomResponseTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.random.RandomResponseTargetAlgorithmEvaluatorFactory;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.random.RandomResponseTargetAlgorithmEvaluatorOptions;
-import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.AbstractTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.debug.CheckForDuplicateRunConfigDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.debug.EqualTargetAlgorithmEvaluatorTester;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.functionality.OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.functionality.OutstandingEvaluationsWithAccessorTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.functionality.SimulatedDelayTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.functionality.TerminateAllRunsOnFileDeleteTargetAlgorithmEvaluatorDecorator;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.functionality.portfolio.PortfolioRunKillingPolicy;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.functionality.portfolio.PortfolioTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.helpers.KillCaptimeExceedingRunsRunsTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.helpers.OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.helpers.WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.prepostcommand.PrePostCommandErrorException;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.BoundedTargetAlgorithmEvaluator;
-import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.caching.CachingTargetAlgorithmEvaluatorDecorator;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.forking.ForkingTargetAlgorithmEvaluatorDecorator;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.forking.ForkingTargetAlgorithmEvaluatorDecoratorPolicyOptions;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.forking.ForkingTargetAlgorithmEvaluatorDecoratorPolicyOptions.ForkingPolicy;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.AbortOnCrashTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.AbortOnFirstRunCrashTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.ResultOrderCorrectCheckerTargetAlgorithmEvaluatorDecorator;
@@ -168,6 +175,545 @@ public class TAETestSet {
 	{
 		pool.logUsage();
 	}
+	
+	
+	@Test
+	public void testPortfolioTargetAlgorithmEvaluatorDecorator()
+	{
+	    //Get analytical ADD tae.
+	    TargetAlgorithmEvaluatorFactory factory = new AnalyticTargetAlgorithmEvaluatorFactory();
+	    
+	    AnalyticTargetAlgorithmEvaluatorOptions options = new AnalyticTargetAlgorithmEvaluatorOptions();
+	    options.func = AnalyticFunctions.ADD;
+	    
+	    TargetAlgorithmEvaluator tae = factory.getTargetAlgorithmEvaluator(options);
+	    
+	    ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("x0 [0,10] [0]");
+	    AlgorithmExecutionConfiguration execConfig = new AlgorithmExecutionConfiguration("", "", configSpace, false, true, 15);
+	    
+	    //Construct portfolio.
+	    ParameterConfiguration config1 = configSpace.getDefaultConfiguration();
+	    config1.put("x0", "2");
+	    
+	    ParameterConfiguration config2 = configSpace.getDefaultConfiguration();
+        config2.put("x0", "5");
+        
+        ParameterConfiguration config3 = configSpace.getDefaultConfiguration();
+        config3.put("x0", "8");
+        
+	    /**
+	     * Test the addition of the default run.
+	     */
+        
+        List<ParameterConfiguration> portfolio = Arrays.asList(config1,config2,config3);
+        
+        TargetAlgorithmEvaluator portfolioTAE = PortfolioTargetAlgorithmEvaluatorDecorator.constructParamConfigPortfolioTargetAlgorithmEvaluatorDecorator(tae, portfolio, RunObjective.RUNTIME, false, PortfolioRunKillingPolicy.SLOWERDIES);
+        
+	    AlgorithmRunConfiguration runConfig = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("test-instance"), 0), 15, configSpace.getDefaultConfiguration(), execConfig);
+	    
+	    List<AlgorithmRunResult> results = portfolioTAE.evaluateRun(runConfig);
+	    AlgorithmRunResult result = results.get(0);
+	    
+	    System.out.println(results);
+	    assertTrue(result.getRuntime() == Double.valueOf(config1.get("x0")));
+	    
+	    portfolioTAE = PortfolioTargetAlgorithmEvaluatorDecorator.constructParamConfigPortfolioTargetAlgorithmEvaluatorDecorator(tae, portfolio, RunObjective.RUNTIME, true, PortfolioRunKillingPolicy.SLOWERDIES);
+        
+        results = portfolioTAE.evaluateRun(runConfig);
+        result = results.get(0);
+        
+        System.out.println(results);
+        assertTrue(result.getRuntime() == Double.valueOf(configSpace.getDefaultValuesMap().get("x0")));
+        
+        /**
+         * Test the breaking at duplicate runs.
+         */
+        
+        ParameterConfiguration configDup3 = configSpace.getDefaultConfiguration();
+        configDup3.put("x0", config3.get("x0"));
+        
+        ParameterConfiguration configDef = configSpace.getDefaultConfiguration();
+        
+        portfolio = Arrays.asList(config1,config2,config3,configDup3);        
+        
+        try
+        {
+            portfolioTAE = PortfolioTargetAlgorithmEvaluatorDecorator.constructParamConfigPortfolioTargetAlgorithmEvaluatorDecorator(tae, portfolio, RunObjective.RUNTIME, true, PortfolioRunKillingPolicy.SLOWERDIES);
+        }
+        catch(IllegalArgumentException e)
+        {
+            System.err.println(e);
+        }
+        
+        
+        portfolio = Arrays.asList(config1,config2,config3,configDef);
+        portfolioTAE = PortfolioTargetAlgorithmEvaluatorDecorator.constructParamConfigPortfolioTargetAlgorithmEvaluatorDecorator(tae, portfolio, RunObjective.RUNTIME, true, PortfolioRunKillingPolicy.SLOWERDIES);
+        try
+        {
+            results = portfolioTAE.evaluateRun(runConfig);
+        }
+        catch(IllegalStateException e)
+        {
+            System.err.println(e);
+        }
+	    
+	}
+	
+	
+	@Test
+	public void testIPCClient()
+	{
+		
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(ParamEchoExecutor.class.getCanonicalName());
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("x0 [-5,10] [0]\n x1 [-0,15] [0]\n");
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 15);
+		
+		RandomResponseTargetAlgorithmEvaluatorFactory afact = new RandomResponseTargetAlgorithmEvaluatorFactory();
+		
+		TargetAlgorithmEvaluator tae = afact.getTargetAlgorithmEvaluator();
+		
+		ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
+
+		config.put("x0", "2.656650319997154");
+		config.put("x1", "8.192989379593786");
+		
+		//config.put("x0", "3.1415");
+		//config.put("x1", "2.275");
+		
+		StringBuilder sb = new StringBuilder();
+		
+		for(int i=0; i < 65535; i++)
+		{
+			sb.append(i);
+			if(sb.length() > 25) 
+			{
+				break;
+			}
+		}
+		String instanceName = sb.toString(); 
+		
+		List<AlgorithmRunConfiguration> rcs = new ArrayList<AlgorithmRunConfiguration>();
+		
+		for(int i=0; i <100; i++)
+		{
+			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance(instanceName), 1L), 15, configSpace.getRandomParameterConfiguration(r), execConfig);
+			rcs.add(rc);
+		}
+		
+		StopWatch aWatch = new AutoStartStopWatch(); 
+		List<AlgorithmRunResult> res = tae.evaluateRun(rcs);
+		
+		System.out.println(res);
+		System.out.println("First batch of runs took: " + aWatch.stop() + "ms");
+		
+		tae.notifyShutdown();
+		
+		IPCTargetAlgorithmEvaluatorFactory tfact = new IPCTargetAlgorithmEvaluatorFactory();
+		
+		IPCTargetAlgorithmEvaluatorOptions opt = tfact.getOptionObject();
+		
+		opt.encodingMechanism = EncodingMechanismOptions.JAVA_SERIALIZATION;
+		
+		opt.ipcMechanism = IPCMechanism.REVERSE_TCP;
+		
+		opt.poolConnections = false;
+		
+		opt.execScriptOutput = false;
+		StringBuilder bn = new StringBuilder();
+		bn.append("java -cp ");
+		bn.append(System.getProperty("java.class.path"));
+		bn.append(" ");
+		bn.append(IPCTAEClient.class.getCanonicalName());
+		
+		
+		bn.append(" --log-level DEBUG --tae RANDOM --ipc-tae-client-port ");
+		opt.execScript = bn.toString();
+		//opt.execScriptOutput = true;
+		TargetAlgorithmEvaluator itae = tfact.getTargetAlgorithmEvaluator(opt);
+
+		itae = new OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator(itae);
+		aWatch = new AutoStartStopWatch();
+		System.out.println(itae.evaluateRun(rcs));
+		System.out.println("Second batch of runs took: " + aWatch.stop() + "ms");
+		
+		itae.evaluateRunsAsync(rcs, new TargetAlgorithmEvaluatorCallback() {
+
+			@Override
+			public void onSuccess(List<AlgorithmRunResult> runs) {
+				System.out.println("DONE");
+				
+			}
+
+			@Override
+			public void onFailure(RuntimeException e) {
+				e.printStackTrace();
+				
+			}
+			
+		});
+		
+		itae.waitForOutstandingEvaluations();
+		itae.notifyShutdown();
+		
+		
+	}
+	
+	@Test
+	/**
+	 * This just tests to see if {@link ForkingTargetAlgorithmEvaluatorDecorator} does what it should.
+	 */
+	public void testForkWithQuickPolicy()
+	{
+
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(ParamEchoExecutor.class.getCanonicalName());
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("x0 [-5,10] [0]\n x1 [-0,15] [0]\n");
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 15);
+		
+		AnalyticTargetAlgorithmEvaluatorFactory ataef = new AnalyticTargetAlgorithmEvaluatorFactory();
+		
+		AnalyticTargetAlgorithmEvaluatorOptions options = ataef.getOptionObject();
+		
+		options.func = AnalyticFunctions.BRANINS;
+		
+		tae = ataef.getTargetAlgorithmEvaluator(options);
+		
+		tae = new SimulatedDelayTargetAlgorithmEvaluatorDecorator(tae, 1000, 3);
+		
+		options = ataef.getOptionObject();
+		
+		options.func = AnalyticFunctions.BRANINS;
+		
+		TargetAlgorithmEvaluator slaveTAE  = ataef.getTargetAlgorithmEvaluator(options);
+		
+		ForkingTargetAlgorithmEvaluatorDecoratorPolicyOptions fOptions = new ForkingTargetAlgorithmEvaluatorDecoratorPolicyOptions();
+		fOptions.fPolicy = ForkingPolicy.DUPLICATE_ON_SLAVE_QUICK;
+		tae = new ForkingTargetAlgorithmEvaluatorDecorator(tae,slaveTAE, fOptions);
+		
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
+		for(int i=0; i < 1; i++)
+		{
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
+
+			config.put("x0", "2.656650319997154");
+			config.put("x1", "8.192989379593786");
+			
+			//config.put("x0", "3.1415");
+			//config.put("x1", "2.275");
+			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), 1L), 15, config, execConfig);
+			runConfigs.add(rc);
+			
+		}
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		AutoStartStopWatch watch = new AutoStartStopWatch();
+		List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs);
+		
+		watch.stop();
+		
+		assertTrue("Run should have taken less than 1 second", watch.time() < 1000);
+		
+		System.out.println("Runs: " + runs);
+		for(AlgorithmRunResult run : runs)
+		{
+			ParameterConfiguration config  = run.getAlgorithmRunConfiguration().getParameterConfiguration();
+			
+			System.out.println(config.get("x0") + "," + config.get("x1") + "=>" + run.getRuntime());
+
+		}
+		
+		
+		 runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
+		for(int i=0; i < 1; i++)
+		{
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
+
+			config.put("x0", "2.756650319997154");
+			config.put("x1", "8.192989379593786");
+			
+			//config.put("x0", "3.1415");
+			//config.put("x1", "2.275");
+			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), 1L), 15, config, execConfig);
+			runConfigs.add(rc);
+			
+		}
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		watch = new AutoStartStopWatch();
+		runs = tae.evaluateRun(runConfigs);
+		
+		watch.stop();
+		
+		assertTrue("Run should have taken more than 1 second", watch.time() > 1000);
+		
+		System.out.println("Runs: " + runs);
+		for(AlgorithmRunResult run : runs)
+		{
+			ParameterConfiguration config  = run.getAlgorithmRunConfiguration().getParameterConfiguration();
+			
+			System.out.println(config.get("x0") + "," + config.get("x1") + "=>" + run.getRuntime());
+
+		}
+		
+		tae.notifyShutdown();
+		
+	}
+	
+	/**
+	 * This just tests to see if {@link ForkingTargetAlgorithmEvaluatorDecorator} does what it should.
+	 */
+	@Test
+	public void testFork()
+	{
+
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(ParamEchoExecutor.class.getCanonicalName());
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
+		
+		TargetAlgorithmEvaluator slaveTAE = new BlackHoleTargetAlgorithmEvaluator(new BlackHoleTargetAlgorithmEvaluatorOptions());
+		
+		ForkingTargetAlgorithmEvaluatorDecoratorPolicyOptions fOptions = new ForkingTargetAlgorithmEvaluatorDecoratorPolicyOptions();
+		fOptions.fPolicy = ForkingPolicy.DUPLICATE_ON_SLAVE;
+		tae = new ForkingTargetAlgorithmEvaluatorDecorator(slaveTAE, tae, fOptions);
+		
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
+		for(int i=0; i < TARGET_RUNS_IN_LOOPS; i++)
+		{
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
+				runConfigs.add(rc);
+			}
+		}
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs);
+		
+		
+		for(AlgorithmRunResult run : runs)
+		{
+			ParameterConfiguration config  = run.getAlgorithmRunConfiguration().getParameterConfiguration();
+			assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
+			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
+			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
+			assertDEquals(config.get("seed"), run.getResultSeed(), 0.1);
+			assertEquals(config.get("solved"), run.getRunStatus().name());
+			//This executor should not have any additional run data
+			assertEquals("",run.getAdditionalRunData());
+
+		}
+		
+		tae.close();
+	}
+	
+	
+	@Test
+	/**
+	 * This just tests to see if {@link ForkingTargetAlgorithmEvaluatorDecorator} does what it should.
+	 * 
+	 * See bug #2055
+	 * 
+	 */
+	public void testForkWithQuickPolicyBoundedThreads()
+	{
+
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(ParamEchoExecutor.class.getCanonicalName());
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("x0 [-5,10] [0]\n x1 [-0,15] [0]\n");
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 15);
+		
+		AnalyticTargetAlgorithmEvaluatorFactory ataef = new AnalyticTargetAlgorithmEvaluatorFactory();
+		
+		AnalyticTargetAlgorithmEvaluatorOptions options = ataef.getOptionObject();
+		
+		options.func = AnalyticFunctions.BRANINS;
+		
+		tae = ataef.getTargetAlgorithmEvaluator(options);
+		
+		options = ataef.getOptionObject();
+		
+		options.func = AnalyticFunctions.BRANINS;
+		
+		
+		RandomResponseTargetAlgorithmEvaluatorFactory rFact = new RandomResponseTargetAlgorithmEvaluatorFactory();
+		
+		RandomResponseTargetAlgorithmEvaluatorOptions rOptions = rFact.getOptionObject();
+		rOptions.sleepInternally = 500;
+		TargetAlgorithmEvaluator slaveTAE  =  rFact.getTargetAlgorithmEvaluator(rOptions);
+		
+		
+		//slaveTAE = new SimulatedDelayTargetAlgorithmEvaluatorDecorator(slaveTAE, 1000, 0.05);
+		
+		slaveTAE = new OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator(slaveTAE);
+		
+		ForkingTargetAlgorithmEvaluatorDecoratorPolicyOptions fOptions = new ForkingTargetAlgorithmEvaluatorDecoratorPolicyOptions();
+		fOptions.fPolicy = ForkingPolicy.DUPLICATE_ON_SLAVE_QUICK;
+		tae = new ForkingTargetAlgorithmEvaluatorDecorator(tae,slaveTAE, fOptions);
+		
+		tae = new OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator(tae);
+		
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
+		for(int i=0; i < 1; i++)
+		{
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
+
+			config.put("x0", "2.656650319997154");
+			config.put("x1", "8.192989379593786");
+			
+			//config.put("x0", "3.1415");
+			//config.put("x1", "2.275");
+			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), 1L), 15, config, execConfig);
+			runConfigs.add(rc);
+			
+		}
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		AutoStartStopWatch watch = new AutoStartStopWatch();
+		List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs);
+		
+		watch.stop();
+		
+		assertTrue("Run should have taken less than 1 second", watch.time() < 1000);
+		
+		System.out.println("Runs: " + runs);
+		for(AlgorithmRunResult run : runs)
+		{
+			ParameterConfiguration config  = run.getAlgorithmRunConfiguration().getParameterConfiguration();
+			
+			System.out.println(config.get("x0") + "," + config.get("x1") + "=>" + run.getRuntime());
+
+		}
+		
+		
+		 runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
+		final int NUM_RUNS_TO_DO = 100;
+		for(int i=0; i < NUM_RUNS_TO_DO; i++)
+		{
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
+
+			//config.put("x0", "2.756650319997154");
+			//config.put("x1", "8.192989379593786");
+			
+			//config.put("x0", "3.1415");
+			//config.put("x1", "2.275");
+			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), 1L), 15, config, execConfig);
+			runConfigs.add(rc);
+			
+		}
+		
+		System.out.println("Number of Threads: " + ManagementFactory.getThreadMXBean().getAllThreadIds().length);
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		watch = new AutoStartStopWatch();
+		for(int i=0; i < NUM_RUNS_TO_DO; i++)
+		{
+			tae.evaluateRunsAsync(runConfigs.subList(i, i+1), new TargetAlgorithmEvaluatorCallback() {
+
+				@Override
+				public void onSuccess(List<AlgorithmRunResult> runs) {
+					EnumMap<RunStatus,AtomicInteger> results = new EnumMap<RunStatus, AtomicInteger>(RunStatus.class);
+					
+					for(RunStatus rs : RunStatus.values())
+					{
+						results.put(rs, new AtomicInteger(0));
+					}
+					
+					for(AlgorithmRunResult run : runs)
+					{
+						results.get(run.getRunStatus()).incrementAndGet();
+					}
+					
+					System.out.println(results);
+					/*for(Entry<RunStatus, AtomicInteger> ent : results.entrySet())
+					{
+						
+					}*/
+				}
+
+				@Override
+				public void onFailure(RuntimeException e) {
+					e.printStackTrace();
+				}
+				
+			});
+			
+		}
+		//runs = tae.evaluateRun(runConfigs);
+		tae.waitForOutstandingEvaluations();
+
+		System.out.println(tae.toString());
+		System.out.println("Runs took : " + watch.time()  + " ms to execute");
+		System.out.println("Number of Threads: " + ManagementFactory.getThreadMXBean().getAllThreadIds().length);
+		//System.out.println(Arrays.deepToString(ManagementFactory.getThreadMXBean().getThreadInfo(ManagementFactory.getThreadMXBean().getAllThreadIds())));
+		System.out.println("Slave TAE outstanding:" + slaveTAE.getNumberOfOutstandingRuns());
+		int numberOfOutstanding = tae.getNumberOfOutstandingRuns();
+		System.out.println("TAE outstanding:" + numberOfOutstanding );
+
+		if(numberOfOutstanding > 0)
+		{
+			fail("Number of outstanding runs should have been zero, but instead got " + numberOfOutstanding);
+		}
+			
+	
+		
+				
+		
+		//watch.stop();
+		
+		//assertTrue("Run should have taken more than 1 second", watch.time() > 1000);
+		
+		System.out.println("Runs: " + runs);
+		/*
+		for(AlgorithmRunResult run : runs)
+		{
+			ParameterConfiguration config  = run.getAlgorithmRunConfiguration().getParameterConfiguration();
+			
+			System.out.println(config.get("x0") + "," + config.get("x1") + "=>" + run.getRuntime());
+
+		}*/
+		
+		
+		slaveTAE.waitForOutstandingEvaluations();
+		System.out.println("Slave TAE took total time: " + watch.stop() + " ms  to execute ");
+		try 
+		
+		{
+			if(watch.time() > 2000)
+			{
+				
+				fail("Expected time should have been less than two seconds, but was " + watch.time() + " ms");
+			}
+		} finally
+		{
+			tae.notifyShutdown();
+		}
+		
+		
+	}
+	
+	
 	/**
 	 * This just tests to see if ParamEchoExecutor does what it should
 	 */
@@ -1717,7 +2263,7 @@ public class TAETestSet {
 		opts.checkSATConsistency = true;
 		opts.checkSATConsistencyException = false;
 		opts.boundRuns = false;
-		
+		opts.retryCount = 0;
 		((PreloadedResponseTargetAlgorithmEvaluatorOptions) taeOptionsMap.get("PRELOADED")).preloadedResponses="[TIMEOUT=4],[CRASHED=2],[TIMEOUT=3],[CRASHED=1],[SAT=1],[SAT=2],[UNSAT=2],[UNSAT=3],[TIMEOUT=4],[CRASHED=2],[TIMEOUT=3],[CRASHED=1],[SAT=1],[SAT=2],[UNSAT=2],[UNSAT=3]";
 		TargetAlgorithmEvaluator tae = TargetAlgorithmEvaluatorBuilder.getTargetAlgorithmEvaluator(opts,  false, taeOptionsMap);
 		
@@ -2222,6 +2768,183 @@ public class TAETestSet {
 		
 	}
 	
+	
+	@Test
+	/**
+	 * This tests that the CLI TAE Frequency is being respected more or less.
+	 * 
+	 * This is related to issue https://mantis.sjrx.net/view.php?id=2040
+	 * 
+	 * 
+	 * 
+	 */
+	public void testObserverFrequency()
+	{
+	
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path").replaceAll("jar:.*", "jar:"));
+		b.append(" ");
+		b.append(ParamEchoExecutor.class.getCanonicalName());
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
+		
+		final List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
+		for(int i=0; i < 100; i++)
+		{
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
+				runConfigs.add(rc);
+			}
+		}
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		
+		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
+		
+		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
+		
+		options.concurrentExecution = true;
+		options.cores = 100;
+		options.logAllCallStrings = true;
+		options.observerFrequency = 250;
+		
+		
+		tae = fact.getTargetAlgorithmEvaluator( options);		
+		tae = new BoundedTargetAlgorithmEvaluator(tae,100);
+		
+
+		final AtomicInteger obsCount = new AtomicInteger(0);
+		TargetAlgorithmEvaluatorRunObserver tObs = new TargetAlgorithmEvaluatorRunObserver()
+		{
+
+			@Override
+			public void currentStatus(List<? extends AlgorithmRunResult> runs) {
+				obsCount.incrementAndGet();
+				
+			}
+			
+		};
+		
+		StopWatch stopWatch = new AutoStartStopWatch();
+		List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs,tObs);
+		
+		stopWatch.stop();
+		System.out.println(obsCount.get() + " vs " + stopWatch.time() / 1000.0);
+		
+		long msPerObs = stopWatch.time() / obsCount.get();
+		
+		
+		assertTrue("Expected milli-seconds per observation to be greater than set 250 got: " + msPerObs ,msPerObs>=250 );
+		//obsCount.get() / stopWatch.time() 
+		
+	
+	}
+	
+	@Test
+	/**
+	 * This tests for that the CLI will return eventually
+	 * This is related to issue https://mantis.sjrx.net/view.php?id=1675
+	 * 
+	 * This test roughly tries to simulate a deadlock, if you look at the commit 0702803124e3513b8b5479b8ae5391d2df5ba38a the changes will show you where the deadlocks were
+	 * occurring.
+	 * 
+	 */
+	public void testDeadLockinCommandLineTargetAlgorithmEvaluatorSimpleRuns()
+	{
+	
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path").replaceAll("jar:.*", "jar:"));
+		b.append(" ");
+		b.append(ParamEchoExecutor.class.getCanonicalName());
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
+		
+		final List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
+		for(int i=0; i < 100; i++)
+		{
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
+			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED"))
+			{
+				//Only want good configurations
+				i--;
+				continue;
+			} else
+			{
+				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1001, config, execConfig);
+				runConfigs.add(rc);
+			}
+		}
+		
+		System.out.println("Performing " + runConfigs.size() + " runs");
+		
+		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
+		
+		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
+		
+		options.concurrentExecution = true;
+		options.cores = 4;
+		options.logAllCallStrings = true;
+		
+		tae = fact.getTargetAlgorithmEvaluator( options);		
+		tae = new BoundedTargetAlgorithmEvaluator(tae,4);
+		
+		
+		
+		
+		final AtomicBoolean finishedRuns = new AtomicBoolean(false);
+		Runnable run = new Runnable()
+		{
+			public void run()
+			{
+				for(int i=0; i < 10; i++)
+				{
+					List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs);
+				}
+			
+				finishedRuns.set(true);
+			}
+		};
+		
+		
+		Executors.newSingleThreadExecutor(new SequentiallyNamedThreadFactory("DeadLock JUnit Test")).submit(run);
+		
+		
+		
+		
+			//This 45 second sleep is probably incredibly sensitive.
+
+		for(int i=0; i < 600; i++)
+		{
+			try {
+				Thread.sleep(1000);
+				if(finishedRuns.get())
+				{
+					break;
+				}
+				
+				if(i == 40)
+				{
+					System.err.println("IF THIS TEST IS STILL OUTPUTTING THEN THE 45 SECOND SLEEP IS TOO LITTLE");
+				}
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				return;
+			}
+		}
+		assertTrue("Deadlock probably occured", finishedRuns.get());	
+	}
+	
+	
+	
 	@Test
 	/**
 	 * This tests for that the CLI will return eventually
@@ -2237,7 +2960,7 @@ public class TAETestSet {
 		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		StringBuilder b = new StringBuilder();
 		b.append("java -cp ");
-		b.append(System.getProperty("java.class.path"));
+		b.append(System.getProperty("java.class.path").replaceAll("jar:.*", "jar:"));
 		b.append(" ");
 		b.append(ParamEchoExecutor.class.getCanonicalName());
 		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
@@ -2296,7 +3019,7 @@ public class TAETestSet {
 		
 			//This 45 second sleep is probably incredibly sensitive.
 
-		for(int i=0; i < 60; i++)
+		for(int i=0; i < 600; i++)
 		{
 			try {
 				Thread.sleep(1000);
@@ -2541,7 +3264,7 @@ public class TAETestSet {
 		options.logAllCallStrings = true;
 		options.logAllProcessOutput = true;
 		options.concurrentExecution = true;
-		options.observerFrequency = 2000;
+		options.observerFrequency = 50;
 		options.cores = 2;
 		
 		tae = fact.getTargetAlgorithmEvaluator( options);	
@@ -2608,7 +3331,7 @@ public class TAETestSet {
 		options.logAllCallStrings = true;
 		options.logAllProcessOutput = true;
 		options.concurrentExecution = true;
-		options.observerFrequency = 2000;
+		options.observerFrequency = 50;
 		options.cores = 4;
 		
 		tae = fact.getTargetAlgorithmEvaluator( options);	
@@ -2715,7 +3438,7 @@ public class TAETestSet {
 		options.logAllCallStrings = true;
 		options.logAllProcessOutput = true;
 		options.concurrentExecution = true;
-		options.observerFrequency = 2000;
+		options.observerFrequency = 50;
 		options.cores = 2;
 		
 		tae = new OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator( fact.getTargetAlgorithmEvaluator( options));	

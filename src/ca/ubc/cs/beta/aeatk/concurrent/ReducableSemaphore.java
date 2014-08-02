@@ -45,7 +45,13 @@ public class ReducableSemaphore extends Semaphore
 	 */
 	public void reducePermits(int reduction)
 	{
-		super.reducePermits(reduction);
+		//NOTE WE SIMPLY WANT TO ENSURE THAT 0 doesn't cause an error, otherwise if the user supplies us garbage we will 
+		//let the actual semaphore decide.
+		if(reduction != 0)
+		{
+			super.reducePermits(reduction);
+		} 
+	
 	}
 	
 

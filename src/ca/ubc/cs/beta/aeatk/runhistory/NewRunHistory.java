@@ -71,7 +71,12 @@ public class NewRunHistory implements RunHistory {
 	/**
 	 * Stores a list of RunData
 	 */
-	private final List<RunData> runHistoryList = new ArrayList<RunData>();
+	//private final List<RunData> runHistoryList = new ArrayList<RunData>();
+	private final List<RunData> runHistoryListIncludingRedundant = new ArrayList<RunData>();
+	
+	private final List<RunData> runHistoryListExcludingRedundant = new ArrayList<RunData>();
+	
+	
 	
 	
 	private final Logger log = LoggerFactory.getLogger(getClass());
@@ -122,8 +127,26 @@ public class NewRunHistory implements RunHistory {
 	 */
 	private final LinkedHashMap<ParameterConfiguration, LinkedHashMap<ProblemInstanceSeedPair,AlgorithmRunResult>> configToRunIgnoreRedundantMap = new LinkedHashMap<ParameterConfiguration, LinkedHashMap<ProblemInstanceSeedPair,AlgorithmRunResult>>();
 	
+	
+
+	/**
+	 * Stores the best known value for each run at any given time. We want to maintain insertion order for this.
+	 */
+	private final List<AlgorithmRunResult> runsInAuthorativeOrderExcludingRedundant = new ArrayList<AlgorithmRunResult>();
+	
+	/**
+	 * Stores for every run configuration the index of the location 
+	 */
+	private final Map<ParamConfigurationProblemInstanceSeedPair, Integer> runIndex = new HashMap<ParamConfigurationProblemInstanceSeedPair, Integer>();
+	
+	
 	private static final DecimalFormat format = new DecimalFormat("#######.####");
 	
+	
+	public NewRunHistory()
+	{
+		this(OverallObjective.MEAN, OverallObjective.MEAN10, RunObjective.RUNTIME);
+	}
 	/**
 	 * Creates NewRunHistory object
 	 * @param intraInstanceObjective	intraInstanceObjective to use when calculating costs
@@ -132,6 +155,22 @@ public class NewRunHistory implements RunHistory {
 	 */
 	public NewRunHistory( OverallObjective intraInstanceObjective,  OverallObjective interInstanceObjective, RunObjective runObj)
 	{
+		
+		if(intraInstanceObjective == null)
+		{
+			throw new IllegalArgumentException("You must supply an intra instance objective");
+		}
+		
+		if(interInstanceObjective == null)
+		{
+			throw new IllegalArgumentException("You must supply an interInstanceObjective");
+			
+		}
+		
+		if(runObj == null)
+		{
+			throw new IllegalArgumentException("You must supply a run objective");
+		}
 		this.perInstanceObjectiveFunction = intraInstanceObjective;
 		this.aggregateInstanceObjectiveFunction = interInstanceObjective;
 		this.runObj = runObj;
@@ -199,6 +238,7 @@ public class NewRunHistory implements RunHistory {
 		
 		boolean censoredEarly = run.isCensoredEarly();
 		
+		
 		if(configToRunIgnoreRedundantMap.get(config) == null)
 		{
 			configToRunIgnoreRedundantMap.put(config, new LinkedHashMap<ProblemInstanceSeedPair, AlgorithmRunResult>());
@@ -215,6 +255,14 @@ public class NewRunHistory implements RunHistory {
 
 			if((censoredEarlyRunsForConfig != null) && censoredEarlyRunsForConfig.contains(pisp))
 			{
+				
+				if(this.runObj != RunObjective.RUNTIME)
+				{
+					//Duplicate check before we tamper with the data structure
+					log.error("Not sure how to rectify early censored runs under different run objectives, current run seems to conflict with a previous one: {} " , run);
+					throw new IllegalStateException("Unable to handle capped runs for the RunObjective: " + runObj);
+				}
+				
 				//We remove it now and will re-add it if this current run was capped
 				censoredEarlyRunsForConfig.remove(pisp); 
 			} else
@@ -252,7 +300,23 @@ public class NewRunHistory implements RunHistory {
 					
 					if(dOldValue < runResult)
 					{
+						//this.configToRunIgnoreRedundantMap.get(config).put(pisp, run);
+						
+						
+						AlgorithmRunResult run2 = this.configToRunIgnoreRedundantMap.get(config).get(pisp);
 						this.configToRunIgnoreRedundantMap.get(config).put(pisp, run);
+						
+						ParamConfigurationProblemInstanceSeedPair pcpisp = new ParamConfigurationProblemInstanceSeedPair(pisp,config);
+						
+						if(this.runIndex.get(pcpisp) == null)
+						{
+							throw new IllegalStateException("This run should exist somewhere else in our list");
+						} 
+						
+						int index = this.runIndex.get(pcpisp);
+						
+						this.runsInAuthorativeOrderExcludingRedundant.set(index, run);
+						
 					}
 				}
 			}
@@ -269,6 +333,12 @@ public class NewRunHistory implements RunHistory {
 			}
 			
 			this.configToRunIgnoreRedundantMap.get(config).put(pisp, run);
+			
+			ParamConfigurationProblemInstanceSeedPair pcpisp = new ParamConfigurationProblemInstanceSeedPair(pisp,config);
+			this.runsInAuthorativeOrderExcludingRedundant.add(run);
+			
+			this.runIndex.put(pcpisp,this.runsInAuthorativeOrderExcludingRedundant.size()-1);
+			
 			
 		}
 		
@@ -292,7 +362,36 @@ public class NewRunHistory implements RunHistory {
 		int instanceIdx = pi.getInstanceID();
 		
 	
-		runHistoryList.add(new RunData(iteration, thetaIdx, instanceIdx, run,runResult, censoredEarly));
+		RunData rd = new RunData(iteration, thetaIdx, instanceIdx, run,runResult, censoredEarly);
+		//runHistoryList.add(rd);
+		
+		runHistoryListIncludingRedundant.add(rd);
+		
+
+		if(dOldValue != null)
+		{
+			if(dOldValue < runResult)
+			{
+				//Previous value
+				
+				ParamConfigurationProblemInstanceSeedPair pcpisp = new ParamConfigurationProblemInstanceSeedPair(pisp,config);
+				
+				if(this.runIndex.get(pcpisp) == null)
+				{
+					throw new IllegalStateException("This run should exist somewhere else in our list");
+				} 
+				
+				int index = this.runIndex.get(pcpisp);
+				
+				this.runHistoryListExcludingRedundant.set(index, rd);
+			}
+			
+		} else
+		{
+			runHistoryListExcludingRedundant.add(rd);
+		}
+		
+		
 		
 		
 		/*
@@ -564,11 +663,11 @@ public class NewRunHistory implements RunHistory {
 	}
 
 	@Override
-	public int[][] getParameterConfigurationInstancesRanByIndex() {
-		int[][] result = new int[runHistoryList.size()][2];
+	public int[][] getParameterConfigurationInstancesRanByIndexExcludingRedundant() {
+		int[][] result = new int[runHistoryListExcludingRedundant.size()][2];
 		
 		int i=0; 
-		for(RunData runData : runHistoryList)
+		for(RunData runData : runHistoryListExcludingRedundant)
 		{
 			result[i][0] = runData.getThetaIdx();
 			result[i][1] = runData.getInstanceidx();
@@ -604,10 +703,15 @@ public class NewRunHistory implements RunHistory {
 	
 
 	@Override
-	public List<RunData> getAlgorithmRunData() {
-		return Collections.unmodifiableList(runHistoryList);
+	public List<RunData> getAlgorithmRunDataExcludingRedundant() {
+		return Collections.unmodifiableList(runHistoryListExcludingRedundant);
 	}
 
+	@Override
+	public List<RunData> getAlgorithmRunDataIncludingRedundant() {
+		return Collections.unmodifiableList(runHistoryListIncludingRedundant);
+	}
+	
 
 	@Override
 	public int getThetaIdx(ParameterConfiguration config) {
@@ -686,13 +790,7 @@ public class NewRunHistory implements RunHistory {
 	@Override
 	public List<AlgorithmRunResult> getAlgorithmRunsExcludingRedundant() {
 		
-		List<AlgorithmRunResult> list = new ArrayList<AlgorithmRunResult>();
-		for(LinkedHashMap<ProblemInstanceSeedPair, AlgorithmRunResult> lhm : this.configToRunIgnoreRedundantMap.values())
-		{
-			list.addAll(lhm.values());
-		}
-		
-		return list;
+		return new ArrayList<>(this.runsInAuthorativeOrderExcludingRedundant);
 	}
 	
 	@Override
@@ -705,9 +803,8 @@ public class NewRunHistory implements RunHistory {
 	 */
 	public List<AlgorithmRunResult> getAlgorithmRunsIncludingRedundant() 
 	{
-		
-		List<AlgorithmRunResult> runs = new ArrayList<AlgorithmRunResult>(this.runHistoryList.size());
-		for(RunData runData : getAlgorithmRunData() )
+		List<AlgorithmRunResult> runs = new ArrayList<AlgorithmRunResult>(this.runHistoryListIncludingRedundant.size());
+		for(RunData runData : getAlgorithmRunDataIncludingRedundant() )
 		{
 			runs.add(runData.getRun());
 		}
@@ -741,8 +838,6 @@ public class NewRunHistory implements RunHistory {
 		return Collections.unmodifiableList(new ArrayList<AlgorithmRunResult>(runs.values()));
 	}
 	
-	
-	
 
 	@Override
 	public List<Long> getSeedsUsedByInstance(ProblemInstance pi) 
@@ -757,7 +852,62 @@ public class NewRunHistory implements RunHistory {
 
 	
 
-	
+
+	private static class ParamConfigurationProblemInstanceSeedPair
+	{
+		private final ProblemInstanceSeedPair pisp;
+		private final ParameterConfiguration config;
+		
+		public ParamConfigurationProblemInstanceSeedPair(ProblemInstanceSeedPair pisp, ParameterConfiguration config)
+		{
+			this.pisp = pisp;
+			this.config = config;
+		}
+
+		public ProblemInstanceSeedPair getProblemInstanceSeedPair() {
+			return pisp;
+		}
+
+		public ParameterConfiguration getConfig() {
+			return config;
+		}
+
+		@Override
+		public int hashCode() {
+			final int prime = 37;
+			int result = 1;
+			result = prime * result
+					+ ((config == null) ? 0 : config.hashCode());
+			result = prime * result + ((pisp == null) ? 0 : pisp.hashCode());
+			return result;
+		}
+
+		@Override
+		public boolean equals(Object obj) {
+			if (this == obj)
+				return true;
+			if (obj == null)
+				return false;
+			if (!(obj instanceof ParamConfigurationProblemInstanceSeedPair))
+				return false;
+			ParamConfigurationProblemInstanceSeedPair other = (ParamConfigurationProblemInstanceSeedPair) obj;
+			if (config == null) {
+				if (other.config != null)
+					return false;
+			} else if (!config.equals(other.config))
+				return false;
+			if (pisp == null) {
+				if (other.pisp != null)
+					return false;
+			} else if (!pisp.equals(other.pisp))
+				return false;
+			return true;
+		}
+		
+		
+		
+	}
+
 
 
 

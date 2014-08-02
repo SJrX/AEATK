@@ -13,6 +13,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aeatk.help.HelpOptions;
+import ca.ubc.cs.beta.aeatk.logging.CommonMarkers;
 import ca.ubc.cs.beta.aeatk.misc.options.OptionLevel;
 import ca.ubc.cs.beta.aeatk.misc.options.UsageSection;
 import ca.ubc.cs.beta.aeatk.misc.returnvalues.AEATKReturnValues;
@@ -274,6 +275,20 @@ public final class JCommanderHelper
 		log.debug("==========Configuration Options==========\n{}", sb.toString());
 		
 	}
+	
+	public static void logConfigurationInfoToFile(JCommander jcom)
+	{
+		Logger log = LoggerFactory.getLogger(JCommanderHelper.class);
+		StringBuilder sb = new StringBuilder();
+		for(Object o : jcom.getObjects())
+		{
+			sb.append(o.toString()).append("\n");
+		}
+			
+		log.info(CommonMarkers.SKIP_CONSOLE_PRINTING,"==========Configuration Options==========\n{}", sb.toString());
+	}
+	
+	
 	
 	
 	

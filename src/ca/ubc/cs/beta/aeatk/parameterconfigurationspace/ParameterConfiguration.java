@@ -45,7 +45,7 @@ import net.jcip.annotations.NotThreadSafe;
  *
  */
 @NotThreadSafe
-@JsonDeserialize
+@JsonDeserialize(using=ParameterConfigurationSpaceJson.ParamConfigurationDeserializer.class)
 @JsonSerialize(using=ParameterConfigurationSpaceJson.ParamConfigurationSerializer.class)
 public class ParameterConfiguration implements Map<String, String>, Serializable {
 
@@ -171,7 +171,8 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 
 	@Override
 	public boolean containsKey(Object key) {			
-		return ((paramKeyToValueArrayIndexMap.get(key) != null) && (valueArray[paramKeyToValueArrayIndexMap.get(key)] != 0));
+		
+		return ((paramKeyToValueArrayIndexMap.get(key) != null));
 	}
 
 

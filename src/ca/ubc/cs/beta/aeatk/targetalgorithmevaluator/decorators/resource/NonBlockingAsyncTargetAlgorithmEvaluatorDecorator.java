@@ -12,8 +12,7 @@ import ca.ubc.cs.beta.aeatk.concurrent.threadfactory.SequentiallyNamedThreadFact
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
-import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.AbstractTargetAlgorithmEvaluatorDecorator;
-import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.functionality.OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.AbstractRunReschedulingTargetAlgorithmEvaluatorDecorator;
 
 /**
  * This decorator ensures that the {@link #evaluateRunsAsync()} method's never block. Obviously {@link #evaluateRun()} will still block.
@@ -25,8 +24,7 @@ import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.functionality.Ou
  *
  */
 @ThreadSafe
-public class NonBlockingAsyncTargetAlgorithmEvaluatorDecorator extends
-		AbstractTargetAlgorithmEvaluatorDecorator {
+public class NonBlockingAsyncTargetAlgorithmEvaluatorDecorator extends	AbstractRunReschedulingTargetAlgorithmEvaluatorDecorator {
 
 	private final ExecutorService execService = Executors.newSingleThreadExecutor(new SequentiallyNamedThreadFactory(getClass().getSimpleName() + " Processor", true));
 			
@@ -79,20 +77,6 @@ public class NonBlockingAsyncTargetAlgorithmEvaluatorDecorator extends
 	}
 
 
-	@Override
-	public void waitForOutstandingEvaluations()
-	{
-		throw new UnsupportedOperationException(this.getClass().getCanonicalName() + " does NOT support waiting or observing the number of outstanding evaluations, even if the wrapped class does, you should probably wrap this TargetAlgorithmEvaluator with an instance of " + OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator.class );
-	}
-	
-	
-	@Override
-	public int getNumberOfOutstandingEvaluations()
-	{
-		throw new UnsupportedOperationException(this.getClass().getCanonicalName() + " does NOT support waiting or observing the number of outstanding evaluations, even if the wrapped class does, you should probably wrap this TargetAlgorithmEvaluator with an instance of " + OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator.class );
-	}
-	
-	
 	private class Triple
 	{
 		final List<AlgorithmRunConfiguration> runConfigs;

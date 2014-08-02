@@ -20,6 +20,7 @@ import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceHelper;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.functionality.transform.TransformTargetAlgorithmEvaluatorDecoratorOptions;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.prepostcommand.PrePostCommandOptions;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.forking.ForkingTargetAlgorithmEvaluatorDecoratorOptions;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.init.TargetAlgorithmEvaluatorBuilder;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.init.TargetAlgorithmEvaluatorLoader;
 
@@ -47,7 +48,23 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	@UsageTextField(level=OptionLevel.INTERMEDIATE)
 	@Parameter(names={"--retry-crashed-count","--retryCrashedRunCount","--retryTargetAlgorithmRunCount"}, description="number of times to retry an algorithm run before reporting crashed (NOTE: The original crashes DO NOT count towards any time limits, they are in effect lost). Additionally this only retries CRASHED runs, not ABORT runs, this is by design as ABORT is only for cases when we shouldn't bother further runs", validateWith=NonNegativeInteger.class)
 	public int retryCount = 0;
+	
+	@UsageTextField(level=OptionLevel.DEVELOPER)
+	@Parameter(names={"--cache-runs"}, description="If true we will cache runs internally, so that subsequent requests are not re-executed [EXPERIMENTAL]")
+	public boolean cacheRuns;
+	
+	@UsageTextField(level=OptionLevel.DEVELOPER)
+	@Parameter(names={"--cache-runs-debug"}, description="If true we will print the state of the cache every so often for debug purposes.")
+	public boolean cacheDebug = false;
 
+	@UsageTextField(level=OptionLevel.DEVELOPER)
+	@Parameter(names={"-use-dynamic-cutoffs"}, description="If true then we change all cutoffs to the maximum cutoff time and dynamically kill runs that exceed there cutoff time. This is useful because cache hits require the cutoff time to match")
+	public boolean useDynamicCappingExclusively = false;
+	
+	@UsageTextField(level=OptionLevel.DEVELOPER)
+	@Parameter(names={"--cache-runs-strictly-increasing-observer"}, description="If true then we will enforce that all runtimes seen externally always have strictly increasing times. (Internally if the run is restarted for some reason, the observed time may in fact go down).")
+	public boolean reportStrictlyIncreasingRuntimes = false;
+	
 	@UsageTextField(level=OptionLevel.INTERMEDIATE)
 	@Parameter(names={"--bound-runs","--boundRuns"}, description="[DEPRECATED] (Use the option on the TAE instead if available) if true, permit only --cores number of runs to be evaluated concurrently. ")
 	public boolean boundRuns = false;
@@ -55,6 +72,11 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	@UsageTextField(level=OptionLevel.INTERMEDIATE)
 	@Parameter(names={"--cores","--numConcurrentAlgoExecs","--maxConcurrentAlgoExecs","--numberOfConcurrentAlgoExecs"}, description=" [DEPRECATED] (Use the TAE option instead if available) maximum number of concurrent target algorithm executions", validateWith=PositiveInteger.class)
 	public int maxConcurrentAlgoExecs = 1;
+	
+	
+	@UsageTextField(level=OptionLevel.DEVELOPER)
+    @Parameter(names={"--exit-on-failure"}, description="If true, when a failure is detected the process will try its best to shutdown, potentially not cleanly")
+    public boolean exitOnFailure = false;
 	
 	@UsageTextField(defaultValues="", level=OptionLevel.DEVELOPER)
 	@Parameter(names={"--run-hashcode-file","--runHashCodeFile"}, description="file containing a list of run hashes one per line: Each line should be: \"Run Hash Codes: (Hash Code) After (n) runs\". The number of runs in this file need not match the number of runs that we execute, this file only ensures that the sequences never diverge. Note the n is completely ignored so the order they are specified in is the order we expect the hash codes in this version. Finally note you can simply point this at a previous log and other lines will be disregarded", converter=ReadableFileConverter.class)
@@ -79,6 +101,10 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	@UsageTextField(level=OptionLevel.INTERMEDIATE)
 	@Parameter(names={"--check-sat-consistency-exception","--checkSATConsistencyException"}, description="Throw an exception if runs on the same problem instance disagree with respect to SAT/UNSAT")
 	public boolean checkSATConsistencyException = true;
+	
+	@UsageTextField(level=OptionLevel.ADVANCED)
+	@Parameter(names={"--call-observer-before-completion"}, description="Ensure that the TAE observer is called on runs before completion")
+	public boolean callObserverBeforeCompletion = true;
 	
 	@ParametersDelegate
 	public PrePostCommandOptions prePostOptions = new PrePostCommandOptions();
@@ -151,6 +177,9 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	@ParametersDelegate
 	public TransformTargetAlgorithmEvaluatorDecoratorOptions ttaedo = new TransformTargetAlgorithmEvaluatorDecoratorOptions();
 	
+	@ParametersDelegate
+	public ForkingTargetAlgorithmEvaluatorDecoratorOptions tForkOptions = new ForkingTargetAlgorithmEvaluatorDecoratorOptions();
+	
 	@UsageTextField(level=OptionLevel.DEVELOPER)
 	@Parameter(names={"--kill-runs-on-file-delete"}, description="All runs will be forcibly killed if the file is deleted. This option may cause the application to enter an infinite loop if the file is deleted, so care is needed. As a rule, you need to set this and some other option to point to the same file, if there is another option, then the application will probably shutdown nicely, if not, then it will probably infinite loop." )
 	public String fileToWatch = null;
@@ -163,6 +192,24 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	@UsageTextField(level=OptionLevel.DEVELOPER)
 	@Parameter(names={"--tae-stop-processing-on-shutdown"}, description="If true, then once JVM Shutdown is triggered either within the application or externally all further requests will be silently dropped. This is recommended since otherwise applications may see unexpected results as the TAE may be unable to continue processing.")
 	public boolean taeStopProcessingOnShutdown = true;
+
+	@UsageTextField(level=OptionLevel.ADVANCED)
+    @Parameter(names={"--file-cache"}, description="If true runs will be either written or read from the specified input and output files. If directories are specified, then input will be from all files in the directory, and output will be to a new random file in the directory. Note: This cache is static, we do not re-read from the cache over time")
+    public boolean filecache;
+
+    @UsageTextField(level=OptionLevel.ADVANCED)
+    @Parameter(names={"--file-cache-source"}, description="Where to read files from")
+    public String fileCacheSource;
+
+    @UsageTextField(level=OptionLevel.ADVANCED)
+    @Parameter(names={"--file-cache-output"}, description="Where to write files from")
+    public String fileCacheOutput;
+
+    @UsageTextField(level=OptionLevel.DEVELOPER)
+    @Parameter(names={"--file-cache-crash-on-cache-miss","--file-cache-crash-on-miss"}, description="Application will crash on cache miss, this is for debugging")
+    public boolean fileCacheCrashOnMiss;
+    
+    
 	
 	/**
 	 * Checks if the problem instances are compatible with the verify sat option

@@ -217,8 +217,17 @@ public class SMACOptions extends AbstractOptions {
 	@UsageTextField(defaultValues="The value of --cores", level=OptionLevel.INTERMEDIATE)
 	@Parameter(names="--validation-cores", description="Number of cores to use when validating (only applicable when using local command line cores). Essentially this changes the value of --cli-cores and --cores after SMAC has run. The use of this parameter is undefined if the TargetAlgorithmEvaluator being used is not the CLI", validateWith=FixedPositiveInteger.class)
 	public Integer validationCores = null;
+
+	@UsageTextField(level=OptionLevel.ADVANCED)
+	@Parameter(names={"--shared-model-mode","--share-model-mode","--shared-run-data","--share-run-data"}, description="If true the run data will be written to a JSON file and other files matching a specific format will be read in periodically")
+	public boolean shareModelMode = false;
 	
 	
+	@UsageTextField(defaultValues="300 seconds", level=OptionLevel.ADVANCED)
+	@Parameter(names={"--shared-model-mode-frequency","--share-model-mode-frequency","--shared-run-data-frequency","--share-run-data-frequency"}, description="How often to poll for new run data (in seconds) ", validateWith=FixedPositiveInteger.class)
+	public int shareRunDataFrequency = 300;
+	
+
 	/**
 	 * Checks if the verify sat option is compatible with this set of probelm instances
 	 * @param instances 	The problem instances

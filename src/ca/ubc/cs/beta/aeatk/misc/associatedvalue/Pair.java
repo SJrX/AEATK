@@ -45,28 +45,41 @@ public class Pair<T,V> {
 	{
 		return "<"+Tobj.toString() + ", " + Vobj.toString()+">";
 	}
-	
-	@Override
-	/**
-	 * Two pairs are the same if the two contained objects are the same.
-	 */
-	public boolean equals(Object o)
-	{
-		if(o instanceof Pair<?,?>)
-		{
-			Pair<?,?> oValue = (Pair<?, ?>) o;
-			return (Tobj.equals(oValue.Tobj) && Vobj.equals(oValue.Vobj));
-		} else
-		{
-			return false;
-		}
-	}
 
-	@Override
-	public int hashCode()
-	{
-		return Vobj.hashCode() ^ Tobj.hashCode();
-	}
+    @Override
+    public int hashCode() {
+        final int prime = 31;
+        int result = 1;
+        result = prime * result + ((Tobj == null) ? 0 : Tobj.hashCode());
+        result = prime * result + ((Vobj == null) ? 0 : Vobj.hashCode());
+        return result;
+    }
+
+    @Override
+    public boolean equals(Object obj) {
+        if (this == obj)
+            return true;
+        if (obj == null)
+            return false;
+        if (getClass() != obj.getClass())
+            return false;
+        Pair other = (Pair) obj;
+        if (Tobj == null) {
+            if (other.Tobj != null)
+                return false;
+        } else if (!Tobj.equals(other.Tobj))
+            return false;
+        if (Vobj == null) {
+            if (other.Vobj != null)
+                return false;
+        } else if (!Vobj.equals(other.Vobj))
+            return false;
+        return true;
+    }
+	
+
+
+
 
 
 }

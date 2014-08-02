@@ -29,11 +29,12 @@ import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunningAlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.algorithmrunresult.kill.KillHandler;
 import ca.ubc.cs.beta.aeatk.concurrent.ReducableSemaphore;
 import ca.ubc.cs.beta.aeatk.concurrent.threadfactory.SequentiallyNamedThreadFactory;
+import ca.ubc.cs.beta.aeatk.logging.CommonMarkers;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorHelper;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
-import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.AbstractTargetAlgorithmEvaluatorDecorator;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.AbstractRunReschedulingTargetAlgorithmEvaluatorDecorator;
 
 
 /**
@@ -91,7 +92,7 @@ import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.AbstractTargetAl
  *
  */
 @ThreadSafe
-public class CachingTargetAlgorithmEvaluatorDecorator extends AbstractTargetAlgorithmEvaluatorDecorator {
+public class CachingTargetAlgorithmEvaluatorDecorator extends AbstractRunReschedulingTargetAlgorithmEvaluatorDecorator {
 
 	private final Logger log = LoggerFactory.getLogger(getClass());
 	
@@ -297,7 +298,12 @@ public class CachingTargetAlgorithmEvaluatorDecorator extends AbstractTargetAlgo
 	
 	
 	private final Thread debugThread; 
-	public CachingTargetAlgorithmEvaluatorDecorator(TargetAlgorithmEvaluator tae) {
+	public CachingTargetAlgorithmEvaluatorDecorator(TargetAlgorithmEvaluator tae)
+	{
+		this(tae, false);
+	}
+	
+	public CachingTargetAlgorithmEvaluatorDecorator(TargetAlgorithmEvaluator tae, boolean logDebugMessages) {
 		super(tae);
 		
 		shutdownOnError = true;
@@ -318,7 +324,7 @@ public class CachingTargetAlgorithmEvaluatorDecorator extends AbstractTargetAlgo
 				{
 					try{
 						try {
-							Thread.sleep(5000);
+							Thread.sleep(60000);
 						} finally
 						{
 							debugMessage();
@@ -334,7 +340,11 @@ public class CachingTargetAlgorithmEvaluatorDecorator extends AbstractTargetAlgo
 			
 		});
 		
-		//debugThread.start();
+		if(logDebugMessages)
+		{
+			debugThread.setDaemon(true);
+			debugThread.start();
+		}
 	
 	}
 
@@ -386,10 +396,11 @@ public class CachingTargetAlgorithmEvaluatorDecorator extends AbstractTargetAlgo
 			
 
 			Set<AlgorithmRunConfiguration> outstandingRunsForTokenSet = Collections.newSetFromMap(new ConcurrentHashMap<AlgorithmRunConfiguration, Boolean>());
+			AtomicInteger outstandingRunsCountForToken = new AtomicInteger(rcs.size());
 			outstandingRunsForTokenSet.addAll(runConfigs);
 			
 			outstandingRunsForTokenMap.put(evalToken, outstandingRunsForTokenSet);
-			outstandingRunsCountForTokenMap.put(evalToken,  new AtomicInteger(rcs.size()));
+			outstandingRunsCountForTokenMap.put(evalToken,  outstandingRunsCountForToken);
 			allRunConfigsForTokenMap.put(evalToken, runConfigs);
 			killedRunsForToken.put(evalToken, Collections.newSetFromMap(new ConcurrentHashMap<AlgorithmRunConfiguration, Boolean>()));
 			
@@ -459,11 +470,12 @@ public class CachingTargetAlgorithmEvaluatorDecorator extends AbstractTargetAlgo
 				submissionQueue.add(runConfigsCurrentThreadSubmits);
 			}
 			
-			//notifyObserverOfToken(evalToken);
 			
-			
-			
-			log.trace("Token {} submitted with outstanding runs: {} map size {}: {}", evalToken, outstandingRunsCountForTokenMap.get(evalToken).get(),this.outstandingRunsForTokenMap.get(evalToken).size(),this.outstandingRunsForTokenMap.get(evalToken));
+			log.trace("Token {} submitted with outstanding runs: {} map size {}: {}", 
+					evalToken,
+					outstandingRunsCountForToken.get(),
+					outstandingRunsForTokenSet.size(),
+					outstandingRunsForTokenSet);
 			/**
 			 * Wait until everything is submitted
 			 */
@@ -479,7 +491,11 @@ public class CachingTargetAlgorithmEvaluatorDecorator extends AbstractTargetAlgo
 			}
 			
 			
-			log.trace("Token {} has completed submission: {} map size{} :{}", evalToken, outstandingRunsCountForTokenMap.get(evalToken).get(),this.outstandingRunsForTokenMap.get(evalToken).size(),this.outstandingRunsForTokenMap.get(evalToken));
+			log.trace("Token {} has completed submission: {} map size{} :{}", 
+					evalToken,
+					outstandingRunsCountForToken.get(),
+					outstandingRunsForTokenSet.size(),
+					outstandingRunsForTokenSet);
 			
 			for(AlgorithmRunConfiguration rc : runConfigs)
 			{
@@ -529,6 +545,7 @@ public class CachingTargetAlgorithmEvaluatorDecorator extends AbstractTargetAlgo
 		log.info("Cache misses {}, Submitted to Decoratee: {}, Cache requests {}, Hit Rate {} ", misses, submittedToNextTAE, requests, nf.format( ((double) requests - misses) / requests)  );
 		
 		debugThread.interrupt();
+
 		
 	}
 
@@ -1407,6 +1424,7 @@ public class CachingTargetAlgorithmEvaluatorDecorator extends AbstractTargetAlgo
 		}
 		
 		System.err.println(sb.toString());
+		log.info(CommonMarkers.SKIP_CONSOLE_PRINTING, sb.toString());
 		
 	}
 

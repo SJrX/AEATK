@@ -106,8 +106,8 @@ public abstract class AbstractRunHistoryDecorator implements RunHistory {
 	}
 
 	@Override
-	public int[][] getParameterConfigurationInstancesRanByIndex() {
-		return rh.getParameterConfigurationInstancesRanByIndex();
+	public int[][] getParameterConfigurationInstancesRanByIndexExcludingRedundant() {
+		return rh.getParameterConfigurationInstancesRanByIndexExcludingRedundant();
 	}
 
 	@Override
@@ -123,10 +123,16 @@ public abstract class AbstractRunHistoryDecorator implements RunHistory {
 	
 
 	@Override
-	public List<RunData> getAlgorithmRunData() {
-		return rh.getAlgorithmRunData();
+	public List<RunData> getAlgorithmRunDataExcludingRedundant() {
+		return rh.getAlgorithmRunDataExcludingRedundant();
 	}
 
+	@Override
+	public List<RunData> getAlgorithmRunDataIncludingRedundant() {
+		return rh.getAlgorithmRunDataIncludingRedundant();
+	}
+
+	
 	@Override
 	public List<AlgorithmRunResult> getAlgorithmRunsExcludingRedundant() {
 		return rh.getAlgorithmRunsExcludingRedundant();

@@ -18,7 +18,7 @@ import com.beust.jcommander.ParametersDelegate;
 @UsageTextField(title="Verify Scenario Utility", description="Verifies scenario files are intact and complete", noarg=VerifyScenarioNoArgumentHandler.class)
 public class VerifyScenarioOptions extends AbstractOptions{
 
-	@Parameter(names={"--scenario-files","--scenario-file","--scenarios"}, description="Scenario Files to validate", variableArity=true)
+	@Parameter(names={"--scenario-files","--scenario-file","--scenarios","--scenario"}, description="Scenario Files to validate", variableArity=true)
 	public List<String> scenarios = new ArrayList<String>();
 	
 	@ParametersDelegate

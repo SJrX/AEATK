@@ -259,7 +259,7 @@ public class CommandLineAlgorithmRun implements Callable<AlgorithmRunResult>{
 	public synchronized AlgorithmRunResult call() 
 	{
 		
-
+		Thread.currentThread().setName("CLI TAE (Master Thread - TBD)");
 		if(runConfig.getCutoffTime() <= 0 || killHandler.isKilled())
 		{
 			
@@ -335,6 +335,8 @@ public class CommandLineAlgorithmRun implements Callable<AlgorithmRunResult>{
 				return run;
 			}
 			
+			final Integer myToken = token;
+			Thread.currentThread().setName("CLI TAE (Master Thread - #" + myToken +")" );
 			
 			try 
 			{
@@ -367,6 +369,8 @@ public class CommandLineAlgorithmRun implements Callable<AlgorithmRunResult>{
 					@Override
 					public void run()
 					{
+						
+						Thread.currentThread().setName("CLI TAE (Socket Thread - #"+myToken+")" );
 						
 						byte[] receiveData = new byte[1024];
 						
@@ -429,7 +433,7 @@ public class CommandLineAlgorithmRun implements Callable<AlgorithmRunResult>{
 					@Override
 					public void run() {
 						
-						Thread.currentThread().setName("Command Line Target Algorithm Evaluator Thread (Standard Error Processor)" + runConfig );
+						Thread.currentThread().setName("CLI TAE (STDERR Thread - #" + myToken + ")");
 						try {
 							try { 
 								try (BufferedReader procIn = new BufferedReader(new InputStreamReader(innerProcess.getErrorStream())))
@@ -504,7 +508,7 @@ public class CommandLineAlgorithmRun implements Callable<AlgorithmRunResult>{
 	
 					@Override
 					public void run() {
-						Thread.currentThread().setName("Command Line Target Algorithm Evaluator Thread (Observer)" + runConfig);
+						Thread.currentThread().setName("CLI TAE (Observer Thread - #" + myToken+ ")");
 	
 						while(true)
 						{
@@ -736,7 +740,10 @@ outerloop:
 						
 						if(completedAlgorithmRun != null && wasKilled)
 						{
-							log.warn("Run was killed but we somehow completed this might be a race condition but our result is: {}. This is a warning just so that developers can see this having occurred and judge the correctness" ,completedAlgorithmRun.getResultLine());
+							if(completedAlgorithmRun.getWallclockExecutionTime() > 1)
+							{ //For very short runs this might not matter.
+								log.warn("Run was killed but we somehow completed this might be a race condition but our result is: {}. This is a warning just so that developers can see this having occurred and judge the correctness" ,completedAlgorithmRun.getResultLine());
+							}
 						}
 						
 						

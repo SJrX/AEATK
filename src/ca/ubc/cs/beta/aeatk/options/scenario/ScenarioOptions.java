@@ -101,11 +101,11 @@ public class ScenarioOptions extends AbstractOptions{
 	public ProblemInstanceOptions instanceOptions = new ProblemInstanceOptions();
 	
 	@UsageTextField(defaultValues="")
-	@Parameter(names={"--scenario-file","--scenarioFile"}, description="scenario file")
+	@Parameter(names={"--scenario-file","--scenarioFile","--scenario"}, description="scenario file")
 	@ParameterFile
 	public File scenarioFile = null;
 	
-	@UsageTextField(defaultValues="<current working directory>/smac-output", level=OptionLevel.INTERMEDIATE)
+	@UsageTextField(defaultValues="<current working directory>/____-output", level=OptionLevel.INTERMEDIATE)
 	@Parameter(names={"--output-dir","--outputDirectory","--outdir"}, required=false, description="Output Directory")
 	public String outputDirectory = System.getProperty("user.dir") + File.separator + "smac-output";
 

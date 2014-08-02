@@ -65,6 +65,11 @@ public class ProblemInstanceOptions extends AbstractOptions{
 	@Parameter(names={"--test-instance-suffix","--test-instance-regex"}, description="A suffix that all instances must match when reading instances from a directory. You can optionally specify a (java) regular expression but be aware that it is suffix matched (internally we take this string and append a $ on it)")
 	public String testInstanceSuffix = null;
 	
+	
+	@CommandLineOnly
+	@Parameter(names={"--skip-features","--ignore-features"}, description="If true the feature file will be ignored (if the feature file is required, this will cause an error, as if it was not supplied")
+	public boolean ignoreFeatures = false;
+	
 	/**
 	 * Gets the training problem instances
 	 * @param experimentDirectory	Directory to search for instance files
@@ -75,10 +80,19 @@ public class ProblemInstanceOptions extends AbstractOptions{
 	public InstanceListWithSeeds getTrainingProblemInstances(String experimentDirectory, long seed, boolean deterministic, boolean required, boolean featuresRequired) throws IOException
 	{
 		
+		Logger log = LoggerFactory.getLogger(getClass());
+		
+		if(ignoreFeatures)
+		{
+			log.trace("Ignoring features as per command line option");
+			this.instanceFeatureFile = null;
+		}
 		
 		String instancesString = this.instanceFile;
 
+	
 		String instanceFeatureFile = this.instanceFeatureFile;
+
 		
 		if(!this.useInstances)
 		{
@@ -104,7 +118,7 @@ public class ProblemInstanceOptions extends AbstractOptions{
 		
 		InstanceListWithSeeds ilws;
 		
-		Logger log = LoggerFactory.getLogger(getClass());
+		
 				
 		try {
 			ilws = ProblemInstanceHelper.getInstances(instancesString,experimentDirectory, instanceFeatureFile, checkInstanceFilesExist, seed, deterministic);
@@ -159,6 +173,13 @@ public class ProblemInstanceOptions extends AbstractOptions{
 	{
 		
 
+		Logger log = LoggerFactory.getLogger(getClass());
+		if(ignoreFeatures)
+		{
+			log.trace("Ignoring features as per command line option");
+			this.instanceFeatureFile = null;
+		}
+		
 		String testInstancesString = this.testInstanceFile;
 		
 		
@@ -191,7 +212,7 @@ public class ProblemInstanceOptions extends AbstractOptions{
 	
 		InstanceListWithSeeds ilws;
 		
-		Logger log = LoggerFactory.getLogger(getClass());
+	
 		try {
 			ilws = ProblemInstanceHelper.getInstances(testInstancesString,experimentDirectory, instanceFeatureFile, checkInstanceFilesExist, seed, deterministic);
 			
@@ -275,7 +296,6 @@ public class ProblemInstanceOptions extends AbstractOptions{
 		Logger log = LoggerFactory.getLogger(getClass());
 		
 		Set<File> checkedDirectories = new HashSet<File>();
-		
 		
 		Set<File> canonicalDirectories = new HashSet<File>();
 		

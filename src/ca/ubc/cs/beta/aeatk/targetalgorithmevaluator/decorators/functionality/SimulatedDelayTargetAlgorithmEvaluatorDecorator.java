@@ -159,9 +159,16 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 			final LinkedHashMap<AlgorithmRunConfiguration, AlgorithmRunResult> runConfigToAlgorithmRunMap = new LinkedHashMap<AlgorithmRunConfiguration, AlgorithmRunResult>();
 			final LinkedHashMap<AlgorithmRunConfiguration, KillHandler> runConfigToKillHandlerMap = new LinkedHashMap<AlgorithmRunConfiguration, KillHandler>();
 			
+			AlgorithmRunResult mostExpensiveRun = null;
 			for(AlgorithmRunResult run : runsFromWrappedTAE)
 			{
+				double oldTimeToSleep = timeToSleep;
 				timeToSleep = Math.max(timeToSleep, Math.max(run.getRuntime(), run.getWallclockExecutionTime()));
+				
+				if(oldTimeToSleep != timeToSleep)
+				{
+					mostExpensiveRun = run;
+				}
 				runConfigToKillHandlerMap.put(run.getAlgorithmRunConfiguration(), new StatusVariableKillHandler() );
 				runConfigToAlgorithmRunMap.put(run.getAlgorithmRunConfiguration(), new RunningAlgorithmRunResult( run.getAlgorithmRunConfiguration(), 0,0,0, run.getAlgorithmRunConfiguration().getProblemInstanceSeedPair().getSeed(),0, null));
 				
@@ -196,6 +203,11 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 						}
 						
 						throw new IllegalStateException("Expected that all runs would be completed by now, but not all are");
+					}
+					
+					if(newRun.equals(mostExpensiveRun))
+					{
+						newRun = new ExistingAlgorithmRunResult(newRun.getAlgorithmRunConfiguration(), newRun.getRunStatus(), newRun.getRuntime(), newRun.getRunLength(),newRun.getQuality(),newRun.getResultSeed(), newRun.getAdditionalRunData(), timeToSleep);
 					}
 					completedRuns.add(newRun);
 					

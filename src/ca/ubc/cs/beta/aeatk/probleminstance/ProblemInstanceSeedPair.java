@@ -4,6 +4,7 @@ import java.io.Serializable;
 
 import ca.ubc.cs.beta.aeatk.json.serializers.ProblemInstanceJson;
 
+import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 /**
@@ -12,6 +13,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
  *
  */
 @JsonSerialize(using=ProblemInstanceJson.ProblemInstanceSeedPairSerializer.class)
+@JsonDeserialize(using=ProblemInstanceJson.ProblemInstanceSeedPairDeserializer.class)
 public class ProblemInstanceSeedPair implements Comparable<ProblemInstanceSeedPair>,Serializable {
 	
 	/**

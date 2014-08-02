@@ -104,8 +104,13 @@ public interface AlgorithmRunResult extends Serializable {
 	
 	
 	/**
-	 * If this run is currently RUNNING request that it should be killed, 
-	 * otherwise do nothing.
+	 * If this run is currently RUNNING request that it should be killed, otherwise do nothing.
+	 * <br/><br/>
+	 * <b>NOTE:</b> This method should only be called within the scope (or synchronized with) a {@link ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver#currentStatus(java.util.List)} call.
+	 * Specifically what this means, is that if you somehow save the run from the observer call, and later call it, the call may then be ignored. The reason is that implementations may choose to handle this in different ways,
+	 * generally it will be some flag variable. When they notify you again later, they may use a different flag variable. As a result if you later chose to kill a run, the {@link ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator} is
+	 * under <b>NO</b> obligation to check it. 
+	 * 
 	 */
 	public void kill();
 	

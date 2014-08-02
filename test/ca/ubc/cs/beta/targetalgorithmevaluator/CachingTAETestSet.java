@@ -162,7 +162,7 @@ private static TargetAlgorithmEvaluator tae;
 		RandomResponseTargetAlgorithmEvaluatorFactory rfact = new RandomResponseTargetAlgorithmEvaluatorFactory();
 		
 		
-		
+		/*
 		
 		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
 		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
@@ -175,10 +175,12 @@ private static TargetAlgorithmEvaluator tae;
 		
 		TargetAlgorithmEvaluator tae = fact.getTargetAlgorithmEvaluator( options);	
 		TargetAlgorithmEvaluator cliTAE = tae;
+		*/
 		
 		RandomResponseTargetAlgorithmEvaluatorOptions opts = rfact.getOptionObject();
 		opts.cores = 20000;
 		opts.simulateDelay = true;
+		
 		
 		opts.maxResponse = 4;
 		tae = rfact.getTargetAlgorithmEvaluator(opts);
@@ -293,6 +295,170 @@ private static TargetAlgorithmEvaluator tae;
 		} catch (InterruptedException e) {
 			Thread.currentThread().interrupt();
 			return;
+		}
+		tae.waitForOutstandingEvaluations();
+		
+		tae.notifyShutdown();
+		System.out.println(insideTAE.getRunCount());
+	
+		System.out.println("Configuration space size: [" +  configSpace.getLowerBoundOnSize() + "," + configSpace.getUpperBoundOnSize() + "] * " + pis.size() + " * 2");
+		assertEquals("Expected no failures to be detected", 0, failures.get());
+		assertEquals("Expected passes to be equal to submits", passes.get(), submits.get());
+		
+		
+	}
+	
+	@Test
+	public void testRepeatedlyRequestingSameRuns()
+	{
+		final Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(TrueSleepyParamEchoExecutor.class.getCanonicalName());
+		
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("a [0,100] [0]i\nb [0,9][0]i \n");
+		
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false,3000);
+		
+		
+		RandomResponseTargetAlgorithmEvaluatorFactory rfact = new RandomResponseTargetAlgorithmEvaluatorFactory();
+		
+		
+		/*
+		
+		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
+		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
+		
+		options.logAllCallStrings = true;
+		options.logAllProcessOutput = true;
+		options.concurrentExecution = true;
+		options.observerFrequency = 2000;
+		options.cores = 10;
+		
+		TargetAlgorithmEvaluator tae = fact.getTargetAlgorithmEvaluator( options);	
+		TargetAlgorithmEvaluator cliTAE = tae;
+		*/
+		
+		RandomResponseTargetAlgorithmEvaluatorOptions opts = rfact.getOptionObject();
+		opts.cores = 20000;
+		opts.simulateDelay = true;
+		
+		
+		opts.maxResponse = 4;
+		tae = rfact.getTargetAlgorithmEvaluator(opts);
+		
+		
+		tae = new OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator(tae);
+		final TargetAlgorithmEvaluator insideTAE = tae;
+	
+		tae = new CachingTargetAlgorithmEvaluatorDecorator(tae);
+		tae = new CachingTargetAlgorithmEvaluatorDecorator(tae);
+		tae = new CachingTargetAlgorithmEvaluatorDecorator(tae);
+		tae = new CachingTargetAlgorithmEvaluatorDecorator(tae);
+		tae = new CachingTargetAlgorithmEvaluatorDecorator(tae);
+		tae = new CachingTargetAlgorithmEvaluatorDecorator(tae);
+		
+		tae = new OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator(tae);
+		ExponentialDistribution dist = new ExponentialDistribution(30);
+		
+		
+		List<ProblemInstance> pis = new ArrayList<ProblemInstance>(4);
+		
+		for(int i=0; i < 4; i++)
+		{
+			pis.add(new ProblemInstance("inst" + i));
+		}
+		
+		
+		final AtomicInteger failures = new AtomicInteger(0);
+		
+		final TargetAlgorithmEvaluator fTAE = tae;
+		ExecutorService execService = Executors.newFixedThreadPool(64);
+		
+		final AtomicInteger submits = new AtomicInteger(0);
+		final AtomicInteger passes = new AtomicInteger(0);
+		
+		
+	
+		int numberOfValuesToSubmit = (int) dist.inverseCumulativeProbability(r.nextDouble());
+		final List<AlgorithmRunConfiguration> submitList = new ArrayList<AlgorithmRunConfiguration>(numberOfValuesToSubmit);
+		
+		final Set<AlgorithmRunConfiguration> rcs = new LinkedHashSet<AlgorithmRunConfiguration>();
+		while(rcs.size() < numberOfValuesToSubmit)
+		{
+			rcs.add(new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(pis.get(r.nextInt(4)),r.nextInt(2)), configSpace.getRandomParameterConfiguration(r),execConfig));
+			
+		}
+		
+		submitList.addAll(rcs);
+		
+		Runnable run = new Runnable()
+		{
+			public void run()
+			{
+				//System.out.println("Submitting Run");
+				fTAE.evaluateRunsAsync(submitList, new TargetAlgorithmEvaluatorCallback(){
+
+					AtomicBoolean bool = new AtomicBoolean();
+					@Override
+					public void onSuccess(List<AlgorithmRunResult> runs) {
+			
+						if(!bool.compareAndSet(false, true))
+						{
+							throw new IllegalStateException("Callback was called twice: " + this);
+						}
+						
+						
+						
+						if(rcs.size() != runs.size())
+						{
+							throw new IllegalStateException("Expected that the number of submitted run configs: " + rcs.size() + " would equal runs completed " + runs.size());
+						}
+						int i=0;
+						for(AlgorithmRunConfiguration rc : submitList)
+						{
+							if(!rc.equals(runs.get(i).getAlgorithmRunConfiguration()))
+							{
+								throw new IllegalStateException("Runs are coming back out of order: " + rcs + " runs: " + runs);
+							}
+							i++;
+						}
+						
+						passes.incrementAndGet();
+					}
+
+					@Override
+					public void onFailure(RuntimeException e) {
+						e.printStackTrace();
+						failures.incrementAndGet();					
+					}
+				});
+			}
+		};
+		for(int i=0; i < 200; i++)
+		{
+			
+			submits.incrementAndGet();
+	
+			
+			execService.submit(run);
+
+		}		
+				
+				
+	
+			
+			//RunConfig rc = new RunConfig(pis.get(index));
+		
+			
+		
+		try {
+			Thread.sleep(1000);
+		} catch (InterruptedException e) {
+		
+			e.printStackTrace();
 		}
 		tae.waitForOutstandingEvaluations();
 		

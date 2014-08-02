@@ -14,6 +14,7 @@ import ca.ubc.cs.beta.probleminstance.BuggyFeatureFilesTester;
 import ca.ubc.cs.beta.probleminstance.ProblemInstanceHelperTester;
 import ca.ubc.cs.beta.runhistory.RunHistoryTester;
 import ca.ubc.cs.beta.state.legacy.LegacyStateDeserializerTester;
+import ca.ubc.cs.beta.targetalgorithmevaluator.CachingTAETestSet;
 import ca.ubc.cs.beta.targetalgorithmevaluator.DynamicCappingTestSet;
 import ca.ubc.cs.beta.targetalgorithmevaluator.RetryCrashedTAETester;
 import ca.ubc.cs.beta.targetalgorithmevaluator.TAETestSet;
@@ -21,7 +22,6 @@ import ca.ubc.cs.beta.instancespecificinfo.*;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
-	
 	TestExistingAlgorithmRun.class,
 	AcquisitionFunctionTester.class,
 	EventManagerTester.class,
@@ -36,8 +36,8 @@ import ca.ubc.cs.beta.instancespecificinfo.*;
 	RunHistoryTester.class, 
 	RetryCrashedTAETester.class,
 	RunObjectiveTester.class,
-	CPUTimeTest.class
-	/*CachingTAETestSet.class,*/
+	CPUTimeTest.class,
+	CachingTAETestSet.class
 })
 
 public class AEATKTestSuite {

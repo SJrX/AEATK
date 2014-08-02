@@ -33,8 +33,7 @@ import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorHelper;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
-import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.AbstractTargetAlgorithmEvaluatorDecorator;
-import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.functionality.OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.AbstractRunReschedulingTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.exceptions.TargetAlgorithmEvaluatorShutdownException;
 /**
  * Ensures that a Target Algorithm Evaluator gets no more than a certain number of runs issued simultaneously.
@@ -57,7 +56,7 @@ import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.exceptions.TargetAlgorithmE
  */
 @ThreadSafe
 public class BoundedTargetAlgorithmEvaluator extends
-		AbstractTargetAlgorithmEvaluatorDecorator {
+	AbstractRunReschedulingTargetAlgorithmEvaluatorDecorator {
 
 	
 	/**
@@ -248,27 +247,6 @@ public class BoundedTargetAlgorithmEvaluator extends
 	@Override
 	public List<AlgorithmRunResult> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
 		return TargetAlgorithmEvaluatorHelper.evaluateRunSyncToAsync(runConfigs, this, obs);
-	}
-	
-	
-
-	/**
-	 * We need to throw this now because even if the lower level supplies it, we may break it.
-	 * @throws UnsupportedOperationException - if the TAE does not support this operation 
-	 */
-	@Override
-	public void waitForOutstandingEvaluations()
-	{
-		throw new UnsupportedOperationException(this.getClass().getCanonicalName() + " does NOT support waiting or observing the number of outstanding evaluations, even if the wrapped class does, you should probably wrap this TargetAlgorithmEvaluator with an instance of " + OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator.class );
-	}
-	
-	/**
-	 * We need to throw this now because even if the lower level supplies it, we may break it.
-	 */
-	@Override
-	public int getNumberOfOutstandingEvaluations()
-	{
-		throw new UnsupportedOperationException(this.getClass().getCanonicalName() + " does NOT support waiting or observing the number of outstanding evaluations, even if the wrapped class does, you should probably wrap this TargetAlgorithmEvaluator with an instance of " + OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator.class );
 	}
 	
 	@Override

@@ -10,9 +10,9 @@ public class ValidPortValidator implements IParameterValidator , DomainDisplay{
 	  public void validate(String name, String value)
 	      throws ParameterException {
 	    int n = Integer.parseInt(value);
-	    if ((n < 1) || (n > 65535)){
+	    if ((n < 0) || (n > 65535)){
 	      throw new ParameterException("Port specified in " + name
-	          + " should be between 1 and 65535 inclusive (found " + value +")");
+	          + " should be between 0 and 65535 inclusive (found " + value +")");
 	    }
 	    
 	  }
@@ -20,7 +20,7 @@ public class ValidPortValidator implements IParameterValidator , DomainDisplay{
 	  @Override
 	  public String getDomain() {
 
-			return "[1,65535]";
+			return "[0,65535]";
 	  }
 	  
 
