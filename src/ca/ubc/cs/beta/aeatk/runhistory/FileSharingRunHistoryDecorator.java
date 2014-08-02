@@ -19,6 +19,7 @@ import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -69,10 +70,16 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 
 	private final ConcurrentMap<File, Integer> importedRuns = new ConcurrentSkipListMap<>();
 	
-	public FileSharingRunHistoryDecorator(RunHistory runHistory, File directory, int outputID, List<ProblemInstance> pis, int MSecondsBetweenUpdates)
+	/**
+	 * Actually read the data in 
+	 */
+	private final boolean readData;
+
+	public FileSharingRunHistoryDecorator(RunHistory runHistory, File directory, final int outputID, List<ProblemInstance> pis, int MSecondsBetweenUpdates, final boolean readData)
 	{
 		this.runHistory = runHistory;
 		this.outputDir = directory;
+		this.readData = readData;
 		
 		if(MSecondsBetweenUpdates < 0)
 		{
@@ -107,6 +114,7 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 			throw new IllegalStateException("Couldn't create shared model output file :" + sharedFileName);
 		}
 		
+		
 		if(log.isInfoEnabled())
 		{
 			Thread t = new Thread(new Runnable(){
@@ -116,7 +124,7 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 					
 					
 					
-					Thread.currentThread().setName("FileSharingRunHistory Logger (" + f.getName() + ")");
+					Thread.currentThread().setName("FileSharingRunHistory Logger ( outputID:" + outputID + ")");
 					List<String> addedRunsStr = new ArrayList<String>();
 					int total = 0;
 					
@@ -132,8 +140,17 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 						}
 					}
 					
-					log.info("At shutdown RunHistory writing to {} had atleast {} runs added to it {}", f, total, addedRunsStr  );
+					if(readData)
+					{
+						log.info("At shutdown: {} had {} runs added to it", f, locallyAddedRuns.get());
+						log.info("At shutdown: we retrieved atleast {} runs and added them to our current data set {}",  total, addedRunsStr  );
+					} else
+					{
+						log.debug("At shutdown: {} had {} runs added to it", f, locallyAddedRuns.get());
+					}
 					
+					
+				
 				}
 				
 			});
@@ -145,15 +162,10 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 		
 	}
 	
+	private final AtomicInteger locallyAddedRuns = new AtomicInteger(0);
+
 	@Override
-	public void append(Collection<AlgorithmRunResult> runs) {
-
-		this.append(runs, true);
-	}
-	
-
-	
-	private void append(Collection<AlgorithmRunResult> runs, boolean write)	 {
+	public void append(Collection<AlgorithmRunResult> runs)	 {
 
 	
 		lockWrite();
@@ -163,6 +175,7 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 			{
 				
 				try {
+					
 					runHistory.append(run);
 				} catch (DuplicateRunException e1) {
 					//We will drop this silently because
@@ -171,20 +184,27 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 					continue;
 				}
 
-				if(write)
-				{
-					try {
-						
-						g.writeObject(run);
-						g.flush();
-						//map.writeValue(fout, run);
-						//fout.flush();
-					} catch (IOException e) {
-						throw new IllegalStateException("Couldn't save data as JSON", e);
-					}
+				
+				try {
 					
+					g.writeObject(run);
+					
+					
+					locallyAddedRuns.incrementAndGet();
+					g.flush();
+					
+					
+					//map.writeValue(fout, run);
+					//fout.flush();
+				} catch (IOException e) {
+					throw new IllegalStateException("Couldn't save data as JSON", e);
+				}
+				
+				if(this.readData)
+				{
 					reReadFiles();
 				}
+			
 				
 			}
 			
@@ -203,7 +223,7 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 	 */
 	private final void reReadFiles()
 	{
-	
+		
 		try 
 		{
 			lockWrite();
@@ -311,21 +331,25 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 			
 			try {
 				
-			
+				
 				for(AlgorithmRunResult run : runResult.subList(previousRuns, runResult.size()))
 				{
 					
 					try {
+						newValue++; //Always count this, if it's a duplicate it counts as a success.
 						runHistory.append(run);
-						newValue++;
 					} catch (DuplicateRunException e) {
 						//Doesn't matter here
 					}
 					 
 				}
-
+				
 			} finally
 			{
+				if(previousRuns != newValue)
+				{
+					log.debug("Successfully read {} new runs (out of {} total) from file {} ", newValue - previousRuns , newValue, match); 
+				}
 				importedRuns.put(match,newValue);
 			}
 
