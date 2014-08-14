@@ -226,6 +226,10 @@ public class SMACOptions extends AbstractOptions {
 	@UsageTextField(defaultValues="300 seconds", level=OptionLevel.ADVANCED)
 	@Parameter(names={"--shared-model-mode-frequency","--share-model-mode-frequency","--shared-run-data-frequency","--share-run-data-frequency"}, description="How often to poll for new run data (in seconds) ", validateWith=FixedPositiveInteger.class)
 	public int shareRunDataFrequency = 300;
+
+	@UsageTextField(level=OptionLevel.DEVELOPER)
+	@Parameter(names={"--shared-model-mode-tae"}, description="If true and shared model mode is enabled, then we will also try and share run data at the TAE level")
+	public boolean shareModeModeTAE = true;
 	
 
 	/**

@@ -9,6 +9,7 @@ import java.util.Set;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.exceptions.DuplicateRunException;
 import ca.ubc.cs.beta.aeatk.objectives.OverallObjective;
@@ -20,8 +21,9 @@ import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
 
 /**
  * TeeRunHistory is a RunHistory object that on top of notifying the decorated RunHistory object, also notifies another one but otherwise acts as a transparent decorator.
+ * 
  * <br>
- * <b>Note:</b>Duplicate runs in the branch are simply silenced.
+ * <b>Note:</b>Duplicate runs in the branch are simply silenced, and the state of the branch should be transparent to users of this object.
  * 
  * @author Steve Ramage <seramage@cs.ubc.ca>
  */
@@ -275,6 +277,12 @@ public class ThreadSafeTeeRunHistory implements ThreadSafeRunHistory {
 	public double getEmpiricalCostUpperBound(ParameterConfiguration config,
 			Set<ProblemInstance> instanceSet, double cutoffTime) {
 		return rh.getEmpiricalCostUpperBound(config, instanceSet, cutoffTime);
+	}
+
+	@Override
+	public AlgorithmRunResult getAlgorithmRunResultForAlgorithmRunConfiguration(
+			AlgorithmRunConfiguration runConfig) {
+		return rh.getAlgorithmRunResultForAlgorithmRunConfiguration(runConfig);
 	}
 	
 	

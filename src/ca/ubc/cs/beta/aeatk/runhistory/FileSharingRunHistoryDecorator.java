@@ -36,6 +36,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.deser.std.StdValueInstantiator;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.exceptions.DuplicateRunException;
 import ca.ubc.cs.beta.aeatk.objectives.OverallObjective;
@@ -800,6 +801,19 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 	public double getEmpiricalCostUpperBound(ParameterConfiguration config,
 			Set<ProblemInstance> instanceSet, double cutoffTime) {
 		return this.runHistory.getEmpiricalCostUpperBound(config, instanceSet, cutoffTime);
+	}
+
+	@Override
+	public AlgorithmRunResult getAlgorithmRunResultForAlgorithmRunConfiguration(
+			AlgorithmRunConfiguration runConfig) {
+		lockRead();
+		try
+		{
+			return this.runHistory.getAlgorithmRunResultForAlgorithmRunConfiguration(runConfig);
+		} finally
+		{
+			unlockRead();
+		}
 	}
 
 
