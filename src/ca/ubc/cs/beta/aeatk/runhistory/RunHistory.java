@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.exceptions.DuplicateRunException;
 import ca.ubc.cs.beta.aeatk.objectives.OverallObjective;
@@ -298,7 +299,14 @@ public interface RunHistory {
 	 */
 	public int getOrCreateThetaIdx(ParameterConfiguration config);
 
-	
+
+	/**
+	 * Returns the AlgorithmRunResult for an AlgorithmRunConfiguration if available
+	 * 
+	 * @param runConfig 	AlgorithmRunConfiguration object
+	 * @return AlgorithmRunResult or null if no match
+	 */
+	public AlgorithmRunResult getAlgorithmRunResultForAlgorithmRunConfiguration(AlgorithmRunConfiguration runConfig);
 
 	
 	

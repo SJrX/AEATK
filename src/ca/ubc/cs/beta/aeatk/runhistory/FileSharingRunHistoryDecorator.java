@@ -10,12 +10,16 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
+import java.util.concurrent.ConcurrentSkipListMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -32,6 +36,7 @@ import com.fasterxml.jackson.databind.SerializationFeature;
 import com.fasterxml.jackson.databind.deser.std.StdValueInstantiator;
 import com.fasterxml.jackson.databind.module.SimpleModule;
 
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.exceptions.DuplicateRunException;
 import ca.ubc.cs.beta.aeatk.objectives.OverallObjective;
@@ -64,12 +69,18 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 	
 	private final List<ProblemInstance> pis;
 
-	private final ConcurrentHashMap<File, Integer> importedRuns = new ConcurrentHashMap<>();
+	private final ConcurrentMap<File, Integer> importedRuns = new ConcurrentSkipListMap<>();
 	
-	public FileSharingRunHistoryDecorator(RunHistory runHistory, File directory, int outputID, List<ProblemInstance> pis, int MSecondsBetweenUpdates)
+	/**
+	 * Actually read the data in 
+	 */
+	private final boolean readData;
+
+	public FileSharingRunHistoryDecorator(RunHistory runHistory, File directory, final int outputID, List<ProblemInstance> pis, int MSecondsBetweenUpdates, final boolean readData)
 	{
 		this.runHistory = runHistory;
 		this.outputDir = directory;
+		this.readData = readData;
 		
 		if(MSecondsBetweenUpdates < 0)
 		{
@@ -104,6 +115,7 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 			throw new IllegalStateException("Couldn't create shared model output file :" + sharedFileName);
 		}
 		
+		
 		if(log.isInfoEnabled())
 		{
 			Thread t = new Thread(new Runnable(){
@@ -113,9 +125,11 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 					
 					
 					
-					Thread.currentThread().setName("FileSharingRunHistory Logger (" + f.getName() + ")");
+					Thread.currentThread().setName("FileSharingRunHistory Logger ( outputID:" + outputID + ")");
 					List<String> addedRunsStr = new ArrayList<String>();
 					int total = 0;
+					
+					
 					
 					for(Entry<File, Integer> ent : importedRuns.entrySet())
 					{
@@ -127,8 +141,17 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 						}
 					}
 					
-					log.info("At shutdown RunHistory writing to {} had atleast {} runs added to it {}", f, total, addedRunsStr  );
+					if(readData)
+					{
+						log.info("At shutdown: {} had {} runs added to it", f, locallyAddedRuns.get());
+						log.info("At shutdown: we retrieved atleast {} runs and added them to our current data set {}",  total, addedRunsStr  );
+					} else
+					{
+						log.debug("At shutdown: {} had {} runs added to it", f, locallyAddedRuns.get());
+					}
 					
+					
+				
 				}
 				
 			});
@@ -140,15 +163,10 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 		
 	}
 	
+	private final AtomicInteger locallyAddedRuns = new AtomicInteger(0);
+
 	@Override
-	public void append(Collection<AlgorithmRunResult> runs) {
-
-		this.append(runs, true);
-	}
-	
-
-	
-	private void append(Collection<AlgorithmRunResult> runs, boolean write)	 {
+	public void append(Collection<AlgorithmRunResult> runs)	 {
 
 	
 		lockWrite();
@@ -158,6 +176,7 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 			{
 				
 				try {
+					
 					runHistory.append(run);
 				} catch (DuplicateRunException e1) {
 					//We will drop this silently because
@@ -166,19 +185,27 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 					continue;
 				}
 
-				if(write)
-				{
-					try {
-						g.writeObject(run);
-						g.flush();
-						//map.writeValue(fout, run);
-						//fout.flush();
-					} catch (IOException e) {
-						throw new IllegalStateException("Couldn't save data as JSON", e);
-					}
+				
+				try {
 					
+					g.writeObject(run);
+					
+					
+					locallyAddedRuns.incrementAndGet();
+					g.flush();
+					
+					
+					//map.writeValue(fout, run);
+					//fout.flush();
+				} catch (IOException e) {
+					throw new IllegalStateException("Couldn't save data as JSON", e);
+				}
+				
+				if(this.readData)
+				{
 					reReadFiles();
 				}
+			
 				
 			}
 			
@@ -197,7 +224,7 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 	 */
 	private final void reReadFiles()
 	{
-	
+		
 		try 
 		{
 			lockWrite();
@@ -248,13 +275,13 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 	
 	
 	
+	private final Set<File> filesWithErrors = Collections.synchronizedSet(new HashSet<File>());
+	
 	private void readRunsFromFile(File match) {
 		
 		importedRuns.putIfAbsent(match, 0);
 		
 		int previousRuns = importedRuns.get(match);
-		
-		
 		
 		if(previousRuns == -1)
 		{
@@ -305,43 +332,44 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 			
 			try {
 				
-			
+				
 				for(AlgorithmRunResult run : runResult.subList(previousRuns, runResult.size()))
 				{
 					
 					try {
+						newValue++; //Always count this, if it's a duplicate it counts as a success.
 						runHistory.append(run);
-						newValue++;
 					} catch (DuplicateRunException e) {
 						//Doesn't matter here
 					}
-					
+					 
 				}
-
+				
 			} finally
 			{
+				if(previousRuns != newValue)
+				{
+					log.debug("Successfully read {} new runs (out of {} total) from file {} ", newValue - previousRuns , newValue, match); 
+				}
 				importedRuns.put(match,newValue);
 			}
 
 			
-			
+			if(this.filesWithErrors.remove(match))
+			{
+				log.info("Successfully read file: {} after previously logged error", match.getAbsolutePath());
+			}
 		
-		} catch (JsonParseException e) {
+		} catch (RuntimeException | IOException e) {
 			
 			//We will just retry later
 			
-			
-			log.debug("Error occurred reading file in shared run history" + match.getAbsolutePath() + ":", e);
-			//importedRuns.put(match, -1);
-		} catch (IOException e) {
-			//We will just retry later
-			
-			log.debug("Error occurred reading file in shared run history" + match.getAbsolutePath() + ":", e);
-			
-			//log.error("Error occurred reading file " + match.getAbsolutePath() + " no longer looking at it, {}", e);
-			//importedRuns.put(match, -1);
-			
-		}
+			if(this.filesWithErrors.add(match))
+			{
+				log.warn("Error occurred reading file in shared run history " + match.getAbsolutePath() + ". We will keep trying to read this file, but will only log another error after it succeeds once. We may not be able to get it's run data but we should be able to continue", e);
+				
+			}
+		} 
 		
 		
 		
@@ -773,6 +801,19 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 	public double getEmpiricalCostUpperBound(ParameterConfiguration config,
 			Set<ProblemInstance> instanceSet, double cutoffTime) {
 		return this.runHistory.getEmpiricalCostUpperBound(config, instanceSet, cutoffTime);
+	}
+
+	@Override
+	public AlgorithmRunResult getAlgorithmRunResultForAlgorithmRunConfiguration(
+			AlgorithmRunConfiguration runConfig) {
+		lockRead();
+		try
+		{
+			return this.runHistory.getAlgorithmRunResultForAlgorithmRunConfiguration(runConfig);
+		} finally
+		{
+			unlockRead();
+		}
 	}
 
 

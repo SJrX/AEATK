@@ -282,7 +282,7 @@ dirty: ${git.dirty}</echo>
 			<arg value="--class" />
 			<arg value="ca.ubc.cs.beta.aeatk.example.evaluator.TAEEvaluator" />
 			<arg value="--name" />
-			<arg value="TAE-evaluator" />
+			<arg value="tae-evaluator" />
 			<arg value="--file-to-write" />
 			<arg value="dist/util/" />
 			<arg value="--default-mem"/>

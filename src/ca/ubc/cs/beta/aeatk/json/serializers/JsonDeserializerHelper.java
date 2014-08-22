@@ -1,9 +1,12 @@
 package ca.ubc.cs.beta.aeatk.json.serializers;
 
 import java.io.IOException;
+import java.util.Collections;
 import java.util.HashMap;
 import java.util.IdentityHashMap;
 import java.util.Map;
+import java.util.WeakHashMap;
+import java.util.concurrent.atomic.AtomicInteger;
 
 import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.JsonProcessingException;
@@ -37,6 +40,12 @@ public class JsonDeserializerHelper {
 	
 	
 	
+	//private static final AtomicInteger lastLoggedSize = new AtomicInteger(0);
+	
+	public static <K,V> Map<K,V> getMap()
+	{
+		return Collections.synchronizedMap(new WeakHashMap<K,V>());
+	}
 	public static synchronized <K> Map<Integer, K> getCache(Map<ObjectCodec, Map<Integer,K>> cacheMap, ObjectCodec c)
 	{
 		synchronized(cacheMap)
@@ -46,7 +55,7 @@ public class JsonDeserializerHelper {
 				cacheMap.put(c, new HashMap<Integer, K>());
 				
 			} 
-		
+
 			return cacheMap.get(c);
 		}
 		

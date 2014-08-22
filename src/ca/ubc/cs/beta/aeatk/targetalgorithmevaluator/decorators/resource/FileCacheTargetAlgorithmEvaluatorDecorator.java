@@ -461,7 +461,7 @@ public class FileCacheTargetAlgorithmEvaluatorDecorator extends	AbstractTargetAl
 	
 		try 
 		{
-			this.log.info("File Cache Target Algorithm Evaluator, Total Requests: {}, Cache Hits {}",this.runRequests.get(), this.cacheHits.get());
+			this.log.info(this.getClass().getSimpleName() + ": Total Requests: {}, Cache Hits {}",this.runRequests.get(), this.cacheHits.get());
 		} finally
 		{
 			writeLearnedRuns();

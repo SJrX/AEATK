@@ -7,6 +7,7 @@ import java.util.Iterator;
 import java.util.Map;
 import java.util.TreeMap;
 import java.util.Map.Entry;
+import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
@@ -43,7 +44,7 @@ public class AlgorithmExecutionConfigurationJson  {
 
 	
 	
-	private static final Map<ObjectCodec, Map<Integer, AlgorithmExecutionConfiguration>> cacheMap = Collections.synchronizedMap(new IdentityHashMap<ObjectCodec, Map<Integer, AlgorithmExecutionConfiguration>>());
+	private static final Map<ObjectCodec, Map<Integer, AlgorithmExecutionConfiguration>> cacheMap = JsonDeserializerHelper.getMap();
 
 	public static class AlgorithmExecutionConfigDeserializer extends StdDeserializer<AlgorithmExecutionConfiguration>
 	{
@@ -63,7 +64,7 @@ public class AlgorithmExecutionConfigurationJson  {
 			
 		
 			
-			final Map<Integer, AlgorithmExecutionConfiguration> cache =  JsonDeserializerHelper.getCache(cacheMap, jp.getCodec());
+			final Map<Integer, AlgorithmExecutionConfiguration> cache = JsonDeserializerHelper.getCache(cacheMap, jp.getCodec());
 					 
 			if(jp.getCurrentToken() == JsonToken.START_OBJECT)
 			{

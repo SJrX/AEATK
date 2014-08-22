@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.exceptions.DuplicateRunException;
 import ca.ubc.cs.beta.aeatk.objectives.OverallObjective;
@@ -213,5 +214,10 @@ public abstract class AbstractRunHistoryDecorator implements RunHistory {
 	}
 	
 
+	@Override
+	public AlgorithmRunResult getAlgorithmRunResultForAlgorithmRunConfiguration(AlgorithmRunConfiguration runConfig)
+	{
+		return rh.getAlgorithmRunResultForAlgorithmRunConfiguration(runConfig);
+	}
 	
 }

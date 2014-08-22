@@ -40,6 +40,7 @@ import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunStatus;
 import ca.ubc.cs.beta.aeatk.concurrent.threadfactory.SequentiallyNamedThreadFactory;
+import ca.ubc.cs.beta.aeatk.exceptions.DuplicateRunException;
 import ca.ubc.cs.beta.aeatk.exceptions.IllegalWrapperOutputException;
 import ca.ubc.cs.beta.aeatk.misc.debug.DebugUtil;
 import ca.ubc.cs.beta.aeatk.misc.logback.MarkerFilter;
@@ -54,6 +55,9 @@ import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSp
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aeatk.random.SeedableRandomPool;
+import ca.ubc.cs.beta.aeatk.runhistory.NewRunHistory;
+import ca.ubc.cs.beta.aeatk.runhistory.ThreadSafeRunHistory;
+import ca.ubc.cs.beta.aeatk.runhistory.ThreadSafeRunHistoryWrapper;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorFactory;
@@ -90,6 +94,7 @@ import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.helpers.Outstand
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.helpers.WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.prepostcommand.PrePostCommandErrorException;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.BoundedTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.caching.runhistory.RunHistoryCachingTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.forking.ForkingTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.forking.ForkingTargetAlgorithmEvaluatorDecoratorPolicyOptions;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.forking.ForkingTargetAlgorithmEvaluatorDecoratorPolicyOptions.ForkingPolicy;
@@ -258,6 +263,118 @@ public class TAETestSet {
         }
 	    
 	}
+	
+	@Test
+	public void testRunHistoryCachingDecorator()
+	{
+		
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(ParamEchoExecutor.class.getCanonicalName());
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("x0 [-5,10] [0]\n x1 [-0,15] [0]\n");
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 15);
+		
+		RandomResponseTargetAlgorithmEvaluatorFactory afact = new RandomResponseTargetAlgorithmEvaluatorFactory();
+		
+		TargetAlgorithmEvaluator tae = afact.getTargetAlgorithmEvaluator();
+		
+		ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
+
+		config.put("x0", "2.656650319997154");
+		config.put("x1", "8.192989379593786");
+		
+		//config.put("x0", "3.1415");
+		//config.put("x1", "2.275");
+		
+		StringBuilder sb = new StringBuilder();
+		
+		for(int i=0; i < 65535; i++)
+		{
+			sb.append(i);
+			if(sb.length() > 25) 
+			{
+				break;
+			}
+		}
+		String instanceName = sb.toString(); 
+		
+		List<AlgorithmRunConfiguration> rcs = new ArrayList<AlgorithmRunConfiguration>();
+		
+		for(int i=0; i <100; i++)
+		{
+			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance(instanceName), 1L), 15, configSpace.getRandomParameterConfiguration(r), execConfig);
+			rcs.add(rc);
+		}
+		
+		ThreadSafeRunHistory rh = new ThreadSafeRunHistoryWrapper(new NewRunHistory());
+		
+		StopWatch aWatch = new AutoStartStopWatch();
+		
+		tae = new RunHistoryCachingTargetAlgorithmEvaluatorDecorator(tae,rh);
+		
+		final List<AlgorithmRunResult> run1 = tae.evaluateRun(rcs);
+		
+		final List<AlgorithmRunResult> run2 = tae.evaluateRun(rcs);
+		
+		
+		System.out.println(run1);
+		try {
+			rh.append(run1);
+		} catch (DuplicateRunException e) {
+		
+		}
+		
+		final List<AlgorithmRunResult> run3 = tae.evaluateRun(rcs);
+		
+		
+		for(int i=0; i < rcs.size(); i++)
+		{
+			assertEquals(run1.get(i).getRuntime(), run3.get(i).getRuntime(),0.0005);
+		}
+		
+
+		for(int i=0; i <100; i++)
+		{
+			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance(instanceName), 1L), 15, configSpace.getRandomParameterConfiguration(r), execConfig);
+			rcs.add(rc);
+		}
+		
+		final List<AlgorithmRunResult> run4 = tae.evaluateRun(rcs);
+		
+		final List<AlgorithmRunResult> run5 = tae.evaluateRun(rcs);
+		
+		boolean notEquals = false;
+		
+		for(int i=0; i < rcs.size(); i++)
+		{
+			if(i < 100)
+			{
+				assertEquals(run4.get(i).getRuntime(), run5.get(i).getRuntime(),0.0005);
+				System.out.println(run4.get(i) +  " is the same as " + run5.get(i));
+			} else
+			{
+				boolean myEquals = ((run4.get(i).getRuntime() - run5.get(i).getRuntime()) > 0.0005);
+				
+				if(!myEquals)
+				{
+					System.out.println(run4.get(i) +  " is different from " + run5.get(i));
+				}
+				notEquals |= myEquals;
+			}
+		}
+		
+		assertTrue("Expected some run is not equal: " , notEquals);
+		System.out.println("Completed ");
+		
+		tae.notifyShutdown();
+		
+		
+		
+	}
+	
 	
 	
 	@Test

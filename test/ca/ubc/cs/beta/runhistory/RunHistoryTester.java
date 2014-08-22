@@ -182,9 +182,9 @@ public class RunHistoryTester {
 		try {
 			f = Files.createTempDirectory("runhistoryTest").toFile();
 			
-			r = new FileSharingRunHistoryDecorator(r, f, 1, pis, 125);
+			r = new FileSharingRunHistoryDecorator(r, f, 1, pis, 125, true);
 			
-			r2 = new FileSharingRunHistoryDecorator(r2,f,2,pis,125); 
+			r2 = new FileSharingRunHistoryDecorator(r2,f,2,pis,125, true); 
 			
 			//System.out.println(f.getAbsolutePath());
 			
