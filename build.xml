@@ -81,22 +81,22 @@ dirty: ${git.dirty}</echo>
 		<fail unless="fastrf.location" message="${line.separator}================[ ERROR ] ==============${line.separator}You must check out and build the fastrf project on this branch (${git.branch}) first${line.separator}Expected to find file:${software.dir}${file.separator}fastrf-${git.branch}.latest${line.separator}This file should contain the location of fastrf."/> 
 		
 		<path id="compile.classpath">
-						<fileset dir="lib" id="lib">
-							<include name="*.jar"/>
-							<exclude name="*sources.jar"/>
-						</fileset>
-						<fileset dir="${fastrf.location}/" id="fastrf">
-							<include name="*"/>
-						</fileset>
-					</path>	
+			<fileset dir="lib" id="lib">
+				<include name="*.jar"/>
+				<exclude name="*sources.jar"/>
+			</fileset>
+			<fileset dir="${fastrf.location}/" id="fastrf">
+				<include name="*"/>
+			</fileset>
+		</path>	
 		<!--<path id="compile.classpath">
-								<fileset dir="lib" id="lib">
-									<include name="*.jar"/>
-									<exclude name="*sources.jar"/>
-								</fileset>
-								<fileset dir="${software.dir}/fastrf-${git.branch}/" id="fastrf">
-									<include name="*"/>
-								</fileset>
+			<fileset dir="lib" id="lib">
+				<include name="*.jar"/>
+				<exclude name="*sources.jar"/>
+			</fileset>
+			<fileset dir="${software.dir}/fastrf-${git.branch}/" id="fastrf">
+				<include name="*"/>
+			</fileset>
 		</path>-->	
 	</target>
 	
@@ -121,18 +121,18 @@ dirty: ${git.dirty}</echo>
 	
 	<target name="compile-test" depends="compile">
 		<path id="test.compile.classpath">
-	            <fileset dir="lib" id="lib">
-	                <include name="*.jar"/>
-	                <exclude name="*sources.jar"/>
-	            </fileset>
-	            <fileset dir="${software.dir}/fastrf-${git.branch}/" id="fastrf">
-	                <include name="fastrf.jar"/>
-	            </fileset>
-                    <fileset dir="testlib">
-                        <include name="*.jar"/>
-                    </fileset>
-	            <pathelement path="build/classes/"/>
-	        </path>
+            <fileset dir="lib" id="lib">
+                <include name="*.jar"/>
+                <exclude name="*sources.jar"/>
+            </fileset>
+            <fileset dir="${software.dir}/fastrf-${git.branch}/" id="fastrf">
+                <include name="fastrf.jar"/>
+            </fileset>
+                <fileset dir="testlib">
+                    <include name="*.jar"/>
+                </fileset>
+            <pathelement path="build/classes/"/>
+        </path>
 				
 	 	<javac srcdir="test" destdir="build/testclasses" debug="true" verbose="true" target="1.7" source="1.7">
 	       <classpath refid="test.compile.classpath" />
