@@ -98,7 +98,7 @@ public class SMACOptions extends AbstractOptions {
 	public String experimentDir = System.getProperty("user.dir") + File.separator + "";
 	
 	@UsageTextField(level=OptionLevel.ADVANCED, defaultValues="EXPONENTIAL if minimizing runtime, EI otherwise.")
-	@Parameter(names={"--acq-func","--acquisition-function", "--ei-func","--expected-improvement-function","--expectedImprovementFunction"}, description="acquisition function to use during local search")
+	@Parameter(names={"--acq-func","--acquisition-function", "--ei-func","--expected-improvement-function","--expectedImprovementFunction"}, description="acquisition function to use during local search, NOTE: The LCB acquisition function mu+k*sigma will have k sampled from an exponential distribution with mean 1.")
 	public AcquisitionFunctions expFunc = null;
 	
 	@ParametersDelegate

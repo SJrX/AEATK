@@ -75,7 +75,7 @@ public enum AcquisitionFunctions implements AcquisitionFunction {
 
 	@Override
 	public double[] computeAcquisitionFunctionValue(double f_min_samples,
-			double[] predmean, double[] predvar) {
-		return internal.computeAcquisitionFunctionValue(f_min_samples, predmean, predvar);
+			double[] predmean, double[] predvar, double standardErrors) {
+		return internal.computeAcquisitionFunctionValue(f_min_samples, predmean, predvar, standardErrors);
 	}
 }

@@ -27,7 +27,8 @@ public class AcquisitionFunctionTester {
 			double f_min_samples = 1.0;
 			double[] predmean = { 1.0, 10}; 
 			double[] predvar = { 0.001, 0.001}; 
-			double[] predictions = f.getFunction().computeAcquisitionFunctionValue(f_min_samples, predmean, predvar);
+			double standardErrors = 1.0;
+			double[] predictions = f.getFunction().computeAcquisitionFunctionValue(f_min_samples, predmean, predvar, standardErrors);
 
 			System.out.println( f.name() + ":" + Arrays.toString(predictions));
 			assertTrue("Expected that for expected improvment function " + f.name()+ " first value should be less than second", predictions[0] <= predictions[1]);
@@ -51,7 +52,8 @@ public class AcquisitionFunctionTester {
 			double f_min_samples = 1.0;
 			double[] predmean = { 2.0, 2.0}; 
 			double[] predvar = { 0.1, 0.001}; 
-			double[] predictions = f.getFunction().computeAcquisitionFunctionValue(f_min_samples, predmean, predvar);
+			double standardErrors = 1.0;
+			double[] predictions = f.getFunction().computeAcquisitionFunctionValue(f_min_samples, predmean, predvar, standardErrors);
 
 			System.out.println( f.name() + ":" + Arrays.toString(predictions));
 			assertTrue("Expected that for expected improvment function " + f.name()+ " first value should be less than second", predictions[0] <= predictions[1]);
@@ -75,7 +77,8 @@ public class AcquisitionFunctionTester {
 			double f_min_samples = 1.0;
 			double[] predmean = { 1.0, 5.0, 10}; 
 			double[] predvar = { 0.001, 0.001, 0.001}; 
-			double[] predictions = f.getFunction().computeAcquisitionFunctionValue(f_min_samples, predmean, predvar);
+			double standardErrors = f_min_samples;
+			double[] predictions = f.getFunction().computeAcquisitionFunctionValue(f_min_samples, predmean, predvar, standardErrors);
 
 			System.out.println( f.name() + ":" + Arrays.toString(predictions));
 			
@@ -87,11 +90,33 @@ public class AcquisitionFunctionTester {
 				assertEquals("Expected that for expected improvement function " + f.name() + " the computed value and the response value are roughly equal" + predictions[i] + " vs " + solutions.get(f).get(i), solutions.get(f).get(i), predictions[i], 0.00000001);
 			}
 			
+		}
+	}
+	
+	@Test
+	public void testLCB()
+	{
+		//This function explicitly checks LCB, it really doesn't exist to do anything other than 
+		//Provide a way of easily seeing that it works correctly manually.
+	
+		double f_min_samples = 1.0;
+		double[] predmean = { 1.0, 5.0, 10}; 
+		double[] predvar = { 0.25, 0.25, 0.25};
+		
+		
+		double[] errs = { 0.001, 0.01, 0.1, 0.25, 0.5, 1, 2, 3, 4, 5};
+		for(double standardError : errs)
+		{
+			double[] predictions = AcquisitionFunctions.LCB.computeAcquisitionFunctionValue(f_min_samples, predmean, predvar, standardError);
+			assertTrue("Expected that for expected improvment function " + AcquisitionFunctions.LCB+ " first value should be less than second", predictions[0] < predictions[1]);
+			assertTrue("Expected that for expected improvment function " + AcquisitionFunctions.LCB+ " first value should be less than second", predictions[1] < predictions[2]);
 			
+			System.out.println(Arrays.toString(predictions));
 		}
 		
 		
-		
+		 
+
 		
 	}
 }

@@ -148,12 +148,7 @@ public class SeedableRandomPool implements Serializable {
 		Random random = randomMap.get(name);
 		if(random == null)
 		{
-			Integer seed = this.randomSeedMap.get(name);
-			if(seed == null)
-			{
-				seed = name.hashCode() ^ poolSeed;
-				this.randomSeedMap.put(name,  seed);
-			}
+			Integer seed = getSeed(name);
 			
 			random = fact.getRandom(seed);
 			randomMap.put(name, fact.getRandom(seed));
@@ -161,6 +156,24 @@ public class SeedableRandomPool implements Serializable {
 		}
 		
 		return random;
+	}
+
+
+	public synchronized int getSeed(Enum<?> enumeration)
+	{
+		return getSeed(enumeration.name());
+	}
+	/**
+	 * Returns the seed for a given pool
+	 */
+	public synchronized int getSeed(String poolName) {
+		Integer seed = this.randomSeedMap.get(poolName);
+		if(seed == null)
+		{
+			seed = poolName.hashCode() ^ poolSeed;
+			this.randomSeedMap.put(poolName,  seed);
+		}
+		return seed;
 	}
 	
 	/**

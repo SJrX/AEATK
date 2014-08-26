@@ -17,7 +17,7 @@ public class ExpectedImprovement implements AcquisitionFunction {
 	private static final double MIN_VALUE = -Math.pow(10, 100);
 
 	@Override
-	public double[] computeAcquisitionFunctionValue(double f_min_samples, double[] predmean, double[] predvar) {
+	public double[] computeAcquisitionFunctionValue(double f_min_samples, double[] predmean, double[] predvar, double standardErrors) {
 
 		double[] predstddev = sqrt(predvar);
 			
