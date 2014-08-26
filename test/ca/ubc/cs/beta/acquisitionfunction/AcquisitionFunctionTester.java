@@ -102,8 +102,7 @@ public class AcquisitionFunctionTester {
 		double f_min_samples = 1.0;
 		double[] predmean = { 1.0, 5.0, 10}; 
 		double[] predvar = { 0.25, 0.25, 0.25};
-		
-		
+
 		double[] errs = { 0.001, 0.01, 0.1, 0.25, 0.5, 1, 2, 3, 4, 5};
 		for(double standardError : errs)
 		{
@@ -113,10 +112,6 @@ public class AcquisitionFunctionTester {
 			
 			System.out.println(Arrays.toString(predictions));
 		}
-		
-		
-		 
-
 		
 	}
 }
