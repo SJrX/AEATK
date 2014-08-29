@@ -41,12 +41,14 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 	//Controls whether we will BREAK our TAE by shuffling the runs
 	private boolean shuffleRuns;
 	
-	private final Random rand;
+	//private final Random rand;
 	private final String additionalRunData;
 	private final long sleepInternally;
+	private final long seed;
 	
 	private static final Logger log = LoggerFactory.getLogger(RandomResponseTargetAlgorithmEvaluator.class);
-			
+	
+	private final Random shuffleRand;
 	public RandomResponseTargetAlgorithmEvaluator (RandomResponseTargetAlgorithmEvaluatorOptions options) {
 		
 		
@@ -61,8 +63,9 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 		this.trendCoefficient = options.trendCoefficient;
 
 		log.debug("Target Algorithm Evaluator initialized with seed: {} ", options.seed);
-		this.rand = new MersenneTwister(options.seed);
+		this.seed = options.seed;
 		this.shuffleRuns = options.shuffleResponses;
+		this.shuffleRand = new MersenneTwister(seed);
 		this.persistent = options.persistent;
 		this.additionalRunData = options.additionalRunData;
 		this.sleepInternally = options.sleepInternally;
@@ -73,8 +76,10 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 	public List<AlgorithmRunResult> evaluateRun(List<AlgorithmRunConfiguration> runConfigs, TargetAlgorithmEvaluatorRunObserver obs) {
 		List<AlgorithmRunResult> ar = new ArrayList<AlgorithmRunResult>(runConfigs.size());
 		
+		
 		for(AlgorithmRunConfiguration rc : runConfigs)
-		{ 
+		{
+			Random rand = new MersenneTwister(seed ^ rc.getProblemInstanceSeedPair().getSeed());
 			double time = Math.max(0.01, ((rand.nextDouble()*this.scale)  + this.minValue) + (this.trendCoefficient * this.getRunCount()));
 			
 			if(time >= rc.getCutoffTime())
@@ -89,7 +94,7 @@ public class RandomResponseTargetAlgorithmEvaluator extends
 		
 		if(shuffleRuns)
 		{
-			Collections.shuffle(ar, rand);
+			Collections.shuffle(ar, shuffleRand);
 		}
 		
 		if(sleepInternally > 0)

@@ -94,6 +94,8 @@ import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.helpers.Outstand
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.helpers.WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.prepostcommand.PrePostCommandErrorException;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.BoundedTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.NonBlockingAsyncTargetAlgorithmEvaluatorDecorator;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.PreemptingTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.caching.runhistory.RunHistoryCachingTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.forking.ForkingTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.forking.ForkingTargetAlgorithmEvaluatorDecoratorPolicyOptions;
@@ -375,6 +377,129 @@ public class TAETestSet {
 		
 	}
 	
+	@Test
+	public void testPreemptionTAE() throws InterruptedException
+	{
+		
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(ParamEchoExecutor.class.getCanonicalName());
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("x0 [-5,10] [0]\n x1 [-0,15] [0]\n");
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 15);
+		
+		RandomResponseTargetAlgorithmEvaluatorFactory afact = new RandomResponseTargetAlgorithmEvaluatorFactory();
+		
+		TargetAlgorithmEvaluator tae = afact.getTargetAlgorithmEvaluator();
+		
+		tae = new SimulatedDelayTargetAlgorithmEvaluatorDecorator(tae, 250, 2);
+		
+		
+		tae = new BoundedTargetAlgorithmEvaluator(tae,20);
+		
+		tae = new PreemptingTargetAlgorithmEvaluator(tae);
+		
+		TargetAlgorithmEvaluator lowPriorityTAE = tae;
+		
+		lowPriorityTAE = ((PreemptingTargetAlgorithmEvaluator) tae).getLowPriorityTargetAlgorithmEvaluator();
+		
+		
+		ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
+
+		config.put("x0", "2.656650319997154");
+		config.put("x1", "8.192989379593786");
+		
+		//config.put("x0", "3.1415");
+		//config.put("x1", "2.275");
+		
+		StringBuilder sb = new StringBuilder();
+		
+		for(int i=0; i < 65535; i++)
+		{
+			sb.append(i);
+			if(sb.length() > 25) 
+			{
+				break;
+			}
+		}
+		String instanceName = sb.toString(); 
+		
+		List<AlgorithmRunConfiguration> rcs = new ArrayList<AlgorithmRunConfiguration>();
+		
+		for(int i=0; i <100; i++)
+		{
+			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance(instanceName), i), 15, configSpace.getRandomParameterConfiguration(r), execConfig);
+			rcs.add(rc);
+		}
+		
+		final StopWatch aWatch = new AutoStartStopWatch(); 
+		
+		synchronized(aWatch)
+		{
+			//Noop
+		}
+		
+		TargetAlgorithmEvaluatorCallback taeCallback = new TargetAlgorithmEvaluatorCallback()
+		{
+
+			@Override
+			public void onSuccess(List<AlgorithmRunResult> runs) {
+				synchronized(aWatch)
+				{
+					System.out.println("LOW PRIORITY RUNS");
+					System.out.println(runs);
+					System.out.println("First batch of runs took: " + aWatch.stop() + "ms");
+				}
+			}
+
+			@Override
+			public void onFailure(RuntimeException e) {
+				e.printStackTrace();
+				
+			}
+			
+		};
+		
+		
+		
+		lowPriorityTAE = new NonBlockingAsyncTargetAlgorithmEvaluatorDecorator(lowPriorityTAE,20);
+		lowPriorityTAE = new OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator(lowPriorityTAE);
+		
+		for(int i=0; i < rcs.size()/10; i++)
+		{
+			lowPriorityTAE.evaluateRunsAsync(rcs.subList(i, i+10), taeCallback);
+		}
+		
+		Thread.sleep(1500);
+		
+
+		List<AlgorithmRunConfiguration> high = new ArrayList<AlgorithmRunConfiguration>();
+		
+		for(int i=0; i <1; i++)
+		{
+			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance(instanceName), i+27), 15, configSpace.getRandomParameterConfiguration(r), execConfig);
+			high.add(rc);
+		}
+		
+		
+		tae  = new OutstandingEvaluationsTargetAlgorithmEvaluatorDecorator(tae);
+		
+
+		List<AlgorithmRunResult> runs = tae.evaluateRun(high);
+		
+		System.out.println("Completed High priority runs");
+		System.out.println("Runs: " + runs);
+		
+
+		lowPriorityTAE.waitForOutstandingEvaluations();
+		
+		tae.close();
+		
+		
+		
+	}
 	
 	
 	@Test
