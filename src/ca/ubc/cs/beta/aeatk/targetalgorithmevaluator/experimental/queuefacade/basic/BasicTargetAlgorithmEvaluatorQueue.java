@@ -92,9 +92,16 @@ public class BasicTargetAlgorithmEvaluatorQueue {
 	 * @return
 	 * @throws InterruptedException
 	 */
-	public synchronized BasicTargetAlgorithmEvaluatorQueueResultContext take() throws InterruptedException
+	public BasicTargetAlgorithmEvaluatorQueueResultContext take() throws InterruptedException
 	{
-		return taeQueue.take();
+		synchronized(this) {/*MEMORY VISIBILITY ONLY */}; 
+		try 
+		{
+			return taeQueue.take();
+		} finally
+		{
+			synchronized(this) {/*MEMORY VISIBILITY ONLY */};
+		}
 	}
 	
 	/**
