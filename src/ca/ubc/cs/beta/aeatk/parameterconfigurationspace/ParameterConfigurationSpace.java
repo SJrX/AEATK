@@ -1355,7 +1355,7 @@ public class ParameterConfigurationSpace implements Serializable {
 					for(String param : params)
 					{
 						
-						if(param.equals("")) continue;
+						if(param.trim().equals("")) continue;
 						String[] paramSplit = param.trim().split(" ");
 						if(!paramSplit[1].trim().equals("NaN"))
 						{
@@ -1379,7 +1379,7 @@ public class ParameterConfigurationSpace implements Serializable {
 					params = tmpParamString.split(",");
 					for(String param : params)
 					{
-						if(param.equals("")) continue;
+						if(param.trim().equals("")) continue;
 						String[] paramSplit = param.trim().split("=");
 						if(!paramSplit[1].trim().equals("NaN"))
 						{
@@ -1393,6 +1393,12 @@ public class ParameterConfigurationSpace implements Serializable {
 					valueArray = new double[numberOfParameters];
 					
 					tmpParamString = paramString;
+					if(paramString.trim().length() == 0)
+					{
+						config = new ParameterConfiguration(this, valueArray,categoricalSize, parameterDomainContinuous, paramKeyIndexMap);
+						break;
+					}
+					
 					params = tmpParamString.split(",");
 					if(params.length != valueArray.length)
 					{
@@ -1414,9 +1420,14 @@ public class ParameterConfigurationSpace implements Serializable {
 					valueArray = new double[numberOfParameters];
 					config = new ParameterConfiguration(this, valueArray,categoricalSize, parameterDomainContinuous, paramKeyIndexMap);
 					
+					if(paramString.trim().length() == 0)
+					{
+						break;
+					}
 					tmpParamString = paramString.trim().replaceAll("-P", "");
 					
-					params = tmpParamString.split(" "); 
+					
+					params = tmpParamString.trim().split(" "); 
 					
 					
 					for(int i=0; i < params.length; i++)
@@ -1457,7 +1468,7 @@ public class ParameterConfigurationSpace implements Serializable {
 					
 					
 				default:
-					throw new IllegalArgumentException("Parsing not implemented for String Format" + f);
+					throw new IllegalArgumentException("Parsing not implemented for String Format: " + f);
 					
 				
 				
