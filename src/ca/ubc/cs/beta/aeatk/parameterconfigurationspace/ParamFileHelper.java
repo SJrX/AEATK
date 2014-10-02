@@ -2,6 +2,8 @@ package ca.ubc.cs.beta.aeatk.parameterconfigurationspace;
 
 import java.io.File;
 import java.io.StringReader;
+import java.security.MessageDigest;
+import java.security.NoSuchAlgorithmException;
 
 /**
  * Contains Factory Methods for getting ParamConfigurationSpaces
@@ -42,7 +44,23 @@ public final class ParamFileHelper {
 	}
 
 	public static ParameterConfigurationSpace getParamFileFromString(String string) {
-		return new ParameterConfigurationSpace(new StringReader(string));
+		 MessageDigest digest;
+		try {
+			digest = java.security.MessageDigest.getInstance("SHA1");
+			byte[] hash = digest.digest();
+			
+			 StringBuilder sb = new StringBuilder();
+			    for (byte b : hash) {
+			        sb.append(String.format("%02x", b));
+			    }
+			   
+			    
+			return new ParameterConfigurationSpace(new StringReader(string), "String-" + sb);
+			
+		} catch (NoSuchAlgorithmException e) {
+			return new ParameterConfigurationSpace(new StringReader(string)); 
+		}
+		 
 	}
 	
 	//Non-initializable

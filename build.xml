@@ -4,7 +4,7 @@
 		<property name="private.buildfile" value="build-resources/private/user-antbuild.properties"/>
 		<property file="${private.buildfile}"/>
 		<property file="build-resources/antbuild.properties"/>
-		
+		<property name="fallback.branch" value="development"/>
 		
 		<touch file="${private.buildfile}" mkdirs="true"/>
 		<fail message="${line.separator}================[ ERROR ] ==============${line.separator}
@@ -77,7 +77,8 @@ dirty: ${git.dirty}</echo>
 		<mkdir dir="models"/>
 		
 		<property file="${software.dir}${file.separator}fastrf-${git.branch}.latest"/>
-	
+		<property file="${software.dir}${file.separator}fastrf-${fallback.branch}.latest"/>
+		
 		<fail unless="fastrf.location" message="${line.separator}================[ ERROR ] ==============${line.separator}You must check out and build the fastrf project on this branch (${git.branch}) first${line.separator}Expected to find file:${software.dir}${file.separator}fastrf-${git.branch}.latest${line.separator}This file should contain the location of fastrf."/> 
 		
 		<path id="compile.classpath">

@@ -1686,6 +1686,50 @@ public class ParamConfigurationTest {
 		
 	}
 	
+	@Test
+	public void testNullAndSingletonConfigurationRestore()
+	{
+		ParameterConfigurationSpace singletonConfigSpace = ParameterConfigurationSpace.getSingletonConfigurationSpace();
+		
+		testRestoration(singletonConfigSpace.getDefaultConfiguration());
+		
+		
+		
+		
+		ParameterConfigurationSpace nullConfigSpace = ParameterConfigurationSpace.getNullConfigurationSpace();
+		
+		testRestoration(nullConfigSpace.getDefaultConfiguration());
+		
+		
+		
+		
+	}
+	
+	
+	public void testRestoration(ParameterConfiguration configuration)
+	{
+		for(ParameterStringFormat format : ParameterStringFormat.values())
+		{
+			switch(format)
+			{
+				case STATEFILE_SYNTAX_NO_INACTIVE:
+				case ARRAY_STRING_MASK_INACTIVE_SYNTAX:
+				case FIXED_WIDTH_ARRAY_STRING_SYNTAX:
+				case FIXED_WIDTH_ARRAY_STRING_MASK_INACTIVE_SYNTAX:
+					
+					
+					continue;
+				default:
+					
+			}
+			
+			
+			ParameterConfiguration restoredConfiguration = configuration.getParameterConfigurationSpace().getParameterConfigurationFromString(configuration.getFormattedParameterString(format), format);
+			assertEquals("Parameter Configurations should be equal", configuration, restoredConfiguration);
+		}
+		
+	}
+	
 	@After
 	public void tearDown()
 	{
