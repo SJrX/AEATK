@@ -58,7 +58,7 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	public boolean cacheDebug = false;
 
 	@UsageTextField(level=OptionLevel.DEVELOPER)
-	@Parameter(names={"-use-dynamic-cutoffs"}, description="If true then we change all cutoffs to the maximum cutoff time and dynamically kill runs that exceed there cutoff time. This is useful because cache hits require the cutoff time to match")
+	@Parameter(names={"--use-dynamic-cutoffs"}, description="If true then we change all cutoffs to the maximum cutoff time and dynamically kill runs that exceed there cutoff time. This is useful because cache hits require the cutoff time to match")
 	public boolean useDynamicCappingExclusively = false;
 	
 	@UsageTextField(level=OptionLevel.DEVELOPER)
