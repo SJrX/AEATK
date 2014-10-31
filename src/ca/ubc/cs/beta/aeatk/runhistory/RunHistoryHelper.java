@@ -2,12 +2,17 @@ package ca.ubc.cs.beta.aeatk.runhistory;
 
 import java.util.ArrayList;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Random;
 import java.util.Set;
+import java.util.TreeSet;
+import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.ConcurrentMap;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -139,8 +144,12 @@ public class RunHistoryHelper{
 			
 			
 			
+			ConcurrentMap<ProblemInstance, Set<Long>> assignedSeedsByPi = new ConcurrentHashMap<>();
+			
 			for(ProblemInstance pi : pis)
 			{
+				
+				assignedSeedsByPi.putIfAbsent(pi, new HashSet<Long>());
 				Map<ProblemInstance, LinkedHashMap<Long, Double>> instanceSeedToPerformanceMap = rh.getPerformanceForConfig(config);
 				
 				
@@ -155,19 +164,14 @@ public class RunHistoryHelper{
 					seedsUsedByPiConfigSet= instanceSeedToPerformanceMap.get(pi).keySet();
 				}
 				
-				List<Long> seedsUsedByPiConfig = new ArrayList<Long>(seedsUsedByPiConfigSet.size());
-						
-				for(Long seed : seedsUsedByPiConfigSet)
-				{
-					seedsUsedByPiConfig.add(seed);
-				}
-				 
+				List<Long> seedsUsedByPiConfig = new ArrayList<Long>(seedsUsedByPiConfigSet);
+				
 				
 				List<Long> potentialSeeds = new ArrayList<Long>(seedsUsedByPi.size() - seedsUsedByPiConfig.size());
 				
 				potentialSeeds.addAll(seedsUsedByPi);
 				potentialSeeds.removeAll(seedsUsedByPiConfig);
-				
+				potentialSeeds.removeAll(assignedSeedsByPi.get(pi));
 				long seed;
 				if(potentialSeeds.size() == 0)
 				{
@@ -196,9 +200,23 @@ public class RunHistoryHelper{
 				}
 				ProblemInstanceSeedPair pisp = new ProblemInstanceSeedPair(pi, seed);
 				pisps.add(pisp);
+				assignedSeedsByPi.get(pi).add(seed);
 			}
+			
+			List<ProblemInstanceSeedPair> newPISPS = new ArrayList<ProblemInstanceSeedPair>(pisps);
+			
+			Set<ProblemInstanceSeedPair> setPISPS = new HashSet<ProblemInstanceSeedPair>(newPISPS);
+			
+			
+			
+			if(setPISPS.size() != newPISPS.size())
+			{
+				throw new IllegalStateException("Duplicated problem instance seed paris generated oddly enough");
+			}
+			
+			
 			return pisps;
-				
+			
 		}
 		
 
