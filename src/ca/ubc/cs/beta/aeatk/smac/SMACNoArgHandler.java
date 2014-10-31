@@ -16,11 +16,8 @@ public class SMACNoArgHandler implements NoArgumentHandler{
 		sb.append("  Skipping Validation:\n");
 		sb.append("  smac --scenario-file <file> --validation false\n\n");
 
-		sb.append("  Linux Example:\n");
+		sb.append("  Linux/Mac OS X/Windows Example:\n");
 		sb.append("  ./smac --scenario-file ./example_scenarios/saps/saps-scenario.txt\n\n");
-		sb.append("  Windows Example:\n");
-		
-		sb.append("  smac.bat --scenario-file example_scenarios\\saps\\saps-scenario-windows.txt \n\n");
 		
 		sb.append("  Full version information is available with :\n");
 		sb.append("  smac -v\n\n");
