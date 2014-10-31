@@ -33,8 +33,6 @@ public class JCommanderTest {
 		UPPER,
 		Mixed,
 		lower;
-		
-		
 	}
 
 	
