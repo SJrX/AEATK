@@ -19,6 +19,7 @@ import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunStatus;
 import ca.ubc.cs.beta.aeatk.exceptions.DuplicateRunException;
@@ -141,6 +142,9 @@ public class NewRunHistory implements RunHistory {
 	
 	
 	private static final DecimalFormat format = new DecimalFormat("#######.####");
+	
+	
+	private final Map<AlgorithmRunConfiguration, AlgorithmRunResult> algorithmRunConfigurationResultMap = new HashMap<AlgorithmRunConfiguration, AlgorithmRunResult>();
 	
 	
 	public NewRunHistory()
@@ -423,12 +427,8 @@ public class NewRunHistory implements RunHistory {
 			censoredEarlyRuns.get(config).add(pisp);
 		}
 		
-		Object[] args = {iteration, paramConfigurationList.getKey(config), pi.getInstanceID(), pisp.getSeed(), format.format(run.getAlgorithmRunConfiguration().getCutoffTime())};
 		
-		
-		
-		//
-	
+		this.algorithmRunConfigurationResultMap.put(run.getAlgorithmRunConfiguration(), run);	
 		
 	}
 
@@ -903,13 +903,11 @@ public class NewRunHistory implements RunHistory {
 				return false;
 			return true;
 		}
-		
-		
-		
 	}
-
-
-
-
+	
+	@Override
+	public AlgorithmRunResult getAlgorithmRunResultForAlgorithmRunConfiguration(AlgorithmRunConfiguration runConfig) {
+		return this.algorithmRunConfigurationResultMap.get(runConfig);
+	}
 
 }

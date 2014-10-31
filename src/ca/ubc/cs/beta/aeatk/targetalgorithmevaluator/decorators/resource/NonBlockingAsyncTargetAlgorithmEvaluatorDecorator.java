@@ -26,38 +26,47 @@ import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.AbstractRunResch
 @ThreadSafe
 public class NonBlockingAsyncTargetAlgorithmEvaluatorDecorator extends	AbstractRunReschedulingTargetAlgorithmEvaluatorDecorator {
 
-	private final ExecutorService execService = Executors.newSingleThreadExecutor(new SequentiallyNamedThreadFactory(getClass().getSimpleName() + " Processor", true));
+	private final ExecutorService execService = Executors.newCachedThreadPool(new SequentiallyNamedThreadFactory(getClass().getSimpleName() + " Processor", true));
 			
 	private final BlockingQueue<Triple> queue = new LinkedBlockingQueue<Triple>();
 	
 	public NonBlockingAsyncTargetAlgorithmEvaluatorDecorator(final TargetAlgorithmEvaluator tae) {
+		this(tae, 1);
+	}
+	
+	public NonBlockingAsyncTargetAlgorithmEvaluatorDecorator(final TargetAlgorithmEvaluator tae, int threads) {
 		super(tae);
 		
-		execService.execute(new Runnable()
+		for(int i=0; i < threads; i++)
 		{
+			execService.execute(new Runnable()
+			{
 
-			@Override
-			public void run() {
-				
-				
-				try {
-					while(true)
-					{
-						Triple t;
-						t = queue.take();
-						tae.evaluateRunsAsync(t.runConfigs, t.callback, t.observer);
+				@Override
+				public void run() {
+					
+					
+					try {
+						while(true)
+						{
+							Triple t;
+							t = queue.take();
+							tae.evaluateRunsAsync(t.runConfigs, t.callback, t.observer);
+						}
+					} catch (InterruptedException e) {
+						Thread.currentThread().interrupt();
+						return;
 					}
-				} catch (InterruptedException e) {
-					Thread.currentThread().interrupt();
-					return;
+					
+					
+					
 				}
 				
-				
-				
-			}
-			
-		});
+			});
+		}
+		
 	}
+	
 
 	@Override
 	public void postDecorateeNotifyShutdown()

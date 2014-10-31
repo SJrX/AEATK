@@ -11,7 +11,7 @@ public class SimpleAcquisitionFunction implements AcquisitionFunction {
 	
 	@Override
 	public double[] computeAcquisitionFunctionValue(double f_min_samples,
-			double[] predmean, double[] predvar) {
+			double[] predmean, double[] predvar, double standardErrors) {
 		if(predmean.length != predvar.length)
 		{
 			throw new IllegalArgumentException("Expected predmean and predvar to have the same length");

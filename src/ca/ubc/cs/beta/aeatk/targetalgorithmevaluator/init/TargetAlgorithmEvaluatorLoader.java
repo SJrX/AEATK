@@ -15,6 +15,7 @@ import ca.ubc.cs.beta.aeatk.misc.spi.SPIClassLoaderHelper;
 import ca.ubc.cs.beta.aeatk.options.AbstractOptions;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorFactory;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.CommandLineTargetAlgorithmEvaluatorFactory;
 
 
 /**
@@ -25,6 +26,19 @@ import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorFac
  *
  */
 public class TargetAlgorithmEvaluatorLoader {
+
+	private static final String NO_TAES_ERROR = "WARNING: I could not find ANY Target Algorithm Evaluators on the classpath."
+			+ "\n If you made this JAR (or setup the classpath) yourself chances are you did not setup SPI correctly."
+			+ "\n You must ensure that in the JAR (or on the classpath) there is a META-INF/services/" + TargetAlgorithmEvaluatorFactory.class.getCanonicalName() +" file\n"
+			+" \n In this file should list every implementation of that interface" 
+			+" \n\n>>>>HOW TO FIX THIS ERROR:<<<<\n"
+			+ "\n 1) If you are using Eclipse see this page (note it's spi-0.2.4 not 0.2.1.jar): https://code.google.com/p/spi/wiki/EclipseSettings"
+			+ "\n  OR \n 2) If you are using Ant/Maven ensure that the spi-0.2.4.jar is on the classpath, and annotation processing is enabled."
+			+ "\n  OR \n 3) A worse option is to make this file manually, for most cases you simply need to have the following line: " + CommandLineTargetAlgorithmEvaluatorFactory.class.getCanonicalName() 
+			+ "\n\n For information on what SPI is see: http://docs.oracle.com/javase/tutorial/ext/basics/spi.html#register-service-providers"
+			+ "\n You may also want to look at the AEATK Manual / Developer Reference for more information"
+			+ "\n NOTE: I will attempt to fallback to using the CLI TAE only\n NOTE: Sleeping for 4 seconds\n";
+
 
 	/**
 	 * Retrieves a Target Algorithm Evaluator configured with the correct options
@@ -40,9 +54,11 @@ public class TargetAlgorithmEvaluatorLoader {
 		
 		Iterator<TargetAlgorithmEvaluatorFactory> taeIt = ServiceLoader.load(TargetAlgorithmEvaluatorFactory.class, loader).iterator();
 		
+		boolean noTAEs = true;
 		while(taeIt.hasNext())
 		{
 		
+			noTAEs = false;
 			try { 
 				TargetAlgorithmEvaluatorFactory tae= taeIt.next();
 				//log.debug("Found Target Algorithm Evaluator {}", tae.getName());
@@ -74,6 +90,25 @@ public class TargetAlgorithmEvaluatorLoader {
 			}
 		}
 			
+		
+		if(noTAEs)
+		{
+			CommandLineTargetAlgorithmEvaluatorFactory cfact = new CommandLineTargetAlgorithmEvaluatorFactory();
+			
+			if(name.trim().equals(cfact.getName()))
+			{
+				log.warn("No Target Algorithm Evaluators detected, see previous warning on how to fix. Falling back to " + cfact.getName() + " manually");
+				
+				return cfact.getTargetAlgorithmEvaluator(taeOptions);
+			} else
+			{
+				log.error("No TAEs were detected, but not sure where " + name + " is, please fix as per the following: {} " , NO_TAES_ERROR);
+			
+			}
+		}
+		
+		
+		
 		
 		throw new IllegalArgumentException("No Target Algorithm Evalutor found for name: " + name);
 	
@@ -211,8 +246,18 @@ public class TargetAlgorithmEvaluatorLoader {
 		
 		if(noTAEsFound)
 		{
-			System.err.println("WARNING: I could not find ANY Target Algorithm Evaluators on the classpath. If you made this JAR yourself chances are you did not setup SPI correctly. See the AEATK Manual / Developer Reference for more information" );
+			System.err.println(NO_TAES_ERROR);
+			
+			try {
+				Thread.sleep(4096);
+			} catch (InterruptedException e) {
+				Thread.currentThread().interrupt();
+				
+			}
+			CommandLineTargetAlgorithmEvaluatorFactory cfact = new CommandLineTargetAlgorithmEvaluatorFactory();
+			taeOptionsMap.put(cfact.getName(), cfact.getOptionObject());
 		}
+					
 		//Options can be modified in the map, but the map keys and values itself can't be
 		return Collections.unmodifiableMap(taeOptionsMap);
 	}

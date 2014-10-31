@@ -58,7 +58,7 @@ public class ExpectedExponentialImprovement implements AcquisitionFunction {
 	}
 	@Override
 	public double[] computeAcquisitionFunctionValue(double f_min_samples,
-			double[] predmean, double[] predvar) {
+			double[] predmean, double[] predvar, double standardErrors) {
 		
 		if(predmean.length != predvar.length)
 		{

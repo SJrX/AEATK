@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.exceptions.DuplicateRunException;
 import ca.ubc.cs.beta.aeatk.objectives.OverallObjective;
@@ -20,7 +21,7 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 	
 	ReadWriteLockThreadTracker rwltt = new ReadWriteLockThreadTracker();
 	
-	//private final static Logger log = LoggerFactory.getLogger(ThreadSafeRunHistoryWrapper.class);
+	
 	
 	public ThreadSafeRunHistoryWrapper(RunHistory runHistory)
 	{
@@ -435,12 +436,23 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 	
 	public void lockRead()
 	{
+	
+		if(runHistory instanceof ThreadSafeRunHistory)
+		{
+			((ThreadSafeRunHistory) runHistory).readLock();
+		}
+		
 		this.rwltt.lockRead();
 	
 	}
 	
 	private void unlockRead()
 	{
+		if(runHistory instanceof ThreadSafeRunHistory)
+		{
+			((ThreadSafeRunHistory) runHistory).releaseReadLock();
+		}
+		
 		this.rwltt.unlockRead();
 	}
 	
@@ -478,6 +490,18 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 	public double getEmpiricalCostUpperBound(ParameterConfiguration config,
 			Set<ProblemInstance> instanceSet, double cutoffTime) {
 		return this.runHistory.getEmpiricalCostUpperBound(config, instanceSet, cutoffTime);
+	}
+
+	@Override
+	public AlgorithmRunResult getAlgorithmRunResultForAlgorithmRunConfiguration(
+			AlgorithmRunConfiguration runConfig) {
+		lockRead();
+		try {
+			return this.runHistory.getAlgorithmRunResultForAlgorithmRunConfiguration(runConfig);
+		} finally
+		{
+			unlockRead();
+		}
 	}
 
 

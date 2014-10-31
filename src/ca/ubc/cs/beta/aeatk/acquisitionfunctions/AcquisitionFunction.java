@@ -11,8 +11,10 @@ public interface AcquisitionFunction {
 	 * @param f_min_samples		the minimum empirical cost found so far
 	 * @param predmean			predicted mean of the samples
 	 * @param predvar			predicted variance of the samples
+	 * @param standardErrors 	numberOfStandardErrorsToSampleWith (only applicable with LCB)
+	 * 
 	 * @return					array of values which correspond to the expected improvement for the corresponding entries in predmean and predvar
 	 */
-	public double[] computeAcquisitionFunctionValue(double f_min_samples, double[] predmean, double[] predvar);
+	public double[] computeAcquisitionFunctionValue(double f_min_samples, double[] predmean, double[] predvar, double standardErrors);
 	
 }

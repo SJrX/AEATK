@@ -6,7 +6,7 @@ public class LCBEIRoundRobin implements AcquisitionFunction{
 
 	@Override
 	public double[] computeAcquisitionFunctionValue(double f_min_samples,
-			double[] predmean, double[] predvar) {
+			double[] predmean, double[] predvar, double standardErrors) {
 		/**
 		 * This is a place holder for something that will be fixed later,
 		 * that is once we seperate the first argument into a sample k and f_min_samples.

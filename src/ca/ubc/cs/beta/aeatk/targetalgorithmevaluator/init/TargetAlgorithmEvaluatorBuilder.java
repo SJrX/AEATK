@@ -38,6 +38,7 @@ import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.caching
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.forking.ForkingTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.AbortOnCrashTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.AbortOnFirstRunCrashTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.CrashedSolutionQualityTransformingTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.ExitOnFailureTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.JVMShutdownBlockerTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.ResultOrderCorrectCheckerTargetAlgorithmEvaluatorDecorator;
@@ -374,6 +375,12 @@ public class TargetAlgorithmEvaluatorBuilder {
 		{
 			log.trace("[TAE] Warning if no response after {} seconds", options.warnIfNoResponseFromTAE);
 			tae = new WarnOnNoWallOrRuntimeTargetAlgorithmEvaluatorDecorator(tae, options.warnIfNoResponseFromTAE);
+		}
+		
+		if(options.transformCrashedQuality)
+		{
+			log.trace("[TAE] Transforming the solution quality of CRASHED runs to {}", options.transformCrashedQualityValue);
+			tae = new CrashedSolutionQualityTransformingTargetAlgorithmEvaluatorDecorator(tae, options.transformCrashedQualityValue);
 		}
 		
 		if(options.callObserverBeforeCompletion)
