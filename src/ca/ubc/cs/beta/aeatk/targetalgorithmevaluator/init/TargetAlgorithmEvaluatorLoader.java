@@ -31,7 +31,7 @@ public class TargetAlgorithmEvaluatorLoader {
 			+ "\n If you made this JAR (or setup the classpath) yourself chances are you did not setup SPI correctly."
 			+ "\n You must ensure that in the JAR (or on the classpath) there is a META-INF/services/" + TargetAlgorithmEvaluatorFactory.class.getCanonicalName() +" file\n"
 			+" \n In this file should list every implementation of that interface" 
-			+" \n\n>>>HOW TO FIX THIS ERROR:<<<<\n"
+			+" \n\n>>>>HOW TO FIX THIS ERROR:<<<<\n"
 			+ "\n 1) If you are using Eclipse see this page (note it's spi-0.2.4 not 0.2.1.jar): https://code.google.com/p/spi/wiki/EclipseSettings"
 			+ "\n  OR \n 2) If you are using Ant/Maven ensure that the spi-0.2.4.jar is on the classpath, and annotation processing is enabled."
 			+ "\n  OR \n 3) A worse option is to make this file manually, for most cases you simply need to have the following line: " + CommandLineTargetAlgorithmEvaluatorFactory.class.getCanonicalName() 
