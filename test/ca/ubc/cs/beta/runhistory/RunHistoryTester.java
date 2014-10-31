@@ -82,8 +82,16 @@ public class RunHistoryTester {
 	private final ParameterConfigurationSpace configSpace = ParamConfigurationTest.getConfigSpaceForFile("paramFiles/daisy-chain-param.txt");
 	private final AlgorithmExecutionConfiguration execConfig = new AlgorithmExecutionConfiguration("boo", "foo", configSpace, false, false, 500);
 	
-	
-	private static final SeedableRandomPool pool = new SeedableRandomPool(System.currentTimeMillis());
+	private static Map<String, Integer> seeds = new HashMap<>();
+	static 
+	{
+		
+		
+		//seeds.put("testRunHistorySavingToFileFeatures", -14922126); 
+		
+		 
+	}
+	private static final SeedableRandomPool pool = new SeedableRandomPool((int) System.currentTimeMillis(),seeds);
 	
 	@Before
 	public void setUp()
@@ -104,6 +112,7 @@ public class RunHistoryTester {
 	public void testRunHistorySavingToFileFeatures()
 	{
 		
+	
 		Random rand = pool.getRandom(DebugUtil.getCurrentMethodName());
 		
 		
@@ -210,7 +219,7 @@ public class RunHistoryTester {
 			
 			
 			try {
-				Thread.sleep(1200);
+				Thread.sleep(2000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -227,7 +236,7 @@ public class RunHistoryTester {
 		
 			
 			try {
-				Thread.sleep(1200);
+				Thread.sleep(2000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -251,7 +260,7 @@ public class RunHistoryTester {
 			
 
 			try {
-				Thread.sleep(1500);
+				Thread.sleep(2000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();

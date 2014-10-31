@@ -174,6 +174,11 @@ public class TAETestSet {
 		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE();
 		
 
+		try {
+			Thread.sleep(250);
+		} catch (InterruptedException e) {
+			Thread.currentThread().interrupt();
+		}
 		
 	}
 	
@@ -307,7 +312,7 @@ public class TAETestSet {
 		
 		for(int i=0; i <100; i++)
 		{
-			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance(instanceName), 1L), 15, configSpace.getRandomParameterConfiguration(r), execConfig);
+			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance(instanceName), r.nextInt(200000)), 15, configSpace.getRandomParameterConfiguration(r), execConfig);
 			rcs.add(rc);
 		}
 		
@@ -358,8 +363,8 @@ public class TAETestSet {
 				System.out.println(run4.get(i) +  " is the same as " + run5.get(i));
 			} else
 			{
-				boolean myEquals = ((run4.get(i).getRuntime() - run5.get(i).getRuntime()) > 0.0005);
-				
+				boolean myEquals = ((run4.get(i).getRuntime() - run5.get(i).getRuntime()) < 0.0005);
+				//System.out.println("Test" + (run4.get(i).getRuntime() - run5.get(i).getRuntime() ) + " My Equals");
 				if(!myEquals)
 				{
 					System.out.println(run4.get(i) +  " is different from " + run5.get(i));
