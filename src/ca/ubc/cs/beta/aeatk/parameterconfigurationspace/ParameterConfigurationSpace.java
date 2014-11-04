@@ -193,6 +193,9 @@ public class ParameterConfigurationSpace implements Serializable {
 	
 	private final String pcsFile;
 	
+	private final Pattern catOrdPattern = Pattern.compile("[ ]*(?<name>\\p{Alnum}+)[ ]*(?<type>[co]+)[ ]*\\{(?<values>.*)\\}[ ]*\\[(?<default>\\p{Graph}+)\\][ ]*");
+	private final Pattern intReaPattern = Pattern.compile("[ ]*(?<name>\\p{Alnum}+)[ ]*(?<type>[ir]+)[ ]*\\[[ ]*(?<min>\\p{Graph}+)[ ]*,[ ]*(?<max>\\p{Graph}+)[ ]*\\][ ]*\\[(?<default>\\p{Graph}+)\\][ ]*(?<log>(log)?)[ ]*");
+	
 	private final Map<String, String> searchSubspace;
 	/**
 	 * Creates a Param Configuration Space from the given file, no random object
@@ -532,8 +535,6 @@ public class ParameterConfigurationSpace implements Serializable {
 		}
 		
 		// categorical or ordinal parameters
-		//TODO: should be compiled only once, move it up as class constant
-		Pattern catOrdPattern = Pattern.compile("[ ]*(?<name>\\p{Alnum}+)[ ]*(?<type>[co]+)[ ]*\\{(?<values>.*)\\}[ ]*\\[(?<default>\\p{Graph}+)\\][ ]*");
 		Matcher catOrdMatcher = catOrdPattern.matcher(line);
 		while (catOrdMatcher.find()){
 			String name = catOrdMatcher.group("name");
@@ -556,7 +557,6 @@ public class ParameterConfigurationSpace implements Serializable {
 		}
 		
 		//integer or real valued parameters
-		Pattern intReaPattern = Pattern.compile("[ ]*(?<name>\\p{Alnum}+)[ ]*(?<type>[ir]+)[ ]*\\[[ ]*(?<min>\\p{Graph}+)[ ]*,[ ]*(?<max>\\p{Graph}+)[ ]*\\][ ]*\\[(?<default>\\p{Graph}+)\\][ ]*(?<log>(log)?)[ ]*");
 		Matcher intReaMatcher = intReaPattern.matcher(line);
 		while (intReaMatcher.find()){
 			boolean intValuesOnly = false;
@@ -609,8 +609,6 @@ public class ParameterConfigurationSpace implements Serializable {
 
 			return;
 		}
-		
-		
 		
 		throw new IllegalStateException("Not sure how to parse this");
 	}
