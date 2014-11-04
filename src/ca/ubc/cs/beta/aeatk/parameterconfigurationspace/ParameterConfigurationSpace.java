@@ -91,6 +91,11 @@ public class ParameterConfigurationSpace implements Serializable {
 	private final Map<String, Boolean> isContinuous = new HashMap<String, Boolean>();
 	
 	/**
+	 * For each parameter stores a boolean for whether or not the value is ordinal
+	 */
+	private final Map<String, Boolean> isOrdinal = new HashMap<String, Boolean>();
+	
+	/**
 	 * Stores a list of parameter names
 	 * @deprecated the paramKeyIndexMap stores the same information, and will iterate the same way
 	 * with a slightly more cumbersome interface unfortunately.
@@ -538,6 +543,7 @@ public class ParameterConfigurationSpace implements Serializable {
 		Matcher catOrdMatcher = catOrdPattern.matcher(line);
 		while (catOrdMatcher.find()){
 			String name = catOrdMatcher.group("name");
+			//TODO: parse type!
 			String type = catOrdMatcher.group("type");
 			List<String> paramValues = Arrays.asList(catOrdMatcher.group("values").split(","));
 			String defaultValue = catOrdMatcher.group("default");
@@ -553,6 +559,11 @@ public class ParameterConfigurationSpace implements Serializable {
 			categoricalValueMap.put(name, valueMap);
 			defaultValues.put(name, defaultValue);
 			isContinuous.put(name,Boolean.FALSE);
+			if (type.equals("o")){
+				isOrdinal.put(name, Boolean.TRUE);
+			} else {
+				isOrdinal.put(name, Boolean.FALSE);
+			}
 			return;
 		}
 		
@@ -598,7 +609,8 @@ public class ParameterConfigurationSpace implements Serializable {
 			paramNames.add(name);
 			isContinuous.put(name, Boolean.TRUE);
 			values.put(name, Collections.<String> emptyList());
-			this.defaultValues.put(name, intReaMatcher.group("default"));
+			isOrdinal.put(name, Boolean.TRUE);
+			defaultValues.put(name, intReaMatcher.group("default"));
 			
 			try {
 				contNormalizedRanges.put(name, new NormalizedRange(min, max, logScale, intValuesOnly));
