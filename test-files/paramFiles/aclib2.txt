@@ -1,0 +1,29 @@
+# params
+
+#categorical
+cat c {a,b,d,c}[d]
+
+#ordinal
+ord o {x,y,z}[z]
+
+#integer
+
+int i [1,10][3]
+
+#real
+
+rea r [1.0,2.0][1.3]
+
+# conditionals
+
+rea | int == 1 || int > 5 
+int | ord > y && cat == a 
+ord | cat in {a,b}
+
+# forbiddens
+
+{cat=a, int=2} 
+
+
+
+
