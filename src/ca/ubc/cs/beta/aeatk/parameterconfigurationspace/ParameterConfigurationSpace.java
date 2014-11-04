@@ -21,6 +21,8 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
@@ -247,6 +249,7 @@ public class ParameterConfigurationSpace implements Serializable {
 		this(file, absoluteFileName, Collections.EMPTY_MAP);
 	}
 	
+	
 	/**
 	 * Creates a Param Configuration Space from the given reader
 	 * @param file 			    				A reader object that will allow us to read the configuration space
@@ -261,6 +264,8 @@ public class ParameterConfigurationSpace implements Serializable {
 		 */
 		this.absoluteFileName = absoluteFileName;
 		
+		boolean aclibFormatFailed = false;
+		
 		if((absoluteFileName == null) || (absoluteFileName.trim().length() == 0))
 		{
 			throw new IllegalArgumentException("Absolute File Name must be non-empty:" + absoluteFileName);
@@ -274,12 +279,32 @@ public class ParameterConfigurationSpace implements Serializable {
 				String line;
 				while((line = inputData.readLine()) != null)
 				{ try {
+					System.out.println(line);
 					pcs.append(line + "\n");
-					parseLine(line);
+					parseAClibLine(line);
 					} catch(RuntimeException e)
 					{
-						System.err.println("Error occured parsing: " + line);
-						throw e;
+						if (!aclibFormatFailed) { //already complained about the file
+							System.err.println("Error occured parsing: " + line); }
+						aclibFormatFailed = true;
+						//throw e; //keep iterating to populate pcs
+						
+					} 
+				    
+				}
+				
+				if (aclibFormatFailed) {
+					System.err.println("Try to read pcs file with \"old\" format");
+					for(String pcsline :pcs.toString().split("\n")) // read from pcs
+					{ try {
+						System.out.println(pcsline);
+						parseLine(pcsline);
+						} catch(RuntimeException e)
+						{
+							System.err.println("Error occured parsing: " + pcsline);
+							throw e;
+						}
+					    
 					}
 				}
 			} finally
@@ -294,14 +319,10 @@ public class ParameterConfigurationSpace implements Serializable {
 			
 			
 		} catch (FileNotFoundException e) {
-
 			throw new IllegalStateException(e);
 		} catch (IOException e) {
-			
-			
 			throw new IllegalStateException(e);
-		}
-		
+		} 
 		
 		
 		/*
@@ -490,6 +511,111 @@ public class ParameterConfigurationSpace implements Serializable {
 	}
 	
 	/**
+	 * Parses a line from the pcs file with the AClib 2.0 format spec,
+	 * populating the relevant data structures
+	 * @param line line of the pcs file
+	 */
+	private void parseAClibLine(String line){
+		
+		//Removes Comment
+		int commentStart = line.indexOf("#");
+		line = line.trim();
+		if (commentStart >= 0)
+		{
+			line = line.substring(0, commentStart).trim();
+		}
+		
+		//We are done if we trim away the rest of the line
+		if (line.length() == 0)
+		{
+			return;
+		}
+		
+		// categorical or ordinal parameters
+		//TODO: should be compiled only once, move it up as class constant
+		Pattern catOrdPattern = Pattern.compile("[ ]*(?<name>\\p{Alnum}+)[ ]*(?<type>[co]+)[ ]*\\{(?<values>.*)\\}[ ]*\\[(?<default>\\p{Graph}+)\\][ ]*");
+		Matcher catOrdMatcher = catOrdPattern.matcher(line);
+		while (catOrdMatcher.find()){
+			String name = catOrdMatcher.group("name");
+			String type = catOrdMatcher.group("type");
+			List<String> paramValues = Arrays.asList(catOrdMatcher.group("values").split(","));
+			String defaultValue = catOrdMatcher.group("default");
+			
+			paramNames.add(name);
+			values.put(name, paramValues);
+			Map<String, Integer> valueMap = new LinkedHashMap<String, Integer>();
+			int i=0;
+			for(String value : paramValues) {
+				valueMap.put(value, i);
+				i++;
+			}
+			categoricalValueMap.put(name, valueMap);
+			defaultValues.put(name, defaultValue);
+			isContinuous.put(name,Boolean.FALSE);
+			return;
+		}
+		
+		//integer or real valued parameters
+		Pattern intReaPattern = Pattern.compile("[ ]*(?<name>\\p{Alnum}+)[ ]*(?<type>[ir]+)[ ]*\\[[ ]*(?<min>\\p{Graph}+)[ ]*,[ ]*(?<max>\\p{Graph}+)[ ]*\\][ ]*\\[(?<default>\\p{Graph}+)\\][ ]*(?<log>(log)?)[ ]*");
+		Matcher intReaMatcher = intReaPattern.matcher(line);
+		while (intReaMatcher.find()){
+			boolean intValuesOnly = false;
+			boolean logScale = false;
+			String name = intReaMatcher.group("name");
+			String type = intReaMatcher.group("type");
+			if (type.equals("i")) {
+				intValuesOnly = true;
+			}
+			Double min;
+			Double max;
+			Double defaultValue;
+			try {
+				min = Double.valueOf(intReaMatcher.group("min"));
+				max = Double.valueOf(intReaMatcher.group("max"));
+				defaultValue = Double.valueOf(intReaMatcher.group("default"));
+			} catch(NumberFormatException e)
+			{
+				throw new IllegalArgumentException("This parameter has to consists of numbers:" + line);
+			}
+			
+			
+			if (!intReaMatcher.group("log").isEmpty()){
+				logScale = true;
+			}
+			
+			if(intValuesOnly)
+			{
+				try {
+				if(!isIntegerDouble(Double.valueOf(min))) throw new IllegalArgumentException("This parameter is marked as integer, only integer values are permitted for the bounds and default on line:" + line); 
+				if(!isIntegerDouble(Double.valueOf(max))) throw new IllegalArgumentException("This parameter is marked as integer, only integer values are permitted for the bounds and default on line:" + line);
+				if(!isIntegerDouble(Double.valueOf(defaultValue))) throw new IllegalArgumentException("This parameter is marked as integer, only integer values are permitted for the bounds and default on line:" + line);
+				} catch(NumberFormatException e)
+				{
+					throw new IllegalArgumentException("This parameter is marked as integer, only integer values are permitted for the bounds and default on line:" + line);
+				}
+			}
+			
+			paramNames.add(name);
+			isContinuous.put(name, Boolean.TRUE);
+			values.put(name, Collections.<String> emptyList());
+			this.defaultValues.put(name, intReaMatcher.group("default"));
+			
+			try {
+				contNormalizedRanges.put(name, new NormalizedRange(min, max, logScale, intValuesOnly));
+			} catch(IllegalArgumentException e)
+			{
+				throw new IllegalArgumentException(e.getMessage() + "; error occured while parsing line: " +line);
+			}
+
+			return;
+		}
+		
+		
+		
+		throw new IllegalStateException("Not sure how to parse this");
+	}
+	
+	/**
 	 * Parses a line from the param file, populating the relevant data structures.
 	 * @param line line of the param file
 	 */
@@ -506,12 +632,12 @@ public class ParameterConfigurationSpace implements Serializable {
 			line = line.substring(0, commentStart).trim();
 		}
 		
-		
 		//We are done if we trim away the rest of the line
 		if (line.length() == 0)
 		{
 			return;
 		}
+
 	
 		
 		/** 
@@ -674,14 +800,8 @@ public class ParameterConfigurationSpace implements Serializable {
 		
 		this.defaultValues.put(name, defaultValue);
 		
-		
-		
-		
-		
 		//This gets the rest of the line after the defaultValue
 		String lineRemaining = line.substring(line.indexOf("]",secondBracket+1)+1);
-		
-		
 		
 		boolean logScale = ((lineRemaining.length() > 0) && (lineRemaining.trim().contains("l")));
 		lineRemaining = lineRemaining.replaceFirst("l", "").trim();
@@ -757,9 +877,6 @@ public class ParameterConfigurationSpace implements Serializable {
 		Map<String, Integer> valueMap = new LinkedHashMap<String, Integer>();
 		
 		int lastIndexOf = line.lastIndexOf("]");
-		
-		
-	
 		
 		int i=0;
 		for(String value : paramValues)
