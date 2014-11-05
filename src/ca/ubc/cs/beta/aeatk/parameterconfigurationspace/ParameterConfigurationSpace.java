@@ -273,6 +273,8 @@ public class ParameterConfigurationSpace implements Serializable {
 	 */
 	public ParameterConfigurationSpace(Reader file, String absoluteFileName, Map<String, String> searchSubspace)
 	{
+		//TODO: remove stderr outputs - use only errors
+		//TODO: maybe try to parse each line independently with the old or new format
 		
 		/*
 		 * Parse File and create configuration space
@@ -294,7 +296,7 @@ public class ParameterConfigurationSpace implements Serializable {
 				String line;
 				while((line = inputData.readLine()) != null)
 				{ try {
-					System.out.println(line);
+					//System.out.println(line);
 					pcs.append(line + "\n");
 					parseAClibLine(line);
 					} catch(RuntimeException e)
@@ -331,188 +333,178 @@ public class ParameterConfigurationSpace implements Serializable {
 				}
 				pcsFile = pcs.toString();
 			}
-			
-			
+
 		} catch (FileNotFoundException e) {
 			throw new IllegalStateException(e);
 		} catch (IOException e) {
 			throw new IllegalStateException(e);
-		} 
-		
-		
+		}
+
 		/*
 		 * Create data structures necessary for ParamConfiguration objects
 		 * 
-		 * Alot of this is redundant with what's above as this code was added
-		 * as part of refactoring. This class could use a clean up
+		 * Alot of this is redundant with what's above as this code was added as
+		 * part of refactoring. This class could use a clean up
 		 * 
 		 * This gets the data into a format convenient for Random Forests.
-		 * 
-		 */		
+		 */
 		List<String> paramOrder = new ArrayList<String>(paramNames.size());
 		paramOrder.addAll(paramNames);
 		Collections.sort(paramOrder);
-		
+
 		this.authorativeParameterNameOrder = Collections.unmodifiableList(paramOrder);
-		
+
 		this.authorativeParameterOrderArray = new String[this.authorativeParameterNameOrder.size()];
 		this.normalizedRangesByIndex = new NormalizedRange[this.authorativeParameterNameOrder.size()];
-		for(int i=0; i < authorativeParameterNameOrder.size(); i++)
-		{
+		for (int i = 0; i < authorativeParameterNameOrder.size(); i++) {
 			this.authorativeParameterOrderArray[i] = authorativeParameterNameOrder.get(i);
 			this.normalizedRangesByIndex[i] = this.contNormalizedRanges.get(this.authorativeParameterOrderArray[i]);
 		}
-		
-		
-		
-		
-		
-		  //TODO: Expand on these comments
-		  parameterDomainContinuous = new boolean[paramNames.size()];
-		  categoricalSize = new int[paramNames.size()];
-		  this.numberOfParameters = paramNames.size();
-		  int i=0;
-		  for(String paramName : getParameterNamesInAuthorativeOrder())
-		  {  
-			paramKeyIndexMap.put(paramName,i);
-			
+
+		parameterDomainContinuous = new boolean[paramNames.size()];
+		categoricalSize = new int[paramNames.size()];
+		this.numberOfParameters = paramNames.size();
+		int i = 0;
+		for (String paramName : getParameterNamesInAuthorativeOrder()) {
+			//map parameter names to index 
+			paramKeyIndexMap.put(paramName, i);
+
+			// saves the size of the categorical domains for each parameter
 			parameterDomainContinuous[i] = getContinuousMap().get(paramName);
-			if(parameterDomainContinuous[i] == false)
-			{
+			if (parameterDomainContinuous[i] == false) {
 				categoricalSize[i] = getValuesMap().get(paramName).size();
-			} else
-			{
+			} else {
 				categoricalSize[i] = INVALID_CATEGORICAL_SIZE;
 			}
-			
+
 			i++;
-		  }
-		  
-		  
-		  
-		  condParents = new int[numberOfParameters][];
-		  condParentVals = new int[numberOfParameters][][];
-		  
-			Map<String, Map<String, List<String>>> depValueMap = getDependentValuesMap();
-			
-			for(String key : depValueMap.keySet())
-			{
-				if(!this.paramKeyIndexMap.keySet().contains(key))
-				{
-					throw new IllegalArgumentException("Illegal independent value ("+ key+") specified on conditional line.");
-				}
+		}
+
+		
+		condParents = new int[numberOfParameters][];
+		condParentVals = new int[numberOfParameters][][];
+
+		/*
+		//parameter -> parent -> parent values
+		Map<String, Map<String, List<String>>> depValueMap = getDependentValuesMap();
+
+
+		//check that all parameters in conditionals exist indeed
+		for (String key : depValueMap.keySet()) {
+			if (!this.paramKeyIndexMap.keySet().contains(key)) {
+				throw new IllegalArgumentException(
+						"Illegal independent value (" + key
+								+ ") specified on conditional line.");
 			}
-			for(i=numberOfParameters; i < numberOfParameters;i++)
-			{
+		}
+
+		// nothing happens here
+		for (i = numberOfParameters; i < numberOfParameters; i++) {
+			condParents[i] = new int[0];
+			condParentVals[i] = new int[0][];
+		}
+
+		for (i = 0; i < numberOfParameters; i++) {
+
+			String key = getParameterNames().get(i);
+
+			// System.out.println("key => " + key);
+
+			Map<String, List<String>> depValues = depValueMap.get(key);
+			// if there are no conditionals, continue with next parameter
+			if ((depValues == null) || (depValues.size() == 0)) {
 				condParents[i] = new int[0];
 				condParentVals[i] = new int[0][];
+				continue;
 			}
-			
-			
-			for( i=0; i < numberOfParameters; i++)
-			{
-				
-				String key = getParameterNames().get(i);
-				
-				//System.out.println("key => " + key);
 
-				Map<String, List<String>> depValues = depValueMap.get(key); 
-				if((depValues == null) || (depValues.size() == 0))
-				{
-					condParents[i] = new int[0];
-					condParentVals[i] = new int[0][];
-					continue;
+			condParents[i] = new int[depValues.size()];
+			condParentVals[i] = new int[depValues.size()][];
+
+			int j = 0;
+			for (Entry<String, List<String>> e : depValues.entrySet()) {
+
+				//if parent parameter does not exist, fire exception
+				if (paramKeyIndexMap.get(e.getKey()) == null) {
+					throw new IllegalArgumentException(
+							"Illegal dependant parameter (" + e.getKey()
+									+ ") on conditional line in param file: ");
 				}
-				
-				condParents[i] = new int[depValues.size()];
-				condParentVals[i] = new int[depValues.size()][];
-				
-				int j=0;
-				for(Entry<String, List<String>> e : depValues.entrySet())
-				{
-					
-					if(paramKeyIndexMap.get(e.getKey())  == null)
-					{
-						throw new IllegalArgumentException("Illegal dependant parameter ("+ e.getKey()+ ") on conditional line in param file: "); 
-					}
-					
-					condParents[i][j] = paramKeyIndexMap.get(e.getKey()) ;
-					condParentVals[i][j] = new int[e.getValue().size()]; 
-					for(int k=0; k < e.getValue().size(); k++)
-					{
 
-						String depValue = e.getValue().get(k);
-						String depKey = e.getKey();
-						
-						if(isContinuous.get(depKey))
-						{
-							throw new IllegalArgumentException("Value depends upon continuous parameter, this is not supported: " + key + " depends on " + depKey + " values: " + depValue);
-						}
-						
-						if(!getCategoricalValueMap().get(depKey).keySet().contains(depValue))
-						{
-							throw new IllegalArgumentException("Value depends upon a non-existant or invalid parameter value: " + key + " depends on " + depKey + " having invalid value: " + depValue);
-						}
-				
-						condParentVals[i][j][k] = getCategoricalValueMap().get(e.getKey()).get(e.getValue().get(k));
-						
-						condParentVals[i][j][k]++;
-						
+				condParents[i][j] = paramKeyIndexMap.get(e.getKey());
+				condParentVals[i][j] = new int[e.getValue().size()];
+				for (int k = 0; k < e.getValue().size(); k++) {
+
+					String depValue = e.getValue().get(k);
+					String depKey = e.getKey();
+
+					if (isContinuous.get(depKey)) {
+						throw new IllegalArgumentException(
+								"Value depends upon continuous parameter, this is not supported: "
+										+ key + " depends on " + depKey
+										+ " values: " + depValue);
 					}
-					j++;	
+
+					if (!getCategoricalValueMap().get(depKey).keySet()
+							.contains(depValue)) {
+						throw new IllegalArgumentException(
+								"Value depends upon a non-existant or invalid parameter value: "
+										+ key + " depends on " + depKey
+										+ " having invalid value: " + depValue);
+					}
+
+					condParentVals[i][j][k] = getCategoricalValueMap().get(
+							e.getKey()).get(e.getValue().get(k));
+
+					condParentVals[i][j][k]++;
+
 				}
-				
+				j++;
 			}
 
-		  
-			
-			for(String forbiddenLine : forbiddenLines )
-			{
-				parseForbiddenLine(forbiddenLine);
-				
-			}
-			forbiddenLines.clear();
-			
-		this.defaultConfigurationValueArray = _getDefaultConfiguration().toValueArray();
-		
-		
-	
-		
-		/*
-		 * This will basically test that 
-		 * the default configuration is actually valid
-		 * This is a fail fast test in case the parameter values are invalid
-		 */
-		if(this.getDefaultConfiguration().isForbiddenParameterConfiguration())
-		{
-			throw new IllegalArgumentException("Default parameter setting cannot be a forbidden parameter setting");
 		}
-		
+		*/
+	
+		for (String forbiddenLine : forbiddenLines) {
+			parseForbiddenLine(forbiddenLine);
+
+		}
+		forbiddenLines.clear();
+
+		this.defaultConfigurationValueArray = _getDefaultConfiguration()
+				.toValueArray();
+
+		/*
+		 * This will basically test that the default configuration is actually
+		 * valid This is a fail fast test in case the parameter values are
+		 * invalid
+		 */
+		if (this.getDefaultConfiguration().isForbiddenParameterConfiguration()) {
+			throw new IllegalArgumentException(
+					"Default parameter setting cannot be a forbidden parameter setting");
+		}
+
 		this.searchSubspaceValues = new double[this.defaultConfigurationValueArray.length];
 		this.searchSubspaceActive = new boolean[this.defaultConfigurationValueArray.length];
-		
+
 		Map<String, String> searchSubspaceMap = new TreeMap<String, String>();
-		for(Entry<String, String> subspaceProfile : searchSubspace.entrySet())
-		{
+		for (Entry<String, String> subspaceProfile : searchSubspace.entrySet()) {
 			String param = subspaceProfile.getKey();
 			String value = subspaceProfile.getValue();
-			
-			if(value.equals("<DEFAULT>"))
-			{
+
+			if (value.equals("<DEFAULT>")) {
 				value = this.getDefaultConfiguration().get(param);
 			}
-			
+
 			searchSubspaceMap.put(param, value);
 			int index = this.paramKeyIndexMap.get(param);
-			
-			
+
 			setValueInArray(this.searchSubspaceValues, param, value);
 			this.searchSubspaceActive[index] = true;
 		}
-		
+
 		this.searchSubspace = Collections.unmodifiableMap(searchSubspaceMap);
-		
-		
+
 	}
 	
 	/**
@@ -549,7 +541,6 @@ public class ParameterConfigurationSpace implements Serializable {
 		Matcher catOrdMatcher = catOrdPattern.matcher(line);
 		while (catOrdMatcher.find()){
 			String name = catOrdMatcher.group("name");
-			//TODO: parse type!
 			String type = catOrdMatcher.group("type");
 			List<String> paramValues = Arrays.asList(catOrdMatcher.group("values").split(","));
 			String defaultValue = catOrdMatcher.group("default");
@@ -562,6 +553,7 @@ public class ParameterConfigurationSpace implements Serializable {
 				valueMap.put(value.trim(), i);
 				i++;
 			}
+			//TODO: check whether ordinal parameters are already handled correctly
 			categoricalValueMap.put(name, valueMap);
 			defaultValues.put(name, defaultValue);
 			isContinuous.put(name,Boolean.FALSE);
@@ -569,8 +561,10 @@ public class ParameterConfigurationSpace implements Serializable {
 			switch (type){
 				case "o": 	paramTypes.put(name, ParameterType.ORDINAL);
 							break;
-				case "C":   paramTypes.put(name, ParameterType.CATEGORICAL);
+				case "c":   paramTypes.put(name, ParameterType.CATEGORICAL);
 							break;
+				default:
+					throw new IllegalStateException("Could not identify the type of the parameter: "+line);
 			}
 			return;
 		}
@@ -622,6 +616,8 @@ public class ParameterConfigurationSpace implements Serializable {
 							break;
 				case "r":   paramTypes.put(name, ParameterType.REAL);
 							break;
+				default:
+					throw new IllegalStateException("Could not identify the type of the parameter: "+line);
 			}
 			defaultValues.put(name, intReaMatcher.group("default"));
 			
@@ -635,7 +631,128 @@ public class ParameterConfigurationSpace implements Serializable {
 			return;
 		}
 		
+		if (line.indexOf("|") >= 0) {
+			
+		} else if(line.trim().substring(0, 1).equals("{"))
+		{
+			forbiddenLines.add(line);
+		}
+		
+		
 		throw new IllegalStateException("Not sure how to parse this");
+	}
+	
+	/**
+	 *	operators in conditionals; EQ ==, NEQ !=, LE <, GR >, IN "in {...}" 
+	 */
+	private enum ConditionalOperators {
+		EQ, NEQ, LE, GR, IN
+	}
+	
+	private class Conditional {
+		public final int parent_ID;
+		public final Double[] values;
+		public final ConditionalOperators op;
+		
+		public Conditional(int parent_ID, Double[] values, ConditionalOperators op) {
+			this.parent_ID = parent_ID;
+			this.values = values;
+			this.op = op;
+		}
+	}
+	
+	/**
+	 * parse conditional lines in AClib 2.0 format
+	 * param | conditional_1 [operator] conditional_2 [operator] ...
+	 * where [operator] is && or ||
+	 * and conditionals are either
+	 * param_x [==, !=, <, >] value
+	 * or
+	 * param_x in {value_1, value_2, ...}
+	 * 
+	 * no parentheses between the conditionals (makes parsing a lot easier)
+	 * 
+	 * @param line line with conditional (as described above)
+	 */
+	private void parseConditional(String line){
+		
+		String param_name = getName(line);
+		
+		String conditions = line.substring(line.indexOf("|") + 1);
+		
+		// since we don't support parantheses, the conditionals are parsed as CNF 
+		// and represented as two nested arrays
+		
+		// disjunction are less important than conjunctions -> split first the disjunctions
+		String[] disjunctions = conditions.split("\\s*||\\s*");
+		
+		for(String dis : disjunctions){
+			//split the conjunctions
+			String[] conjunctions = dis.split("\\s*&&\\s*");
+			
+			//save triple for each conditional: (ID) parent, (ID / or float) values, type   
+			for(String con: conjunctions){
+				String parent = "";
+				String[] value = new String[0];
+				ConditionalOperators op;
+				if (con.indexOf("==") >= 0) {
+					String[] split = con.split("==");
+					parent = split[0].trim();
+					value = new String[1];
+					value[0] = split[1].trim();
+					op = ConditionalOperators.EQ;
+				} else if (con.indexOf("!=") >= 0){
+					String[] split = con.split("!=");
+					parent = split[0].trim();
+					value = new String[1];
+					value[0] = split[1].trim();
+					op = ConditionalOperators.NEQ;
+				} else if (con.indexOf(">") >= 0){
+					String[] split = con.split(">");
+					parent = split[0].trim();
+					value = new String[1];
+					value[0] = split[1].trim();
+					op = ConditionalOperators.GR;
+				} else if (con.indexOf("<") >= 0){
+					String[] split = con.split("<");
+					parent = split[0].trim();
+					value = new String[1];
+					value[0] = split[1].trim();
+					op = ConditionalOperators.LE;
+				} else if (con.indexOf("in") >= 0){
+					String[] split = con.split("in");
+					parent = split[0].trim();
+					String values = split[1].trim();
+					value = (String[]) getValues(values).toArray();
+					op = ConditionalOperators.IN;
+				}
+				
+				if (!this.paramKeyIndexMap.keySet().contains(parent)) {
+					throw new IllegalArgumentException(
+								"Illegal dependent parameter (" + parent
+								+ ") specified on conditional line.");
+				}
+				
+				for (String v : value) {
+					if (paramTypes.get(parent) == ParameterType.CATEGORICAL || paramTypes.get(parent) == ParameterType.ORDINAL) { 
+						Integer mapped_value = this.categoricalValueMap.get(parent).get(value);
+						if (mapped_value == null) {
+							throw new IllegalArgumentException("Illegal dependent parameter (" + (parent)+ ") specified on conditional line.");
+						}
+						Double vmapped = (double) mapped_value;
+					} else {
+						try {
+							Double vmapped = Double.parseDouble(v);
+						} catch (NumberFormatException e){
+							throw new IllegalArgumentException(parent + " is a of type i or o but is compared a non-double value in conditionals.");
+						}
+					}
+				
+				}
+				
+				
+			}
+		} 
 	}
 	
 	/**
@@ -731,10 +848,7 @@ public class ParameterConfigurationSpace implements Serializable {
 		line = line.replaceFirst("}","");
 		
 		if(line.trim().indexOf("}") != -1) throw new IllegalArgumentException("Line specifying forbidden parameters contained multiple closing braces \"}\" in line: " + originalLine);
-		
-		
-		
-		
+
 		String[] nameValuePairs = line.split(",");
 		
 		List<int[]> forbiddenIndexValuePairs = new ArrayList<int[]>();
@@ -757,9 +871,9 @@ public class ParameterConfigurationSpace implements Serializable {
 			
 			String value = nvPairArr[1].trim();
 			
-			if(isContinuous.get(name))
+			if(paramTypes.get(name) == ParameterType.REAL || paramTypes.get(name) == ParameterType.INTEGER)
 			{
-				throw new IllegalArgumentException("Forbidden Parameter Declarations can only exclude combinations of categorical parameters " + name + " is continuous; in line: " + line );
+				throw new IllegalArgumentException("Forbidden Parameter Declarations can only exclude combinations of categorical or ordinal parameters " + name + " is continuous; in line: " + line );
 			}
 			
 			Integer valueIndex = categoricalValueMap.get(name).get(value);
@@ -769,9 +883,6 @@ public class ParameterConfigurationSpace implements Serializable {
 				throw new IllegalArgumentException("Invalid parameter value " + value + " for parameter " + name + " in line: " + line);
 				
 			}
-			
-			
-			
 			
 			int[] nvPairArrayForm = new int[2];
 			nvPairArrayForm[0] = indexIntoValueArrays;
@@ -830,6 +941,13 @@ public class ParameterConfigurationSpace implements Serializable {
 		lineRemaining = lineRemaining.replaceFirst("l", "").trim();
 		
 		boolean intValuesOnly = ((lineRemaining.length() > 0) && (lineRemaining.trim().contains("i")));
+		
+		if (intValuesOnly) {
+			paramTypes.put(name, ParameterType.INTEGER);
+		}
+		else {
+			paramTypes.put(name, ParameterType.REAL);
+		}
 		
 		if(intValuesOnly)
 		{
@@ -913,6 +1031,8 @@ public class ParameterConfigurationSpace implements Serializable {
 		defaultValues.put(name, defaultValue);
 		
 		isContinuous.put(name,Boolean.FALSE);
+		
+		paramTypes.put(name, ParameterType.CATEGORICAL);
 		
 		String remaining = line.substring(lastIndexOf+1).trim();
 		
@@ -1386,7 +1506,7 @@ public class ParameterConfigurationSpace implements Serializable {
 	 * You are only guaranteed that the number of actual configurations is HIGHER than this lower bound.
 	 * <b>NOTE:</b> Search Subspaces do NOT lower the size of the bound because you can leave the subspace 
 	 * 
-	 * @return an upper bound on the size of the search space
+	 * @return an lower bound on the size of the search space
 	 */
 	public double getLowerBoundOnSize()
 	{
