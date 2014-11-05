@@ -91,9 +91,16 @@ public class ParameterConfigurationSpace implements Serializable {
 	private final Map<String, Boolean> isContinuous = new HashMap<String, Boolean>();
 	
 	/**
-	 * For each parameter stores a boolean for whether or not the value is ordinal
+	 * types of parameters
 	 */
-	private final Map<String, Boolean> isOrdinal = new HashMap<String, Boolean>();
+	public enum ParameterType {
+		CATEGORICAL, ORDINAL, INTEGER, REAL
+	}
+	
+	/**
+	 * For each parameter stores a the ParameterType
+	 */
+	private final Map<String, ParameterType> paramTypes = new HashMap<String, ParameterType>();
 	
 	/**
 	 * Stores a list of parameter names
@@ -198,8 +205,8 @@ public class ParameterConfigurationSpace implements Serializable {
 	
 	private final String pcsFile;
 	
-	private final Pattern catOrdPattern = Pattern.compile("[ ]*(?<name>\\p{Alnum}+)[ ]*(?<type>[co]+)[ ]*\\{(?<values>.*)\\}[ ]*\\[(?<default>\\p{Graph}+)\\][ ]*");
-	private final Pattern intReaPattern = Pattern.compile("[ ]*(?<name>\\p{Alnum}+)[ ]*(?<type>[ir]+)[ ]*\\[[ ]*(?<min>\\p{Graph}+)[ ]*,[ ]*(?<max>\\p{Graph}+)[ ]*\\][ ]*\\[(?<default>\\p{Graph}+)\\][ ]*(?<log>(log)?)[ ]*");
+	private final Pattern catOrdPattern = Pattern.compile("\\s*(?<name>\\p{Alnum}+)\\s*(?<type>[co])\\s*\\{(?<values>.*)\\}\\s*\\[(?<default>\\p{Graph}+)\\]\\s*");
+	private final Pattern intReaPattern = Pattern.compile("\\s*(?<name>\\p{Alnum}+)\\s*(?<type>[ir])\\s*\\[\\s*(?<min>\\p{Graph}+)\\s*,\\s*(?<max>\\p{Graph}+)\\s*\\]\\s*\\[(?<default>\\p{Graph}+)\\]\\s*(?<log>(log)?)\\s*");
 	
 	private final Map<String, String> searchSubspace;
 	/**
@@ -493,7 +500,6 @@ public class ParameterConfigurationSpace implements Serializable {
 			if(value.equals("<DEFAULT>"))
 			{
 				value = this.getDefaultConfiguration().get(param);
-				
 			}
 			
 			searchSubspaceMap.put(param, value);
@@ -553,16 +559,18 @@ public class ParameterConfigurationSpace implements Serializable {
 			Map<String, Integer> valueMap = new LinkedHashMap<String, Integer>();
 			int i=0;
 			for(String value : paramValues) {
-				valueMap.put(value, i);
+				valueMap.put(value.trim(), i);
 				i++;
 			}
 			categoricalValueMap.put(name, valueMap);
 			defaultValues.put(name, defaultValue);
 			isContinuous.put(name,Boolean.FALSE);
-			if (type.equals("o")){
-				isOrdinal.put(name, Boolean.TRUE);
-			} else {
-				isOrdinal.put(name, Boolean.FALSE);
+			
+			switch (type){
+				case "o": 	paramTypes.put(name, ParameterType.ORDINAL);
+							break;
+				case "C":   paramTypes.put(name, ParameterType.CATEGORICAL);
+							break;
 			}
 			return;
 		}
@@ -609,7 +617,12 @@ public class ParameterConfigurationSpace implements Serializable {
 			paramNames.add(name);
 			isContinuous.put(name, Boolean.TRUE);
 			values.put(name, Collections.<String> emptyList());
-			isOrdinal.put(name, Boolean.TRUE);
+			switch (type){
+				case "i": 	paramTypes.put(name, ParameterType.INTEGER);
+							break;
+				case "r":   paramTypes.put(name, ParameterType.REAL);
+							break;
+			}
 			defaultValues.put(name, intReaMatcher.group("default"));
 			
 			try {
