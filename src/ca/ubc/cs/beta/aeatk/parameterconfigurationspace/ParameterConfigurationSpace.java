@@ -103,18 +103,9 @@ public class ParameterConfigurationSpace implements Serializable {
 	private final Map<String, ParameterType> paramTypes = new HashMap<String, ParameterType>();
 	
 	/**
-	 * Stores a list of parameter names
-	 * @deprecated the paramKeyIndexMap stores the same information, and will iterate the same way
-	 * with a slightly more cumbersome interface unfortunately.
-	 */
-	@Deprecated
-	private final List<String> paramNames = new LinkedList<String>();
-	
-	/**
 	 * For each Categorical Parameter, maps the value of input, into the value the random forest expects
 	 */
 	private final Map<String, Map<String, Integer>> categoricalValueMap = new HashMap<String, Map<String, Integer>>();
-	
 	
 	/**
 	 * Used as the basis of hashCode calculations
@@ -227,6 +218,12 @@ public class ParameterConfigurationSpace implements Serializable {
 	 * maps parameter (ID) to list of conditions (CNF: disjunctive list of clauses)
 	 */
 	private Map<Integer, ArrayList<ArrayList<Conditional>>> nameConditionsMap = new HashMap<Integer, ArrayList<ArrayList<Conditional>>>();
+
+	/**
+	 * 
+	 */
+	private Map<String, HashSet<String>> parameterDependencies = new HashMap<String, HashSet<String>>(); 
+	private List<Integer> activeCheckOrder = new ArrayList<Integer>();
 	
 	private final String pcsFile;
 	
@@ -306,8 +303,6 @@ public class ParameterConfigurationSpace implements Serializable {
 		 */
 		this.absoluteFileName = absoluteFileName;
 		
-		boolean aclibFormatFailed = false;
-		
 		if((absoluteFileName == null) || (absoluteFileName.trim().length() == 0))
 		{
 			throw new IllegalArgumentException("Absolute File Name must be non-empty:" + absoluteFileName);
@@ -349,7 +344,6 @@ public class ParameterConfigurationSpace implements Serializable {
 				}*/
 			} finally
 			{
-				Collections.sort(paramNames);
 				if (inputData != null)
 				{
 					inputData.close();
@@ -362,6 +356,8 @@ public class ParameterConfigurationSpace implements Serializable {
 		} catch (IOException e) {
 			throw new IllegalStateException(e);
 		}
+		
+		computeCheckActiveOrder();
 
 		//convert authorativeParameterNameOrder and contNormalizedRanges to an Array (before List)
 		this.authorativeParameterOrderArray = new String[this.authorativeParameterNameOrder.size()];
@@ -385,6 +381,13 @@ public class ParameterConfigurationSpace implements Serializable {
 
 			i++;
 		}
+		
+		for(String forbiddenLine : forbiddenLines )
+		{
+			parseForbiddenLine(forbiddenLine);
+			
+		}
+		forbiddenLines.clear();
 		
 		condParents = new int[numberOfParameters][];
 		condParentVals = new int[numberOfParameters][][];
@@ -565,7 +568,6 @@ public class ParameterConfigurationSpace implements Serializable {
 		
 		System.out.println(line);
 		if (line.indexOf("|") >= 0) {
-			System.out.println("Conditional");
 			parseConditional(line);
 			return;
 		} 
@@ -696,15 +698,57 @@ public class ParameterConfigurationSpace implements Serializable {
 				Conditional cond_tuple = new Conditional(parent_id, values_mapped.toArray(new Double[values_mapped.size()]), op);
 				
 				conj_conds.add(cond_tuple);
+				
+				//remember all other parameter that it has conditions on
+				if (parameterDependencies.get(param_name) == null){
+					HashSet<String> deps = new HashSet<String>();
+					deps.add(parent);
+					parameterDependencies.put(param_name, deps);
+				} else {
+					parameterDependencies.get(param_name).add(parent);
+				}
 			}
+			
 		} 
+	}
+	
+	/**
+	 * computes the order in which the parameter should be checked whether they are active
+	 */
+	private void computeCheckActiveOrder(){
+		Set<String> params_left = new HashSet<String>(authorativeParameterNameOrder);
+		boolean changed = true;
+		while(!params_left.isEmpty() && changed){
+			changed = false;
+			Set<String> to_remove = new HashSet<String>();
+			for (String p: params_left){
+				boolean ok = true;
+				if (parameterDependencies.get(p) != null) {
+					for(String d: parameterDependencies.get(p)){
+						if (!activeCheckOrder.contains(paramKeyIndexMap.get(d))) {
+							ok = false;
+							break;
+						}
+					}
+				}
+				if (ok) {
+					activeCheckOrder.add(paramKeyIndexMap.get(p));
+					to_remove.add(p);
+					changed = true;
+				}
+			}
+			params_left.removeAll(to_remove);
+		}
+		if (!params_left.isEmpty()) {
+			throw new IllegalArgumentException("Could not parse hierarchy of parameters. Probably cycles in there. ("+ Arrays.toString(params_left.toArray())+")");
+		}
 	}
 	
 	/**
 	 * Parses a line from the param file, populating the relevant data structures.
 	 * @param line line of the param file
 	 */
-	private void parseLine(String line)
+	/*private void parseLine(String line)
 	{
 		//Default to a LineType of other 
 		LineType type = LineType.OTHER;
@@ -733,7 +777,7 @@ public class ParameterConfigurationSpace implements Serializable {
 		 * 
 		 * This is hardly robust and easily tricked.
 		 */
-		if (line.indexOf("|") >= 0)
+		/*if (line.indexOf("|") >= 0)
 		{
 			type = LineType.CONDITIONAL;
 		} else if(line.trim().substring(0, 1).equals("{"))
@@ -777,6 +821,7 @@ public class ParameterConfigurationSpace implements Serializable {
 		
 		
 	}
+	*/
 	
 	private void parseForbiddenLine(String line) {
 		
@@ -854,7 +899,7 @@ public class ParameterConfigurationSpace implements Serializable {
 	 * 
 	 * @param line
 	 */
-	private void parseContinuousLine(String line) 
+	/*private void parseContinuousLine(String line) 
 	{
 		
 		String name = getName(line);
@@ -933,7 +978,7 @@ public class ParameterConfigurationSpace implements Serializable {
 		}
 		
 		
-	}
+	}*/
 
 	/**
 	 * Categorical Lines consist of:
@@ -948,6 +993,7 @@ public class ParameterConfigurationSpace implements Serializable {
 	 * 
 	 * @param line
 	 */
+	/*
 	private void parseCategoricalLine(String line) 
 	{
 		String name = getName(line);
@@ -993,6 +1039,8 @@ public class ParameterConfigurationSpace implements Serializable {
 			throw new IllegalArgumentException("Extra flags set for categorical value (flags are not permitted on categorical values) on line : " + line);
 		}
 	}
+	*/
+	
 	
 	
 	/**
@@ -1008,6 +1056,7 @@ public class ParameterConfigurationSpace implements Serializable {
 	 * Note: <op> only supports in at this time. (and the public interface only assumes in).
 	 * @param line
 	 */
+	/*
 	private void parseConditionalLine(String line) {
 		String lineToParse = line;
 		
@@ -1095,7 +1144,7 @@ public class ParameterConfigurationSpace implements Serializable {
 		}
 		
 	}
-	
+	*/
 	
 	/**
 	 * Returns the name assuming it starts at the beginning of a line.
@@ -1150,6 +1199,7 @@ public class ParameterConfigurationSpace implements Serializable {
 	 * @param line
 	 * @return
 	 */
+	/*
 	private String getDefault(int offset, String line) {
 		String defaultValue = line.substring(line.indexOf("[",offset+1)+1, line.indexOf("]",offset+1)).trim();
 		if (defaultValue.length() == 0)
@@ -1160,7 +1210,7 @@ public class ParameterConfigurationSpace implements Serializable {
 			return defaultValue;
 		}
 	}
-
+	*/
 
 	/**
 	 * Gets the list of allowable values
@@ -1218,7 +1268,7 @@ public class ParameterConfigurationSpace implements Serializable {
 
 	public List<String> getParameterNames()
 	{
-		return Collections.unmodifiableList(paramNames);
+		return Collections.unmodifiableList(authorativeParameterNameOrder);
 	}
 	
 	public Map<String, Boolean> getContinuousMap()
