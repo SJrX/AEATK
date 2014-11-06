@@ -69,17 +69,6 @@ public class ParamConfigurationTestNewPCS {
 	
 	
 	@Test
-	public void testIntegerContinuousParameters() {
-		URL url = this.getClass().getClassLoader().getResource("paramFiles/integerFormatParam.txt");
-		File f = new File(url.getPath());
-		System.out.println(f.getAbsolutePath());
-		ParameterConfigurationSpace configSpace = new ParameterConfigurationSpace(f);
-		ParameterConfiguration config = configSpace.getDefaultConfiguration();
-		System.out.println(config.getFormattedParameterString());
-		//File is parsed correctly
-	}
-	
-	@Test
 	public void testAClibFormat() {
 		URL url = this.getClass().getClassLoader().getResource("paramFiles/aclib2.txt");
 		File f = new File(url.getPath());
@@ -90,13 +79,14 @@ public class ParamConfigurationTestNewPCS {
 		//File is parsed correctly
 	}
 	
-	
-	
+/*	
 	@Test
-	public void testRegex() {
+	public void testRegexRange() {
 		System.out.println("STart");
 		String in = "int i [1,10][3]";
-		Pattern catOrdPattern = Pattern.compile("[ ]*(?<name>\\p{Alnum}+)[ ]*(?<type>[ir]+)[ ]*\\[[ ]*(?<min>\\p{Graph}+)[ ]*,[ ]*(?<max>\\p{Graph}+)[ ]*\\][ ]*\\[(?<default>\\p{Graph}+)\\][ ]*(?<log>(log)?)[ ]*");		
+		String pat ="[ ]*(?<name>\\p{Alnum}+)[ ]*(?<type>[ir]+)[ ]*\\[[ ]*(?<min>\\p{Graph}+)[ ]*,[ ]*(?<max>\\p{Graph}+)[ ]*\\][ ]*\\[(?<default>\\p{Graph}+)\\][ ]*(?<log>(log)?)[ ]*"; 
+		pat = "\\s*(?<name>\\p{Alnum}+)\\s*(?<type>[ir])\\s*\\[\\s*(?<min>\\p{Graph}+)\\s*,\\s*(?<max>\\p{Graph}+)\\s*\\]\\s*\\[(?<default>\\p{Graph}+)\\]\\s*(?<log>(log)?)\\s*";
+		Pattern catOrdPattern = Pattern.compile(pat);		
 		Matcher catOrdMatcher = catOrdPattern.matcher(in);
 		System.out.println(catOrdMatcher);
 		while (catOrdMatcher.find())
@@ -110,6 +100,25 @@ public class ParamConfigurationTestNewPCS {
 			System.out.println(catOrdMatcher.group("log"));
 		}
 	}
+	
+	@Test
+	public void testRegexCat() {
+		System.out.println("STart");
+		String in = "cat c {a,b,c}[a]";
+		String pat ="\\s*(?<name>\\p{Alnum}+)\\s*(?<type>[co])\\s*\\{(?<values>.*)\\}\\s*\\[(?<default>\\p{Graph}+)\\]\\s*"; 
+		Pattern catOrdPattern = Pattern.compile(pat);		
+		Matcher catOrdMatcher = catOrdPattern.matcher(in);
+		System.out.println(catOrdMatcher);
+		while (catOrdMatcher.find())
+		{
+			System.out.println("int/real");
+			System.out.println(catOrdMatcher.group("name"));
+			System.out.println(catOrdMatcher.group("type"));
+			System.out.println(catOrdMatcher.group("values"));
+			System.out.println(catOrdMatcher.group("default"));
+		}
+	}
+	*/	
 		
 	@After
 	public void tearDown()

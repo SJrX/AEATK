@@ -144,7 +144,7 @@ public class ParameterConfigurationSpace implements Serializable {
 	/**
 	 * Number of parameters 
 	 */
-	private final int numberOfParameters;
+	private int numberOfParameters;
 	
 	/**
 	 * For each parameter (in authorative order) stores the indexes of the parent parameters
@@ -188,9 +188,8 @@ public class ParameterConfigurationSpace implements Serializable {
 	 * 
 	 * The authorative order is in fact something that should be specified in the constructor but for now sorting seems to work
 	 * 
-	 * 
 	 */
-	private final List<String> authorativeParameterNameOrder;
+	private List<String> authorativeParameterNameOrder = new ArrayList<String>();
 
 	/**
 	 * Array representation of the previous value to speed up searching
@@ -227,7 +226,7 @@ public class ParameterConfigurationSpace implements Serializable {
 	/**
 	 * maps parameter (ID) to list of conditions (CNF: disjunctive list of clauses)
 	 */
-	private Map<Integer, List<ArrayList<Conditional>>> nameConditionsMap;
+	private Map<Integer, ArrayList<ArrayList<Conditional>>> nameConditionsMap = new HashMap<Integer, ArrayList<ArrayList<Conditional>>>();
 	
 	private final String pcsFile;
 	
@@ -327,16 +326,14 @@ public class ParameterConfigurationSpace implements Serializable {
 					parseAClibLine(line);
 					} catch(RuntimeException e)
 					{
-						if (!aclibFormatFailed) { //already complained about the file
-							System.err.println("Error occured parsing: " + line); }
-						aclibFormatFailed = true;
-						//throw e; //keep iterating to populate pcs
-						
+						throw e;
 					} 
 				    
 				}
-				
+				/* //maybe support old format later again!
 				if (aclibFormatFailed) {
+				
+					//TODO: Re-initialize all object attributes ... :-(
 					System.err.println("Try to read pcs file with \"old\" format");
 					for(String pcsline :pcs.toString().split("\n")) // read from pcs
 					{ try {
@@ -349,7 +346,7 @@ public class ParameterConfigurationSpace implements Serializable {
 						}
 					    
 					}
-				}
+				}*/
 			} finally
 			{
 				Collections.sort(paramNames);
@@ -366,20 +363,7 @@ public class ParameterConfigurationSpace implements Serializable {
 			throw new IllegalStateException(e);
 		}
 
-		/*
-		 * Create data structures necessary for ParamConfiguration objects
-		 * 
-		 * Alot of this is redundant with what's above as this code was added as
-		 * part of refactoring. This class could use a clean up
-		 * 
-		 * This gets the data into a format convenient for Random Forests.
-		 */
-		List<String> paramOrder = new ArrayList<String>(paramNames.size());
-		paramOrder.addAll(paramNames);
-		Collections.sort(paramOrder);
-
-		this.authorativeParameterNameOrder = Collections.unmodifiableList(paramOrder);
-
+		//convert authorativeParameterNameOrder and contNormalizedRanges to an Array (before List)
 		this.authorativeParameterOrderArray = new String[this.authorativeParameterNameOrder.size()];
 		this.normalizedRangesByIndex = new NormalizedRange[this.authorativeParameterNameOrder.size()];
 		for (int i = 0; i < authorativeParameterNameOrder.size(); i++) {
@@ -387,14 +371,10 @@ public class ParameterConfigurationSpace implements Serializable {
 			this.normalizedRangesByIndex[i] = this.contNormalizedRanges.get(this.authorativeParameterOrderArray[i]);
 		}
 
-		parameterDomainContinuous = new boolean[paramNames.size()];
-		categoricalSize = new int[paramNames.size()];
-		this.numberOfParameters = paramNames.size();
+		parameterDomainContinuous = new boolean[numberOfParameters];
+		categoricalSize = new int[numberOfParameters];
 		int i = 0;
-		for (String paramName : getParameterNamesInAuthorativeOrder()) {
-			//map parameter names to index 
-			paramKeyIndexMap.put(paramName, i);
-
+		for (String paramName : authorativeParameterOrderArray) {
 			// saves the size of the categorical domains for each parameter
 			parameterDomainContinuous[i] = getContinuousMap().get(paramName);
 			if (parameterDomainContinuous[i] == false) {
@@ -405,105 +385,15 @@ public class ParameterConfigurationSpace implements Serializable {
 
 			i++;
 		}
-
 		
 		condParents = new int[numberOfParameters][];
 		condParentVals = new int[numberOfParameters][][];
 
-		/*
-		//parameter -> parent -> parent values
-		Map<String, Map<String, List<String>>> depValueMap = getDependentValuesMap();
-
-
-		//check that all parameters in conditionals exist indeed
-		for (String key : depValueMap.keySet()) {
-			if (!this.paramKeyIndexMap.keySet().contains(key)) {
-				throw new IllegalArgumentException(
-						"Illegal independent value (" + key
-								+ ") specified on conditional line.");
-			}
-		}
-
-		// nothing happens here
-		for (i = numberOfParameters; i < numberOfParameters; i++) {
-			condParents[i] = new int[0];
-			condParentVals[i] = new int[0][];
-		}
-
-		for (i = 0; i < numberOfParameters; i++) {
-
-			String key = getParameterNames().get(i);
-
-			// System.out.println("key => " + key);
-
-			Map<String, List<String>> depValues = depValueMap.get(key);
-			// if there are no conditionals, continue with next parameter
-			if ((depValues == null) || (depValues.size() == 0)) {
-				condParents[i] = new int[0];
-				condParentVals[i] = new int[0][];
-				continue;
-			}
-
-			condParents[i] = new int[depValues.size()];
-			condParentVals[i] = new int[depValues.size()][];
-
-			int j = 0;
-			for (Entry<String, List<String>> e : depValues.entrySet()) {
-
-				//if parent parameter does not exist, fire exception
-				if (paramKeyIndexMap.get(e.getKey()) == null) {
-					throw new IllegalArgumentException(
-							"Illegal dependant parameter (" + e.getKey()
-									+ ") on conditional line in param file: ");
-				}
-
-				condParents[i][j] = paramKeyIndexMap.get(e.getKey());
-				condParentVals[i][j] = new int[e.getValue().size()];
-				for (int k = 0; k < e.getValue().size(); k++) {
-
-					String depValue = e.getValue().get(k);
-					String depKey = e.getKey();
-
-					if (isContinuous.get(depKey)) {
-						throw new IllegalArgumentException(
-								"Value depends upon continuous parameter, this is not supported: "
-										+ key + " depends on " + depKey
-										+ " values: " + depValue);
-					}
-
-					if (!getCategoricalValueMap().get(depKey).keySet()
-							.contains(depValue)) {
-						throw new IllegalArgumentException(
-								"Value depends upon a non-existant or invalid parameter value: "
-										+ key + " depends on " + depKey
-										+ " having invalid value: " + depValue);
-					}
-
-					condParentVals[i][j][k] = getCategoricalValueMap().get(
-							e.getKey()).get(e.getValue().get(k));
-
-					condParentVals[i][j][k]++;
-
-				}
-				j++;
-			}
-
-		}
-		*/
-	
-		for (String forbiddenLine : forbiddenLines) {
-			parseForbiddenLine(forbiddenLine);
-
-		}
-		forbiddenLines.clear();
-
-		this.defaultConfigurationValueArray = _getDefaultConfiguration()
-				.toValueArray();
+		this.defaultConfigurationValueArray = _getDefaultConfiguration().toValueArray();
 
 		/*
-		 * This will basically test that the default configuration is actually
-		 * valid This is a fail fast test in case the parameter values are
-		 * invalid
+		 * This will basically test that the default configuration is actually valid.
+		 * This is a fail fast test in case the parameter values are invalid
 		 */
 		if (this.getDefaultConfiguration().isForbiddenParameterConfiguration()) {
 			throw new IllegalArgumentException(
@@ -565,13 +455,21 @@ public class ParameterConfigurationSpace implements Serializable {
 		
 		// categorical or ordinal parameters
 		Matcher catOrdMatcher = catOrdPattern.matcher(line);
-		while (catOrdMatcher.find()){
+		if (catOrdMatcher.find()){
+			
 			String name = catOrdMatcher.group("name");
 			String type = catOrdMatcher.group("type");
 			List<String> paramValues = Arrays.asList(catOrdMatcher.group("values").split(","));
 			String defaultValue = catOrdMatcher.group("default");
 			
-			paramNames.add(name);
+			if (paramKeyIndexMap.get(name) != null) {
+				throw new IllegalArgumentException("Parameter ("+name+") defined more than once.");
+			}
+			
+			paramKeyIndexMap.put(name, numberOfParameters);
+			numberOfParameters++;
+			authorativeParameterNameOrder.add(name);
+
 			values.put(name, paramValues);
 			Map<String, Integer> valueMap = new LinkedHashMap<String, Integer>();
 			int i=0;
@@ -597,11 +495,20 @@ public class ParameterConfigurationSpace implements Serializable {
 		
 		//integer or real valued parameters
 		Matcher intReaMatcher = intReaPattern.matcher(line);
-		while (intReaMatcher.find()){
+		if (intReaMatcher.find()){
 			boolean intValuesOnly = false;
 			boolean logScale = false;
 			String name = intReaMatcher.group("name");
 			String type = intReaMatcher.group("type");
+			
+			if (paramKeyIndexMap.get(name) != null) {
+				throw new IllegalArgumentException("Parameter ("+name+") defined more than once.");
+			}
+			
+			paramKeyIndexMap.put(name, numberOfParameters);
+			numberOfParameters++;
+			authorativeParameterNameOrder.add(name);
+			
 			if (type.equals("i")) {
 				intValuesOnly = true;
 			}
@@ -634,7 +541,6 @@ public class ParameterConfigurationSpace implements Serializable {
 				}
 			}
 			
-			paramNames.add(name);
 			isContinuous.put(name, Boolean.TRUE);
 			values.put(name, Collections.<String> emptyList());
 			switch (type){
@@ -657,7 +563,9 @@ public class ParameterConfigurationSpace implements Serializable {
 			return;
 		}
 		
+		System.out.println(line);
 		if (line.indexOf("|") >= 0) {
+			System.out.println("Conditional");
 			parseConditional(line);
 			return;
 		} 
@@ -680,6 +588,10 @@ public class ParameterConfigurationSpace implements Serializable {
 	 * 
 	 * no parentheses between the conditionals (makes parsing a lot easier)
 	 * 
+	 * Assumptions:
+	 *   (i) parameters are only once in the head of a condition
+	 *   (ii) conditions come after parameter definition
+	 * 
 	 * @param line line with conditional (as described above)
 	 */
 	private void parseConditional(String line){
@@ -692,20 +604,23 @@ public class ParameterConfigurationSpace implements Serializable {
 		// and represented as two nested arrays
 		
 		// disjunction are less important than conjunctions -> split first the disjunctions
-		String[] disjunctions = conditions.split("\\s*||\\s*");
+		String[] disjunctions = conditions.split("\\|\\|");
 		
-		List<ArrayList<Conditional>> conditionals = new ArrayList<ArrayList<Conditional>>();
+		ArrayList<ArrayList<Conditional>> conditionals = new ArrayList<ArrayList<Conditional>>();
 		
 		Integer param_id = paramKeyIndexMap.get(param_name);
 		if (param_id == null) {
 			throw new IllegalArgumentException("Conditioned parameter "+param_name+" not defined.");
 		}
 		
+		if (nameConditionsMap.get(param_id) != null){
+			throw new IllegalArgumentException("Each parameter can only be once in the head of a condition!");
+		}
 		nameConditionsMap.put(param_id, conditionals);
 		
 		for(String dis : disjunctions){
 			//split the conjunctions
-			String[] conjunctions = dis.split("\\s*&&\\s*");
+			String[] conjunctions = dis.split("&&");
 			
 			//save triple for each conditional: (ID) parent, (ID / or float) values, type   
 			
@@ -744,7 +659,8 @@ public class ParameterConfigurationSpace implements Serializable {
 					String[] split = con.split("in");
 					parent = split[0].trim();
 					String values = split[1].trim();
-					value = (String[]) getValues(values).toArray();
+					List<String> values_list = getValues(values);
+					value =  values_list.toArray(new String[values_list.size()]);
 					op = ConditionalOperators.IN;
 				} else {
 					throw new IllegalArgumentException("Unknown conditional operator: "+op+" in pcs file.");
@@ -777,7 +693,7 @@ public class ParameterConfigurationSpace implements Serializable {
 				}
 				
 				int parent_id = paramKeyIndexMap.get(parent); 
-				Conditional cond_tuple = new Conditional(parent_id, (Double[]) values_mapped.toArray(), op);
+				Conditional cond_tuple = new Conditional(parent_id, values_mapped.toArray(new Double[values_mapped.size()]), op);
 				
 				conj_conds.add(cond_tuple);
 			}
@@ -1166,7 +1082,7 @@ public class ParameterConfigurationSpace implements Serializable {
 			throw new IllegalArgumentException("Conditioned parameter "+name1+" not defined.");
 		}
 
-		List<ArrayList<Conditional>> conditionals = null;
+		ArrayList<ArrayList<Conditional>> conditionals = null;
 		if (nameConditionsMap.get(param_id) == null) {
 			conditionals = new ArrayList<ArrayList<Conditional>>();
 			ArrayList<Conditional> conj_cond = new ArrayList<Conditional>();

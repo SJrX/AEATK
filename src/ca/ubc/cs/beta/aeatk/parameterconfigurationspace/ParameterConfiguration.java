@@ -192,8 +192,6 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 			return null;
 		}
 		
-		
-		
 		double value = valueArray[index];
 		
 		if(Double.isNaN(value))

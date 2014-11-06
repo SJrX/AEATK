@@ -24,7 +24,7 @@ ord | cat in {a,b}
 
 # forbiddens
 
-{cat=a, int=2} 
+{cat=a, cat2=2.0} 
 
 
 
