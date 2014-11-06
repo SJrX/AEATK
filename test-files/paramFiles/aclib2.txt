@@ -19,7 +19,7 @@ realog r [1.0,2.0][1.3] log
 # conditionals
 
 rea | int == 1 || int > 5 
-int | ord > y && cat == a 
+int | ord > y && cat == a  || ord < y && cat in {a,b,c}
 ord | cat in {a,b}
 
 # forbiddens

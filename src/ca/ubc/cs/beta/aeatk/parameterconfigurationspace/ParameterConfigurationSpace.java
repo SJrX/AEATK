@@ -202,6 +202,32 @@ public class ParameterConfigurationSpace implements Serializable {
 	 */
 	private final NormalizedRange[] normalizedRangesByIndex;
 
+	/**
+	 *	operators in conditionals; EQ ==, NEQ !=, LE <, GR >, IN "in {...}" 
+	 */
+	private enum ConditionalOperators {
+		EQ, NEQ, LE, GR, IN
+	}
+	
+	/**
+	 *	Tuple with parent ID, conditional values and ConditionalOperator to save individual conditions
+	 */
+	private class Conditional {
+		public final int parent_ID;
+		public final Double[] values;
+		public final ConditionalOperators op;
+		
+		public Conditional(int parent_ID, Double[] values, ConditionalOperators op) {
+			this.parent_ID = parent_ID;
+			this.values = values;
+			this.op = op;
+		}
+	}
+	
+	/**
+	 * maps parameter (ID) to list of conditions (CNF: disjunctive list of clauses)
+	 */
+	private Map<Integer, List<ArrayList<Conditional>>> nameConditionsMap;
 	
 	private final String pcsFile;
 	
@@ -632,33 +658,15 @@ public class ParameterConfigurationSpace implements Serializable {
 		}
 		
 		if (line.indexOf("|") >= 0) {
-			
-		} else if(line.trim().substring(0, 1).equals("{"))
-		{
+			parseConditional(line);
+			return;
+		} 
+		else if(line.trim().substring(0, 1).equals("{")) {
 			forbiddenLines.add(line);
+			return;
 		}
 		
-		
-		throw new IllegalStateException("Not sure how to parse this");
-	}
-	
-	/**
-	 *	operators in conditionals; EQ ==, NEQ !=, LE <, GR >, IN "in {...}" 
-	 */
-	private enum ConditionalOperators {
-		EQ, NEQ, LE, GR, IN
-	}
-	
-	private class Conditional {
-		public final int parent_ID;
-		public final Double[] values;
-		public final ConditionalOperators op;
-		
-		public Conditional(int parent_ID, Double[] values, ConditionalOperators op) {
-			this.parent_ID = parent_ID;
-			this.values = values;
-			this.op = op;
-		}
+		throw new IllegalStateException("Not sure how to parse this line: "+line);
 	}
 	
 	/**
@@ -686,15 +694,28 @@ public class ParameterConfigurationSpace implements Serializable {
 		// disjunction are less important than conjunctions -> split first the disjunctions
 		String[] disjunctions = conditions.split("\\s*||\\s*");
 		
+		List<ArrayList<Conditional>> conditionals = new ArrayList<ArrayList<Conditional>>();
+		
+		Integer param_id = paramKeyIndexMap.get(param_name);
+		if (param_id == null) {
+			throw new IllegalArgumentException("Conditioned parameter "+param_name+" not defined.");
+		}
+		
+		nameConditionsMap.put(param_id, conditionals);
+		
 		for(String dis : disjunctions){
 			//split the conjunctions
 			String[] conjunctions = dis.split("\\s*&&\\s*");
 			
 			//save triple for each conditional: (ID) parent, (ID / or float) values, type   
+			
+			ArrayList<Conditional> conj_conds = new ArrayList<Conditional>();
+			conditionals.add(conj_conds);
+			
 			for(String con: conjunctions){
 				String parent = "";
 				String[] value = new String[0];
-				ConditionalOperators op;
+				ConditionalOperators op = null;
 				if (con.indexOf("==") >= 0) {
 					String[] split = con.split("==");
 					parent = split[0].trim();
@@ -725,7 +746,10 @@ public class ParameterConfigurationSpace implements Serializable {
 					String values = split[1].trim();
 					value = (String[]) getValues(values).toArray();
 					op = ConditionalOperators.IN;
+				} else {
+					throw new IllegalArgumentException("Unknown conditional operator: "+op+" in pcs file.");
 				}
+					
 				
 				if (!this.paramKeyIndexMap.keySet().contains(parent)) {
 					throw new IllegalArgumentException(
@@ -733,24 +757,29 @@ public class ParameterConfigurationSpace implements Serializable {
 								+ ") specified on conditional line.");
 				}
 				
+				List<Double> values_mapped = new ArrayList<Double>();
 				for (String v : value) {
+					Double vmapped; 
 					if (paramTypes.get(parent) == ParameterType.CATEGORICAL || paramTypes.get(parent) == ParameterType.ORDINAL) { 
-						Integer mapped_value = this.categoricalValueMap.get(parent).get(value);
+						Integer mapped_value = this.categoricalValueMap.get(parent).get(v);
 						if (mapped_value == null) {
 							throw new IllegalArgumentException("Illegal dependent parameter (" + (parent)+ ") specified on conditional line.");
 						}
-						Double vmapped = (double) mapped_value;
+						vmapped = (double) mapped_value;
 					} else {
 						try {
-							Double vmapped = Double.parseDouble(v);
+							vmapped = Double.parseDouble(v);
 						} catch (NumberFormatException e){
 							throw new IllegalArgumentException(parent + " is a of type i or o but is compared a non-double value in conditionals.");
 						}
 					}
-				
+					values_mapped.add(vmapped);
 				}
 				
+				int parent_id = paramKeyIndexMap.get(parent); 
+				Conditional cond_tuple = new Conditional(parent_id, (Double[]) values_mapped.toArray(), op);
 				
+				conj_conds.add(cond_tuple);
 			}
 		} 
 	}
@@ -778,7 +807,6 @@ public class ParameterConfigurationSpace implements Serializable {
 			return;
 		}
 
-	
 		
 		/** 
 		 * Perhaps not the most robust but the logic here is as follows
@@ -1107,6 +1135,48 @@ public class ParameterConfigurationSpace implements Serializable {
 			
 		dependencies.put(name2, condValues);
 		
+		//new aclib 2.0 format data structure
+		
+		List<Double> values_mapped = new ArrayList<Double>();
+		for (String v : condValues) {
+			Double vmapped; 
+			if (paramTypes.get(name2) == ParameterType.CATEGORICAL || paramTypes.get(name2) == ParameterType.ORDINAL) { 
+				Integer mapped_value = this.categoricalValueMap.get(name2).get(v);
+				if (mapped_value == null) {
+					throw new IllegalArgumentException("Illegal dependent parameter (" + (name2)+ ") specified on conditional line.");
+				}
+				vmapped = (double) mapped_value;
+			} else {
+				try {
+					vmapped = Double.parseDouble(v);
+				} catch (NumberFormatException e){
+					throw new IllegalArgumentException(name2 + " is a of type i or o but is compared a non-double value in conditionals.");
+				}
+			}
+			values_mapped.add(vmapped);
+		}
+		
+		int parent_id = paramKeyIndexMap.get(name2); 
+		Conditional cond_tuple = new Conditional(parent_id, (Double[]) values_mapped.toArray(), ConditionalOperators.IN);
+		
+		
+		
+		Integer param_id = paramKeyIndexMap.get(name1);
+		if (param_id == null) {
+			throw new IllegalArgumentException("Conditioned parameter "+name1+" not defined.");
+		}
+
+		List<ArrayList<Conditional>> conditionals = null;
+		if (nameConditionsMap.get(param_id) == null) {
+			conditionals = new ArrayList<ArrayList<Conditional>>();
+			ArrayList<Conditional> conj_cond = new ArrayList<Conditional>();
+			conj_cond.add(cond_tuple);
+			conditionals.add(conj_cond);
+			nameConditionsMap.put(param_id, conditionals);
+		} else {
+			//there are not disjunctions in the old format; therefore upper list has only one element
+			nameConditionsMap.get(param_id).get(0).add(cond_tuple);
+		}
 		
 	}
 	
