@@ -38,6 +38,10 @@ import com.beust.jcommander.internal.Lists;
 import ec.util.MersenneTwister;
 import ec.util.MersenneTwisterFast;
 
+/**
+ * @deprecated
+ *
+ */
 @SuppressWarnings({"unused", "deprecation","unchecked"})
 public class ParamConfigurationTest {
 

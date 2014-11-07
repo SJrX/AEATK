@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -17,6 +18,8 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import ca.ubc.cs.beta.aeatk.json.serializers.ParameterConfigurationSpaceJson;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace.Conditional;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace.ConditionalOperators;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -951,12 +954,94 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 		
 	}
 	
+	/**
+	 * Since the ConfigSpace already now an order of parameters to check active status, 
+	 * we simply iterate over it and check the conditions
+	 * @return
+	 */
 	private Set<String> _getActiveParameters()
 	{
-		
-		
-		boolean activeSetChanged = false;
 		Set<String> activeParams= new TreeSet<String>();
+		Map<Integer, ArrayList<ArrayList<Conditional>>> conds = configSpace.getNameConditionsMap();
+		List<String> param_names = configSpace.getParameterNamesInAuthorativeOrder();
+		for(String param : configSpace.getActiveCheckOrderString()){
+			
+			Integer param_id = configSpace.getParamKeyIndexMap().get(param);
+			
+			//if no conditions on this parameter, it is always active
+			if (!conds.containsKey(param_id)) {
+				activeParams.add(param);
+				continue;
+			}
+			
+			ArrayList<ArrayList<Conditional>> clauses = conds.get(param_id);
+			
+			//only one of the clauses has to be true
+			for (ArrayList<Conditional> clause : clauses){
+				boolean all_satisfied = true;
+				// all conditions in a clause have to be satisfied
+				for (Conditional cond: clause){
+					Integer parent_id = cond.parent_ID;
+					String parent_name = param_names.get(parent_id);
+					String parent_value_string = get(parent_name);
+					Double encoded_value;
+
+					// check whether parent is active; if not, child is also not active
+					if (! activeParams.contains(parent_name)){
+						all_satisfied = false;
+						break;
+					}
+					
+					//translate value
+					if (configSpace.getContinuousMap().get(parent_name)) {
+						encoded_value = Double.parseDouble(parent_value_string);
+					} else {
+						encoded_value = (double) configSpace.getCategoricalValueMap().get(parent_name).get(parent_value_string);
+					}
+
+					// check condition					
+					List<Double> values = Arrays.asList(cond.values);
+					if (cond.op == ConditionalOperators.IN) {
+						if (! values.contains(encoded_value)) {
+							all_satisfied = false;
+							break;
+						}
+					} else if (cond.op == ConditionalOperators.EQ) {
+						if (! values.get(0).equals(encoded_value)) {
+							all_satisfied = false;
+							break;
+						}
+					} else if (cond.op == ConditionalOperators.NEQ) {
+						if (values.get(0).equals(encoded_value)) {
+							all_satisfied = false;
+							break;
+						}
+					} else if (cond.op == ConditionalOperators.LE) {
+						if (values.get(0) >= encoded_value) {
+							all_satisfied = false;
+							break;
+						}
+					} else if (cond.op == ConditionalOperators.GR) {
+						if (values.get(0) <= encoded_value) {
+							all_satisfied = false;
+							break;
+						}
+					}
+					
+				}
+				if (all_satisfied) {
+					activeParams.add(param);
+					break;
+				}
+			}
+		}
+		
+		return activeParams;
+		
+		//OLD
+		
+		//boolean activeSetChanged = false;
+		//Set<String> activeParams= new TreeSet<String>();
 		
 		/*
 		 * This code is will loop in worse case ~(n^2) times, the data structures may not be very 
@@ -969,10 +1054,9 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 		 *  	- if all dependee parameters have an acceptible value, adds it to the active set.
 		 *  3) Terminates when there are no changes to the active set. (controlled by the changed flag) 
 		 */
+		/*
 		do {
-			/*
-			 * Loop through every parameter to see if it should be added to the activeParams set.
-			 */
+			//Loop through every parameter to see if it should be added to the activeParams set.
 			activeSetChanged = false;
 			List<String> paramNames = this.configSpace.getParameterNames();
 			
@@ -985,10 +1069,7 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 					continue;
 				}
 				
-				
-				/*
-				 * Check if this parameter is conditional (if not add it to the activeParam set), if it is check if it's conditions are all satisified. 
-				 */	
+				// Check if this parameter is conditional (if not add it to the activeParam set), if it is check if it's conditions are all satisified. 
 				Map<String,List<String>> dependentOn;
 				if(( dependentOn = configSpace.getDependentValuesMap().get(candidateParam)) != null)
 				{
@@ -1038,12 +1119,11 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 					}
 				}				
 			}
-
 			
 		} while(activeSetChanged == true);
 		
-		
 		return activeParams;
+		*/
 	}
 	
 	

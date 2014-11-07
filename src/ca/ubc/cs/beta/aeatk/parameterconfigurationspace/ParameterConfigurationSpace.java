@@ -125,6 +125,10 @@ public class ParameterConfigurationSpace implements Serializable {
 	private final boolean[] parameterDomainContinuous;
 	private final int[] categoricalSize;
 
+	public Map<String, Integer> getParamKeyIndexMap() {
+		return paramKeyIndexMap;
+	}
+	
 	
 	private final List<int[][]> forbiddenParameterValuesList = new ArrayList<int[][]>();
 	/**
@@ -195,14 +199,14 @@ public class ParameterConfigurationSpace implements Serializable {
 	/**
 	 *	operators in conditionals; EQ ==, NEQ !=, LE <, GR >, IN "in {...}" 
 	 */
-	private enum ConditionalOperators {
+	public enum ConditionalOperators {
 		EQ, NEQ, LE, GR, IN
 	}
 	
 	/**
 	 *	Tuple with parent ID, conditional values and ConditionalOperator to save individual conditions
 	 */
-	private class Conditional {
+	public class Conditional {
 		public final int parent_ID;
 		public final Double[] values;
 		public final ConditionalOperators op;
@@ -213,22 +217,36 @@ public class ParameterConfigurationSpace implements Serializable {
 			this.op = op;
 		}
 	}
-	
+
+	//TODO: the next four attributes should be final
 	/**
 	 * maps parameter (ID) to list of conditions (CNF: disjunctive list of clauses)
 	 */
 	private Map<Integer, ArrayList<ArrayList<Conditional>>> nameConditionsMap = new HashMap<Integer, ArrayList<ArrayList<Conditional>>>();
-
+	
 	/**
 	 * 
 	 */
 	private Map<String, HashSet<String>> parameterDependencies = new HashMap<String, HashSet<String>>(); 
 	private List<Integer> activeCheckOrder = new ArrayList<Integer>();
+	private List<String> activeCheckOrderString = new ArrayList<String>();
+	
+	public List<String> getActiveCheckOrderString() {
+		return activeCheckOrderString;
+	}
+	
+	public Map<Integer, ArrayList<ArrayList<Conditional>>> getNameConditionsMap(){
+		return nameConditionsMap;
+	}
+	
+	public Map<String, ParameterType> getParamTypes(){
+		return paramTypes;
+	}
 	
 	private final String pcsFile;
 	
-	private final Pattern catOrdPattern = Pattern.compile("\\s*(?<name>\\p{Alnum}+)\\s*(?<type>[co])\\s*\\{(?<values>.*)\\}\\s*\\[(?<default>\\p{Graph}+)\\]\\s*");
-	private final Pattern intReaPattern = Pattern.compile("\\s*(?<name>\\p{Alnum}+)\\s*(?<type>[ir])\\s*\\[\\s*(?<min>\\p{Graph}+)\\s*,\\s*(?<max>\\p{Graph}+)\\s*\\]\\s*\\[(?<default>\\p{Graph}+)\\]\\s*(?<log>(log)?)\\s*");
+	private final Pattern catOrdPattern = Pattern.compile("\\s*(?<name>\\p{Graph}+)\\s*(?<type>[co])\\s*\\{(?<values>.*)\\}\\s*\\[(?<default>\\p{Graph}+)\\]\\s*");
+	private final Pattern intReaPattern = Pattern.compile("\\s*(?<name>\\p{Graph}+)\\s*(?<type>[ir])\\s*\\[\\s*(?<min>\\p{Graph}+)\\s*,\\s*(?<max>\\p{Graph}+)\\s*\\]\\s*\\[(?<default>\\p{Graph}+)\\]\\s*(?<log>(log)?)\\s*");
 	
 	private final Map<String, String> searchSubspace;
 	/**
@@ -442,6 +460,8 @@ public class ParameterConfigurationSpace implements Serializable {
 	 */
 	private void parseAClibLine(String line){
 		
+		//System.out.println(line);
+		
 		//Removes Comment
 		int commentStart = line.indexOf("#");
 		line = line.trim();
@@ -459,11 +479,11 @@ public class ParameterConfigurationSpace implements Serializable {
 		// categorical or ordinal parameters
 		Matcher catOrdMatcher = catOrdPattern.matcher(line);
 		if (catOrdMatcher.find()){
-			
+			//System.out.println("CatMatch");
 			String name = catOrdMatcher.group("name");
 			String type = catOrdMatcher.group("type");
 			List<String> paramValues = Arrays.asList(catOrdMatcher.group("values").split(","));
-			String defaultValue = catOrdMatcher.group("default");
+			String defaultValue = catOrdMatcher.group("default").trim();
 			
 			if (paramKeyIndexMap.get(name) != null) {
 				throw new IllegalArgumentException("Parameter ("+name+") defined more than once.");
@@ -472,12 +492,17 @@ public class ParameterConfigurationSpace implements Serializable {
 			paramKeyIndexMap.put(name, numberOfParameters);
 			numberOfParameters++;
 			authorativeParameterNameOrder.add(name);
-
-			values.put(name, paramValues);
+			
+			List<String> paramValues_trimed = new ArrayList<String>();
+			for (String value: paramValues){
+				paramValues_trimed.add(value.trim());
+			}
+			
+			values.put(name, paramValues_trimed);
 			Map<String, Integer> valueMap = new LinkedHashMap<String, Integer>();
 			int i=0;
-			for(String value : paramValues) {
-				valueMap.put(value.trim(), i);
+			for(String value : paramValues_trimed) {
+				valueMap.put(value, i);
 				i++;
 			}
 			//TODO: check whether ordinal parameters are already handled correctly
@@ -499,6 +524,7 @@ public class ParameterConfigurationSpace implements Serializable {
 		//integer or real valued parameters
 		Matcher intReaMatcher = intReaPattern.matcher(line);
 		if (intReaMatcher.find()){
+			//System.out.println("ReaMatch");
 			boolean intValuesOnly = false;
 			boolean logScale = false;
 			String name = intReaMatcher.group("name");
@@ -566,17 +592,17 @@ public class ParameterConfigurationSpace implements Serializable {
 			return;
 		}
 		
-		System.out.println(line);
 		if (line.indexOf("|") >= 0) {
+			//System.out.println("ConditionMatch");
 			parseConditional(line);
 			return;
 		} 
 		else if(line.trim().substring(0, 1).equals("{")) {
+			//System.out.println("FordiddenMatch");
 			forbiddenLines.add(line);
 			return;
 		}
-		
-		throw new IllegalStateException("Not sure how to parse this line: "+line);
+		throw new IllegalArgumentException("Not sure how to parse this line: "+line);
 	}
 	
 	/**
@@ -733,6 +759,7 @@ public class ParameterConfigurationSpace implements Serializable {
 				}
 				if (ok) {
 					activeCheckOrder.add(paramKeyIndexMap.get(p));
+					activeCheckOrderString.add(p);
 					to_remove.add(p);
 					changed = true;
 				}
@@ -1296,6 +1323,7 @@ public class ParameterConfigurationSpace implements Serializable {
 	
 	/**
 	 * This R/O protection isn't robust
+	 * @deprecated
 	 * 
 	 */
 	public Map<String, Map<String, List<String>>> getDependentValuesMap()
@@ -1559,7 +1587,8 @@ public class ParameterConfigurationSpace implements Serializable {
 		
 			int catSize = this.categoricalSize[i];
 
-			if(this.condParents[i].length > 0)
+			//if(this.condParents[i].length > 0)
+			if (this.parameterDependencies.get(this.authorativeParameterNameOrder.get(i)) != null)
 			{
 				//Conditionals are ignored
 				continue;
@@ -1883,7 +1912,7 @@ public class ParameterConfigurationSpace implements Serializable {
 	 */
 	public static ParameterConfigurationSpace getSingletonConfigurationSpace()
 	{
-		return new ParameterConfigurationSpace(new StringReader("singleton { singleton } [singleton]"),SINGLETON_ABSOLUTE_NAME);
+		return new ParameterConfigurationSpace(new StringReader("singleton c { singleton } [singleton]"),SINGLETON_ABSOLUTE_NAME);
 	}
 	
 	public static ParameterConfigurationSpace getNullConfigurationSpace() {
