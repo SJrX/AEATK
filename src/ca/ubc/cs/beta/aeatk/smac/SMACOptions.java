@@ -2,6 +2,7 @@ package ca.ubc.cs.beta.aeatk.smac;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -119,6 +120,14 @@ public class SMACOptions extends AbstractOptions {
 	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names={"--intensification-percentage","--intensificationPercentage","--frac_rawruntime"}, description="percent of time to spend intensifying versus model learning", validateWith=ZeroOneHalfOpenRightDouble.class)
 	public double intensificationPercentage = 0.50;
+	
+	@UsageTextField(level=OptionLevel.INTERMEDIATE)
+	@Parameter(names={"--initialChallengers","--initial-challengers"}, description="Can be specified multiple times. Every item is one additional initial challenger which will be used in the challenge procedure prior to starting the actual optimization method. If specified, the first initial challenger replaces the initial incumbent. For the syntax, please see --initialIncumbent.")
+	public List<String> initialChallengers = new ArrayList<String>();
+	
+	@UsageTextField(level=OptionLevel.ADVANCED)
+	@Parameter(names={"--initialChallengersIntensificationTime","--initial-challengers-intensification-time"}, description="Time to spend on intensify for the initial challengers.")
+	public int initialChallengersIntensificationTime = Integer.MAX_VALUE;
 	
 	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names={"--iterativeCappingBreakOnFirstCompletion"}, description="In Phase 2 of the initialization phase, we will abort the first time something completes and not look at anything else with the same kappa limits")

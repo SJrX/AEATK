@@ -1308,6 +1308,19 @@ public class ParameterConfigurationSpace implements Serializable {
 		return new ParameterConfiguration(this, valueArray.clone(), categoricalSize, parameterDomainContinuous, paramKeyIndexMap);
 	}
 	
+	public List<ParameterConfiguration> getParameterConfigurationsFromList( List<String> paramStrings, ParameterStringFormat f, Random rand)
+	{
+		List<ParameterConfiguration> parameterConfigurations = new ArrayList<ParameterConfiguration>();
+		
+		for( String paramString: paramStrings)
+		{
+			ParameterConfiguration parameterConfiguration = getParameterConfigurationFromString(paramString, f, rand);
+			parameterConfigurations.add(parameterConfiguration);
+		}
+		
+		return parameterConfigurations;
+	}
+	
 	public ParameterConfiguration getParameterConfigurationFromString( String paramString, ParameterStringFormat f)
 	{
 		return getParameterConfigurationFromString(paramString, f, null);
