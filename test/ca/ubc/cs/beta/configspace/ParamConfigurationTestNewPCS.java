@@ -444,6 +444,15 @@ public class ParamConfigurationTestNewPCS {
 	}
 	
 	@Test(expected=IllegalArgumentException.class)
+	public void testMisplacedType()
+	{
+		System.out.println("misplaced test");
+		String file = "param i [1, 10] [1]i";
+		StringReader sr = new StringReader(file);
+		new ParameterConfigurationSpace(sr);
+	}
+	
+	@Test(expected=IllegalArgumentException.class)
 	public void testIllegalArgumentOnNonIntegerLowerBound()
 	{
 		String file = "param i [0.1, 10] [1]";
@@ -1321,7 +1330,7 @@ public class ParamConfigurationTestNewPCS {
 	}
 	
 	@Test
-	//@Ignore
+	@Ignore
 	public void testSpeed()
 	{
 		//This really isn't a test
@@ -1342,7 +1351,7 @@ public class ParamConfigurationTestNewPCS {
 	}
 	
 	@Test
-	//@Ignore
+	@Ignore
 	public void testRandomSpeed()
 	{
 		 

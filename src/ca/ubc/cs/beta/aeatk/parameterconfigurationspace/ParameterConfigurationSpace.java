@@ -245,8 +245,8 @@ public class ParameterConfigurationSpace implements Serializable {
 	
 	private final String pcsFile;
 	
-	private final Pattern catOrdPattern = Pattern.compile("\\s*(?<name>\\p{Graph}+)\\s*(?<type>[co])\\s*\\{(?<values>.*)\\}\\s*\\[(?<default>\\p{Graph}+)\\]\\s*");
-	private final Pattern intReaPattern = Pattern.compile("\\s*(?<name>\\p{Graph}+)\\s*(?<type>[ir])\\s*\\[\\s*(?<min>\\p{Graph}+)\\s*,\\s*(?<max>\\p{Graph}+)\\s*\\]\\s*\\[(?<default>\\p{Graph}+)\\]\\s*(?<log>(log)?)\\s*");
+	private final Pattern catOrdPattern = Pattern.compile("^\\s*(?<name>\\p{Graph}+)\\s*(?<type>[co])\\s*\\{(?<values>.*)\\}\\s*\\[(?<default>\\p{Graph}+)\\]\\s*$");
+	private final Pattern intReaPattern = Pattern.compile("^\\s*(?<name>\\p{Graph}+)\\s*(?<type>[ir])\\s*\\[\\s*(?<min>\\p{Graph}+)\\s*,\\s*(?<max>\\p{Graph}+)\\s*\\]\\s*\\[(?<default>\\p{Graph}+)\\]\\s*(?<log>(log)?)\\s*$");
 	
 	private final Map<String, String> searchSubspace;
 	/**
