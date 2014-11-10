@@ -81,11 +81,6 @@ public class ParameterConfigurationSpace implements Serializable {
 	private final Map<String,String> defaultValues = new HashMap<String, String>();
 	
 	/**
-	 * For each parameter name stores the name of the parameters and the required values of those parameters, for this parameter to be active. 
-	 */
-	private final Map<String, Map<String, List<String>>> dependentValues = new HashMap<String, Map<String,List<String>>>();
-	
-	/**
 	 * For each parameter stores a boolean for whether or not the value is continuous
 	 */
 	private final Map<String, Boolean> isContinuous = new HashMap<String, Boolean>();
@@ -141,14 +136,6 @@ public class ParameterConfigurationSpace implements Serializable {
 	 */
 	private int numberOfParameters;
 	
-	/**
-	 * For each parameter (in authorative order) stores the indexes of the parent parameters
-	 */	
-	private final int[][] condParents;
-
-	
-	private final int[][][] condParentVals;
-
 
 	/**
 	 * Flag variable that controls whether there exists a real PCS file
@@ -208,10 +195,10 @@ public class ParameterConfigurationSpace implements Serializable {
 	 */
 	public class Conditional {
 		public final int parent_ID;
-		public final Double[] values;
+		public final double[] values;
 		public final ConditionalOperators op;
 		
-		public Conditional(int parent_ID, Double[] values, ConditionalOperators op) {
+		public Conditional(int parent_ID, double[] values, ConditionalOperators op) {
 			this.parent_ID = parent_ID;
 			this.values = values;
 			this.op = op;
@@ -224,12 +211,14 @@ public class ParameterConfigurationSpace implements Serializable {
 	 */
 	private Map<Integer, ArrayList<ArrayList<Conditional>>> nameConditionsMap = new HashMap<Integer, ArrayList<ArrayList<Conditional>>>();
 	
-	/**
-	 * 
-	 */
 	private Map<String, HashSet<String>> parameterDependencies = new HashMap<String, HashSet<String>>(); 
 	private List<Integer> activeCheckOrder = new ArrayList<Integer>();
 	private List<String> activeCheckOrderString = new ArrayList<String>();
+	
+	private int[] activeCheckOrderArray;
+	private Map<Integer, int[][]> nameConditionsMapParentsArray;
+	private Map<Integer, double[][][]> nameConditionsMapParentsValues;
+	private Map<Integer, int[][]> nameConditionsMapOp;
 	
 	public List<String> getActiveCheckOrderString() {
 		return activeCheckOrderString;
@@ -376,6 +365,7 @@ public class ParameterConfigurationSpace implements Serializable {
 		}
 		
 		computeCheckActiveOrder();
+		transformConditionals2FastRFStructure();
 
 		//convert authorativeParameterNameOrder and contNormalizedRanges to an Array (before List)
 		this.authorativeParameterOrderArray = new String[this.authorativeParameterNameOrder.size()];
@@ -407,9 +397,6 @@ public class ParameterConfigurationSpace implements Serializable {
 		}
 		forbiddenLines.clear();
 		
-		condParents = new int[numberOfParameters][];
-		condParentVals = new int[numberOfParameters][][];
-
 		this.defaultConfigurationValueArray = _getDefaultConfiguration().toValueArray();
 
 		/*
@@ -721,7 +708,15 @@ public class ParameterConfigurationSpace implements Serializable {
 				}
 				
 				int parent_id = paramKeyIndexMap.get(parent); 
-				Conditional cond_tuple = new Conditional(parent_id, values_mapped.toArray(new Double[values_mapped.size()]), op);
+				
+				double[] value_array = new double[values_mapped.size()];
+				int i = 0;
+				for (double v : values_mapped) {
+					value_array[i] = v;
+					i++;
+				}
+				
+				Conditional cond_tuple = new Conditional(parent_id, value_array, op);
 				
 				conj_conds.add(cond_tuple);
 				
@@ -772,83 +767,54 @@ public class ParameterConfigurationSpace implements Serializable {
 	}
 	
 	/**
-	 * Parses a line from the param file, populating the relevant data structures.
-	 * @param line line of the param file
+	 * transforms <nameConditionsMap> into <nameConditionsMapParentsArray>, <nameConditionsMapParentsValues>, <nameConditionsMapOp>
+	 * and <activeCheckOrder> into <activeCheckOrderArray>
 	 */
-	/*private void parseLine(String line)
-	{
-		//Default to a LineType of other 
-		LineType type = LineType.OTHER;
-		
-		//Removes Comment
-		int commentStart = line.indexOf("#");
-		line = line.trim();
-		if (commentStart >= 0)
-		{
-			line = line.substring(0, commentStart).trim();
+	private void transformConditionals2FastRFStructure(){
+		activeCheckOrderArray = new int[activeCheckOrder.size()];
+		int i = 0;
+		for (int ord_idx: activeCheckOrder){
+			activeCheckOrderArray[i] = ord_idx;
+			i++;
 		}
 		
-		//We are done if we trim away the rest of the line
-		if (line.length() == 0)
-		{
-			return;
-		}
-
-		
-		/** 
-		 * Perhaps not the most robust but the logic here is as follows
-		 * if we see a "|" it's a conditional line
-		 * otherwise we expect to see a "[" (if we don't we have no idea) what it is. 
-		 * If we see two (Or more) "[" then allegedly it's continous (one specifies the range the other the default).
-		 * Otherwise we must be categorical
-		 * 
-		 * This is hardly robust and easily tricked.
-		 */
-		/*if (line.indexOf("|") >= 0)
-		{
-			type = LineType.CONDITIONAL;
-		} else if(line.trim().substring(0, 1).equals("{"))
-		{
-			type = LineType.FORBIDDEN;
-		} else if(line.indexOf("[") < 0)
-		{
-			type = LineType.OTHER;
-			if(line.trim().equals("Conditionals:")) return;
-			if(line.trim().equals("Forbidden:")) return;
+		for (int p_idx: nameConditionsMap.keySet()) {
+			int[][] parent_id = new int[nameConditionsMap.get(p_idx).size()][];
+			double[][][] values = new double[nameConditionsMap.get(p_idx).size()][][];
+			int[][] op = new int[nameConditionsMap.get(p_idx).size()][];
 			
-			throw new IllegalArgumentException("Cannot parse the following line:" + line);
-		} else if (line.indexOf("[") != line.lastIndexOf("["))
-		{
-			type = LineType.CONTINUOUS;
-		} else if(line.trim().indexOf("{") > 1 && line.trim().indexOf("}") > 1 )
-		{
-			type = LineType.CATEGORICAL;
-		} else
-		{
-			throw new IllegalArgumentException("Syntax error parsing line " + line + " probably malformed");
+			i = 0;
+			for (List<Conditional> clause: nameConditionsMap.get(p_idx)){
+				int j = 0;
+				int[] parent_id_in = new int[clause.size()];
+				double[][] values_in = new double[clause.size()][];
+				int[] op_in = new int[clause.size()];
+				for (Conditional cond: clause){
+					parent_id_in[j] = cond.parent_ID;
+					values_in[j] = cond.values;
+					if (cond.op == ConditionalOperators.EQ) {
+						op_in[j] = 0; 
+					} else if (cond.op == ConditionalOperators.NEQ) {
+						op_in[j] = 1; 
+					} else if (cond.op == ConditionalOperators.LE) {
+						op_in[j] = 2; 
+					} else if (cond.op == ConditionalOperators.GR) {
+						op_in[j] = 3; 
+					} else if (cond.op == ConditionalOperators.IN) {
+						op_in[j] = 4; 
+					}
+					j++;
+				}
+				parent_id[i] = parent_id_in;
+				values[i] = values_in;
+				op[i] = op_in;
+				i++;
+			}
+			nameConditionsMapParentsArray.put(p_idx, parent_id);
+			nameConditionsMapParentsValues.put(p_idx, values);
+			nameConditionsMapOp.put(p_idx, op);
 		}
-		
-		switch(type)
-		{
-			case CONDITIONAL:
-				parseConditionalLine(line);
-				break;
-			case CATEGORICAL:
-				parseCategoricalLine(line);
-				break;
-			case CONTINUOUS:
-				parseContinuousLine(line);
-				break;
-			case FORBIDDEN:
-				forbiddenLines.add(line);
-				break;
-			default:
-				throw new IllegalStateException("Not sure how I can be parsing some other type, ");
-		}
-		
-		
-	}
-	*/
+	} 
 	
 	private void parseForbiddenLine(String line) {
 		
@@ -911,267 +877,6 @@ public class ParameterConfigurationSpace implements Serializable {
 		forbiddenParameterValuesList.add(forbiddenIndexValuePairs.toArray(new int[0][0]));
 		
 	}
-	/**
-	 * Continuous Lines consist of:
-	 *   
-	 * <name><w*>[<minValue>,<maxValue>]<w*>[<default>]<*w><i?><l?>#Comment
-	 * where:
-	 * <name> - name of parameter.
-	 * <minValue> - minimum Value in Range
-	 * <maxValue> - maximum Value in Range.
-	 * <default> - default value enclosed in braces.
-	 * <w*> - zero or more whitespace characters
-	 * <i?> - An optional i character that specifies whether or not only integral values are permitted
-	 * <l?> - An optional l character that specifies if the domain should be considered logarithmic (for sampling purposes).
-	 * 
-	 * @param line
-	 */
-	/*private void parseContinuousLine(String line) 
-	{
-		
-		String name = getName(line);
-		int firstBracket = line.indexOf("[");
-		int secondBracket = line.indexOf("]");
-		String domainValues = line.substring(firstBracket+1, secondBracket);
-		String[] contValues  = domainValues.split(",");
-		if(contValues.length != 2)
-		{
-			throw new IllegalArgumentException ("Expected two parameter values (or one comma between the first brackets) from line \""+ line + "\" but received " + contValues.length);
-		}
-		
-		double min = Double.valueOf(contValues[0]);
-		double max = Double.valueOf(contValues[1]);
-
-		String defaultValue = getDefault(secondBracket, line);
-		
-		paramNames.add(name);
-		isContinuous.put(name, Boolean.TRUE);
-		values.put(name, Collections.<String> emptyList());
-		
-		this.defaultValues.put(name, defaultValue);
-		
-		//This gets the rest of the line after the defaultValue
-		String lineRemaining = line.substring(line.indexOf("]",secondBracket+1)+1);
-		
-		boolean logScale = ((lineRemaining.length() > 0) && (lineRemaining.trim().contains("l")));
-		lineRemaining = lineRemaining.replaceFirst("l", "").trim();
-		
-		boolean intValuesOnly = ((lineRemaining.length() > 0) && (lineRemaining.trim().contains("i")));
-		
-		if (intValuesOnly) {
-			paramTypes.put(name, ParameterType.INTEGER);
-		}
-		else {
-			paramTypes.put(name, ParameterType.REAL);
-		}
-		
-		if(intValuesOnly)
-		{
-			try {
-			
-			if(!isIntegerDouble(Double.valueOf(contValues[0]))) throw new IllegalArgumentException("This parameter is marked as integer, only integer values are permitted for the bounds and default on line:" + line); 
-			if(!isIntegerDouble(Double.valueOf(contValues[1]))) throw new IllegalArgumentException("This parameter is marked as integer, only integer values are permitted for the bounds and default on line:" + line);
-			if(!isIntegerDouble(Double.valueOf(defaultValue))) throw new IllegalArgumentException("This parameter is marked as integer, only integer values are permitted for the bounds and default on line:" + line);
-			} catch(NumberFormatException e)
-			{
-				throw new IllegalArgumentException("This parameter is marked as integer, only integer values are permitted for the bounds and default on line:" + line);
-			}
-		}
-		
-		
-		lineRemaining = lineRemaining.replaceFirst("i", "").trim();		
-		
-		if(lineRemaining.trim().length() != 0)
-		{
-			throw new IllegalArgumentException("Unknown or duplicate modifier(s): " + lineRemaining + " in line: " + line);
-		}
-			
-			
-		try {
-			contNormalizedRanges.put(name, new NormalizedRange(min, max, logScale, intValuesOnly));
-		} catch(IllegalArgumentException e)
-		{
-			throw new IllegalArgumentException(e.getMessage() + "; error occured while parsing line: " +line);
-		}
-
-		
-		//Check for gibberish between ] [  
-		String subString = line.substring(line.indexOf("]") +1, line.indexOf("[", line.indexOf("]"))).trim();
-		
-		
-		if(subString.length() > 0)
-		{
-			throw new IllegalArgumentException("Invalid Characters detected between domain and default value on line : " + line);
-		}
-		
-		
-	}*/
-
-	/**
-	 * Categorical Lines consist of:
-	 *   
-	 * <name><w*>{<values>}<w*>[<default>]<*w>#Comment
-	 * where:
-	 * <name> - name of parameter.
-	 * <values> - comma seperated list of values (i.e. a,b,c,d...,z)
-	 * <default> - default value enclosed in braces.
-	 * <w*> - zero or more whitespace characters
-	 * 
-	 * 
-	 * @param line
-	 */
-	/*
-	private void parseCategoricalLine(String line) 
-	{
-		String name = getName(line);
-		List<String> paramValues = getValues(line);
-		String defaultValue = getDefault(0,line);
-		
-		paramNames.add(name);
-		values.put(name, paramValues);
-		
-		//LinkedHashMap just makes it easier to debug
-		//Map is all that is necessary
-		Map<String, Integer> valueMap = new LinkedHashMap<String, Integer>();
-		
-		int lastIndexOf = line.lastIndexOf("]");
-		
-		int i=0;
-		for(String value : paramValues)
-		{
-			valueMap.put(value, i);
-			i++;
-			
-		}
-		categoricalValueMap.put(name, valueMap);
-		
-		defaultValues.put(name, defaultValue);
-		
-		isContinuous.put(name,Boolean.FALSE);
-		
-		paramTypes.put(name, ParameterType.CATEGORICAL);
-		
-		String remaining = line.substring(lastIndexOf+1).trim();
-		
-		if(remaining.contains("i")) {
-			throw new IllegalArgumentException("Cannot set categorical value as having integral only values on line " +  line );
-		}
-		
-		if(remaining.contains("l")) {
-			throw new IllegalArgumentException("Cannot set categorical value as being selected with a log distribution" + line );
-		}
-		
-		if(remaining.length() > 0)
-		{
-			throw new IllegalArgumentException("Extra flags set for categorical value (flags are not permitted on categorical values) on line : " + line);
-		}
-	}
-	*/
-	
-	
-	
-	/**
-	 * Conditional Lines consist of:
-	 * <name1><w*>|<name2><w+><op><w+>{<values>} #Comment
-	 * <name1> - dependent parameter name
-	 * <name2> - the independent parameter name
-	 * <op> - probably only in at this time.
-	 * <w*> - zero or more whitespace characters.
-	 * <w+> - one or more whitespace characters
-	 * <values> - values 
-	 * 
-	 * Note: <op> only supports in at this time. (and the public interface only assumes in).
-	 * @param line
-	 */
-	/*
-	private void parseConditionalLine(String line) {
-		String lineToParse = line;
-		
-		String name1 = getName(line);
-		
-		String name2 = getName(line.substring(line.indexOf("|") + 1));
-		//System.out.println(name1 + " depends on " + name2);
-		
-		
-		if(name1.equals(name2))
-		{
-			throw new IllegalArgumentException("Parameter " + name1 + " cannot be conditional on itself in line: " + line);
-		}
-		lineToParse = lineToParse.replaceFirst(name1,"");
-		lineToParse = lineToParse.replaceFirst("|", "");
-		lineToParse = lineToParse.replaceFirst(name2,"");
-		lineToParse = lineToParse.trim();
-		
-		
-				
-		if (lineToParse.indexOf(" in ") < 0)
-		{
-			throw new IllegalStateException("Unknown or missing operator in line: " + line);
-		}
-		List<String> condValues = getValues(line);
-		
-		Map<String, List<String>> dependencies = dependentValues.get(name1);
-		if( dependencies == null)
-		{
-			dependencies = new HashMap<String,List<String>>();
-			dependentValues.put(name1, dependencies );
-		}
-	
-		//If multiple lines appear for more than one clause I overwrite the previous value
-		if (dependencies.get(name2) != null)
-		{
-			
-			throw new IllegalArgumentException("Parameter " + name1 + " already has a previous dependency for " + name2 + " values {" + dependencies.get(name2).toString() + "}. Parameter dependencies respecified in line: " + line);
-		}
-			
-			
-		dependencies.put(name2, condValues);
-		
-		//new aclib 2.0 format data structure
-		
-		List<Double> values_mapped = new ArrayList<Double>();
-		for (String v : condValues) {
-			Double vmapped; 
-			if (paramTypes.get(name2) == ParameterType.CATEGORICAL || paramTypes.get(name2) == ParameterType.ORDINAL) { 
-				Integer mapped_value = this.categoricalValueMap.get(name2).get(v);
-				if (mapped_value == null) {
-					throw new IllegalArgumentException("Illegal dependent parameter (" + (name2)+ ") specified on conditional line.");
-				}
-				vmapped = (double) mapped_value;
-			} else {
-				try {
-					vmapped = Double.parseDouble(v);
-				} catch (NumberFormatException e){
-					throw new IllegalArgumentException(name2 + " is a of type i or o but is compared a non-double value in conditionals.");
-				}
-			}
-			values_mapped.add(vmapped);
-		}
-		
-		int parent_id = paramKeyIndexMap.get(name2); 
-		Conditional cond_tuple = new Conditional(parent_id, (Double[]) values_mapped.toArray(), ConditionalOperators.IN);
-		
-		
-		
-		Integer param_id = paramKeyIndexMap.get(name1);
-		if (param_id == null) {
-			throw new IllegalArgumentException("Conditioned parameter "+name1+" not defined.");
-		}
-
-		ArrayList<ArrayList<Conditional>> conditionals = null;
-		if (nameConditionsMap.get(param_id) == null) {
-			conditionals = new ArrayList<ArrayList<Conditional>>();
-			ArrayList<Conditional> conj_cond = new ArrayList<Conditional>();
-			conj_cond.add(cond_tuple);
-			conditionals.add(conj_cond);
-			nameConditionsMap.put(param_id, conditionals);
-		} else {
-			//there are not disjunctions in the old format; therefore upper list has only one element
-			nameConditionsMap.get(param_id).get(0).add(cond_tuple);
-		}
-		
-	}
-	*/
 	
 	/**
 	 * Returns the name assuming it starts at the beginning of a line.
@@ -1319,16 +1024,6 @@ public class ParameterConfigurationSpace implements Serializable {
 	{
 		return Collections.unmodifiableMap(defaultValues);
 		
-	}
-	
-	/**
-	 * This R/O protection isn't robust
-	 * @deprecated
-	 * 
-	 */
-	public Map<String, Map<String, List<String>>> getDependentValuesMap()
-	{
-		return Collections.unmodifiableMap(dependentValues);
 	}
 	
 	/**
@@ -1845,16 +1540,6 @@ public class ParameterConfigurationSpace implements Serializable {
 		return categoricalSize.clone();
 	}
 
-	public int[][] getCondParentsArray() {
-
-		return condParents.clone();
-	}
-
-	public int[][][] getCondParentValsArray() {
-
-		return condParentVals.clone();
-	}
-	
 
 	/**
 	 * Checks the array representation of a configuration to see if it is forbidden
