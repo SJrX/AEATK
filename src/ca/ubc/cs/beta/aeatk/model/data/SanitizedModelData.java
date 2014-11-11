@@ -121,6 +121,17 @@ public interface SanitizedModelData {
 	 * @return array which for each element says whether response[i] is censored
 	 */
 	public boolean[] getCensoredResponses();
+	
+	/**
+	 * Return columns that are constant (to a strict definition of constant)
+	 * @return
+	 */
+	public int[] getConstantColumns();
+
+	/**
+	 * True if the features are empty after constant columns are removed 
+	 */
+	boolean isEmptyFeatures();
 
 	
 }
