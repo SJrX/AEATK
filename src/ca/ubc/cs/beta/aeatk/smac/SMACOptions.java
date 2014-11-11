@@ -230,8 +230,8 @@ public class SMACOptions extends AbstractOptions {
 	@UsageTextField(level=OptionLevel.DEVELOPER)
 	@Parameter(names={"--shared-model-mode-tae"}, description="If true and shared model mode is enabled, then we will also try and share run data at the TAE level")
 	public boolean shareModeModeTAE = true;
-	
 
+	
 	/**
 	 * Checks if the verify sat option is compatible with this set of probelm instances
 	 * @param instances 	The problem instances

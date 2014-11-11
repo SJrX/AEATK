@@ -50,6 +50,8 @@ public class TrajectoryFileLogger implements EventHandler<AutomaticConfiguratorE
 	
 	private volatile SoftReference<Object> softModel = new SoftReference<Object>(null);
 	private volatile Object hardModel;
+	private volatile Boolean logModel;
+	
 	private AtomicBoolean modelPredictionErrorLogged = new AtomicBoolean(false);
 	
 	public TrajectoryFileLogger(RunHistory runHistory, TerminationCondition terminationCondition, String fileNamePrefix, ParameterConfiguration initialIncumbent, CPUTime cpuTime)
@@ -117,6 +119,7 @@ public class TrajectoryFileLogger implements EventHandler<AutomaticConfiguratorE
 				
 				this.softModel = new SoftReference<Object>(theModel);
 				this.hardModel = theModel;
+				this.logModel = ((ModelBuildEndEvent) event).isLogModel();
 		} else
 		{
 			log.error("Got an event I wasn't expecting: {}", event.getClass().getCanonicalName());
@@ -196,6 +199,11 @@ public class TrajectoryFileLogger implements EventHandler<AutomaticConfiguratorE
 				try 
 				{
 					predictedPerformance = this.applyMarginalModel(Collections.singletonList(incumbent),rf)[0][0];
+					
+					if(logModel == null || logModel == true)
+					{
+						predictedPerformance = Math.pow(10, predictedPerformance);
+					}
 				} catch(RuntimeException e)
 				{
 					if(modelPredictionErrorLogged.compareAndSet(false, true))

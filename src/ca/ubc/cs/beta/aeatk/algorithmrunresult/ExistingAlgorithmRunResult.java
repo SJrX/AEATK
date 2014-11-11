@@ -74,15 +74,15 @@ public class ExistingAlgorithmRunResult extends AbstractAlgorithmRunResult {
 	/**
 	 * 
 	 * @param runConfig			run configuration we are executing
-	 * @param runResult			The RunResult to report
+	 * @param runStatus			The RunResult to report
 	 * @param runtime 			The Run Time
 	 * @param runlength			The Run Length
 	 * @param quality			The Run Quality
 	 * @param seed 				The Reported seed
 	 */
-	public ExistingAlgorithmRunResult( AlgorithmRunConfiguration runConfig, RunStatus runResult, double runtime, double runlength, double quality, long seed)
+	public ExistingAlgorithmRunResult( AlgorithmRunConfiguration runConfig, RunStatus runStatus, double runtime, double runlength, double quality, long seed)
 	{
-		this( runConfig, runResult, runtime,runlength, quality, seed, "", 0.0);
+		this( runConfig, runStatus, runtime,runlength, quality, seed, "", 0.0);
 	}
 	
 	

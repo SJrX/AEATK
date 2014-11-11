@@ -215,7 +215,10 @@ public class SeedableRandomPool implements Serializable {
 		{ 
 			Object[] args = {seedPair.getKey(), seedPair.getValue(), this.specifiedInitialSeeds.contains(seedPair.getKey()), this.usedNames.contains(seedPair.getKey())};
 			
-			if(this.specifiedInitialSeeds.contains(seedPair.getKey()))
+			//This awful hack is so that we log properly when running unit tests, it means that this stuff will only be logged
+			boolean unitTesting = false; //System.getProperty("java.class.path").toLowerCase().contains("junit") || System.getProperty("java.class.path").toLowerCase().contains("testng");
+						
+			if(this.specifiedInitialSeeds.contains(seedPair.getKey()) || unitTesting)
 			{
 				log.debug("Seed for {} was {}, Manually Set: {}  Used: {}",args);
 			} else

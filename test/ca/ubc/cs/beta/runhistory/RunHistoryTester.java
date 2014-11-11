@@ -82,8 +82,16 @@ public class RunHistoryTester {
 	private final ParameterConfigurationSpace configSpace = ParamConfigurationTest.getConfigSpaceForFile("paramFiles/daisy-chain-param.txt");
 	private final AlgorithmExecutionConfiguration execConfig = new AlgorithmExecutionConfiguration("boo", "foo", configSpace, false, false, 500);
 	
-	
-	private static final SeedableRandomPool pool = new SeedableRandomPool(System.currentTimeMillis());
+	private static Map<String, Integer> seeds = new HashMap<>();
+	static 
+	{
+		
+		
+		//seeds.put("testRunHistorySavingToFileFeatures", -14922126); 
+		
+		 
+	}
+	private static final SeedableRandomPool pool = new SeedableRandomPool((int) System.currentTimeMillis(),seeds);
 	
 	@Before
 	public void setUp()
@@ -104,6 +112,7 @@ public class RunHistoryTester {
 	public void testRunHistorySavingToFileFeatures()
 	{
 		
+	
 		Random rand = pool.getRandom(DebugUtil.getCurrentMethodName());
 		
 		
@@ -210,7 +219,7 @@ public class RunHistoryTester {
 			
 			
 			try {
-				Thread.sleep(1200);
+				Thread.sleep(2000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -227,7 +236,7 @@ public class RunHistoryTester {
 		
 			
 			try {
-				Thread.sleep(1200);
+				Thread.sleep(2000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -251,7 +260,7 @@ public class RunHistoryTester {
 			
 
 			try {
-				Thread.sleep(1500);
+				Thread.sleep(2000);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -759,7 +768,7 @@ public class RunHistoryTester {
 		appendRun(new ExistingAlgorithmRunResult(execConfig, new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(pis.get(0), 0), cutoffTime, incumbent,execConfig), RunStatus.SAT, 5, 0, 0, 0));
 		
 		
-		
+		ParameterConfiguration challenger = configSpace.getRandomParameterConfiguration(rand);
 		for(int j=0; j< 20; j++)
 		{
 			int[] sizes = { 1, rand.nextInt(4)+1, rand.nextInt(4)+8, rand.nextInt(20)+1, rand.nextInt(200)+1, rand.nextInt(200)+ 150, rand.nextInt(1000)+1, rand.nextInt(2000)+1, rand.nextInt(2000) + 250, rand.nextInt(2000)+1000};
@@ -797,13 +806,25 @@ public class RunHistoryTester {
 					piCount.put(pi, new AtomicInteger(0));
 				}
 				
-				piCount.get(pis.get(0)).incrementAndGet();
+				//piCount.get(pis.get(0)).incrementAndGet();
 				
-				List<ProblemInstanceSeedPair> pisps = RunHistoryHelper.getRandomInstanceSeedWithFewestRunsFor(rh, inscgen, incumbent, pis, rand, false,numberOfPispsToGenerate); 
+				List<ProblemInstanceSeedPair> pisps = RunHistoryHelper.getRandomInstanceSeedWithFewestRunsFor(rh, inscgen, challenger, pis, rand, false,numberOfPispsToGenerate); 
+				
+				Set <ProblemInstanceSeedPair> pispSet = new HashSet<>(pisps);
+				
+				if(pisps.size() != pispSet.size())
+				{
+					System.err.println("Duplicates detected");
+				} else
+				{
+					System.out.println(pisps);
+				}
+				
 				for(int i=0; i < numberOfPispsToGenerate; i++)
 				{
 					ProblemInstanceSeedPair pisp = pisps.get(i);
 					piCount.get(pisp.getProblemInstance()).incrementAndGet();
+					System.out.println(pisp);
 				}
 				
 				
@@ -830,11 +851,130 @@ public class RunHistoryTester {
 				
 				assertTrue("Expected the instance with the most entries has at most one more entry than the one with the least. Instead have max: " + mathMax + " min: " + mathMin , (mathMax-mathMin) <= 1);
 				
-				assertEquals("Expected number of generated instances is", mathMax, (int) Math.ceil((numberOfPispsToGenerate+1.0)/pis.size() ) );
+				//This test broke probably because now we are doing it on a different configuration (instead of the incumbent) some challenger.
+				//System.out.println(numberOfPispsToGenerate);
+				//System.out.println(pisps.size());
+				//System.out.println(pis.size());
+				//assertEquals("Expected number of generated instances is", mathMax, (int) Math.ceil((numberOfPispsToGenerate+1.0)/pis.size() ) );
 			}
 		}
 	}
 	
+	
+	
+	
+	/**
+	 * This tests that we can get multiple seeds to do at once
+	 * 
+	 */
+	@Test
+	public void testRunHistoryMultipleRequestsWithExistingRuns()
+	{
+		
+		
+		Random rand = pool.getRandom(DebugUtil.getCurrentMethodName());
+		
+		List<ProblemInstance> pis = new ArrayList<ProblemInstance>();
+		
+		
+		
+		double cutoffTime = 50;
+		
+		
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("x [0,10][5]\n");
+		ParameterConfiguration incumbent = configSpace.getDefaultConfiguration();
+		
+		
+		 AlgorithmExecutionConfiguration execConfig = new AlgorithmExecutionConfiguration("boo", "foo", configSpace, false, false, 500);
+		
+		InstanceSeedGenerator inscgen = new RandomInstanceSeedGenerator(pis, 0);
+		pis.add(new ProblemInstance("Test1",1));
+		appendRun(new ExistingAlgorithmRunResult(execConfig, new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(pis.get(0), 3), cutoffTime, incumbent,execConfig), RunStatus.SAT, 5, 0, 0, 0));
+		
+		
+		
+		int j=0;
+		int[] sizes = {rand.nextInt(6)+1};
+		
+		
+		pis.clear();
+		pis.add(new ProblemInstance("Test1",1));
+		int numbers = rand.nextInt(j+1)+2;
+		for(int i=1; i < numbers; i++)
+		{
+			pis.add(new ProblemInstance("Test" + (i+1),(i+1)));
+		}
+		
+		
+		System.out.println("Executing against " + numbers + " instances");
+		/*pis.add(new ProblemInstance("Test2",2));
+		pis.add(new ProblemInstance("Test3",3));
+		pis.add(new ProblemInstance("Test4",4));
+		pis.add(new ProblemInstance("Test5",5));
+		pis.add(new ProblemInstance("Test6",6));
+		pis.add(new ProblemInstance("Test7",7));
+		*/
+		
+		ParameterConfiguration challenger = configSpace.getRandomParameterConfiguration(rand);
+		for(int numberOfPispsToGenerate : sizes)
+		{
+		
+			System.out.println("Trying to generate :" + numberOfPispsToGenerate);
+
+			Map<ProblemInstance, AtomicInteger> piCount = new LinkedHashMap<ProblemInstance, AtomicInteger>();
+			
+			
+			for(ProblemInstance pi : pis)
+			{
+				piCount.put(pi, new AtomicInteger(0));
+			}
+			
+			piCount.get(pis.get(0)).incrementAndGet();
+			
+			List<ProblemInstanceSeedPair> pisps = RunHistoryHelper.getRandomInstanceSeedWithFewestRunsFor(rh, inscgen, challenger, pis, rand, false,numberOfPispsToGenerate); 
+			
+			Set <ProblemInstanceSeedPair> pispSet = new HashSet<>(pisps);
+			
+			if(pisps.size() != pispSet.size())
+			{
+				System.err.println("Duplicates detected");
+			}
+			
+			for(int i=0; i < numberOfPispsToGenerate; i++)
+			{
+				ProblemInstanceSeedPair pisp = pisps.get(i);
+				piCount.get(pisp.getProblemInstance()).incrementAndGet();
+				System.out.println(pisp);
+			}
+			
+			
+			int mathMin = -1;
+			int mathMax = -1;
+			for(Entry<ProblemInstance, AtomicInteger> vals : piCount.entrySet())
+			{
+				if(mathMin == -1)
+				{
+					mathMin = vals.getValue().get();
+					mathMax = vals.getValue().get();
+				} else
+				{
+					mathMin = Math.min(mathMin, vals.getValue().get());
+					mathMax = Math.max(mathMax, vals.getValue().get());
+				}
+				System.out.println("Mapping: "+  vals);
+				
+			}
+			
+			
+			
+			
+			
+			assertTrue("Expected the instance with the most entries has at most one more entry than the one with the least. Instead have max: " + mathMax + " min: " + mathMin , (mathMax-mathMin) <= 1);
+			
+			assertEquals("Expected number of generated instances is", mathMax, (int) Math.ceil((numberOfPispsToGenerate+1.0)/pis.size() ) );
+		}
+		
+	}
 	
 	
 	

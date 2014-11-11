@@ -121,17 +121,25 @@ public class TargetAlgorithmEvaluatorQueueFacade<K extends TargetAlgorithmEvalua
 	 * @return
 	 * @throws InterruptedException
 	 */
-	public synchronized K take() throws InterruptedException
+	public K take() throws InterruptedException
 	{
+		
+		synchronized(this)
+		{
+			
+		}
 		
 		K context = (queue.take());
 		
-		if(context != null)
+		synchronized (this) 
 		{
-			this.queuedAndOutstandingRuns.decrementAndGet();
-		} 
+			if(context != null)
+			{
+				this.queuedAndOutstandingRuns.decrementAndGet();
+			} 
+			return checkForException(context);
+		}
 		
-		return checkForException(context);
 	}
 	
 	/**
