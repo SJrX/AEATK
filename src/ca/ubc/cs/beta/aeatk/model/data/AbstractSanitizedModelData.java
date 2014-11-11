@@ -123,5 +123,17 @@ public abstract class AbstractSanitizedModelData implements SanitizedModelData{
 		return smd.getCensoredResponses();	
 	}
 
+	@Override
+	public int[] getConstantColumns() {
+		if(this.smd == null) throw new UnsupportedOperationException("No Wrapped Object and no default implementation");
+		return smd.getConstantColumns();
+	}
+
+	@Override
+	public boolean isEmptyFeatures()
+	{
+		if(this.smd == null) throw new UnsupportedOperationException("No Wrapped Object and no default implementation");
+		return smd.isEmptyFeatures();
+	}
 	
 }
