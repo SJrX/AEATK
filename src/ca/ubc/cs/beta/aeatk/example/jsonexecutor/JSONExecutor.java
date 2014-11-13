@@ -1,13 +1,14 @@
-package ca.ubc.cs.beta.aeatk.example.tae;
+package ca.ubc.cs.beta.aeatk.example.jsonexecutor;
 
 import java.io.ByteArrayOutputStream;
-import java.io.IOException;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Random;
+import java.util.concurrent.atomic.AtomicBoolean;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -25,12 +26,14 @@ import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration.P
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorOptions;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
 import com.fasterxml.jackson.core.JsonFactory;
 import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.JsonParser;
 import com.fasterxml.jackson.core.Version;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.SerializationFeature;
@@ -50,7 +53,7 @@ import ec.util.MersenneTwister;
  * 
  * @author Steve Ramage <seramage@cs.ubc.ca>
  */
-public class TargetAlgorithmEvaluatorRunner 
+public class JSONExecutor 
 {
 
 	//SLF4J Logger object (not-initialized on start up in case command line options want to change it)
@@ -58,13 +61,12 @@ public class TargetAlgorithmEvaluatorRunner
 	
 	public static void main(String[] args)
 	{
-		 
-		//JCommander Options object that specifies the main arguments to this project
-		//It also includes a @ParametersDelegate for built in Option objects.
-		TargetAlgorithmEvaluatorRunnerOptions mainOptions = new TargetAlgorithmEvaluatorRunnerOptions();
+
+		JSONExecutorOptions mainOptions = new JSONExecutorOptions();
+		
 		
 		//Map object that for each available TargetAlgorithmEvaluator gives it's associated options object
-		Map<String,AbstractOptions> taeOptions = mainOptions.scenOptions.algoExecOptions.taeOpts.getAvailableTargetAlgorithmEvaluators();
+		Map<String,AbstractOptions> taeOptions = mainOptions.taeOptions.getAvailableTargetAlgorithmEvaluators();
 
 		try {
 			
@@ -80,133 +82,100 @@ public class TargetAlgorithmEvaluatorRunner
 			{
 				//Initialize the logger *AFTER* the JCommander objects have been parsed
 				//So that options that take effect
-				log = LoggerFactory.getLogger(TargetAlgorithmEvaluatorRunner.class);
+				log = LoggerFactory.getLogger(JSONExecutor.class);
 			}
 		
-			//Displays version information
-			//See the TargetAlgorithmEvaluatorRunnerVersionInfo class for how to manage your own versions.
-			VersionTracker.logVersions();
-			
-			
-			for(String name : jcom.getParameterFilesToRead())
-			{
-				log.debug("Parsing (default) options from file: {} ", name);
-			}
-			
-			
-			//AlgorithmExecutionConfig object represents all the information needed to invoke the target algorithm / wrapper.
-			//This includes information such as cutoff time, and the parameter space.
-			//Like most domain objects in AEATK, AlgorithmExecutionConfig is IMMUTABLE. 
-			AlgorithmExecutionConfiguration execConfig = mainOptions.getAlgorithmExecutionConfig();
-			
-			
-			//Logs the options (since mainOptions implements AbstractOptions a 'nice-ish' printout is created).
-			log.debug("==== Configuration====\n {} ", mainOptions);
+	
+		
 			
 			
 			
-			TargetAlgorithmEvaluator tae = null;
-			try {
-				//Retrieve the target algorithm evaluator with the necessary options
-				tae = mainOptions.scenOptions.algoExecOptions.taeOpts.getTargetAlgorithmEvaluator( taeOptions);
+			List<AlgorithmRunResult> results = null;
+			try( TargetAlgorithmEvaluator tae = mainOptions.taeOptions.getTargetAlgorithmEvaluator( taeOptions) ) {
+				
+				log.info("Waiting for an array of AlgorithmRunConfiguration in JSON format to be recieved on STDIN. You can use the algo-test utility --print-json true to get example JSON.");
+				JsonFactory jfactory = new JsonFactory();
+				
+				ObjectMapper map = new ObjectMapper(jfactory);
+				SimpleModule sModule = new SimpleModule("MyModule", new Version(1, 0, 0, null));
+				map.registerModule(sModule);
+
+				
+				JsonParser jParser = jfactory.createParser(System.in);
 				
 				
-				//Create a new problem instance to run (IMMUTABLE)
-				//NOTE: We don't validate the instance name at all, it's entirely up to the target algorithm how to interpret these
-				//commonly we use filenames, but as far as AEATK is concerned this is of no consequence.
-				ProblemInstance pi;
-				if(mainOptions.instanceName == null)
+				List<AlgorithmRunConfiguration> runsToDo = new ArrayList<AlgorithmRunConfiguration>(Arrays.asList(map.readValue(jParser, AlgorithmRunConfiguration[].class)));
+			
+				final AtomicBoolean outputCompleted = new AtomicBoolean(false);
+				TargetAlgorithmEvaluatorRunObserver taeRunObserver = new TargetAlgorithmEvaluatorRunObserver()
 				{
-					
-					List<ProblemInstance> instances = mainOptions.getTrainingAndTestProblemInstances().getTrainingInstances().getInstances();
-					if(instances == null || instances.size() == 0)
-					{
-						throw new ParameterException("No instances available, please specify one manually via --instance argument");
+
+					@Override
+					public void currentStatus(
+							List<? extends AlgorithmRunResult> runs) {
+						int total = runs.size();
+						int completed = 0;
+						int notStarted = 0;
+						int started = 0;
+						for(AlgorithmRunResult run : runs)
+						{
+							if(run.isRunCompleted())
+							{
+								completed++;
+							} else if (run.getRuntime() > 0 || run.getWallclockExecutionTime() > 0)
+							{
+								started++;
+							} else
+							{
+								notStarted++;
+							}
+							
+						}
+						if(!outputCompleted.get())
+						{
+							log.info("Current Run Status, Total: {} , Started: {} , Completed: {}, Not Started: {}", total, started, completed, notStarted);
+						}
+						
 					}
 					
-					switch(mainOptions.instanceSelection)
-					{
-						case RANDOM:
-							Random r = new MersenneTwister();
-							pi = instances.get(r.nextInt(instances.size()));
-							break;
-						case FIRST:
-							pi = instances.get(0);
-							break;
-						default:
-							//Should always handle the default case and throw an exception if unsure
-							throw new IllegalArgumentException("Unknown value for option : " + mainOptions.instanceSelection);
-					}
-					
+				};
+				
+				if(mainOptions.printStatus)
+				{
+					log.info("Periodically printing status, use --print-status false to disable");
+					results = tae.evaluateRun(runsToDo, taeRunObserver);
 				} else
 				{
-					pi = new ProblemInstance(mainOptions.instanceName);
+					results = tae.evaluateRun(runsToDo);
 				}
+					outputCompleted.set(true);
 				
+								
 				
+			} 
 			
-				//The following is a common convention used in AEATK
-				if(execConfig.isDeterministicAlgorithm())
-				{
-					if (mainOptions.seed != -1)
-					{
-						//A simple log message with SLF4J
-						log.warn("It is convention to use -1 as the seed for deterministic algorithms");
-					}
-				} else
-				{
-					if(mainOptions.seed == -1)
-					{
-						//A simple log message with SLF4J
-						log.warn("It is convention that -1 be used as seed only for deterministic algorithms");
-					}
-				}
-				
-				//A problem instance seed pair object (IMMUTABLE)
-				ProblemInstanceSeedPair pisp = new ProblemInstanceSeedPair(pi, mainOptions.seed);
-				
-				//A Configuration Space object it represents the space of allowable configurations (IMMUTABLE).
-				//"ParamFile" is a deprecated term for it that is still in use in the code base
-				ParameterConfigurationSpace configSpace = execConfig.getParameterConfigurationSpace();
+			ObjectMapper map = new ObjectMapper();
+			JsonFactory factory = new JsonFactory();
+			factory.setCodec(map);
 			
-				
-				//If we are asked to supply a random a configuration, we need to pass a Random object
-				Random configSpacePRNG = new MersenneTwister(mainOptions.configSeed);
-				
-				
-				//Converts the string based configuration in the options object, to a point in the above space
-				ParameterConfiguration config = configSpace.getParameterConfigurationFromString(mainOptions.config, ParameterStringFormat.NODB_OR_STATEFILE_SYNTAX, configSpacePRNG);
-				
-				//ParamConfiguration objects implement the Map<String, String> interface (but not all methods are implemented)
-				//Other methods have restricted semantics, for instance you must ensure that you are only placing keys with valid values in the map. 
-				//They are MUTABLE, but doing this after they have been "used" is likely to cause problems.
-				for(Entry<String, String> entry : mainOptions.configSettingsToOverride.entrySet())
-				{
-					config.put(entry.getKey(), entry.getValue());
-				}
 			
-				
-				//A RunConfig object stores the information needed to actually request (compare the objects here to the information passed to the wrapper as listed in the Manual)
-				//It is also IMMUTABLE
-				AlgorithmRunConfiguration runConfig = new AlgorithmRunConfiguration(pisp, execConfig.getAlgorithmMaximumCutoffTime(), config,execConfig);
-				
-				if(mainOptions.printJSON)
-				{
-					//This is an advanced debug functionality, skip over this line. It just prints a JSON representation of a run.
-					printJSON(runConfig);
-				}
-				processRunConfig(runConfig, tae, mainOptions.killTime);
-				
-				
-			} finally
-			{
-				//We need to tell the TAE we are shutting down
-				//Otherwise the program may not exit 
-				if(tae != null)
-				{
-					tae.notifyShutdown();
-				}
-			}
+			
+			ByteArrayOutputStream bout = new ByteArrayOutputStream();
+			JsonGenerator g = factory.createGenerator(bout);
+
+			SimpleModule sModule = new SimpleModule("MyModule", new Version(1, 0, 0, null));
+			map.configure(SerializationFeature.INDENT_OUTPUT, true);
+			  
+			map.registerModule(sModule);
+			
+			List<AlgorithmRunResult> results2 = new ArrayList<>(results);
+			g.writeObject(results2);
+			g.flush();
+			
+			System.out.flush();
+			System.out.println("******JSON******\n" + bout.toString("UTF-8") + "\n********");
+			System.out.flush();
+			
 		} catch(ParameterException e)
 		{	
 			log.error(e.getMessage());
@@ -224,11 +193,6 @@ public class TargetAlgorithmEvaluatorRunner
 
 	
 	
-	
-
-
-
-
 	/**
 	 * Encapsulated method for evaluating a run
 	 * 
@@ -315,46 +279,5 @@ public class TargetAlgorithmEvaluatorRunner
 		}
 	}
 
-	
-	/**
-	 * Logs a run in JSON Format, this is useful for debugging the json-exec command.
-	 * @param runConfig
-	 */
-	private static void printJSON(AlgorithmRunConfiguration runConfig) {
-		ArrayList<AlgorithmRunConfiguration> rcs = new ArrayList<>();
-		rcs.add(runConfig);
-
-		ObjectMapper map = new ObjectMapper();
-		JsonFactory factory = new JsonFactory();
-		ByteArrayOutputStream bout = new ByteArrayOutputStream();
-		
-		
-		JsonGenerator g;
-		try {
-			SimpleModule sModule = new SimpleModule("MyModule", new Version(1, 0, 0, null));
-			map.configure(SerializationFeature.INDENT_OUTPUT, true);
-			  
-			map.registerModule(sModule);
-			factory.setCodec(map);
-			
-			
-			g = factory.createGenerator(bout);
-			
-			
-		
-			g.writeObject(rcs);
-			g.flush();
-			
-			log.info("----====[JSON Representation of Run Configuration]====-----:\n\n{}\n\n",bout.toString("UTF-8"));
-			
-		} catch (IOException e) {
-			log.error("Unexpected Exception: ", e);
-		}
-		
-
-	
-		
-		
-	}
 			
 }

@@ -127,7 +127,7 @@ public class ProblemInstanceOptions extends AbstractOptions{
 		} catch(FeatureNotFoundException e)
 		{
 			ProblemInstanceHelper.clearCache();
-			if(featuresRequired)
+			if(featuresRequired || (instanceFeatureFile != null))
 			{
 				throw new ParameterException("Training instances require features and there was a problem loading features for all instances: " + e.getMessage());
 			} else
