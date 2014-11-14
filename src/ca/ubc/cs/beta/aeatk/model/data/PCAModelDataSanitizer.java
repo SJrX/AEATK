@@ -6,6 +6,10 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+import java.util.HashSet;
+import java.util.Iterator;
+import java.util.Set;
+import java.util.TreeSet;
 
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -26,14 +30,16 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 	private final double[][] pcaVec;
 	private final double[] pcaCoeff;
 	private final int[] sub;
+	private final int[] constantColumns;
 	private final double[] means;
-	private final double[] stdDev;
+	private final double[] stdDevs;
 	private final double[][] pcaFeatures;
 	private final double[][] prePCAInstanceFeatures;
 	private final double[] responseValues;
 	private final ParameterConfigurationSpace configSpace;
 	private final double[][] configs;
 	
+	private final boolean emptyFeatures;
 	private final boolean logModel;
 	/**
 	 * Debugging crap that basically writes the arguments to a file that you can then use to test outside of Matlab
@@ -92,15 +98,35 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 		return s.replaceAll("]","}\n").replaceAll("\\[", "{");
 	}
 	
-	public PCAModelDataSanitizer(double[][] instanceFeatures, double[][] paramValues, int numPCA, double[] responseValues, int[] usedInstances, boolean logModel, int[][] theta_inst_idxs, boolean[] censoredResponseValues )
+	public PCAModelDataSanitizer(double[][] instanceFeatures, double[][] paramValues, int numPCA, double[] responseValues,  boolean logModel, int[][] theta_inst_idxs, boolean[] censoredResponseValues )
 	{
-		this(instanceFeatures, paramValues, numPCA, responseValues, usedInstances, logModel,  theta_inst_idxs,  censoredResponseValues , null);
+		this(instanceFeatures, paramValues, numPCA, responseValues, logModel,  theta_inst_idxs,  censoredResponseValues , null);
 	}
 	
 	public static boolean printFeatures = false;
 	
-	public PCAModelDataSanitizer(double[][] instanceFeatures, double[][] paramValues, int numPCA, double[] responseValues, int[] usedInstancesIdxs, boolean logModel, int[][] theta_inst_idxs, boolean[] censoredResponseValues , ParameterConfigurationSpace configSpace)
+	/*
+	 * Dimensions:
+	 * instanceFeatures: #instances * # features
+	 * paramValues: #uniq configs * #dimensions
+	 * responseValue: #runs 
+	 * theta_inst_idxs: #runs*2; THIS IS 1-based! Each value for the theta_ids is between 1 and #uniq confis; each value for the inst_ids is between 1 and #instances
+	 * censoredResponseValues: #runs
+	 */
+	public PCAModelDataSanitizer(double[][] instanceFeatures, double[][] paramValues, int numPCA, double[] responseValues, boolean logModel, int[][] theta_inst_idxs, boolean[] censoredResponseValues , ParameterConfigurationSpace configSpace)
 	{
+		//=== Setting the previous redundant input int[] usedInstancesIdxs directly from theta_inst_idxs: it's a 0-based vector of the instances used (i.e., {the union over the second column of theta_inst_idxs}-1).  
+		Set<Integer> usedInstIdxs = new TreeSet<>();
+		for (int i = 0; i < theta_inst_idxs.length; i++) {
+			usedInstIdxs.add(theta_inst_idxs[i][1]);
+		}
+		int[] usedInstancesIdxs = new int[usedInstIdxs.size()];
+		int count = 0;
+		for (int idx : usedInstIdxs) {
+			usedInstancesIdxs[count++] = idx-1;
+		} 
+		
+		
 		this.configSpace = configSpace;
 		this.configs = paramValues;
 		this.responseValues = responseValues;
@@ -109,51 +135,7 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 		
 		this.prePCAInstanceFeatures = ArrayMathOps.copy(instanceFeatures);
 		
-		/*
-		if(RoundingMode.ROUND_NUMBERS_FOR_MATLAB_SYNC)
-		{
-			if(!printFeatures)
-			{
-				for(int i=0; i < instanceFeatures.length; i++)
-				{
-					System.out.println(i+":" + Arrays.toString(instanceFeatures[i]));
-				}
-				printFeatures = true;
-			} 
-			System.out.println("Instance Features Hash: " + ArrayMathOps.matlabHashCode(instanceFeatures));
-			System.out.println("Param Values Hash:" + ArrayMathOps.matlabHashCode(paramValues));
-			System.out.println("Used Instance IDs:" + Arrays.toString(usedInstancesIdxs));
-			System.out.println("Num PCA:" + numPCA);
-			System.out.println("Response Values:" +Arrays.toString(responseValues));
-			System.out.println("Log Model: " + logModel);
-		
-		}
-		*/
 		instanceFeatures = ArrayMathOps.copy(instanceFeatures);
-		writeOutput = false;
-		if(writeOutput)
-		{
-			File f = new File(filename + "-" + index);
-			f.delete();
-			
-			try { 
-			ObjectOutputStream o = new ObjectOutputStream(new FileOutputStream(f));
-			/*
-			System.out.println("double[][] instanceFeatures = " + explode(Arrays.deepToString(instanceFeatures)) + ";");
-			System.out.println("double[][] paramValues = " + explode(Arrays.deepToString(paramValues)) + ";");
-			System.out.println("double[] responseValues = " + explode(Arrays.toString(responseValues)) + ";");
-			*/
-			o.writeObject(instanceFeatures);
-			o.writeObject(paramValues);
-			o.writeObject(responseValues);
-			o.writeObject(usedInstancesIdxs);
-			System.out.println("Calls written & deleted to: " + filename + "-" + index++ );
-			o.close();
-			} catch(IOException e)
-			{
-				System.err.println(e);
-			}
-		}
 		
 		MessyMathHelperClass pca = new MessyMathHelperClass();
 		double[][] usedInstanceFeatures = new double[usedInstancesIdxs.length][];
@@ -163,55 +145,19 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 			usedInstanceFeatures[i] = instanceFeatures[usedInstancesIdxs[i]];
 		}
 		
-	
+		/****
+		* NOTE: Yes this code is removing constant columns twice, once at the level 
+		* of 10^-6 and once at the level of 10^-5. This is what MATLAB did (verified 2014)
+		**/
+		
+		
 		int[] constFeatures = pca.constantColumnsWithMissingValues(usedInstanceFeatures);
 		instanceFeatures = pca.removeColumns(instanceFeatures, constFeatures);
-		
-		/*
-		log.warn("Temporarily changed for debugging: PCAed only used instances");
-		for(int i=0; i < theta_inst_idxs.length; i++)
-		{
-			int oldIndex = theta_inst_idxs[i][1];
-			
-			for(int j=0; j < usedInstancesIdxs.length; j++)
-			{
-				if(oldIndex == (usedInstancesIdxs[j]+1))
-				{
-					theta_inst_idxs[i][1] = j+1;
-				}
-			}
-		}
-		
-		for(int i=0; i < theta_inst_idxs.length; i++)
-		{
-			int oldIndex = theta_inst_idxs[i][1];
-			
-			if(oldIndex > usedInstancesIdxs.length)
-			{
-				throw new IllegalStateException("Couldn't map instance");
-			}
-		}
-		
-		
-		instanceFeatures = pca.removeColumns(usedInstanceFeatures, constFeatures);
-		*/
-		
-		
+	
+		constantColumns = constFeatures;
 		
 		log.trace("Discarding {} constant inputs of {} in total.", constFeatures.length, prePCAInstanceFeatures[0].length);
-	/*
-		if(RoundingMode.ROUND_NUMBERS_FOR_MATLAB_SYNC)
-		{
-			System.out.print("Constant Columns: ");
-			for(int i=0; i < constFeatures.length; i++)
-			{
-				System.out.print(constFeatures[i]+1 + ",");
-			}
-			
-			System.out.println("\n");
-			System.out.println("Discarding "+ constFeatures.length + "  constant inputs of " + prePCAInstanceFeatures[0].length +" total ");
-		}
-		*/
+	
 		double[][] instanceFeaturesT = pca.transpose(instanceFeatures);
 		
 		
@@ -234,41 +180,44 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 			//throw new IllegalStateException("Not sure what to do in this case at the moment");
 			sub = new int[0];
 			means = new double[0];
-			stdDev = new double[0];
+			stdDevs = new double[0];
 			pcaCoeff = new double[0];
 			pcaVec = new double[0][];
 			pcaFeatures = new double[instanceFeatures.length][1];
-			
+			emptyFeatures = true;
 			return;
 		} else if (instanceFeatures[0].length < numPCA)
 		{
 			sub = new int[0];
 			means = new double[0];
-			stdDev = new double[0];
+			stdDevs = new double[0];
 			pcaCoeff = new double[0];
 			pcaVec = new double[0][];
 			pcaFeatures = instanceFeatures;
+			emptyFeatures = false;
 			return;
 		} else
 		{
+			emptyFeatures = false;
 			sub = mySub;
 		}
+		
 		instanceFeatures = pca.keepColumns(instanceFeatures, sub);
 		instanceFeaturesT = pca.transpose(instanceFeatures);
 		means = pca.getRowMeans(instanceFeaturesT);
-		stdDev = pca.getRowStdDev(instanceFeaturesT);
+		stdDevs = pca.getRowStdDev(instanceFeaturesT);
 		
-				
 		pca.perColumnOperation(instanceFeatures, means, Operation.SUBTRACT);
-		pca.perColumnOperation(instanceFeatures, stdDev, Operation.DIVIDE);
+		pca.perColumnOperation(instanceFeatures, stdDevs, Operation.DIVIDE);
 		
 		pcaCoeff = pca.getPCACoeff(instanceFeatures, numPCA);
 		pcaVec = pca.getPCA(instanceFeatures, numPCA);
 		
 		
 		//double[][] pcaVecT = pca.transpose(pcaVec);
-		pcaFeatures = pca.matrixMultiply(instanceFeatures, pcaVec);
-		
+//		pcaFeatures = pca.matrixMultiply(instanceFeatures, pcaVec);
+
+		pcaFeatures = applyTransformation(prePCAInstanceFeatures,emptyFeatures, constantColumns, sub, means, stdDevs, pcaVec);
 		/*
 		if(RoundingMode.ROUND_NUMBERS_FOR_MATLAB_SYNC)
 		{
@@ -276,6 +225,27 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 		}
 		*/
 		
+	}
+	
+	public static double[][] applyTransformation(double[][] instanceFeatures,boolean emptyFeatures,  int[] constantColumns, int[] sub, double[] means, double[] stdDevs,  double[][] pcaVec){
+
+		
+		if(emptyFeatures)
+		{
+			return new double[instanceFeatures.length][1];
+		}
+		
+		MessyMathHelperClass pca = new MessyMathHelperClass();
+		double[][] result = pca.removeColumns(instanceFeatures, constantColumns);
+		
+		if (sub.length == 0){
+			return result;
+		} 
+
+		pca.keepColumns(result, sub);
+		pca.perColumnOperation(result, means, Operation.SUBTRACT);
+		pca.perColumnOperation(result, stdDevs, Operation.DIVIDE);
+		return pca.matrixMultiply(result, pcaVec);
 	}
 
 	
@@ -310,7 +280,7 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 	
 	@Override
 	public double[] getStdDev() {
-		return stdDev;
+		return stdDevs;
 	}
 	
 	
@@ -378,5 +348,15 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 	public boolean[] getCensoredResponses() {
 		return this.censoredResponseValues;
 	}
+
+	@Override
+	public int[] getConstantColumns() {
+		return constantColumns;
+	}
 	
+	@Override
+	public boolean isEmptyFeatures()
+	{
+		return emptyFeatures;
+	}
 }

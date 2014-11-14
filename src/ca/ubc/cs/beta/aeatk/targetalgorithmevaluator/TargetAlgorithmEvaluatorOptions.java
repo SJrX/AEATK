@@ -58,7 +58,7 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	public boolean cacheDebug = false;
 
 	@UsageTextField(level=OptionLevel.DEVELOPER)
-	@Parameter(names={"-use-dynamic-cutoffs"}, description="If true then we change all cutoffs to the maximum cutoff time and dynamically kill runs that exceed there cutoff time. This is useful because cache hits require the cutoff time to match")
+	@Parameter(names={"--use-dynamic-cutoffs"}, description="If true then we change all cutoffs to the maximum cutoff time and dynamically kill runs that exceed there cutoff time. This is useful because cache hits require the cutoff time to match")
 	public boolean useDynamicCappingExclusively = false;
 	
 	@UsageTextField(level=OptionLevel.DEVELOPER)
@@ -210,7 +210,15 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
     public boolean fileCacheCrashOnMiss;
     
     
+    @UsageTextField(level=OptionLevel.ADVANCED)
+    @Parameter(names={"--transform-crashed-quality"}, description="If true we will transform the solution quality reported to the MAX(quality, --transform-crashed-quality-value).")
+    public boolean transformCrashedQuality = true;
+    
+	@UsageTextField(level=OptionLevel.ADVANCED)
+	@Parameter(names={"--transform-crashed-quality-value"}, description="The minimum quality value that a CRASHED run can have")
+	public double transformCrashedQualityValue = Math.pow(10, 9);
 	
+    
 	/**
 	 * Checks if the problem instances are compatible with the verify sat option
 	 * @param instances 

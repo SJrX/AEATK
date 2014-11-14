@@ -20,6 +20,7 @@ import ca.ubc.cs.beta.aeatk.misc.options.OptionLevel;
 import ca.ubc.cs.beta.aeatk.misc.options.UsageSection;
 import ca.ubc.cs.beta.aeatk.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aeatk.options.AbstractOptions;
+import ca.ubc.cs.beta.aeatk.options.scenario.ScenarioOptions;
 
 import com.beust.jcommander.DynamicParameter;
 import com.beust.jcommander.Parameter;
@@ -62,12 +63,17 @@ public class UsageSectionGenerator {
 			NoArgumentHandler handler = new NoopNoArgumentHandler();
 			if(utf == null)
 			{
-				System.err.println("Class " + obj.getClass()  + " does not have a UsageTextField annotation, this is very ugly for users to deal. Sleeping for 5 seconds");
+				System.err.println("[WARNING]: Class " + obj.getClass()  + " does not have a "+UsageTextField.class.getSimpleName()+" annotation.\n"
+						+ "If you are the developer, you should open the class and put a @" + UsageTextField.class.getSimpleName() + " on the the class, and fill in the title and description.\n"
+						+ "You can look at " + ScenarioOptions.class.getCanonicalName() + " for an example.\n"
+						+" Failure to do this will result in --help not being very informative for users.\n"
+						+" If you are a user, you can ignore this warning.\n" + "\n Sleeping for 10 seconds...");
+				
 				
 				if(!hasSlept)
 				{
 					try {
-						Thread.sleep(5000);
+						Thread.sleep(10000);
 					} catch(InterruptedException e)
 					{
 						Thread.currentThread().interrupt();

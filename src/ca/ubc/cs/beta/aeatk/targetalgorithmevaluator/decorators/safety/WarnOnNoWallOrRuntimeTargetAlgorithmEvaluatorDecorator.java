@@ -59,7 +59,7 @@ public class WarnOnNoWallOrRuntimeTargetAlgorithmEvaluatorDecorator extends Abst
 						if(!acquired)
 						{
 							Logger log = LoggerFactory.getLogger(getClass());
-							log.warn("Runs have been submitted to Target Algorithm Evaluator but we have not recieved any data back after {} seconds of waiting, it's possible that the observer frequency is too low, or something is wrong with the Target Algorithm Evaluator", watch.time() / 1000 );
+							log.warn("Runs have been submitted to Target Algorithm Evaluator but we have not seen any progress (no observed runs have any non-zero walltime or runtime) after {} seconds of waiting, it's possible that the observer frequency is too low, or something is wrong with the Target Algorithm Evaluator (for instance some require that you start external processes and will hang if you don't).", watch.time() / 1000 );
 						}
 					} catch (InterruptedException e) {
 						//==== Do nothing because we probably are just being shutdown

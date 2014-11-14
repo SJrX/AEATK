@@ -16,6 +16,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
 import java.util.Set;
+import java.util.TreeSet;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListMap;
@@ -255,13 +256,22 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 					}
 				});
 				
+				Set<String> newReads = new TreeSet<String>();
+				
 				for(File match : matchingFiles)
 				{
 					log.trace("Matching files: {} my file: {} ", match.getAbsolutePath(), sharedFileName);
 					
-					readRunsFromFile(match);
+					boolean newFileRead = readRunsFromFile(match);
+					
+					if(newFileRead)
+					{
+						newReads.add(match.getName());
+					}
+			
 				}
 				
+				log.info("Detected new source(s) of run data which we will read from : {}", newReads);
 			} finally
 			{
 				lastUpdateTime = System.currentTimeMillis();
@@ -277,7 +287,12 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 	
 	private final Set<File> filesWithErrors = Collections.synchronizedSet(new HashSet<File>());
 	
-	private void readRunsFromFile(File match) {
+	/**
+	 * 
+	 * @param match
+	 * @return true if we successfully read a new file (which means we imported run 0), false otherwise
+	 */
+	private boolean readRunsFromFile(File match) {
 		
 		importedRuns.putIfAbsent(match, 0);
 		
@@ -286,13 +301,14 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 		if(previousRuns == -1)
 		{
 			//Blacklisted
-			return;
+			return false;
 		}
 		JsonFactory jfactory = new JsonFactory();
 		
 		
 		//System.err.println("Starting...");
 		
+		boolean readNewFile = false;
 		try {
 			
 			ObjectMapper map = new ObjectMapper(jfactory);
@@ -310,7 +326,7 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 				log.warn("Instances in file {} do match our instances, ignoring file.\nMine   : {}\nTheirs : {}", match,this.pis, pis);
 				
 				//importedRuns.put(match, -1);
-				return;
+				return false;
 			}
 			
 			
@@ -335,6 +351,10 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 				
 				for(AlgorithmRunResult run : runResult.subList(previousRuns, runResult.size()))
 				{
+					if(previousRuns == 0)
+					{
+						readNewFile = true;
+					}
 					
 					try {
 						newValue++; //Always count this, if it's a duplicate it counts as a success.
@@ -372,7 +392,7 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 		} 
 		
 		
-		
+		return readNewFile;
 		
 	}
 
