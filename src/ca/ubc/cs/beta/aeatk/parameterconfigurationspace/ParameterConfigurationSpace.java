@@ -215,7 +215,6 @@ public class ParameterConfigurationSpace implements Serializable {
 	private List<Integer> activeCheckOrder = new ArrayList<Integer>();
 	private List<String> activeCheckOrderString = new ArrayList<String>();
 	
-	private int[] activeCheckOrderArray;
 	private Map<Integer, int[][]> nameConditionsMapParentsArray;
 	private Map<Integer, double[][][]> nameConditionsMapParentsValues;
 	private Map<Integer, int[][]> nameConditionsMapOp;
@@ -771,19 +770,12 @@ public class ParameterConfigurationSpace implements Serializable {
 	 * and <activeCheckOrder> into <activeCheckOrderArray>
 	 */
 	private void transformConditionals2FastRFStructure(){
-		activeCheckOrderArray = new int[activeCheckOrder.size()];
-		int i = 0;
-		for (int ord_idx: activeCheckOrder){
-			activeCheckOrderArray[i] = ord_idx;
-			i++;
-		}
-		
 		for (int p_idx: nameConditionsMap.keySet()) {
 			int[][] parent_id = new int[nameConditionsMap.get(p_idx).size()][];
 			double[][][] values = new double[nameConditionsMap.get(p_idx).size()][][];
 			int[][] op = new int[nameConditionsMap.get(p_idx).size()][];
 			
-			i = 0;
+			int i = 0;
 			for (List<Conditional> clause: nameConditionsMap.get(p_idx)){
 				int j = 0;
 				int[] parent_id_in = new int[clause.size()];
@@ -791,7 +783,21 @@ public class ParameterConfigurationSpace implements Serializable {
 				int[] op_in = new int[clause.size()];
 				for (Conditional cond: clause){
 					parent_id_in[j] = cond.parent_ID;
-					values_in[j] = cond.values;
+					String parent_name = authorativeParameterOrderArray[cond.parent_ID];
+					Boolean iscont = isContinuous.get(parent_name);
+					//contNormalizedRanges: name-> normalizer
+					if (iscont){
+						//continuous parameters have to be normalized to range [0,1]
+						int z = 0;
+						for (Double d : cond.values){
+							values_in[j][z] = contNormalizedRanges.get(parent_name).normalizeValue(d);
+							z++;
+						}
+					}
+					else {
+						//categorical and ordinal values are already encoded as integer
+						values_in[j] = cond.values;	
+					}
 					if (cond.op == ConditionalOperators.EQ) {
 						op_in[j] = 0; 
 					} else if (cond.op == ConditionalOperators.NEQ) {
