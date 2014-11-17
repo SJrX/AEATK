@@ -427,8 +427,9 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 		double[][] configs = mds.getConfigs();
 		
 		int[] categoricalSize = mds.getCategoricalSize();
-		int[][] condParents = mds.getCondParents();
-		int[][][] condParentVals = mds.getCondParentVals();
+		Map<Integer, int[][]> nameConditionsMapParentsArray = mds.getNameConditionsMapParentsArray();
+		Map<Integer, double[][][]> nameConditionsMapParentsValues = mds.getNameConditionsMapParentsValues();
+		Map<Integer, int[][]> nameConditionsMapOp = mds.getNameConditionsMapOp();
 		
 		/*
 		System.out.println("y = \n" + Arrays.toString(responseValues));
@@ -446,7 +447,7 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 			theta_inst_idxs[i][1]--;
 		}
 */
-		RegtreeBuildParams buildParams = SMACRandomForestHelper.getRandomForestBuildParams(rfOptions, features[0].length, categoricalSize, condParents, condParentVals, rand);
+		RegtreeBuildParams buildParams = SMACRandomForestHelper.getRandomForestBuildParams(rfOptions, features[0].length, categoricalSize, nameConditionsMapParentsArray, nameConditionsMapParentsValues, nameConditionsMapOp, rand);
 		
 		
 		RandomForest forest;
@@ -512,8 +513,9 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 		double[][] configs = mds.getConfigs();
 		
 		int[] categoricalSize = mds.getCategoricalSize();
-		int[][] condParents = mds.getCondParents();
-		int[][][] condParentVals = mds.getCondParentVals();
+		Map<Integer, int[][]> nameConditionsMapParentsArray = mds.getNameConditionsMapParentsArray();
+		Map<Integer, double[][][]> nameConditionsMapParentsValues = mds.getNameConditionsMapParentsValues();
+		Map<Integer, int[][]> nameConditionsMapOp = mds.getNameConditionsMapOp();
 		
 		/*
 		System.out.println("y = \n" + Arrays.toString(responseValues));
@@ -531,7 +533,7 @@ public class AdaptiveCappingModelBuilder implements ModelBuilder{
 			theta_inst_idxs[i][1]--;
 		}
 */		
-		RegtreeBuildParams buildParams = SMACRandomForestHelper.getRandomForestBuildParams(rfOptions, features[0].length, categoricalSize, condParents, condParentVals, rand);
+		RegtreeBuildParams buildParams = SMACRandomForestHelper.getRandomForestBuildParams(rfOptions, features[0].length, categoricalSize, nameConditionsMapParentsArray, nameConditionsMapParentsValues, nameConditionsMapOp, rand);
 		
 	
 		log.trace("Building Random Forest with {} data points ", responseValues[0].length);

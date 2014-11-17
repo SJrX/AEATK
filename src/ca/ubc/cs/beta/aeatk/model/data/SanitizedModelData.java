@@ -1,5 +1,7 @@
 package ca.ubc.cs.beta.aeatk.model.data;
 
+import java.util.Map;
+
 /**
  * Takes all the data from the automatic configurator, and applies various transformations to it.
  * 
@@ -93,14 +95,30 @@ public interface SanitizedModelData {
 	 * @see ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration for more details
 	 * @return array of conditional parents
 	 */
-	public int[][] getCondParents();
+	//public int[][] getCondParents();
 
 	/**
 	 * Stores the conditional parent values required to make a parameter active
 	 * @see ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration ParamConfiguration for more details
 	 * @return  array of values required to be set for a parameter to be active
 	 */
-	public int[][][] getCondParentVals();
+	//public int[][][] getCondParentVals();
+	
+	/**
+	 * maps variable index to disjunctions of conjunctions of parent variables
+	 * @see ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration for more details
+	 */
+	public Map<Integer, int[][]> getNameConditionsMapParentsArray();	
+	/**
+	 * maps variable index to disjunctions of conjunctions of parent values in conditional
+	 * @see ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration for more details
+	 */
+	public Map<Integer, double[][][]> getNameConditionsMapParentsValues();
+	/**
+	 * maps variable index to disjunctions of conjunctions of conditional operator
+	 * @see ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration for more details
+	 */
+	public Map<Integer, int[][]> getNameConditionsMapOp();
 	
 	/**
 	 * Transforms a response value according to some function

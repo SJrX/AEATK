@@ -984,7 +984,7 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 					Integer parent_id = cond.parent_ID;
 					String parent_name = param_names.get(parent_id);
 					String parent_value_string = get(parent_name);
-					Double encoded_value;
+					double encoded_value;
 
 					// check whether parent is active; if not, child is also not active
 					if (! activeParams.contains(parent_name)){
@@ -1000,34 +1000,39 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 					}
 
 					// check condition					
-					List<Double> values = Arrays.asList(cond.values);
 					if (cond.op == ConditionalOperators.IN) {
-						if (! values.contains(encoded_value)) {
-							all_satisfied = false;
-							break;
+						boolean contains = false;
+						for (Double cv: cond.values) {
+							if (cv == encoded_value) {
+								contains = true;
+								break;
+							}
 						}
+						all_satisfied = contains;
 					} else if (cond.op == ConditionalOperators.EQ) {
-						if (! values.get(0).equals(encoded_value)) {
+						if (cond.values[0] != encoded_value) {
 							all_satisfied = false;
 							break;
 						}
 					} else if (cond.op == ConditionalOperators.NEQ) {
-						if (values.get(0).equals(encoded_value)) {
+						if (cond.values[0] == encoded_value) {
 							all_satisfied = false;
 							break;
 						}
 					} else if (cond.op == ConditionalOperators.LE) {
-						if (values.get(0) >= encoded_value) {
+						if (cond.values[0] >= encoded_value) {
 							all_satisfied = false;
 							break;
 						}
 					} else if (cond.op == ConditionalOperators.GR) {
-						if (values.get(0) <= encoded_value) {
+						if (cond.values[0] <= encoded_value) {
 							all_satisfied = false;
 							break;
 						}
 					}
-					
+					if (!all_satisfied){ //if one condition is not satisfied, the complete clause is falsified; no further check necessary
+						break;
+					}
 				}
 				if (all_satisfied) {
 					activeParams.add(param);

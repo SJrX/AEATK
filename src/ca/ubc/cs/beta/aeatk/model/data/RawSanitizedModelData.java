@@ -1,5 +1,7 @@
 package ca.ubc.cs.beta.aeatk.model.data;
 
+import java.util.Map;
+
 import ca.ubc.cs.beta.aeatk.misc.math.ArrayMathOps;
 import ca.ubc.cs.beta.aeatk.misc.math.MessyMathHelperClass;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace;
@@ -119,18 +121,37 @@ public class RawSanitizedModelData implements SanitizedModelData {
 	{
 		return configSpace.getCategoricalSize();
 	}
+	 
+	@Override
+	public Map<Integer, int[][]> getNameConditionsMapParentsArray() {
+		return configSpace.getNameConditionsMapParentsArray();
+	}; 
 	
-	@Override 
+	@Override
+	public Map<Integer, double[][][]> getNameConditionsMapParentsValues() {
+		return configSpace.getNameConditionsMapParentsValues();
+	}
+	
+	@Override
+	public Map<Integer, int[][]> getNameConditionsMapOp() {
+		return configSpace.getNameConditionsMapOp();
+	}
+	
+	/*
+	@Override
 	public int[][] getCondParents()
 	{
 		return configSpace.getCondParentsArray();
 	}
+	*/
 	
+	/*
 	@Override
 	public int[][][] getCondParentVals()
 	{
 		return configSpace.getCondParentValsArray();
 	}
+	*/
 
 	@Override
 	public double transformResponseValue(double d) {

@@ -215,9 +215,30 @@ public class ParameterConfigurationSpace implements Serializable {
 	private List<Integer> activeCheckOrder = new ArrayList<Integer>();
 	private List<String> activeCheckOrderString = new ArrayList<String>();
 	
+	/*
+	 * maps variable index to disjunctions of conjunctions of parent variables
+	 */
 	private Map<Integer, int[][]> nameConditionsMapParentsArray;
+	/*
+	 * maps variable index to disjunctions of conjunctions of parent values in conditional
+	 */
 	private Map<Integer, double[][][]> nameConditionsMapParentsValues;
+	/*
+	 * maps variable index to disjunctions of conjunctions of conditional operator
+	 */
 	private Map<Integer, int[][]> nameConditionsMapOp;
+	
+	public Map<Integer, int[][]> getNameConditionsMapParentsArray() {
+		return nameConditionsMapParentsArray;
+	}
+
+	public Map<Integer, double[][][]> getNameConditionsMapParentsValues() {
+		return nameConditionsMapParentsValues;
+	}
+
+	public Map<Integer, int[][]> getNameConditionsMapOp() {
+		return nameConditionsMapOp;
+	}
 	
 	public List<String> getActiveCheckOrderString() {
 		return activeCheckOrderString;
@@ -770,6 +791,9 @@ public class ParameterConfigurationSpace implements Serializable {
 	 * and <activeCheckOrder> into <activeCheckOrderArray>
 	 */
 	private void transformConditionals2FastRFStructure(){
+		nameConditionsMapParentsArray = new HashMap<Integer, int[][]>();
+		nameConditionsMapParentsValues = new HashMap<Integer, double[][][]>();
+		nameConditionsMapOp = new HashMap<Integer, int[][]>();
 		for (int p_idx: nameConditionsMap.keySet()) {
 			int[][] parent_id = new int[nameConditionsMap.get(p_idx).size()][];
 			double[][][] values = new double[nameConditionsMap.get(p_idx).size()][][];
@@ -783,13 +807,17 @@ public class ParameterConfigurationSpace implements Serializable {
 				int[] op_in = new int[clause.size()];
 				for (Conditional cond: clause){
 					parent_id_in[j] = cond.parent_ID;
-					String parent_name = authorativeParameterOrderArray[cond.parent_ID];
+					String parent_name = authorativeParameterNameOrder.get(cond.parent_ID);
 					Boolean iscont = isContinuous.get(parent_name);
 					//contNormalizedRanges: name-> normalizer
 					if (iscont){
 						//continuous parameters have to be normalized to range [0,1]
 						int z = 0;
+						values_in[j] = new double[cond.values.length];
 						for (Double d : cond.values){
+							System.out.println(parent_name);
+							System.out.println(contNormalizedRanges.get(parent_name));
+							System.out.println(contNormalizedRanges.get(parent_name).normalizeValue(d));
 							values_in[j][z] = contNormalizedRanges.get(parent_name).normalizeValue(d);
 							z++;
 						}
