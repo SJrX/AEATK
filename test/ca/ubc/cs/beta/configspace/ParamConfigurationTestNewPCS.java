@@ -94,6 +94,18 @@ public class ParamConfigurationTestNewPCS {
 	}
 	
 	@Test
+	public void testAClibFormatInactives() {
+		URL url = this.getClass().getClassLoader().getResource("paramFiles/aclib2.txt");
+		File f = new File(url.getPath());
+		System.out.println(f.getAbsolutePath());
+		ParameterConfigurationSpace configSpace = new ParameterConfigurationSpace(f);
+		ParameterConfiguration config = configSpace.getDefaultConfiguration();
+		configSpace.getParameterConfigurationFromString("-Pcat=d -Pcat2=8.0 -Pord=z -Prealog=1.0", ParameterStringFormat.SURROGATE_EXECUTOR);
+		System.out.println(config.getFormattedParameterString());
+		//File is parsed correctly
+	}
+	
+	@Test
 	public void testIntegerContinuousParameters() {
 		URL url = this.getClass().getClassLoader().getResource("paramFiles/aclib2integerFormatParam.txt");
 		File f = new File(url.getPath());
