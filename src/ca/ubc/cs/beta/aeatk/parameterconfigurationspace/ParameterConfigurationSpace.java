@@ -690,8 +690,8 @@ public class ParameterConfigurationSpace implements Serializable {
 					value = new String[1];
 					value[0] = split[1].trim();
 					op = ConditionalOperators.LE;
-				} else if (con.indexOf("in") >= 0){
-					String[] split = con.split("in");
+				} else if (con.indexOf(" in ") >= 0){
+					String[] split = con.split(" in ");
 					parent = split[0].trim();
 					String values = split[1].trim();
 					List<String> values_list = getValues(values);
