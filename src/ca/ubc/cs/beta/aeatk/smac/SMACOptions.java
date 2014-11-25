@@ -122,7 +122,7 @@ public class SMACOptions extends AbstractOptions {
 	public double intensificationPercentage = 0.50;
 	
 	@UsageTextField(level=OptionLevel.INTERMEDIATE)
-	@Parameter(names={"--initialChallengers","--initial-challengers"}, description="Can be specified multiple times. Every item is one additional initial challenger which will be used in the challenge procedure prior to starting the actual optimization method. If specified, the first initial challenger replaces the initial incumbent. For the syntax, please see --initialIncumbent.")
+	@Parameter(names={"--initialChallengers","--initial-challengers"}, description="Can be specified multiple times. Every item is one additional initial challenger which will be used to challenge the incumbent prior to starting the actual optimization method. For the syntax, please see --initialIncumbent.")
 	public List<String> initialChallengers = new ArrayList<String>();
 	
 	@UsageTextField(level=OptionLevel.ADVANCED)
