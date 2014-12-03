@@ -23,7 +23,7 @@ public class SMACRandomForestHelper {
 	 * @param numberOfFeatures   number of features we will build with
 	 * @param categoricalSize	 sizes of the categorical values
 	 * @param condParents		 for each parameter specifies the indexes of other parameters we are dependent upon
-	 * @param condParentVals	 for each parameter specifies the value required for the indepnedent parameters for this parameter to be activee
+	 * @param condParentVals	 for each parameter specifies the value required for the parent parameters for this parameter to be active
 	 * @return regtreeBuildParams object for Random Forest construction
 	 */
 	public static RegtreeBuildParams getRandomForestBuildParams(RandomForestOptions rfOptions, int numberOfFeatures, int[] categoricalSize, int[][] condParents, int[][][] condParentVals, Random rand)
@@ -31,7 +31,7 @@ public class SMACRandomForestHelper {
 	/*
 	 * Parameter File Generator
 	 */
-	RegtreeBuildParams buildParams = new RegtreeBuildParams();
+	RegtreeBuildParams buildParams = new RegtreeBuildParams(categoricalSize.length + numberOfFeatures, true);
 	
 	buildParams.condParents = null;
 	/*
