@@ -14,10 +14,26 @@ import ec.util.MersenneTwisterFast;
 
 public class ParamConfigurationForbiddenTest {
 
-	public static ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("a [0,10] [0.5]\nb[0,10] [0.5]\n");
+	public static ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("a [-1,1] [0.5]\nb[-1,1] [0.5]\n");
+
 	
-	public static ParameterConfigurationSpace forbiddenConfigSpace = ParamFileHelper.getParamFileFromString("a [0,10] [0.5]\nb[0,10] [0.5]\nForbidden Expression:a^2+b^2>=1");
-		
+	public static ParameterConfigurationSpace forbiddenConfigSpace = ParamFileHelper.getParamFileFromString("a [-1,1] [0]\nb[-1,1] [0]\nForbidden Expression: sqrt(a^2+b^2)>=0.5");
+	
+	
+	public static ParameterConfigurationSpace forbiddenConfigSpaceTwo = ParamFileHelper.getParamFileFromString("a [-1,1] [0]\nb[-1,1] [0]\nForbidden Expression: sqrt(a^2+b^2)>=0.5 \nForbidden Expression: abs(b-a)>0.5");
+	
+	
+	
+	//public static ParameterConfigurationSpace forbiddenConfigSpace = ParamFileHelper.getParamFileFromString("a [0,1000000] [0]i\n b[0,1000000] [0]i\n c[0,1000000] [0]i\n Forbidden Expression: abs(c^3-(a^3+b^3))>0.9");
+	
+	@Test
+	public void testNewFormatTwo()
+	{
+		System.out.println("Foo");
+		benchMarkSpeed(forbiddenConfigSpaceTwo);
+		System.out.println("Foo");
+	}
+	
 	@Test
 	public void testNewFormat()
 	{
@@ -62,13 +78,17 @@ public class ParamConfigurationForbiddenTest {
 		{
 			
 			List<ParameterConfiguration> paramConfiguration = config.getNeighbourhood(mtf, 4);
-			//System.out.println(i + ":"+ config.getFormattedParameterString());
+			double a = Double.valueOf(config.get("a"));
+			double b = Double.valueOf(config.get("b"));
+			//double c = Double.valueOf(config.get("c"));
+			//System.out.println(i + ":"+ config.getFormattedParameterString() + ":"+ (c*c*c - (a*a*a+b*b*b))) ;
+			System.out.println(i + ":"+ config.getFormattedParameterString() + ":"+ Math.sqrt(a*a+b*b));
 			config = paramConfiguration.get(mtf.nextInt(paramConfiguration.size()));
 		}
 		System.out.println("Walk:" + watch.stop() / 1000.0 + " => " + config.getFormattedParameterString());
 	}
 	
 	
-
+	
 
 }

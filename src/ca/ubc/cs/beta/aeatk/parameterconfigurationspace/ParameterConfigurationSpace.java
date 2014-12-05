@@ -29,14 +29,12 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import net.jcip.annotations.Immutable;
+import net.objecthunter.exp4j.Expression;
+import net.objecthunter.exp4j.ExpressionBuilder;
+import net.objecthunter.exp4j.operator.Operator;
 import ca.ubc.cs.beta.aeatk.json.serializers.ParameterConfigurationSpaceJson;
 import ca.ubc.cs.beta.aeatk.misc.java.io.FileReaderNoException.FileReaderNoExceptionThrown;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration.ParameterStringFormat;
-import de.congrace.exp4j.Calculable;
-import de.congrace.exp4j.CustomOperator;
-import de.congrace.exp4j.ExpressionBuilder;
-import de.congrace.exp4j.UnknownFunctionException;
-import de.congrace.exp4j.UnparsableExpressionException;
 import ec.util.MersenneTwisterFast;
 
 enum LineType
@@ -202,7 +200,7 @@ public class ParameterConfigurationSpace implements Serializable {
 	
 	private final Map<String, String> searchSubspace;
 	
-	List<Calculable> cl = new ArrayList<Calculable>();
+	List<Expression> cl = new ArrayList<Expression>();
 	
 	/**
 	 * Creates a Param Configuration Space from the given file, no random object
@@ -458,60 +456,60 @@ public class ParameterConfigurationSpace implements Serializable {
 				newForbiddenLinesPresent = true;
 				
 
-				List<CustomOperator> cos = new ArrayList<>();
+				List<Operator> cos = new ArrayList<>();
 				//Precedence of 0 
-				cos.add(new CustomOperator(":",true, 0,2)
+				cos.add(new Operator(":",2, true,0)
 				{
 
 					@Override
-					protected double applyOperation(double[] values) {
+					public double apply(double... values) {
 						return (values[0] != values[1]) ? 1 : 0;
 					}
 				});
 				
-				cos.add(new CustomOperator("|",true, 0,2)
+				cos.add(new Operator("|",2, true,0)
 				{
 
 					@Override
-					protected double applyOperation(double[] values) {
+					public double apply(double... values) {
 						return (values[0] == values[1]) ? 1 : 0;
 					}
 				});
 				
 				//Precendence of 1
-				cos.add(new CustomOperator(">",true, 1,2)
+				cos.add(new Operator(">",2, true,1)
 				{
 
 					@Override
-					protected double applyOperation(double[] values) {
+					public double apply(double... values) {
 						return (values[0] > values[1]) ? 1 : 0;
 					}
 				});
 				
-				cos.add(new CustomOperator("<",true, 1,2)
+				cos.add(new Operator("<",2, true,1)
 				{
 
 					@Override
-					protected double applyOperation(double[] values) {
+					public double apply(double... values) {
 						return (values[0] < values[1]) ? 1 : 0;
 					}
 				});
 				
-				cos.add(new CustomOperator("$",true, 1,2)
+				cos.add(new Operator("$",2, true,1)
 				{
 
 					@Override
-					protected double applyOperation(double[] values) {
+					public double apply(double... values) {
 						return (values[0] >= values[1]) ? 1 : 0;
 					}
 				});
 				
 			
-				cos.add(new CustomOperator("#",true, 1,2)
+				cos.add(new Operator("#",2, true,1)
 				{
 
 					@Override
-					protected double applyOperation(double[] values) {
+					public double apply(double... values) {
 						return (values[0] <= values[1]) ? 1 : 0;
 					}
 				});
@@ -532,23 +530,26 @@ public class ParameterConfigurationSpace implements Serializable {
 					
 					ExpressionBuilder eb = new ExpressionBuilder(line);
 					
-					for(String name : this.getParameterNames())
-					{
-						eb.withVariableNames(name);
-					}
+					eb.variables(new HashSet<>(this.getParameterNames()));
 					
-					for(CustomOperator co : cos)
-					{
-						eb.withOperation(co);
-					}
+					
+					eb.operator(cos);
+					
+					/*
 					try {
-						Calculable calc = eb.build();
+					*/
+						Expression calc = eb.build();
 						
 						cl.add(calc);
-						
+						/*
+						if(!calc.validate().isValid())
+						{
+							throw new IllegalArgumentException("Couldn't validate expression due to: " + calc.validate().getErrors());
+						}*/
+						/*
 					} catch (UnknownFunctionException | UnparsableExpressionException e) {
 						throw new IllegalArgumentException("Problem occured processing line :[" + line + "] [Note !=, >=, <= and == where replaced with :, $, #, | respectively], exception message: " + e.getMessage(),e);
-					}
+					}*/
 				}
 
 				
@@ -571,7 +572,7 @@ public class ParameterConfigurationSpace implements Serializable {
 		 */
 		if(this.getDefaultConfiguration().isForbiddenParameterConfiguration())
 		{
-			throw new IllegalArgumentException("Default parameter setting cannot be a forbidden parameter setting");
+			throw new IllegalArgumentException("Default parameter setting cannot be a forbidden parameter setting:" + this.getDefaultConfiguration().getFormattedParameterString());
 		}
 		
 		this.searchSubspaceValues = new double[this.defaultConfigurationValueArray.length];

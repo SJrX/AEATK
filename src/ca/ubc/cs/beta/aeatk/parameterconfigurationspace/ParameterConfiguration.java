@@ -23,6 +23,7 @@ import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import de.congrace.exp4j.Calculable;
 import net.jcip.annotations.NotThreadSafe;
+import net.objecthunter.exp4j.Expression;
 
 
 /**
@@ -763,7 +764,9 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 				ParameterConfiguration config = new ParameterConfiguration(configSpace, newValueArray.clone(), categoricalSize, parameterDomainContinuous, paramKeyToValueArrayIndexMap);
 				
 				if(config.isForbiddenParameterConfiguration()) 
-				{	j--;
+				{	
+					//Probably needs to be commented out.
+					j--;
 					continue;
 				}
 				
@@ -1106,7 +1109,7 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 			return false;
 		} else
 		{
-			for(Calculable calc : configSpace.cl)
+			for(Expression calc : configSpace.cl)
 			{
 				
 				int i=0; 
@@ -1121,7 +1124,7 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 					}
 					i++;
 				}
-				if (calc.calculate() == 0)
+				if (calc.evaluate() == 0)
 				{
 					continue;
 				} else
