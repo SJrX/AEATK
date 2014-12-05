@@ -17,6 +17,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
@@ -31,6 +32,11 @@ import net.jcip.annotations.Immutable;
 import ca.ubc.cs.beta.aeatk.json.serializers.ParameterConfigurationSpaceJson;
 import ca.ubc.cs.beta.aeatk.misc.java.io.FileReaderNoException.FileReaderNoExceptionThrown;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration.ParameterStringFormat;
+import de.congrace.exp4j.Calculable;
+import de.congrace.exp4j.CustomOperator;
+import de.congrace.exp4j.ExpressionBuilder;
+import de.congrace.exp4j.UnknownFunctionException;
+import de.congrace.exp4j.UnparsableExpressionException;
 import ec.util.MersenneTwisterFast;
 
 enum LineType
@@ -39,7 +45,7 @@ enum LineType
 	CONTINUOUS,
 	CONDITIONAL,
 	FORBIDDEN,
-	OTHER
+	OTHER, NEW_FORBIDDEN
 }
 
 
@@ -63,6 +69,8 @@ enum LineType
 @JsonDeserialize(using=ParameterConfigurationSpaceJson.ParamConfigurationSpaceDeserializer.class)
 public class ParameterConfigurationSpace implements Serializable {
 	
+	private static final String FORBIDDEN_EXPRESSION = "Forbidden Expression:";
+
 	/**
 	 * 
 	 */
@@ -152,6 +160,7 @@ public class ParameterConfigurationSpace implements Serializable {
 	 */
 	private final List<String> forbiddenLines = new ArrayList<String>();
 
+	private final List<String> newForbiddenLines = new ArrayList<String>();
 	/**
 	 * Gets the default configuration
 	 */
@@ -192,6 +201,9 @@ public class ParameterConfigurationSpace implements Serializable {
 	private final String pcsFile;
 	
 	private final Map<String, String> searchSubspace;
+	
+	List<Calculable> cl = new ArrayList<Calculable>();
+	
 	/**
 	 * Creates a Param Configuration Space from the given file, no random object
 	 * @param filename string storing the filename to parse
@@ -437,6 +449,116 @@ public class ParameterConfigurationSpace implements Serializable {
 			}
 			forbiddenLines.clear();
 			
+			
+			
+			
+			
+			if(newForbiddenLines.size()  > 0)
+			{
+				newForbiddenLinesPresent = true;
+				
+
+				List<CustomOperator> cos = new ArrayList<>();
+				//Precedence of 0 
+				cos.add(new CustomOperator(":",true, 0,2)
+				{
+
+					@Override
+					protected double applyOperation(double[] values) {
+						return (values[0] != values[1]) ? 1 : 0;
+					}
+				});
+				
+				cos.add(new CustomOperator("|",true, 0,2)
+				{
+
+					@Override
+					protected double applyOperation(double[] values) {
+						return (values[0] == values[1]) ? 1 : 0;
+					}
+				});
+				
+				//Precendence of 1
+				cos.add(new CustomOperator(">",true, 1,2)
+				{
+
+					@Override
+					protected double applyOperation(double[] values) {
+						return (values[0] > values[1]) ? 1 : 0;
+					}
+				});
+				
+				cos.add(new CustomOperator("<",true, 1,2)
+				{
+
+					@Override
+					protected double applyOperation(double[] values) {
+						return (values[0] < values[1]) ? 1 : 0;
+					}
+				});
+				
+				cos.add(new CustomOperator("$",true, 1,2)
+				{
+
+					@Override
+					protected double applyOperation(double[] values) {
+						return (values[0] >= values[1]) ? 1 : 0;
+					}
+				});
+				
+			
+				cos.add(new CustomOperator("#",true, 1,2)
+				{
+
+					@Override
+					protected double applyOperation(double[] values) {
+						return (values[0] <= values[1]) ? 1 : 0;
+					}
+				});
+				
+				for(String line : newForbiddenLines)
+				{
+					
+					line = line.substring(ParameterConfigurationSpace.FORBIDDEN_EXPRESSION.length());
+					
+					line = line.replaceAll("!=", ":");
+					
+					
+					
+					
+					line = line.replaceAll(">=", Matcher.quoteReplacement("$"));
+					line  = line.replaceAll("<=", "#");
+					line = line.replaceAll("==","|");
+					
+					ExpressionBuilder eb = new ExpressionBuilder(line);
+					
+					for(String name : this.getParameterNames())
+					{
+						eb.withVariableNames(name);
+					}
+					
+					for(CustomOperator co : cos)
+					{
+						eb.withOperation(co);
+					}
+					try {
+						Calculable calc = eb.build();
+						
+						cl.add(calc);
+						
+					} catch (UnknownFunctionException | UnparsableExpressionException e) {
+						throw new IllegalArgumentException("Problem occured processing line :[" + line + "] [Note !=, >=, <= and == where replaced with :, $, #, | respectively], exception message: " + e.getMessage(),e);
+					}
+				}
+
+				
+			} else
+			{
+				newForbiddenLinesPresent = false;
+			}
+			
+			
+			
 		this.defaultConfigurationValueArray = _getDefaultConfiguration().toValueArray();
 		
 		
@@ -523,7 +645,10 @@ public class ParameterConfigurationSpace implements Serializable {
 		 * 
 		 * This is hardly robust and easily tricked.
 		 */
-		if (line.indexOf("|") >= 0)
+		if(line.indexOf(FORBIDDEN_EXPRESSION) >= 0)
+		{
+			type = LineType.NEW_FORBIDDEN;
+		}	else if (line.indexOf("|") >= 0)
 		{
 			type = LineType.CONDITIONAL;
 		} else if(line.trim().substring(0, 1).equals("{"))
@@ -560,6 +685,9 @@ public class ParameterConfigurationSpace implements Serializable {
 				break;
 			case FORBIDDEN:
 				forbiddenLines.add(line);
+				break;
+			case NEW_FORBIDDEN:
+				newForbiddenLines.add(line.trim());
 				break;
 			default:
 				throw new IllegalStateException("Not sure how I can be parsing some other type, ");
@@ -1706,6 +1834,18 @@ public class ParameterConfigurationSpace implements Serializable {
 	public Map<String, String> getSearchSubspace()
 	{
 		return this.searchSubspace;
+	}
+
+
+	/**
+	 * Returns true if there are new forbidden lines, false otherwise
+	 * @return
+	 */
+	private final boolean newForbiddenLinesPresent;
+	
+	boolean hasNewForbidden() {
+		// TODO Auto-generated method stub
+		return newForbiddenLinesPresent;
 	}
 
 

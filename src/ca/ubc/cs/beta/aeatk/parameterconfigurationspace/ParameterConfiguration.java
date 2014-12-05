@@ -21,6 +21,7 @@ import ca.ubc.cs.beta.aeatk.json.serializers.ParameterConfigurationSpaceJson;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
+import de.congrace.exp4j.Calculable;
 import net.jcip.annotations.NotThreadSafe;
 
 
@@ -757,9 +758,16 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 			{
 				newValueArray[i] = getNeighbourForParameter(i,j,rand);
 				
-				if(configSpace.isForbiddenParameterConfiguration(newValueArray)) continue;
 				
-				neighbours.add(new ParameterConfiguration(configSpace, newValueArray.clone(), categoricalSize, parameterDomainContinuous, paramKeyToValueArrayIndexMap));
+				
+				ParameterConfiguration config = new ParameterConfiguration(configSpace, newValueArray.clone(), categoricalSize, parameterDomainContinuous, paramKeyToValueArrayIndexMap);
+				
+				if(config.isForbiddenParameterConfiguration()) 
+				{	j--;
+					continue;
+				}
+				
+				neighbours.add(config);
 			}
 		}
 		
@@ -1087,7 +1095,45 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 	 */
 	public boolean isForbiddenParameterConfiguration()
 	{
-		return configSpace.isForbiddenParameterConfiguration(valueArray);
+		
+		if(configSpace.isForbiddenParameterConfiguration(valueArray))
+		{
+			return true;
+		}
+		
+		if(!configSpace.hasNewForbidden())
+		{
+			return false;
+		} else
+		{
+			for(Calculable calc : configSpace.cl)
+			{
+				
+				int i=0; 
+				for(String name : configSpace.getParameterNamesInAuthorativeOrder())
+				{
+					if(configSpace.getNormalizedRangeMap().get(name) != null && true)
+					{
+						calc.setVariable(name, configSpace.getNormalizedRangeMap().get(name).unnormalizeValue(this.valueArray[i]));
+					} else
+					{
+						calc.setVariable(name,Double.valueOf(this.get(name)));
+					}
+					i++;
+				}
+				if (calc.calculate() == 0)
+				{
+					continue;
+				} else
+				{
+					return true;
+				}
+			}
+			
+			return false;
+		}
+		
+
 	}
 
 
