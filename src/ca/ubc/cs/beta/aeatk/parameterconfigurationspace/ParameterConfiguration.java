@@ -755,19 +755,25 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 		{
 			double[] newValueArray = valueArray.clone();
 			
+			int failuresForParameter = 0;
 			for(int j=1; j <= numberOfNeighboursForParameter(i,activeParams.contains(configSpace.getParameterNamesInAuthorativeOrder().get(i)),numNumericalNeighbours); j++)
 			{
 				newValueArray[i] = getNeighbourForParameter(i,j,rand);
-				
-				
+			
 				
 				ParameterConfiguration config = new ParameterConfiguration(configSpace, newValueArray.clone(), categoricalSize, parameterDomainContinuous, paramKeyToValueArrayIndexMap);
 				
 				if(config.isForbiddenParameterConfiguration()) 
 				{	
-					//Probably needs to be commented out.
-					j--;
+					
+					failuresForParameter++;
+					if(failuresForParameter < 100 && this.parameterDomainContinuous[i])
+					{
+						j--;
+					} 
+					//System.out.println(j);
 					continue;
+				
 				}
 				
 				neighbours.add(config);
