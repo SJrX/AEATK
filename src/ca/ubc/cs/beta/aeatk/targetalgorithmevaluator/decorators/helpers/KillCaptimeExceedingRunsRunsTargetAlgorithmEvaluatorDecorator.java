@@ -99,13 +99,16 @@ public class KillCaptimeExceedingRunsRunsTargetAlgorithmEvaluatorDecorator exten
 						
 							run.kill();
 						}
+					}
 				}
+			
 			}
+			
 			if(obs != null)
 			{
 				obs.currentStatus(runs);
 			}
-		}
+			
 		
 		}
 	}
