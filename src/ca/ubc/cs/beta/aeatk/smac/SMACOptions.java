@@ -219,7 +219,7 @@ public class SMACOptions extends AbstractOptions {
 	public Integer validationCores = null;
 
 	@UsageTextField(level=OptionLevel.ADVANCED)
-	@Parameter(names={"--shared-model-mode","--share-model-mode","--shared-run-data","--share-run-data"}, description="If true the run data will be written to a JSON file and other files matching a specific format will be read in periodically")
+	@Parameter(names={"--shared-model-mode","--share-model-mode","--shared-run-data","--share-run-data"}, description="If true the run data will be read from other runs in the output dir periodically (the runs need have a specific filename)")
 	public boolean shareModelMode = false;
 	
 	
@@ -227,10 +227,29 @@ public class SMACOptions extends AbstractOptions {
 	@Parameter(names={"--shared-model-mode-frequency","--share-model-mode-frequency","--shared-run-data-frequency","--share-run-data-frequency"}, description="How often to poll for new run data (in seconds) ", validateWith=FixedPositiveInteger.class)
 	public int shareRunDataFrequency = 300;
 
+	
 	@UsageTextField(level=OptionLevel.DEVELOPER)
 	@Parameter(names={"--shared-model-mode-tae"}, description="If true and shared model mode is enabled, then we will also try and share run data at the TAE level")
 	public boolean shareModeModeTAE = true;
 
+	public enum SharedModelModeDefaultHandling{
+		USE_ALL,
+		SKIP_FIRST_TWO,
+		IGNORE_ALL
+	}
+	@UsageTextField(level=OptionLevel.ADVANCED)
+	@Parameter(names={"--shared-model-mode-write-data","--write-json-data"}, description="If true we will write run data to a JSON file")
+	public boolean writeRunData = true;
+	
+	
+	
+	@UsageTextField(level=OptionLevel.DEVELOPER)
+	@Parameter(names={"--shared-model-mode-default-handling"}, description="If set to USE_ALL then all runs of the default configuration will be used, If set to SKIP_FIRST_TWO then then first two runs (presumably the default) will not be read, If set to IGNORE_ALL then we will always ignore runs with the default configuration")
+	public SharedModelModeDefaultHandling defaultHandler = SharedModelModeDefaultHandling.USE_ALL;
+
+	@UsageTextField(level=OptionLevel.DEVELOPER)
+	@Parameter(names={"--shared-model-mode-asymetric"}, description="If set to true, then (based on the order of the file names) we will only read from runs that are transitively 2N and 2N+1 from our ID. So for instance if there were 16 runs, 0-15, runs 8-15 would be independent. Run 4 would read from 8,9. Run 5 would read from 10,11. Run 2 would read from 4,5,8,9,10,11, etc...")
+	public boolean sharedModeModeAssymetricMode = false;
 	
 	/**
 	 * Checks if the verify sat option is compatible with this set of probelm instances
