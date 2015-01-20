@@ -266,6 +266,7 @@ public class MessyMathHelperClass {
 	 * @param matrix
 	 * @return return the indexes of columns that are constant
 	 */
+	/*
 	public int[] constantColumns(double[][] matrix)
 	{
 		ArrayList<Integer> constColumnsList = new ArrayList<Integer>();
@@ -293,6 +294,7 @@ public class MessyMathHelperClass {
 		return constColumns;
 		
 	}
+	*/
 
 	public Set<Integer> fromArray(int[] arr)
 	{
@@ -304,7 +306,7 @@ public class MessyMathHelperClass {
 		return vals;
 	}
 	
-	public double[][] keepColumns(double[][] matrix, int[] columns)
+	public double[][] copyMatrixAndKeepColumns(double[][] matrix, int[] columns)
 	{
 		Set<Integer> columnsToKeep = fromArray(columns);
 		List<Integer> columnsToRemove = new ArrayList<Integer>(matrix[0].length);
@@ -320,7 +322,7 @@ public class MessyMathHelperClass {
 		{
 			columnsToRemoveArr[i] = columnsToRemove.get(i);
 		}
-		return removeColumns(matrix, columnsToRemoveArr);
+		return copyMatrixAndRemoveColumns(matrix, columnsToRemoveArr);
 	}
 	/**
 	 * Returns a double[][] with columns removed
@@ -329,7 +331,7 @@ public class MessyMathHelperClass {
 	 * @param columns	columns that we should remove 
 	 * @return - NOTE: the return value will always be a different array than the input)
 	 */
-	public double[][] removeColumns(double[][] matrix , int[] columns)
+	public double[][] copyMatrixAndRemoveColumns(double[][] matrix , int[] columns)
 	{
 		
 		double[][] outputMatrix;
