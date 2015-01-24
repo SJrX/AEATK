@@ -13,8 +13,11 @@ import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.Map.Entry;
 import java.util.Random;
 import java.util.Set;
+import java.util.TreeMap;
+import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -156,9 +159,7 @@ public class ParamConfigurationTestNewPCS {
 	{
 		ParameterConfiguration config = getConfigSpaceForFile("paramFiles/aclib2continuousNameNoSpaceParam.txt").getDefaultConfiguration();
 		double d = Double.valueOf(config.get("name"));
-		if( d > 0.45 && d < 0.55)
-		{
-		} else
+		if(!( d > 0.45 && d < 0.55))
 		{
 			fail("Value should have been 0.5");
 		}
@@ -1436,10 +1437,193 @@ public class ParamConfigurationTestNewPCS {
 				
 		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(weirdPCS);
 		
-		
 		System.out.println(configSpace.getRandomParameterConfiguration(rand).getFormattedParameterString());
+	}
+	
+	@Test
+	public void testConditionalPrecedence()
+	{
+		String precendencePCS = "a c { true, false} [true]\n"+
+								"b c { true, false} [true]\n"+
+								"c c { true, false} [true]\n"+
+								"d c { true, false} [true]\n"+
+								"e c { true, false} [true]\n"+
+								"f c { true, false} [true]\n"+
+								"g c { active} [active]\n"+
+								"g | c in {true} && b == true || a == true && d in {true} && e in {true} || f == true";
+				
+		
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(precendencePCS);
+		
+		Map<String, Boolean> parameters = new TreeMap<String,Boolean>();
+		
+		for(int i=0; i < 2500; i++)
+		{ //Try and make sure every configuration is generated
+			ParameterConfiguration configuration = configSpace.getRandomParameterConfiguration(rand);
+			
+			boolean a = Boolean.valueOf(configuration.get("a"));
+			boolean b = Boolean.valueOf(configuration.get("b"));
+			boolean c = Boolean.valueOf(configuration.get("c"));
+			boolean d = Boolean.valueOf(configuration.get("d"));
+			boolean e = Boolean.valueOf(configuration.get("e"));
+			boolean f = Boolean.valueOf(configuration.get("f"));
+			
+			boolean gActive =   c && b || a && d && e || f;
+			
+			
+			
+			assertEquals("Prediction of active and parameter configuration space active differ for:" + configuration.getFormattedParameterString() , gActive,configuration.getFormattedParameterString().contains("-g 'active'"));
+			parameters.put(configuration.getFormattedParameterString(),gActive);;
+					
+		}
+		
+		for(Entry<String,Boolean> s : parameters.entrySet())
+		{
+			System.out.println(s.getKey() + "=>" + s.getValue());
+		}
 		
 	}
+	
+	@Test
+	public void testConditionalOperators()
+	{
+		
+		String pcsFile = "";
+		ParameterConfigurationSpace configSpace = null;
+		
+		pcsFile = "A i [0,10] [5]\n"
+				+ "B i [0,10] [5]\n"
+				+ "B | A == 5";
+				
+		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
+		
+		
+		
+		
+		pcsFile = "A i [0,10] [5]\n"
+				+ "B i [0,10] [5]\n"
+				+ "B | A != 5";
+				
+		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
+		
+		
+		
+		
+		
+		
+		pcsFile = "A r [0,10] [5]\n"
+				+ "B r [0,10] [5]\n"
+				+ "B | A == 5";
+				
+		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
+		
+		
+		
+		
+		pcsFile = "A r [0,10] [5]\n"
+				+ "B r [0,10] [5]\n"
+				+ "B | A != 5";
+				
+		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
+		
+		
+		
+		
+		
+		
+		pcsFile = "A i [0,10] [5]\n"
+				+ "B i [0,10] [5]\n"
+				+ "B | A in { 5 } ";
+				
+		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
+		
+		
+		
+		
+		pcsFile = "A i [0,10] [5]\n"
+				+ "B i [0,10] [5]\n"
+				+ "B | A in { 6 }";
+				
+		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
+		
+		
+		
+		
+		pcsFile = "A r [0,10] [5]\n"
+				+ "B r [0,10] [5]\n"
+				+ "B | A in { 5 } ";
+				
+		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
+		
+		
+		
+		
+		pcsFile = "A r [0,10] [5]\n"
+				+ "B r [0,10] [5]\n"
+				+ "B | A in { 6 }";
+				
+		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
+		
+		
+		
+		
+		
+		pcsFile = "A i [0,10] [5]\n"
+				+ "B i [0,10] [5]\n"
+				+ "B | A > 4 ";
+				
+		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
+		
+		
+		
+		
+		pcsFile = "A i [0,10] [5]\n"
+				+ "B i [0,10] [5]\n"
+				+ "B | A > 5";
+				
+		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
+		
+		
+		
+		
+		pcsFile = "A r [0,10] [5]\n"
+				+ "B r [0,10] [5]\n"
+				+ "B | A < 6 ";
+				
+		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
+		
+		
+		
+		
+		pcsFile = "A r [0,10] [5]\n"
+				+ "B r [0,10] [5]\n"
+				+ "B | A < 5";
+				
+		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		//System.out.println(configSpace.getDefaultConfiguration().getFormattedParameterString());
+				
+	}
+	/**
+	 * @param pcsFile
+	 * @return
+	 */
+	public boolean checkWhetherBIsActive(String pcsFile) {
+		ParameterConfigurationSpace configSpace =  ParamFileHelper.getParamFileFromString(pcsFile);
+		ParameterConfiguration  config =configSpace.getDefaultConfiguration();
+		Set<String> activeParameters = config.getActiveParameters();
+		return activeParameters.contains("B");
+	}
+	
 	
 	@After
 	public void tearDown()

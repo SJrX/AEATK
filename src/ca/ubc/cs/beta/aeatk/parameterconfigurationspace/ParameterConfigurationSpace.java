@@ -218,8 +218,8 @@ public class ParameterConfigurationSpace implements Serializable {
 			this.opCode = opCode;
 		}
 		
-		private static Pattern conditionalMatch = Pattern.compile("^\\S+\\s+(\\S+)\\s+");
-		
+		private static Pattern conditionalMatch = Pattern.compile("^\\s*(\\S+)\\s+(\\S+)\\s+(\\S+)");
+		private static Pattern inSetMatch = Pattern.compile("^\\s*(\\S+)\\s+in\\s+\\{(.+)\\}");
 		
 		static ConditionalOperators getOperatorFromConditionalClause(String clause)
 		{
@@ -228,20 +228,34 @@ public class ParameterConfigurationSpace implements Serializable {
 			
 			if(m.find())
 			{
-				String operator = m.group(1);
-			
-				try
+				String operator = m.group(2);
+				
+				for(ConditionalOperators op : ConditionalOperators.values())
 				{
-					return ConditionalOperators.valueOf(operator.trim());
-				} catch(IllegalArgumentException e)
-				{
-					throw new IllegalArgumentException("Detected conditional operator of " + operator + " in clause: " + clause + ", this operator is unsupported only the following operators are legal: " + getAllOperators());
+					if(op.operatorString.equals(operator))
+					{
+						return op;
+					}
 				}
+				throw new IllegalArgumentException("Detected conditional operator of \"" + operator + "\" in clause: " +  clause + ", this operator is unsupported only the following operators are legal: " + getAllOperators());
+				
+				
 			}
 			
 			throw new IllegalArgumentException("Could not find conditional operator in clause: " + clause);
 		}
 		
+		public static String getParent(String clause)
+		{
+			Matcher m = conditionalMatch.matcher(clause);
+			
+			if(m.find())
+			{
+				return m.group(1);
+			}
+				
+			throw new IllegalArgumentException("The following is not a valid conditional clause: " + clause);
+		}
 		
 		private static String getAllOperators()
 		{
@@ -255,7 +269,83 @@ public class ParameterConfigurationSpace implements Serializable {
 			return sb.toString();
 		}
 
-
+		public static String[] getValues(String clause)
+		{
+			
+			Matcher m = conditionalMatch.matcher(clause);
+			ConditionalOperators op = getOperatorFromConditionalClause(clause);
+			
+			
+			/*
+			if(!m.find())
+			{
+				throw new IllegalStateException("Expected to find matched clause already how did this happen: " + clause);
+			}
+			*/
+			
+			String[] values = null;
+			switch(op)
+			{
+				case EQ:
+				case NEQ:
+				case LE:
+				case GR:
+					values = new String[1];
+					
+					if(m.find())
+					{
+						values[0] = m.group(3);
+					} else
+					{
+						throw new IllegalStateException("No match found, this shouldn't happen with clause:" + clause);
+					}
+					return values;
+					/*
+					} else if (con.indexOf(" in ") >= 0){
+						String[] split = con.split(" in ");
+						String values = split[1].trim();
+						List<String> values_list = getValues(values);
+						
+						
+						
+						value =  values_list.toArray(new String[values_list.size()]);
+						
+					} else {
+						throw new IllegalArgumentException("Unknown conditional operator: "+op+" in pcs file.");
+					}
+					*/
+					
+					
+				case IN:
+					Matcher setValue = inSetMatch.matcher(clause);
+					
+					
+					if(setValue.find())
+					{
+						String[] args = setValue.group(2).split(",");
+						values = new String[args.length];
+						Set<String> previousValues = new HashSet<String>();
+						
+						for(int i=0; i < args.length; i++)
+						{
+							values[i] = args[i].trim();
+							
+							if(!previousValues.add(values[i]))
+							{
+								throw new IllegalArgumentException("Duplicate value in conditional clause detected: " + values[i] + " clause: " + clause);
+							}
+						}
+						
+						return values;
+					} else
+					{
+						throw new IllegalArgumentException("Illegal value for \"in\" operator, must contain list of values in set notation e.g., {1,2,3}, failed parsing: " + clause);
+					}
+					
+				default:
+					throw new IllegalStateException("Unsupported operator: " + op);
+			}
+		}
 		public int getOperatorCode() {
 			return opCode;
 		}
@@ -724,49 +814,17 @@ public class ParameterConfigurationSpace implements Serializable {
 			conditionals.add(conj_conds);
 			
 			for(String con: conjunctions){
-				String parent = "";
-				String[] value = new String[0];
-				ConditionalOperators op = null;
-				if (con.indexOf("==") >= 0) {
-					String[] split = con.split("==");
-					parent = split[0].trim();
-					value = new String[1];
-					value[0] = split[1].trim();
-					op = ConditionalOperators.EQ;
-				} else if (con.indexOf("!=") >= 0){
-					String[] split = con.split("!=");
-					parent = split[0].trim();
-					value = new String[1];
-					value[0] = split[1].trim();
-					op = ConditionalOperators.NEQ;
-				} else if (con.indexOf(">") >= 0){
-					String[] split = con.split(">");
-					parent = split[0].trim();
-					value = new String[1];
-					value[0] = split[1].trim();
-					op = ConditionalOperators.GR;
-				} else if (con.indexOf("<") >= 0){
-					String[] split = con.split("<");
-					parent = split[0].trim();
-					value = new String[1];
-					value[0] = split[1].trim();
-					op = ConditionalOperators.LE;
-				} else if (con.indexOf(" in ") >= 0){
-					String[] split = con.split(" in ");
-					parent = split[0].trim();
-					String values = split[1].trim();
-					List<String> values_list = getValues(values);
-					value =  values_list.toArray(new String[values_list.size()]);
-					op = ConditionalOperators.IN;
-				} else {
-					throw new IllegalArgumentException("Unknown conditional operator: "+op+" in pcs file.");
-				}
-					
+				String parent = ConditionalOperators.getParent(con);
+				ConditionalOperators op = ConditionalOperators.getOperatorFromConditionalClause(con);
+				String[] value = ConditionalOperators.getValues(con);
+				
+				System.out.println(Arrays.toString(value));
+				
 				
 				if (!this.paramKeyIndexMap.keySet().contains(parent)) {
 					throw new IllegalArgumentException(
 								"Illegal dependent parameter (" + parent
-								+ ") specified on conditional line.");
+								+ ") specified on conditional line: " + line);
 				}
 				
 				List<Double> values_mapped = new ArrayList<Double>();
@@ -775,7 +833,7 @@ public class ParameterConfigurationSpace implements Serializable {
 					if (paramTypes.get(parent) == ParameterType.CATEGORICAL || paramTypes.get(parent) == ParameterType.ORDINAL) { 
 						Integer mapped_value = this.categoricalValueMap.get(parent).get(v);
 						if (mapped_value == null) {
-							throw new IllegalArgumentException("Illegal dependent parameter (" + (parent)+ ") specified on conditional line.");
+							throw new IllegalArgumentException("Illegal dependent parameter (" + (parent)+ ") specified on conditional line: " + line);
 						}
 						vmapped = (double) mapped_value;
 					} else {
@@ -890,18 +948,6 @@ public class ParameterConfigurationSpace implements Serializable {
 					
 					
 					op_in[j] = cond.op.getOperatorCode();
-					/*
-					if (cond.op == ConditionalOperators.EQ) {
-						op_in[j] = 0; 
-					} else if (cond.op == ConditionalOperators.NEQ) {
-						op_in[j] = 1; 
-					} else if (cond.op == ConditionalOperators.LE) {
-						op_in[j] = 2; 
-					} else if (cond.op == ConditionalOperators.GR) {
-						op_in[j] = 3; 
-					} else if (cond.op == ConditionalOperators.IN) {
-						op_in[j] = 4; 
-					}*/
 					j++;
 				}
 				parent_id[i] = parent_id_in;
