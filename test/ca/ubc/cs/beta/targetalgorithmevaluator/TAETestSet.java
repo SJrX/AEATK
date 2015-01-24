@@ -26,6 +26,7 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.io.output.NullOutputStream;
 import org.junit.AfterClass;
@@ -102,6 +103,7 @@ import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.forking
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.forking.ForkingTargetAlgorithmEvaluatorDecoratorPolicyOptions.ForkingPolicy;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.AbortOnCrashTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.AbortOnFirstRunCrashTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.CrashedSolutionQualityTransformingTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.ResultOrderCorrectCheckerTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.TimingCheckerTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.VerifySATTargetAlgorithmEvaluator;
@@ -4238,6 +4240,173 @@ public class TAETestSet {
 	}
 	
 	
+	@Test
+	public void testKillingRunDecoratorRunsMarkedAsCrashed()
+	{
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(SleepyParamEchoExecutorWithRealtime.class.getCanonicalName());
+		
+		
+		
+		
+		File paramFile = TestHelper.getTestFile("paramFiles/paramEchoParamFileWithRealTime.txt");
+		
+		ParameterConfigurationSpace configSpace = new ParameterConfigurationSpace(paramFile);
+		
+		
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 2);
+		
+		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
+		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
+		
+		options.cores = 1;
+		options.logAllCallStrings = true;
+		options.logAllProcessOutput = true;
+		options.concurrentExecution = true;
+		options.observerFrequency = 125;
+		
+		
+		tae = fact.getTargetAlgorithmEvaluator( options);	
+		TargetAlgorithmEvaluator cliTAE = tae;
+		tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
+		
+		
+		final int CRASHED_SOLUTION_QUALITY = 2_000_000;
+		try(TargetAlgorithmEvaluator taeUnity = new CrashedSolutionQualityTransformingTargetAlgorithmEvaluatorDecorator(new KillCaptimeExceedingRunsRunsTargetAlgorithmEvaluatorDecorator(tae, 1.1), CRASHED_SOLUTION_QUALITY ))
+		{
+			/**
+			 * Test Synchronous Transformation
+			 */
+			List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(4);
+	
+			for(int i=0; i < 2; i++)
+			{
+				ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
+				
+				System.out.println(config.getFormattedParameterString());
+				config.put("runtime",String.valueOf("0"));
+				if(i == 0)
+				{
+					config.put("realTime", String.valueOf(i*10+0));
+				}
+				
+				if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
+				{
+					//Only want good configurations
+					i--;
+					continue;
+				} else
+				{
+					config.put("solved","SAT");
+					AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1.5, config, execConfig);
+					runConfigs.add(rc);
+				}
+			}
+			
+			long startTime = System.currentTimeMillis();
+			List<AlgorithmRunResult> runs = taeUnity.evaluateRun(runConfigs);
+			long endTime = System.currentTimeMillis();
+			
+			
+			assertEquals(runs.get(0).getRunStatus(), RunStatus.SAT);
+			
+			assertEquals(runs.get(1).getRunStatus(), RunStatus.CRASHED);
+			assertTrue(runs.get(1).getRuntime() > 1.5);
+			assertEquals(runs.get(1).getQuality(), CRASHED_SOLUTION_QUALITY, 1);
+			
+			
+			System.out.println(runs);
+			
+			 runConfigs = new ArrayList<AlgorithmRunConfiguration>(4);
+			
+			for(int i=0; i < 2; i++)
+			{
+				ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
+				
+				System.out.println(config.getFormattedParameterString());
+				config.put("runtime",String.valueOf("0"));
+				if(i == 0)
+				{
+					config.put("realTime", String.valueOf(i*10+0));
+				}
+				
+				if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
+				{
+					//Only want good configurations
+					i--;
+					continue;
+				} else
+				{
+					config.put("solved","SAT");
+					AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1.5, config, execConfig);
+					runConfigs.add(rc);
+				}
+			}
+			
+			startTime = System.currentTimeMillis();
+			
+			
+			final AtomicReference<List<AlgorithmRunResult>> listRef = new AtomicReference<>();
+			final CountDownLatch latch = new CountDownLatch(1);
+			
+			
+			taeUnity.evaluateRunsAsync(runConfigs, new TargetAlgorithmEvaluatorCallback(){
+
+				@Override
+				public void onSuccess(List<AlgorithmRunResult> runs) {
+					listRef.set(runs);
+					latch.countDown();
+				}
+
+				@Override
+				public void onFailure(RuntimeException e) {
+					e.printStackTrace();
+					latch.countDown();
+				}
+				
+			}
+			);
+			
+			
+			
+			try {
+				latch.await();
+			} catch (InterruptedException e1) {
+			
+				fail("Interrupted while executing test");
+			}
+			
+			
+			System.out.println(listRef.get());
+			runs = listRef.get();
+			assertEquals(runs.get(0).getRunStatus(), RunStatus.SAT);
+			
+			assertEquals(runs.get(1).getRunStatus(), RunStatus.CRASHED);
+			assertTrue(runs.get(1).getRuntime() > 1.5);
+			assertEquals(runs.get(1).getQuality(), CRASHED_SOLUTION_QUALITY, 1);
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+		}
+		
+		
+		
+		
+	}
+	
+	
+	
 	
 	public void checkExceptedObserverCount(TargetAlgorithmEvaluator tae, double scale, List<AlgorithmRunConfiguration> runConfigs, double runtime, double observerFrequency)
 	{
@@ -4812,6 +4981,8 @@ public class TAETestSet {
 		}
 		
 	}
+	
+	
 	
 	
 	
