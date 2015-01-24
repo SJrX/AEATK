@@ -1426,6 +1426,20 @@ public class ParamConfigurationTestNewPCS {
 		
 	}
 	
+	@Test
+	public void testWeirdNames()
+	{
+		
+		String weirdPCS = "weirdN>ame c { true, false} [true]\n"+
+						  "second c { true, false} [true]\n" + 
+						  "second | weirdN>ame in { true}\n";
+				
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(weirdPCS);
+		
+		
+		System.out.println(configSpace.getRandomParameterConfiguration(rand).getFormattedParameterString());
+		
+	}
 	
 	@After
 	public void tearDown()

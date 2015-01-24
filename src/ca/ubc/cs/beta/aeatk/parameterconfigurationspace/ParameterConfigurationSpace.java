@@ -186,8 +186,79 @@ public class ParameterConfigurationSpace implements Serializable {
 	/**
 	 *	operators in conditionals; EQ ==, NEQ !=, LE <, GR >, IN "in {...}" 
 	 */
+	
+	
+	
 	public enum ConditionalOperators {
-		EQ, NEQ, LE, GR, IN
+		
+		/*
+		 * 	if (cond.op == ConditionalOperators.EQ) {
+				op_in[j] = 0; 
+			} else if (cond.op == ConditionalOperators.NEQ) {
+				op_in[j] = 1; 
+			} else if (cond.op == ConditionalOperators.LE) {
+				op_in[j] = 2; 
+			} else if (cond.op == ConditionalOperators.GR) {
+				op_in[j] = 3; 
+			} else if (cond.op == ConditionalOperators.IN) {
+				op_in[j] = 4; 
+			}*/
+		
+		
+		EQ("==",0), NEQ("!=",1), LE("<",2), GR(">",3), IN("in",4);
+		
+		
+		private final String operatorString;
+		private final int opCode;
+		
+		
+		ConditionalOperators(String operatorString, int opCode)
+		{
+			this.operatorString = operatorString;
+			this.opCode = opCode;
+		}
+		
+		private static Pattern conditionalMatch = Pattern.compile("^\\S+\\s+(\\S+)\\s+");
+		
+		
+		static ConditionalOperators getOperatorFromConditionalClause(String clause)
+		{
+			
+			Matcher m = conditionalMatch.matcher(clause);
+			
+			if(m.find())
+			{
+				String operator = m.group(1);
+			
+				try
+				{
+					return ConditionalOperators.valueOf(operator.trim());
+				} catch(IllegalArgumentException e)
+				{
+					throw new IllegalArgumentException("Detected conditional operator of " + operator + " in clause: " + clause + ", this operator is unsupported only the following operators are legal: " + getAllOperators());
+				}
+			}
+			
+			throw new IllegalArgumentException("Could not find conditional operator in clause: " + clause);
+		}
+		
+		
+		private static String getAllOperators()
+		{
+			StringBuilder sb = new StringBuilder("{");
+			for(ConditionalOperators op : ConditionalOperators.values())
+			{
+				sb.append(op.operatorString).append(",");
+			}
+			
+			sb.setCharAt(sb.length() - 1, '}');
+			return sb.toString();
+		}
+
+
+		public int getOperatorCode() {
+			return opCode;
+		}
 	}
 	
 	/**
@@ -345,30 +416,14 @@ public class ParameterConfigurationSpace implements Serializable {
 				{ try {
 					//System.out.println(line);
 					pcs.append(line + "\n");
-					parseAClibLine(line);
+					parseAClibLine(transformOldFormat(line));
 					} catch(RuntimeException e)
 					{
 						throw e;
 					} 
 				    
 				}
-				/* //maybe support old format later again!
-				if (aclibFormatFailed) {
 				
-					//TODO: Re-initialize all object attributes ... :-(
-					System.err.println("Try to read pcs file with \"old\" format");
-					for(String pcsline :pcs.toString().split("\n")) // read from pcs
-					{ try {
-						System.out.println(pcsline);
-						parseLine(pcsline);
-						} catch(RuntimeException e)
-						{
-							System.err.println("Error occured parsing: " + pcsline);
-							throw e;
-						}
-					    
-					}
-				}*/
 			} finally
 			{
 				if (inputData != null)
@@ -483,6 +538,10 @@ public class ParameterConfigurationSpace implements Serializable {
 			return;
 		}
 		
+		if(line.trim().equals("Conditionals:")) return;
+		if(line.trim().equals("Forbidden:")) return;
+		
+		
 		// categorical or ordinal parameters
 		Matcher catOrdMatcher = catOrdPattern.matcher(line);
 		if (catOrdMatcher.find()){
@@ -580,10 +639,12 @@ public class ParameterConfigurationSpace implements Serializable {
 			isContinuous.put(name, Boolean.TRUE);
 			values.put(name, Collections.<String> emptyList());
 			switch (type){
-				case "i": 	paramTypes.put(name, ParameterType.INTEGER);
-							break;
-				case "r":   paramTypes.put(name, ParameterType.REAL);
-							break;
+				case "i": 	
+						paramTypes.put(name, ParameterType.INTEGER);
+						break;
+				case "r":
+						paramTypes.put(name, ParameterType.REAL);
+						break;
 				default:
 					throw new IllegalStateException("Could not identify the type of the parameter: "+line);
 			}
@@ -649,7 +710,7 @@ public class ParameterConfigurationSpace implements Serializable {
 		}
 		
 		if (nameConditionsMap.get(param_id) != null){
-			throw new IllegalArgumentException("Each parameter can only be once in the head of a condition!");
+			throw new IllegalArgumentException("Each parameter can only be once in the head of a condition!" + param_name);
 		}
 		nameConditionsMap.put(param_id, conditionals);
 		
@@ -826,6 +887,10 @@ public class ParameterConfigurationSpace implements Serializable {
 						//categorical and ordinal values are already encoded as integer
 						values_in[j] = cond.values;	
 					}
+					
+					
+					op_in[j] = cond.op.getOperatorCode();
+					/*
 					if (cond.op == ConditionalOperators.EQ) {
 						op_in[j] = 0; 
 					} else if (cond.op == ConditionalOperators.NEQ) {
@@ -836,7 +901,7 @@ public class ParameterConfigurationSpace implements Serializable {
 						op_in[j] = 3; 
 					} else if (cond.op == ConditionalOperators.IN) {
 						op_in[j] = 4; 
-					}
+					}*/
 					j++;
 				}
 				parent_id[i] = parent_id_in;
@@ -912,6 +977,80 @@ public class ParameterConfigurationSpace implements Serializable {
 		
 	}
 	
+	Pattern oldCategoricalFormatMatcher = Pattern.compile("^\\s*(\\S+)\\s*\\{(.+)\\}\\s*\\[\\s*(\\S+)\\s*\\]\\s*$");
+	Pattern oldContinuousFormatMatcher = Pattern.compile("^\\s*(\\S+)\\s*\\[(.+)\\]\\s*\\[\\s*(\\S+)\\s*]\\s*([il]*[il]*)\\s*$");
+	
+	private String transformOldFormat(String s)
+	{
+		String line = s;
+		int commentStart = line.indexOf("#");
+		line = line.trim();
+		if (commentStart >= 0)
+		{
+			line = line.substring(0, commentStart).trim();
+		}
+		
+		//We are done if we trim away the rest of the line
+		if (line.length() == 0)
+		{
+			return s;
+		}
+		
+		if(line.trim().equals("Conditionals:")) return s;
+		if(line.trim().equals("Forbidden:")) return s;
+		
+		Matcher match = oldCategoricalFormatMatcher.matcher(line);
+		
+		if(match.find())
+		{
+			String name = match.group(1);
+			String values = match.group(2);
+			String defaultValue = match.group(3);
+			
+			
+			String newLine =  name + " c {" +values+"} [" + defaultValue + "]";
+			
+			System.err.println("Transformation: " + s + "\t ====>" + newLine);
+			return newLine;
+		}
+		
+		
+		match = oldContinuousFormatMatcher.matcher(line);
+		
+		
+		if(match.find())
+		{
+			String name = match.group(1);
+			String range = match.group(2);
+			String defaultValue = match.group(3);
+			String il = match.group(4);
+			
+			boolean integerOnly = false;
+			boolean logTransform = false;
+			
+			
+			
+			if(il.contains("i"))
+			{
+				integerOnly = true;
+			}
+			
+			if(il.contains("l"))
+			{
+				logTransform = true;
+			}
+			
+			String newLine = name + " " + (integerOnly?"i":"r") + " [" + range + "] " + "[" + defaultValue +"]" + (logTransform?"log":"");
+			
+			System.err.println("Transformation: " + s + "\t ====>" + newLine);
+			return newLine;
+		}
+		
+		return s;
+		
+		
+		
+	}
 	/**
 	 * Returns the name assuming it starts at the beginning of a line.
 	 * @param line
@@ -957,26 +1096,6 @@ public class ParameterConfigurationSpace implements Serializable {
 			return name;
 		}
 	}
-	
-	
-	/**
-	 *  Returns the default value (takes an offset from where to search)
-	 * @param offset
-	 * @param line
-	 * @return
-	 */
-	/*
-	private String getDefault(int offset, String line) {
-		String defaultValue = line.substring(line.indexOf("[",offset+1)+1, line.indexOf("]",offset+1)).trim();
-		if (defaultValue.length() == 0)
-		{
-			throw new IllegalArgumentException("Invalid Default Value specified in line: " + line);
-		} else
-		{
-			return defaultValue;
-		}
-	}
-	*/
 
 	/**
 	 * Gets the list of allowable values

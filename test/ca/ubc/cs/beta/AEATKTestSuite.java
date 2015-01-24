@@ -6,6 +6,7 @@ import org.junit.runners.Suite;
 import ca.ubc.cs.beta.acquisitionfunction.AcquisitionFunctionTester;
 import ca.ubc.cs.beta.aeatk.algorithmrun.TestExistingAlgorithmRun;
 import ca.ubc.cs.beta.configspace.ParamConfigurationTest;
+import ca.ubc.cs.beta.configspace.ParamConfigurationTestNewPCS;
 import ca.ubc.cs.beta.configspace.RandomConfigurationTest;
 import ca.ubc.cs.beta.eventsystem.EventManagerTester;
 import ca.ubc.cs.beta.misc.CPUTimeTest;
@@ -29,6 +30,7 @@ import ca.ubc.cs.beta.jcommander.JCommanderTest;
 	EventManagerTester.class,
 	DynamicCappingTestSet.class,
 	ParamConfigurationTest.class,
+	ParamConfigurationTestNewPCS.class,
 	RandomConfigurationTest.class,
 	ProblemInstanceHelperTester.class,
 	AlgoExecutionInstanceSpecificInfoTest.class,
