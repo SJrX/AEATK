@@ -1849,7 +1849,25 @@ public class ParamConfigurationTestNewPCS {
 		}
 
 		
-	
+		
+		try {	
+			String pcsFile = "A c {a,b,} [a]\n"
+				+ "B i [0,10] [5]\n"
+				+ "C c {true, false} [true]\n"
+				+ "C | A in {a,b} && B > 2\n"
+				+ "B | C in {true}";
+		
+			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+			fail("Expected Exception");
+			
+		} catch(IllegalArgumentException e)
+		{
+			//Good
+			System.err.println(e.getMessage());
+			
+		}
+
+		
 		
 		
 		try {
@@ -1859,7 +1877,7 @@ public class ParamConfigurationTestNewPCS {
 				+ "C | A in {a,b} || A in {a}";
 		
 			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
-			System.out.println(configSpace.getPCSFile());
+			//System.out.println(configSpace.getPCSFile());
 			
 			
 		} catch(IllegalArgumentException e)
