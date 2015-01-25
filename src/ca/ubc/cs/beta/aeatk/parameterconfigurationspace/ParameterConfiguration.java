@@ -19,7 +19,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import ca.ubc.cs.beta.aeatk.json.serializers.ParameterConfigurationSpaceJson;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace.Conditional;
-import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace.ConditionalOperators;
+
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -984,7 +984,7 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 					Integer parent_id = cond.parent_ID;
 					String parent_name = param_names.get(parent_id);
 					String parent_value_string = get(parent_name);
-					double encoded_value;
+					double encodedParentPresentValue;
 
 					// check whether parent is active; if not, child is also not active
 					if (! activeParams.contains(parent_name)){
@@ -994,42 +994,48 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 					
 					//translate value
 					if (configSpace.getContinuousMap().get(parent_name)) {
-						encoded_value = Double.parseDouble(parent_value_string);
+						encodedParentPresentValue = Double.parseDouble(parent_value_string);
 					} else {
-						encoded_value = (double) configSpace.getCategoricalValueMap().get(parent_name).get(parent_value_string);
+						encodedParentPresentValue = (double) configSpace.getCategoricalValueMap().get(parent_name).get(parent_value_string);
 					}
 
-					// check condition					
+					// check condition
+					
+					
+					boolean satisfied = cond.op.conditionalClauseMatch(encodedParentPresentValue, cond.values);
+					System.out.println(satisfied);
+					all_satisfied = all_satisfied & satisfied;
+					/*
 					if (cond.op == ConditionalOperators.IN) {
 						boolean contains = false;
 						for (Double cv: cond.values) {
-							if (cv == encoded_value) {
+							if (cv == encodedParentPresentValue) {
 								contains = true;
 								break;
 							}
 						}
 						all_satisfied = contains;
 					} else if (cond.op == ConditionalOperators.EQ) {
-						if (cond.values[0] != encoded_value) {
+						if (cond.values[0] != encodedParentPresentValue) {
 							all_satisfied = false;
 							break;
 						}
 					} else if (cond.op == ConditionalOperators.NEQ) {
-						if (cond.values[0] == encoded_value) {
+						if (cond.values[0] == encodedParentPresentValue) {
 							all_satisfied = false;
 							break;
 						}
 					} else if (cond.op == ConditionalOperators.LE) {
-						if (cond.values[0] >= encoded_value) {
+						if (cond.values[0] < encodedParentPresentValue) {
 							all_satisfied = false;
 							break;
 						}
 					} else if (cond.op == ConditionalOperators.GR) {
-						if (cond.values[0] <= encoded_value) {
+						if (cond.values[0] > encodedParentPresentValue) {
 							all_satisfied = false;
 							break;
 						}
-					}
+					}*/
 					if (!all_satisfied){ //if one condition is not satisfied, the complete clause is falsified; no further check necessary
 						break;
 					}

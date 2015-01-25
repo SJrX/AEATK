@@ -56,16 +56,7 @@ public class StateMergeModelBuilder {
 	
 	public void learnModel(List<ProblemInstance> instances, RunHistory runHistory, ParameterConfigurationSpace configSpace, RandomForestOptions rfOptions, ModelBuildingOptions mbOptions, ScenarioOptions scenarioOptions, boolean adaptiveCapping, SeedableRandomPool pool) 
 	{
-		
 
-		
-		
-		
-		
-		
-		
-		
-		
 		//=== The following two sets are required to be sorted by instance and paramConfig ID.
 		Set<ProblemInstance> all_instances = new LinkedHashSet<ProblemInstance>(instances);
 		Set<ParameterConfiguration> paramConfigs = runHistory.getUniqueParamConfigurations();

@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.StringReader;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -529,11 +530,14 @@ public class ParamConfigurationTest {
 		
 		double[] valueArray = config.toValueArray();
 		
+		System.out.println(Arrays.toString(valueArray));
+		System.out.println(config.getParameterConfigurationSpace().getParameterNamesInAuthorativeOrder());
 		assertDEquals(valueArray[0], 3);
 		assertDEquals(valueArray[1], 2);
-		assertDEquals(valueArray[3], 2);
+		
 		assertDEquals(valueArray[2], 2);
 		
+		assertDEquals(valueArray[3], 2);
 
 		/*
 		SurrogateExecutorParams config = getConfig("-Pa=3 -Pb=2 -Pd=2 -Pc=2 -f " + STANDARD_MATRIX_FILE + " -d --inst /ubc/cs/project/arrow/projects/Sat_Data/bench/SW-verification/HSAT/hsat_vc3492.cnf --seed 1234 ");

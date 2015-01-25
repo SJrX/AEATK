@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.StringReader;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -147,7 +148,7 @@ public class ParamConfigurationTestNewPCS {
 		assertTrue(config.isForbiddenParameterConfiguration());
 	}
 	
-	@Test(expected=IllegalArgumentException.class)
+	
 	public void testOldFormat() {
 		URL url = this.getClass().getClassLoader().getResource("paramFiles/aclib2oldFormat.txt");
 		File f = new File(url.getPath());
@@ -203,18 +204,9 @@ public class ParamConfigurationTestNewPCS {
 		ParameterConfigurationSpace p = getConfigSpaceForFile("paramFiles/aclib2daisy-chain-param.txt");
 		ParameterConfiguration config = p.getParameterConfigurationFromString("-Pa=2 -Pb=1 -Pc=4 -Pd=2 -Pe=7", ParameterStringFormat.SURROGATE_EXECUTOR);
 		
-		//ParamConfigurationSpace p = new ParamConfigurationSpace(new File("./test_resources/daisy-chain-param.txt"));
-		List<String> paramNames = Lists.newLinkedList();
+
+		assertTrue("Parameter e should be active",config.getActiveParameters().contains("e"));
 		
-		paramNames.addAll(p.getParameterNames());
-		
-		double[] valueArray = config.toValueArray();
-		
-		assertDEquals(valueArray[0], 2);
-		assertDEquals(valueArray[1], 1);
-		assertDEquals(valueArray[2], 4);
-		assertDEquals(valueArray[4], 2); //switched order because we store the parameters in the same order as used in the pcs files
-		assertDEquals(valueArray[3], 7);
 	}
 	
 	/**
@@ -262,15 +254,8 @@ public class ParamConfigurationTestNewPCS {
 		ParameterConfigurationSpace p = getConfigSpaceForFile("paramFiles/aclib2diamond-param.txt");
 		ParameterConfiguration config = p.getParameterConfigurationFromString("-Pa=1 -Pb=3 -Pc=4 -Pd=6 -Pe=2 ", ParameterStringFormat.SURROGATE_EXECUTOR);
 		
-		List<String> paramNames = Lists.newLinkedList();
-		paramNames.addAll(p.getParameterNames());
+		assertTrue("Parameter E should be active",config.getActiveParameters().contains("e"));
 		
-		double[] valueArray = config.toValueArray();
-		assertDEquals(valueArray[0], 1);
-		assertDEquals(valueArray[1], 3);
-		assertDEquals(valueArray[2], 4);
-		assertDEquals(valueArray[4], 6);
-		assertDEquals(valueArray[3], 2);
 	}
 	
 	/**
@@ -287,9 +272,10 @@ public class ParamConfigurationTestNewPCS {
 		paramNames.addAll(p.getParameterNames());
 		double[] valueArray = config.toValueArray();
 		
-		assertDEquals(valueArray[0], 1);
-		assertDEquals(valueArray[1], 1);
-		assertDEquals(valueArray[4], 6);
+		assertFalse("Parameter e should be active",config.getActiveParameters().contains("e"));
+		assertFalse("Parameter c should be active",config.getActiveParameters().contains("c"));
+		
+		assertTrue("Parameter d should be active",config.getActiveParameters().contains("d"));
 	}
 	
 	/**
@@ -359,11 +345,8 @@ public class ParamConfigurationTestNewPCS {
 		paramNames.addAll(p.getParameterNames());
 		
 		double[] valueArray = config.toValueArray();
-		assertDEquals(valueArray[0], 2);
-		assertDEquals(valueArray[1], 2);
-		assertDEquals(valueArray[4], 2);
-		assertDEquals(valueArray[2], 2);
-		assertDEquals(valueArray[3], 1);
+
+		assertTrue("Parameter E should be active",config.getActiveParameters().contains("e"));
 	}
 	
 	/**
@@ -373,16 +356,17 @@ public class ParamConfigurationTestNewPCS {
 	public void testMultiParamEInActive()
 	{
 		ParameterConfigurationSpace p = getConfigSpaceForFile("paramFiles/aclib2multi-dependency-param.txt");
-		ParameterConfiguration config = p.getParameterConfigurationFromString("-Pa=3 -Pb=2 -Pd=2 -Pc=2", ParameterStringFormat.SURROGATE_EXECUTOR);
+		ParameterConfiguration config = p.getParameterConfigurationFromString("-Pa=2 -Pb=2 -Pd=2 -Pc=2 -Pe=2", ParameterStringFormat.SURROGATE_EXECUTOR);
 	
 		List<String> paramNames = Lists.newLinkedList();
 		paramNames.addAll(p.getParameterNames());
 
 		double[] valueArray = config.toValueArray();
-		assertDEquals(valueArray[0], 3);
-		assertDEquals(valueArray[1], 2);
-		assertDEquals(valueArray[4], 2);
-		assertDEquals(valueArray[2], 2);
+		System.out.println(Arrays.toString(valueArray));
+		
+		
+		assertTrue("Parameter E should be active",config.getActiveParameters().contains("e"));
+		
 	}
 	
 	/**
@@ -1485,7 +1469,7 @@ public class ParamConfigurationTestNewPCS {
 	}
 	
 	@Test
-	public void testConditionalOperators()
+	public void testConditionalOperatorsSimple()
 	{
 		
 		String pcsFile = "";
@@ -1526,19 +1510,11 @@ public class ParamConfigurationTestNewPCS {
 				
 		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
 		
-		
-		
-		
-		
-		
 		pcsFile = "A i [0,10] [5]\n"
 				+ "B i [0,10] [5]\n"
 				+ "B | A in { 5 } ";
 				
 		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
-		
-		
-		
 		
 		pcsFile = "A i [0,10] [5]\n"
 				+ "B i [0,10] [5]\n"
@@ -1613,6 +1589,681 @@ public class ParamConfigurationTestNewPCS {
 		//System.out.println(configSpace.getDefaultConfiguration().getFormattedParameterString());
 				
 	}
+	
+	
+	
+	@Test
+	public void testSyntaxErrors()
+	{
+		
+		try {
+			
+		
+			String pcsFile = "A i [0,10] [5]\n"
+				+ "B i [0,10] [5]\n"
+				+ "C c {true, false} [true]\n"
+				+ "B | A == 5 | C == true";
+		
+		
+			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+			fail("Expected Exception");
+		} catch(IllegalArgumentException e)
+		{
+			//Good
+			System.err.println(e.getMessage());
+		}
+		
+		
+		try {
+			
+			
+			String pcsFile = "A i [0,10] [5]\n"
+				+ "B i [0,10] [5]\n"
+				+ "C c {true, false} [true]\n"
+				+ "B | A == 5 & C == true";
+		
+		
+			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+			fail("Expected Exception");
+		} catch(IllegalArgumentException e)
+		{
+			//Good
+			System.err.println(e.getMessage());
+		}
+		
+		
+		
+		try {	
+			String pcsFile = "A i [0,10] [5]\n"
+				+ "B i [0,10] [5]\n"
+				+ "C c {true, false} [true]\n"
+				+ "B | A == 5 5";
+		
+		
+			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+			fail("Expected Exception");
+		} catch(IllegalArgumentException e)
+		{
+			//Good
+			System.err.println(e.getMessage());
+		}
+		
+	
+		try {	
+			String pcsFile = "A i [0,10] [5]\n"
+				+ "B i [0,10] [5]\n"
+				+ "C c {true, false} [true]\n"
+				+ "B  A == 5 ";
+		
+		
+			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+			fail("Expected Exception");
+		} catch(IllegalArgumentException e)
+		{
+			//Good
+			System.err.println(e.getMessage());
+		}
+	
+		
+
+		try {	
+			String pcsFile = "A i [0,10] [5]\n"
+				+ "B i [0,10] [5]\n"
+				+ "C c {true, false} [true]\n"
+				+ "C c {a,b,c} [a] ";
+		
+			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+			fail("Expected Exception");
+		} catch(IllegalArgumentException e)
+		{
+			//Good
+			System.err.println(e.getMessage());
+		}
+	
+		try {	
+			String pcsFile = "A i [0,10] [5]\n"
+				+ "B i [0,10] [5]\n"
+				+ "C c {true, false} [true]\n"
+				+ "C | A > -1";
+		
+			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+			fail("Expected Exception");
+			
+		} catch(IllegalArgumentException e)
+		{
+			//Good
+			System.err.println(e.getMessage());
+		
+		}
+	
+		try {	
+			String pcsFile = "A i [0,10] [-1]\n"
+				+ "B i [0,10] [5]\n"
+				+ "C c {true, false} [true]\n";
+		
+			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+			fail("Expected Exception");
+			
+		} catch(IllegalArgumentException e)
+		{
+			//Good
+			System.err.println(e.getMessage());
+			
+		}
+	
+		try {	
+			String pcsFile = "A i [0,10] [0.5]\n"
+				+ "B i [0,10] [5]\n"
+				+ "C c {true, false} [true]\n";
+		
+			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+			fail("Expected Exception");
+			
+		} catch(IllegalArgumentException e)
+		{
+			//Good
+			System.err.println(e.getMessage());
+			
+		}
+	
+
+		try {	
+			String pcsFile = "A i [0,10] [2]\n"
+				+ "B i [100,10] [5]\n"
+				+ "C c {true, false} [true]\n";
+		
+			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+			fail("Expected Exception");
+			
+		} catch(IllegalArgumentException e)
+		{
+			//Good
+			System.err.println(e.getMessage());
+			
+		}
+	
+	
+
+		try {	
+			String pcsFile = "A i [0,10] [2]\n"
+				+ "B i [-1,10] [5] log\n"
+				+ "C c {true, false} [true]\n";
+		
+			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+			fail("Expected Exception");
+			
+		} catch(IllegalArgumentException e)
+		{
+			//Good
+			System.err.println(e.getMessage());
+			
+		}
+	
+	
+		
+		
+		
+		
+		try {	
+			String pcsFile = "A  c {} []\n"
+				+ "B i [0,10] [5]\n"
+				+ "C c {true, false} [true]\n";
+		
+			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+			fail("Expected Exception");
+			
+		} catch(IllegalArgumentException e)
+		{
+			//Good
+			System.err.println(e.getMessage());
+			
+		}
+	
+		
+		
+		try {	
+			String pcsFile = "A c {a,b,   a    } [b]\n"
+				+ "B i [0,10] [5]\n"
+				+ "C c {true, false} [true]\n";
+		
+			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+			fail("Expected Exception");
+			
+		} catch(IllegalArgumentException e)
+		{
+			//Good
+			System.err.println(e.getMessage());
+			
+		}
+		
+		
+		try {	
+			String pcsFile = "A c {a,b } [b]\n"
+				+ "B i [0,10.5] [5]\n"
+				+ "C c {true, false} [true]\n";
+		
+			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+			fail("Expected Exception");
+			
+		} catch(IllegalArgumentException e)
+		{
+			//Good
+			System.err.println(e.getMessage());
+			
+		}
+		
+	
+		
+		
+		try {	
+			String pcsFile = "A c {a,b,} [a]\n"
+				+ "B i [0,10] [5]\n"
+				+ "C c {true, false} [true]\n"
+				+ "C | A in {a,a,b} && B > 2";
+		
+			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+			fail("Expected Exception");
+			
+		} catch(IllegalArgumentException e)
+		{
+			//Good
+			System.err.println(e.getMessage());
+			
+		}
+
+		
+	
+		
+		
+		try {
+			String pcsFile = "A {a,b,} [a]\n"
+				+ "B [0,10] [5]i\n"
+				+ "C c {true, false} [true]\n"
+				+ "C | A in {a,b} || A in {a}";
+		
+			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+			System.out.println(configSpace.getPCSFile());
+			
+			
+		} catch(IllegalArgumentException e)
+		{
+			//Good
+			System.err.println(e.getMessage());
+			
+		}
+		
+	
+		/*
+		try {	
+			String pcsFile = "A o { LOW, MEDIUM, HIGH} [LOW]\n";
+				
+		
+			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+			
+			System.out.println(Arrays.toString(configSpace.getDefaultConfiguration().toValueArray()));
+			fail("Expected Exception");
+			
+		} catch(IllegalArgumentException e)
+		{
+			//Good
+			System.err.println(e.getMessage());
+			
+		}
+		*/
+			
+	}
+	
+	@Test
+	public void testConditionalOperatorsAdvanced()
+	{
+		
+		
+		/**
+		 * Integer == , != Tests
+		 */
+		String pcsFile = "";
+		ParameterConfigurationSpace configSpace = null;
+		
+		pcsFile = "A i [0,10] [5]\n"
+				+ "B i [0,10] [5]\n"
+				+ "C c {true, false} [true]\n"
+				+ "B | A == 5 && C == true";
+				
+		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
+		
+		pcsFile = "A i [0,10] [5]\n"
+				+ "B i [0,10] [5]\n"
+				+ "C c {true, false} [true]\n"
+				+ "B | A == 5 || C == true";
+				
+		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
+		
+		pcsFile = "A i [0,10] [5]\n"
+				+ "B i [0,10] [5]\n"
+				+ "C c {true, false} [true]\n"
+				+ "B | A == 6 || C == true";
+				
+		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
+		
+		
+		pcsFile = "A i [0,10] [5]\n"
+				+ "B i [0,10] [5]\n"
+				+ "C c {true, false} [true]\n"
+				+ "B | A == 5 || C == false";
+				
+		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
+		
+		
+		
+		
+		pcsFile = "A i [0,10] [5]\n"
+				+ "B i [0,10] [5]\n"
+				+ "C c {true, false} [true]\n"
+				+ "B | A != 5 && C == true";
+				
+		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
+		
+		
+		pcsFile = "A i [0,10] [5]\n"
+				+ "B i [0,10] [5]\n"
+				+ "C c {true, false} [true]\n"
+				+ "B | A == 5 && C == false";
+				
+		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
+		
+		
+		pcsFile = "A i [0,10] [5]\n"
+				+ "B i [0,10] [5]\n"
+				+ "C c {true, false} [true]\n"
+				+ "B | A == 5 && C != true";
+				
+		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
+		
+		
+		
+		
+		/**
+		 *  Real Tests ==, != Tests
+		 **/
+		
+		
+		
+		
+		
+		
+		pcsFile = "A r [0,10] [5]\n"
+				+ "B r [0,10] [5]\n"
+				+ "C c {true, false} [true]\n"
+				+ "B | A == 5 && C == true";
+				
+		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
+		
+		
+		pcsFile = "A r [0,10] [5]\n"
+				+ "B r [0,10] [5]\n"
+				+ "C c {true, false} [true]\n"
+				+ "B | A == 5 || C == true";
+				
+		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
+		
+		
+		pcsFile = "A r [0,10] [5]\n"
+				+ "B r [0,10] [5]\n"
+				+ "C c {true, false} [true]\n"
+				+ "B | A == 6 || C == true";
+				
+		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
+		
+		
+		pcsFile = "A r [0,10] [5]\n"
+				+ "B r [0,10] [5]\n"
+				+ "C c {true, false} [true]\n"
+				+ "B | A == 5 || C == false";
+				
+		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
+		
+	
+		
+		
+		
+		pcsFile = "A r [0,10] [5]\n"
+				+ "B r [0,10] [5]\n"
+				+ "C c {true, false} [true]\n"
+				+ "B | A != 5 && C == true";
+				
+		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
+	
+
+		pcsFile = "A r [0,10] [5]\n"
+				+ "B r [0,10] [5]\n"
+				+ "C c {true, false} [true]\n"
+				+ "B | A == 5 && C == false";
+				
+		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
+	
+		
+		
+
+		pcsFile = "A r [0,10] [5]\n"
+				+ "B r [0,10] [5]\n"
+				+ "C c {true, false} [true]\n"
+				+ "B | A != 5 || C != true";
+				
+		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
+	
+		
+		
+
+		pcsFile = "A r [0,10] [5]\n"
+				+ "B r [0,10] [5]\n"
+				+ "C c {true, false} [true]\n"
+				+ "B | A != 5 || C == false";
+				
+		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
+	
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		/**
+		 * Integer Set tests
+		 */
+		pcsFile = "A i [0,10] [5]\n"
+				+ "B i [0,10] [5]\n"
+				+ "C c {true, false} [true]\n"
+				+ "B | C == true && A in { 5 } ";
+				
+		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
+		
+		
+		pcsFile = "A i [0,10] [5]\n"
+				+ "B i [0,10] [5]\n"
+				+ "C c {true, false} [true]\n"
+				+ "B | C == false || A in { 5 } ";
+				
+		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
+		
+		pcsFile = "A i [0,10] [5]\n"
+				+ "B i [0,10] [5]\n"
+				+ "C c {true, false} [true]\n"
+				+ "B | C == true || A in { 6 } ";
+				
+		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
+		
+		pcsFile = "A i [0,10] [5]\n"
+				+ "B i [0,10] [5]\n"
+				+ "C c {true, false} [true]\n"
+				+ "B | A in { 6 } || C != false";
+				
+		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
+		
+		
+		
+	
+		
+		pcsFile = "A i [0,10] [5]\n"
+				+ "B i [0,10] [5]\n"
+				+ "C c {true, false} [true]\n"
+				+ "B | A in { 6 } && C == true";
+				
+		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
+	
+
+		pcsFile = "A i [0,10] [5]\n"
+				+ "B i [0,10] [5]\n"
+				+ "C c {true, false} [true]\n"
+				+ "B | A in { 5 } && C == false";
+				
+		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
+		
+
+		pcsFile = "A i [0,10] [5]\n"
+				+ "B i [0,10] [5]\n"
+				+ "C c {true, false} [true]\n"
+				+ "B | A in { 6 } || C == false";
+				
+		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
+		
+
+		pcsFile = "A i [0,10] [5]\n"
+				+ "B i [0,10] [5]\n"
+				+ "C c {true, false} [true]\n"
+				+ "B | C != true || A in { 6 }";
+				
+		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
+		
+		
+		
+		/**
+		 * Real set tests
+		 */
+
+		pcsFile = "A r [0,10] [5]\n"
+				+ "B r [0,10] [5]\n"
+				+ "C c {true, false} [true]\n"
+				+ "B | C == true && A in { 5 }";
+				
+		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
+		
+
+		pcsFile = "A r [0,10] [5]\n"
+				+ "B r [0,10] [5]\n"
+				+ "C c {true, false} [true]\n"
+				+ "B | C == false || A in { 5 }";
+				
+		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
+		
+		
+		
+
+		pcsFile = "A r [0,10] [5]\n"
+				+ "B r [0,10] [5]\n"
+				+ "C c {true, false} [true]\n"
+				+ "B | C == true || A in { 6 }";
+				
+		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
+		
+		
+		
+
+		pcsFile = "A r [0,10] [5]\n"
+				+ "B r [0,10] [5]\n"
+				+ "C c {true, false} [true]\n"
+				+ "B | A in { 6 } || C != false";
+				
+		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
+		
+		
+		
+		pcsFile = "A r [0,10] [5]\n"
+				+ "B r [0,10] [5]\n"
+				+ "C c {true, false} [true]\n"
+				+ "B | A in { 6 } && C == true";
+				
+		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
+		
+		pcsFile = "A r [0,10] [5]\n"
+				+ "B r [0,10] [5]\n"
+				+ "C c {true, false} [true]\n"
+				+ "B | A in { 6 } || C == false";
+				
+		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
+		
+		pcsFile = "A r [0,10] [5]\n"
+				+ "B r [0,10] [5]\n"
+				+ "C c {true, false} [true]\n"
+				+ "B | A in { 6 } || C != true";
+				
+		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
+		
+		
+		pcsFile = "A r [0,10] [5]\n"
+				+ "B r [0,10] [5]\n"
+				+ "C c {true, false} [true]\n"
+				+ "B | A in { 6 } && C != false";
+				
+		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
+		
+		
+		
+		
+		
+		
+		pcsFile = "A i [0,10] [5]\n"
+				+ "B i [0,10] [5]\n"
+				+ "C c {true, false} [true]\n"
+				+ "B | A > 4 && C == true ";
+				
+		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
+		
+		
+		pcsFile = "A i [0,10] [5]\n"
+				+ "B i [0,10] [5]\n"
+				+ "C c {true, false} [true]\n"
+				+ "B | A > 3.5 || C == false ";
+				
+		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
+		
+		
+		
+		
+		pcsFile = "A i [0,10] [5]\n"
+				+ "B i [0,10] [5]\n"
+				+ "C c {true, false} [true]\n"
+				+ "B | A > 5 && C == false";
+				
+		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
+		
+		
+		
+		pcsFile = "A i [0,10] [5]\n"
+				+ "B i [0,10] [5]\n"
+				+ "C c {true, false} [true]\n"
+				+ "B | A > 6 && C == true";
+				
+		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
+		
+		
+		
+		pcsFile = "A r [0,10] [5]\n"
+				+ "B r [0,10] [5]\n"
+				+ "C c {true, false} [true]\n"
+				+ "B | A < 6 && C == true ";
+				
+		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
+		
+		
+		pcsFile = "A r [0,10] [5]\n"
+				+ "B r [0,10] [5]\n"
+				+ "C c {true, false} [true]\n"
+				+ "B | A < 5.5 || C == false ";
+				
+		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
+		
+		
+		
+		
+		
+		pcsFile = "A r [0,10] [5]\n"
+				+ "B r [0,10] [5]\n"
+				+ "C c {true, false} [true]\n"
+				+ "B | A < 5 && C == false";
+				
+		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
+		
+		
+
+		
+		pcsFile = "A r [0,10] [5]\n"
+				+ "B r [0,10] [5]\n"
+				+ "C c {true, false} [true]\n"
+				+ "B | A < 4 || C in { false} ";
+				
+		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		//System.out.println(configSpace.getDefaultConfiguration().getFormattedParameterString());
+				
+	}
+	
+	
+	
 	/**
 	 * @param pcsFile
 	 * @return
