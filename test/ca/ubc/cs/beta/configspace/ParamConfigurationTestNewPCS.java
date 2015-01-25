@@ -1612,6 +1612,23 @@ public class ParamConfigurationTestNewPCS {
 			//Good
 			System.err.println(e.getMessage());
 		}
+		try {
+			
+			
+			String pcsFile = "A i [0,10] [5]\n"
+				+ "B i [0,10] [5]\n"
+				+ "C c {true, false} [true]\n"
+				+ "B | A == 5 \n"
+				+ "B | C == 6\n";
+		
+		
+			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+			fail("Expected Exception");
+		} catch(IllegalArgumentException e)
+		{
+			//Good
+			System.err.println(e.getMessage());
+		}
 		
 		
 		try {

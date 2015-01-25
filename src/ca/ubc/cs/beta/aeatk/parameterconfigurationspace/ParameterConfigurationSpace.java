@@ -444,7 +444,7 @@ public class ParameterConfigurationSpace implements Serializable {
 						
 					} else
 					{
-						throw new IllegalStateException("Duplicate conditional lines detected: " + conditionalLines + ". Only one conditional line allowed per variable in new format. This line doesn't seem to be of the old format: " + line);
+						throw new IllegalArgumentException("Duplicate conditional lines detected: " + conditionalLines + ". Only one conditional line allowed per variable in new format. This line doesn't seem to be of the old format: " + line);
 					}
 				}
 				

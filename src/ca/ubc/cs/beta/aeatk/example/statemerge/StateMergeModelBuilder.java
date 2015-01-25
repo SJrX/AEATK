@@ -19,6 +19,7 @@ import ca.ubc.cs.beta.aeatk.model.data.DefaultValueForConditionalsMDS;
 import ca.ubc.cs.beta.aeatk.model.data.MaskCensoredDataAsUncensored;
 import ca.ubc.cs.beta.aeatk.model.data.MaskInactiveConditionalParametersWithDefaults;
 import ca.ubc.cs.beta.aeatk.model.data.SanitizedModelData;
+import ca.ubc.cs.beta.aeatk.objectives.OverallObjective;
 import ca.ubc.cs.beta.aeatk.options.RandomForestOptions;
 import ca.ubc.cs.beta.aeatk.options.scenario.ScenarioOptions;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
@@ -54,7 +55,7 @@ public class StateMergeModelBuilder {
 	
 	private final Logger log = LoggerFactory.getLogger(getClass());
 	
-	public void learnModel(List<ProblemInstance> instances, RunHistory runHistory, ParameterConfigurationSpace configSpace, RandomForestOptions rfOptions, ModelBuildingOptions mbOptions, ScenarioOptions scenarioOptions, boolean adaptiveCapping, SeedableRandomPool pool) 
+	public void learnModel(List<ProblemInstance> instances, RunHistory runHistory, ParameterConfigurationSpace configSpace, RandomForestOptions rfOptions, ModelBuildingOptions mbOptions,double cutoffTime, OverallObjective intraInstanceObjective, boolean adaptiveCapping, SeedableRandomPool pool) 
 	{
 
 		//=== The following two sets are required to be sorted by instance and paramConfig ID.
@@ -113,7 +114,7 @@ public class StateMergeModelBuilder {
 			{
 				if(censored[j])
 				{
-					runResponseValues[j] = scenarioOptions.algoExecOptions.cutoffTime;
+					runResponseValues[j] = cutoffTime;
 				}
 			}
 		}
@@ -124,9 +125,9 @@ public class StateMergeModelBuilder {
 		for(int j=0; j < runResponseValues.length; j++)
 		{ //=== Not sure if I Should be penalizing runs prior to the model
 			// but matlab sure does
-			if(runResponseValues[j] >= scenarioOptions.algoExecOptions.cutoffTime)
+			if(runResponseValues[j] >= cutoffTime)
 			{	
-				runResponseValues[j] = scenarioOptions.algoExecOptions.cutoffTime * scenarioOptions.getIntraInstanceObjective().getPenaltyFactor();
+				runResponseValues[j] = cutoffTime * intraInstanceObjective.getPenaltyFactor();
 			}
 			
 		}
@@ -155,7 +156,7 @@ public class StateMergeModelBuilder {
 		preparedForest = null;
 		if(adaptiveCapping)
 		{
-			mb = new AdaptiveCappingModelBuilder(sanitizedData, rfOptions, pool.getRandom("RANDOM_FOREST_BUILDING_PRNG"), mbOptions.imputationIterations, scenarioOptions.algoExecOptions.cutoffTime, scenarioOptions.getIntraInstanceObjective().getPenaltyFactor(), 1);
+			mb = new AdaptiveCappingModelBuilder(sanitizedData, rfOptions, pool.getRandom("RANDOM_FOREST_BUILDING_PRNG"), mbOptions.imputationIterations, cutoffTime, intraInstanceObjective.getPenaltyFactor(), 1);
 		} else
 		{
 			//mb = new HashCodeVerifyingModelBuilder(sanitizedData,smacConfig.randomForestOptions, runHistory);
