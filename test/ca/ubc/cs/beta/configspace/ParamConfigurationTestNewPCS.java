@@ -19,6 +19,7 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.concurrent.TimeUnit;
@@ -2349,38 +2350,61 @@ public class ParamConfigurationTestNewPCS {
 	
 	
 	@Test
-	public void checkNewForbiddenClausesSpeed()
+	@Ignore
+	public void checkNewForbiddenClausesSpeedMT() throws InterruptedException
 	{
 		
 		String pcsFile = "x r [-1,1] [0]\n"
 				+ "y r [-1,1] [0]\n"
 				+ "{ x^2+y^2 > 1 }";
 				
-		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+		final ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
 		
 		
 		TreeSet<String> output = new TreeSet<String>();
 		
+		ExecutorService execService = Executors.newFixedThreadPool(4);
 		
 		for(int j=0; j < 45; j++)
 		{
-			
-			AutoStartStopWatch watch = new AutoStartStopWatch();
-			
-			for(int i=0; i < 1000000; i++)
+			final CountDownLatch latch = new CountDownLatch(1);
+			final CountDownLatch complete = new CountDownLatch(100);
+			Runnable run = new Runnable()
 			{
-				ParameterConfiguration config = configSpace.getRandomParameterConfiguration(rand);
-				//double r = Math.sqrt( Math.pow(Double.valueOf(config.get("x")),2) + Math.pow(Double.valueOf(config.get("y")),2));
 				
-				//assertTrue("Expected distance should be less than one", r < 1);
-				//output.add(/*r + "=>" +*/ config.getFormattedParameterString() + "=> " + r);
+				@Override
+				public void run() {
+					try {
+						latch.await();
+					} catch (InterruptedException e) {
+						e.printStackTrace();
+					}
+					for(int i=0; i < 10000; i++)
+					{
+						ParameterConfiguration config = configSpace.getRandomParameterConfiguration(rand);
+						//double r = Math.sqrt( Math.pow(Double.valueOf(config.get("x")),2) + Math.pow(Double.valueOf(config.get("y")),2));
+						
+						//assertTrue("Expected distance should be less than one", r < 1);
+						//output.add(/*r + "=>" +*/ config.getFormattedParameterString() + "=> " + r);
+					}
+					complete.countDown();
+				}
+			};
+			
+			for(int i=0; i < 100; i++)
+			{
+				execService.submit(run);
 			}
 			
+			AutoStartStopWatch watch = new AutoStartStopWatch();
+			latch.countDown();
+			
+			complete.await();
 			watch.stop();
 			
 			if(j > 4)
 			{
-				System.out.println(j-4 + "," + watch.time() / 1000.0);
+				System.out.println(/*j-4 + ","*/ + watch.time() / 1000.0);
 			}
 			System.gc();
 		}
@@ -2582,6 +2606,7 @@ public class ParamConfigurationTestNewPCS {
 	}
 	
 	@Test
+	@Ignore
 	public void testSpeedOfRandomWithRadius()
 	{
 		
@@ -2615,6 +2640,7 @@ public class ParamConfigurationTestNewPCS {
 	
 	
 	@Test
+	@Ignore
 	public void testSpeedOfRandomWithRedundantClauses()
 	{
 		
@@ -2648,6 +2674,7 @@ public class ParamConfigurationTestNewPCS {
 	
 	
 	@Test
+	@Ignore
 	public void testSpeedOfRandomWithRedundantSingleClauses()
 	{
 		
@@ -2685,6 +2712,7 @@ public class ParamConfigurationTestNewPCS {
 	}
 	
 	@Test
+	
 	public void testThreadSafeRandomGeneration() throws InterruptedException
 	{
 		String pcsFile = "a [-1,1] [0]\n b [-1,1] [0]\n { a^2 + b^2 > 0.75^2 }";

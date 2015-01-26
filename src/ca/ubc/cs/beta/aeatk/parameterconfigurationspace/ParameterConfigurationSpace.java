@@ -287,8 +287,13 @@ public class ParameterConfigurationSpace implements Serializable {
 	
 	private final Map<String, String> searchSubspace;
 	
-	List<Expression> cl = new ArrayList<Expression>();
+	final List<Expression> cl = new ArrayList<Expression>();
 	
+	final List<ExpressionBuilder> bl = new ArrayList<>();
+	
+	final ThreadLocal<List<Expression>> tlExpressions = new ThreadLocal<>();
+	
+	final ThreadLocal<Map<String, Double>> map = new ThreadLocal<>();
 	/**
 	 * Creates a Param Configuration Space from the given file, no random object
 	 * @param filename string storing the filename to parse
@@ -579,7 +584,7 @@ public class ParameterConfigurationSpace implements Serializable {
 	 */
 	private void parseAClibLine(String line){
 		
-		//System.out.println(line);
+	
 		
 		//Removes Comment
 		int commentStart = line.indexOf("#");
@@ -1041,6 +1046,8 @@ public class ParameterConfigurationSpace implements Serializable {
 				eb.variables(new HashSet<>(this.getParameterNames()));
 				
 				eb.operator(ForbiddenOperators.operators);
+				
+				bl.add(eb);
 				
 				Expression calc = eb.build();
 				

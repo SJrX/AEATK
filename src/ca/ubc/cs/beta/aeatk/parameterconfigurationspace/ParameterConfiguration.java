@@ -7,6 +7,7 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
@@ -20,13 +21,13 @@ import java.util.concurrent.atomic.AtomicInteger;
 import ca.ubc.cs.beta.aeatk.json.serializers.ParameterConfigurationSpaceJson;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace.Conditional;
 
-
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import de.congrace.exp4j.Calculable;
 import net.jcip.annotations.NotThreadSafe;
 import net.objecthunter.exp4j.Expression;
+import net.objecthunter.exp4j.ExpressionBuilder;
 
 
 /**
@@ -305,9 +306,9 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 			
 			if(Math.abs(d1/d2 - 1) >  Math.pow(10, -12))
 			{
-				System.out.println("Warning got the following value back from map " + get(key) + " put " + newValue + " in");
+				throw new IllegalStateException("Not Sure Why this happened: " + get(key) + " vs. " + newValue);
 			}
-				//throw new IllegalStateException("Not Sure Why this happened: " + get(key) + " vs. " + newValue);
+				
 		} else
 		{
 			if(get(key) == null)
@@ -770,7 +771,6 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 					{
 						j--;
 					} 
-					//System.out.println(j);
 					continue;
 				
 				}
@@ -1018,7 +1018,7 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 					
 					
 					boolean satisfied = cond.op.conditionalClauseMatch(encodedParentPresentValue, cond.values);
-					System.out.println(satisfied);
+					
 					all_satisfied = all_satisfied & satisfied;
 				
 					if (!all_satisfied){ //if one condition is not satisfied, the complete clause is falsified; no further check necessary
@@ -1085,28 +1085,62 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 			return false;
 		} else
 		{
-			for(Expression calc : configSpace.cl)
+			/*for(ExpressionBuilder eb : configSpace.bl)
+			{
+				Expression calc = eb.build();
+				*/
+			
+			
+			
+			List<Expression> expressions = configSpace.tlExpressions.get();
+			if(expressions == null)
+			{
+				expressions = new ArrayList<Expression>();
+				
+				for(ExpressionBuilder builder : configSpace.bl)
+				{
+					expressions.add(builder.build());
+				}
+				
+				configSpace.tlExpressions.set(expressions);
+			}
+			
+			
+		
+			//List<Expression> expressions = configSpace.cl;
+			
+			for(Expression calc : expressions)
 			{
 				
+				
 				int i=0; 
-				for(String name : configSpace.getParameterNamesInAuthorativeOrder())
+				
+				//synchronized(calc)
 				{
-					if(configSpace.getNormalizedRangeMap().get(name) != null && true)
+				
+					for(String name : configSpace.getParameterNamesInAuthorativeOrder())
 					{
-						calc.setVariable(name, configSpace.getNormalizedRangeMap().get(name).unnormalizeValue(this.valueArray[i]));
+						if(configSpace.getNormalizedRangeMap().get(name) != null && true)
+						{
+							//variables.put(name, configSpace.getNormalizedRangeMap().get(name).unnormalizeValue(this.valueArray[i]));
+							calc.setVariable(name, configSpace.getNormalizedRangeMap().get(name).unnormalizeValue(this.valueArray[i]));
+						} else
+						{
+							//variables.put(name, Double.valueOf(this.get(name)));
+							calc.setVariable(name,Double.valueOf(this.get(name)));
+						}
+						i++;
+					}
+					
+					if (calc.evaluate() == 0)
+					{
+						continue;
 					} else
 					{
-						calc.setVariable(name,Double.valueOf(this.get(name)));
+						return true;
 					}
-					i++;
-				}
-				if (calc.evaluate() == 0)
-				{
-					continue;
-				} else
-				{
-					return true;
-				}
+				} 
+				
 			}
 			
 			return false;
