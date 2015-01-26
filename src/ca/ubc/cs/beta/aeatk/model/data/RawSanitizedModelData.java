@@ -16,7 +16,8 @@ public class RawSanitizedModelData implements SanitizedModelData {
 	private double[] stdDev;
 	private double[] pcaCoeff;
 	private double[][] pcaVec;
-
+	private final int[] constantColumns;
+	
 	private final boolean logModel;
 	private int[][] theta_inst_idxs;
 	private boolean[] censoredResponseValues;
@@ -46,7 +47,7 @@ public class RawSanitizedModelData implements SanitizedModelData {
 		int[] constFeatures = pca.constantColumnsWithMissingValues(usedInstanceFeatures);
 		instanceFeatures = pca.removeColumns(instanceFeatures, constFeatures);
 		
-		
+		this.constantColumns = constFeatures;
 		
 		
 		
@@ -171,6 +172,15 @@ public class RawSanitizedModelData implements SanitizedModelData {
 	@Override
 	public boolean[] getCensoredResponses() {
 		return this.censoredResponseValues;
+	}
+	@Override
+	public int[] getConstantColumns() {
+		return constantColumns;
+	}
+	@Override
+	public boolean isEmptyFeatures() {
+		throw new IllegalStateException("This method only exists for PCA transformations and doesn't have a proper meaning outside. I have not thought about how this method would be used outside of PCA.");
+		//return false;
 	}
 	
 }

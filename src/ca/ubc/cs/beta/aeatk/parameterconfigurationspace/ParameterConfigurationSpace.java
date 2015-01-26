@@ -17,6 +17,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
@@ -30,6 +31,9 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import net.jcip.annotations.Immutable;
+import net.objecthunter.exp4j.Expression;
+import net.objecthunter.exp4j.ExpressionBuilder;
+import net.objecthunter.exp4j.operator.Operator;
 import ca.ubc.cs.beta.aeatk.json.serializers.ParameterConfigurationSpaceJson;
 import ca.ubc.cs.beta.aeatk.misc.java.io.FileReaderNoException.FileReaderNoExceptionThrown;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration.ParameterStringFormat;
@@ -41,7 +45,8 @@ enum LineType
 	CONTINUOUS,
 	CONDITIONAL,
 	FORBIDDEN,
-	OTHER
+	OTHER,
+	NEW_FORBIDDEN
 }
 
 
@@ -65,6 +70,8 @@ enum LineType
 @JsonDeserialize(using=ParameterConfigurationSpaceJson.ParamConfigurationSpaceDeserializer.class)
 public class ParameterConfigurationSpace implements Serializable {
 	
+	private static final String FORBIDDEN_EXPRESSION = "Forbidden Expression:";
+
 	/**
 	 * 
 	 */
@@ -153,6 +160,7 @@ public class ParameterConfigurationSpace implements Serializable {
 	 * Stores forbidden lines for later parsing
 	 */
 	private final List<String> forbiddenLines = new ArrayList<String>();
+
 
 	
 	/**
@@ -248,7 +256,7 @@ public class ParameterConfigurationSpace implements Serializable {
 	 */
 	private Map<Integer, int[][]> nameConditionsMapOp;
 	
-	public Map<Integer, int[][]> getNameConditionsMapParentsArray() {
+	public  Map<Integer, int[][]> getNameConditionsMapParentsArray() {
 		return nameConditionsMapParentsArray;
 	}
 
@@ -260,11 +268,11 @@ public class ParameterConfigurationSpace implements Serializable {
 		return nameConditionsMapOp;
 	}
 	
-	public List<String> getActiveCheckOrderString() {
+	protected List<String> getActiveCheckOrderString() {
 		return activeCheckOrderString;
 	}
 	
-	public Map<Integer, ArrayList<ArrayList<Conditional>>> getNameConditionsMap(){
+	protected Map<Integer, ArrayList<ArrayList<Conditional>>> getNameConditionsMap(){
 		return nameConditionsMap;
 	}
 	
@@ -278,6 +286,9 @@ public class ParameterConfigurationSpace implements Serializable {
 	private final Pattern intReaPattern = Pattern.compile("^\\s*(?<name>\\p{Graph}+)\\s*(?<type>[ir])\\s*\\[\\s*(?<min>\\p{Graph}+)\\s*,\\s*(?<max>\\p{Graph}+)\\s*\\]\\s*\\[(?<default>\\p{Graph}+)\\]\\s*(?<log>(log)?)\\s*$");
 	
 	private final Map<String, String> searchSubspace;
+	
+	List<Expression> cl = new ArrayList<Expression>();
+	
 	/**
 	 * Creates a Param Configuration Space from the given file, no random object
 	 * @param filename string storing the filename to parse
@@ -356,12 +367,13 @@ public class ParameterConfigurationSpace implements Serializable {
 		{
 			throw new IllegalArgumentException("Absolute File Name must be non-empty:" + absoluteFileName);
 		}
+		
+		
 		try {
-			BufferedReader inputData = null;
 			
 			StringBuilder pcs = new  StringBuilder();
-			try{
-				inputData = new BufferedReader(file);
+			try(BufferedReader inputData = new BufferedReader(file))
+			{
 				String line;
 				while((line = inputData.readLine()) != null)
 				{ try {
@@ -374,16 +386,12 @@ public class ParameterConfigurationSpace implements Serializable {
 					} 
 				    
 				}
-				
 			} finally
 			{
-				if (inputData != null)
-				{
-					inputData.close();
-				}
 				pcsFile = pcs.toString();
 			}
-
+			
+			
 		} catch (FileNotFoundException e) {
 			throw new IllegalStateException(e);
 		} catch (IOException e) {
@@ -400,12 +408,98 @@ public class ParameterConfigurationSpace implements Serializable {
 		
 		
 		
+		processConditionalLines();
+		
+		
+		computeCheckActiveOrder();
+		
+		
+		transformConditionals2FastRFStructure();
+
+		//convert authorativeParameterNameOrder and contNormalizedRanges to an Array (before List)
+		this.authorativeParameterOrderArray = new String[this.authorativeParameterNameOrder.size()];
+		this.normalizedRangesByIndex = new NormalizedRange[this.authorativeParameterNameOrder.size()];
+		for (int i = 0; i < authorativeParameterNameOrder.size(); i++) {
+			this.authorativeParameterOrderArray[i] = authorativeParameterNameOrder.get(i);
+			this.normalizedRangesByIndex[i] = this.contNormalizedRanges.get(this.authorativeParameterOrderArray[i]);
+		}
+
+		parameterDomainContinuous = new boolean[numberOfParameters];
+		categoricalSize = new int[numberOfParameters];
+		int i = 0;
+		for (String paramName : authorativeParameterOrderArray) {
+			// saves the size of the categorical domains for each parameter
+			parameterDomainContinuous[i] = getContinuousMap().get(paramName);
+			if (parameterDomainContinuous[i] == false) {
+				categoricalSize[i] = getValuesMap().get(paramName).size();
+			} else {
+				categoricalSize[i] = INVALID_CATEGORICAL_SIZE;
+			}
+
+			i++;
+		}
+		
+		
+		this.newForbiddenLinesPresent = parseForbiddenLines(forbiddenLines);
+	
+	
+		this.defaultConfigurationValueArray = _getDefaultConfiguration().toValueArray();
+		
+		
+	
+		
+		/*
+		 * This will basically test that 
+		 * the default configuration is actually valid
+		 * This is a fail fast test in case the parameter values are invalid
+		 */
+		if(this.getDefaultConfiguration().isForbiddenParameterConfiguration())
+		{
+			throw new IllegalArgumentException("Default parameter setting cannot be a forbidden parameter setting:" + this.getDefaultConfiguration().getFormattedParameterString());
+		}
+	
+		/*
+		for(String forbiddenLine : forbiddenLines )
+		{
+			parseForbiddenLine(forbiddenLine);
+			
+		}
+		forbiddenLines.clear();
+		*/
+		
+		
+	
+		this.searchSubspaceValues = new double[this.defaultConfigurationValueArray.length];
+		this.searchSubspaceActive = new boolean[this.defaultConfigurationValueArray.length];
+
+		Map<String, String> searchSubspaceMap = new TreeMap<String, String>();
+		for (Entry<String, String> subspaceProfile : searchSubspace.entrySet()) {
+			String param = subspaceProfile.getKey();
+			String value = subspaceProfile.getValue();
+
+			if (value.equals("<DEFAULT>")) {
+				value = this.getDefaultConfiguration().get(param);
+			}
+
+			searchSubspaceMap.put(param, value);
+			int index = this.paramKeyIndexMap.get(param);
+
+			setValueInArray(this.searchSubspaceValues, param, value);
+			this.searchSubspaceActive[index] = true;
+		}
+
+		this.searchSubspace = Collections.unmodifiableMap(searchSubspaceMap);
+
+	}
+
+	/**
+	 * Processes all conditional clauses found in the PCS file
+	 */
+	private final void processConditionalLines() {
 		Map<String, List<String>> conditionalLinesMap = new LinkedHashMap<>();
 		
 		for(String conditionalLine : conditionalLines)
 		{
-			
-			
 			String name = getName(conditionalLine);
 			if( conditionalLinesMap.get(name) == null)
 			{
@@ -413,7 +507,6 @@ public class ParameterConfigurationSpace implements Serializable {
 			}
 			
 			conditionalLinesMap.get(name).add(conditionalLine);
-			
 		}
 		
 		for(Entry<String, List<String>> ent : conditionalLinesMap.entrySet())
@@ -468,77 +561,6 @@ public class ParameterConfigurationSpace implements Serializable {
 		}
 		
 		conditionalLines.clear();
-		
-		
-		computeCheckActiveOrder();
-		transformConditionals2FastRFStructure();
-
-		//convert authorativeParameterNameOrder and contNormalizedRanges to an Array (before List)
-		this.authorativeParameterOrderArray = new String[this.authorativeParameterNameOrder.size()];
-		this.normalizedRangesByIndex = new NormalizedRange[this.authorativeParameterNameOrder.size()];
-		for (int i = 0; i < authorativeParameterNameOrder.size(); i++) {
-			this.authorativeParameterOrderArray[i] = authorativeParameterNameOrder.get(i);
-			this.normalizedRangesByIndex[i] = this.contNormalizedRanges.get(this.authorativeParameterOrderArray[i]);
-		}
-
-		parameterDomainContinuous = new boolean[numberOfParameters];
-		categoricalSize = new int[numberOfParameters];
-		int i = 0;
-		for (String paramName : authorativeParameterOrderArray) {
-			// saves the size of the categorical domains for each parameter
-			parameterDomainContinuous[i] = getContinuousMap().get(paramName);
-			if (parameterDomainContinuous[i] == false) {
-				categoricalSize[i] = getValuesMap().get(paramName).size();
-			} else {
-				categoricalSize[i] = INVALID_CATEGORICAL_SIZE;
-			}
-
-			i++;
-		}
-		
-		for(String forbiddenLine : forbiddenLines )
-		{
-			parseForbiddenLine(forbiddenLine);
-			
-		}
-		forbiddenLines.clear();
-		
-		
-		
-		
-		
-		this.defaultConfigurationValueArray = _getDefaultConfiguration().toValueArray();
-
-		/*
-		 * This will basically test that the default configuration is actually valid.
-		 * This is a fail fast test in case the parameter values are invalid
-		 */
-		if (this.getDefaultConfiguration().isForbiddenParameterConfiguration()) {
-			throw new IllegalArgumentException(
-					"Default parameter setting cannot be a forbidden parameter setting");
-		}
-
-		this.searchSubspaceValues = new double[this.defaultConfigurationValueArray.length];
-		this.searchSubspaceActive = new boolean[this.defaultConfigurationValueArray.length];
-
-		Map<String, String> searchSubspaceMap = new TreeMap<String, String>();
-		for (Entry<String, String> subspaceProfile : searchSubspace.entrySet()) {
-			String param = subspaceProfile.getKey();
-			String value = subspaceProfile.getValue();
-
-			if (value.equals("<DEFAULT>")) {
-				value = this.getDefaultConfiguration().get(param);
-			}
-
-			searchSubspaceMap.put(param, value);
-			int index = this.paramKeyIndexMap.get(param);
-
-			setValueInArray(this.searchSubspaceValues, param, value);
-			this.searchSubspaceActive[index] = true;
-		}
-
-		this.searchSubspace = Collections.unmodifiableMap(searchSubspaceMap);
-
 	}
 	
 	/**
@@ -587,7 +609,7 @@ public class ParameterConfigurationSpace implements Serializable {
 			String type = catOrdMatcher.group("type");
 			List<String> paramValues = Arrays.asList(catOrdMatcher.group("values").split(","));
 			String defaultValue = catOrdMatcher.group("default").trim();
-			
+
 			
 			
 			if(this.sortedParameterNames.contains(name)) {
@@ -714,17 +736,20 @@ public class ParameterConfigurationSpace implements Serializable {
 			}
 
 			return;
+		} else if(generalForbidden.matcher(line).find())
+		{
+			System.out.println("Adding line: " + line);
+			forbiddenLines.add(line);
+			return;
 		} else if (line.indexOf("|") >= 0) {
 			
 			conditionalLines.add(line);
 			return;
 		} 
-		else if(line.trim().substring(0, 1).equals("{")) {
-			//System.out.println("FordiddenMatch");
-			forbiddenLines.add(line);
-			return;
-		}
+		
+
 		throw new IllegalArgumentException("Not sure how to parse this line: "+line);
+
 	}
 	
 	/**
@@ -929,10 +954,111 @@ public class ParameterConfigurationSpace implements Serializable {
 		}
 	} 
 	
-	private void parseForbiddenLine(String line) {
+	
+	
+	private final Pattern classicForbidden = Pattern.compile("^\\s*\\{((\\s*\\S+\\s*=\\s*\\S+\\s*,?\\s*)+)\\}\\s*$");
+	private final Pattern generalForbidden = Pattern.compile("^\\s*\\{\\s*(.+)\\s*\\}\\s*$");
+	
+	private boolean parseForbiddenLines(List<String> lines) {
 		
-		String originalLine = line;
+		boolean newForbiddenStatements = false;
+		for(String line : lines)
+		{
+			
+			String originalLine = line;
+			
+			if(line.indexOf("#") >= 0)
+			{
+				line = line.substring(0, line.indexOf("#"));
+			}
+			
+			
+			Matcher classicForbiddenStatementMatcher = classicForbidden.matcher(line);
+			Matcher generalForbiddenMatcher = generalForbidden.matcher(line);
+			if(classicForbiddenStatementMatcher.matches())
+			{
+				String values = classicForbiddenStatementMatcher.group(1);
+				String[] nameValuePairs = values.split(",");
+				
+				List<int[]> forbiddenIndexValuePairs = new ArrayList<int[]>();
+						
+				for(String nameValuePair : nameValuePairs)
+				{
+					String[] nvPairArr = nameValuePair.split("=");
+					if(nvPairArr.length != 2)
+					{
+						throw new IllegalArgumentException("Line specifying forbidden parameters contained an name value pair that could not be parsed: "+ Arrays.toString(nvPairArr) + " in line: " + originalLine);
+					}
+					
+					String name = nvPairArr[0].trim();
+					Integer indexIntoValueArrays = paramKeyIndexMap.get(name);
+					
+					if(indexIntoValueArrays == null)
+					{
+						throw new IllegalArgumentException("Unknown parameter " + name + " in line: " + originalLine);
+					}
+					
+					String value = nvPairArr[1].trim();
+					
+					if(paramTypes.get(name) == ParameterType.REAL || paramTypes.get(name) == ParameterType.INTEGER)
+					{
+						throw new IllegalArgumentException("Forbidden Parameter Declarations can only exclude combinations of categorical or ordinal parameters " + name + " is continuous; in line: " + line );
+					}
+					
+					Integer valueIndex = categoricalValueMap.get(name).get(value);
+					
+					if(valueIndex == null)
+					{
+						throw new IllegalArgumentException("Invalid parameter value " + value + " for parameter " + name + " in line: " + line);
+						
+					}
+					
+					int[] nvPairArrayForm = new int[2];
+					nvPairArrayForm[0] = indexIntoValueArrays;
+					nvPairArrayForm[1] = valueIndex; 
+					
+					forbiddenIndexValuePairs.add(nvPairArrayForm);
+				}
+				
+				
+				forbiddenParameterValuesList.add(forbiddenIndexValuePairs.toArray(new int[0][0]));
+				
+			} else if(generalForbiddenMatcher.find())
+			{
+				newForbiddenStatements = true;
+				
+				/*
+				line = line.replaceAll("!=", ":");
+				
+				line = line.replaceAll(">=", Matcher.quoteReplacement("$"));
+				line  =line.replaceAll("<=", "#");
+				line = line.replaceAll("==","|");
+				*/
+				
+				ExpressionBuilder eb = new ExpressionBuilder(line);
+				
+				System.out.println("Expression Line: " + line);
+				eb.variables(new HashSet<>(this.getParameterNames()));
+				
+				eb.operator(ForbiddenOperators.operators);
+				
+				Expression calc = eb.build();
+				
+				cl.add(calc);
+			
+			} else
+			{
+				throw new IllegalArgumentException("Unsure how to parse the following line, guess was that it was forbidden, line: " + originalLine);
+			}
+			
+			
+		}
 		
+		forbiddenLines.clear();
+		return newForbiddenStatements;
+		
+		
+		/*
 		if(line.trim().indexOf("{",1) != -1) throw new IllegalArgumentException("Line specifying forbidden parameters contained more than one { in line: " + originalLine);
 		
 		line = line.replace("{", "");
@@ -944,50 +1070,14 @@ public class ParameterConfigurationSpace implements Serializable {
 		
 		if(line.trim().indexOf("}") != -1) throw new IllegalArgumentException("Line specifying forbidden parameters contained multiple closing braces \"}\" in line: " + originalLine);
 
-		String[] nameValuePairs = line.split(",");
+		*/
 		
-		List<int[]> forbiddenIndexValuePairs = new ArrayList<int[]>();
-				
-		for(String nameValuePair : nameValuePairs)
-		{
-			String[] nvPairArr = nameValuePair.split("=");
-			if(nvPairArr.length != 2)
-			{
-				throw new IllegalArgumentException("Line specifying forbidden parameters contained an name value pair that could not be parsed: "+ Arrays.toString(nvPairArr) + " in line: " + originalLine);
-			}
-			
-			String name = nvPairArr[0].trim();
-			Integer indexIntoValueArrays = paramKeyIndexMap.get(name);
-			
-			if(indexIntoValueArrays == null)
-			{
-				throw new IllegalArgumentException("Unknown parameter " + name + " in line: " + originalLine);
-			}
-			
-			String value = nvPairArr[1].trim();
-			
-			if(paramTypes.get(name) == ParameterType.REAL || paramTypes.get(name) == ParameterType.INTEGER)
-			{
-				throw new IllegalArgumentException("Forbidden Parameter Declarations can only exclude combinations of categorical or ordinal parameters " + name + " is continuous; in line: " + line );
-			}
-			
-			Integer valueIndex = categoricalValueMap.get(name).get(value);
-			
-			if(valueIndex == null)
-			{
-				throw new IllegalArgumentException("Invalid parameter value " + value + " for parameter " + name + " in line: " + line);
-				
-			}
-			
-			int[] nvPairArrayForm = new int[2];
-			nvPairArrayForm[0] = indexIntoValueArrays;
-			nvPairArrayForm[1] = valueIndex; 
-			
-			forbiddenIndexValuePairs.add(nvPairArrayForm);
-		}
+		//Remove Comment
+	
 		
 		
-		forbiddenParameterValuesList.add(forbiddenIndexValuePairs.toArray(new int[0][0]));
+		
+		
 		
 	}
 	
@@ -1024,7 +1114,7 @@ public class ParameterConfigurationSpace implements Serializable {
 			
 			String newLine =  name + " c {" +values+"} [" + defaultValue + "]";
 			
-			System.err.println("Transformation: " + s + "\t ====>" + newLine);
+			//System.err.println("Transformation: " + s + "\t ====>" + newLine);
 			return newLine;
 		}
 		
@@ -1056,7 +1146,7 @@ public class ParameterConfigurationSpace implements Serializable {
 			
 			String newLine = name + " " + (integerOnly?"i":"r") + " [" + range + "] " + "[" + defaultValue +"]" + (logTransform?"log":"");
 			
-			System.err.println("Transformation: " + s + "\t ====>" + newLine);
+			//System.err.println("Transformation: " + s + "\t ====>" + newLine);
 			return newLine;
 		}
 		
@@ -1883,6 +1973,18 @@ public class ParameterConfigurationSpace implements Serializable {
 	public Map<String, String> getSearchSubspace()
 	{
 		return this.searchSubspace;
+	}
+
+
+	/**
+	 * Returns true if there are new forbidden lines, false otherwise
+	 * @return
+	 */
+	private final boolean newForbiddenLinesPresent;
+	
+	boolean hasNewForbidden() {
+		// TODO Auto-generated method stub
+		return newForbiddenLinesPresent;
 	}
 
 

@@ -5,6 +5,7 @@ import org.junit.runners.Suite;
 
 import ca.ubc.cs.beta.acquisitionfunction.AcquisitionFunctionTester;
 import ca.ubc.cs.beta.aeatk.algorithmrun.TestExistingAlgorithmRun;
+import ca.ubc.cs.beta.configspace.ForbiddenOperatorsTest;
 import ca.ubc.cs.beta.configspace.ParamConfigurationTest;
 import ca.ubc.cs.beta.configspace.ParamConfigurationTestNewPCS;
 import ca.ubc.cs.beta.configspace.RandomConfigurationTest;
@@ -29,6 +30,7 @@ import ca.ubc.cs.beta.jcommander.JCommanderTest;
 	AcquisitionFunctionTester.class,
 	EventManagerTester.class,
 	DynamicCappingTestSet.class,
+	ForbiddenOperatorsTest.class,
 	ParamConfigurationTest.class,
 	ParamConfigurationTestNewPCS.class,
 	RandomConfigurationTest.class,

@@ -12,7 +12,7 @@ public class TAEEvaluatorNoArgumentHandler implements NoArgumentHandler {
 
 		sb.append("Basic Usage:\n\n");
 		
-		sb.append("--algorithm-name <name> --algo-cutoff-time <absolute maximum cutoff time> --algo-exec <algorithm execution callstring> --algo-exec-dir <directory in which to execute algorithm> --param-file <algorithm parameter space file> --config <config to use, ex. DEFAULT> --instances <file containing list of instances> --cutoff <cutoff time> --seed <seed> --tae <TAE to use>  \n\n");
+		sb.append("--algorithm-name <name> --algo-cutoff-time <absolute maximum cutoff time> --algo-exec <algorithm execution callstring> --algo-exec-dir <directory in which to execute algorithm> --param-file <algorithm parameter space file> --config <config to use, ex. DEFAULT> --instances <file containing list of instances> --cutoff <cutoff time> --seed <seed>\n\n");
 
 		System.out.println(sb);
 		return true;

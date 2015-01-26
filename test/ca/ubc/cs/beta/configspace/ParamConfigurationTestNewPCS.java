@@ -1887,6 +1887,23 @@ public class ParamConfigurationTestNewPCS {
 			
 		}
 		
+		
+		try {
+			String pcsFile = "A {a,b} [a]\n"
+				+ "B [0,10] [5]i\n"
+				+ "{A > 3}{B < 4}";
+		
+			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+			//System.out.println(configSpace.getPCSFile());
+			
+			fail("Expected Exception");
+		} catch(IllegalArgumentException e)
+		{
+			//Good
+			System.err.println(e.getMessage());
+			
+		}
+		
 	
 		/*
 		try {	
@@ -2281,18 +2298,6 @@ public class ParamConfigurationTestNewPCS {
 				+ "B | A < 4 || C in { false} ";
 				
 		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
-		
 		//System.out.println(configSpace.getDefaultConfiguration().getFormattedParameterString());
 				
 	}
@@ -2309,6 +2314,231 @@ public class ParamConfigurationTestNewPCS {
 		Set<String> activeParameters = config.getActiveParameters();
 		return activeParameters.contains("B");
 	}
+	
+	@Test
+	public void checkNewForbiddenClausesRadius()
+	{
+		
+		String pcsFile = "x r [-1,1] [0]\n"
+				+ "y r [-1,1] [0]\n"
+				+ "{ x^2+y^2 > 1 }";
+				
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+		
+		
+		TreeSet<String> output = new TreeSet<String>();
+		
+		for(int i=0; i < 10000; i++)
+		{
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(rand);
+			double r = Math.sqrt( Math.pow(Double.valueOf(config.get("x")),2) + Math.pow(Double.valueOf(config.get("y")),2));
+			
+			assertTrue("Expected distance should be less than one", r < 1);
+			//output.add(/*r + "=>" +*/ config.getFormattedParameterString() + "=> " + r);
+		}
+		
+		for(String line : output)
+		{
+			//System.out.println(line);
+		}
+	}
+	
+
+	@Test
+	public void checkNewForbiddenClausesOrder()
+	{
+		
+		String pcsFile = "x r [0,1] [0.5]\n"
+				+ "y r [0,1] [0.5]\n"
+				+ "{ x > y }";
+		/*	+ "z r [0,1] [0.5]\n"
+		+ "{ x > y || y > z }";
+	*/				
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+		
+		
+		TreeSet<String> output = new TreeSet<String>();
+		
+		for(int i=0; i < 10000; i++)
+		{
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(rand);
+			
+			double x = Double.valueOf(config.get("x"));
+			double y = Double.valueOf(config.get("y"));
+			
+			//double r = Math.sqrt( Math.pow(Double.valueOf(config.get("x")),2) + Math.pow(Double.valueOf(config.get("y")),2));
+			
+			
+			assertTrue("Expected x: " + x + "<= y:" + y + " for configuration: " + config.getFormattedParameterString() , x <= y);
+			output.add(/*r + "=>" +*/ config.getFormattedParameterString());
+		}
+		
+		for(String line : output)
+		{
+			System.out.println(line);
+		}
+		
+		
+		
+		pcsFile = "x r [0,1] [0.5]\n"
+				+ "y r [0,1] [0.5]\n"
+				+ "z r [0,1] [0.5]\n"
+				+ "{ x > y }\n"
+				+ "{ y > z }";
+					
+		configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+		
+		
+		System.err.println("Second");
+		System.out.println("Second");
+		
+		
+		output = new TreeSet<String>();
+		
+		for(int i=0; i < 10000; i++)
+		{
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(rand);
+			
+			double x = Double.valueOf(config.get("x"));
+			double y = Double.valueOf(config.get("y"));
+			double z = Double.valueOf(config.get("z"));
+			
+			//double r = Math.sqrt( Math.pow(Double.valueOf(config.get("x")),2) + Math.pow(Double.valueOf(config.get("y")),2));
+			
+			
+			try 
+			{
+				assertTrue("Expected x: " + x + "<= y:" + y + " for configuration: " + config.getFormattedParameterString() , x <= y);
+				assertTrue("Expected y: " + x + "<= z:" + y + " for configuration: " + config.getFormattedParameterString() , y <= z);
+			} catch(AssertionError e)
+			{
+				System.out.println(config.isForbiddenParameterConfiguration());
+				System.out.println(config.isForbiddenParameterConfiguration());
+				throw e;
+			}
+			output.add(/*r + "=>" +*/ config.getFormattedParameterString());
+		}
+		
+		for(String line : output)
+		{
+			System.out.println(line);
+		}
+		
+		
+		
+		pcsFile = "x r [0,1] [0.5]\n"
+				+ "y r [0,1] [0.5]\n"
+				+ "z r [0,1] [0.5]\n"
+				+ "{ (x > y) || (y > z) }\n";
+					
+		configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+		
+		
+		System.err.println("Third");
+		System.out.println("Third");
+		output = new TreeSet<String>();
+		
+		for(int i=0; i < 10000; i++)
+		{
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(rand);
+			
+			double x = Double.valueOf(config.get("x"));
+			double y = Double.valueOf(config.get("y"));
+			double z = Double.valueOf(config.get("z"));
+			
+			//double r = Math.sqrt( Math.pow(Double.valueOf(config.get("x")),2) + Math.pow(Double.valueOf(config.get("y")),2));
+			
+		
+			try 
+			{
+				assertTrue("Expected x: " + x + "<= y:" + y + " for configuration: " + config.getFormattedParameterString() , x <= y);
+				assertTrue("Expected y: " + x + "<= z:" + y + " for configuration: " + config.getFormattedParameterString() , y <= z);
+				
+			} catch(AssertionError e)
+			{
+				System.out.println(config.isForbiddenParameterConfiguration());
+				System.out.println(config.isForbiddenParameterConfiguration());
+				throw e;
+			}
+			output.add(/*r + "=>" +*/ config.getFormattedParameterString());
+		}
+		
+		for(String line : output)
+		{
+			System.out.println(line);
+		}
+		
+		
+		
+		assertFalse( 0.2 > 0.3 || 0.3 > 0.4);
+		
+		
+		assertFalse( 0.2 > 0.3 && 0.3 > 0.4);
+		
+		
+		assertTrue( 0.2 > 0.1 || 0.1 > 0.4);
+		
+		assertFalse( 0.2 > 0.1 && 0.1 > 0.4);
+		
+		
+		assertTrue( 0.2 > 0.1 || 0.1 > 0.01);
+		
+		assertTrue( 0.2 > 0.1 && 0.1 > 0.01);
+		
+		
+		
+		pcsFile = "x r [0,1] [0.5]\n"
+				+ "y r [0,1] [0.5]\n"
+				+ "z r [0,1] [0.5]\n"
+				+ "{ x > y || y > z }\n";
+					
+		configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+		
+		
+		System.err.println("Fourth");
+		System.out.println("Fourth");
+		output = new TreeSet<String>();
+		
+		for(int i=0; i < 10000; i++)
+		{
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(rand);
+			
+			double x = Double.valueOf(config.get("x"));
+			double y = Double.valueOf(config.get("y"));
+			double z = Double.valueOf(config.get("z"));
+			
+			//double r = Math.sqrt( Math.pow(Double.valueOf(config.get("x")),2) + Math.pow(Double.valueOf(config.get("y")),2));
+			
+		
+			try 
+			{
+				assertTrue("Expected x: " + x + "<= y:" + y + " for configuration: " + config.getFormattedParameterString() , x <= y);
+				assertTrue("Expected y: " + x + "<= z:" + y + " for configuration: " + config.getFormattedParameterString() , y <= z);
+				
+			} catch(AssertionError e)
+			{
+				System.out.flush();
+				System.err.flush();
+				System.err.println(config.getFormattedParameterString());
+				System.err.println(config.isForbiddenParameterConfiguration());
+				System.out.println(config.isForbiddenParameterConfiguration());
+				System.out.println(config.isForbiddenParameterConfiguration());
+				throw e;
+			}
+			output.add(/*r + "=>" +*/ config.getFormattedParameterString());
+		}
+		
+		for(String line : output)
+		{
+			System.out.println(line);
+		}
+		
+		
+		
+	}
+	
+	
+	
 	
 	
 	@After

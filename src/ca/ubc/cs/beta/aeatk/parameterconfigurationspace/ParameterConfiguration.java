@@ -24,7 +24,9 @@ import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSp
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
+import de.congrace.exp4j.Calculable;
 import net.jcip.annotations.NotThreadSafe;
+import net.objecthunter.exp4j.Expression;
 
 
 /**
@@ -295,8 +297,6 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 			
 			
 		}
-		
-	
 		
 		if(parameterDomainContinuous[index] && newValue != null)
 		{
@@ -754,13 +754,28 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 		{
 			double[] newValueArray = valueArray.clone();
 			
+			int failuresForParameter = 0;
 			for(int j=1; j <= numberOfNeighboursForParameter(i,activeParams.contains(configSpace.getParameterNamesInAuthorativeOrder().get(i)),numNumericalNeighbours); j++)
 			{
 				newValueArray[i] = getNeighbourForParameter(i,j,rand);
+			
 				
-				if(configSpace.isForbiddenParameterConfiguration(newValueArray)) continue;
+				ParameterConfiguration config = new ParameterConfiguration(configSpace, newValueArray.clone(), categoricalSize, parameterDomainContinuous, paramKeyToValueArrayIndexMap);
 				
-				neighbours.add(new ParameterConfiguration(configSpace, newValueArray.clone(), categoricalSize, parameterDomainContinuous, paramKeyToValueArrayIndexMap));
+				if(config.isForbiddenParameterConfiguration()) 
+				{	
+					
+					failuresForParameter++;
+					if(failuresForParameter < 100 && this.parameterDomainContinuous[i])
+					{
+						j--;
+					} 
+					//System.out.println(j);
+					continue;
+				
+				}
+				
+				neighbours.add(config);
 			}
 		}
 		
@@ -1005,37 +1020,7 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 					boolean satisfied = cond.op.conditionalClauseMatch(encodedParentPresentValue, cond.values);
 					System.out.println(satisfied);
 					all_satisfied = all_satisfied & satisfied;
-					/*
-					if (cond.op == ConditionalOperators.IN) {
-						boolean contains = false;
-						for (Double cv: cond.values) {
-							if (cv == encodedParentPresentValue) {
-								contains = true;
-								break;
-							}
-						}
-						all_satisfied = contains;
-					} else if (cond.op == ConditionalOperators.EQ) {
-						if (cond.values[0] != encodedParentPresentValue) {
-							all_satisfied = false;
-							break;
-						}
-					} else if (cond.op == ConditionalOperators.NEQ) {
-						if (cond.values[0] == encodedParentPresentValue) {
-							all_satisfied = false;
-							break;
-						}
-					} else if (cond.op == ConditionalOperators.LE) {
-						if (cond.values[0] < encodedParentPresentValue) {
-							all_satisfied = false;
-							break;
-						}
-					} else if (cond.op == ConditionalOperators.GR) {
-						if (cond.values[0] > encodedParentPresentValue) {
-							all_satisfied = false;
-							break;
-						}
-					}*/
+				
 					if (!all_satisfied){ //if one condition is not satisfied, the complete clause is falsified; no further check necessary
 						break;
 					}
@@ -1048,93 +1033,6 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 		}
 		
 		return activeParams;
-		
-		//OLD
-		
-		//boolean activeSetChanged = false;
-		//Set<String> activeParams= new TreeSet<String>();
-		
-		/*
-		 * This code is will loop in worse case ~(n^2) times, the data structures may not be very 
-		 * good either, so gut feeling is probably Omega(n^3) in worse case.
-		 * 
-		 *  This algorithm basically does the following:
-		 *  1) Adds all independent clauses to the active set
-		 *  2) For every dependent value:
-		 *  	- checks if each dependee parameter is active
-		 *  	- if all dependee parameters have an acceptible value, adds it to the active set.
-		 *  3) Terminates when there are no changes to the active set. (controlled by the changed flag) 
-		 */
-		/*
-		do {
-			//Loop through every parameter to see if it should be added to the activeParams set.
-			activeSetChanged = false;
-			List<String> paramNames = this.configSpace.getParameterNames();
-			
-			for(String candidateParam : paramNames)
-			{	
-				
-				if(activeParams.contains(candidateParam))
-				{ 
-					//We already know the Param is active
-					continue;
-				}
-				
-				// Check if this parameter is conditional (if not add it to the activeParam set), if it is check if it's conditions are all satisified. 
-				Map<String,List<String>> dependentOn;
-				if(( dependentOn = configSpace.getDependentValuesMap().get(candidateParam)) != null)
-				{
-					//System.out.print(" is dependent ");
-					
-					
-					boolean dependentValuesSatified = true; 
-					for(String dependentParamName : dependentOn.keySet())
-					{
-						if(activeParams.contains(dependentParamName))
-						{
-							if(dependentOn.get(dependentParamName).contains(get(dependentParamName)))
-							{	
-								//System.out.print("[+]:" +  dependentParamName +  " is " + params.get(dependentParamName)); 
-							} else
-							{	
-								//System.out.print("[-]:" + dependentParamName +  " is " + params.get(dependentParamName));
-								dependentValuesSatified = false;
-								break;
-							}
-								
-						} else
-						{
-							dependentValuesSatified = false;
-							break;		
-						}
-					}
-					
-					if(dependentValuesSatified == true)
-					{
-						
-						activeSetChanged = true;
-						activeParams.add(candidateParam);
-					} else
-					{
-						
-					}
-					
-					
-					
-				} else
-				{ //This Parameter is not dependent
-					if(activeParams.add(candidateParam))
-					{
-						activeSetChanged = true;
-						
-					}
-				}				
-			}
-			
-		} while(activeSetChanged == true);
-		
-		return activeParams;
-		*/
 	}
 	
 	
@@ -1176,7 +1074,45 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 	 */
 	public boolean isForbiddenParameterConfiguration()
 	{
-		return configSpace.isForbiddenParameterConfiguration(valueArray);
+		
+		if(configSpace.isForbiddenParameterConfiguration(valueArray))
+		{
+			return true;
+		}
+		
+		if(!configSpace.hasNewForbidden())
+		{
+			return false;
+		} else
+		{
+			for(Expression calc : configSpace.cl)
+			{
+				
+				int i=0; 
+				for(String name : configSpace.getParameterNamesInAuthorativeOrder())
+				{
+					if(configSpace.getNormalizedRangeMap().get(name) != null && true)
+					{
+						calc.setVariable(name, configSpace.getNormalizedRangeMap().get(name).unnormalizeValue(this.valueArray[i]));
+					} else
+					{
+						calc.setVariable(name,Double.valueOf(this.get(name)));
+					}
+					i++;
+				}
+				if (calc.evaluate() == 0)
+				{
+					continue;
+				} else
+				{
+					return true;
+				}
+			}
+			
+			return false;
+		}
+		
+
 	}
 
 
