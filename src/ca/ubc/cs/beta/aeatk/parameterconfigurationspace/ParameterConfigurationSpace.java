@@ -386,10 +386,10 @@ public class ParameterConfigurationSpace implements Serializable {
 					} 
 				    
 				}
-			} finally
-			{
-				pcsFile = pcs.toString();
-			}
+			} 
+			
+			pcsFile = pcs.toString();
+			
 			
 			
 		} catch (FileNotFoundException e) {
@@ -738,7 +738,7 @@ public class ParameterConfigurationSpace implements Serializable {
 			return;
 		} else if(generalForbidden.matcher(line).find())
 		{
-			System.out.println("Adding line: " + line);
+			//System.out.println("Adding line: " + line);
 			forbiddenLines.add(line);
 			return;
 		} else if (line.indexOf("|") >= 0) {
@@ -1037,7 +1037,7 @@ public class ParameterConfigurationSpace implements Serializable {
 				
 				ExpressionBuilder eb = new ExpressionBuilder(line);
 				
-				System.out.println("Expression Line: " + line);
+				
 				eb.variables(new HashSet<>(this.getParameterNames()));
 				
 				eb.operator(ForbiddenOperators.operators);

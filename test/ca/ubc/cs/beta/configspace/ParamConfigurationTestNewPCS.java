@@ -19,6 +19,10 @@ import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.concurrent.ExecutorService;
+import java.util.concurrent.Executors;
+import java.util.concurrent.TimeUnit;
+import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -2343,6 +2347,46 @@ public class ParamConfigurationTestNewPCS {
 		}
 	}
 	
+	
+	@Test
+	public void checkNewForbiddenClausesSpeed()
+	{
+		
+		String pcsFile = "x r [-1,1] [0]\n"
+				+ "y r [-1,1] [0]\n"
+				+ "{ x^2+y^2 > 1 }";
+				
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+		
+		
+		TreeSet<String> output = new TreeSet<String>();
+		
+		
+		for(int j=0; j < 45; j++)
+		{
+			
+			AutoStartStopWatch watch = new AutoStartStopWatch();
+			
+			for(int i=0; i < 1000000; i++)
+			{
+				ParameterConfiguration config = configSpace.getRandomParameterConfiguration(rand);
+				//double r = Math.sqrt( Math.pow(Double.valueOf(config.get("x")),2) + Math.pow(Double.valueOf(config.get("y")),2));
+				
+				//assertTrue("Expected distance should be less than one", r < 1);
+				//output.add(/*r + "=>" +*/ config.getFormattedParameterString() + "=> " + r);
+			}
+			
+			watch.stop();
+			
+			if(j > 4)
+			{
+				System.out.println(j-4 + "," + watch.time() / 1000.0);
+			}
+			System.gc();
+		}
+		
+	}
+	
 
 	@Test
 	public void checkNewForbiddenClausesOrder()
@@ -2537,8 +2581,158 @@ public class ParamConfigurationTestNewPCS {
 		
 	}
 	
+	@Test
+	public void testSpeedOfRandomWithRadius()
+	{
+		
+		
+		for( int i=0; i < 10; i++)
+		{
+			for (double k = 2; k > 0.15; k -= 0.1)
+			{
+				String pcsFile = "a r [-1,1] [0]\n b r [-1,1] [0]\n";
+					
+					
+				if (k <= 1.95)
+				{
+					pcsFile += "{ a^2 + b^2>" + k + "^2}\n";
+				}
+				ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+				AutoStartStopWatch watch = new AutoStartStopWatch();
+				for(int j=0; j < 1_000_000; j++)
+				{
+					configSpace.getRandomParameterConfiguration(rand);
+				}
+				
+				watch.stop();
+				
+				System.out.println("Time for " + k + " is " + watch.stop() / 1000.0  + " s");
+			}
+			
+		}
+		 
+	}
 	
 	
+	@Test
+	public void testSpeedOfRandomWithRedundantClauses()
+	{
+		
+		
+		for( int i=0; i < 20; i++)
+		{
+			for (int k = 0 ; k < 10; k++)
+			{
+				String pcsFile = "a r [-1,1] [0]\n b r [-1,1] [0]\n";
+					
+				for(int j =0; j < k; j++)
+				{
+					pcsFile += "{ a^2 + b^2>2^2 }\n";
+				}
+				
+				ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+				AutoStartStopWatch watch = new AutoStartStopWatch();
+				for(int j=0; j < 1_000_000; j++)
+				{
+					configSpace.getRandomParameterConfiguration(rand);
+				}
+				
+				watch.stop();
+				
+				System.out.println("Time for " + k + " is " + watch.stop() / 1000.0  + " s");
+			}
+			
+		}
+		 
+	}
+	
+	
+	@Test
+	public void testSpeedOfRandomWithRedundantSingleClauses()
+	{
+		
+		
+		for( int i=0; i < 20; i++)
+		{
+			for (int k = 0 ; k < 10; k++)
+			{
+				String pcsFile = "a r [-1,1] [0]\n b r [-1,1] [0]\n";
+				
+				if(k > 0)
+				{
+					pcsFile += "{ ";
+					for(int j =1; j < k; j++)
+					{
+						pcsFile += "(a^2 + b^2>2^2) && ";
+					}
+				
+					pcsFile += " (a^2 + b^2>2^2) }\n";
+				}
+				ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+				AutoStartStopWatch watch = new AutoStartStopWatch();
+				for(int j=0; j < 1_000_000; j++)
+				{
+					configSpace.getRandomParameterConfiguration(rand);
+				}
+				
+				watch.stop();
+				
+				System.out.println("Time for " + k + " is " + watch.stop() / 1000.0  + " s");
+			}
+			
+		}
+		 
+	}
+	
+	@Test
+	public void testThreadSafeRandomGeneration() throws InterruptedException
+	{
+		String pcsFile = "a [-1,1] [0]\n b [-1,1] [0]\n { a^2 + b^2 > 0.75^2 }";
+		final ParameterConfigurationSpace configSpace =  ParamFileHelper.getParamFileFromString(pcsFile);
+		
+		
+		final AtomicInteger forbiddenConfigurations = new AtomicInteger(0);
+		Runnable run = new Runnable()
+		{
+
+			@Override
+			public void run() {
+				// TODO Auto-generated method stub
+				MersenneTwisterFast mtf = new MersenneTwisterFast(System.nanoTime());
+				for(int i=0; i < 2500; i++)
+				{
+					
+					//synchronized(configSpace)
+					{
+						ParameterConfiguration config = configSpace.getRandomParameterConfiguration(mtf);
+						if(config.isForbiddenParameterConfiguration())
+						{
+							System.out.println(config.getFormattedParameterString());
+							forbiddenConfigurations.incrementAndGet();
+							
+						}
+					}
+					
+				}
+				System.out.print(".");
+			}
+	
+		};
+		
+		
+		ExecutorService execService = Executors.newFixedThreadPool(8);
+		
+		for(int i=0; i < 50; i++)
+		{
+			execService.submit(run);
+		}
+		
+		
+		execService.shutdown();
+		execService.awaitTermination(24, TimeUnit.DAYS);
+		
+		assertEquals("Expected number of forbidden configurations should be zero", 0, forbiddenConfigurations.get());
+	}
 	
 	
 	@After
