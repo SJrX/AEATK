@@ -2901,7 +2901,7 @@ public class ParamConfigurationTestNewPCS {
 				newConfig.put(name, "75");
 				assertFalse(newConfig.isForbiddenParameterConfiguration()); 
 				newConfig.put(aName, "75");
-				assertTrue(newConfig.isForbiddenParameterConfiguration());
+				assertTrue("Configuration should be forbidden:" + newConfig.getFormattedParameterString() , newConfig.isForbiddenParameterConfiguration());
 				System.out.println(newConfig.getFormattedParameterString());
 				
 				newConfig.put(aName, "25");
@@ -2964,12 +2964,15 @@ public class ParamConfigurationTestNewPCS {
 				}
 				
 				ParameterConfiguration newConfig = configSpace.getDefaultConfiguration();
+			
 				
 				newConfig.put(name, "75");
 				assertFalse(newConfig.isForbiddenParameterConfiguration()); 
 				newConfig.put(aName, "75");
-				assertTrue(newConfig.isForbiddenParameterConfiguration());
+				
 				System.out.println(newConfig.getFormattedParameterString());
+				assertTrue(newConfig.isForbiddenParameterConfiguration());
+				
 				
 				newConfig.put(aName, "25");
 				assertTrue(newConfig.isForbiddenParameterConfiguration());
@@ -2984,6 +2987,68 @@ public class ParamConfigurationTestNewPCS {
 			
 			assertFalse("Expected configuration to be allowed", config.isForbiddenParameterConfiguration());
 		}
+	}
+	
+	@Test
+	public void testOrdinalValues()
+	{
+		String pcsFile = "priority o { LOW, MEDIUM, HIGH } [MEDIUM]\n" +
+				"temp o { COLD, COOL, MILD, WARM, HOT} [HOT]\n" 
+				+ "temp | priority == MEDIUM\n" 
+				+ "{priority = LOW}";
+		
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+		
+		System.out.println(configSpace.getDefaultConfiguration().getFormattedParameterString());
+		System.out.println(configSpace.getRandomParameterConfiguration(rand).getFormattedParameterString());
+		
+		ParameterConfiguration config = configSpace.getDefaultConfiguration();
+	
+		for(int i=0; i <1000; i++)
+		{
+			config = configSpace.getRandomParameterConfiguration(rand);
+			
+			if(config.get("priority").equals("MEDIUM"))
+			{
+				assertTrue(config.getActiveParameters().contains("temp"));
+			} else
+			{
+				assertFalse(config.getActiveParameters().contains("temp"));
+			}
+			
+			if(config.get("priority").equals("LOW"))
+			{
+				assertTrue(config.isForbiddenParameterConfiguration());
+			}else
+			{
+				assertFalse(config.isForbiddenParameterConfiguration());
+			}
+		}
+		
+		
+		 pcsFile = "priority o { LOW, MEDIUM, HIGH } [MEDIUM]\n" +
+					"temp o { COLD, COOL, MILD, WARM, HOT} [HOT]\n" 
+					+ "temp | priority > LOW\n";
+			
+		configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+		
+		for(int i=0; i <1000; i++)
+		{
+			config = configSpace.getRandomParameterConfiguration(rand);
+			
+			if(config.get("priority").equals("MEDIUM") || config.get("priority").equals("HIGH") )
+			{
+				assertTrue(config.getActiveParameters().contains("temp"));
+				
+			} else
+			{
+				assertFalse(config.getActiveParameters().contains("temp"));
+			}
+			
+			System.out.println(config.getFormattedParameterString());
+			
+		}
+		
 	}
 	
 	

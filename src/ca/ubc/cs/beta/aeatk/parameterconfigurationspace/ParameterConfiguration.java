@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import ca.ubc.cs.beta.aeatk.json.serializers.ParameterConfigurationSpaceJson;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace.Conditional;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace.ParameterType;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
@@ -212,7 +213,15 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 			NormalizedRange range = configSpace.getNormalizedRangeMap().get(key);
 			if(range.isIntegerOnly())
 			{
-				return String.valueOf((long) Math.round(range.unnormalizeValue(value)));
+				long intValue = ((long) Math.round(range.unnormalizeValue(value)));
+				if(configSpace.getParameterTypes().get(key) == ParameterType.ORDINAL)
+				{
+					return configSpace.getValuesMap().get(key).get( (int) intValue);
+				} else
+				{
+					return String.valueOf(intValue);
+				}
+				
 			} else
 			{
 				return String.valueOf(range.unnormalizeValue(value));
@@ -273,6 +282,12 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 		}
 		else if(parameterDomainContinuous[index])
 		{
+			
+			if(configSpace.getParameterTypes().get(key) == ParameterType.ORDINAL)
+			{
+				newValue = String.valueOf(configSpace.getCategoricalValueMap().get(key).get(newValue));
+			}
+			
 			valueArray[index] = configSpace.getNormalizedRangeMap().get(key).normalizeValue(Double.valueOf(newValue));
 			
 		} else
@@ -301,8 +316,13 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 			
 		}
 		
+		/*
+		 * After three years I don't think we need these tests anymore :)
+		 * 
+		 *
 		if(parameterDomainContinuous[index] && newValue != null)
 		{
+			
 			double d1 = Double.valueOf(get(key));
 			double d2 = Double.valueOf(newValue);
 			
@@ -324,6 +344,7 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 				throw new IllegalStateException("Not Sure Why this happened: " + get(key) + " vs. " + newValue);
 			}
 		}
+		*/
 		return oldValue;
 	}
 
@@ -1010,11 +1031,28 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 					}
 					
 					//translate value
-					if (configSpace.getParameterTypes().get(parent_name).isNormalized()) {
-						encodedParentPresentValue = Double.parseDouble(parent_value_string);
-					} else {
+					
+					String tmpParentValueString = parent_value_string;
+					switch(configSpace.getParameterTypes().get(parent_name))
+					{
+					
+					case ORDINAL:
+						tmpParentValueString =  String.valueOf(configSpace.getCategoricalValueMap().get(parent_name).get(parent_value_string));
+						
+					case INTEGER:
+					case REAL:
+						encodedParentPresentValue = Double.parseDouble(tmpParentValueString);
+						
+						break;
+					case CATEGORICAL:
+						
 						encodedParentPresentValue = (double) configSpace.getCategoricalValueMap().get(parent_name).get(parent_value_string);
+					
+						break;
+					default:
+						throw new IllegalStateException("Unknown Type");
 					}
+					
 
 					// check condition
 					
@@ -1153,17 +1191,21 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 						if(configSpace.getNormalizedRangeMap().get(name) != null && true)
 						{
 							//variables.put(name, configSpace.getNormalizedRangeMap().get(name).unnormalizeValue(this.valueArray[i]));
-							calc.setVariable(name, configSpace.getNormalizedRangeMap().get(name).unnormalizeValue(this.valueArray[i]));
+							
+							double d = configSpace.getNormalizedRangeMap().get(name).unnormalizeValue(this.valueArray[i]);
+							
+							
+							if(configSpace.getParameterTypes().get(name) == ParameterType.ORDINAL)
+							{
+								d = Double.valueOf(configSpace.getValuesMap().get(name).get((int) d));
+							}
+							calc.setVariable(name, d);
 						} else
 						{
 							//variables.put(name, Double.valueOf(this.get(name)));
-							try
-							{
-								calc.setVariable(name,Double.valueOf(this.get(name)));
-							} catch(NumberFormatException e)
-							{
-								calc.setVariable(name, valueArray[i]);
-							}
+							
+							calc.setVariable(name,Double.valueOf(this.get(name)));
+							
 						}
 						i++;
 					}

@@ -90,7 +90,7 @@ public class ParameterConfigurationSpace implements Serializable {
 	 * types of parameters
 	 */
 	public static enum ParameterType {
-		CATEGORICAL(false), ORDINAL(false), INTEGER(true), REAL(true);
+		CATEGORICAL(false), ORDINAL(true), INTEGER(true), REAL(true);
 		
 		private final boolean normalize;
 		
@@ -644,7 +644,6 @@ public class ParameterConfigurationSpace implements Serializable {
 				}
 			}
 			
-			values.put(name, paramValues_trimed);
 			Map<String, Integer> valueMap = new LinkedHashMap<String, Integer>();
 			int i=0;
 			for(String value : paramValues_trimed) {
@@ -655,15 +654,47 @@ public class ParameterConfigurationSpace implements Serializable {
 			categoricalValueMap.put(name, valueMap);
 			defaultValues.put(name, defaultValue);
 			
+			values.put(name, paramValues_trimed);
 			
-			switch (type){
-				case "o": 	paramTypes.put(name, ParameterType.ORDINAL);
-							break;
-				case "c":   paramTypes.put(name, ParameterType.CATEGORICAL);
-							break;
-				default:
-					throw new IllegalStateException("Could not identify the type of the parameter: "+line);
+			if(!paramValuesSet.contains(defaultValue))
+			{
+				throw new IllegalArgumentException("Default value " + defaultValue + " is not in the domain of the parameter on line: " + line);
 			}
+			
+			
+			switch(type)
+			{
+			case "c":
+				paramTypes.put(name, ParameterType.CATEGORICAL);
+				
+			
+				
+				
+				break;
+				
+			case "o":
+				
+				
+				boolean intValuesOnly = true;
+				
+				boolean logScale = false;
+				
+				double min = 0;
+				
+				double max = paramValuesSet.size()-1;
+				
+
+				createNumericParameter(line, intValuesOnly, logScale, name, type, min, max, String.valueOf(valueMap.get(defaultValue)));
+				
+				paramTypes.put(name, ParameterType.ORDINAL);
+				
+				break;
+					
+					
+			default:
+				throw new IllegalStateException("Unknown Type");
+			}
+			
 			return;
 		} else if (intReaMatcher.find()){
 			//integer or real valued parameters
@@ -687,7 +718,7 @@ public class ParameterConfigurationSpace implements Serializable {
 			}
 			Double min;
 			Double max;
-			Double defaultValue;
+			String defaultValue;
 			try {
 				min = Double.valueOf(intReaMatcher.group("min"));
 				max = Double.valueOf(intReaMatcher.group("max"));
@@ -697,7 +728,7 @@ public class ParameterConfigurationSpace implements Serializable {
 				{
 					throw new IllegalArgumentException("Minimum value " + min + " must be less than the maximum value: " + max + " on line:" + line);
 				}
-				defaultValue = Double.valueOf(intReaMatcher.group("default"));
+				defaultValue = intReaMatcher.group("default");
 			} catch(NumberFormatException e)
 			{
 				throw new IllegalArgumentException("This parameter has to consists of numbers:" + line);
@@ -708,44 +739,19 @@ public class ParameterConfigurationSpace implements Serializable {
 				logScale = true;
 			}
 			
-			if(intValuesOnly)
-			{
-				try {
-				if(!isIntegerDouble(Double.valueOf(min))) throw new IllegalArgumentException("This parameter is marked as integer, only integer values are permitted for the bounds and default on line:" + line); 
-				if(!isIntegerDouble(Double.valueOf(max))) throw new IllegalArgumentException("This parameter is marked as integer, only integer values are permitted for the bounds and default on line:" + line);
-				if(!isIntegerDouble(Double.valueOf(defaultValue))) throw new IllegalArgumentException("This parameter is marked as integer, only integer values are permitted for the bounds and default on line:" + line);
-				
-				
-				if (defaultValue < min || defaultValue > max)
-				{
-					throw new IllegalArgumentException("Default value " + defaultValue +  " must fall in the interval [" + min + "," + max +"] on line: " + line);
-				}
-				} catch(NumberFormatException e)
-				{
-					throw new IllegalArgumentException("This parameter is marked as integer, only integer values are permitted for the bounds and default on line:" + line);
-				}
-			}
-			
-			
-			values.put(name, Collections.<String> emptyList());
 			switch (type){
-				case "i": 	
-						paramTypes.put(name, ParameterType.INTEGER);
-						break;
-				case "r":
-						paramTypes.put(name, ParameterType.REAL);
-						break;
-				default:
-					throw new IllegalStateException("Could not identify the type of the parameter: "+line);
+			case "i": 	
+					paramTypes.put(name, ParameterType.INTEGER);
+					break;
+			case "r":
+					paramTypes.put(name, ParameterType.REAL);
+					break;
+			default:
+				throw new IllegalStateException("Could not identify the type of the parameter: "+line);
 			}
-			defaultValues.put(name, intReaMatcher.group("default"));
-			
-			try {
-				contNormalizedRanges.put(name, new NormalizedRange(min, max, logScale, intValuesOnly));
-			} catch(IllegalArgumentException e)
-			{
-				throw new IllegalArgumentException(e.getMessage() + "; error occured while parsing line: " +line);
-			}
+			defaultValues.put(name, defaultValue);
+			values.put(name, Collections.<String> emptyList());
+			createNumericParameter(line, intValuesOnly, logScale, name, type, min, max, defaultValue);
 
 			return;
 		} else if(generalForbidden.matcher(line).find())
@@ -762,6 +768,54 @@ public class ParameterConfigurationSpace implements Serializable {
 
 		throw new IllegalArgumentException("Not sure how to parse this line: "+line);
 
+	}
+
+	/**
+	 * Creates a numeric parameter
+	 * @param line
+	 * @param intValuesOnly
+	 * @param logScale
+	 * @param name
+	 * @param type
+	 * @param min
+	 * @param max
+	 * @param defaultValue
+	 */
+	public void createNumericParameter(String line, boolean intValuesOnly,
+			boolean logScale, String name, String type, Double min, Double max,
+			String defaultValue) {
+		if(intValuesOnly)
+		{
+			System.out.println(defaultValue);
+			try {
+			if(!isIntegerDouble(Double.valueOf(min))) throw new IllegalArgumentException("This parameter is marked as integer, only integer values are permitted for the bounds and default on line:" + line); 
+			if(!isIntegerDouble(Double.valueOf(max))) throw new IllegalArgumentException("This parameter is marked as integer, only integer values are permitted for the bounds and default on line:" + line);
+			if(!isIntegerDouble(Double.valueOf(defaultValue))) throw new IllegalArgumentException("This parameter is marked as integer, only integer values are permitted for the bounds and default on line:" + line);
+			
+			double defDouble = Double.valueOf(defaultValue);
+			if (defDouble < min || defDouble > max)
+			{
+				throw new IllegalArgumentException("Default value " + defaultValue +  " must fall in the interval [" + min + "," + max +"] on line: " + line);
+			}
+			
+			} catch(NumberFormatException e)
+			{
+				e.printStackTrace();
+				throw new IllegalArgumentException("This parameter is marked as integer, only integer values are permitted for the bounds and default on line:" + line);
+			}
+		}
+		
+		
+		
+		
+	
+		
+		try {
+			contNormalizedRanges.put(name, new NormalizedRange(min, max, logScale, intValuesOnly));
+		} catch(IllegalArgumentException e)
+		{
+			throw new IllegalArgumentException(e.getMessage() + "; error occured while parsing line: " +line);
+		}
 	}
 	
 	/**
@@ -1017,7 +1071,6 @@ public class ParameterConfigurationSpace implements Serializable {
 					
 					switch(paramTypes.get(name))
 					{
-					case ORDINAL:
 					case CATEGORICAL:
 						{
 							Integer valueIndex = categoricalValueMap.get(name).get(value);
@@ -1035,6 +1088,10 @@ public class ParameterConfigurationSpace implements Serializable {
 							forbiddenIndexValuePairs.add(nvPairArrayForm);
 						}
 						break;
+					case ORDINAL:
+					{
+						value = String.valueOf(this.categoricalValueMap.get(name).get(value));
+					}
 					case REAL:
 					case INTEGER:
 						{
@@ -1632,6 +1689,7 @@ public class ParameterConfigurationSpace implements Serializable {
 		try 
 		{
 			
+			
 			ParameterConfiguration config;
 			
 			String trySpecialParamString = paramString.trim().toUpperCase();
@@ -1669,8 +1727,11 @@ public class ParameterConfigurationSpace implements Serializable {
 					for(String param : params)
 					{
 						
+						
 						if(param.trim().equals("")) continue;
 						String[] paramSplit = param.trim().split(" ");
+						
+						
 						if(!paramSplit[1].trim().equals("NaN"))
 						{
 							config.put(paramSplit[0].trim(),paramSplit[1].replaceAll("'","").trim());

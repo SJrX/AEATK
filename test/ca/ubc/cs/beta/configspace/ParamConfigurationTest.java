@@ -1735,6 +1735,26 @@ public class ParamConfigurationTest {
 		
 	}
 	
+	@Test
+	public void testGeneration()
+	{
+		String pcsFile ="solved { SAT, UNSAT, TIMEOUT, CRASHED, ABORT, INVALID } [SAT]\n"+
+						"runtime [0,1000] [0]\n"+
+						"walltime [0,2000] [1]\n"+
+						"runlength [0,1000000][0]\n"+
+						"quality [0, 1000000] [0]\n"+
+						"seed [ -1,4294967295][1]i";
+		
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+		
+		for(int i=0; i < 1000; i++)
+		{
+			configSpace.getParameterConfigurationFromString(configSpace.getRandomParameterConfiguration(rand).getFormattedParameterString(), ParameterStringFormat.NODB_SYNTAX);
+			
+			
+		}
+	}
+	
 	@After
 	public void tearDown()
 	{
