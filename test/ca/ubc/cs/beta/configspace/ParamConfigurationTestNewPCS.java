@@ -1907,7 +1907,8 @@ public class ParamConfigurationTestNewPCS {
 		} catch(IllegalArgumentException e)
 		{
 			//Good
-			System.err.println(e.getMessage());
+			//e.printStackTrace();
+			//System.err.println( e.getMessage());
 			
 		}
 		
@@ -2793,7 +2794,7 @@ public class ParamConfigurationTestNewPCS {
 					  
 		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
 		
-		for(int i=0; i < 1000; i++)
+		for(int i=0; i < 100; i++)
 		{
 			BufferedReader sr = new BufferedReader(new StringReader(pcsFile));
 			
@@ -2850,6 +2851,141 @@ public class ParamConfigurationTestNewPCS {
 			
 		}
 	}
+	
+	@Test
+	public void testForbiddenClassic()
+	{
+		String pcsFile = "a r [0,100] [50]\n"
+				+ "b i [0,100] [50]\n"
+				+ "c o { 0, 25 , 50, 75, 100} [50]\n"
+				+ "d c { 0, 25 , 50, 75, 100} [50]\n"
+				+ "{a = 25}\n"
+				+ "{b = 25}\n"
+				+ "{c = 25}\n"
+				+ "{d = 25}\n"
+				+ "{a = 75, b = 75}\n"
+				+ "{c = 75, d = 75}\n"
+				+ "{a = 75, c = 75}\n"
+				+ "{a = 75, d = 75}\n"
+				+ "{b = 75, c = 75}\n"
+				+ "{b = 75, d = 75}\n";
+				
+		
+		
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);		
+		
+		assertEquals("Lower Bound should be 1.0", 1, configSpace.getLowerBoundOnSize(), 0.5);
+		System.out.println(configSpace.getDefaultConfiguration().getFormattedParameterString());
+		
+		
+		for(String name : configSpace.getParameterNames())
+		{
+			System.out.println("Starting: " + name);
+			ParameterConfiguration config = configSpace.getDefaultConfiguration();
+			
+			
+			config.put(name, "25");
+			assertTrue("Configuration " + config.getFormattedParameterString() + " should be verboten", config.isForbiddenParameterConfiguration());
+			
+			
+			
+			for(String aName : configSpace.getParameterNames())
+			{
+				if(name.equals(aName))
+				{
+					continue;
+				}
+				
+				ParameterConfiguration newConfig = configSpace.getDefaultConfiguration();
+				
+				newConfig.put(name, "75");
+				assertFalse(newConfig.isForbiddenParameterConfiguration()); 
+				newConfig.put(aName, "75");
+				assertTrue(newConfig.isForbiddenParameterConfiguration());
+				System.out.println(newConfig.getFormattedParameterString());
+				
+				newConfig.put(aName, "25");
+				assertTrue(newConfig.isForbiddenParameterConfiguration());
+				
+			}
+		}
+		
+		
+		for(int i=0; i < 1000000; i++)
+		{
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(rand);
+			
+			assertFalse("Expected configuration to be allowed", config.isForbiddenParameterConfiguration());
+		}
+	}
+	
+	@Test
+	public void testForbiddenNew()
+	{
+		String pcsFile = "a r [0,100] [50]\n"
+				+ "b i [0,100] [50]\n"
+				+ "c o { 0, 25 , 50, 75, 100} [50]\n"
+				+ "d c { 0, 25 , 50, 75, 100} [50]\n"
+				+ "{a == 25}\n"
+				+ "{b == 25}\n"
+				+ "{c == 25}\n"
+				+ "{d == 25}\n"
+				+ "{a == 75 && b == 75}\n"
+				+ "{c == 75 && d == 75}\n"
+				+ "{a == 75 && c == 75}\n"
+				+ "{a == 75 && d == 75}\n"
+				+ "{b == 75 && c == 75}\n"
+				+ "{b == 75 && d == 75}\n";
+				
+		
+		
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);		
+		
+		System.out.println(configSpace.getDefaultConfiguration().getFormattedParameterString());
+		
+		assertEquals("Lower Bound should be 1.0", 1, configSpace.getLowerBoundOnSize(), 0.5);
+		
+		for(String name : configSpace.getParameterNames())
+		{
+			System.out.println("Starting: " + name);
+			ParameterConfiguration config = configSpace.getDefaultConfiguration();
+			
+			
+			config.put(name, "25");
+			assertTrue("Configuration " + config.getFormattedParameterString() + " should be verboten", config.isForbiddenParameterConfiguration());
+			
+			
+			
+			for(String aName : configSpace.getParameterNames())
+			{
+				if(name.equals(aName))
+				{
+					continue;
+				}
+				
+				ParameterConfiguration newConfig = configSpace.getDefaultConfiguration();
+				
+				newConfig.put(name, "75");
+				assertFalse(newConfig.isForbiddenParameterConfiguration()); 
+				newConfig.put(aName, "75");
+				assertTrue(newConfig.isForbiddenParameterConfiguration());
+				System.out.println(newConfig.getFormattedParameterString());
+				
+				newConfig.put(aName, "25");
+				assertTrue(newConfig.isForbiddenParameterConfiguration());
+				
+			}
+		}
+		
+		
+		for(int i=0; i < 10000; i++)
+		{
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(rand);
+			
+			assertFalse("Expected configuration to be allowed", config.isForbiddenParameterConfiguration());
+		}
+	}
+	
 	
 	@After
 	public void tearDown()

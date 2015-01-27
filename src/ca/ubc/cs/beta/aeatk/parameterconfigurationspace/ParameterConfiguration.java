@@ -28,6 +28,8 @@ import de.congrace.exp4j.Calculable;
 import net.jcip.annotations.NotThreadSafe;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
+import net.objecthunter.exp4j.ValidationResult;
+import net.objecthunter.exp4j.operator.Operator;
 
 
 /**
@@ -1075,7 +1077,7 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 	public boolean isForbiddenParameterConfiguration()
 	{
 		
-		if(configSpace.isForbiddenParameterConfiguration(valueArray))
+		if(configSpace.isForbiddenParameterConfigurationByClassicClauses(valueArray))
 		{
 			return true;
 		}
@@ -1097,9 +1099,37 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 			{
 				expressions = new ArrayList<Expression>();
 				
+				
 				for(ExpressionBuilder builder : configSpace.bl)
 				{
-					expressions.add(builder.build());
+					Expression exp = null;
+					
+					
+					
+					 
+					StringBuilder errorMessage = new StringBuilder(" Besides the operator and functions listed on http://www.objecthunter.net/exp4j/, the following are supported: ");
+					
+					List<String> operators = new ArrayList<>();
+					for(Operator o : ForbiddenOperators.operators)
+					{
+						operators.add(o.getSymbol());
+					}
+					errorMessage.append(operators);
+					try
+					{
+						  exp = builder.build();
+					} catch(IllegalArgumentException e)
+					{
+						
+						throw new IllegalArgumentException("The following forbidden line seems to be invalid: " + configSpace.expressions.get(builder) + "." + errorMessage, e);
+					}
+					ValidationResult res = exp.validate(false);
+					if(!res.isValid())
+					{
+						throw new IllegalArgumentException("The following forbidden line seems to be invalid: " + configSpace.expressions.get(builder) + " exp4j says:" + res.getErrors() + "." + ( configSpace.expressions.get(builder).indexOf(',') >= 0 ? " Guess: Is the , suppose to be an &&?":"")  + errorMessage );
+					}
+					
+					expressions.add(exp);
 				}
 				
 				configSpace.tlExpressions.set(expressions);
@@ -1127,17 +1157,29 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 						} else
 						{
 							//variables.put(name, Double.valueOf(this.get(name)));
-							calc.setVariable(name,Double.valueOf(this.get(name)));
+							try
+							{
+								calc.setVariable(name,Double.valueOf(this.get(name)));
+							} catch(NumberFormatException e)
+							{
+								calc.setVariable(name, valueArray[i]);
+							}
 						}
 						i++;
 					}
 					
-					if (calc.evaluate() == 0)
+					try 
 					{
-						continue;
-					} else
+						if (calc.evaluate() == 0)
+						{
+							continue;
+						} else
+						{
+							return true;
+						}
+					} catch(RuntimeException e)
 					{
-						return true;
+						throw new IllegalArgumentException("Error occured evaluating configuration for forbiddenness",e);
 					}
 				} 
 				

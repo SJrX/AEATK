@@ -15,6 +15,7 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
@@ -142,7 +143,7 @@ public class ParameterConfigurationSpace implements Serializable {
 	}
 	
 	
-	private final List<int[][]> forbiddenParameterValuesList = new ArrayList<int[][]>();
+	private final List<double[][]> forbiddenParameterValuesList = new ArrayList<double[][]>();
 	/**
 	 * Value to store in the categoricalSize array for continuous parameters
 	 */
@@ -291,13 +292,15 @@ public class ParameterConfigurationSpace implements Serializable {
 	
 	private final Map<String, String> searchSubspace;
 	
-	final List<Expression> cl = new ArrayList<Expression>();
+	//final List<Expression> cl = new ArrayList<Expression>();
 	
 	final List<ExpressionBuilder> bl = new ArrayList<>();
 	
+	final Map<ExpressionBuilder, String> expressions = new IdentityHashMap<>();
+	
 	final ThreadLocal<List<Expression>> tlExpressions = new ThreadLocal<>();
 	
-	final ThreadLocal<Map<String, Double>> map = new ThreadLocal<>();
+
 	/**
 	 * Creates a Param Configuration Space from the given file, no random object
 	 * @param filename string storing the filename to parse
@@ -966,7 +969,7 @@ public class ParameterConfigurationSpace implements Serializable {
 	
 	
 	private final Pattern classicForbidden = Pattern.compile("^\\s*\\{((\\s*\\S+\\s*=\\s*\\S+\\s*,?\\s*)+)\\}\\s*$");
-	private final Pattern generalForbidden = Pattern.compile("^\\s*\\{\\s*(.+)\\s*\\}\\s*$");
+	private final Pattern generalForbidden = Pattern.compile("^\\s*\\{\\s*([^\\{\\}]+)\\s*\\}\\s*$");
 	
 	private boolean parseForbiddenLines(List<String> lines) {
 		
@@ -989,7 +992,7 @@ public class ParameterConfigurationSpace implements Serializable {
 				String values = classicForbiddenStatementMatcher.group(1);
 				String[] nameValuePairs = values.split(",");
 				
-				List<int[]> forbiddenIndexValuePairs = new ArrayList<int[]>();
+				List<double[]> forbiddenIndexValuePairs = new ArrayList<double[]>();
 						
 				for(String nameValuePair : nameValuePairs)
 				{
@@ -1009,40 +1012,53 @@ public class ParameterConfigurationSpace implements Serializable {
 					
 					String value = nvPairArr[1].trim();
 					
-					if(paramTypes.get(name) == ParameterType.REAL || paramTypes.get(name) == ParameterType.INTEGER)
-					{
-						throw new IllegalArgumentException("Forbidden Parameter Declarations can only exclude combinations of categorical or ordinal parameters " + name + " is continuous; in line: " + line );
-					}
 					
-					Integer valueIndex = categoricalValueMap.get(name).get(value);
 					
-					if(valueIndex == null)
+					
+					switch(paramTypes.get(name))
 					{
-						throw new IllegalArgumentException("Invalid parameter value " + value + " for parameter " + name + " in line: " + line);
+					case ORDINAL:
+					case CATEGORICAL:
+						{
+							Integer valueIndex = categoricalValueMap.get(name).get(value);
+							
+							if(valueIndex == null)
+							{
+								throw new IllegalArgumentException("Invalid parameter value " + value + " for parameter " + name + " in line: " + line);
+								
+							}
+							
+							double[] nvPairArrayForm = new double[2];
+							nvPairArrayForm[0] = indexIntoValueArrays;
+							nvPairArrayForm[1] = valueIndex; 
+							
+							forbiddenIndexValuePairs.add(nvPairArrayForm);
+						}
+						break;
+					case REAL:
+					case INTEGER:
+						{
+							
+							
+							double[] nvPairArrayForm = new double[2];
+							nvPairArrayForm[0] = indexIntoValueArrays;
+							nvPairArrayForm[1] = this.getNormalizedRangeMap().get(name).normalizeValue(Double.valueOf(value));
+							
+							forbiddenIndexValuePairs.add(nvPairArrayForm);
+						}
 						
 					}
 					
-					int[] nvPairArrayForm = new int[2];
-					nvPairArrayForm[0] = indexIntoValueArrays;
-					nvPairArrayForm[1] = valueIndex; 
 					
-					forbiddenIndexValuePairs.add(nvPairArrayForm);
+					
 				}
 				
 				
-				forbiddenParameterValuesList.add(forbiddenIndexValuePairs.toArray(new int[0][0]));
+				forbiddenParameterValuesList.add(forbiddenIndexValuePairs.toArray(new double[0][0]));
 				
 			} else if(generalForbiddenMatcher.find())
 			{
 				newForbiddenStatements = true;
-				
-				/*
-				line = line.replaceAll("!=", ":");
-				
-				line = line.replaceAll(">=", Matcher.quoteReplacement("$"));
-				line  =line.replaceAll("<=", "#");
-				line = line.replaceAll("==","|");
-				*/
 				
 				ExpressionBuilder eb = new ExpressionBuilder(line);
 				
@@ -1053,9 +1069,8 @@ public class ParameterConfigurationSpace implements Serializable {
 				
 				bl.add(eb);
 				
-				Expression calc = eb.build();
+				expressions.put(eb, line);
 				
-				cl.add(calc);
 			
 			} else
 			{
@@ -1551,7 +1566,7 @@ public class ParameterConfigurationSpace implements Serializable {
 		//Default cannot be forbidden so there is at least 1 configuration
 		//We don't need to worry about the edge case
 		double configSpaceSize = 1;
-		if(this.forbiddenParameterValuesList.size() > 0)
+		if(this.forbiddenParameterValuesList.size() > 0 || this.bl.size() > 0)
 		{
 			return 1;
 		}
@@ -1821,28 +1836,44 @@ public class ParameterConfigurationSpace implements Serializable {
 
 
 	/**
-	 * Checks the array representation of a configuration to see if it is forbidden
+	 * Checks the array representation of a configuration to see if it is forbidden by classical parameters
 	 * @param valueArray
 	 * @return <code>true</code> if the valueArray is ultimately forbidden, <code>false</code> otherwise.
 	 */
-	public boolean isForbiddenParameterConfiguration(double[] valueArray) {
+	protected boolean isForbiddenParameterConfigurationByClassicClauses(double[] valueArray) {
 		
 		
 		/*
 		 * Each value is Nx2 where the first is an index into the array, and the second is the 
 		 * index of the categorical value.
 		 */
-		for(int[][] forbiddenParamValues : forbiddenParameterValuesList)
+		
+		for(double[][] forbiddenParamValues : forbiddenParameterValuesList)
 		{
 			
 			boolean match = true;
-			for(int[] forbiddenParamValue : forbiddenParamValues)
+			for(double[] forbiddenParamValue : forbiddenParamValues)
 			{
 				//Value arrays are indexed by 1, and forbidden parameters are 0 indexed
-				if(valueArray[forbiddenParamValue[0]] != forbiddenParamValue[1] + 1)
+				
+				int index = (int) forbiddenParamValue[0];
+
+				if(this.parameterDomainContinuous[index]) 
 				{
-					match = false;
-					break;
+					
+					if(valueArray[index] != forbiddenParamValue[1] )
+					{
+						match = false;
+						break;
+					}
+				} else
+				{
+					
+					if(valueArray[index] != forbiddenParamValue[1] + 1)
+					{
+						match = false;
+						break;
+					}
 				}
 				
 			}
