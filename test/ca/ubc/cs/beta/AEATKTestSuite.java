@@ -22,10 +22,12 @@ import ca.ubc.cs.beta.targetalgorithmevaluator.RetryCrashedTAETester;
 import ca.ubc.cs.beta.targetalgorithmevaluator.TAETestSet;
 import ca.ubc.cs.beta.instancespecificinfo.*;
 import ca.ubc.cs.beta.jcommander.JCommanderTest;
+import ca.ubc.cs.beta.json.JSONTester;
 
 @RunWith(Suite.class)
 @Suite.SuiteClasses({
 	JCommanderTest.class,
+	JSONTester.class,
 	TestExistingAlgorithmRun.class,
 	AcquisitionFunctionTester.class,
 	EventManagerTester.class,

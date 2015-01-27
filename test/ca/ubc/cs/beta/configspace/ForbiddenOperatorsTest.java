@@ -10,6 +10,7 @@ import java.util.concurrent.Future;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 
+import org.junit.Ignore;
 import org.junit.Test;
 
 import ca.ubc.cs.beta.aeatk.concurrent.threadfactory.SequentiallyNamedThreadFactory;
@@ -469,9 +470,10 @@ public class ForbiddenOperatorsTest {
 	}
 	
 	@Test
+	@Ignore
 	public void exp4JThreadSafetyBug() throws InterruptedException, ExecutionException
 	{
-		
+		//This test should fail
 		StringBuilder sb = new StringBuilder();
 		
 		final int LIMIT = 1000000;

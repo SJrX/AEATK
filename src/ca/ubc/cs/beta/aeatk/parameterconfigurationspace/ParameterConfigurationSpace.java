@@ -4,6 +4,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InvalidObjectException;
+import java.io.ObjectInputStream;
+import java.io.ObjectStreamException;
 import java.io.Reader;
 import java.io.Serializable;
 import java.io.StringReader;
@@ -34,21 +37,11 @@ import net.jcip.annotations.Immutable;
 import net.objecthunter.exp4j.Expression;
 import net.objecthunter.exp4j.ExpressionBuilder;
 import net.objecthunter.exp4j.operator.Operator;
+import ca.ubc.cs.beta.aeatk.json.JSONConverter;
 import ca.ubc.cs.beta.aeatk.json.serializers.ParameterConfigurationSpaceJson;
 import ca.ubc.cs.beta.aeatk.misc.java.io.FileReaderNoException.FileReaderNoExceptionThrown;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration.ParameterStringFormat;
 import ec.util.MersenneTwisterFast;
-
-enum LineType
-{
-	CATEGORICAL,
-	CONTINUOUS,
-	CONDITIONAL,
-	FORBIDDEN,
-	OTHER,
-	NEW_FORBIDDEN
-}
-
 
 
 /**
@@ -70,12 +63,11 @@ enum LineType
 @JsonDeserialize(using=ParameterConfigurationSpaceJson.ParamConfigurationSpaceDeserializer.class)
 public class ParameterConfigurationSpace implements Serializable {
 	
-	private static final String FORBIDDEN_EXPRESSION = "Forbidden Expression:";
 
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -9137375058810057209L;
+	private static final long serialVersionUID = -11111155215218L;
 
 	/**
 	 * Stores a list of values for each parameter name
@@ -550,7 +542,7 @@ public class ParameterConfigurationSpace implements Serializable {
 				
 				
 				try {
-					System.err.println("Parsing transformed conditional:" + sb.toString());
+					//System.err.println("Parsing transformed conditional:" + sb.toString());
 					parseConditional(sb.toString());
 				} catch(IllegalArgumentException e)
 				{
@@ -1243,7 +1235,7 @@ public class ParameterConfigurationSpace implements Serializable {
 			}
 		} catch (IOException e) {
 
-			System.err.println("Some random IOException occured?");
+			//System.err.println("Some random IOException occured?");
 			e.printStackTrace();
 			
 			throw new IllegalStateException("An exception occured while reading values from (" + oLine + ") we mistakenly thought this would never happen, please contact developer", e);
@@ -1994,6 +1986,47 @@ public class ParameterConfigurationSpace implements Serializable {
 		return newForbiddenLinesPresent;
 	}
 
+	
+	private static final class PCSSerializationProxy implements Serializable
+	{
+
+		private final String pcsJSON;
+		
+		private static final long serialVersionUID = 21585218521L;
+		
+		public PCSSerializationProxy(String json)
+		{
+			this.pcsJSON = json;
+		}
+		
+		
+		private final Object readResolve() throws ObjectStreamException
+		{
+			JSONConverter<ParameterConfigurationSpace> json = new JSONConverter<ParameterConfigurationSpace>() {} ;
+			
+			//String jsonText = json.getJSON(pcsJSON);
+			//System.out.println(jsonText);
+
+			return json.getObject(pcsJSON);
+		}
+		
+	}
+	
+
+	
+	private final Object writeReplace() throws ObjectStreamException
+	{
+		JSONConverter<ParameterConfigurationSpace> json = new JSONConverter<ParameterConfigurationSpace>() {} ;
+		
+		String jsonText = json.getJSON(this);
+		
+		return new PCSSerializationProxy(jsonText);
+	}
+	
+	private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException
+	{
+		throw new InvalidObjectException("This object cannot be deserialized, should have used: " + PCSSerializationProxy.class.getCanonicalName());
+	}
 
 	
 }
