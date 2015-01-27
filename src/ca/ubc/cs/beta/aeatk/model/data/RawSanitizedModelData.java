@@ -45,7 +45,7 @@ public class RawSanitizedModelData implements SanitizedModelData {
 			usedInstanceFeatures[i] = instanceFeatures[usedInstancesIdxs[i]];
 		}
 		int[] constFeatures = pca.constantColumnsWithMissingValues(usedInstanceFeatures);
-		instanceFeatures = pca.removeColumns(instanceFeatures, constFeatures);
+		instanceFeatures = pca.copyMatrixAndRemoveColumns(instanceFeatures, constFeatures);
 		
 		this.constantColumns = constFeatures;
 		
