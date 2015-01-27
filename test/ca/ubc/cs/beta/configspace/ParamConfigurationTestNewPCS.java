@@ -4,7 +4,9 @@ package ca.ubc.cs.beta.configspace;
 
 import static org.junit.Assert.*;
 
+import java.io.BufferedReader;
 import java.io.File;
+import java.io.IOException;
 import java.io.StringReader;
 import java.net.URL;
 import java.util.ArrayList;
@@ -2762,10 +2764,98 @@ public class ParamConfigurationTestNewPCS {
 		assertEquals("Expected number of forbidden configurations should be zero", 0, forbiddenConfigurations.get());
 	}
 	
+	@Test
+	public void testComments() throws IOException
+	{
+		
+		String pcsFile = "a [1, 10] [1] i\n"
+					   + "b [1, 10] [1] l\n"
+					   + "c [1, 10] [1] il\n"
+					   + "d [1, 10] [1] \n"
+					   + "e {1,2,3,4,5,6,7,8,9,10} [1]\n"
+					   + "e2 {1,2,3,4,5,6,7,8,9,10} [1]\n"
+					   + "f i [1,10] [1] \n"
+					   + "g i [1 ,10] [1] log \n"
+					   + "h r [1, 10] [1] \n"
+					   + "i r [1 ,10] [1] log\n"
+					   + "j r [1 ,10] [1]log\n"
+					   + "k i [1 ,10] [1]log\n"
+					   + "l c {1,2,3,4,5,6,7,8,9,10} [1] \n"
+					   + "m o { 1,2,3, 4, 5, 6 ,7 ,8, 9, 10} [1]\n"
+					   + "\n"
+					   +"\n"
+					   + "\n"
+					   + "l | e in { 1,2 ,3 ,4}\n"
+					   + "l | e2 in { 1,2 ,3 ,4}\n"
+					   + "m | a > 5 && b < 5 || c == 5 && d != 10"
+					   + "\n"
+					   + "{a + b + c + d + e + e2 + f + g + h + i + j + k + l + m > 70}";
+					  
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+		
+		for(int i=0; i < 1000; i++)
+		{
+			BufferedReader sr = new BufferedReader(new StringReader(pcsFile));
+			
+			String line = null;
+			StringBuilder sb = new StringBuilder();
+			while((line = sr.readLine()) != null)
+			{
+				
+				if(rand.nextInt(10) > 8)
+				{
+					line = line.replaceAll("\\s", "    ");
+				}
+
+				if(rand.nextInt(10) > 7)
+				{
+					line = line.replaceAll(",10", " ,    10 ");
+				}
+				
+				while(rand.nextInt(10) > 6)
+				{
+					line = line.replaceAll(",", " , ");
+				}
+				
+				while (rand.nextInt(10) > 7)
+				{
+					line = line.replaceAll("\\[", "   [");
+				}
+				sb.append(line);
+				if(rand.nextDouble() < 0.25)
+				{
+					while(rand.nextInt(10) > 7){
+						sb.append(" ");
+					}
+					sb.append("# Comment of some kind");
+				}
+				
+				
+				sb.append("\n");
+			}
+			
+			//System.out.println("***********\n" + sb.toString() + "*********");
+			
+			ParameterConfigurationSpace newConfigurationSpace = ParamFileHelper.getParamFileFromString(sb.toString());
+			
+			assertTrue(configSpace.getParameterConfigurationFromString(newConfigurationSpace.getDefaultConfiguration().getFormattedParameterString(), ParameterStringFormat.NODB_OR_STATEFILE_SYNTAX).equals(configSpace.getDefaultConfiguration()));
+						
+			for(int j=0; j < 100; j++)
+			{
+				ParameterConfiguration newConfig = (newConfigurationSpace.getRandomParameterConfiguration(rand));
+				ParameterConfiguration config = configSpace.getParameterConfigurationFromString(newConfig.getFormattedParameterString(), ParameterStringFormat.NODB_OR_STATEFILE_SYNTAX);
+
+				assertEquals(newConfig.getFormattedParameterString(), config.getFormattedParameterString());
+			}
+			
+		}
+	}
 	
 	@After
 	public void tearDown()
 	{
 		System.out.println("Done");
 	}
+	
+	
 }

@@ -577,10 +577,10 @@ public class ParameterConfigurationSpace implements Serializable {
 	private void parseAClibLine(String line){
 		
 	
-		
+		line = line.trim();
 		//Removes Comment
 		int commentStart = line.indexOf("#");
-		line = line.trim();
+	
 		if (commentStart >= 0)
 		{
 			line = line.substring(0, commentStart).trim();
