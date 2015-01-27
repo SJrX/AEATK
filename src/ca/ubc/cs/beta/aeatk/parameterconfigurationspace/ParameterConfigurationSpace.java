@@ -83,13 +83,25 @@ public class ParameterConfigurationSpace implements Serializable {
 	 * For each parameter stores a boolean for whether or not the value is continuous
 	 * @deprecated this should be replaced with the paramTypes array.
 	 */
-	private final Map<String, Boolean> isContinuous = new HashMap<String, Boolean>();
+	//private final Map<String, Boolean> isContinuous = new HashMap<String, Boolean>();
 	
 	/**
 	 * types of parameters
 	 */
-	public enum ParameterType {
-		CATEGORICAL, ORDINAL, INTEGER, REAL
+	public static enum ParameterType {
+		CATEGORICAL(false), ORDINAL(false), INTEGER(true), REAL(true);
+		
+		private final boolean normalize;
+		
+		ParameterType(boolean normalize)
+		{
+			this.normalize = normalize;
+		}
+
+		public Boolean isNormalized() {
+			
+			return normalize;
+		}
 	}
 	
 	/**
@@ -261,15 +273,15 @@ public class ParameterConfigurationSpace implements Serializable {
 	}
 	
 	protected List<String> getActiveCheckOrderString() {
-		return activeCheckOrderString;
+		return Collections.unmodifiableList(activeCheckOrderString);
 	}
 	
 	protected Map<Integer, ArrayList<ArrayList<Conditional>>> getNameConditionsMap(){
-		return nameConditionsMap;
+		return Collections.unmodifiableMap(nameConditionsMap);
 	}
 	
-	public Map<String, ParameterType> getParamTypes(){
-		return paramTypes;
+	public Map<String, ParameterType> getParameterTypes(){
+		return Collections.unmodifiableMap(paramTypes);
 	}
 	
 	private final String pcsFile;
@@ -426,7 +438,7 @@ public class ParameterConfigurationSpace implements Serializable {
 		int i = 0;
 		for (String paramName : authorativeParameterOrderArray) {
 			// saves the size of the categorical domains for each parameter
-			parameterDomainContinuous[i] = getContinuousMap().get(paramName);
+			parameterDomainContinuous[i] = getParameterTypes().get(paramName).isNormalized();
 			if (parameterDomainContinuous[i] == false) {
 				categoricalSize[i] = getValuesMap().get(paramName).size();
 			} else {
@@ -639,7 +651,7 @@ public class ParameterConfigurationSpace implements Serializable {
 			//TODO: check whether ordinal parameters are already handled correctly
 			categoricalValueMap.put(name, valueMap);
 			defaultValues.put(name, defaultValue);
-			isContinuous.put(name,Boolean.FALSE);
+			
 			
 			switch (type){
 				case "o": 	paramTypes.put(name, ParameterType.ORDINAL);
@@ -711,7 +723,7 @@ public class ParameterConfigurationSpace implements Serializable {
 				}
 			}
 			
-			isContinuous.put(name, Boolean.TRUE);
+			
 			values.put(name, Collections.<String> emptyList());
 			switch (type){
 				case "i": 	
@@ -911,9 +923,9 @@ public class ParameterConfigurationSpace implements Serializable {
 				for (Conditional cond: clause){
 					parent_id_in[j] = cond.parent_ID;
 					String parent_name = authorativeParameterNameOrder.get(cond.parent_ID);
-					Boolean iscont = isContinuous.get(parent_name);
+					Boolean normalize = this.getParameterTypes().get(parent_name).isNormalized();
 					//contNormalizedRanges: name-> normalizer
-					if (iscont){
+					if (normalize){
 						//continuous parameters have to be normalized to range [0,1]
 						int z = 0;
 						values_in[j] = new double[cond.values.length];
@@ -1259,9 +1271,20 @@ public class ParameterConfigurationSpace implements Serializable {
 		return Collections.unmodifiableList(authorativeParameterNameOrder);
 	}
 	
+	/**
+	 * 
+	 * @deprecated use getParameterTypes() instead
+	 */
 	public Map<String, Boolean> getContinuousMap()
 	{
-		return Collections.unmodifiableMap(isContinuous);
+		Map<String, Boolean> continuousMap = new LinkedHashMap<String, Boolean>(); 
+		
+		
+		for(Entry< String, ParameterType> ent :this.getParameterTypes().entrySet())
+		{
+			continuousMap.put(ent.getKey(), ent.getValue().isNormalized());
+		}
+		return Collections.unmodifiableMap(continuousMap);
 	}
 	
 	/**

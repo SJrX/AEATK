@@ -1008,7 +1008,7 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 					}
 					
 					//translate value
-					if (configSpace.getContinuousMap().get(parent_name)) {
+					if (configSpace.getParameterTypes().get(parent_name).isNormalized()) {
 						encodedParentPresentValue = Double.parseDouble(parent_value_string);
 					} else {
 						encodedParentPresentValue = (double) configSpace.getCategoricalValueMap().get(parent_name).get(parent_value_string);
