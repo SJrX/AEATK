@@ -42,6 +42,9 @@ import ca.ubc.cs.beta.aeatk.json.JSONConverter;
 import ca.ubc.cs.beta.aeatk.json.serializers.ParameterConfigurationSpaceJson;
 import ca.ubc.cs.beta.aeatk.misc.java.io.FileReaderNoException.FileReaderNoExceptionThrown;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration.ParameterStringFormat;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.util.TopologicalSorter;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.util.TopologicalSorter.Constraint;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.util.TopologicalSorter.NoTopologicalOrderAvailableException;
 import ec.util.MersenneTwisterFast;
 
 
@@ -589,6 +592,9 @@ public class ParameterConfigurationSpace implements Serializable {
 	 * populating the relevant data structures
 	 * @param line line of the pcs file
 	 */
+	
+	private static final Pattern allowedParameterValuesRegex = Pattern.compile("^\\p{Graph}+$");
+	
 	private void parseAClibLine(String line){
 		
 	
@@ -637,7 +643,16 @@ public class ParameterConfigurationSpace implements Serializable {
 			
 			Set<String> paramValuesSet = new HashSet<String>();
 			for (String value: paramValues){
+				
+				if(!allowedParameterValuesRegex.matcher(value.trim()).find())
+				{
+					throw new IllegalArgumentException("Illegal parameter value detected: `" + value.trim() + "` on line: " + line);
+				}
+				
 				paramValues_trimed.add(value.trim());
+				
+				
+				
 				if(!paramValuesSet.add(value.trim()))
 				{
 					throw new IllegalArgumentException("Duplicate value: " + value.trim() + " detected on line: " + line);
@@ -786,7 +801,6 @@ public class ParameterConfigurationSpace implements Serializable {
 			String defaultValue) {
 		if(intValuesOnly)
 		{
-			System.out.println(defaultValue);
 			try {
 			if(!isIntegerDouble(Double.valueOf(min))) throw new IllegalArgumentException("This parameter is marked as integer, only integer values are permitted for the bounds and default on line:" + line); 
 			if(!isIntegerDouble(Double.valueOf(max))) throw new IllegalArgumentException("This parameter is marked as integer, only integer values are permitted for the bounds and default on line:" + line);
@@ -886,7 +900,7 @@ public class ParameterConfigurationSpace implements Serializable {
 					if (paramTypes.get(parent) == ParameterType.CATEGORICAL || paramTypes.get(parent) == ParameterType.ORDINAL) { 
 						Integer mapped_value = this.categoricalValueMap.get(parent).get(v);
 						if (mapped_value == null) {
-							throw new IllegalArgumentException("Illegal dependent parameter (" + (parent)+ ") specified on conditional line: " + line);
+							throw new IllegalArgumentException("Illegal value (" + v + ") specified for parent (" + (parent)+ ") specified on conditional line: " + line);
 						}
 						vmapped = (double) mapped_value;
 					} else {
@@ -1005,6 +1019,13 @@ public class ParameterConfigurationSpace implements Serializable {
 						values_in[j] = cond.values;	
 					}
 					
+					if(( cond.op.equals(ConditionalOperator.LE) || cond.op.equals(ConditionalOperator.GR) ))
+					{
+						if(this.getParameterTypes().get(parent_name) == ParameterType.CATEGORICAL)
+						{
+							throw new IllegalArgumentException("You cannot use the > or < in a conditional clause with categorical parameter:" + parent_name);
+						}
+					}
 					
 					op_in[j] = cond.op.getOperatorCode();
 					j++;
@@ -1024,6 +1045,17 @@ public class ParameterConfigurationSpace implements Serializable {
 	
 	private final Pattern classicForbidden = Pattern.compile("^\\s*\\{((\\s*\\S+\\s*=\\s*\\S+\\s*,?\\s*)+)\\}\\s*$");
 	private final Pattern generalForbidden = Pattern.compile("^\\s*\\{\\s*([^\\{\\}]+)\\s*\\}\\s*$");
+
+	
+	/**
+	 * Stores our assignment from an ordinal and categorical to a constant
+	 */
+	protected Map<String, Double> forbiddenParameterConstants;
+	
+	/**
+	 * Stores our assignment from an ordinal and categorical to a constant, but only for things that aren't doubles.
+	 */
+	protected Map<String, Double> forbiddenOrdinalAndCategoricalVariableValues;
 	
 	private boolean parseForbiddenLines(List<String> lines) {
 		
@@ -1103,11 +1135,12 @@ public class ParameterConfigurationSpace implements Serializable {
 							
 							forbiddenIndexValuePairs.add(nvPairArrayForm);
 						}
-						
+						break;
+					default:
+						throw new IllegalStateException("Unknown Parameter Type:" + paramTypes.get(name));
 					}
 					
-					
-					
+	
 				}
 				
 				
@@ -1120,7 +1153,96 @@ public class ParameterConfigurationSpace implements Serializable {
 				ExpressionBuilder eb = new ExpressionBuilder(line);
 				
 				
-				eb.variables(new HashSet<>(this.getParameterNames()));
+				Set<String> parameterNameVariables = new TreeSet<>(this.getParameterNames());
+				
+				Set<String> parameterValuesVariables = new TreeSet<>();
+				
+				
+				Set<String> allParameterValues = new TreeSet<>();
+				Set<Constraint<String>> constraints = new HashSet<>();
+				
+				for(Entry<String, Map<String, Integer>> ent : this.categoricalValueMap.entrySet())
+				{
+					List<String> paramValues = new ArrayList<>(ent.getValue().keySet());
+					allParameterValues.addAll(paramValues);
+					if(this.getParameterTypes().get(ent.getKey()) == ParameterType.ORDINAL)
+					{
+						for(int i=1; i < paramValues.size(); i++)
+						{
+							constraints.add(new Constraint<>(paramValues.get(i-1),paramValues.get(i)));
+						}
+					}
+					
+					
+					for(int i=0; i < paramValues.size(); i++)
+					{
+						try 
+						{
+							Double.valueOf(paramValues.get(i));
+						} catch(RuntimeException e)
+						{
+							parameterValuesVariables.add(paramValues.get(i));
+						}
+					}
+				}
+				
+				Set<String> copyOfParameterNameVariables = new HashSet<>(parameterNameVariables);
+				
+				copyOfParameterNameVariables.removeAll(parameterValuesVariables);
+				
+				
+				if(forbiddenParameterConstants == null)
+				{
+					//The topological sorting is expensive so only do it once.
+					//The logic of the other stuff would have be saved as fields or whatever, so we will do that
+					//for every forbidden statement even though it is redundant.
+					
+					
+					List<String> topologicallySortedValues;
+					try {
+						 topologicallySortedValues = TopologicalSorter.getTopologicalOrder(allParameterValues, constraints);
+					} catch (NoTopologicalOrderAvailableException e) {
+						throw new IllegalArgumentException("Cycle detected in ordinal parameter values:" + e.getMessage());
+					}
+					
+					
+					
+					forbiddenParameterConstants = Collections.unmodifiableMap(getForbiddenParameterConstants(topologicallySortedValues));
+					
+					
+					Map<String, Double> forbiddenParameterConstantVariableValues = new LinkedHashMap<>();
+					
+					for(Entry<String, Double> ent : forbiddenParameterConstants.entrySet())
+					{
+						try 
+						{
+							Double.valueOf(ent.getKey());
+						} catch(RuntimeException e)
+						{
+							forbiddenParameterConstantVariableValues.put(ent.getKey(), ent.getValue());
+						}
+						
+							
+					}
+					
+					this.forbiddenOrdinalAndCategoricalVariableValues = Collections.unmodifiableMap(forbiddenParameterConstantVariableValues);
+				}
+				
+				
+				if(!copyOfParameterNameVariables.equals(parameterNameVariables))
+				{
+					parameterNameVariables.retainAll(parameterValuesVariables);
+					throw new IllegalArgumentException("Detected parameter name that is also a value to another parameter, which is not allowed with advanced forbidden parameters: " + parameterNameVariables );
+				}
+				
+				
+				Set<String> exp4jVariables = new TreeSet<String>();
+				
+				exp4jVariables.addAll(parameterNameVariables);
+				exp4jVariables.addAll(parameterValuesVariables);
+				eb.variables(exp4jVariables);
+				
+				//eb.variable(variableName)
 				
 				eb.operator(ForbiddenOperators.operators);
 				
@@ -1164,6 +1286,131 @@ public class ParameterConfigurationSpace implements Serializable {
 		
 	}
 	
+	/**
+	 * Converts a list of Strings that are considered sorted by some custom sort order a map from String to Double consistent with that order.
+	 * 
+	 * e.g. input: [ -10, 2, a , c , b, 7, 21, apple, orange, 22, banana ]
+	 * 
+	 * A consistent output is (but not necessarily the output of this function)
+	 * 
+	 * [ -10, 2, a , c , b, 7, 21, apple, orange, 22, banana ]
+	 * [ -10, 2, 3 , 4 , 5, 7, 21, 21.33, 21.66 , 22 , 23 ] 
+	 * 
+	 * 
+	 * @param input
+	 * @return
+	 */
+	private Map<String, Double> getForbiddenParameterConstants(List<String> input) {
+		
+		
+		LinkedHashMap<String, Double> forbiddenExpressionConstants = new LinkedHashMap<>();
+
+		//Set this initial value, because it will set the value to zero if there are no numbers.
+		double leastValue = input.size();
+		int inputsBeforeLeastValue=0;
+		for(String val : input)
+		{
+			inputsBeforeLeastValue++;
+			try {
+			leastValue = Double.valueOf(val);
+			
+			//List is assumed sorted so we can break out of this search when we find the first number
+			break;
+			} catch(RuntimeException e)
+			{
+				//Doesn't matter
+			}
+			
+		}
+		
+		double lastValue = leastValue - inputsBeforeLeastValue;
+		
+		for(int i=0; i < input.size(); /*Nothing goes here */)
+		{
+		
+			//Find next numeric value
+			
+			boolean nextNumberFound = false;
+			int indexOfNumberFound = 0;
+			double nextNumber = 0;
+			for(int j=i; j < input.size(); j++)
+			{
+				try
+				{
+					nextNumber = Double.valueOf(input.get(j));
+					
+					nextNumberFound = true;
+					
+					
+					indexOfNumberFound = j;
+					break;
+				} catch(RuntimeException e)
+				{
+					//Okay not number
+				}
+			}
+		
+			
+			//No more numbers are found
+			if(nextNumberFound == false)
+			{
+				
+				
+				for(int j=i; j < input.size(); j++)
+				{
+					//set value to one more than the previous value.
+					forbiddenExpressionConstants.put(input.get(j), (j-i)+1+lastValue);
+				}
+				
+				break;
+			} else
+			{
+				double delta = nextNumber - lastValue;
+				
+				double avgDelta = delta / (indexOfNumberFound - i + 1);
+				
+				
+				double assignedValue = nextNumber - (indexOfNumberFound-i+1)*avgDelta;
+				for(int j=i; j < indexOfNumberFound; j++)
+				{
+					
+					assignedValue += avgDelta;
+					forbiddenExpressionConstants.put(input.get(j), assignedValue);
+				}
+				
+				lastValue = nextNumber;
+				i=indexOfNumberFound+1;
+				
+				forbiddenExpressionConstants.put(input.get(indexOfNumberFound), nextNumber);
+				
+			}
+		
+		}
+		
+		
+		//System.out.println(forbiddenExpressionConstants);
+		
+		/*
+		for(Entry<String, Double> ent : forbiddenExpressionConstants.entrySet())
+		{
+			try
+			{
+				double percentDiff = Math.abs(Double.valueOf(ent.getKey()) - ent.getValue()) / Math.abs(Math.max(Double.valueOf(ent.getKey()), ent.getValue()));
+				
+				if (percentDiff > 0.001)
+				{
+					throw new IllegalStateException("Key and Value in Map don't seem to match :" + ent);
+				}
+			}catch(NumberFormatException e)
+			{
+				//continue
+			}
+			
+		}*/
+		return forbiddenExpressionConstants;
+	}
+
+
 	Pattern oldCategoricalFormatMatcher = Pattern.compile("^\\s*(\\S+)\\s*\\{(.+)\\}\\s*\\[\\s*(\\S+)\\s*\\]\\s*$");
 	Pattern oldContinuousFormatMatcher = Pattern.compile("^\\s*(\\S+)\\s*\\[(.+)\\]\\s*\\[\\s*(\\S+)\\s*]\\s*([il]*[il]*)\\s*$");
 	
@@ -1518,7 +1765,7 @@ public class ParameterConfigurationSpace implements Serializable {
 		//fastRand.setSeed(random.nextLong());
 		double[] valueArray = new double[numberOfParameters];
 		
-		for(int j=0; j < 1000000; j++)
+		for(int j=0; j < 1_000_000; j++)
 		{
 			
 			for(int i=0; i < numberOfParameters; i++)
@@ -2101,6 +2348,24 @@ public class ParameterConfigurationSpace implements Serializable {
 		return newForbiddenLinesPresent;
 	}
 
+	/**
+	 * Returns a mapping (if there are forbidden statements) of the values of all ordinal and categorical values.
+	 * @return
+	 */
+	public Map<String, Double> getForbiddenOrdinalAndCategoricalValues()
+	{
+		return ((forbiddenParameterConstants == null) ? Collections.<String, Double>emptyMap() : forbiddenParameterConstants);
+	}
+	
+	/**
+	 * Returns a mapping (if there are forbidden statements) of the values of all non-numeric ordinal and categorical values.
+	 * @return
+	 */
+	public Map<String, Double> getForbiddenOrdinalAndCategoricalVariableValues()
+	{
+		return ((this.forbiddenOrdinalAndCategoricalVariableValues == null) ? Collections.<String, Double>emptyMap() : this.forbiddenOrdinalAndCategoricalVariableValues);
+	}
+	
 	
 	private static final class PCSSerializationProxy implements Serializable
 	{
@@ -2143,6 +2408,7 @@ public class ParameterConfigurationSpace implements Serializable {
 		throw new InvalidObjectException("This object cannot be deserialized, should have used: " + PCSSerializationProxy.class.getCanonicalName());
 	}
 
+	
 	
 }
 

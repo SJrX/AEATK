@@ -1,5 +1,6 @@
 package ca.ubc.cs.beta.model;
 
+import java.io.File;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
@@ -25,6 +26,7 @@ import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSp
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
 import ca.ubc.cs.beta.aeatk.random.SeedableRandomPool;
+import ca.ubc.cs.beta.aeatk.runhistory.FileSharingRunHistoryDecorator;
 import ca.ubc.cs.beta.aeatk.runhistory.NewRunHistory;
 import ca.ubc.cs.beta.aeatk.runhistory.RunHistory;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
@@ -48,14 +50,12 @@ public class RandomForestPredictionTester {
 			System.out.print(TWO_PI/50.0*i + ",");
 		}
 		System.out.println("}");
-		ProblemInstance pi = new ProblemInstance("dummy",1, Collections.singletonMap("feature", 1.2));
+		ProblemInstance pi = new ProblemInstance("dummy",1);
 		
 		
 		StateMergeModelBuilder mb = new StateMergeModelBuilder();
 		
-		RunHistory rh = new NewRunHistory();
-		
-		
+	
 		RandomForestOptions rfOptions = new RandomForestOptions();
 		
 		rfOptions.fullTreeBootstrap = true;
@@ -72,8 +72,8 @@ public class RandomForestPredictionTester {
 		
 		ParameterConfigurationSpace categoricalConfigSpace = ParamFileHelper.getParamFileFromString("x0 o {0.0,0.126,0.252,0.378,0.504,0.63,0.756,0.882,1.008,1.134,1.26,1.3860000000000001,1.512,1.638,1.764,1.8900000000000001,2.016,2.142,2.268,2.394,2.52,2.646,2.7720000000000002,2.898,3.024,3.15,3.276,3.402,3.528,3.654,3.7800000000000002,3.906,4.032,4.158,4.284,4.41,4.536,4.662,4.788,4.914,5.04,5.166,5.292,5.418,5.5440000000000005,5.67,5.796,5.922,6.048,6.174,} [3.15]");
 		
-		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("x0 r [0,6.3] [3.14]");
-		configSpace = categoricalConfigSpace;
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileParser("/home/sjr/git/SMAC-Java/sineplusone/sineplusone.pcs");
+		//configSpace = categoricalConfigSpace;
 		boolean adaptiveCapping = false;
 		SeedableRandomPool pool = new SeedableRandomPool(System.currentTimeMillis());
 		
@@ -86,15 +86,29 @@ public class RandomForestPredictionTester {
 		options.func = AnalyticFunctions.SINEPLUSONE;
 		TargetAlgorithmEvaluator tae = fact.getTargetAlgorithmEvaluator(options);
 		
-		AlgorithmExecutionConfiguration execConfig = new AlgorithmExecutionConfiguration("", "", configSpace,false, true, 2);
+		AlgorithmExecutionConfiguration execConfig = new AlgorithmExecutionConfiguration("test", "/home/sjr/git/SMAC-Java/deployables", configSpace,false, true, 2);
 		
 		Random rand = pool.getRandom("runs");
+		
+		RunHistory rh = new NewRunHistory();
+		
+		rh = new FileSharingRunHistoryDecorator(rh, new File("/home/sjr/git/SMAC-Java/sineplusone/smac-output"), 1000, Collections.singletonList(pi), 1000, false);
+		
 		List<AlgorithmRunConfiguration> runs = new ArrayList<>();
-		for(int i=0; i < 100; i++)
+		for(int i=0; i < 100000; i++)
 		{
 			AlgorithmRunConfiguration runConfig = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(pi, -1),5, configSpace.getRandomParameterConfiguration(rand), execConfig);
 			runs.add(runConfig);
 		}
+		
+		ParameterConfiguration config = configSpace.getDefaultConfiguration();
+		config.put("x0", String.valueOf(Math.PI * 3.0 / 2.0));
+		
+		
+		
+		AlgorithmRunConfiguration runConfig2 = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(pi, -1),5, config, execConfig);
+		runs.add(runConfig2);
+		
 		
 		List<AlgorithmRunResult> results = tae.evaluateRun(runs);
 		
@@ -117,10 +131,13 @@ public class RandomForestPredictionTester {
 		{
 			System.out.println(s);
 		}
-		mb.learnModel(Collections.singletonList(pi), rh, configSpace, rfOptions, mbOptions, 2, OverallObjective.MEAN, adaptiveCapping, pool);
 		
+		
+		System.out.println("Building model");
+		mb.learnModel(Collections.singletonList(pi), rh, configSpace, rfOptions, mbOptions, 2, OverallObjective.MEAN, adaptiveCapping, pool);
 		RandomForest rf = mb.getPreparedForest();
 		
+		System.out.println("Done Building Model");
 		
 		int[] treeIndxsUsed = {0};
 		

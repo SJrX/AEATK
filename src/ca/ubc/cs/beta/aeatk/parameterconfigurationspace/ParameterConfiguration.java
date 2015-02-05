@@ -286,6 +286,10 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 			if(configSpace.getParameterTypes().get(key) == ParameterType.ORDINAL)
 			{
 				newValue = String.valueOf(configSpace.getCategoricalValueMap().get(key).get(newValue));
+				if(newValue == null)
+				{
+					throw new IllegalArgumentException("Value is not legal for this parameter: " + key + " Value:" + newValue);
+				}
 			}
 			
 			valueArray[index] = configSpace.getNormalizedRangeMap().get(key).normalizeValue(Double.valueOf(newValue));
@@ -1161,6 +1165,11 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 						
 						throw new IllegalArgumentException("The following forbidden line seems to be invalid: " + configSpace.expressions.get(builder) + "." + errorMessage, e);
 					}
+					
+					for(Entry<String, Double> ent : configSpace.forbiddenOrdinalAndCategoricalVariableValues.entrySet())
+					{
+						exp.setVariable(ent.getKey(), Double.valueOf(ent.getValue()));
+					}
 					ValidationResult res = exp.validate(false);
 					if(!res.isValid())
 					{
@@ -1188,24 +1197,29 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 				
 					for(String name : configSpace.getParameterNamesInAuthorativeOrder())
 					{
-						if(configSpace.getNormalizedRangeMap().get(name) != null && true)
+						if(configSpace.getNormalizedRangeMap().get(name) != null )
 						{
 							//variables.put(name, configSpace.getNormalizedRangeMap().get(name).unnormalizeValue(this.valueArray[i]));
 							
 							double d = configSpace.getNormalizedRangeMap().get(name).unnormalizeValue(this.valueArray[i]);
-							
-							
-							if(configSpace.getParameterTypes().get(name) == ParameterType.ORDINAL)
+							if(configSpace.getParameterTypes().get(name) == ParameterType.ORDINAL || configSpace.getParameterTypes().get(name) == ParameterType.CATEGORICAL)
 							{
-								d = Double.valueOf(configSpace.getValuesMap().get(name).get((int) d));
+								String value = configSpace.getValuesMap().get(name).get((int) d);
+								
+								calc.setVariable(name, Double.valueOf(configSpace.forbiddenParameterConstants.get(value)));
+							} else
+							{
+								calc.setVariable(name, d);
 							}
-							calc.setVariable(name, d);
+							
 						} else
 						{
 							//variables.put(name, Double.valueOf(this.get(name)));
 							
-							calc.setVariable(name,Double.valueOf(this.get(name)));
-							
+						
+								
+								
+							calc.setVariable(name,Double.valueOf(configSpace.forbiddenParameterConstants.get(this.get(name))));
 						}
 						i++;
 					}

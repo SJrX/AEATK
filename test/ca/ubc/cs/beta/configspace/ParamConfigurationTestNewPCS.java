@@ -1906,11 +1906,233 @@ public class ParamConfigurationTestNewPCS {
 			fail("Expected Exception");
 		} catch(IllegalArgumentException e)
 		{
+			System.err.println(e.getMessage());
 			//Good
 			//e.printStackTrace();
 			//System.err.println( e.getMessage());
 			
 		}
+		
+
+		try {
+			String pcsFile = "A c {a,b} [a]\n"
+				+ "B o { 0,1,2,3,5,10} [5]\n"
+				+ "A | B > 6";
+		
+			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+			//System.out.println(configSpace.getPCSFile());
+			
+			fail("Expected Exception");
+		} catch(IllegalArgumentException e)
+		{
+			System.err.println(e.getMessage());
+			//Good
+			//e.printStackTrace();
+			//System.err.println( e.getMessage());
+			
+		}
+		
+		
+		try {
+			String pcsFile = "A c {a,b} [a]\n"
+				+ "B o { 0,1,2,3,5,10} [5]\n"
+				+ "A | B in {0,1,2,3,5,7,10}";
+		
+			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+			//System.out.println(configSpace.getPCSFile());
+			
+			fail("Expected Exception");
+		} catch(IllegalArgumentException e)
+		{
+			System.err.println(e.getMessage());
+			//Good
+			//e.printStackTrace();
+			//System.err.println( e.getMessage());
+			
+		}
+		
+		
+		try {
+			String pcsFile = "A c {a,b} [a]\n"
+			    + " C r [0.01,1] [0.5] log\n"
+				+ "B o { 0,1,2,3,5,10} [5]\n"
+				+ "A | C < 0.9 && B in {0,1,2,3,5,7,10}";
+		
+			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+			//System.out.println(configSpace.getPCSFile());
+			
+			fail("Expected Exception");
+		} catch(IllegalArgumentException e)
+		{
+			System.err.println(e.getMessage());
+			//Good
+			//e.printStackTrace();
+			//System.err.println( e.getMessage());
+			
+		}
+		
+		try {
+			String pcsFile = "A c {a,b} [a]\n"
+			    + " C r [0.01,1] [0.5] log\n"
+				+ "B o { 0,1,2,3,5,10} [5]\n"
+				+ "A | C < 1.1";
+		
+			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+			//System.out.println(configSpace.getPCSFile());
+			
+			fail("Expected Exception");
+		} catch(IllegalArgumentException e)
+		{
+			System.err.println(e.getMessage());
+			//Good
+			//e.printStackTrace();
+			//System.err.println( e.getMessage());
+			
+		}
+		
+		
+		
+		
+
+		try {
+			String pcsFile = "A c {a,b} [a]\n"
+			    + " C r [0.01,1] [0.5] log\n"
+				+ "B c { 0,1,2,3,5,10, abuetnh} [5]\n"
+				+ "A | B < abuetnh";
+		
+			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+			//System.out.println(configSpace.getPCSFile());
+			
+			fail("Expected Exception");
+		} catch(IllegalArgumentException e)
+		{
+			System.err.println(e.getMessage());
+			//Good
+			//e.printStackTrace();
+			//System.err.println( e.getMessage());
+			
+		}
+		
+		
+		try {
+			String pcsFile ="abc c { off, 1, on, 2, yes, 3, no } [on]\n"
+					+		"def o { off, 1, on, 2, yes, 3, no } [on]\n"
+					+		"on c { 1, 2 } [1]\n"
+					+ "maybe c { 1,2} [2] \n"
+					+ "off c { 1 , 2} [1]\n"
+					+ "{abc == off && on < 2}";
+					//+		"heur_order c { heur1then2, heur2then1 } [heur1then2]";
+					//+		"heur_order | heur1 == on && heur2 == on";
+		
+			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+			//System.out.println(configSpace.getPCSFile());
+			
+			fail("Expected Exception");
+		} catch(IllegalArgumentException e)
+		{
+			System.err.println(e.getMessage());
+			//Good
+			//e.printStackTrace();
+			//System.err.println( e.getMessage());
+			
+		}
+		
+		
+		
+		
+		
+		
+		
+		
+		
+		try {
+			String pcsFile ="heur1 c { off, on } [on]"
+					+		"heur2 c { off, on } [on]";
+					//+		"heur_order c { heur1then2, heur2then1 } [heur1then2]";
+					//+		"heur_order | heur1 == on && heur2 == on";
+		
+			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+			//System.out.println(configSpace.getPCSFile());
+			
+			fail("Expected Exception");
+		} catch(IllegalArgumentException e)
+		{
+			System.err.println(e.getMessage());
+			//Good
+			//e.printStackTrace();
+			//System.err.println( e.getMessage());
+			
+		}
+		
+		try {
+			String pcsFile ="heur1 o { 10, 1 , 0} [1]\n {heur1 > 1}";
+					//+		"heur_order c { heur1then2, heur2then1 } [heur1then2]";
+					//+		"heur_order | heur1 == on && heur2 == on";
+		
+			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+			//System.out.println(configSpace.getPCSFile());
+			System.out.println(configSpace.getForbiddenOrdinalAndCategoricalValues());
+			fail("Expected Exception");
+		} catch(IllegalArgumentException e)
+		{
+			System.err.println(e.getMessage());
+			//Good
+			//e.printStackTrace();
+			//System.err.println( e.getMessage());
+			
+		}
+		
+		try {
+			String pcsFile ="heur1 o { a, b} [a]\n"
+					+ "heur2 o { b, c,d, e } [b]\n"
+					+ "heur3 c { c, d,d1,e,f,z0,a0} [c]\n"
+					+ "heur4 o {d, e} [d]\n"
+					+ "heur5 o {d0, d} [d]\n"
+					+ "heur6 o {e, f} [e]\n"
+					+ "heur7 o {d, a} [a]\n"
+					+ "\n {heur1 > b}";
+					//+		"heur_order c { heur1then2, heur2then1 } [heur1then2]";
+					//+		"heur_order | heur1 == on && heur2 == on";
+		
+			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+			//System.out.println(configSpace.getPCSFile());
+			System.out.println(configSpace.getForbiddenOrdinalAndCategoricalValues());
+			fail("Expected Exception");
+		} catch(IllegalArgumentException e)
+		{
+			System.err.println(e.getMessage());
+			//Good
+			//e.printStackTrace();
+			//System.err.println( e.getMessage());
+			
+		}
+		
+		
+		try {
+			String pcsFile ="heur1 o { a, 1} [a]\n"
+					+ "heur2 o { 2, b } [b]\n"
+					+ "heur3 o { b, 3 } [b]\n"
+					+ "heur4 o { 4, c } [c]\n"
+					+ "heur5 o { c, a } [c]\n"
+					
+					+ "\n {heur1 > 5}";
+					//+		"heur_order c { heur1then2, heur2then1 } [heur1then2]";
+					//+		"heur_order | heur1 == on && heur2 == on";
+		
+			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+			//System.out.println(configSpace.getPCSFile());
+			System.out.println(configSpace.getForbiddenOrdinalAndCategoricalValues());
+			fail("Expected Exception");
+		} catch(IllegalArgumentException e)
+		{
+			System.err.println(e.getMessage());
+			//Good
+			//e.printStackTrace();
+			//System.err.println( e.getMessage());
+			
+		}
+		
+		
 		
 	
 		/*
@@ -2989,6 +3211,8 @@ public class ParamConfigurationTestNewPCS {
 		}
 	}
 	
+	
+	
 	@Test
 	public void testOrdinalValues()
 	{
@@ -3026,7 +3250,7 @@ public class ParamConfigurationTestNewPCS {
 		}
 		
 		
-		 pcsFile = "priority o { LOW, MEDIUM, HIGH } [MEDIUM]\n" +
+		pcsFile = "priority o { LOW, MEDIUM, HIGH } [MEDIUM]\n" +
 					"temp o { COLD, COOL, MILD, WARM, HOT} [HOT]\n" 
 					+ "temp | priority > LOW\n";
 			
@@ -3048,6 +3272,208 @@ public class ParamConfigurationTestNewPCS {
 			System.out.println(config.getFormattedParameterString());
 			
 		}
+		
+		//pcsFile = "temp o { ABSOLUTE_ZERO, COLD, COOL, MILD, WARM, HOT, BOILING } [MILD]";
+		pcsFile = "temp i [1,7] [4]";
+		
+		configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+		
+		for(ParameterConfiguration config2 : configSpace.getDefaultConfiguration().getNeighbourhood(rand, 4))
+		{
+			System.out.println(config2.getFormattedParameterString());
+		}
+		
+		
+		pcsFile = "priority o { LOW, MEDIUM, HIGH } [MEDIUM]\n" +
+				  "temp o { COLD, COOL, MILD, WARM, HOT} [HOT]\n" 
+				+ "{ priority > MEDIUM && temp <= WARM }";
+		
+		configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+		
+		for(int i=0; i <1000; i++)
+		{
+			config = configSpace.getRandomParameterConfiguration(rand);
+						
+			
+			if(config.get("priority").equals("HIGH") && !config.get("temp").equals("HOT"))
+			{
+				fail("This parameter setting should have been forbidden:" + config.getFormattedParameterString());
+			}
+
+			System.out.println(config.getFormattedParameterString());
+			
+		}
+
+		
+		pcsFile = "x o { 1,4, 16, 64, 256, 1024, INFINITY} [4]\n"
+				+ "y o { 0, 1, 10, 100, 1000, INFINITY } [10]\n"
+				+ "z c { 1, 4, 10 , 16, 64, INFINITY } [4] \n"
+				+ "priority o {0, LOW, MEDIUM, HIGH,INFINITY } [MEDIUM]\n "
+				+ "boundary r [1,100] [10] log\n"
+				+ "{ x >= y }\n"
+				+ "{ z == INFINITY && y == INFINITY && x > 128 }\n"
+				+ "{ z = 1, y = 10 , x = 4 }\n"
+				+ "{ priority == LOW && yx > 40 }\n"
+				+ "{ y-x == 99 }\n"
+				+ "{ (x < boundary && y > boundary) }\n"
+				+ "\n";
+				
+		
+		configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+		
+		
+		System.out.println(configSpace.getForbiddenOrdinalAndCategoricalValues());
+		System.out.println(configSpace.getForbiddenOrdinalAndCategoricalVariableValues());
+		for(int i=0; i <1000000; i++)
+		{
+			config = configSpace.getRandomParameterConfiguration(rand);
+						
+			/*
+			if(config.get("priority").equals("HIGH") && !config.get("temp").equals("HOT"))
+			{
+				fail("This parameter setting should have been forbidden:" + config.getFormattedParameterString());
+			}*/
+			
+			
+			if(config.get("z").equals("INFINITY") && config.get("y").equals("INFINITY"))
+			{
+				assertTrue("Expected x to be less than or equal to 128: " + config.getFormattedParameterString(), Double.valueOf(config.get("x")) <= 128);
+			}
+			
+			if(config.get("y").equals("100") && config.get("x").equals("1"))
+			{
+				fail("Expected that y-x should not be 99: " + config.getFormattedParameterString());
+			}
+			
+			if(config.get("z").equals("1") && config.get("y").equals("10") && config.get("x").equals("4"))
+			{
+				fail("This parameter should be forbidden" + config.getFormattedParameterString());
+			} 
+			
+			if(config.get("x").equals("INFINITY"))
+			{
+				fail("This parameter should be forbidden by {x >= y}:" + config.getFormattedParameterString());
+			}
+			
+			double x = Double.valueOf(config.get("x"));
+			
+			//x is not infinity so can be cast to double
+			
+			double boundary = Double.valueOf(config.get("boundary"));
+			
+			if(!config.get("y").equals("INFINITY"))
+			{
+				assertTrue("Expected x to be less than y" + config.getFormattedParameterString(),x < Double.valueOf(config.get("y")));
+			}
+			
+			if(config.get("priority").equals("LOW"))
+			{
+				if(config.get("y").equals("INFINITY"))
+				{
+					fail("This parameter setting should have been forbidden (since xy > 40)" + config.getFormattedParameterString());
+				} else
+				{
+					double y = Double.valueOf(config.get("y"));
+					
+					assertTrue("Expected xy <= 40 in "+ config.getFormattedParameterString(), x*y <= 40);
+				}
+			}
+			//System.out.println(config.getFormattedParameterString());
+			
+			if(x > boundary)
+			{
+				try
+				{
+					double d = Double.valueOf(config.get("y"));
+					
+					if(d < boundary)
+					{
+						fail("Configuration forbidden (x > boundary && y < boundary) " + config.getFormattedParameterString());
+					}
+				} catch(RuntimeException e)
+				{
+					
+					//It's okay 
+				}
+			} else if (x < boundary)
+			{
+				
+				try {
+					double d = Double.valueOf(config.get("y"));
+					
+					if(d > boundary)
+					{
+						fail("Configuration forbidden (x < boundary && y > boundary) " + config.getFormattedParameterString());
+					}
+					
+				} catch(RuntimeException e)
+				{
+					
+						fail("Configuration forbidden (x < boundary && y > boundary) " + config.getFormattedParameterString());
+					
+				}
+			}
+				
+				
+			
+			
+			
+		}
+
+		
+				
+	}
+	
+	@Test
+	/**
+	 * This just tests that all the examples in the PCS file are valid
+	 */
+	public void testPCSFileExample()
+	{
+		
+		
+		String[] pcsExamples = {"@1:loops c { common, distinct, shared, no} [no]\n",
+								"DS c {TinyDataStructure, FastDataStructure}[TinyDataStructure]\n",
+								"random-variable-frequency c {0, 0.05, 0.1, 0.2} [0.05]",
+								"annealing-temperature o {cold, cool, medium, warm, hot} [medium]",
+								"alpha-heuristic o { 1, 10, 100, 1000, INFINITE } [1]",
+								"sp-rand-var-dec-scaling r [0.3, 1.1] [1]",
+								"mult-factor i [2, 15] [5]",
+								"DLSc r [0.00001, 0.1] [0.01] log",
+								"first-restart i [10, 1000] [100] log",
+								"heur1 c { off, on } [on]\n"
+								+		"heur2 c { off, on } [on]\n"
+								+		"heur_order c { heur1then2, heur2then1 } [heur1then2]\n"
+								+		"heur_order | heur1 == on && heur2 == on",
+								"temperature r [-273.15, 100] [10]\n"
+								+"rain r [0, 200] [0]\n"
+								+"gloves o { none, yarn, leather, gortex } [none]\n"
+								+"gloves | rain > 0 || temperature < 5"
+		};
+		
+		
+		
+		for(String pcsFile : pcsExamples)
+		{
+		
+			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+			
+			System.out.println(configSpace.getDefaultConfiguration().getFormattedParameterString());
+		}
+		
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("first-restart i [10, 1000] [100] log");
+		
+		int matches = 0;
+		
+		for(int i=0; i < 1000;i++)
+		{
+			if(Integer.valueOf(configSpace.getRandomParameterConfiguration(rand).get("first-restart")) > 100)
+			{
+				matches++;
+			}
+		}
+		
+		System.out.println(matches);
 		
 	}
 	

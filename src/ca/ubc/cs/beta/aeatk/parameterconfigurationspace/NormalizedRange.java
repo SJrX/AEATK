@@ -119,7 +119,13 @@ public class NormalizedRange implements Serializable
 				b = Math.round(b-0.5);
 			}
 			
-			throw new IllegalArgumentException("Value " + x + " is outside of domain [" + a + "," + b + "]");
+			if(normalizeToLog)
+			{
+				throw new IllegalArgumentException("Value " + Math.pow(10,x) + " is outside of domain [" + Math.pow(10,a) + "," + Math.pow(10,b) + "]");
+			} else
+			{
+				throw new IllegalArgumentException("Value " + x + " is outside of domain [" + a + "," + b + "]");
+			}
 		}
 		
 		return (x - minNormalizedValue) / (maxNormalizedValue - minNormalizedValue);
