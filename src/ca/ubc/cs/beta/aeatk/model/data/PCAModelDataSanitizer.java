@@ -6,12 +6,15 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+
+import java.util.Map;
+
 import java.util.Arrays;
+
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -324,16 +327,35 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 	}
 	
 	@Override
+	public Map<Integer, int[][]> getNameConditionsMapParentsArray() {
+		return configSpace.getNameConditionsMapParentsArray();
+	}; 
+	
+	@Override
+	public Map<Integer, double[][][]> getNameConditionsMapParentsValues() {
+		return configSpace.getNameConditionsMapParentsValues();
+	}
+	
+	@Override
+	public Map<Integer, int[][]> getNameConditionsMapOp() {
+		return configSpace.getNameConditionsMapOp();
+	}
+	
+	/*
+	@Override
 	public int[][] getCondParents()
 	{
 		return configSpace.getCondParentsArray();
 	}
+	*/
 
+	/*
 	@Override
 	public int[][][] getCondParentVals()
 	{
 		return configSpace.getCondParentValsArray();
 	}
+	*/
 
 	@Override
 	public double transformResponseValue(double d) {

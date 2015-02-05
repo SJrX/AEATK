@@ -1,5 +1,6 @@
 package ca.ubc.cs.beta.aeatk.model.builder;
 
+import java.util.Map;
 import java.util.Random;
 
 import org.slf4j.Logger;
@@ -41,8 +42,9 @@ public class BasicModelBuilder implements ModelBuilder{
 		double[][] configs = smd.getConfigs();
 		double[] responseValues = smd.getResponseValues();
 		int[] categoricalSize = smd.getCategoricalSize();
-		int[][] condParents = smd.getCondParents();
-		int[][][] condParentVals = smd.getCondParentVals();
+		Map<Integer, int[][]> nameConditionsMapParentsArray = smd.getNameConditionsMapParentsArray();
+		Map<Integer, double[][][]> nameConditionsMapParentsValues = smd.getNameConditionsMapParentsValues();
+		Map<Integer, int[][]> nameConditionsMapOp = smd.getNameConditionsMapOp();
 		
 		/*
 		System.out.println("y = \n" + Arrays.toString(responseValues));
@@ -65,7 +67,7 @@ public class BasicModelBuilder implements ModelBuilder{
 			theta_inst_idxs[i][0]--;
 			theta_inst_idxs[i][1]--;
 		}
-		RegtreeBuildParams buildParams = SMACRandomForestHelper.getRandomForestBuildParams(rfConfig, features[0].length, categoricalSize, condParents, condParentVals, rand);
+		RegtreeBuildParams buildParams = SMACRandomForestHelper.getRandomForestBuildParams(rfConfig, features[0].length, categoricalSize, nameConditionsMapParentsArray, nameConditionsMapParentsValues, nameConditionsMapOp, rand);
 		
 		
 		

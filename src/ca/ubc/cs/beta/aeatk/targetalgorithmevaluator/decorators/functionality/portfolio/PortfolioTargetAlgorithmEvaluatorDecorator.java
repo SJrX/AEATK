@@ -21,6 +21,7 @@ import ca.ubc.cs.beta.aeatk.algorithmrunresult.kill.KillHandler;
 import ca.ubc.cs.beta.aeatk.misc.associatedvalue.Pair;
 import ca.ubc.cs.beta.aeatk.objectives.RunObjective;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration.ParameterStringFormat;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorHelper;
@@ -143,7 +144,7 @@ public class PortfolioTargetAlgorithmEvaluatorDecorator extends	AbstractTargetAl
 	        {
 	            throw new IllegalArgumentException("A portfolio entry contains a forbidden param configuration.");
 	        }
-	        else if(execConfig != null && execConfig.getParameterConfigurationSpace().isForbiddenParameterConfiguration(paramConfig.toValueArray()))
+	        else if(execConfig != null && execConfig.getParameterConfigurationSpace().getParameterConfigurationFromString(paramConfig.getFormattedParameterString(ParameterStringFormat.NODB_SYNTAX), ParameterStringFormat.NODB_SYNTAX).isForbiddenParameterConfiguration())
 	        {
 	            throw new IllegalArgumentException("A portfolio entry contains an incompatible exec config / param config pair.");
 	        }
@@ -211,7 +212,7 @@ public class PortfolioTargetAlgorithmEvaluatorDecorator extends	AbstractTargetAl
 	            
 	            ParameterConfiguration runParamConfig = portfolioEntry.getSecond();
 	            
-	            if(runExecConfig.getParameterConfigurationSpace().isForbiddenParameterConfiguration(runParamConfig.toValueArray()))
+	            if(runExecConfig.getParameterConfigurationSpace().getParameterConfigurationFromString(runParamConfig.getFormattedParameterString(ParameterStringFormat.NODB_SYNTAX), ParameterStringFormat.NODB_SYNTAX).isForbiddenParameterConfiguration())
 	            {
 	                throw new IllegalArgumentException("Substituting paramater config and exec config for run ended in a forbidden configuration.");
 	            }

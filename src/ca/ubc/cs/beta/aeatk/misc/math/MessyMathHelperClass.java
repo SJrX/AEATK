@@ -185,6 +185,11 @@ public class MessyMathHelperClass {
 	
 	public int[] constantColumnsWithMissingValues(double[][] matrix)
 	{
+		
+		if(matrix.length == 0)
+		{
+			return new int[0];
+		}
 		ArrayList<Integer> constColumnsList = new ArrayList<Integer>();
 		
 		

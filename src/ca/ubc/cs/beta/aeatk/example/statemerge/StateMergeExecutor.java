@@ -208,7 +208,7 @@ public class StateMergeExecutor {
 					}
 				} 
 						
-				smmb.learnModel(instances, rhToFilter, execConfig.getParameterConfigurationSpace(), smo.rfo, smo.mbo, smo.scenOpts, adaptiveCapping, srp);
+				smmb.learnModel(instances, rhToFilter, execConfig.getParameterConfigurationSpace(), smo.rfo, smo.mbo, smo.scenOpts.algoExecOptions.cutoffTime, smo.scenOpts.getIntraInstanceObjective(), adaptiveCapping, srp);
 				
 				RandomForest rf = smmb.getPreparedForest();
 				

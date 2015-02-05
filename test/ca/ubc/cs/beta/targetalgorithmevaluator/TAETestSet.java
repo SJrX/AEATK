@@ -1769,11 +1769,16 @@ public class TAETestSet {
 		b.append(" ");
 		b.append(ParamAliasEchoExecutor.class.getCanonicalName());
 		
+		CommandLineTargetAlgorithmEvaluatorFactory tfact = new CommandLineTargetAlgorithmEvaluatorFactory();
+		
+		CommandLineTargetAlgorithmEvaluatorOptions opts = tfact.getOptionObject();
+		
+		opts.logAllProcessOutput = true;
 		
 		
 		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 			
-		tae = new AbortOnCrashTargetAlgorithmEvaluator(CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE());
+		tae = new AbortOnCrashTargetAlgorithmEvaluator(tfact.getTargetAlgorithmEvaluator(opts));
 		
 		
 		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);

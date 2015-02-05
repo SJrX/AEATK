@@ -2,5 +2,5 @@
 a c { v1 , v2 , v3 } [v2]
 b c { w1 , w2 , w3 } [w3]
 
-Forbidden:
+#Forbidden:
 {a=v2, b=w2}

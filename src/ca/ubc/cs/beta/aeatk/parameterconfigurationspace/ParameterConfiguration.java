@@ -7,6 +7,8 @@ import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.HashMap;
+import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
@@ -17,11 +19,18 @@ import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import ca.ubc.cs.beta.aeatk.json.serializers.ParameterConfigurationSpaceJson;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace.Conditional;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace.ParameterType;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
+import de.congrace.exp4j.Calculable;
 import net.jcip.annotations.NotThreadSafe;
+import net.objecthunter.exp4j.Expression;
+import net.objecthunter.exp4j.ExpressionBuilder;
+import net.objecthunter.exp4j.ValidationResult;
+import net.objecthunter.exp4j.operator.Operator;
 
 
 /**
@@ -192,8 +201,6 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 			return null;
 		}
 		
-		
-		
 		double value = valueArray[index];
 		
 		if(Double.isNaN(value))
@@ -206,7 +213,15 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 			NormalizedRange range = configSpace.getNormalizedRangeMap().get(key);
 			if(range.isIntegerOnly())
 			{
-				return String.valueOf((long) Math.round(range.unnormalizeValue(value)));
+				long intValue = ((long) Math.round(range.unnormalizeValue(value)));
+				if(configSpace.getParameterTypes().get(key) == ParameterType.ORDINAL)
+				{
+					return configSpace.getValuesMap().get(key).get( (int) intValue);
+				} else
+				{
+					return String.valueOf(intValue);
+				}
+				
 			} else
 			{
 				return String.valueOf(range.unnormalizeValue(value));
@@ -267,6 +282,16 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 		}
 		else if(parameterDomainContinuous[index])
 		{
+			
+			if(configSpace.getParameterTypes().get(key) == ParameterType.ORDINAL)
+			{
+				newValue = String.valueOf(configSpace.getCategoricalValueMap().get(key).get(newValue));
+				if(newValue == null)
+				{
+					throw new IllegalArgumentException("Value is not legal for this parameter: " + key + " Value:" + newValue);
+				}
+			}
+			
 			valueArray[index] = configSpace.getNormalizedRangeMap().get(key).normalizeValue(Double.valueOf(newValue));
 			
 		} else
@@ -295,18 +320,21 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 			
 		}
 		
-	
-		
+		/*
+		 * After three years I don't think we need these tests anymore :)
+		 * 
+		 *
 		if(parameterDomainContinuous[index] && newValue != null)
 		{
+			
 			double d1 = Double.valueOf(get(key));
 			double d2 = Double.valueOf(newValue);
 			
 			if(Math.abs(d1/d2 - 1) >  Math.pow(10, -12))
 			{
-				System.out.println("Warning got the following value back from map " + get(key) + " put " + newValue + " in");
+				throw new IllegalStateException("Not Sure Why this happened: " + get(key) + " vs. " + newValue);
 			}
-				//throw new IllegalStateException("Not Sure Why this happened: " + get(key) + " vs. " + newValue);
+				
 		} else
 		{
 			if(get(key) == null)
@@ -320,6 +348,7 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 				throw new IllegalStateException("Not Sure Why this happened: " + get(key) + " vs. " + newValue);
 			}
 		}
+		*/
 		return oldValue;
 	}
 
@@ -753,13 +782,27 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 		{
 			double[] newValueArray = valueArray.clone();
 			
+			int failuresForParameter = 0;
 			for(int j=1; j <= numberOfNeighboursForParameter(i,activeParams.contains(configSpace.getParameterNamesInAuthorativeOrder().get(i)),numNumericalNeighbours); j++)
 			{
 				newValueArray[i] = getNeighbourForParameter(i,j,rand);
+			
 				
-				if(configSpace.isForbiddenParameterConfiguration(newValueArray)) continue;
+				ParameterConfiguration config = new ParameterConfiguration(configSpace, newValueArray.clone(), categoricalSize, parameterDomainContinuous, paramKeyToValueArrayIndexMap);
 				
-				neighbours.add(new ParameterConfiguration(configSpace, newValueArray.clone(), categoricalSize, parameterDomainContinuous, paramKeyToValueArrayIndexMap));
+				if(config.isForbiddenParameterConfiguration()) 
+				{	
+					
+					failuresForParameter++;
+					if(failuresForParameter < 100 && this.parameterDomainContinuous[i])
+					{
+						j--;
+					} 
+					continue;
+				
+				}
+				
+				neighbours.add(config);
 			}
 		}
 		
@@ -953,97 +996,85 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 		
 	}
 	
+	/**
+	 * Since the ConfigSpace already now an order of parameters to check active status, 
+	 * we simply iterate over it and check the conditions
+	 * @return
+	 */
 	private Set<String> _getActiveParameters()
 	{
-		
-		
-		boolean activeSetChanged = false;
 		Set<String> activeParams= new TreeSet<String>();
-		
-		/*
-		 * This code is will loop in worse case ~(n^2) times, the data structures may not be very 
-		 * good either, so gut feeling is probably Omega(n^3) in worse case.
-		 * 
-		 *  This algorithm basically does the following:
-		 *  1) Adds all independent clauses to the active set
-		 *  2) For every dependent value:
-		 *  	- checks if each dependee parameter is active
-		 *  	- if all dependee parameters have an acceptible value, adds it to the active set.
-		 *  3) Terminates when there are no changes to the active set. (controlled by the changed flag) 
-		 */
-		do {
-			/*
-			 * Loop through every parameter to see if it should be added to the activeParams set.
-			 */
-			activeSetChanged = false;
-			List<String> paramNames = this.configSpace.getParameterNames();
+		Map<Integer, ArrayList<ArrayList<Conditional>>> conds = configSpace.getNameConditionsMap();
+		List<String> param_names = configSpace.getParameterNamesInAuthorativeOrder();
+		for(String param : configSpace.getActiveCheckOrderString()){
 			
-			for(String candidateParam : paramNames)
-			{	
-				
-				if(activeParams.contains(candidateParam))
-				{ 
-					//We already know the Param is active
-					continue;
-				}
-				
-				
-				/*
-				 * Check if this parameter is conditional (if not add it to the activeParam set), if it is check if it's conditions are all satisified. 
-				 */	
-				Map<String,List<String>> dependentOn;
-				if(( dependentOn = configSpace.getDependentValuesMap().get(candidateParam)) != null)
-				{
-					//System.out.print(" is dependent ");
-					
-					
-					boolean dependentValuesSatified = true; 
-					for(String dependentParamName : dependentOn.keySet())
-					{
-						if(activeParams.contains(dependentParamName))
-						{
-							if(dependentOn.get(dependentParamName).contains(get(dependentParamName)))
-							{	
-								//System.out.print("[+]:" +  dependentParamName +  " is " + params.get(dependentParamName)); 
-							} else
-							{	
-								//System.out.print("[-]:" + dependentParamName +  " is " + params.get(dependentParamName));
-								dependentValuesSatified = false;
-								break;
-							}
-								
-						} else
-						{
-							dependentValuesSatified = false;
-							break;		
-						}
-					}
-					
-					if(dependentValuesSatified == true)
-					{
-						
-						activeSetChanged = true;
-						activeParams.add(candidateParam);
-					} else
-					{
-						
-					}
-					
-					
-					
-				} else
-				{ //This Parameter is not dependent
-					if(activeParams.add(candidateParam))
-					{
-						activeSetChanged = true;
-						
-					}
-				}				
+			Integer param_id = configSpace.getParamKeyIndexMap().get(param);
+			
+			//if no conditions on this parameter, it is always active
+			if (!conds.containsKey(param_id)) {
+				activeParams.add(param);
+				continue;
 			}
-
 			
-		} while(activeSetChanged == true);
-		
+			ArrayList<ArrayList<Conditional>> clauses = conds.get(param_id);
+			
+			//only one of the clauses has to be true
+			for (ArrayList<Conditional> clause : clauses){
+				boolean all_satisfied = true;
+				// all conditions in a clause have to be satisfied
+				for (Conditional cond: clause){
+					Integer parent_id = cond.parent_ID;
+					String parent_name = param_names.get(parent_id);
+					String parent_value_string = get(parent_name);
+					double encodedParentPresentValue;
+
+					// check whether parent is active; if not, child is also not active
+					if (! activeParams.contains(parent_name)){
+						all_satisfied = false;
+						break;
+					}
+					
+					//translate value
+					
+					String tmpParentValueString = parent_value_string;
+					switch(configSpace.getParameterTypes().get(parent_name))
+					{
+					
+					case ORDINAL:
+						tmpParentValueString =  String.valueOf(configSpace.getCategoricalValueMap().get(parent_name).get(parent_value_string));
+						
+					case INTEGER:
+					case REAL:
+						encodedParentPresentValue = Double.parseDouble(tmpParentValueString);
+						
+						break;
+					case CATEGORICAL:
+						
+						encodedParentPresentValue = (double) configSpace.getCategoricalValueMap().get(parent_name).get(parent_value_string);
+					
+						break;
+					default:
+						throw new IllegalStateException("Unknown Type");
+					}
+					
+
+					// check condition
+					
+					
+					boolean satisfied = cond.op.conditionalClauseMatch(encodedParentPresentValue, cond.values);
+					
+					all_satisfied = all_satisfied & satisfied;
+				
+					if (!all_satisfied){ //if one condition is not satisfied, the complete clause is falsified; no further check necessary
+						break;
+					}
+				}
+				if (all_satisfied) {
+					activeParams.add(param);
+					break;
+				}
+			}
+		}
 		
 		return activeParams;
 	}
@@ -1087,7 +1118,133 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 	 */
 	public boolean isForbiddenParameterConfiguration()
 	{
-		return configSpace.isForbiddenParameterConfiguration(valueArray);
+		
+		if(configSpace.isForbiddenParameterConfigurationByClassicClauses(valueArray))
+		{
+			return true;
+		}
+		
+		if(!configSpace.hasNewForbidden())
+		{
+			return false;
+		} else
+		{
+			/*for(ExpressionBuilder eb : configSpace.bl)
+			{
+				Expression calc = eb.build();
+				*/
+			
+			
+			
+			List<Expression> expressions = configSpace.tlExpressions.get();
+			if(expressions == null)
+			{
+				expressions = new ArrayList<Expression>();
+				
+				
+				for(ExpressionBuilder builder : configSpace.bl)
+				{
+					Expression exp = null;
+					
+					
+					
+					 
+					StringBuilder errorMessage = new StringBuilder(" Besides the operator and functions listed on http://www.objecthunter.net/exp4j/, the following are supported: ");
+					
+					List<String> operators = new ArrayList<>();
+					for(Operator o : ForbiddenOperators.operators)
+					{
+						operators.add(o.getSymbol());
+					}
+					errorMessage.append(operators);
+					try
+					{
+						  exp = builder.build();
+					} catch(IllegalArgumentException e)
+					{
+						
+						throw new IllegalArgumentException("The following forbidden line seems to be invalid: " + configSpace.expressions.get(builder) + "." + errorMessage, e);
+					}
+					
+					for(Entry<String, Double> ent : configSpace.forbiddenOrdinalAndCategoricalVariableValues.entrySet())
+					{
+						exp.setVariable(ent.getKey(), Double.valueOf(ent.getValue()));
+					}
+					ValidationResult res = exp.validate(false);
+					if(!res.isValid())
+					{
+						throw new IllegalArgumentException("The following forbidden line seems to be invalid: " + configSpace.expressions.get(builder) + " exp4j says:" + res.getErrors() + "." + ( configSpace.expressions.get(builder).indexOf(',') >= 0 ? " Guess: Is the , suppose to be an &&?":"")  + errorMessage );
+					}
+					
+					expressions.add(exp);
+				}
+				
+				configSpace.tlExpressions.set(expressions);
+			}
+			
+			
+		
+			//List<Expression> expressions = configSpace.cl;
+			
+			for(Expression calc : expressions)
+			{
+				
+				
+				int i=0; 
+				
+				//synchronized(calc)
+				{
+				
+					for(String name : configSpace.getParameterNamesInAuthorativeOrder())
+					{
+						if(configSpace.getNormalizedRangeMap().get(name) != null )
+						{
+							//variables.put(name, configSpace.getNormalizedRangeMap().get(name).unnormalizeValue(this.valueArray[i]));
+							
+							double d = configSpace.getNormalizedRangeMap().get(name).unnormalizeValue(this.valueArray[i]);
+							if(configSpace.getParameterTypes().get(name) == ParameterType.ORDINAL || configSpace.getParameterTypes().get(name) == ParameterType.CATEGORICAL)
+							{
+								String value = configSpace.getValuesMap().get(name).get((int) d);
+								
+								calc.setVariable(name, Double.valueOf(configSpace.forbiddenParameterConstants.get(value)));
+							} else
+							{
+								calc.setVariable(name, d);
+							}
+							
+						} else
+						{
+							//variables.put(name, Double.valueOf(this.get(name)));
+							
+						
+								
+								
+							calc.setVariable(name,Double.valueOf(configSpace.forbiddenParameterConstants.get(this.get(name))));
+						}
+						i++;
+					}
+					
+					try 
+					{
+						if (calc.evaluate() == 0)
+						{
+							continue;
+						} else
+						{
+							return true;
+						}
+					} catch(RuntimeException e)
+					{
+						throw new IllegalArgumentException("Error occured evaluating configuration for forbiddenness",e);
+					}
+				} 
+				
+			}
+			
+			return false;
+		}
+		
+
 	}
 
 
