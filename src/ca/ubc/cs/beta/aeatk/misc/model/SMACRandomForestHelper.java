@@ -34,13 +34,15 @@ public class SMACRandomForestHelper {
 	/*
 	 * Parameter File Generator
 	 */
-	RegtreeBuildParams buildParams = new RegtreeBuildParams();
+		//	public RegtreeBuildParams(boolean doBootstrapping, int splitMin, double ratioFeatures, int[] catDomainSizes)
+	
 	
 	/*
 	 * Most of the defaults are either read from the config or were 
 	 * pilfered from a run of the MATLAB
 	 * The actual values may need to be more intelligently chosen.
 	 */
+	RegtreeBuildParams buildParams = new RegtreeBuildParams(false, rfOptions.splitMin, rfOptions.ratioFeatures, categoricalSize);
 	buildParams.splitMin = rfOptions.splitMin;
 	buildParams.ratioFeatures = rfOptions.ratioFeatures;//(5.0/6);
 	
