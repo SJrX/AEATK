@@ -1155,6 +1155,7 @@ public class ParameterConfigurationSpace implements Serializable {
 				
 				Set<String> parameterNameVariables = new TreeSet<>(this.getParameterNames());
 				
+				
 				Set<String> parameterValuesVariables = new TreeSet<>();
 				
 				
@@ -1240,8 +1241,25 @@ public class ParameterConfigurationSpace implements Serializable {
 				
 				exp4jVariables.addAll(parameterNameVariables);
 				exp4jVariables.addAll(parameterValuesVariables);
+				
+				
 				eb.variables(exp4jVariables);
 				
+				Set<String> illegalVariables = new HashSet<String>();
+				Pattern legalCharacters = Pattern.compile("^[a-zA-Z_][a-zA-Z_0-9]*$");
+				for(String variable : exp4jVariables)
+				{
+					if(!legalCharacters.matcher(variable).find())
+					{
+						illegalVariables.add(variable);
+					}
+				}
+				
+				if(illegalVariables.size() > 0)
+				{
+					throw new IllegalArgumentException("When using Advanced Forbidden Syntax all parameter names and values must start with an letter or underscore, and can only consist of letter, underscores and digits. Illegal names & values are:" + illegalVariables);
+				}
+					
 				//eb.variable(variableName)
 				
 				eb.operator(ForbiddenOperators.operators);
@@ -1530,60 +1548,6 @@ public class ParameterConfigurationSpace implements Serializable {
 			return name;
 		}
 	}
-
-	/**
-	 * Gets the list of allowable values
-	 * @param line
-	 * @return
-	 */
-	private List<String> getValues(String line) {
-
-		String oLine = line;
-		int start = line.indexOf("{");
-		int end = line.indexOf("}");
-		
-		line = line.substring(start+1,end);
-		line = line.replace(',', '\n');
-		
-		BufferedReader r = new BufferedReader( new StringReader(line));
-		
-		List<String> strings = new LinkedList<String>();
-		
-		String value; 
-		
-		try {
-			while ((value = r.readLine()) != null)
-			{
-				
-					if (value.trim().length() == 0)
-					{
-						throw new IllegalArgumentException("Value cannot be empty (consist only of whitespace) in line: " + oLine);
-					} else
-					{
-						strings.add(value.trim());
-					}
-				
-			}
-		} catch (IOException e) {
-
-			//System.err.println("Some random IOException occured?");
-			e.printStackTrace();
-			
-			throw new IllegalStateException("An exception occured while reading values from (" + oLine + ") we mistakenly thought this would never happen, please contact developer", e);
-		}
-		
-		Set<String> set = new HashSet<String>();
-		set.addAll(strings);
-		if(set.size() < strings.size())
-		{
-			throw new IllegalStateException("Duplicate Value detected in line: " +  oLine);
-		}
-		
-		return strings;
-	}
-
-
-	
 
 	public List<String> getParameterNames()
 	{

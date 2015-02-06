@@ -11,7 +11,7 @@ public class PCSCheckNoArgumentHandler implements NoArgumentHandler {
 		sb.append("pcs-check is a utility that allows testing of PCS file, it will execute exactly one run. ").append("\n\n");
 
 		sb.append("  Checking PCS File:\n");
-		sb.append("  pcs-check --pcsFile <file> \n\n");
+		sb.append("  pcs-check --pcs-file <file> \n\n");
 
 		sb.append("  Checking PCS File:\n");
 		sb.append("  pcs-check --scenarioFile <file> \n\n");

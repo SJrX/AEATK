@@ -2013,6 +2013,27 @@ public class ParamConfigurationTestNewPCS {
 			
 		}
 		
+		try {
+			String pcsFile = "sp-test r [0,10][0] \n"
+					+ "ab r [0,10] [0]\n"
+					+ "de r [0,10] [0]\n"
+					+ "noeth c { 24, 59, dg, af, unth-oeuh } [24]\n"
+					+ "{ (sp-test-3)(sp-test+3)(sp-test+1) > 0 }";
+			    
+		
+			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+			//System.out.println(configSpace.getPCSFile());
+			
+			fail("Expected Exception");
+		} catch(IllegalArgumentException e)
+		{
+			System.err.println(e.getMessage());
+			//Good
+			//e.printStackTrace();
+			//System.err.println( e.getMessage());
+			
+		}
+		
 		
 		try {
 			String pcsFile ="abc c { off, 1, on, 2, yes, 3, no } [on]\n"

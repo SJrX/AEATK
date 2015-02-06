@@ -126,10 +126,14 @@ public class PCSCheckExecutor
 				config.put(entry.getKey(), entry.getValue());
 			}
 		
-			log.info("PCS File Parsed Successfully estimated sized is in [" + configSpace.getLowerBoundOnSize() + "," + configSpace.getUpperBoundOnSize() + "]");
+			log.info("PCS file parsed Successfully estimated sized is in [" + configSpace.getLowerBoundOnSize() + "," + configSpace.getUpperBoundOnSize() + "]");
 			
 			log.info("Supplied configuration {} is {}forbidden", config.getFormattedParameterString() , config.isForbiddenParameterConfiguration() ? "":"NOT ");
 			
+			if(configSpace.getForbiddenOrdinalAndCategoricalValues().size() > 0)
+			{
+				log.info("Values of categorical and ordinal parameter values are: {}",configSpace.getForbiddenOrdinalAndCategoricalValues() );
+			}
 			
 			
 			//Ignore JVM Warmup
@@ -148,7 +152,6 @@ public class PCSCheckExecutor
 				log.warn("In 1000 ms only able to generate {} configurations you might find that random generation involves a lot of overhead",i);
 			}
 		
-						
 			
 			
 			
