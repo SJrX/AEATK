@@ -36,6 +36,7 @@ import org.junit.Ignore;
 import org.junit.Test;
 
 import ca.ubc.cs.beta.TestHelper;
+import ca.ubc.cs.beta.aeatk.exceptions.ParameterConfigurationLockedException;
 import ca.ubc.cs.beta.aeatk.misc.debug.DebugUtil;
 import ca.ubc.cs.beta.aeatk.misc.watch.AutoStartStopWatch;
 import ca.ubc.cs.beta.aeatk.misc.watch.StopWatch;
@@ -2016,7 +2017,7 @@ public class ParamConfigurationTestNewPCS {
 		try {
 			String pcsFile = "sp-test r [0,10][0] \n"
 					+ "ab r [0,10] [0]\n"
-					+ "de r [0,10] [0]\n"
+					+ "_de r [0,10] [0]\n"
 					+ "noeth c { 24, 59, dg, af, unth-oeuh } [24]\n"
 					+ "{ (sp-test-3)(sp-test+3)(sp-test+1) > 0 }";
 			    
@@ -3498,6 +3499,44 @@ public class ParamConfigurationTestNewPCS {
 		
 	}
 	
+	
+	@Test(expected=ParameterConfigurationLockedException.class)
+	public void testLock()
+	{
+		String pcsFile = "test c { a, b, d } [b]\n";
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+		
+		ParameterConfiguration test = configSpace.getRandomParameterConfiguration(rand);
+		
+		try
+		{
+			test.put("test", "b");
+		} catch(Exception e)
+		{
+			fail("Should have been successful");
+		}
+		
+		test.lock();
+		
+		
+		try
+		{
+			test.put("test", "b");
+		} catch(Exception e)
+		{
+			fail("Should have been successful");
+		}
+		
+		
+		
+		test.put("test", "a");
+		 
+		
+		
+		
+		
+			
+	}
 	
 	@After
 	public void tearDown()

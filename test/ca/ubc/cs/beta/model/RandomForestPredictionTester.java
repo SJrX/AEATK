@@ -59,8 +59,8 @@ public class RandomForestPredictionTester {
 		RandomForestOptions rfOptions = new RandomForestOptions();
 		
 		rfOptions.fullTreeBootstrap = true;
-		rfOptions.splitMin = 1;
-		rfOptions.numTrees = 1;
+		rfOptions.splitMin = 10;
+		rfOptions.numTrees = 10;
 		rfOptions.logModel = false;
 		
 		

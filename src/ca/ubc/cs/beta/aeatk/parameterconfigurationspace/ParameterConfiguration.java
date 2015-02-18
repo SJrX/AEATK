@@ -3,21 +3,26 @@ package ca.ubc.cs.beta.aeatk.parameterconfigurationspace;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
+import java.util.AbstractMap;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.exceptions.ParameterConfigurationLockedException;
 import ca.ubc.cs.beta.aeatk.json.serializers.ParameterConfigurationSpaceJson;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace.Conditional;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace.ParameterType;
@@ -118,7 +123,13 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 	 * Value array used in comparisons with equal() and hashCode()
 	 * (All Inactive Parameters are hidden)
 	 */
-	private final double[] valueArrayForComparsion; 
+	private final double[] valueArrayForComparsion;
+
+	
+	/**
+	 * If set to true, the configuration can no longer be modified.
+	 */
+	private volatile boolean locked = false; 
 
 	/**
 	 * Default Constructor 
@@ -166,7 +177,16 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 		this.valueArrayForComparsion = oConfig.valueArrayForComparsion.clone();
 		this.lastHash = oConfig.lastHash;
 		
+		//DO NOT CHANGE THIS TO BE TRUE, as new configurations should be mutable.
+		this.locked = false;
+		
 	}
+	
+	
+	
+	
+	
+	
 	
 	@Override
 	public int size() {
@@ -187,7 +207,16 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 
 
 	public boolean containsValue(Object value) {
-		return getRealMap().containsValue(value);
+		for(String s : this.values())
+		{
+			if(s.equals(value))
+			{
+				return true;
+			}
+		} 
+		
+		return false;
+		
 	}
 
 	
@@ -242,6 +271,16 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 
 
 	/**
+	 * Returns a copy of the parameter setting, this copy will be mutable.
+	 * @return
+	 */
+	public ParameterConfiguration copy()
+	{
+		return new ParameterConfiguration(this);
+	}
+	
+	
+	/**
 	 * Replaces a value in the Map
 	 * 
 	 * <b>NOTE:</b> This operation can be slow and could be sped up if the parser file had a Map<String, Integer> mapping Strings to there integer equivilants.
@@ -254,10 +293,26 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 	 */
 	public String put(String key, String newValue) 
 	{
+		
+		if(this.locked)
+		{
+			
+			if(get(key).equals(newValue))
+			{
+				return newValue;
+			} else
+			{
+				throw new ParameterConfigurationLockedException("This parameter setting has been locked (via the lock() method), this prevents any further changes to this instance. You should use the copy() method to obtain a new instance that is still modifiable. Unfortunately defensive copying was leaking too much memory.");
+			}
+			
+		}
+		
+		
+		
 		//Now th
 		isDirty = true;
 		
-		builtMap = null;
+		//builtMap = null;
 		
 		
 		
@@ -403,19 +458,22 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 
 
 	public Collection<String> values() {
-		return getRealMap().values();
+		
+		return new ValueSetCollection();
+		//return getRealMap().values();
 	}
 
 
 	/**
 	 * A real map view of this configuration, it is nulled out when the map is made dirty.
 	 */
-	private volatile Map<String, String> builtMap = null;
+	//private volatile Map<String, String> builtMap = null;
 	
 	/**
 	 * Retrieves a real map view (one that has all methods supported) 
 	 * @return
 	 */
+	/*
 	private Map<String, String> getRealMap()
 	{
 		
@@ -431,11 +489,11 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 		
 		
 		return builtMap;
-	}
+	}*/
 
 	
 	public Set<java.util.Map.Entry<String, String>> entrySet() {
-		return getRealMap().entrySet();
+		return new ParameterConfigurationEntrySet();
 	}
 	
 	/**
@@ -503,7 +561,7 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 		}
 	}
 	
-	boolean hashSet = false;
+	volatile boolean hashSet = false;
 	int lastHash = 0;
 	
 	@Override
@@ -524,8 +582,6 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 			}
 			
 			lastHash = Arrays.hashCode(values);
-			//lastHash = Hash.hashCode(values); 
-			
 			
 			hashSet = true;
 		}
@@ -1278,10 +1334,263 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 
 
 
+	/**
+	 * @return
+	 */
+	public boolean isLocked()
+	{
+		return locked;
+	}
+	
+	/**
+	 * When invoked the parameter configuration becomes immutable.
+	 */
+	public void lock()
+	{
+		locked = true;
+	}
+
+
+	private class ValueSetCollection implements Collection<String>
+	{
+
+		@Override
+		public int size() {
+			return ParameterConfiguration.this.size();
+		}
+
+		@Override
+		public boolean isEmpty() {
+			// TODO Auto-generated method stub
+			return false;
+		}
+
+		@Override
+		public boolean contains(Object o) {
+			for(String obj : this)
+			{
+				if(obj.equals(o))
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+
+		@Override
+		public Iterator<String> iterator() {
+			return new Iterator<String>()
+			{
+
+				private int i=0;
+				@Override
+				public boolean hasNext() {
+					return (i < size());
+				}
+
+				@Override
+				public String next() {
+					if( i >= size() )
+					{
+						throw new NoSuchElementException();
+					}
+					return get(configSpace.getParameterNamesInAuthorativeOrder().get(i++));
+					
+				}
+
+				@Override
+				public void remove() {
+					throw new UnsupportedOperationException();
+				}
+				
+			};
+			
+		}
+
+		@Override
+		public Object[] toArray() {
+			return getList().toArray();
+		}
+
+		private final ArrayList<String> getList()
+		{
+			System.err.println("getList() called");
+			
+			ArrayList<String> myList = new ArrayList<String>(size());
+			for(String obj : this)
+			{
+				myList.add(obj);
+			}
+			return myList;
+		}
 	
 
+		@Override
+		public boolean add(String e) {
+			throw new UnsupportedOperationException();
+		}
 
+		@Override
+		public boolean remove(Object o) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public boolean containsAll(Collection<?> c) {
+			
+			return getList().containsAll(c);
+		}
+
+		
+
+		@Override
+		public boolean removeAll(Collection<?> c) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public <T> T[] toArray(T[] a) {
+			return getList().toArray(a);
+		}
+
+		@Override
+		public boolean addAll(Collection<? extends String> c) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public boolean retainAll(Collection<?> c) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public void clear() {
+			throw new UnsupportedOperationException();
+		}
 
 	
+		
+
+		
+		
+	}
+	
+	
+	private class ParameterConfigurationEntrySet implements  Set<java.util.Map.Entry<String, String>>
+	{
+
+		@Override
+		public int size() {
+			return ParameterConfiguration.this.size();
+		}
+
+		@Override
+		public boolean isEmpty() {
+			return false;
+		}
+
+		@Override
+		public boolean contains(Object o) {
+			for(Map.Entry<String, String> ent : this)
+			{
+				if(ent.equals(o))
+				{
+					return true;
+				}
+			}
+			return false;
+		}
+
+		@Override
+		public Iterator<java.util.Map.Entry<String, String>> iterator() {
+			
+			
+			return new Iterator<Entry<String, String>>()
+			{
+
+				private int i=0; 
+				@Override
+				public boolean hasNext() {
+					
+					return (i < size());
+				}
+
+				@Override
+				public java.util.Map.Entry<String, String> next() {
+					
+					String key = ParameterConfiguration.this.configSpace.getParameterNamesInAuthorativeOrder().get(i);
+					i++;
+					return new AbstractMap.SimpleImmutableEntry<String, String>(key, ParameterConfiguration.this.get(key));
+				}
+
+				@Override
+				public void remove() {
+					throw new UnsupportedOperationException();
+					
+				}
+				
+			};
+		}
+		
+		private final ArrayList<Map.Entry<String,String>> getList()
+		{
+			System.err.println("getList() called");
+			
+			ArrayList<Map.Entry<String, String>> myList = new ArrayList<>(size());
+			for(Map.Entry<String, String> obj : this)
+			{
+				myList.add(obj);
+			}
+			return myList;
+		}
+		
+		@Override
+		public Object[] toArray() {
+			return getList().toArray();
+		}
+
+		@Override
+		public <T> T[] toArray(T[] a) {
+			return getList().toArray(a);
+		}
+
+		@Override
+		public boolean add(java.util.Map.Entry<String, String> e) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public boolean remove(Object o) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public boolean containsAll(Collection<?> c) {
+			return getList().containsAll(c);
+		}
+
+		@Override
+		public boolean addAll(
+				Collection<? extends java.util.Map.Entry<String, String>> c) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public boolean retainAll(Collection<?> c) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public boolean removeAll(Collection<?> c) {
+			throw new UnsupportedOperationException();
+		}
+
+		@Override
+		public void clear() {
+			throw new UnsupportedOperationException();
+			
+		}
+		
+	}
 
 }
