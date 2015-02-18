@@ -3,11 +3,14 @@ package ca.ubc.cs.beta.aeatk.parameterconfigurationspace;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
+import java.util.AbstractCollection;
 import java.util.AbstractMap;
+import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.Iterator;
@@ -173,7 +176,7 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 		this.paramKeyToValueArrayIndexMap = oConfig.paramKeyToValueArrayIndexMap;
 		
 		this.activeParams = oConfig.activeParams.clone();
-		this.activeParameters = oConfig.activeParameters;
+		//this.activeParametersSet = oConfig.activeParametersSet;
 		this.valueArrayForComparsion = oConfig.valueArrayForComparsion.clone();
 		this.lastHash = oConfig.lastHash;
 		
@@ -459,6 +462,7 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 
 	public Collection<String> values() {
 		
+		if(isDirty) cleanUp();
 		return new ValueSetCollection();
 		//return getRealMap().values();
 	}
@@ -493,6 +497,8 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 
 	
 	public Set<java.util.Map.Entry<String, String>> entrySet() {
+		
+		if(isDirty) cleanUp();
 		return new ParameterConfigurationEntrySet();
 	}
 	
@@ -828,8 +834,9 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 	 */
 	public List<ParameterConfiguration> getNeighbourhood(Random rand, int numNumericalNeighbours)
 	{
-		List<ParameterConfiguration> neighbours = new ArrayList<ParameterConfiguration>(numberOfNeighboursExcludingForbidden(numNumericalNeighbours));
 		Set<String> activeParams = getActiveParameters();
+		List<ParameterConfiguration> neighbours = new ArrayList<ParameterConfiguration>(numberOfNeighboursExcludingForbidden(numNumericalNeighbours, activeParams));
+		
 		/*
 		 * i is the number of parameters
 		 * j is the number of neighbours
@@ -863,9 +870,9 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 		}
 		
 		
-		if(neighbours.size() > numberOfNeighboursExcludingForbidden(numNumericalNeighbours))
+		if(neighbours.size() > numberOfNeighboursExcludingForbidden(numNumericalNeighbours, activeParams))
 		{
-			throw new IllegalStateException("Expected " + numberOfNeighboursExcludingForbidden(numNumericalNeighbours) + " neighbours (should be greater than or equal to) but got " + neighbours.size());
+			throw new IllegalStateException("Expected " + numberOfNeighboursExcludingForbidden(numNumericalNeighbours, activeParams) + " neighbours (should be greater than or equal to) but got " + neighbours.size());
 		}
 		return neighbours;
 		
@@ -911,11 +918,11 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 	 * Returns the number of neighbours for this configuration
 	 * @return number of neighbours that this configuration has
 	 */
-	private int numberOfNeighboursExcludingForbidden(int numNumericalNeighbours)
+	private int numberOfNeighboursExcludingForbidden(int numNumericalNeighbours,Set<String> activeParams)
 	{
 		int neighbours = 0;
 		
-		Set<String> activeParams = getActiveParameters();
+		 
 		
 		for(int i=0; i < configSpace.getParameterNamesInAuthorativeOrder().size(); i++)
 		{
@@ -995,7 +1002,7 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 		}
 	}
 	
-	private volatile Set<String> activeParameters;
+	//private volatile Set<String> activeParametersSet;
 	
 	/**
 	 * Recomputes the active parameters and valueArrayForComparision and marks configuration clean again
@@ -1030,9 +1037,14 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 			}
 		}
 		myID = idPool.incrementAndGet();
-		activeParameters = Collections.unmodifiableSet(activeParams);
+		//activeParametersSet = Collections.unmodifiableSet(activeParams);
 		isDirty = false;
 		
+		
+		if(!activeParams.equals(getActiveParameters()))
+		{
+			throw new IllegalStateException("Expected our internal set representation to match the array set implementation" + activeParams + " vs " + getActiveParameters());
+		}
 	}
 	
 	
@@ -1047,7 +1059,7 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 			cleanUp();
 		}
 		
-		return activeParameters;
+		return new ActiveParametersSet();
 		
 		
 	}
@@ -1351,7 +1363,7 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 	}
 
 
-	private class ValueSetCollection implements Collection<String>
+	private class ValueSetCollection extends AbstractCollection<String>
 	{
 
 		@Override
@@ -1360,36 +1372,23 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 		}
 
 		@Override
-		public boolean isEmpty() {
-			// TODO Auto-generated method stub
-			return false;
-		}
-
-		@Override
-		public boolean contains(Object o) {
-			for(String obj : this)
-			{
-				if(obj.equals(o))
-				{
-					return true;
-				}
-			}
-			return false;
-		}
-
-		@Override
 		public Iterator<String> iterator() {
 			return new Iterator<String>()
 			{
 
 				private int i=0;
+				final int creationID = ParameterConfiguration.this.myID;
+				
+				
 				@Override
 				public boolean hasNext() {
+					if(isDirty || creationID != ParameterConfiguration.this.myID) throw new ConcurrentModificationException("Detected change to the parameter settings");
 					return (i < size());
 				}
 
 				@Override
 				public String next() {
+					if(isDirty || creationID != ParameterConfiguration.this.myID) throw new ConcurrentModificationException("Detected change to the parameter settings");
 					if( i >= size() )
 					{
 						throw new NoSuchElementException();
@@ -1407,76 +1406,13 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 			
 		}
 
-		@Override
-		public Object[] toArray() {
-			return getList().toArray();
-		}
-
-		private final ArrayList<String> getList()
-		{
-			System.err.println("getList() called");
-			
-			ArrayList<String> myList = new ArrayList<String>(size());
-			for(String obj : this)
-			{
-				myList.add(obj);
-			}
-			return myList;
-		}
 	
-
-		@Override
-		public boolean add(String e) {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public boolean remove(Object o) {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public boolean containsAll(Collection<?> c) {
-			
-			return getList().containsAll(c);
-		}
-
-		
-
-		@Override
-		public boolean removeAll(Collection<?> c) {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public <T> T[] toArray(T[] a) {
-			return getList().toArray(a);
-		}
-
-		@Override
-		public boolean addAll(Collection<? extends String> c) {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public boolean retainAll(Collection<?> c) {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public void clear() {
-			throw new UnsupportedOperationException();
-		}
-
-	
-		
-
 		
 		
 	}
 	
 	
-	private class ParameterConfigurationEntrySet implements  Set<java.util.Map.Entry<String, String>>
+	private class ParameterConfigurationEntrySet extends AbstractSet<java.util.Map.Entry<String, String>>
 	{
 
 		@Override
@@ -1484,23 +1420,7 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 			return ParameterConfiguration.this.size();
 		}
 
-		@Override
-		public boolean isEmpty() {
-			return false;
-		}
-
-		@Override
-		public boolean contains(Object o) {
-			for(Map.Entry<String, String> ent : this)
-			{
-				if(ent.equals(o))
-				{
-					return true;
-				}
-			}
-			return false;
-		}
-
+	
 		@Override
 		public Iterator<java.util.Map.Entry<String, String>> iterator() {
 			
@@ -1508,16 +1428,21 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 			return new Iterator<Entry<String, String>>()
 			{
 
+				final int creationID = ParameterConfiguration.this.myID;
+				
+				
 				private int i=0; 
 				@Override
 				public boolean hasNext() {
 					
+					if(isDirty || creationID != ParameterConfiguration.this.myID) throw new ConcurrentModificationException("Detected change to the parameter settings");
 					return (i < size());
 				}
 
 				@Override
 				public java.util.Map.Entry<String, String> next() {
 					
+					if(isDirty || creationID != ParameterConfiguration.this.myID) throw new ConcurrentModificationException("Detected change to the parameter settings");
 					String key = ParameterConfiguration.this.configSpace.getParameterNamesInAuthorativeOrder().get(i);
 					i++;
 					return new AbstractMap.SimpleImmutableEntry<String, String>(key, ParameterConfiguration.this.get(key));
@@ -1531,66 +1456,112 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 				
 			};
 		}
-		
-		private final ArrayList<Map.Entry<String,String>> getList()
-		{
-			System.err.println("getList() called");
-			
-			ArrayList<Map.Entry<String, String>> myList = new ArrayList<>(size());
-			for(Map.Entry<String, String> obj : this)
-			{
-				myList.add(obj);
-			}
-			return myList;
-		}
-		
-		@Override
-		public Object[] toArray() {
-			return getList().toArray();
-		}
-
-		@Override
-		public <T> T[] toArray(T[] a) {
-			return getList().toArray(a);
-		}
-
-		@Override
-		public boolean add(java.util.Map.Entry<String, String> e) {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public boolean remove(Object o) {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public boolean containsAll(Collection<?> c) {
-			return getList().containsAll(c);
-		}
-
-		@Override
-		public boolean addAll(
-				Collection<? extends java.util.Map.Entry<String, String>> c) {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public boolean retainAll(Collection<?> c) {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public boolean removeAll(Collection<?> c) {
-			throw new UnsupportedOperationException();
-		}
-
-		@Override
-		public void clear() {
-			throw new UnsupportedOperationException();
-			
-		}
-		
 	}
 
+	private final class ActiveParametersSet extends AbstractSet<String>
+	{
+
+		
+		@Override
+		public Iterator<String> iterator() {
+
+			
+			int firstIndex = activeParams.length;
+			 
+			
+			for(int i=0; i < activeParams.length; i++)
+			{
+				if(activeParams[i])
+				{
+					firstIndex = i;
+					break;
+				}
+			}
+			
+			
+			final int firstRealIndex = firstIndex;
+			
+			
+			return new Iterator<String>()
+			{
+			
+				int i=firstRealIndex;
+				
+				final int creationID = ParameterConfiguration.this.myID;
+				
+				
+				@Override
+				public boolean hasNext() {
+					
+					if(isDirty || creationID != ParameterConfiguration.this.myID) throw new ConcurrentModificationException("Detected change to the parameter settings");
+					
+					
+					return (i < valueArray.length);
+				}
+
+				@Override
+				public String next() {
+					
+					if(isDirty || creationID != ParameterConfiguration.this.myID) throw new ConcurrentModificationException("Detected change to the parameter settings");
+					
+					String result = configSpace.getParameterNamesInAuthorativeOrder().get(i);
+					
+					
+					
+					i=-i;
+					for(int j=-i+1; j < activeParams.length; j++)
+					{
+						if(activeParams[j])
+						{
+							i=j;
+							break;
+						}
+					}
+					
+					if (i <= 0)
+					{
+						i = valueArray.length;
+					}
+					return result;
+					
+				}
+
+				@Override
+				public void remove() {
+					throw new UnsupportedOperationException();
+				}
+			};
+					
+			
+		}
+
+		private volatile int size = -1;
+		@Override
+		public int size() {
+			if(size == -1)
+			{
+				 size = 0;
+				for(String ent : this)
+				{
+					size++;
+				}
+			
+			}
+			
+			return size;
+		}
+		
+		@Override
+		public boolean contains(Object o)
+		{
+			Integer index = configSpace.getParamKeyIndexMap().get(o);
+			
+			if(index == null)
+			{
+				return false;
+			}
+			
+			return activeParams[index];
+		}
+	}
 }

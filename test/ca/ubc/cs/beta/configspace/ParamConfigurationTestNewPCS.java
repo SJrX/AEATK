@@ -12,6 +12,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collections;
+import java.util.ConcurrentModificationException;
 import java.util.HashMap;
 import java.util.HashSet;
 import java.util.List;
@@ -3536,6 +3537,84 @@ public class ParamConfigurationTestNewPCS {
 		
 		
 			
+	}
+	
+	@Test
+	public void testConcurrentModificationException()
+	{
+		String pcsFile = "a { on, off } [on]\nb { on, off } [on]\n a | b in { on} ";
+		
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+		
+		
+		ParameterConfiguration defaultConfig = configSpace.getDefaultConfiguration();
+		
+		
+		for(String s : defaultConfig.getActiveParameters())
+		{
+			System.out.println(s);
+		}
+		
+		
+		try 
+		{
+			for(String s : defaultConfig.getActiveParameters())
+			{
+				defaultConfig.put("a", "off");
+				System.out.println(s);
+			}
+			
+			fail();
+		} catch(ConcurrentModificationException e)
+		{
+			//Good
+		}
+		
+
+		for(String s : defaultConfig.values())
+		{
+			System.out.println(s);
+		}
+		
+		
+		try 
+		{
+			for(String s : defaultConfig.values())
+			{
+				defaultConfig.put("a", "off");
+				System.out.println(s);
+			}
+			
+			fail("Expected exception");
+		} catch(ConcurrentModificationException e)
+		{
+			//Good
+		}
+
+		
+
+		for(Entry<String,String> s : defaultConfig.entrySet())
+		{
+			System.out.println(s);
+		}
+		
+		
+		try 
+		{
+			for(Entry<String,String> s : defaultConfig.entrySet())
+			{
+				defaultConfig.put("a", "off");
+				System.out.println(s);	
+			}
+			
+			fail();
+		} catch(ConcurrentModificationException e)
+		{
+			//Good
+		}
+
+		
+		
 	}
 	
 	@After
