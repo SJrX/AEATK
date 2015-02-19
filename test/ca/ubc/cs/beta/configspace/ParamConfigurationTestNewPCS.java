@@ -3617,6 +3617,59 @@ public class ParamConfigurationTestNewPCS {
 		
 	}
 	
+	@Test
+	/**
+	 * Bug #2101
+	 */
+	public void testDefaultInactiveValueParsingFromString()
+	{
+		String pcs = "@1:max-solver [1,100][3]il\nTest {a,b} [a]\n @1:max-solver | Test == b";
+		
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcs);
+		
+		ParameterConfiguration config = configSpace.getDefaultConfiguration();
+		
+		assertEquals("3",config.get("@1:max-solver"));
+		assertEquals("a", config.get("Test"));
+		
+		
+		
+		System.out.println(config.getFormattedParameterString());
+		config = configSpace.getParameterConfigurationFromString("-Test 'a' ",ParameterStringFormat.NODB_SYNTAX);
+
+		assertEquals("3",config.get("@1:max-solver"));
+		assertEquals("a", config.get("Test"));
+
+		
+		config = configSpace.getParameterConfigurationFromString("-Test 'a' -@1:max-solver '6'",ParameterStringFormat.NODB_SYNTAX);
+		
+		assertEquals("6",config.get("@1:max-solver"));
+		assertEquals("a", config.get("Test"));
+		
+		
+		pcs = "@1:max-solver {1,2,3,4,5,6,7,8,9,100}[3]\nTest {a,b} [a]\n @1:max-solver | Test == b";
+		
+		configSpace = ParamFileHelper.getParamFileFromString(pcs);
+		
+		config = configSpace.getDefaultConfiguration();
+		
+		assertEquals("3",config.get("@1:max-solver"));
+		assertEquals("a", config.get("Test"));
+		
+		System.out.println(config.getFormattedParameterString());
+		config = configSpace.getParameterConfigurationFromString("-Test 'a' ",ParameterStringFormat.NODB_SYNTAX);
+		
+		assertEquals("3",config.get("@1:max-solver"));
+		assertEquals("a", config.get("Test"));
+		
+		
+		config = configSpace.getParameterConfigurationFromString("-Test 'a' -@1:max-solver '6'",ParameterStringFormat.NODB_SYNTAX);
+		
+		assertEquals("6",config.get("@1:max-solver"));
+		assertEquals("a", config.get("Test"));
+		
+		
+	}
 	@After
 	public void tearDown()
 	{

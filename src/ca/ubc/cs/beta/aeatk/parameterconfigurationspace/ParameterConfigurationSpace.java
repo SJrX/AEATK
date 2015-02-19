@@ -2062,19 +2062,22 @@ public class ParameterConfigurationSpace implements Serializable {
 			
 			
 			/**
-			 * For all inactive parameters, set them to the default value
+			 * For all inactive parameters, set them to the default value if they weren't set.
 			 */
 			Set<String> allParameters = new HashSet<String>(this.getParameterNames());
 			
 			allParameters.removeAll(config.getActiveParameters());
 			for(String inactiveParameter : allParameters)
 			{
-				if(config.get(inactiveParameter) == null)
+				
+				if(namesSpecified.contains(inactiveParameter)) 
 				{
-					config.put(inactiveParameter, defaultConfig.get(inactiveParameter));
+					continue;
 				}
+				
+				config.put(inactiveParameter, defaultConfig.get(inactiveParameter));
 			}
-			
+		
 			
 			Set<String> unSetActiveParameters = new TreeSet<String>(config.getActiveParameters());
 			unSetActiveParameters.removeAll(namesSpecified);
