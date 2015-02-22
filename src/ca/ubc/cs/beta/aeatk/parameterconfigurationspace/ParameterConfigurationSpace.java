@@ -1610,7 +1610,55 @@ public class ParameterConfigurationSpace implements Serializable {
 	{
 		return authorativeParameterNameOrder;
 	}
-	
+
+
+    /**
+     * Returns the parameters that the given parameter directly depends upon to be active.
+     * i.e., there was a direct conditional specified between the two parameters
+     */
+    public Set<String> getImmediateParentParameters(String parameter) {
+        return Collections.unmodifiableSet(parameterDependencies.get(parameter));
+    }
+
+
+    /**
+     * Returns all parameters that the given parameter depends upon to be active.
+     * i.e. the result of {@link #getImmediateParentParameters(String)} on the given parameter,
+     * along with the result of {@link #getImmediateParentParameters(String)} on those parameters, etc.
+     */
+    public Set<String> getAllParentParameters(String parameter) {
+        Set<String> immediate = parameterDependencies.get(parameter);
+        if (immediate == null) {
+            return null;
+        }
+
+        HashSet<String> parents = new HashSet<String>(immediate);
+        HashSet<String> queryParameters = new HashSet<String>(immediate);
+
+        // NOTE: This may result in some parameters getting processed multiple times
+        // in complex conditional hierarchies, but I don't think rearchitecting this code
+        // to use a queue and check membership etc. is worth it.
+        while (!queryParameters.isEmpty()) {
+            Set<String> newParents = new HashSet<String>();
+
+            for (String queryParameter : queryParameters) {
+                Set<String> queryParents = parameterDependencies.get(queryParameter);
+
+                if (queryParents != null) {
+                    newParents.addAll(queryParents);
+                }
+            }
+
+            queryParameters.clear();
+
+            parents.addAll(newParents);
+            queryParameters.addAll(newParents);
+        }
+
+        return parents;
+    }
+
+
 	/**
 	 * Absolute File Name is the basis for the hashCode
 	 */
