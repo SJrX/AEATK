@@ -1617,7 +1617,11 @@ public class ParameterConfigurationSpace implements Serializable {
      * i.e., there was a direct conditional specified between the two parameters
      */
     public Set<String> getImmediateParentParameters(String parameter) {
-        return Collections.unmodifiableSet(parameterDependencies.get(parameter));
+    	if (parameterDependencies.containsKey(parameter)) {
+    		return Collections.unmodifiableSet(parameterDependencies.get(parameter));
+    	} else {
+    		return null;
+    	}
     }
 
 
