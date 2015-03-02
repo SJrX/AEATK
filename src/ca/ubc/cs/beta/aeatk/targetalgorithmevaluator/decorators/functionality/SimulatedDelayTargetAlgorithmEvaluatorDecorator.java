@@ -153,7 +153,7 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 			log.trace("Scheduling runs synchronously for configs {}", configIDs);
 			
 			final List<AlgorithmRunResult> runsFromWrappedTAE = Collections.unmodifiableList(tae.evaluateRun(runConfigs, null));
-			double timeToSleep = Double.NEGATIVE_INFINITY;
+			double timeToSleepInSeconds = Double.NEGATIVE_INFINITY;
 			//Stores a mapping of Run Config objects to Algorithm Run Objects
 			//The kill handlers may modify these.
 			final LinkedHashMap<AlgorithmRunConfiguration, AlgorithmRunResult> runConfigToAlgorithmRunMap = new LinkedHashMap<AlgorithmRunConfiguration, AlgorithmRunResult>();
@@ -162,10 +162,10 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 			AlgorithmRunResult mostExpensiveRun = null;
 			for(AlgorithmRunResult run : runsFromWrappedTAE)
 			{
-				double oldTimeToSleep = timeToSleep;
-				timeToSleep = Math.max(timeToSleep, Math.max(run.getRuntime(), run.getWallclockExecutionTime()));
+				double oldTimeToSleep = timeToSleepInSeconds;
+				timeToSleepInSeconds = Math.max(timeToSleepInSeconds, Math.max(run.getRuntime(), run.getWallclockExecutionTime()));
 				
-				if(oldTimeToSleep != timeToSleep)
+				if(oldTimeToSleep != timeToSleepInSeconds)
 				{
 					mostExpensiveRun = run;
 				}
@@ -174,11 +174,11 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 				
 			}
 			
-			double oRigTimeToSleep = timeToSleep;
-			timeToSleep = timeToSleep / this.timeScalingFactor;
+			double oRigTimeToSleep = timeToSleepInSeconds;
+			timeToSleepInSeconds = timeToSleepInSeconds / this.timeScalingFactor;
 			
-			Object[] args = {  oRigTimeToSleep, timeScalingFactor, timeToSleep,  configIDs, getNicelyFormattedWakeUpTime(timeToSleep), threadsWaiting.get()}; 
-			log.trace("Simulating {} elapsed with time scaling factor {} for a total of {} seconds of running for configs ({}) . Wake-up estimated in/at: {}  ( ~({}) threads currently waiting )", args);
+			Object[] args = {  oRigTimeToSleep, timeScalingFactor, timeToSleepInSeconds,  configIDs, getNicelyFormattedWakeUpTime(timeToSleepInSeconds), threadsWaiting.get()}; 
+			log.trace("Simulating {} seconds elapsed with time scaling factor {} for a total of {} seconds of running for configs ({}) . Wake-up estimated in/at: {}  ( ~({}) threads currently waiting )", args);
 			
 			sleepAndNotifyObservers(timeSim, startTimeInMS,  oRigTimeToSleep, obs, runsFromWrappedTAE, runConfigs, runConfigToKillHandlerMap, runConfigToAlgorithmRunMap);
 			
@@ -207,7 +207,7 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 					
 					if(newRun.equals(mostExpensiveRun))
 					{
-						newRun = new ExistingAlgorithmRunResult(newRun.getAlgorithmRunConfiguration(), newRun.getRunStatus(), newRun.getRuntime(), newRun.getRunLength(),newRun.getQuality(),newRun.getResultSeed(), newRun.getAdditionalRunData(), timeToSleep);
+						newRun = new ExistingAlgorithmRunResult(newRun.getAlgorithmRunConfiguration(), newRun.getRunStatus(), newRun.getRuntime(), newRun.getRunLength(),newRun.getQuality(),newRun.getResultSeed(), newRun.getAdditionalRunData(), timeToSleepInSeconds);
 					}
 					completedRuns.add(newRun);
 					
@@ -225,7 +225,7 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 	private void sleepAndNotifyObservers(TimeSimulator timeSimulator, long startTimeInMs, double maxRuntime, TargetAlgorithmEvaluatorRunObserver observer, List<AlgorithmRunResult> runsFromWrappedTAE, List<AlgorithmRunConfiguration> runConfigs, final LinkedHashMap<AlgorithmRunConfiguration, KillHandler> khs, final LinkedHashMap<AlgorithmRunConfiguration, AlgorithmRunResult> runResults)
 	{
 		
-		long sleepTimeInMS = (long) maxRuntime * 1000;
+		long sleepTimeInMS = (long) (maxRuntime * 1000);
 		do {
 			long waitTimeRemainingMs;
 			
@@ -314,6 +314,7 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 	
 	private String getNicelyFormattedWakeUpTime(double timeToSleep)
 	{
+		
 		long time = System.currentTimeMillis()  + (long) (timeToSleep * 1000);
 		Date d = new Date(time);
 

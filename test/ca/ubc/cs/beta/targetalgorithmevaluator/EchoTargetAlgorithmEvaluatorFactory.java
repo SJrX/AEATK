@@ -6,6 +6,8 @@ import ca.ubc.cs.beta.aeatk.options.AbstractOptions;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.AbstractTargetAlgorithmEvaluatorFactory;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorFactory;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.functionality.SimulatedDelayTargetAlgorithmEvaluatorDecorator;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.BoundedTargetAlgorithmEvaluator;
 
 @ProviderFor(TargetAlgorithmEvaluatorFactory.class)
 public class EchoTargetAlgorithmEvaluatorFactory extends AbstractTargetAlgorithmEvaluatorFactory  {
@@ -17,7 +19,17 @@ public class EchoTargetAlgorithmEvaluatorFactory extends AbstractTargetAlgorithm
 
 	@Override
 	public TargetAlgorithmEvaluator getTargetAlgorithmEvaluator(AbstractOptions options) {
-		return new EchoTargetAlgorithmEvaluator( (EchoTargetAlgorithmEvaluatorOptions) options);
+		
+		EchoTargetAlgorithmEvaluatorOptions eOpt = (EchoTargetAlgorithmEvaluatorOptions) options;
+		TargetAlgorithmEvaluator tae =  new EchoTargetAlgorithmEvaluator( eOpt);
+		
+		if(( (EchoTargetAlgorithmEvaluatorOptions) options).cores > 0)
+		{
+			tae = new SimulatedDelayTargetAlgorithmEvaluatorDecorator(tae,eOpt.observerFrequency,1);
+			tae = new BoundedTargetAlgorithmEvaluator(tae, eOpt.cores);
+		}
+		
+		return tae;
 	}
 
 	@Override
