@@ -122,11 +122,11 @@ public class SMACOptions extends AbstractOptions {
 	public double intensificationPercentage = 0.50;
 	
 	@UsageTextField(level=OptionLevel.INTERMEDIATE)
-	@Parameter(names={"--initialChallengers","--initial-challengers"}, description="Can be specified multiple times. Every item is one additional initial challenger which will be used to challenge the incumbent prior to starting the actual optimization method. For the syntax, please see --initialIncumbent.")
+	@Parameter(names={"--initial-challengers","--initialChallengers"}, description="Can be specified multiple times. Every item is one additional initial challenger which will be used to challenge the incumbent prior to starting the actual optimization method. For the syntax, please see --initialIncumbent.")
 	public List<String> initialChallengers = new ArrayList<String>();
 	
 	@UsageTextField(level=OptionLevel.ADVANCED)
-	@Parameter(names={"--initialChallengersIntensificationTime","--initial-challengers-intensification-time"}, description="Time to spend on intensify for the initial challengers.")
+	@Parameter(names={"--initial-challengers-intensification-time","--initialChallengersIntensificationTime"}, description="Time to spend on intensify for the initial challengers.")
 	public int initialChallengersIntensificationTime = Integer.MAX_VALUE;
 	
 	@UsageTextField(level=OptionLevel.ADVANCED)
