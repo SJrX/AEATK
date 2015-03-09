@@ -3670,6 +3670,66 @@ public class ParamConfigurationTestNewPCS {
 		
 		
 	}
+	
+	/**
+	 * Test for Bug #2104
+	 */
+	@Test
+	public void testConfigurationLimits()
+	{
+		String pcsFile = "a i [1,5][1]\n"
+				+ "b i [1,5][1]\n"
+				+ "c i [1,5][1]\n";
+		
+		
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+		
+		Set<ParameterConfiguration> generatedConfigurations = new HashSet<>();
+		
+		
+		Set<String> configs = new TreeSet<>();
+		
+		while(generatedConfigurations.size() < configSpace.getLowerBoundOnSize())
+		{
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(rand);
+			generatedConfigurations.add(config);
+			configs.add(config.getFormattedParameterString());
+		}
+		
+		assertEquals(configs.size(), generatedConfigurations.size());
+		
+		
+		System.out.println("Done");
+		
+		
+		generatedConfigurations = new HashSet<>();
+		
+		
+		configs = new TreeSet<>();
+		
+		
+		while(generatedConfigurations.size() < configSpace.getLowerBoundOnSize())
+		{
+			ParameterConfiguration newConfig = configSpace.getRandomParameterConfiguration(rand);
+			
+			
+			for(ParameterConfiguration config : newConfig.getNeighbourhood(rand, 4))
+			{
+				generatedConfigurations.add(config);
+				configs.add(config.getFormattedParameterString());
+			}
+		}
+		for(ParameterConfiguration config : generatedConfigurations)
+		{
+			System.out.println("Parameters: " + config.getFormattedParameterString() + " => " + Arrays.toString(config.toValueArray()));
+		}
+		assertEquals(configs.size(), generatedConfigurations.size());
+		
+		
+		System.out.println("Done");
+		
+	}
+	
 	@After
 	public void tearDown()
 	{

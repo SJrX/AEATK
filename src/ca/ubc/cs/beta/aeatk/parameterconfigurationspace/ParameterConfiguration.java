@@ -978,6 +978,10 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 				
 				if(randValue >= 0 && randValue <= 1)
 				{
+					
+					NormalizedRange nr = configSpace.normalizedRangesByIndex[valueArrayIndex]; 
+					randValue = nr.normalizeValue(nr.unnormalizeValue(randValue));
+					
 					return randValue;
 				}
 			}

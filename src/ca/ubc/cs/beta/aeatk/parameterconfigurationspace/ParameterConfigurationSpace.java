@@ -211,7 +211,7 @@ public class ParameterConfigurationSpace implements Serializable {
 	/**
 	 * Array representation of the ranges by index 
 	 */
-	private final NormalizedRange[] normalizedRangesByIndex;
+	final NormalizedRange[] normalizedRangesByIndex;
 
 	/**
 	 *	operators in conditionals; EQ ==, NEQ !=, LE <, GR >, IN "in {...}" 

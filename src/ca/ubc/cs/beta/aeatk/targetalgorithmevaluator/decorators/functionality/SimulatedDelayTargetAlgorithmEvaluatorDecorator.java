@@ -26,6 +26,8 @@ import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunningAlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.algorithmrunresult.kill.KillHandler;
 import ca.ubc.cs.beta.aeatk.algorithmrunresult.kill.StatusVariableKillHandler;
 import ca.ubc.cs.beta.aeatk.concurrent.threadfactory.SequentiallyNamedThreadFactory;
+import ca.ubc.cs.beta.aeatk.misc.watch.AutoStartStopWatch;
+import ca.ubc.cs.beta.aeatk.misc.watch.StopWatch;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
@@ -178,10 +180,13 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 			timeToSleepInSeconds = timeToSleepInSeconds / this.timeScalingFactor;
 			
 			Object[] args = {  oRigTimeToSleep, timeScalingFactor, timeToSleepInSeconds,  configIDs, getNicelyFormattedWakeUpTime(timeToSleepInSeconds), threadsWaiting.get()}; 
-			log.trace("Simulating {} seconds elapsed with time scaling factor {} for a total of {} seconds of running for configs ({}) . Wake-up estimated in/at: {}  ( ~({}) threads currently waiting )", args);
+			log.warn("Simulating {} seconds elapsed with time scaling factor {} for a total of {} seconds of running for configs ({}) . Wake-up estimated in/at: {}  ( ~({}) threads currently waiting )", args);
 			
+			 
+			StopWatch sleepTimeWatch = new AutoStartStopWatch();
 			sleepAndNotifyObservers(timeSim, startTimeInMS,  oRigTimeToSleep, obs, runsFromWrappedTAE, runConfigs, runConfigToKillHandlerMap, runConfigToAlgorithmRunMap);
-			
+			Object[] args2 = {  oRigTimeToSleep, timeScalingFactor, timeToSleepInSeconds,  configIDs, sleepTimeWatch.stop()/ 1000.0};
+			log.warn("Done simulating {} seconds elapsed with time scaling factor {} for a total of {} seconds of running for configs ({}). Total sleep time : {} seconds", args2);
 			if(obs == null)
 			{ 
 				//None of the runResultsChanged so we can return them unmodified
@@ -235,11 +240,25 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 				updateRunsAndNotifyObserver(startTimeInMs, currentTimeInMs, maxRuntime, observer, runsFromWrappedTAE, runConfigs, khs, runResults);
 			}	
 			
+			
+			
 			//In case the observers took significant amounts of time, we get the time again
 			currentTimeInMs = timeSimulator.time();
 			waitTimeRemainingMs =  startTimeInMs - currentTimeInMs +  sleepTimeInMS; 
 		
-			if(waitTimeRemainingMs <= 0)
+			boolean allKilled = true;
+			for(AlgorithmRunConfiguration rc : runConfigs)
+			{
+				
+				if(!runResults.get(rc).getRunStatus().equals(RunStatus.KILLED))
+				{
+					allKilled = false;
+					break;
+				}
+						
+			}
+			
+			if(waitTimeRemainingMs <= 0 || allKilled)
 			{
 				break;
 			} else
@@ -291,7 +310,8 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 			} else if(killHandlers.get(rc).isKilled())
 			{
 				//We should kill this run
-				runConfigToAlgorithmRunMap.put(rc, new ExistingAlgorithmRunResult( rc, RunStatus.KILLED, currentRuntime, 0, 0, rc.getProblemInstanceSeedPair().getSeed(),currentRuntime));
+				//log.warn("We should kill this run");
+				runConfigToAlgorithmRunMap.put(rc, new ExistingAlgorithmRunResult( rc, RunStatus.KILLED, currentRuntime, 0, 0, rc.getProblemInstanceSeedPair().getSeed(),"Killed by " + getClass().getSimpleName(), currentRuntime));
 			} else
 			{
 				//Update the run
