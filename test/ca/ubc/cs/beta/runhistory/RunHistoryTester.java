@@ -260,7 +260,7 @@ public class RunHistoryTester {
 			
 
 			try {
-				Thread.sleep(2000);
+				Thread.sleep(4096);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
@@ -288,6 +288,8 @@ public class RunHistoryTester {
 			inS2NotInS1.removeAll(s1);
 			
 			
+			System.out.println(inS1NotInS2.size());
+			System.out.println(inS2NotInS1.size());
 			
 			assertEquals("Both RunHistory objects should have the same data", inS1NotInS2, inS2NotInS1);
 			

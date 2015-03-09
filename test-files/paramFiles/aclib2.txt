@@ -1,20 +1,20 @@
 # params
 
 #categorical
-cat c {a,b,d,c}[d]
-cat2 c {2.0,3.0,6.0,8.0}[8.0]
+cat cat {a,b,d,c}[d]
+cat2 cat {2.0,3.0,6.0,8.0}[8.0]
 
 #ordinal
-ord o {x,y,z}[z]
+ord ord {x,y,z}[z]
 
 #integer
 
-int i [1,10][3]
+int int [1,10][3]
 
 #real
 
-rea r [1.0,2.0][1.3]
-realog r [1.0,2.0][1.3] log
+rea real [1.0,2.0][1.3]
+realog real [1.0,2.0][1.3] log
 
 # conditionals
 

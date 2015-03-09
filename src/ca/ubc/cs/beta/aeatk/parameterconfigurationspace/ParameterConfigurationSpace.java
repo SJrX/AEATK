@@ -93,18 +93,45 @@ public class ParameterConfigurationSpace implements Serializable {
 	 * types of parameters
 	 */
 	public static enum ParameterType {
-		CATEGORICAL(false), ORDINAL(true), INTEGER(true), REAL(true);
+		CATEGORICAL(false,"cat"), ORDINAL(true,"ord"), INTEGER(true,"int"), REAL(true,"real");
 		
 		private final boolean normalize;
 		
-		ParameterType(boolean normalize)
+		private final String keyword;
+		
+	
+		
+		
+		ParameterType(boolean normalize, String keyword)
 		{
 			this.normalize = normalize;
+			this.keyword = keyword;
+			
 		}
 
+		
 		public Boolean isNormalized() {
 			
 			return normalize;
+		}
+		
+		public String keyword()
+		{
+			return keyword;
+		}
+		
+		public static ParameterType getParameterTypeFromKeyword(String keyword)
+		{
+			
+			for(ParameterType type : ParameterType.values())
+			{
+				if(type.keyword().equals(keyword))
+				{
+					return type;
+				}
+			} 
+			
+			throw new IllegalArgumentException("Unknown Parameter Type: " + keyword + " allowed types are: " + Arrays.toString(ParameterType.values()));
 		}
 	}
 	
@@ -290,8 +317,8 @@ public class ParameterConfigurationSpace implements Serializable {
 	
 	private final String pcsFile;
 	
-	private final Pattern catOrdPattern = Pattern.compile("^\\s*(?<name>\\p{Graph}+)\\s*(?<type>[co])\\s*\\{(?<values>.*)\\}\\s*\\[(?<default>\\p{Graph}+)\\]\\s*$");
-	private final Pattern intReaPattern = Pattern.compile("^\\s*(?<name>\\p{Graph}+)\\s*(?<type>[ir])\\s*\\[\\s*(?<min>\\p{Graph}+)\\s*,\\s*(?<max>\\p{Graph}+)\\s*\\]\\s*\\[(?<default>\\p{Graph}+)\\]\\s*(?<log>(log)?)\\s*$");
+	private final Pattern catOrdPattern = Pattern.compile("^\\s*(?<name>\\p{Graph}+)\\s*(?<type>cat|ord)\\s*\\{(?<values>.*)\\}\\s*\\[(?<default>\\p{Graph}+)\\]\\s*$");
+	private final Pattern intReaPattern = Pattern.compile("^\\s*(?<name>\\p{Graph}+)\\s*(?<type>int|real)\\s*\\[\\s*(?<min>\\p{Graph}+)\\s*,\\s*(?<max>\\p{Graph}+)\\s*\\]\\s*\\[(?<default>\\p{Graph}+)\\]\\s*(?<log>(log)?)\\s*$");
 	
 	private final Map<String, String> searchSubspace;
 	
@@ -677,17 +704,20 @@ public class ParameterConfigurationSpace implements Serializable {
 			}
 			
 			
-			switch(type)
+			ParameterType encodedType = ParameterType.getParameterTypeFromKeyword(type);
+			
+			paramTypes.put(name, encodedType);
+			
+			switch(encodedType)
 			{
-			case "c":
-				paramTypes.put(name, ParameterType.CATEGORICAL);
+			case CATEGORICAL:
 				
 			
 				
 				
 				break;
 				
-			case "o":
+			case ORDINAL:
 				
 				
 				boolean intValuesOnly = true;
@@ -701,7 +731,7 @@ public class ParameterConfigurationSpace implements Serializable {
 
 				createNumericParameter(line, intValuesOnly, logScale, name, type, min, max, String.valueOf(valueMap.get(defaultValue)));
 				
-				paramTypes.put(name, ParameterType.ORDINAL);
+				
 				
 				break;
 					
@@ -728,7 +758,11 @@ public class ParameterConfigurationSpace implements Serializable {
 			
 			authorativeParameterNameOrder.add(name);
 			
-			if (type.equals("i")) {
+			ParameterType encodedType = ParameterType.getParameterTypeFromKeyword(type);
+			
+			paramTypes.put(name, encodedType);
+			
+			if (encodedType.equals(ParameterType.INTEGER)) {
 				intValuesOnly = true;
 			}
 			Double min;
@@ -753,17 +787,7 @@ public class ParameterConfigurationSpace implements Serializable {
 			if (!intReaMatcher.group("log").isEmpty()){
 				logScale = true;
 			}
-			
-			switch (type){
-			case "i": 	
-					paramTypes.put(name, ParameterType.INTEGER);
-					break;
-			case "r":
-					paramTypes.put(name, ParameterType.REAL);
-					break;
-			default:
-				throw new IllegalStateException("Could not identify the type of the parameter: "+line);
-			}
+		
 			defaultValues.put(name, defaultValue);
 			values.put(name, Collections.<String> emptyList());
 			createNumericParameter(line, intValuesOnly, logScale, name, type, min, max, defaultValue);
@@ -1460,7 +1484,7 @@ public class ParameterConfigurationSpace implements Serializable {
 			String defaultValue = match.group(3);
 			
 			
-			String newLine =  name + " c {" +values+"} [" + defaultValue + "]";
+			String newLine =  name + " cat {" +values+"} [" + defaultValue + "]";
 			
 			//System.err.println("Transformation: " + s + "\t ====>" + newLine);
 			return newLine;
@@ -1492,7 +1516,7 @@ public class ParameterConfigurationSpace implements Serializable {
 				logTransform = true;
 			}
 			
-			String newLine = name + " " + (integerOnly?"i":"r") + " [" + range + "] " + "[" + defaultValue +"]" + (logTransform?"log":"");
+			String newLine = name + " " + (integerOnly?ParameterType.INTEGER.keyword():ParameterType.REAL.keyword()) + " [" + range + "] " + "[" + defaultValue +"]" + (logTransform?"log":"");
 			
 			//System.err.println("Transformation: " + s + "\t ====>" + newLine);
 			return newLine;
@@ -2182,7 +2206,7 @@ public class ParameterConfigurationSpace implements Serializable {
 	 */
 	public static ParameterConfigurationSpace getSingletonConfigurationSpace()
 	{
-		return new ParameterConfigurationSpace(new StringReader("singleton c { singleton } [singleton]"),SINGLETON_ABSOLUTE_NAME);
+		return new ParameterConfigurationSpace(new StringReader("singleton cat { singleton } [singleton]"),SINGLETON_ABSOLUTE_NAME);
 	}
 	
 	public static ParameterConfigurationSpace getNullConfigurationSpace() {
