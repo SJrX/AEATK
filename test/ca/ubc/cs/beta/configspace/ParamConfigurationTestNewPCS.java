@@ -255,6 +255,109 @@ public class ParamConfigurationTestNewPCS {
 	}
 	
 	/**
+	 * Test retrieval of immediate parent parameters for conditional parameters
+	 */
+	@Test
+	public void testDaisyChainImmediateParents()
+	{
+		ParameterConfigurationSpace p = getConfigSpaceForFile("paramFiles/aclib2daisy-chain-param.txt");
+				
+		Set<String> aParents = p.getImmediateParentParameters("a");
+		assertNull(aParents);
+		
+		Set<String> bParents = p.getImmediateParentParameters("b");
+		assertEquals(1, bParents.size());
+		assertTrue(bParents.contains("a"));
+		
+		Set<String> cParents = p.getImmediateParentParameters("c");
+		assertEquals(1, cParents.size());
+		assertTrue(cParents.contains("b"));
+		
+		Set<String> dParents = p.getImmediateParentParameters("d");
+		assertEquals(1, dParents.size());
+		assertTrue(dParents.contains("c"));
+		
+		Set<String> eParents = p.getImmediateParentParameters("e");
+		assertEquals(1, eParents.size());
+		assertTrue(eParents.contains("d"));
+	}
+	
+	/**
+	 * Test retrieval of all parent parameters for conditional parameters
+	 */
+	@Test
+	public void testDaisyChainAllParents()
+	{
+		ParameterConfigurationSpace p = getConfigSpaceForFile("paramFiles/aclib2daisy-chain-param.txt");
+		
+		Set<String> aParents = p.getAllParentParameters("a");
+		assertNull(aParents);
+		
+		Set<String> bParents = p.getAllParentParameters("b");
+		assertEquals(1, bParents.size());
+		assertTrue(bParents.contains("a"));
+		
+		Set<String> cParents = p.getAllParentParameters("c");
+		assertEquals(2, cParents.size());
+		assertTrue(cParents.contains("a"));
+		assertTrue(cParents.contains("b"));
+		
+		Set<String> dParents = p.getAllParentParameters("d");
+		assertEquals(3, dParents.size());
+		assertTrue(dParents.contains("a"));
+		assertTrue(dParents.contains("b"));
+		assertTrue(dParents.contains("c"));
+		
+		Set<String> eParents = p.getAllParentParameters("e");
+		assertEquals(4, eParents.size());
+		assertTrue(eParents.contains("a"));
+		assertTrue(eParents.contains("b"));
+		assertTrue(eParents.contains("c"));
+		assertTrue(eParents.contains("d"));
+	}
+	
+	/**
+	 * Test immediate and all parents in the single multi-dependency case
+	 */
+	@Test
+	public void testMultipleDependencyParents() {
+		ParameterConfigurationSpace p = getConfigSpaceForFile("paramFiles/aclib2multi-dependency-param.txt");
+		
+		Set<String> eParents = p.getImmediateParentParameters("e");
+		assertEquals(4, eParents.size());
+		assertTrue(eParents.contains("a"));
+		assertTrue(eParents.contains("b"));
+		assertTrue(eParents.contains("c"));
+		assertTrue(eParents.contains("d"));
+		
+		eParents = p.getAllParentParameters("e");
+		assertEquals(4, eParents.size());
+		assertTrue(eParents.contains("a"));
+		assertTrue(eParents.contains("b"));
+		assertTrue(eParents.contains("c"));
+		assertTrue(eParents.contains("d"));
+	}
+	
+	/**
+	 * Test immediate parents in the diamond PCS
+	 */
+	@Test
+	public void testDiamondParents() {
+		ParameterConfigurationSpace p = getConfigSpaceForFile("paramFiles/aclib2diamond-param.txt");
+		
+		Set<String> eImmediateParents = p.getImmediateParentParameters("e");
+		assertEquals(2, eImmediateParents.size());
+		assertTrue(eImmediateParents.contains("d"));
+		assertTrue(eImmediateParents.contains("c"));
+		
+		Set<String> eAllParents = p.getAllParentParameters("e");
+		assertEquals(3, eAllParents.size());
+		assertTrue(eAllParents.contains("d"));
+		assertTrue(eAllParents.contains("c"));
+		assertTrue(eAllParents.contains("b"));
+	}
+	
+	/**
 	 * Tests Diamond Param File for E active
 	 */
 	@Test
