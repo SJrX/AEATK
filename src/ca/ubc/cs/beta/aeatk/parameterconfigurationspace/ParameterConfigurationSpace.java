@@ -93,7 +93,7 @@ public class ParameterConfigurationSpace implements Serializable {
 	 * types of parameters
 	 */
 	public static enum ParameterType {
-		CATEGORICAL(false,"cat"), ORDINAL(true,"ord"), INTEGER(true,"int"), REAL(true,"real");
+		CATEGORICAL(false,"categorical"), ORDINAL(true,"ordinal"), INTEGER(true,"integer"), REAL(true,"real");
 		
 		private final boolean normalize;
 		
@@ -317,8 +317,8 @@ public class ParameterConfigurationSpace implements Serializable {
 	
 	private final String pcsFile;
 	
-	private final Pattern catOrdPattern = Pattern.compile("^\\s*(?<name>\\p{Graph}+)\\s*(?<type>cat|ord)\\s*\\{(?<values>.*)\\}\\s*\\[(?<default>\\p{Graph}+)\\]\\s*$");
-	private final Pattern intReaPattern = Pattern.compile("^\\s*(?<name>\\p{Graph}+)\\s*(?<type>int|real)\\s*\\[\\s*(?<min>\\p{Graph}+)\\s*,\\s*(?<max>\\p{Graph}+)\\s*\\]\\s*\\[(?<default>\\p{Graph}+)\\]\\s*(?<log>(log)?)\\s*$");
+	private final Pattern catOrdPattern = Pattern.compile("^\\s*(?<name>\\p{Graph}+)\\s*(?<type>"+ParameterType.CATEGORICAL.keyword()+"|"+ParameterType.ORDINAL.keyword()+"+)\\s*\\{(?<values>.*)\\}\\s*\\[(?<default>\\p{Graph}+)\\]\\s*$");
+	private final Pattern intReaPattern = Pattern.compile("^\\s*(?<name>\\p{Graph}+)\\s*(?<type>"+ParameterType.INTEGER.keyword()+"|"+ParameterType.REAL.keyword()+")\\s*\\[\\s*(?<min>\\p{Graph}+)\\s*,\\s*(?<max>\\p{Graph}+)\\s*\\]\\s*\\[(?<default>\\p{Graph}+)\\]\\s*(?<log>(log)?)\\s*$");
 	
 	private final Map<String, String> searchSubspace;
 	
@@ -1484,7 +1484,7 @@ public class ParameterConfigurationSpace implements Serializable {
 			String defaultValue = match.group(3);
 			
 			
-			String newLine =  name + " cat {" +values+"} [" + defaultValue + "]";
+			String newLine =  name + " "+ParameterType.CATEGORICAL.keyword()+" {" +values+"} [" + defaultValue + "]";
 			
 			//System.err.println("Transformation: " + s + "\t ====>" + newLine);
 			return newLine;
@@ -2219,7 +2219,7 @@ public class ParameterConfigurationSpace implements Serializable {
 	 */
 	public static ParameterConfigurationSpace getSingletonConfigurationSpace()
 	{
-		return new ParameterConfigurationSpace(new StringReader("singleton cat { singleton } [singleton]"),SINGLETON_ABSOLUTE_NAME);
+		return new ParameterConfigurationSpace(new StringReader("singleton categorical { singleton } [singleton]"),SINGLETON_ABSOLUTE_NAME);
 	}
 	
 	public static ParameterConfigurationSpace getNullConfigurationSpace() {

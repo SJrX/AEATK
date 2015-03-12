@@ -1,15 +1,15 @@
 # params
 
 #categorical
-cat cat {a,b,d,c}[d]
-cat2 cat {2.0,3.0,6.0,8.0}[8.0]
+cat categorical {a,b,d,c}[d]
+cat2 categorical {2.0,3.0,6.0,8.0}[8.0]
 
 #ordinal
-ord ord {x,y,z}[z]
+ord ordinal {x,y,z}[z]
 
 #integer
 
-int int [1,10][3]
+int integer [1,10][3]
 
 #real
 

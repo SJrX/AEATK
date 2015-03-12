@@ -160,6 +160,13 @@ public class SMACOptions extends AbstractOptions {
 	public int numberOfRandomConfigsInEI = 10000;
 	
 	@UsageTextField(level=OptionLevel.ADVANCED)
+	@Parameter(names={"--num-ls-random","--num-local-search-random"}, description="Number of configurations ", validateWith=NonNegativeInteger.class)
+	public int numberOfRandomConfigsUsedForLocalSearch = 0;
+	
+	
+	
+	
+	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names={"--num-pca","--numPCA"}, description="number of principal components features to use when building the model", validateWith=FixedPositiveInteger.class)
 	public int numPCA = 7;
 
@@ -259,6 +266,7 @@ public class SMACOptions extends AbstractOptions {
 	@UsageTextField(level=OptionLevel.DEVELOPER)
 	@Parameter(names={"--shared-model-mode-asymetric"}, description="If set to true, then (based on the order of the file names) we will only read from runs that are transitively 2N and 2N+1 from our ID. So for instance if there were 16 runs, 0-15, runs 8-15 would be independent. Run 4 would read from 8,9. Run 5 would read from 10,11. Run 2 would read from 4,5,8,9,10,11, etc...")
 	public boolean sharedModeModeAssymetricMode = false;
+
 	
 	/**
 	 * Checks if the verify sat option is compatible with this set of probelm instances

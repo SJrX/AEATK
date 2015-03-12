@@ -1,1 +1,1 @@
-boo cat { 1,2,4} [3]
+boo categorical { 1,2,4} [3]

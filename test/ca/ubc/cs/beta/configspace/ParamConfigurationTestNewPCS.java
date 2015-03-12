@@ -453,7 +453,7 @@ public class ParamConfigurationTestNewPCS {
 	public void testMisplacedType()
 	{
 		System.out.println("misplaced test");
-		String file = "param int [1, 10] [1]i";
+		String file = "param integer [1, 10] [1]i";
 		StringReader sr = new StringReader(file);
 		new ParameterConfigurationSpace(sr);
 	}
@@ -461,7 +461,7 @@ public class ParamConfigurationTestNewPCS {
 	@Test(expected=IllegalArgumentException.class)
 	public void testIllegalArgumentOnNonIntegerLowerBound()
 	{
-		String file = "param int [0.1, 10] [1]";
+		String file = "param integer [0.1, 10] [1]";
 		StringReader sr = new StringReader(file);
 		 new ParameterConfigurationSpace(sr);
 	}
@@ -469,7 +469,7 @@ public class ParamConfigurationTestNewPCS {
 	@Test(expected=IllegalArgumentException.class)
 	public void testIllegalArgumentOnNonIntegerUpperBound()
 	{
-		String file = "param int [1, 10.5] [1]";
+		String file = "param integer [1, 10.5] [1]";
 		StringReader sr = new StringReader(file);
 		new ParameterConfigurationSpace(sr);
 	}
@@ -477,7 +477,7 @@ public class ParamConfigurationTestNewPCS {
 	@Test(expected=IllegalArgumentException.class)
 	public void testIllegalArgumentOnNonIntegerDefault()
 	{
-		String file = "param int [1, 10] [1.5]";
+		String file = "param integer [1, 10] [1.5]";
 		StringReader sr = new StringReader(file);
 		new ParameterConfigurationSpace(sr);
 	}
@@ -485,7 +485,7 @@ public class ParamConfigurationTestNewPCS {
 	@Test(expected=IllegalArgumentException.class)
 	public void testIllegalArgumentOnNonIntegerLowerBoundLog()
 	{
-		String file = "param int [1.1, 10] [2] log";
+		String file = "param integer [1.1, 10] [2] log";
 		StringReader sr = new StringReader(file);
 		 new ParameterConfigurationSpace(sr);
 	}
@@ -493,7 +493,7 @@ public class ParamConfigurationTestNewPCS {
 	@Test(expected=IllegalArgumentException.class)
 	public void testIllegalArgumentOnNonIntegerUpperBoundLog()
 	{
-		String file = "param int [1, 10.5] [1] log";
+		String file = "param integer [1, 10.5] [1] log";
 		StringReader sr = new StringReader(file);
 		new ParameterConfigurationSpace(sr);
 	}
@@ -502,7 +502,7 @@ public class ParamConfigurationTestNewPCS {
 	public void testIllegalArgumentOnNonIntegerDefaultLog()
 	{
 		
-		String file = "param int [1, 10] [1.5] log";
+		String file = "param integer [1, 10] [1.5] log";
 		StringReader sr = new StringReader(file);
 		new ParameterConfigurationSpace(sr);
 	}
@@ -548,7 +548,7 @@ public class ParamConfigurationTestNewPCS {
 	public void testIllegalBothFlagSetInIncorrectOrder()
 	{
 		
-		String file = "-numPCA [1,10]log int [1]";
+		String file = "-numPCA [1,10]log integer [1]";
 		StringReader sr = new StringReader(file);
 		new ParameterConfigurationSpace(sr);
 	}
@@ -557,8 +557,8 @@ public class ParamConfigurationTestNewPCS {
 	public void testIllegalDependentValue()
 	{
 		StringReader sr = new StringReader(
-				"foo cat { a, b, c, d } [a]\n" +
-				"bar cat { 1,2,3,4} [1]\n" +
+				"foo categorical { a, b, c, d } [a]\n" +
+				"bar categorical { 1,2,3,4} [1]\n" +
 				"bar | foolar in { a,b }");
 		new ParameterConfigurationSpace(sr);
 	}
@@ -567,8 +567,8 @@ public class ParamConfigurationTestNewPCS {
 	public void testIllegalIndependentValue()
 	{
 		StringReader sr = new StringReader(
-				"foo cat { a, b, c, d } [a]\n" +
-				"bar cat { 1,2,3,4} [1]\n" +
+				"foo categorical { a, b, c, d } [a]\n" +
+				"bar categorical { 1,2,3,4} [1]\n" +
 				"barar | foo in { a,b }");
 		new ParameterConfigurationSpace(sr);
 	}
@@ -576,7 +576,7 @@ public class ParamConfigurationTestNewPCS {
 	@Test
 	public void testIntegralValue()
 	{
-		String file = "-numPCA int [1,20] [7]\n-numberSearch int [1,10000000] [2000]\n";
+		String file = "-numPCA integer [1,20] [7]\n-numberSearch integer [1,10000000] [2000]\n";
 		StringReader sr = new StringReader(file);
 		String exec = new ParameterConfigurationSpace(sr).getDefaultConfiguration().getFormattedParameterString(ParameterStringFormat.NODB_SYNTAX);
 		System.out.println(exec);
@@ -616,13 +616,13 @@ public class ParamConfigurationTestNewPCS {
 	public void testStringEncodingPreserving()
 	{
 		//Complex Parameter Space
-		StringReader sr = new StringReader("test cat {a,b,c,d,e,f} [a]\n"
+		StringReader sr = new StringReader("test categorical {a,b,c,d,e,f} [a]\n"
 				+ "bar real [0,1000] [1]\n"
-				+ "bar2 int [0,1000] [1]\n"
-				+ "bar3 int [1,1000] [1] log\n"
+				+ "bar2 integer [0,1000] [1]\n"
+				+ "bar3 integer [1,1000] [1] log\n"
 				+ "bar4 real [1,1000] [1]log\n" 
-				+ "test2 cat { a,b,c,d,e,f} [b]\n"
-				+ "test3 ord { a,b,c,d,e,f, Az,Bz, Cz, dZ,eZ} [c]\n"
+				+ "test2 categorical { a,b,c,d,e,f} [b]\n"
+				+ "test3 ordinal { a,b,c,d,e,f, Az,Bz, Cz, dZ,eZ} [c]\n"
 				+ "test2 | test in { a,b,c} \n"
 				+ "{test3 = f, test2 = f}\n");
 		
@@ -672,7 +672,7 @@ public class ParamConfigurationTestNewPCS {
 	public void testNoDefaultFromConfiguration()
 	{ //Tries to prevent a newly implemented StringFormat from creating a representation of DEFAULT
 	  
-		StringReader sr = new StringReader("DEFAULT cat {DEFAULT} [DEFAULT] ");
+		StringReader sr = new StringReader("DEFAULT categorical {DEFAULT} [DEFAULT] ");
 		ParameterConfigurationSpace configSpace = new ParameterConfigurationSpace(sr);
 		ParameterConfiguration defaultConfiguration = configSpace.getDefaultConfiguration();
 		for(ParameterStringFormat f : ParameterStringFormat.values())
@@ -680,7 +680,7 @@ public class ParamConfigurationTestNewPCS {
 			assertFalse("Was able to get a DEFAULT as a string representation for StringFormat " + f.toString(), defaultConfiguration.getFormattedParameterString(f).trim().toUpperCase().equals("DEFAULT"));
 		}
 		
-		StringReader sr2 = new StringReader("<DEFAULT> cat {<DEFAULT>} [<DEFAULT>]");
+		StringReader sr2 = new StringReader("<DEFAULT> categorical {<DEFAULT>} [<DEFAULT>]");
 		ParameterConfigurationSpace configSpace2 = new ParameterConfigurationSpace(sr2);
 		ParameterConfiguration defaultConfiguration2 = configSpace2.getDefaultConfiguration();
 		for(ParameterStringFormat f : ParameterStringFormat.values())
@@ -693,7 +693,7 @@ public class ParamConfigurationTestNewPCS {
 	public void testNoRandomFromConfiguration()
 	{ //Tries to prevent a newly implemented StringFormat from creating a representation of a RANDOM configuration
 	  
-		StringReader sr = new StringReader("RANDOM cat {RANDOM} [RANDOM] ");
+		StringReader sr = new StringReader("RANDOM categorical {RANDOM} [RANDOM] ");
 		ParameterConfigurationSpace configSpace = new ParameterConfigurationSpace(sr);
 		ParameterConfiguration defaultConfiguration = configSpace.getDefaultConfiguration();
 		for(ParameterStringFormat f : ParameterStringFormat.values())
@@ -701,7 +701,7 @@ public class ParamConfigurationTestNewPCS {
 			assertFalse("Was able to get a RANDOM as a string representation for StringFormat " + f.toString(), defaultConfiguration.getFormattedParameterString(f).trim().toUpperCase().equals("RANDOM"));
 		}
 		
-		StringReader sr2 = new StringReader("<RANDOM> cat {<RANDOM>} [<RANDOM>]");
+		StringReader sr2 = new StringReader("<RANDOM> categorical {<RANDOM>} [<RANDOM>]");
 		ParameterConfigurationSpace configSpace2 = new ParameterConfigurationSpace(sr2);
 		ParameterConfiguration defaultConfiguration2 = configSpace2.getDefaultConfiguration();
 		for(ParameterStringFormat f : ParameterStringFormat.values())
@@ -714,7 +714,7 @@ public class ParamConfigurationTestNewPCS {
 	@Test
 	public void testNeighbourFunction()
 	{
-		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("a cat { 0,1,2,3,4,5,6,7,8,9 } [0] \n b cat { 0,1,2,3,4,5,6,7,8,9 } [0] \n c cat { 0,1,2,3,4,5,6,7,8,9 } [0] \n d cat { 0, 1} [0] \n d | c in { 0 } ");
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("a categorical { 0,1,2,3,4,5,6,7,8,9 } [0] \n b categorical { 0,1,2,3,4,5,6,7,8,9 } [0] \n c categorical { 0,1,2,3,4,5,6,7,8,9 } [0] \n d categorical { 0, 1} [0] \n d | c in { 0 } ");
 		ParameterConfiguration defaultConfig = configSpace.getDefaultConfiguration();
 		
 		assertFalse(defaultConfig.isNeighbour(defaultConfig));
@@ -744,7 +744,7 @@ public class ParamConfigurationTestNewPCS {
 	@Test
 	public void testSubspaceDeclaration()
 	{
-		StringReader sr = new StringReader("foo cat { a, b, c, d } [a]");
+		StringReader sr = new StringReader("foo categorical { a, b, c, d } [a]");
 		ParameterConfigurationSpace configSpace = new ParameterConfigurationSpace(sr, Collections.singletonMap("foo", "a") );
 		assertEquals("No neighbours", 0, configSpace.getDefaultConfiguration().getNeighbourhood(rand,NUMBER_OF_NEIGHBOURS).size());
 		assertEquals("Default correct", "a", configSpace.getDefaultConfiguration().get("foo"));
@@ -769,7 +769,7 @@ public class ParamConfigurationTestNewPCS {
 	{
 		//A Subspace and a parent space should NOT be equal
 		
-		String sf = "foo cat { a, b, c } [a] \n bar cat { d, e,f} [f]";
+		String sf = "foo categorical { a, b, c } [a] \n bar categorical { d, e,f} [f]";
 		ParameterConfigurationSpace configSpace = new ParameterConfigurationSpace(new StringReader(sf),"<>");
 		System.out.println(configSpace.getDefaultConfiguration().getFormattedParameterString());
 		ParameterConfigurationSpace configSpace2 = new ParameterConfigurationSpace(new StringReader(sf),"<>");
@@ -787,7 +787,7 @@ public class ParamConfigurationTestNewPCS {
 	@Test
 	public void testSubspaceDeclarationDefault()
 	{
-		StringReader sr = new StringReader("foo   cat { a, b, c, d } [a]");
+		StringReader sr = new StringReader("foo   categorical { a, b, c, d } [a]");
 		ParameterConfigurationSpace configSpace = new ParameterConfigurationSpace(sr, Collections.singletonMap("foo", "<DEFAULT>") );
 		assertEquals("No neighbours", 0, configSpace.getDefaultConfiguration().getNeighbourhood(rand,NUMBER_OF_NEIGHBOURS).size());
 		assertEquals("Default correct", "a", configSpace.getDefaultConfiguration().get("foo"));
@@ -813,7 +813,7 @@ public class ParamConfigurationTestNewPCS {
 	public void testSubspaceDeclarationContinuous()
 	{
 		StringReader sr = new StringReader("foo real [0,1] [0.1]\n" +
-				"bar cat { a, b, c } [a]");
+				"bar categorical { a, b, c } [a]");
 		ParameterConfigurationSpace configSpace = new ParameterConfigurationSpace(sr, Collections.singletonMap("foo", "0.1") );
 		assertEquals("# neighbours", 2, configSpace.getDefaultConfiguration().getNeighbourhood(rand,NUMBER_OF_NEIGHBOURS).size());
 		assertEquals("Default correct", "0.1", configSpace.getDefaultConfiguration().get("foo"));
@@ -835,8 +835,8 @@ public class ParamConfigurationTestNewPCS {
 	{
 		StringReader sr = new StringReader("foo real [0,1] [0.1]\n" +
 				"bar real [0,1] [0.1]\n" +
-				"tar cat { a,b,c,d,e } [e]\n "+
-				"gzi cat { a,b,c,d,e} [a]\n");
+				"tar categorical { a,b,c,d,e } [e]\n "+
+				"gzi categorical { a,b,c,d,e} [a]\n");
 		
 		Map<String,String> subspace = new HashMap<String, String>();
 		
@@ -858,9 +858,9 @@ public class ParamConfigurationTestNewPCS {
 	{
 		StringReader sr = new StringReader("foo real [0,1] [0.1]\n" +
 				"bar real [0,1] [0.1]\n" +
-				"tar cat { a,b,c,d,e } [e]\n "+
-				"gzi cat { a,b,c,d,e} [a]\n" +
-				"bzi cat { a,b,c,d,e} [c]\n" + 
+				"tar categorical { a,b,c,d,e } [e]\n "+
+				"gzi categorical { a,b,c,d,e} [a]\n" +
+				"bzi categorical { a,b,c,d,e} [c]\n" + 
 				"bzi | gzi in {a,b}");
 		
 		Map<String,String> subspace = new HashMap<String, String>();
@@ -893,7 +893,7 @@ public class ParamConfigurationTestNewPCS {
 	@Test
 	public void testSubspaceDeclarationNotDefault()
 	{
-		StringReader sr = new StringReader("foo cat { a, b, c, d } [a]");
+		StringReader sr = new StringReader("foo categorical { a, b, c, d } [a]");
 		ParameterConfigurationSpace configSpace = new ParameterConfigurationSpace(sr, Collections.singletonMap("foo", "d") );
 		
 		assertEquals("No neighbours", 0, configSpace.getDefaultConfiguration().getNeighbourhood(rand,NUMBER_OF_NEIGHBOURS).size());
@@ -914,7 +914,7 @@ public class ParamConfigurationTestNewPCS {
 	public void testSubspaceDeclarationSubspaceIsForbidden()
 	{
 		
-		StringReader sr = new StringReader("foo cat { a, b, c, d } [d]\n {foo = a}");
+		StringReader sr = new StringReader("foo categorical { a, b, c, d } [d]\n {foo = a}");
 		ParameterConfigurationSpace configSpace = new ParameterConfigurationSpace(sr, Collections.singletonMap("foo", "a") );
 		
 		assertEquals("No neighbours", 0, configSpace.getDefaultConfiguration().getNeighbourhood(rand,NUMBER_OF_NEIGHBOURS).size());
@@ -929,8 +929,8 @@ public class ParamConfigurationTestNewPCS {
 	public void testSubspaceDeclarationSubspaceAndForbidden()
 	{
 		StringReader sr = new StringReader(
-				"foo cat { a, b, c, d } [a]\n" +
-				"bar cat { 1,2,3,4} [1]\n" +
+				"foo categorical { a, b, c, d } [a]\n" +
+				"bar categorical { 1,2,3,4} [1]\n" +
 				"{foo = a, bar= 2}");
 		ParameterConfigurationSpace configSpace = new ParameterConfigurationSpace(sr, Collections.singletonMap("foo", "a"));
 		assertTrue("Configuration should be in Subspace", configSpace.getDefaultConfiguration().isInSearchSubspace());
@@ -945,8 +945,8 @@ public class ParamConfigurationTestNewPCS {
 	public void testSubspaceDeclarationSubspaceAndIrrelevantForbidden()
 	{
 		StringReader sr = new StringReader(
-				"foo cat { a, b, c, d } [a]\n" +
-				"bar cat { 1,2,3,4} [1]\n" +
+				"foo categorical { a, b, c, d } [a]\n" +
+				"bar categorical { 1,2,3,4} [1]\n" +
 				"{foo = b, bar= 2}");
 		
 		ParameterConfigurationSpace configSpace = new ParameterConfigurationSpace(sr, Collections.singletonMap("foo", "a"));
@@ -962,8 +962,8 @@ public class ParamConfigurationTestNewPCS {
 	public void testSubspaceDeclarationSubspaceAndConditionalInactive()
 	{
 		StringReader sr = new StringReader(
-				"foo cat { a, b, c, d } [d]\n" +
-				"bar cat { 1,2,3,4} [1]\n" +
+				"foo categorical { a, b, c, d } [d]\n" +
+				"bar categorical { 1,2,3,4} [1]\n" +
 				"bar | foo in { c,b }");
 		ParameterConfigurationSpace configSpace = new ParameterConfigurationSpace(sr, Collections.singletonMap("foo", "a"));
 		assertFalse("Configuration shouldn't be in Subspace", configSpace.getDefaultConfiguration().isInSearchSubspace());
@@ -978,8 +978,8 @@ public class ParamConfigurationTestNewPCS {
 	public void testSubspaceDeclarationSubspaceAndConditional()
 	{
 		StringReader sr = new StringReader(
-				"foo cat { a, b, c, d } [a]\n" +
-				"bar cat { 1,2,3,4} [1]\n" +
+				"foo categorical { a, b, c, d } [a]\n" +
+				"bar categorical { 1,2,3,4} [1]\n" +
 				"bar | foo in { a,b }");
 		ParameterConfigurationSpace configSpace = new ParameterConfigurationSpace(sr, Collections.singletonMap("foo", "a"));
 		assertEquals("Should have 3 neighbours", 3, configSpace.getDefaultConfiguration().getNeighbourhood(rand,NUMBER_OF_NEIGHBOURS).size());
@@ -989,8 +989,8 @@ public class ParamConfigurationTestNewPCS {
 	public void testSubspaceValidation()
 	{
 		StringReader sr = new StringReader(
-				"foo cat { a, b, c, d } [a]\n" +
-				"bar cat { 1,2,3,4} [1]\n" +
+				"foo categorical { a, b, c, d } [a]\n" +
+				"bar categorical { 1,2,3,4} [1]\n" +
 				"bar | foo in { a,b }");
 		new ParameterConfigurationSpace(sr, Collections.singletonMap("foo", "ILLEGAL"));
 	}
@@ -1042,24 +1042,24 @@ public class ParamConfigurationTestNewPCS {
 		System.out.println("Expect 1 : "+ParameterConfigurationSpace.getSingletonConfigurationSpace().getUpperBoundOnSize());
 		assertTrue("Singleton space should have >= 1 configuration ", ParameterConfigurationSpace.getSingletonConfigurationSpace().getUpperBoundOnSize() >= 1);
 		
-		ParameterConfigurationSpace configSpace = new ParameterConfigurationSpace(new StringReader("foo cat { a,b,c} [a]\n"),"<>",Collections.EMPTY_MAP);
+		ParameterConfigurationSpace configSpace = new ParameterConfigurationSpace(new StringReader("foo categorical { a,b,c} [a]\n"),"<>",Collections.EMPTY_MAP);
 		System.out.println("Expect 3 : "+ configSpace.getUpperBoundOnSize());
 		assertTrue("Size should be >= 3", configSpace.getUpperBoundOnSize() >= 3);
 		
-		configSpace = new ParameterConfigurationSpace(new StringReader("foo cat { a,b,c} [a]\n bar cat { d,e,f} [f]"),"<>",Collections.EMPTY_MAP);
+		configSpace = new ParameterConfigurationSpace(new StringReader("foo categorical { a,b,c} [a]\n bar categorical { d,e,f} [f]"),"<>",Collections.EMPTY_MAP);
 		System.out.println("Expect 9 : " +configSpace.getUpperBoundOnSize());
 		assertTrue("Size should be >= 9", configSpace.getUpperBoundOnSize() >= 9);
 		
-		configSpace = new ParameterConfigurationSpace(new StringReader("foo cat { a,b,c} [a]\n bar cat { d,e,f} [f]\n bar | foo in {a}"),"<>",Collections.EMPTY_MAP);
+		configSpace = new ParameterConfigurationSpace(new StringReader("foo categorical { a,b,c} [a]\n bar categorical { d,e,f} [f]\n bar | foo in {a}"),"<>",Collections.EMPTY_MAP);
 		System.out.println("Expect 9 : " + configSpace.getUpperBoundOnSize());
 		assertTrue("Size should be >= 9", configSpace.getUpperBoundOnSize() >= 9);
 		
-		configSpace = new ParameterConfigurationSpace(new StringReader("foo cat { a,b,c} [a]\n bar cat { d,e,f} [f]\n"),"<>",Collections.singletonMap("foo", "a"));
+		configSpace = new ParameterConfigurationSpace(new StringReader("foo categorical { a,b,c} [a]\n bar categorical { d,e,f} [f]\n"),"<>",Collections.singletonMap("foo", "a"));
 		System.out.println("Expect 9 : " + configSpace.getUpperBoundOnSize());
 		
 		assertTrue("Size should be >= 9", configSpace.getUpperBoundOnSize() >= 9);
 		
-		configSpace = new ParameterConfigurationSpace(new StringReader("foo cat { a,b,c} [a]\n bar cat { d,e,f} [f]\n"),"<>",Collections.singletonMap("foo", "b"));
+		configSpace = new ParameterConfigurationSpace(new StringReader("foo categorical { a,b,c} [a]\n bar categorical { d,e,f} [f]\n"),"<>",Collections.singletonMap("foo", "b"));
 		System.out.println("Expect 9 : " + configSpace.getUpperBoundOnSize());
 		assertTrue("Size should be >= 9", configSpace.getUpperBoundOnSize() >= 9);
 		
@@ -1074,29 +1074,29 @@ public class ParamConfigurationTestNewPCS {
 			System.out.println(config.getFormattedParameterString());
 		}
 		
-		configSpace = new ParameterConfigurationSpace(new StringReader("foo cat { a,b,c} [a]\n bar cat { d,e,f} [f]\n {foo = a, bar = d}"),"<>",Collections.EMPTY_MAP);
+		configSpace = new ParameterConfigurationSpace(new StringReader("foo categorical { a,b,c} [a]\n bar categorical { d,e,f} [f]\n {foo = a, bar = d}"),"<>",Collections.EMPTY_MAP);
 		System.out.println("Expect 9 :" + configSpace.getUpperBoundOnSize());
 		assertTrue("Size should be >= 9", configSpace.getUpperBoundOnSize() >= 9);
 		
-		configSpace = new ParameterConfigurationSpace(new StringReader("foo real [0,1][1]\n bar cat { d,e,f} [f]\n"),"<>",Collections.EMPTY_MAP);
+		configSpace = new ParameterConfigurationSpace(new StringReader("foo real [0,1][1]\n bar categorical { d,e,f} [f]\n"),"<>",Collections.EMPTY_MAP);
 		System.out.println("Expect Infinity: " + configSpace.getUpperBoundOnSize());
 		assertTrue("Size should be >= Infinity", configSpace.getUpperBoundOnSize() >= Double.POSITIVE_INFINITY);
 		
 		
-		configSpace = new ParameterConfigurationSpace(new StringReader("foo int [0,1][1]\n bar cat { d,e,f} [f]\n"),"<>",Collections.EMPTY_MAP);
+		configSpace = new ParameterConfigurationSpace(new StringReader("foo integer [0,1][1]\n bar categorical { d,e,f} [f]\n"),"<>",Collections.EMPTY_MAP);
 		System.out.println("Expect 6: " + configSpace.getUpperBoundOnSize());
 		assertTrue("Size should be >= 6", configSpace.getUpperBoundOnSize() >= 6);
 		
-		configSpace = new ParameterConfigurationSpace(new StringReader("foo int [0,9][1]\n bar cat { d,e,f} [f]\n"),"<>",Collections.EMPTY_MAP);
+		configSpace = new ParameterConfigurationSpace(new StringReader("foo integer [0,9][1]\n bar categorical { d,e,f} [f]\n"),"<>",Collections.EMPTY_MAP);
 		System.out.println("Expect 30: " + configSpace.getUpperBoundOnSize());
 		assertTrue("Size should be >= 30", configSpace.getUpperBoundOnSize() >= 30);
 		
-		configSpace = new ParameterConfigurationSpace(new StringReader("foo int [0,9][1]\n bar int [0,9] [1]\n"),"<>",Collections.EMPTY_MAP);
+		configSpace = new ParameterConfigurationSpace(new StringReader("foo integer [0,9][1]\n bar integer [0,9] [1]\n"),"<>",Collections.EMPTY_MAP);
 		System.out.println("Expect 100: " + configSpace.getUpperBoundOnSize());
 		assertTrue("Size should be >= 100", configSpace.getUpperBoundOnSize() >= 100);
 		
 		
-		configSpace = new ParameterConfigurationSpace(new StringReader("foo int [0,9][1]\n bar real [0,9] [1]\n"),"<>",Collections.EMPTY_MAP);
+		configSpace = new ParameterConfigurationSpace(new StringReader("foo integer [0,9][1]\n bar real [0,9] [1]\n"),"<>",Collections.EMPTY_MAP);
 		System.out.println("Expect Infinity: " + configSpace.getUpperBoundOnSize());
 		assertTrue("Size should be >= Infinity", configSpace.getUpperBoundOnSize() >= Double.POSITIVE_INFINITY);
 		
@@ -1109,24 +1109,24 @@ public class ParamConfigurationTestNewPCS {
 		System.out.println("Expect 1 : "+ParameterConfigurationSpace.getSingletonConfigurationSpace().getLowerBoundOnSize());
 		assertTrue("Singleton space should have >= 1 configuration ", ParameterConfigurationSpace.getSingletonConfigurationSpace().getLowerBoundOnSize() >= 1);
 		
-		ParameterConfigurationSpace configSpace = new ParameterConfigurationSpace(new StringReader("foo cat { a,b,c} [a]\n"),"<>",Collections.EMPTY_MAP);
+		ParameterConfigurationSpace configSpace = new ParameterConfigurationSpace(new StringReader("foo categorical { a,b,c} [a]\n"),"<>",Collections.EMPTY_MAP);
 		System.out.println("Expect 3 : "+ configSpace.getLowerBoundOnSize());
 		assertTrue("Size should be <= 3", configSpace.getLowerBoundOnSize() <= 3);
 		
-		configSpace = new ParameterConfigurationSpace(new StringReader("foo cat { a,b,c} [a]\n bar cat { d,e,f} [f]"),"<>",Collections.EMPTY_MAP);
+		configSpace = new ParameterConfigurationSpace(new StringReader("foo categorical { a,b,c} [a]\n bar categorical { d,e,f} [f]"),"<>",Collections.EMPTY_MAP);
 		System.out.println("Expect 9 : " +configSpace.getLowerBoundOnSize());
 		assertTrue("Size should be <= 9", configSpace.getLowerBoundOnSize() <= 9);
 		
-		configSpace = new ParameterConfigurationSpace(new StringReader("foo cat { a,b,c} [a]\n bar cat { d,e,f} [f]\n bar | foo in {a}"),"<>",Collections.EMPTY_MAP);
+		configSpace = new ParameterConfigurationSpace(new StringReader("foo categorical { a,b,c} [a]\n bar categorical { d,e,f} [f]\n bar | foo in {a}"),"<>",Collections.EMPTY_MAP);
 		System.out.println("Expect 3 : " + configSpace.getLowerBoundOnSize());
 		assertTrue("Size should be <= 5", configSpace.getLowerBoundOnSize() <= 5);
 		
-		configSpace = new ParameterConfigurationSpace(new StringReader("foo cat { a,b,c} [a]\n bar cat { d,e,f} [f]\n"),"<>",Collections.singletonMap("foo", "a"));
+		configSpace = new ParameterConfigurationSpace(new StringReader("foo categorical { a,b,c} [a]\n bar categorical { d,e,f} [f]\n"),"<>",Collections.singletonMap("foo", "a"));
 		System.out.println("Expect 9 : " + configSpace.getLowerBoundOnSize());
 		
 		assertTrue("Size should be <= 9", configSpace.getLowerBoundOnSize() <= 9);
 		
-		configSpace = new ParameterConfigurationSpace(new StringReader("foo cat { a,b,c} [a]\n bar cat { d,e,f} [f]\n"),"<>",Collections.singletonMap("foo", "b"));
+		configSpace = new ParameterConfigurationSpace(new StringReader("foo categorical { a,b,c} [a]\n bar categorical { d,e,f} [f]\n"),"<>",Collections.singletonMap("foo", "b"));
 		System.out.println("Expect 9 : " + configSpace.getLowerBoundOnSize());
 		assertTrue("Size should be <= 9", configSpace.getLowerBoundOnSize() <= 9);
 		
@@ -1142,29 +1142,29 @@ public class ParamConfigurationTestNewPCS {
 		}
 		
 		
-		configSpace = new ParameterConfigurationSpace(new StringReader("foo cat { a,b,c} [a]\n bar cat { d,e,f} [f]\n {foo = a, bar = d}"),"<>",Collections.EMPTY_MAP);
+		configSpace = new ParameterConfigurationSpace(new StringReader("foo categorical { a,b,c} [a]\n bar categorical { d,e,f} [f]\n {foo = a, bar = d}"),"<>",Collections.EMPTY_MAP);
 		System.out.println("Expect 1 :" + configSpace.getLowerBoundOnSize());
 		assertTrue("Size should be <= 8", configSpace.getLowerBoundOnSize() <= 8);
 		
-		configSpace = new ParameterConfigurationSpace(new StringReader("foo real [0,1][1]\n bar cat { d,e,f} [f]\n"),"<>",Collections.EMPTY_MAP);
+		configSpace = new ParameterConfigurationSpace(new StringReader("foo real [0,1][1]\n bar categorical { d,e,f} [f]\n"),"<>",Collections.EMPTY_MAP);
 		System.out.println("Expect Infinity: " + configSpace.getLowerBoundOnSize());
 		assertTrue("Size should be <= Infinity", configSpace.getLowerBoundOnSize() <= Double.POSITIVE_INFINITY);
 		
 		
-		configSpace = new ParameterConfigurationSpace(new StringReader("foo int [0,1][1]\n bar cat { d,e,f} [f]\n"),"<>",Collections.EMPTY_MAP);
+		configSpace = new ParameterConfigurationSpace(new StringReader("foo integer [0,1][1]\n bar categorical { d,e,f} [f]\n"),"<>",Collections.EMPTY_MAP);
 		System.out.println("Expect 6: " + configSpace.getLowerBoundOnSize());
 		assertTrue("Size should be <= 6", configSpace.getLowerBoundOnSize() <= 6);
 		
-		configSpace = new ParameterConfigurationSpace(new StringReader("foo int [0,9][1]\n bar cat { d,e,f} [f]\n"),"<>",Collections.EMPTY_MAP);
+		configSpace = new ParameterConfigurationSpace(new StringReader("foo integer [0,9][1]\n bar categorical { d,e,f} [f]\n"),"<>",Collections.EMPTY_MAP);
 		System.out.println("Expect 30: " + configSpace.getLowerBoundOnSize());
 		assertTrue("Size should be <= 30", configSpace.getLowerBoundOnSize() <= 30);
 		
-		configSpace = new ParameterConfigurationSpace(new StringReader("foo int [0,9][1]\n bar int [0,9] [1]\n"),"<>",Collections.EMPTY_MAP);
+		configSpace = new ParameterConfigurationSpace(new StringReader("foo integer [0,9][1]\n bar integer [0,9] [1]\n"),"<>",Collections.EMPTY_MAP);
 		System.out.println("Expect 100: " + configSpace.getLowerBoundOnSize());
 		assertTrue("Size should be <= 100", configSpace.getLowerBoundOnSize() <= 100);
 		
 		
-		configSpace = new ParameterConfigurationSpace(new StringReader("foo int [0,9][1]\n bar [0,9] [1]\n"),"<>",Collections.EMPTY_MAP);
+		configSpace = new ParameterConfigurationSpace(new StringReader("foo integer [0,9][1]\n bar [0,9] [1]\n"),"<>",Collections.EMPTY_MAP);
 		System.out.println("Expect Infinity: " + configSpace.getLowerBoundOnSize());
 		assertTrue("Size should be <= Infinity", configSpace.getLowerBoundOnSize() <= Double.POSITIVE_INFINITY);
 	}
@@ -1175,7 +1175,7 @@ public class ParamConfigurationTestNewPCS {
 	 */
 	public void testEmptyParamValue()
 	{
-		StringReader sr = new StringReader("foo cat {\"\",\"test\"} [\"\"]\n");
+		StringReader sr = new StringReader("foo categorical {\"\",\"test\"} [\"\"]\n");
 		
 		ParameterConfigurationSpace configSpace = new ParameterConfigurationSpace(sr, "<>", Collections.EMPTY_MAP);
 		ParameterConfiguration defaultConfig = configSpace.getDefaultConfiguration();
@@ -1199,7 +1199,7 @@ public class ParamConfigurationTestNewPCS {
 	public void testDefaultConfigurationToAndFromString()
 	{
 
-		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("foo cat {a,b,c} [a]\nbar cat {e,d,f} [f]\nbar | foo in { c }");		
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("foo categorical {a,b,c} [a]\nbar categorical {e,d,f} [f]\nbar | foo in { c }");		
 		ParameterConfiguration defaultConfig = configSpace.getDefaultConfiguration();
 		ParameterConfiguration duplicateConfig = configSpace.getParameterConfigurationFromString(defaultConfig.getFormattedParameterString(ParameterStringFormat.NODB_SYNTAX), ParameterStringFormat.NODB_SYNTAX);		
 		
@@ -1214,7 +1214,7 @@ public class ParamConfigurationTestNewPCS {
 	public void testFromStringMissingActiveParam()
 	{
 
-		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("foo cat {a,b,c} [a]\nbar cat{e,d,f} [f]\n cat cat {2,3,4} [2] \nbar | foo in { c }");		
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("foo categorical {a,b,c} [a]\nbar categorical{e,d,f} [f]\n cat categorical {2,3,4} [2] \nbar | foo in { c }");		
 	
 
 		ParameterConfiguration duplicateConfig = configSpace.getParameterConfigurationFromString("-foo 'a' -bar 'e' -cat 2", ParameterStringFormat.NODB_SYNTAX);
@@ -1251,7 +1251,7 @@ public class ParamConfigurationTestNewPCS {
 	public void testFromStringMissingActiveParamContinuous()
 	{
 
-		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("foo cat {a,b,c} [a]\nbar cat{e,d,f} [f]\n cat real [2,4] [2] \nbar | foo in { c }");		
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("foo categorical {a,b,c} [a]\nbar categorical {e,d,f} [f]\n cat real [2,4] [2] \nbar | foo in { c }");		
 	
 		ParameterConfiguration duplicateConfig = configSpace.getParameterConfigurationFromString("-foo 'a' -bar 'e' -cat 2", ParameterStringFormat.NODB_SYNTAX);
 		duplicateConfig = configSpace.getParameterConfigurationFromString("-foo 'a' -bar 'e' -cat 3", ParameterStringFormat.NODB_SYNTAX);
@@ -1284,7 +1284,7 @@ public class ParamConfigurationTestNewPCS {
 	@Test
 	public void testFromStringMissingInactive()
 	{
-		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("foo cat {a,b,c} [a]\nbar cat{e,d,f} [f]\n \nbar | foo in { a }");		
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("foo categorical {a,b,c} [a]\nbar categorical{e,d,f} [f]\n \nbar | foo in { a }");		
 	
 		//==== Parameter value for cat is missing, should tank
 		ParameterConfiguration duplicateConfig = configSpace.getParameterConfigurationFromString("-foo 'b' ", ParameterStringFormat.NODB_SYNTAX);
@@ -1307,7 +1307,7 @@ public class ParamConfigurationTestNewPCS {
 	public void testGenerateForbidden()
 	{
 
-		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("foo cat {a,b,c} [a]\nbar cat{e,d,f} [f]\n cat cat { g,h,i } [h] \n bar | foo in { c } \n { foo=a,bar=d,cat=g} ");		
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("foo categorical {a,b,c} [a]\nbar categorical{e,d,f} [f]\n cat categorical { g,h,i } [h] \n bar | foo in { c } \n { foo=a,bar=d,cat=g} ");		
 		ParameterConfiguration duplicateConfig = configSpace.getParameterConfigurationFromString("-foo 'a' -bar 'd' -cat 'g'", ParameterStringFormat.NODB_SYNTAX);
 		
 		assertTrue("Parameter should be forbidden", duplicateConfig.isForbiddenParameterConfiguration());
@@ -1342,7 +1342,7 @@ public class ParamConfigurationTestNewPCS {
 		//This really isn't a test
 		//Just times it.
 		
-		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("a cat { 1,2} [1]\n b cat { 1,2} [1]\n c cat { 1,2} [1]\n d cat { 1,2} [1]\n e cat { 1,2} [1]\n f cat { 1,2} [1]\n g cat{ 1,2} [1]\n h cat { 1,2} [1]\n i cat { 1,2} [1]\n");
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("a categorical { 1,2} [1]\n b categorical { 1,2} [1]\n c categorical { 1,2} [1]\n d categorical { 1,2} [1]\n e categorical { 1,2} [1]\n f categorical { 1,2} [1]\n g cat{ 1,2} [1]\n h categorical { 1,2} [1]\n i categorical { 1,2} [1]\n");
 		
 		StopWatch t = new AutoStartStopWatch();
 		
@@ -1424,8 +1424,8 @@ public class ParamConfigurationTestNewPCS {
 	public void testWeirdNames()
 	{
 		
-		String weirdPCS = "weirdN>ame cat { true, false} [true]\n"+
-						  "second cat { true, false} [true]\n" + 
+		String weirdPCS = "weirdN>ame categorical { true, false} [true]\n"+
+						  "second categorical { true, false} [true]\n" + 
 						  "second | weirdN>ame in { true}\n";
 				
 		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(weirdPCS);
@@ -1436,13 +1436,13 @@ public class ParamConfigurationTestNewPCS {
 	@Test
 	public void testConditionalPrecedence()
 	{
-		String precendencePCS = "a cat { true, false} [true]\n"+
-								"b cat { true, false} [true]\n"+
-								"c cat { true, false} [true]\n"+
-								"d cat { true, false} [true]\n"+
-								"e cat { true, false} [true]\n"+
-								"f cat { true, false} [true]\n"+
-								"g cat { active} [active]\n"+
+		String precendencePCS = "a categorical { true, false} [true]\n"+
+								"b categorical { true, false} [true]\n"+
+								"c categorical { true, false} [true]\n"+
+								"d categorical { true, false} [true]\n"+
+								"e categorical { true, false} [true]\n"+
+								"f categorical { true, false} [true]\n"+
+								"g categorical { active} [active]\n"+
 								"g | c in {true} && b == true || a == true && d in {true} && e in {true} || f == true";
 				
 		
@@ -1484,8 +1484,8 @@ public class ParamConfigurationTestNewPCS {
 		String pcsFile = "";
 		ParameterConfigurationSpace configSpace = null;
 		
-		pcsFile = "A int [0,10] [5]\n"
-				+ "B int [0,10] [5]\n"
+		pcsFile = "A integer [0,10] [5]\n"
+				+ "B integer [0,10] [5]\n"
 				+ "B | A == 5";
 				
 		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
@@ -1493,8 +1493,8 @@ public class ParamConfigurationTestNewPCS {
 		
 		
 		
-		pcsFile = "A int [0,10] [5]\n"
-				+ "B int [0,10] [5]\n"
+		pcsFile = "A integer [0,10] [5]\n"
+				+ "B integer [0,10] [5]\n"
 				+ "B | A != 5";
 				
 		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
@@ -1519,14 +1519,14 @@ public class ParamConfigurationTestNewPCS {
 				
 		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
 		
-		pcsFile = "A int [0,10] [5]\n"
-				+ "B int [0,10] [5]\n"
+		pcsFile = "A integer [0,10] [5]\n"
+				+ "B integer [0,10] [5]\n"
 				+ "B | A in { 5 } ";
 				
 		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
 		
-		pcsFile = "A int [0,10] [5]\n"
-				+ "B int [0,10] [5]\n"
+		pcsFile = "A integer [0,10] [5]\n"
+				+ "B integer [0,10] [5]\n"
 				+ "B | A in { 6 }";
 				
 		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
@@ -1553,8 +1553,8 @@ public class ParamConfigurationTestNewPCS {
 		
 		
 		
-		pcsFile = "A int [0,10] [5]\n"
-				+ "B int [0,10] [5]\n"
+		pcsFile = "A integer [0,10] [5]\n"
+				+ "B integer [0,10] [5]\n"
 				+ "B | A > 4 ";
 				
 		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
@@ -1562,8 +1562,8 @@ public class ParamConfigurationTestNewPCS {
 		
 		
 		
-		pcsFile = "A int [0,10] [5]\n"
-				+ "B int [0,10] [5]\n"
+		pcsFile = "A integer [0,10] [5]\n"
+				+ "B integer [0,10] [5]\n"
 				+ "B | A > 5";
 				
 		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
@@ -1608,9 +1608,9 @@ public class ParamConfigurationTestNewPCS {
 		try {
 			
 		
-			String pcsFile = "A int [0,10] [5]\n"
-				+ "B int [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n"
+			String pcsFile = "A integer [0,10] [5]\n"
+				+ "B integer [0,10] [5]\n"
+				+ "C categorical {true, false} [true]\n"
 				+ "B | A == 5 | C == true";
 		
 		
@@ -1624,9 +1624,9 @@ public class ParamConfigurationTestNewPCS {
 		try {
 			
 			
-			String pcsFile = "A int [0,10] [5]\n"
-				+ "B int [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n"
+			String pcsFile = "A integer [0,10] [5]\n"
+				+ "B integer [0,10] [5]\n"
+				+ "C categorical {true, false} [true]\n"
 				+ "B | A == 5 \n"
 				+ "B | C == 6\n";
 		
@@ -1643,9 +1643,9 @@ public class ParamConfigurationTestNewPCS {
 		try {
 			
 			
-			String pcsFile = "A int [0,10] [5]\n"
-				+ "B int [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n"
+			String pcsFile = "A integer [0,10] [5]\n"
+				+ "B integer [0,10] [5]\n"
+				+ "C categorical {true, false} [true]\n"
 				+ "B | A == 5 & C == true";
 		
 		
@@ -1660,9 +1660,9 @@ public class ParamConfigurationTestNewPCS {
 		
 		
 		try {	
-			String pcsFile = "A int [0,10] [5]\n"
-				+ "B int [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n"
+			String pcsFile = "A integer [0,10] [5]\n"
+				+ "B integer [0,10] [5]\n"
+				+ "C categorical {true, false} [true]\n"
 				+ "B | A == 5 5";
 		
 		
@@ -1676,9 +1676,9 @@ public class ParamConfigurationTestNewPCS {
 		
 	
 		try {	
-			String pcsFile = "A int [0,10] [5]\n"
-				+ "B int [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n"
+			String pcsFile = "A integer [0,10] [5]\n"
+				+ "B integer [0,10] [5]\n"
+				+ "C categorical {true, false} [true]\n"
 				+ "B  A == 5 ";
 		
 		
@@ -1693,10 +1693,10 @@ public class ParamConfigurationTestNewPCS {
 		
 
 		try {	
-			String pcsFile = "A int [0,10] [5]\n"
-				+ "B int [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n"
-				+ "C cat {a,b,c} [a] ";
+			String pcsFile = "A integer [0,10] [5]\n"
+				+ "B integer [0,10] [5]\n"
+				+ "C categorical {true, false} [true]\n"
+				+ "C categorical {a,b,c} [a] ";
 		
 			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
 			fail("Expected Exception");
@@ -1707,9 +1707,9 @@ public class ParamConfigurationTestNewPCS {
 		}
 	
 		try {	
-			String pcsFile = "A int [0,10] [5]\n"
-				+ "B int [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n"
+			String pcsFile = "A integer [0,10] [5]\n"
+				+ "B integer [0,10] [5]\n"
+				+ "C categorical {true, false} [true]\n"
 				+ "C | A > -1";
 		
 			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
@@ -1723,9 +1723,9 @@ public class ParamConfigurationTestNewPCS {
 		}
 	
 		try {	
-			String pcsFile = "A int [0,10] [-1]\n"
-				+ "B int [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n";
+			String pcsFile = "A integer [0,10] [-1]\n"
+				+ "B integer [0,10] [5]\n"
+				+ "C categorical {true, false} [true]\n";
 		
 			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
 			fail("Expected Exception");
@@ -1738,9 +1738,9 @@ public class ParamConfigurationTestNewPCS {
 		}
 	
 		try {	
-			String pcsFile = "A int [0,10] [0.5]\n"
-				+ "B int [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n";
+			String pcsFile = "A integer [0,10] [0.5]\n"
+				+ "B integer [0,10] [5]\n"
+				+ "C categorical {true, false} [true]\n";
 		
 			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
 			fail("Expected Exception");
@@ -1754,9 +1754,9 @@ public class ParamConfigurationTestNewPCS {
 	
 
 		try {	
-			String pcsFile = "A int [0,10] [2]\n"
-				+ "B int [100,10] [5]\n"
-				+ "C cat {true, false} [true]\n";
+			String pcsFile = "A integer [0,10] [2]\n"
+				+ "B integer [100,10] [5]\n"
+				+ "C categorical {true, false} [true]\n";
 		
 			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
 			fail("Expected Exception");
@@ -1771,9 +1771,9 @@ public class ParamConfigurationTestNewPCS {
 	
 
 		try {	
-			String pcsFile = "A int [0,10] [2]\n"
-				+ "B int [-1,10] [5] log\n"
-				+ "C cat {true, false} [true]\n";
+			String pcsFile = "A integer [0,10] [2]\n"
+				+ "B integer [-1,10] [5] log\n"
+				+ "C categorical {true, false} [true]\n";
 		
 			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
 			fail("Expected Exception");
@@ -1791,9 +1791,9 @@ public class ParamConfigurationTestNewPCS {
 		
 		
 		try {	
-			String pcsFile = "A  cat {} []\n"
-				+ "B int [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n";
+			String pcsFile = "A  categorical {} []\n"
+				+ "B integer [0,10] [5]\n"
+				+ "C categorical {true, false} [true]\n";
 		
 			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
 			fail("Expected Exception");
@@ -1808,9 +1808,9 @@ public class ParamConfigurationTestNewPCS {
 		
 		
 		try {	
-			String pcsFile = "A cat {a,b,   a    } [b]\n"
-				+ "B int [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n";
+			String pcsFile = "A categorical {a,b,   a    } [b]\n"
+				+ "B integer [0,10] [5]\n"
+				+ "C categorical {true, false} [true]\n";
 		
 			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
 			fail("Expected Exception");
@@ -1824,9 +1824,9 @@ public class ParamConfigurationTestNewPCS {
 		
 		
 		try {	
-			String pcsFile = "A cat {a,b } [b]\n"
-				+ "B int [0,10.5] [5]\n"
-				+ "C cat {true, false} [true]\n";
+			String pcsFile = "A categorical {a,b } [b]\n"
+				+ "B integer [0,10.5] [5]\n"
+				+ "C categorical {true, false} [true]\n";
 		
 			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
 			fail("Expected Exception");
@@ -1842,9 +1842,9 @@ public class ParamConfigurationTestNewPCS {
 		
 		
 		try {	
-			String pcsFile = "A cat {a,b,} [a]\n"
-				+ "B int [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n"
+			String pcsFile = "A categorical {a,b,} [a]\n"
+				+ "B integer [0,10] [5]\n"
+				+ "C categorical {true, false} [true]\n"
 				+ "C | A in {a,a,b} && B > 2";
 		
 			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
@@ -1860,9 +1860,9 @@ public class ParamConfigurationTestNewPCS {
 		
 		
 		try {	
-			String pcsFile = "A cat {a,b,} [a]\n"
-				+ "B int [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n"
+			String pcsFile = "A categorical {a,b,} [a]\n"
+				+ "B integer [0,10] [5]\n"
+				+ "C categorical {true, false} [true]\n"
 				+ "C | A in {a,b} && B > 2\n"
 				+ "B | C in {true}";
 		
@@ -1882,7 +1882,7 @@ public class ParamConfigurationTestNewPCS {
 		try {
 			String pcsFile = "A {a,b,} [a]\n"
 				+ "B [0,10] [5]i\n"
-				+ "C cat {true, false} [true]\n"
+				+ "C categorical {true, false} [true]\n"
 				+ "C | A in {a,b} || A in {a}";
 		
 			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
@@ -1917,8 +1917,8 @@ public class ParamConfigurationTestNewPCS {
 		
 
 		try {
-			String pcsFile = "A cat {a,b} [a]\n"
-				+ "B ord { 0,1,2,3,5,10} [5]\n"
+			String pcsFile = "A categorical {a,b} [a]\n"
+				+ "B ordinal { 0,1,2,3,5,10} [5]\n"
 				+ "A | B > 6";
 		
 			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
@@ -1936,8 +1936,8 @@ public class ParamConfigurationTestNewPCS {
 		
 		
 		try {
-			String pcsFile = "A cat {a,b} [a]\n"
-				+ "B ord { 0,1,2,3,5,10} [5]\n"
+			String pcsFile = "A categorical {a,b} [a]\n"
+				+ "B ordinal { 0,1,2,3,5,10} [5]\n"
 				+ "A | B in {0,1,2,3,5,7,10}";
 		
 			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
@@ -1955,9 +1955,9 @@ public class ParamConfigurationTestNewPCS {
 		
 		
 		try {
-			String pcsFile = "A cat {a,b} [a]\n"
+			String pcsFile = "A categorical {a,b} [a]\n"
 			    + " C real [0.01,1] [0.5] log\n"
-				+ "B ord { 0,1,2,3,5,10} [5]\n"
+				+ "B ordinal { 0,1,2,3,5,10} [5]\n"
 				+ "A | C < 0.9 && B in {0,1,2,3,5,7,10}";
 		
 			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
@@ -1974,9 +1974,9 @@ public class ParamConfigurationTestNewPCS {
 		}
 		
 		try {
-			String pcsFile = "A cat {a,b} [a]\n"
+			String pcsFile = "A categorical {a,b} [a]\n"
 			    + " C real [0.01,1] [0.5] log\n"
-				+ "B ord { 0,1,2,3,5,10} [5]\n"
+				+ "B ordinal { 0,1,2,3,5,10} [5]\n"
 				+ "A | C < 1.1";
 		
 			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
@@ -1997,9 +1997,9 @@ public class ParamConfigurationTestNewPCS {
 		
 
 		try {
-			String pcsFile = "A cat {a,b} [a]\n"
+			String pcsFile = "A categorical {a,b} [a]\n"
 			    + " C real [0.01,1] [0.5] log\n"
-				+ "B cat { 0,1,2,3,5,10, abuetnh} [5]\n"
+				+ "B categorical { 0,1,2,3,5,10, abuetnh} [5]\n"
 				+ "A | B < abuetnh";
 		
 			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
@@ -2019,7 +2019,7 @@ public class ParamConfigurationTestNewPCS {
 			String pcsFile = "sp-test real [0,10][0] \n"
 					+ "ab real [0,10] [0]\n"
 					+ "_de real [0,10] [0]\n"
-					+ "noeth cat { 24, 59, dg, af, unth-oeuh } [24]\n"
+					+ "noeth categorical { 24, 59, dg, af, unth-oeuh } [24]\n"
 					+ "{ (sp-test-3)(sp-test+3)(sp-test+1) > 0 }";
 			    
 		
@@ -2038,13 +2038,13 @@ public class ParamConfigurationTestNewPCS {
 		
 		
 		try {
-			String pcsFile ="abc cat { off, 1, on, 2, yes, 3, no } [on]\n"
-					+		"def ord { off, 1, on, 2, yes, 3, no } [on]\n"
-					+		"on cat { 1, 2 } [1]\n"
-					+ "maybe cat { 1,2} [2] \n"
-					+ "off cat { 1 , 2} [1]\n"
+			String pcsFile ="abc categorical { off, 1, on, 2, yes, 3, no } [on]\n"
+					+		"def ordinal { off, 1, on, 2, yes, 3, no } [on]\n"
+					+		"on categorical { 1, 2 } [1]\n"
+					+ "maybe categorical { 1,2} [2] \n"
+					+ "off categorical { 1 , 2} [1]\n"
 					+ "{abc == off && on < 2}";
-					//+		"heur_order cat { heur1then2, heur2then1 } [heur1then2]";
+					//+		"heur_order categorical { heur1then2, heur2then1 } [heur1then2]";
 					//+		"heur_order | heur1 == on && heur2 == on";
 		
 			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
@@ -2069,9 +2069,9 @@ public class ParamConfigurationTestNewPCS {
 		
 		
 		try {
-			String pcsFile ="heur1 cat { off, on } [on]"
-					+		"heur2 cat { off, on } [on]";
-					//+		"heur_order cat { heur1then2, heur2then1 } [heur1then2]";
+			String pcsFile ="heur1 categorical { off, on } [on]"
+					+		"heur2 categorical { off, on } [on]";
+					//+		"heur_order categorical { heur1then2, heur2then1 } [heur1then2]";
 					//+		"heur_order | heur1 == on && heur2 == on";
 		
 			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
@@ -2088,8 +2088,8 @@ public class ParamConfigurationTestNewPCS {
 		}
 		
 		try {
-			String pcsFile ="heur1 ord { 10, 1 , 0} [1]\n {heur1 > 1}";
-					//+		"heur_order cat { heur1then2, heur2then1 } [heur1then2]";
+			String pcsFile ="heur1 ordinal { 10, 1 , 0} [1]\n {heur1 > 1}";
+					//+		"heur_order categorical { heur1then2, heur2then1 } [heur1then2]";
 					//+		"heur_order | heur1 == on && heur2 == on";
 		
 			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
@@ -2106,15 +2106,15 @@ public class ParamConfigurationTestNewPCS {
 		}
 		
 		try {
-			String pcsFile ="heur1 ord { a, b} [a]\n"
-					+ "heur2 ord { b, c,d, e } [b]\n"
-					+ "heur3 cat { c, d,d1,e,f,z0,a0} [c]\n"
-					+ "heur4 ord {d, e} [d]\n"
-					+ "heur5 ord {d0, d} [d]\n"
-					+ "heur6 ord {e, f} [e]\n"
-					+ "heur7 ord {d, a} [a]\n"
+			String pcsFile ="heur1 ordinal { a, b} [a]\n"
+					+ "heur2 ordinal { b, c,d, e } [b]\n"
+					+ "heur3 categorical { c, d,d1,e,f,z0,a0} [c]\n"
+					+ "heur4 ordinal {d, e} [d]\n"
+					+ "heur5 ordinal {d0, d} [d]\n"
+					+ "heur6 ordinal {e, f} [e]\n"
+					+ "heur7 ordinal {d, a} [a]\n"
 					+ "\n {heur1 > b}";
-					//+		"heur_order cat { heur1then2, heur2then1 } [heur1then2]";
+					//+		"heur_order categorical { heur1then2, heur2then1 } [heur1then2]";
 					//+		"heur_order | heur1 == on && heur2 == on";
 		
 			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
@@ -2132,14 +2132,14 @@ public class ParamConfigurationTestNewPCS {
 		
 		
 		try {
-			String pcsFile ="heur1 ord { a, 1} [a]\n"
-					+ "heur2 ord { 2, b } [b]\n"
-					+ "heur3 ord { b, 3 } [b]\n"
-					+ "heur4 ord { 4, c } [c]\n"
-					+ "heur5 ord { c, a } [c]\n"
+			String pcsFile ="heur1 ordinal { a, 1} [a]\n"
+					+ "heur2 ordinal { 2, b } [b]\n"
+					+ "heur3 ordinal { b, 3 } [b]\n"
+					+ "heur4 ordinal { 4, c } [c]\n"
+					+ "heur5 ordinal { c, a } [c]\n"
 					
 					+ "\n {heur1 > 5}";
-					//+		"heur_order cat { heur1then2, heur2then1 } [heur1then2]";
+					//+		"heur_order categorical { heur1then2, heur2then1 } [heur1then2]";
 					//+		"heur_order | heur1 == on && heur2 == on";
 		
 			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
@@ -2160,7 +2160,7 @@ public class ParamConfigurationTestNewPCS {
 	
 		/*
 		try {	
-			String pcsFile = "A ord { LOW, MEDIUM, HIGH} [LOW]\n";
+			String pcsFile = "A ordinal { LOW, MEDIUM, HIGH} [LOW]\n";
 				
 		
 			ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
@@ -2189,31 +2189,31 @@ public class ParamConfigurationTestNewPCS {
 		String pcsFile = "";
 		ParameterConfigurationSpace configSpace = null;
 		
-		pcsFile = "A int [0,10] [5]\n"
-				+ "B int [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n"
+		pcsFile = "A integer [0,10] [5]\n"
+				+ "B integer [0,10] [5]\n"
+				+ "C categorical {true, false} [true]\n"
 				+ "B | A == 5 && C == true";
 				
 		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
 		
-		pcsFile = "A int [0,10] [5]\n"
-				+ "B int [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n"
+		pcsFile = "A integer [0,10] [5]\n"
+				+ "B integer [0,10] [5]\n"
+				+ "C categorical {true, false} [true]\n"
 				+ "B | A == 5 || C == true";
 				
 		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
 		
-		pcsFile = "A int [0,10] [5]\n"
-				+ "B int [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n"
+		pcsFile = "A integer [0,10] [5]\n"
+				+ "B integer [0,10] [5]\n"
+				+ "C categorical {true, false} [true]\n"
 				+ "B | A == 6 || C == true";
 				
 		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
 		
 		
-		pcsFile = "A int [0,10] [5]\n"
-				+ "B int [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n"
+		pcsFile = "A integer [0,10] [5]\n"
+				+ "B integer [0,10] [5]\n"
+				+ "C categorical {true, false} [true]\n"
 				+ "B | A == 5 || C == false";
 				
 		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
@@ -2221,25 +2221,25 @@ public class ParamConfigurationTestNewPCS {
 		
 		
 		
-		pcsFile = "A int [0,10] [5]\n"
-				+ "B int [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n"
+		pcsFile = "A integer [0,10] [5]\n"
+				+ "B integer [0,10] [5]\n"
+				+ "C categorical {true, false} [true]\n"
 				+ "B | A != 5 && C == true";
 				
 		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
 		
 		
-		pcsFile = "A int [0,10] [5]\n"
-				+ "B int [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n"
+		pcsFile = "A integer [0,10] [5]\n"
+				+ "B integer [0,10] [5]\n"
+				+ "C categorical {true, false} [true]\n"
 				+ "B | A == 5 && C == false";
 				
 		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
 		
 		
-		pcsFile = "A int [0,10] [5]\n"
-				+ "B int [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n"
+		pcsFile = "A integer [0,10] [5]\n"
+				+ "B integer [0,10] [5]\n"
+				+ "C categorical {true, false} [true]\n"
 				+ "B | A == 5 && C != true";
 				
 		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
@@ -2258,7 +2258,7 @@ public class ParamConfigurationTestNewPCS {
 		
 		pcsFile = "A real [0,10] [5]\n"
 				+ "B real [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n"
+				+ "C categorical {true, false} [true]\n"
 				+ "B | A == 5 && C == true";
 				
 		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
@@ -2266,7 +2266,7 @@ public class ParamConfigurationTestNewPCS {
 		
 		pcsFile = "A real [0,10] [5]\n"
 				+ "B real [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n"
+				+ "C categorical {true, false} [true]\n"
 				+ "B | A == 5 || C == true";
 				
 		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
@@ -2274,7 +2274,7 @@ public class ParamConfigurationTestNewPCS {
 		
 		pcsFile = "A real [0,10] [5]\n"
 				+ "B real [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n"
+				+ "C categorical {true, false} [true]\n"
 				+ "B | A == 6 || C == true";
 				
 		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
@@ -2282,7 +2282,7 @@ public class ParamConfigurationTestNewPCS {
 		
 		pcsFile = "A real [0,10] [5]\n"
 				+ "B real [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n"
+				+ "C categorical {true, false} [true]\n"
 				+ "B | A == 5 || C == false";
 				
 		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
@@ -2293,7 +2293,7 @@ public class ParamConfigurationTestNewPCS {
 		
 		pcsFile = "A real [0,10] [5]\n"
 				+ "B real [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n"
+				+ "C categorical {true, false} [true]\n"
 				+ "B | A != 5 && C == true";
 				
 		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
@@ -2301,7 +2301,7 @@ public class ParamConfigurationTestNewPCS {
 
 		pcsFile = "A real [0,10] [5]\n"
 				+ "B real [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n"
+				+ "C categorical {true, false} [true]\n"
 				+ "B | A == 5 && C == false";
 				
 		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
@@ -2311,7 +2311,7 @@ public class ParamConfigurationTestNewPCS {
 
 		pcsFile = "A real [0,10] [5]\n"
 				+ "B real [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n"
+				+ "C categorical {true, false} [true]\n"
 				+ "B | A != 5 || C != true";
 				
 		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
@@ -2321,7 +2321,7 @@ public class ParamConfigurationTestNewPCS {
 
 		pcsFile = "A real [0,10] [5]\n"
 				+ "B real [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n"
+				+ "C categorical {true, false} [true]\n"
 				+ "B | A != 5 || C == false";
 				
 		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
@@ -2339,31 +2339,31 @@ public class ParamConfigurationTestNewPCS {
 		/**
 		 * Integer Set tests
 		 */
-		pcsFile = "A int [0,10] [5]\n"
-				+ "B int [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n"
+		pcsFile = "A integer [0,10] [5]\n"
+				+ "B integer [0,10] [5]\n"
+				+ "C categorical {true, false} [true]\n"
 				+ "B | C == true && A in { 5 } ";
 				
 		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
 		
 		
-		pcsFile = "A int [0,10] [5]\n"
-				+ "B int [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n"
+		pcsFile = "A integer [0,10] [5]\n"
+				+ "B integer [0,10] [5]\n"
+				+ "C categorical {true, false} [true]\n"
 				+ "B | C == false || A in { 5 } ";
 				
 		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
 		
-		pcsFile = "A int [0,10] [5]\n"
-				+ "B int [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n"
+		pcsFile = "A integer [0,10] [5]\n"
+				+ "B integer [0,10] [5]\n"
+				+ "C categorical {true, false} [true]\n"
 				+ "B | C == true || A in { 6 } ";
 				
 		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
 		
-		pcsFile = "A int [0,10] [5]\n"
-				+ "B int [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n"
+		pcsFile = "A integer [0,10] [5]\n"
+				+ "B integer [0,10] [5]\n"
+				+ "C categorical {true, false} [true]\n"
 				+ "B | A in { 6 } || C != false";
 				
 		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
@@ -2372,33 +2372,33 @@ public class ParamConfigurationTestNewPCS {
 		
 	
 		
-		pcsFile = "A int [0,10] [5]\n"
-				+ "B int [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n"
+		pcsFile = "A integer [0,10] [5]\n"
+				+ "B integer [0,10] [5]\n"
+				+ "C categorical {true, false} [true]\n"
 				+ "B | A in { 6 } && C == true";
 				
 		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
 	
 
-		pcsFile = "A int [0,10] [5]\n"
-				+ "B int [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n"
+		pcsFile = "A integer [0,10] [5]\n"
+				+ "B integer [0,10] [5]\n"
+				+ "C categorical {true, false} [true]\n"
 				+ "B | A in { 5 } && C == false";
 				
 		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
 		
 
-		pcsFile = "A int [0,10] [5]\n"
-				+ "B int [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n"
+		pcsFile = "A integer [0,10] [5]\n"
+				+ "B integer [0,10] [5]\n"
+				+ "C categorical {true, false} [true]\n"
 				+ "B | A in { 6 } || C == false";
 				
 		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
 		
 
-		pcsFile = "A int [0,10] [5]\n"
-				+ "B int [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n"
+		pcsFile = "A integer [0,10] [5]\n"
+				+ "B integer [0,10] [5]\n"
+				+ "C categorical {true, false} [true]\n"
 				+ "B | C != true || A in { 6 }";
 				
 		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
@@ -2411,7 +2411,7 @@ public class ParamConfigurationTestNewPCS {
 
 		pcsFile = "A real [0,10] [5]\n"
 				+ "B real [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n"
+				+ "C categorical {true, false} [true]\n"
 				+ "B | C == true && A in { 5 }";
 				
 		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
@@ -2419,7 +2419,7 @@ public class ParamConfigurationTestNewPCS {
 
 		pcsFile = "A real [0,10] [5]\n"
 				+ "B real [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n"
+				+ "C categorical {true, false} [true]\n"
 				+ "B | C == false || A in { 5 }";
 				
 		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
@@ -2429,7 +2429,7 @@ public class ParamConfigurationTestNewPCS {
 
 		pcsFile = "A real [0,10] [5]\n"
 				+ "B real [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n"
+				+ "C categorical {true, false} [true]\n"
 				+ "B | C == true || A in { 6 }";
 				
 		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
@@ -2439,7 +2439,7 @@ public class ParamConfigurationTestNewPCS {
 
 		pcsFile = "A real [0,10] [5]\n"
 				+ "B real [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n"
+				+ "C categorical {true, false} [true]\n"
 				+ "B | A in { 6 } || C != false";
 				
 		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
@@ -2448,21 +2448,21 @@ public class ParamConfigurationTestNewPCS {
 		
 		pcsFile = "A real [0,10] [5]\n"
 				+ "B real [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n"
+				+ "C categorical {true, false} [true]\n"
 				+ "B | A in { 6 } && C == true";
 				
 		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
 		
 		pcsFile = "A real [0,10] [5]\n"
 				+ "B real [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n"
+				+ "C categorical {true, false} [true]\n"
 				+ "B | A in { 6 } || C == false";
 				
 		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
 		
 		pcsFile = "A real [0,10] [5]\n"
 				+ "B real [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n"
+				+ "C categorical {true, false} [true]\n"
 				+ "B | A in { 6 } || C != true";
 				
 		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
@@ -2470,7 +2470,7 @@ public class ParamConfigurationTestNewPCS {
 		
 		pcsFile = "A real [0,10] [5]\n"
 				+ "B real [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n"
+				+ "C categorical {true, false} [true]\n"
 				+ "B | A in { 6 } && C != false";
 				
 		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
@@ -2480,17 +2480,17 @@ public class ParamConfigurationTestNewPCS {
 		
 		
 		
-		pcsFile = "A int [0,10] [5]\n"
-				+ "B int [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n"
+		pcsFile = "A integer [0,10] [5]\n"
+				+ "B integer [0,10] [5]\n"
+				+ "C categorical {true, false} [true]\n"
 				+ "B | A > 4 && C == true ";
 				
 		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
 		
 		
-		pcsFile = "A int [0,10] [5]\n"
-				+ "B int [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n"
+		pcsFile = "A integer [0,10] [5]\n"
+				+ "B integer [0,10] [5]\n"
+				+ "C categorical {true, false} [true]\n"
 				+ "B | A > 3.5 || C == false ";
 				
 		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
@@ -2498,18 +2498,18 @@ public class ParamConfigurationTestNewPCS {
 		
 		
 		
-		pcsFile = "A int [0,10] [5]\n"
-				+ "B int [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n"
+		pcsFile = "A integer [0,10] [5]\n"
+				+ "B integer [0,10] [5]\n"
+				+ "C categorical {true, false} [true]\n"
 				+ "B | A > 5 && C == false";
 				
 		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
 		
 		
 		
-		pcsFile = "A int [0,10] [5]\n"
-				+ "B int [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n"
+		pcsFile = "A integer [0,10] [5]\n"
+				+ "B integer [0,10] [5]\n"
+				+ "C categorical {true, false} [true]\n"
 				+ "B | A > 6 && C == true";
 				
 		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
@@ -2518,7 +2518,7 @@ public class ParamConfigurationTestNewPCS {
 		
 		pcsFile = "A real [0,10] [5]\n"
 				+ "B real [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n"
+				+ "C categorical {true, false} [true]\n"
 				+ "B | A < 6 && C == true ";
 				
 		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
@@ -2526,7 +2526,7 @@ public class ParamConfigurationTestNewPCS {
 		
 		pcsFile = "A real [0,10] [5]\n"
 				+ "B real [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n"
+				+ "C categorical {true, false} [true]\n"
 				+ "B | A < 5.5 || C == false ";
 				
 		assertTrue("Expected that B would be active", checkWhetherBIsActive(pcsFile));
@@ -2537,7 +2537,7 @@ public class ParamConfigurationTestNewPCS {
 		
 		pcsFile = "A real [0,10] [5]\n"
 				+ "B real [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n"
+				+ "C categorical {true, false} [true]\n"
 				+ "B | A < 5 && C == false";
 				
 		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
@@ -2547,7 +2547,7 @@ public class ParamConfigurationTestNewPCS {
 		
 		pcsFile = "A real [0,10] [5]\n"
 				+ "B real [0,10] [5]\n"
-				+ "C cat {true, false} [true]\n"
+				+ "C categorical {true, false} [true]\n"
 				+ "B | A < 4 || C in { false} ";
 				
 		assertFalse("Expected that B would NOT be active", checkWhetherBIsActive(pcsFile));
@@ -3020,14 +3020,14 @@ public class ParamConfigurationTestNewPCS {
 					   + "d [1, 10] [1] \n"
 					   + "e {1,2,3,4,5,6,7,8,9,10} [1]\n"
 					   + "e2 {1,2,3,4,5,6,7,8,9,10} [1]\n"
-					   + "f int [1,10] [1] \n"
-					   + "g int [1 ,10] [1] log \n"
+					   + "f integer [1,10] [1] \n"
+					   + "g integer [1 ,10] [1] log \n"
 					   + "h real [1, 10] [1] \n"
 					   + "i real [1 ,10] [1] log\n"
 					   + "j real [1 ,10] [1]log\n"
-					   + "k int [1 ,10] [1]log\n"
-					   + "l cat {1,2,3,4,5,6,7,8,9,10} [1] \n"
-					   + "m ord { 1,2,3, 4, 5, 6 ,7 ,8, 9, 10} [1]\n"
+					   + "k integer [1 ,10] [1]log\n"
+					   + "l categorical {1,2,3,4,5,6,7,8,9,10} [1] \n"
+					   + "m ordinal { 1,2,3, 4, 5, 6 ,7 ,8, 9, 10} [1]\n"
 					   + "\n"
 					   +"\n"
 					   + "\n"
@@ -3101,9 +3101,9 @@ public class ParamConfigurationTestNewPCS {
 	public void testForbiddenClassic()
 	{
 		String pcsFile = "a real [0,100] [50]\n"
-				+ "b int [0,100] [50]\n"
-				+ "c ord { 0, 25 , 50, 75, 100} [50]\n"
-				+ "d cat { 0, 25 , 50, 75, 100} [50]\n"
+				+ "b integer [0,100] [50]\n"
+				+ "c ordinal { 0, 25 , 50, 75, 100} [50]\n"
+				+ "d categorical { 0, 25 , 50, 75, 100} [50]\n"
 				+ "{a = 25}\n"
 				+ "{b = 25}\n"
 				+ "{c = 25}\n"
@@ -3168,9 +3168,9 @@ public class ParamConfigurationTestNewPCS {
 	public void testForbiddenNew()
 	{
 		String pcsFile = "a real [0,100] [50]\n"
-				+ "b int [0,100] [50]\n"
-				+ "c ord { 0, 25 , 50, 75, 100} [50]\n"
-				+ "d cat { 0, 25 , 50, 75, 100} [50]\n"
+				+ "b integer [0,100] [50]\n"
+				+ "c ordinal { 0, 25 , 50, 75, 100} [50]\n"
+				+ "d categorical { 0, 25 , 50, 75, 100} [50]\n"
 				+ "{a == 25}\n"
 				+ "{b == 25}\n"
 				+ "{c == 25}\n"
@@ -3239,8 +3239,8 @@ public class ParamConfigurationTestNewPCS {
 	@Test
 	public void testOrdinalValues()
 	{
-		String pcsFile = "priority ord { LOW, MEDIUM, HIGH } [MEDIUM]\n" +
-				"temp ord { COLD, COOL, MILD, WARM, HOT} [HOT]\n" 
+		String pcsFile = "priority ordinal { LOW, MEDIUM, HIGH } [MEDIUM]\n" +
+				"temp ordinal { COLD, COOL, MILD, WARM, HOT} [HOT]\n" 
 				+ "temp | priority == MEDIUM\n" 
 				+ "{priority = LOW}";
 		
@@ -3273,8 +3273,8 @@ public class ParamConfigurationTestNewPCS {
 		}
 		
 		
-		pcsFile = "priority ord { LOW, MEDIUM, HIGH } [MEDIUM]\n" +
-					"temp ord { COLD, COOL, MILD, WARM, HOT} [HOT]\n" 
+		pcsFile = "priority ordinal { LOW, MEDIUM, HIGH } [MEDIUM]\n" +
+					"temp ordinal { COLD, COOL, MILD, WARM, HOT} [HOT]\n" 
 					+ "temp | priority > LOW\n";
 			
 		configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
@@ -3296,8 +3296,8 @@ public class ParamConfigurationTestNewPCS {
 			
 		}
 		
-		//pcsFile = "temp ord { ABSOLUTE_ZERO, COLD, COOL, MILD, WARM, HOT, BOILING } [MILD]";
-		pcsFile = "temp int [1,7] [4]";
+		//pcsFile = "temp ordinal { ABSOLUTE_ZERO, COLD, COOL, MILD, WARM, HOT, BOILING } [MILD]";
+		pcsFile = "temp integer [1,7] [4]";
 		
 		configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
 		
@@ -3307,8 +3307,8 @@ public class ParamConfigurationTestNewPCS {
 		}
 		
 		
-		pcsFile = "priority ord { LOW, MEDIUM, HIGH } [MEDIUM]\n" +
-				  "temp ord { COLD, COOL, MILD, WARM, HOT} [HOT]\n" 
+		pcsFile = "priority ordinal { LOW, MEDIUM, HIGH } [MEDIUM]\n" +
+				  "temp ordinal { COLD, COOL, MILD, WARM, HOT} [HOT]\n" 
 				+ "{ priority > MEDIUM && temp <= WARM }";
 		
 		configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
@@ -3328,10 +3328,10 @@ public class ParamConfigurationTestNewPCS {
 		}
 
 		
-		pcsFile = "x ord { 1,4, 16, 64, 256, 1024, INFINITY} [4]\n"
-				+ "y ord { 0, 1, 10, 100, 1000, INFINITY } [10]\n"
-				+ "z cat { 1, 4, 10 , 16, 64, INFINITY } [4] \n"
-				+ "priority ord {0, LOW, MEDIUM, HIGH,INFINITY } [MEDIUM]\n "
+		pcsFile = "x ordinal { 1,4, 16, 64, 256, 1024, INFINITY} [4]\n"
+				+ "y ordinal { 0, 1, 10, 100, 1000, INFINITY } [10]\n"
+				+ "z categorical { 1, 4, 10 , 16, 64, INFINITY } [4] \n"
+				+ "priority ordinal {0, LOW, MEDIUM, HIGH,INFINITY } [MEDIUM]\n "
 				+ "boundary real [1,100] [10] log\n"
 				+ "{ x >= y }\n"
 				+ "{ z == INFINITY && y == INFINITY && x > 128 }\n"
@@ -3455,22 +3455,22 @@ public class ParamConfigurationTestNewPCS {
 	{
 		
 		
-		String[] pcsExamples = {"@1:loops cat { common, distinct, shared, no} [no]\n",
-								"DS cat {TinyDataStructure, FastDataStructure}[TinyDataStructure]\n",
-								"random-variable-frequency cat {0, 0.05, 0.1, 0.2} [0.05]",
-								"annealing-temperature ord {cold, cool, medium, warm, hot} [medium]",
-								"alpha-heuristic ord { 1, 10, 100, 1000, INFINITE } [1]",
+		String[] pcsExamples = {"@1:loops categorical { common, distinct, shared, no} [no]\n",
+								"DS categorical {TinyDataStructure, FastDataStructure}[TinyDataStructure]\n",
+								"random-variable-frequency categorical {0, 0.05, 0.1, 0.2} [0.05]",
+								"annealing-temperature ordinal {cold, cool, medium, warm, hot} [medium]",
+								"alpha-heuristic ordinal { 1, 10, 100, 1000, INFINITE } [1]",
 								"sp-rand-var-dec-scaling real [0.3, 1.1] [1]",
-								"mult-factor int [2, 15] [5]",
+								"mult-factor integer [2, 15] [5]",
 								"DLSc real [0.00001, 0.1] [0.01] log",
-								"first-restart int [10, 1000] [100] log",
-								"heur1 cat { off, on } [on]\n"
-								+		"heur2 cat { off, on } [on]\n"
-								+		"heur_order cat { heur1then2, heur2then1 } [heur1then2]\n"
+								"first-restart integer [10, 1000] [100] log",
+								"heur1 categorical { off, on } [on]\n"
+								+		"heur2 categorical { off, on } [on]\n"
+								+		"heur_order categorical { heur1then2, heur2then1 } [heur1then2]\n"
 								+		"heur_order | heur1 == on && heur2 == on",
 								"temperature real [-273.15, 100] [10]\n"
 								+"rain real [0, 200] [0]\n"
-								+"gloves ord { none, yarn, leather, gortex } [none]\n"
+								+"gloves ordinal { none, yarn, leather, gortex } [none]\n"
 								+"gloves | rain > 0 || temperature < 5"
 		};
 		
@@ -3484,7 +3484,7 @@ public class ParamConfigurationTestNewPCS {
 			System.out.println(configSpace.getDefaultConfiguration().getFormattedParameterString());
 		}
 		
-		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("first-restart int [10, 1000] [100] log");
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString("first-restart integer [10, 1000] [100] log");
 		
 		int matches = 0;
 		
@@ -3504,7 +3504,7 @@ public class ParamConfigurationTestNewPCS {
 	@Test(expected=ParameterConfigurationLockedException.class)
 	public void testLock()
 	{
-		String pcsFile = "test cat { a, b, d } [b]\n";
+		String pcsFile = "test categorical { a, b, d } [b]\n";
 		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
 		
 		ParameterConfiguration test = configSpace.getRandomParameterConfiguration(rand);
@@ -3677,9 +3677,9 @@ public class ParamConfigurationTestNewPCS {
 	@Test
 	public void testConfigurationLimits()
 	{
-		String pcsFile = "a int [1,5][1]\n"
-				+ "b int [1,5][1]\n"
-				+ "c int [1,5][1]\n";
+		String pcsFile = "a integer [1,5][1]\n"
+				+ "b integer [1,5][1]\n"
+				+ "c integer [1,5][1]\n";
 		
 		
 		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);

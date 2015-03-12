@@ -1,11 +1,11 @@
 #Multi Dependency  Param
 # i.e. E depends on all of the values
 
-a cat { 1,2,3,4,5,6,7,8 } [1]
-b cat { 1,2,3,4,5,6,7,8 } [1]
-c cat { 1,2,3,4,5,6,7,8 } [1]
-e cat { 1,2,3,4,5,6,7,8 } [1] #Out of order to make sure we can declare them out of order for conditionals
-d cat { 1,2,3,4,5,6,7,8 } [1]
+a categorical { 1,2,3,4,5,6,7,8 } [1]
+b categorical { 1,2,3,4,5,6,7,8 } [1]
+c categorical { 1,2,3,4,5,6,7,8 } [1]
+e categorical { 1,2,3,4,5,6,7,8 } [1] #Out of order to make sure we can declare them out of order for conditionals
+d categorical { 1,2,3,4,5,6,7,8 } [1]
 
 #Conditionals:
 
