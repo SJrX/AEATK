@@ -15,4 +15,8 @@ public class TargetAlgorithmEvaluatorShutdownException extends RuntimeException 
 		super(e);
 	}
 
+	
+	public TargetAlgorithmEvaluatorShutdownException() {
+		super("Target Algorithm Evaluator has been shutdown");
+	}
 }
