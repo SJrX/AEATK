@@ -5325,6 +5325,84 @@ public class TAETestSet {
 	}
 	
 	
+	static class TestClass
+	{
+		public static void main(String[] args)
+		{
+			System.out.println("WHAT");
+		}
+	}
+	
+	
+	/**
+	 * Bug #2115
+	 * 
+	 * Walltime is incorrect when wrapper doesn't output anything.
+	 */
+	@Test
+	public void testIncorrectWallTimeOnNoWrapperOutput()
+	{
+		
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(TestClass.class.getCanonicalName());
+		
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false,3000);
+		
+		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
+		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
+		
+		options.logAllCallStrings = true;
+		options.logAllProcessOutput = true;
+		options.concurrentExecution = true;
+		options.observerFrequency = 2000;
+		options.cores = 16;
+		
+		tae = fact.getTargetAlgorithmEvaluator( options);	
+	
+	
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(4);
+		for(int i=0; i < 1; i++)
+		{
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
+
+			config.put("runtime", "0");
+			if(config.get("solved").equals("ABORT") || config.get("solved").equals("INVALID"))
+			{
+				i--;
+				continue;
+			}
+			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"),1), 0, config, execConfig);
+			runConfigs.add(rc);
+
+		}
+		
+		StopWatch watch = new AutoStartStopWatch();
+		
+		List<AlgorithmRunResult> results = tae.evaluateRun(runConfigs);
+		
+		for(AlgorithmRunResult run : results)
+		{
+			System.out.println(run.getResultLine() + "===>" + run.getWallclockExecutionTime());
+		}
+		System.out.println(watch.stop());
+		
+		try
+		{
+			assertTrue("Run should report less time than we measured.", results.get(0).getWallclockExecutionTime() < watch.time() / 1000.0 );
+		} finally
+		{
+			tae.notifyShutdown();
+		}
+		
+		
+	
+	}
+	
 	@Test
 	/**
 	 * Related to bug #2116

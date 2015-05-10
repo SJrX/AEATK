@@ -54,7 +54,7 @@ import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.exceptions.TargetAlgorithmA
 
 /**
  * Executes a Target Algorithm Run via Command Line Execution
- * @author sjr
+ * @author Steve Ramage <seramage@cs.ubc.ca>
  *
  */
 public class CommandLineAlgorithmRun implements Callable<AlgorithmRunResult>{
@@ -583,7 +583,7 @@ public class CommandLineAlgorithmRun implements Callable<AlgorithmRunResult>{
 						} else
 						{
 							double currentTime = Math.max(0,currentRuntime.get());
-							completedAlgorithmRun = new ExistingAlgorithmRunResult(runConfig, RunStatus.CRASHED, currentTime, 0,0, runConfig.getProblemInstanceSeedPair().getSeed(), "ERROR: Wrapper did not output anything that matched the expected output (\"Result of algorithm run:...\"). Please try executing the wrapper directly", this.getCurrentWallClockTime() );
+							completedAlgorithmRun = new ExistingAlgorithmRunResult(runConfig, RunStatus.CRASHED, currentTime, 0,0, runConfig.getProblemInstanceSeedPair().getSeed(), "ERROR: Wrapper did not output anything that matched the expected output (\"Result of algorithm run:...\"). Please try executing the wrapper directly", this.getCurrentWallClockTime() / 1000.0);
 						}
 					}
 					
