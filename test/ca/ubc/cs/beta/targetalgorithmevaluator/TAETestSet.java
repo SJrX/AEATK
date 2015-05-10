@@ -90,6 +90,7 @@ import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.functionality.Si
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.functionality.TerminateAllRunsOnFileDeleteTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.functionality.portfolio.PortfolioRunKillingPolicy;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.functionality.portfolio.PortfolioTargetAlgorithmEvaluatorDecorator;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.helpers.CompleteZeroSecondCutoffRunsTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.helpers.KillCaptimeExceedingRunsRunsTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.helpers.OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.helpers.WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator;
@@ -5320,6 +5321,121 @@ public class TAETestSet {
 			fail("Um what?");
 		}
 		
+		
+	}
+	
+	
+	@Test
+	/**
+	 * Related to bug #2116
+	 * 
+	 * The TAE gets a run with zero seconds cutoff time, users may not expect this.
+	 * 
+	 */
+	public void testZeroSecondsCallNotSentToTAE()
+	{
+
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		
+		
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(SleepyParamEchoExecutor.class.getCanonicalName());
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false,3000);
+		
+		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
+		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
+		
+		options.logAllCallStrings = true;
+		options.logAllProcessOutput = true;
+		options.concurrentExecution = true;
+		options.observerFrequency = 2000;
+		options.cores = 16;
+		
+		tae = fact.getTargetAlgorithmEvaluator( options);	
+	
+		
+		tae = new BoundedTargetAlgorithmEvaluator(tae,2);
+		tae = new CompleteZeroSecondCutoffRunsTargetAlgorithmEvaluatorDecorator(tae);
+		
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(4);
+		for(int i=0; i < 40; i++)
+		{
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
+
+			config.put("runtime", "0");
+			if(config.get("solved").equals("ABORT") || config.get("solved").equals("INVALID"))
+			{
+				i--;
+				continue;
+			}
+			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"),1), 0, config, execConfig);
+			runConfigs.add(rc);
+
+		}
+
+		ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
+		config.put("solved","SAT");
+		AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"),1), 3000, config, execConfig);
+		runConfigs.set(5, rc);
+		
+		config = configSpace.getRandomParameterConfiguration(r);
+		config.put("solved","SAT");
+		rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"),1), 3000, config, execConfig);
+		runConfigs.set(7, rc);
+		
+		config = configSpace.getRandomParameterConfiguration(r);
+		config.put("solved","SAT");
+		rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"),1), 3000, config, execConfig);
+		runConfigs.set(11, rc);
+		
+		config = configSpace.getRandomParameterConfiguration(r);
+		config.put("solved","SAT");
+		rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"),1), 3000, config, execConfig);
+		runConfigs.set(12, rc);
+		
+		
+		
+		
+		
+		
+		
+		
+		TargetAlgorithmEvaluatorRunObserver obs = new TargetAlgorithmEvaluatorRunObserver()
+		{
+
+			@Override
+			public void currentStatus(List<? extends AlgorithmRunResult> runs) {
+				for(AlgorithmRunResult run : runs)
+				{
+					System.out.println(run.getResultLine());
+				}
+
+				
+			}
+			
+		};
+		
+		StopWatch watch = new AutoStartStopWatch();
+		
+		List<AlgorithmRunResult> results = tae.evaluateRun(runConfigs, obs);
+		
+		
+		for(AlgorithmRunResult run : results)
+		{
+			System.out.println(run.getResultLine());
+		}
+		System.out.println(watch.stop());
+		
+		try
+		{
+			assertTrue("Expected time to execute runs was less than 15 seconds", watch.time() < 15000);
+		} finally
+		{
+			tae.notifyShutdown();
+		}
 		
 	}
 	
