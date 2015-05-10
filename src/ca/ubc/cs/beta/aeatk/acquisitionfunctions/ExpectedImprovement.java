@@ -74,7 +74,7 @@ public class ExpectedImprovement implements AcquisitionFunction {
 					double a = Math.log(f_min_samples-mu) + normcdfln(x);
 					result = Math.max(a, b) +  Math.log1p(Math.exp(-Math.abs(b-a)));
 					
-					checkAssertions(result, standardEI[i], predmean[i], predvar[i]);
+					//checkAssertions(result, standardEI[i], predmean[i], predvar[i]);
 				} else
 				{
 				  // When y<0, z>0, we define a=ln(-y), b=ln(z), and it has to be true that b >= a in order to satisfy y+z>=0.
@@ -87,7 +87,7 @@ public class ExpectedImprovement implements AcquisitionFunction {
 		            } else
 		            {
 		                result = b + Math.log1p(-exp(a-b));
-		                checkAssertions(result, standardEI[i], predmean[i], predvar[i]);
+		                //checkAssertions(result, standardEI[i], predmean[i], predvar[i]);
 		            }
 					            
 				}
@@ -99,12 +99,13 @@ public class ExpectedImprovement implements AcquisitionFunction {
 		return logEI;
 	}
 
-	
+	/*
 	private final double NEG103 = -Math.pow(10, -3);
 	private final double POS103 = Math.pow(10, -3);
 	
 	private void checkAssertions(double logEI, double EI, double predmean, double predvar)
 	{
+		
 		double delta = Math.exp(logEI) - EI;
 		if(Double.isNaN(logEI))
 		{
@@ -118,6 +119,7 @@ public class ExpectedImprovement implements AcquisitionFunction {
 		}
 		
 	}
+	*/
 		
 }
 
