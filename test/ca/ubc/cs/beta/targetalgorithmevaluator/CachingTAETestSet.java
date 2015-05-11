@@ -20,6 +20,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 
 import org.apache.commons.io.output.NullOutputStream;
 import org.apache.commons.math3.distribution.ExponentialDistribution;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -102,12 +103,22 @@ private static TargetAlgorithmEvaluator tae;
 		
 		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 		
-		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE();
+		//tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE();
 		
 
 		
 	}
 	
+	@After
+	public void afterTest()
+	{
+		if(tae != null)
+		{
+			tae.notifyShutdown();
+			tae = null;
+		} 
+		
+	}
 	@AfterClass
 	public static void afterClass()
 	{

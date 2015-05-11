@@ -4,6 +4,9 @@ import java.io.BufferedReader;
 import java.io.File;
 import java.io.FileNotFoundException;
 import java.io.IOException;
+import java.io.InvalidObjectException;
+import java.io.ObjectInputStream;
+import java.io.ObjectStreamException;
 import java.io.Reader;
 import java.io.Serializable;
 import java.io.StringReader;
@@ -12,15 +15,19 @@ import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.IdentityHashMap;
 import java.util.LinkedHashMap;
 import java.util.LinkedList;
 import java.util.List;
 import java.util.Map;
 import java.util.Map.Entry;
+import java.util.regex.Matcher;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeMap;
 import java.util.TreeSet;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
@@ -28,20 +35,17 @@ import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import net.jcip.annotations.Immutable;
+import net.objecthunter.exp4j.Expression;
+import net.objecthunter.exp4j.ExpressionBuilder;
+import net.objecthunter.exp4j.operator.Operator;
+import ca.ubc.cs.beta.aeatk.json.JSONConverter;
 import ca.ubc.cs.beta.aeatk.json.serializers.ParameterConfigurationSpaceJson;
 import ca.ubc.cs.beta.aeatk.misc.java.io.FileReaderNoException.FileReaderNoExceptionThrown;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration.ParameterStringFormat;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.util.TopologicalSorter;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.util.TopologicalSorter.Constraint;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.util.TopologicalSorter.NoTopologicalOrderAvailableException;
 import ec.util.MersenneTwisterFast;
-
-enum LineType
-{
-	CATEGORICAL,
-	CONTINUOUS,
-	CONDITIONAL,
-	FORBIDDEN,
-	OTHER
-}
-
 
 
 /**
@@ -63,10 +67,11 @@ enum LineType
 @JsonDeserialize(using=ParameterConfigurationSpaceJson.ParamConfigurationSpaceDeserializer.class)
 public class ParameterConfigurationSpace implements Serializable {
 	
+
 	/**
 	 * 
 	 */
-	private static final long serialVersionUID = -9137375058810057209L;
+	private static final long serialVersionUID = -11111155215218L;
 
 	/**
 	 * Stores a list of values for each parameter name
@@ -79,28 +84,66 @@ public class ParameterConfigurationSpace implements Serializable {
 	private final Map<String,String> defaultValues = new HashMap<String, String>();
 	
 	/**
-	 * For each parameter name stores the name of the parameters and the required values of those parameters, for this parameter to be active. 
-	 */
-	private final Map<String, Map<String, List<String>>> dependentValues = new HashMap<String, Map<String,List<String>>>();
-	
-	/**
 	 * For each parameter stores a boolean for whether or not the value is continuous
+	 * @deprecated this should be replaced with the paramTypes array.
 	 */
-	private final Map<String, Boolean> isContinuous = new HashMap<String, Boolean>();
+	//private final Map<String, Boolean> isContinuous = new HashMap<String, Boolean>();
 	
 	/**
-	 * Stores a list of parameter names
-	 * @deprecated the paramKeyIndexMap stores the same information, and will iterate the same way
-	 * with a slightly more cumbersome interface unfortunately.
+	 * types of parameters
 	 */
-	@Deprecated
-	private final List<String> paramNames = new LinkedList<String>();
+	public static enum ParameterType {
+		CATEGORICAL(false,"categorical"), ORDINAL(true,"ordinal"), INTEGER(true,"integer"), REAL(true,"real");
+		
+		private final boolean normalize;
+		
+		private final String keyword;
+		
+	
+		
+		
+		ParameterType(boolean normalize, String keyword)
+		{
+			this.normalize = normalize;
+			this.keyword = keyword;
+			
+		}
+
+		
+		public Boolean isNormalized() {
+			
+			return normalize;
+		}
+		
+		public String keyword()
+		{
+			return keyword;
+		}
+		
+		public static ParameterType getParameterTypeFromKeyword(String keyword)
+		{
+			
+			for(ParameterType type : ParameterType.values())
+			{
+				if(type.keyword().equals(keyword))
+				{
+					return type;
+				}
+			} 
+			
+			throw new IllegalArgumentException("Unknown Parameter Type: " + keyword + " allowed types are: " + Arrays.toString(ParameterType.values()));
+		}
+	}
+	
+	/**
+	 * For each parameter stores a the ParameterType
+	 */
+	private final Map<String, ParameterType> paramTypes = new HashMap<String, ParameterType>();
 	
 	/**
 	 * For each Categorical Parameter, maps the value of input, into the value the random forest expects
 	 */
 	private final Map<String, Map<String, Integer>> categoricalValueMap = new HashMap<String, Map<String, Integer>>();
-	
 	
 	/**
 	 * Used as the basis of hashCode calculations
@@ -117,11 +160,20 @@ public class ParameterConfigurationSpace implements Serializable {
 	 * always get the first index first, then the second, then the third)...
 	 */
 	private final Map<String, Integer> paramKeyIndexMap = new LinkedHashMap<String, Integer>();
+	
+	
+	
+	
+	
 	private final boolean[] parameterDomainContinuous;
 	private final int[] categoricalSize;
 
+	public Map<String, Integer> getParamKeyIndexMap() {
+		return Collections.unmodifiableMap(paramKeyIndexMap);
+	}
 	
-	private final List<int[][]> forbiddenParameterValuesList = new ArrayList<int[][]>();
+	
+	private final List<double[][]> forbiddenParameterValuesList = new ArrayList<double[][]>();
 	/**
 	 * Value to store in the categoricalSize array for continuous parameters
 	 */
@@ -130,16 +182,8 @@ public class ParameterConfigurationSpace implements Serializable {
 	/**
 	 * Number of parameters 
 	 */
-	private final int numberOfParameters;
+	private int numberOfParameters;
 	
-	/**
-	 * For each parameter (in authorative order) stores the indexes of the parent parameters
-	 */	
-	private final int[][] condParents;
-
-	
-	private final int[][][] condParentVals;
-
 
 	/**
 	 * Flag variable that controls whether there exists a real PCS file
@@ -152,6 +196,13 @@ public class ParameterConfigurationSpace implements Serializable {
 	 */
 	private final List<String> forbiddenLines = new ArrayList<String>();
 
+
+	
+	/**
+	 * Stores conditional lines for later parsing
+	 */
+	private final List<String> conditionalLines = new ArrayList<>(); 
+	
 	/**
 	 * Gets the default configuration
 	 */
@@ -174,9 +225,10 @@ public class ParameterConfigurationSpace implements Serializable {
 	 * 
 	 * The authorative order is in fact something that should be specified in the constructor but for now sorting seems to work
 	 * 
-	 * 
 	 */
-	private final List<String> authorativeParameterNameOrder;
+	private List<String> authorativeParameterNameOrder = new ArrayList<String>();
+	
+	private Set<String> sortedParameterNames = new TreeSet<String>();
 
 	/**
 	 * Array representation of the previous value to speed up searching
@@ -186,12 +238,99 @@ public class ParameterConfigurationSpace implements Serializable {
 	/**
 	 * Array representation of the ranges by index 
 	 */
-	private final NormalizedRange[] normalizedRangesByIndex;
+	final NormalizedRange[] normalizedRangesByIndex;
 
+	/**
+	 *	operators in conditionals; EQ ==, NEQ !=, LE <, GR >, IN "in {...}" 
+	 */
+	
+	
+	
+	
+	
+	/**
+	 *	Tuple with parent ID, conditional values and ConditionalOperator to save individual conditions
+	 */
+	public class Conditional {
+		public final int parent_ID;
+		public final double[] values;
+		public final ConditionalOperator op;
+		
+		public Conditional(int parent_ID, double[] values, ConditionalOperator op) {
+			this.parent_ID = parent_ID;
+			this.values = values;
+			this.op = op;
+		}
+		
+		public String toString()
+		{
+			return "parentID:" + parent_ID + " values: " + Arrays.toString(values) + " op: " + op;
+		}
+	}
+
+	//TODO: the next four attributes should be final
+	/**
+	 * maps parameter (ID) to list of conditions (CNF: disjunctive list of clauses)
+	 */
+	private Map<Integer, ArrayList<ArrayList<Conditional>>> nameConditionsMap = new HashMap<Integer, ArrayList<ArrayList<Conditional>>>();
+	
+	private Map<String, HashSet<String>> parameterDependencies = new HashMap<String, HashSet<String>>(); 
+	private List<Integer> activeCheckOrder = new ArrayList<Integer>();
+	private List<String> activeCheckOrderString = new ArrayList<String>();
+	
+	/*
+	 * maps variable index to disjunctions of conjunctions of parent variables
+	 */
+	private Map<Integer, int[][]> nameConditionsMapParentsArray;
+	/*
+	 * maps variable index to disjunctions of conjunctions of parent values in conditional
+	 */
+	private Map<Integer, double[][][]> nameConditionsMapParentsValues;
+	/*
+	 * maps variable index to disjunctions of conjunctions of conditional operator
+	 */
+	private Map<Integer, int[][]> nameConditionsMapOp;
+	
+	public  Map<Integer, int[][]> getNameConditionsMapParentsArray() {
+		return nameConditionsMapParentsArray;
+	}
+
+	public Map<Integer, double[][][]> getNameConditionsMapParentsValues() {
+		return nameConditionsMapParentsValues;
+	}
+
+	public Map<Integer, int[][]> getNameConditionsMapOp() {
+		return nameConditionsMapOp;
+	}
+	
+	protected List<String> getActiveCheckOrderString() {
+		return Collections.unmodifiableList(activeCheckOrderString);
+	}
+	
+	protected Map<Integer, ArrayList<ArrayList<Conditional>>> getNameConditionsMap(){
+		return Collections.unmodifiableMap(nameConditionsMap);
+	}
+	
+	public Map<String, ParameterType> getParameterTypes(){
+		return Collections.unmodifiableMap(paramTypes);
+	}
 	
 	private final String pcsFile;
 	
+	private final Pattern catOrdPattern = Pattern.compile("^\\s*(?<name>\\p{Graph}+)\\s*(?<type>"+ParameterType.CATEGORICAL.keyword()+"|"+ParameterType.ORDINAL.keyword()+"+)\\s*\\{(?<values>.*)\\}\\s*\\[(?<default>\\p{Graph}+)\\]\\s*$");
+	private final Pattern intReaPattern = Pattern.compile("^\\s*(?<name>\\p{Graph}+)\\s*(?<type>"+ParameterType.INTEGER.keyword()+"|"+ParameterType.REAL.keyword()+")\\s*\\[\\s*(?<min>\\p{Graph}+)\\s*,\\s*(?<max>\\p{Graph}+)\\s*\\]\\s*\\[(?<default>\\p{Graph}+)\\]\\s*(?<log>(log)?)\\s*$");
+	
 	private final Map<String, String> searchSubspace;
+	
+	//final List<Expression> cl = new ArrayList<Expression>();
+	
+	final List<ExpressionBuilder> bl = new ArrayList<>();
+	
+	final Map<ExpressionBuilder, String> expressions = new IdentityHashMap<>();
+	
+	final ThreadLocal<List<Expression>> tlExpressions = new ThreadLocal<>();
+	
+
 	/**
 	 * Creates a Param Configuration Space from the given file, no random object
 	 * @param filename string storing the filename to parse
@@ -247,6 +386,9 @@ public class ParameterConfigurationSpace implements Serializable {
 		this(file, absoluteFileName, Collections.EMPTY_MAP);
 	}
 	
+	
+	 
+	
 	/**
 	 * Creates a Param Configuration Space from the given reader
 	 * @param file 			    				A reader object that will allow us to read the configuration space
@@ -255,6 +397,8 @@ public class ParameterConfigurationSpace implements Serializable {
 	 */
 	public ParameterConfigurationSpace(Reader file, String absoluteFileName, Map<String, String> searchSubspace)
 	{
+		//TODO: remove stderr outputs - use only errors
+		//TODO: maybe try to parse each line independently with the old or new format
 		
 		/*
 		 * Parse File and create configuration space
@@ -265,178 +409,82 @@ public class ParameterConfigurationSpace implements Serializable {
 		{
 			throw new IllegalArgumentException("Absolute File Name must be non-empty:" + absoluteFileName);
 		}
+		
+		
 		try {
-			BufferedReader inputData = null;
 			
 			StringBuilder pcs = new  StringBuilder();
-			try{
-				inputData = new BufferedReader(file);
+			try(BufferedReader inputData = new BufferedReader(file))
+			{
 				String line;
 				while((line = inputData.readLine()) != null)
 				{ try {
+					//System.out.println(line);
 					pcs.append(line + "\n");
-					parseLine(line);
+					parseAClibLine(transformOldFormat(line));
 					} catch(RuntimeException e)
 					{
-						System.err.println("Error occured parsing: " + line);
 						throw e;
-					}
+					} 
+				    
 				}
-			} finally
-			{
-				Collections.sort(paramNames);
-				if (inputData != null)
-				{
-					inputData.close();
-				}
-				pcsFile = pcs.toString();
-			}
+			} 
+			
+			pcsFile = pcs.toString();
+			
 			
 			
 		} catch (FileNotFoundException e) {
-
 			throw new IllegalStateException(e);
 		} catch (IOException e) {
-			
-			
 			throw new IllegalStateException(e);
+		}
+		
+		Collections.sort(this.authorativeParameterNameOrder);
+		this.numberOfParameters = this.authorativeParameterNameOrder.size();
+		
+		for(int i=0; i < this.authorativeParameterNameOrder.size(); i++)
+		{
+			paramKeyIndexMap.put(this.authorativeParameterNameOrder.get(i), i);
 		}
 		
 		
 		
-		/*
-		 * Create data structures necessary for ParamConfiguration objects
-		 * 
-		 * Alot of this is redundant with what's above as this code was added
-		 * as part of refactoring. This class could use a clean up
-		 * 
-		 * This gets the data into a format convenient for Random Forests.
-		 * 
-		 */		
-		List<String> paramOrder = new ArrayList<String>(paramNames.size());
-		paramOrder.addAll(paramNames);
-		Collections.sort(paramOrder);
+		processConditionalLines();
 		
-		this.authorativeParameterNameOrder = Collections.unmodifiableList(paramOrder);
 		
+		computeCheckActiveOrder();
+		
+		
+		transformConditionals2FastRFStructure();
+
+		//convert authorativeParameterNameOrder and contNormalizedRanges to an Array (before List)
 		this.authorativeParameterOrderArray = new String[this.authorativeParameterNameOrder.size()];
 		this.normalizedRangesByIndex = new NormalizedRange[this.authorativeParameterNameOrder.size()];
-		for(int i=0; i < authorativeParameterNameOrder.size(); i++)
-		{
+		for (int i = 0; i < authorativeParameterNameOrder.size(); i++) {
 			this.authorativeParameterOrderArray[i] = authorativeParameterNameOrder.get(i);
 			this.normalizedRangesByIndex[i] = this.contNormalizedRanges.get(this.authorativeParameterOrderArray[i]);
 		}
-		
-		
-		
-		
-		
-		  //TODO: Expand on these comments
-		  parameterDomainContinuous = new boolean[paramNames.size()];
-		  categoricalSize = new int[paramNames.size()];
-		  this.numberOfParameters = paramNames.size();
-		  int i=0;
-		  for(String paramName : getParameterNamesInAuthorativeOrder())
-		  {  
-			paramKeyIndexMap.put(paramName,i);
-			
-			parameterDomainContinuous[i] = getContinuousMap().get(paramName);
-			if(parameterDomainContinuous[i] == false)
-			{
+
+		parameterDomainContinuous = new boolean[numberOfParameters];
+		categoricalSize = new int[numberOfParameters];
+		int i = 0;
+		for (String paramName : authorativeParameterOrderArray) {
+			// saves the size of the categorical domains for each parameter
+			parameterDomainContinuous[i] = getParameterTypes().get(paramName).isNormalized();
+			if (parameterDomainContinuous[i] == false) {
 				categoricalSize[i] = getValuesMap().get(paramName).size();
-			} else
-			{
+			} else {
 				categoricalSize[i] = INVALID_CATEGORICAL_SIZE;
 			}
-			
+
 			i++;
-		  }
-		  
-		  
-		  
-		  condParents = new int[numberOfParameters][];
-		  condParentVals = new int[numberOfParameters][][];
-		  
-			Map<String, Map<String, List<String>>> depValueMap = getDependentValuesMap();
-			
-			for(String key : depValueMap.keySet())
-			{
-				if(!this.paramKeyIndexMap.keySet().contains(key))
-				{
-					throw new IllegalArgumentException("Illegal independent value ("+ key+") specified on conditional line.");
-				}
-			}
-			for(i=numberOfParameters; i < numberOfParameters;i++)
-			{
-				condParents[i] = new int[0];
-				condParentVals[i] = new int[0][];
-			}
-			
-			
-			for( i=0; i < numberOfParameters; i++)
-			{
-				
-				String key = getParameterNames().get(i);
-				
-				//System.out.println("key => " + key);
-
-				Map<String, List<String>> depValues = depValueMap.get(key); 
-				if((depValues == null) || (depValues.size() == 0))
-				{
-					condParents[i] = new int[0];
-					condParentVals[i] = new int[0][];
-					continue;
-				}
-				
-				condParents[i] = new int[depValues.size()];
-				condParentVals[i] = new int[depValues.size()][];
-				
-				int j=0;
-				for(Entry<String, List<String>> e : depValues.entrySet())
-				{
-					
-					if(paramKeyIndexMap.get(e.getKey())  == null)
-					{
-						throw new IllegalArgumentException("Illegal dependant parameter ("+ e.getKey()+ ") on conditional line in param file: "); 
-					}
-					
-					condParents[i][j] = paramKeyIndexMap.get(e.getKey()) ;
-					condParentVals[i][j] = new int[e.getValue().size()]; 
-					for(int k=0; k < e.getValue().size(); k++)
-					{
-
-						String depValue = e.getValue().get(k);
-						String depKey = e.getKey();
-						
-						if(isContinuous.get(depKey))
-						{
-							throw new IllegalArgumentException("Value depends upon continuous parameter, this is not supported: " + key + " depends on " + depKey + " values: " + depValue);
-						}
-						
-						if(!getCategoricalValueMap().get(depKey).keySet().contains(depValue))
-						{
-							throw new IllegalArgumentException("Value depends upon a non-existant or invalid parameter value: " + key + " depends on " + depKey + " having invalid value: " + depValue);
-						}
-				
-						condParentVals[i][j][k] = getCategoricalValueMap().get(e.getKey()).get(e.getValue().get(k));
-						
-						condParentVals[i][j][k]++;
-						
-					}
-					j++;	
-				}
-				
-			}
-
-		  
-			
-			for(String forbiddenLine : forbiddenLines )
-			{
-				parseForbiddenLine(forbiddenLine);
-				
-			}
-			forbiddenLines.clear();
-			
+		}
+		
+		
+		this.newForbiddenLinesPresent = parseForbiddenLines(forbiddenLines);
+	
+	
 		this.defaultConfigurationValueArray = _getDefaultConfiguration().toValueArray();
 		
 		
@@ -449,35 +497,112 @@ public class ParameterConfigurationSpace implements Serializable {
 		 */
 		if(this.getDefaultConfiguration().isForbiddenParameterConfiguration())
 		{
-			throw new IllegalArgumentException("Default parameter setting cannot be a forbidden parameter setting");
+			throw new IllegalArgumentException("Default parameter setting cannot be a forbidden parameter setting:" + this.getDefaultConfiguration().getFormattedParameterString());
 		}
+	
+		/*
+		for(String forbiddenLine : forbiddenLines )
+		{
+			parseForbiddenLine(forbiddenLine);
+			
+		}
+		forbiddenLines.clear();
+		*/
 		
+		
+	
 		this.searchSubspaceValues = new double[this.defaultConfigurationValueArray.length];
 		this.searchSubspaceActive = new boolean[this.defaultConfigurationValueArray.length];
-		
+
 		Map<String, String> searchSubspaceMap = new TreeMap<String, String>();
-		for(Entry<String, String> subspaceProfile : searchSubspace.entrySet())
-		{
+		for (Entry<String, String> subspaceProfile : searchSubspace.entrySet()) {
 			String param = subspaceProfile.getKey();
 			String value = subspaceProfile.getValue();
-			
-			if(value.equals("<DEFAULT>"))
-			{
+
+			if (value.equals("<DEFAULT>")) {
 				value = this.getDefaultConfiguration().get(param);
-				
 			}
-			
+
 			searchSubspaceMap.put(param, value);
 			int index = this.paramKeyIndexMap.get(param);
-			
-			
+
 			setValueInArray(this.searchSubspaceValues, param, value);
 			this.searchSubspaceActive[index] = true;
 		}
-		
+
 		this.searchSubspace = Collections.unmodifiableMap(searchSubspaceMap);
+
+	}
+
+	/**
+	 * Processes all conditional clauses found in the PCS file
+	 */
+	private final void processConditionalLines() {
+		Map<String, List<String>> conditionalLinesMap = new LinkedHashMap<>();
 		
+		for(String conditionalLine : conditionalLines)
+		{
+			String name = getName(conditionalLine);
+			if( conditionalLinesMap.get(name) == null)
+			{
+				conditionalLinesMap.put(name, new ArrayList<String>());
+			}
+			
+			conditionalLinesMap.get(name).add(conditionalLine);
+		}
 		
+		for(Entry<String, List<String>> ent : conditionalLinesMap.entrySet())
+		{
+			
+			List<String> conditionalLines = ent.getValue();
+			if(conditionalLines.size() ==  1)
+			{
+				parseConditional(conditionalLines.get(0));
+			} else if( conditionalLines.size() > 1)
+			{
+				
+				
+				StringBuilder sb = new StringBuilder(ent.getKey());
+				sb.append("|");
+				Pattern p = Pattern.compile("^\\s*\\S+\\s*\\|\\s*(\\S+)\\s+in\\s+(\\{.+\\})\\s*$");
+				for(String line : conditionalLines)
+				{
+					Matcher m = p.matcher(line);
+					
+					if(m.find())
+					{
+						 String name = m.group(1);
+						 String values = m.group(2);
+						 
+						 
+						sb.append(" ").append( name ).append(" in ").append(values).append(" &&");
+						
+					} else
+					{
+						throw new IllegalArgumentException("Duplicate conditional lines detected: " + conditionalLines + ". Only one conditional line allowed per variable in new format. This line doesn't seem to be of the old format: " + line);
+					}
+				}
+				
+				sb.setLength(sb.length()-2);
+				
+				
+				try {
+					//System.err.println("Parsing transformed conditional:" + sb.toString());
+					parseConditional(sb.toString());
+				} catch(IllegalArgumentException e)
+				{
+					throw new IllegalArgumentException("Problem occured during parsing conditionals, new PCS format requires all conditionals to be on the same line. This transformation has been done internally, and afterwards the following error occurred:" + e.getMessage());
+				}
+				
+			} else
+			{
+				throw new IllegalArgumentException("Duplicate conditional lines detected: " + conditionalLines);
+			}
+			
+			
+		}
+		
+		conditionalLines.clear();
 	}
 	
 	/**
@@ -490,88 +615,697 @@ public class ParameterConfigurationSpace implements Serializable {
 	}
 	
 	/**
-	 * Parses a line from the param file, populating the relevant data structures.
-	 * @param line line of the param file
+	 * Parses a line from the pcs file with the AClib 2.0 format spec,
+	 * populating the relevant data structures
+	 * @param line line of the pcs file
 	 */
-	private void parseLine(String line)
-	{
-		//Default to a LineType of other 
-		LineType type = LineType.OTHER;
+	
+	private static final Pattern allowedParameterValuesRegex = Pattern.compile("^\\p{Graph}+$");
+	
+	private void parseAClibLine(String line){
 		
+	
+		line = line.trim();
 		//Removes Comment
 		int commentStart = line.indexOf("#");
-		line = line.trim();
+	
 		if (commentStart >= 0)
 		{
 			line = line.substring(0, commentStart).trim();
 		}
-		
 		
 		//We are done if we trim away the rest of the line
 		if (line.length() == 0)
 		{
 			return;
 		}
+		
+		if(line.trim().equals("Conditionals:")) return;
+		if(line.trim().equals("Forbidden:")) return;
+		
+		
+		// categorical or ordinal parameters
+		Matcher catOrdMatcher = catOrdPattern.matcher(line);
+		Matcher intReaMatcher = intReaPattern.matcher(line);
+		
+		if (catOrdMatcher.find()){
+			//System.out.println("CatMatch");
+			String name = catOrdMatcher.group("name");
+			String type = catOrdMatcher.group("type");
+			List<String> paramValues = Arrays.asList(catOrdMatcher.group("values").split(","));
+			String defaultValue = catOrdMatcher.group("default").trim();
+
+			
+			
+			if(this.sortedParameterNames.contains(name)) {
+				throw new IllegalArgumentException("Parameter ("+name+") defined more than once.");
+			}
+			
+			sortedParameterNames.add(name);
+			//paramKeyIndexMap.put(name, numberOfParameters);
+		
+			authorativeParameterNameOrder.add(name);
+			
+			List<String> paramValues_trimed = new ArrayList<String>();
+			
+			Set<String> paramValuesSet = new HashSet<String>();
+			for (String value: paramValues){
+				
+				if(!allowedParameterValuesRegex.matcher(value.trim()).find())
+				{
+					throw new IllegalArgumentException("Illegal parameter value detected: `" + value.trim() + "` on line: " + line);
+				}
+				
+				paramValues_trimed.add(value.trim());
+				
+				
+				
+				if(!paramValuesSet.add(value.trim()))
+				{
+					throw new IllegalArgumentException("Duplicate value: " + value.trim() + " detected on line: " + line);
+				}
+			}
+			
+			Map<String, Integer> valueMap = new LinkedHashMap<String, Integer>();
+			int i=0;
+			for(String value : paramValues_trimed) {
+				valueMap.put(value, i);
+				i++;
+			}
+			//TODO: check whether ordinal parameters are already handled correctly
+			categoricalValueMap.put(name, valueMap);
+			defaultValues.put(name, defaultValue);
+			
+			values.put(name, paramValues_trimed);
+			
+			if(!paramValuesSet.contains(defaultValue))
+			{
+				throw new IllegalArgumentException("Default value " + defaultValue + " is not in the domain of the parameter on line: " + line);
+			}
+			
+			
+			ParameterType encodedType = ParameterType.getParameterTypeFromKeyword(type);
+			
+			paramTypes.put(name, encodedType);
+			
+			switch(encodedType)
+			{
+			case CATEGORICAL:
+				
+			
+				
+				
+				break;
+				
+			case ORDINAL:
+				
+				
+				boolean intValuesOnly = true;
+				
+				boolean logScale = false;
+				
+				double min = 0;
+				
+				double max = paramValuesSet.size()-1;
+				
+
+				createNumericParameter(line, intValuesOnly, logScale, name, type, min, max, String.valueOf(valueMap.get(defaultValue)));
+				
+				
+				
+				break;
+					
+					
+			default:
+				throw new IllegalStateException("Unknown Type");
+			}
+			
+			return;
+		} else if (intReaMatcher.find()){
+			//integer or real valued parameters
+
+			boolean intValuesOnly = false;
+			boolean logScale = false;
+			String name = intReaMatcher.group("name");
+			String type = intReaMatcher.group("type");
+			
+			if (sortedParameterNames.contains(name)) {
+				throw new IllegalArgumentException("Parameter ("+name+") defined more than once.");
+			}
+			
+			sortedParameterNames.add(name);
+			//paramKeyIndexMap.put(name, numberOfParameters);
+			
+			authorativeParameterNameOrder.add(name);
+			
+			ParameterType encodedType = ParameterType.getParameterTypeFromKeyword(type);
+			
+			paramTypes.put(name, encodedType);
+			
+			if (encodedType.equals(ParameterType.INTEGER)) {
+				intValuesOnly = true;
+			}
+			Double min;
+			Double max;
+			String defaultValue;
+			try {
+				min = Double.valueOf(intReaMatcher.group("min"));
+				max = Double.valueOf(intReaMatcher.group("max"));
+				
+				
+				if(min > max)
+				{
+					throw new IllegalArgumentException("Minimum value " + min + " must be less than the maximum value: " + max + " on line:" + line);
+				}
+				defaultValue = intReaMatcher.group("default");
+			} catch(NumberFormatException e)
+			{
+				throw new IllegalArgumentException("This parameter has to consists of numbers:" + line);
+			}
+			
+			
+			if (!intReaMatcher.group("log").isEmpty()){
+				logScale = true;
+			}
+		
+			defaultValues.put(name, defaultValue);
+			values.put(name, Collections.<String> emptyList());
+			createNumericParameter(line, intValuesOnly, logScale, name, type, min, max, defaultValue);
+
+			return;
+		} else if(generalForbidden.matcher(line).find())
+		{
+			//System.out.println("Adding line: " + line);
+			forbiddenLines.add(line);
+			return;
+		} else if (line.indexOf("|") >= 0) {
+			
+			conditionalLines.add(line);
+			return;
+		} 
+		
+
+		throw new IllegalArgumentException("Not sure how to parse this line: "+line);
+
+	}
+
+	/**
+	 * Creates a numeric parameter
+	 * @param line
+	 * @param intValuesOnly
+	 * @param logScale
+	 * @param name
+	 * @param type
+	 * @param min
+	 * @param max
+	 * @param defaultValue
+	 */
+	public void createNumericParameter(String line, boolean intValuesOnly,
+			boolean logScale, String name, String type, Double min, Double max,
+			String defaultValue) {
+		if(intValuesOnly)
+		{
+			try {
+			if(!isIntegerDouble(Double.valueOf(min))) throw new IllegalArgumentException("This parameter is marked as integer, only integer values are permitted for the bounds and default on line:" + line); 
+			if(!isIntegerDouble(Double.valueOf(max))) throw new IllegalArgumentException("This parameter is marked as integer, only integer values are permitted for the bounds and default on line:" + line);
+			if(!isIntegerDouble(Double.valueOf(defaultValue))) throw new IllegalArgumentException("This parameter is marked as integer, only integer values are permitted for the bounds and default on line:" + line);
+			
+			double defDouble = Double.valueOf(defaultValue);
+			if (defDouble < min || defDouble > max)
+			{
+				throw new IllegalArgumentException("Default value " + defaultValue +  " must fall in the interval [" + min + "," + max +"] on line: " + line);
+			}
+			
+			} catch(NumberFormatException e)
+			{
+				e.printStackTrace();
+				throw new IllegalArgumentException("This parameter is marked as integer, only integer values are permitted for the bounds and default on line:" + line);
+			}
+		}
+		
+		
+		
+		
 	
 		
-		/** 
-		 * Perhaps not the most robust but the logic here is as follows
-		 * if we see a "|" it's a conditional line
-		 * otherwise we expect to see a "[" (if we don't we have no idea) what it is. 
-		 * If we see two (Or more) "[" then allegedly it's continous (one specifies the range the other the default).
-		 * Otherwise we must be categorical
-		 * 
-		 * This is hardly robust and easily tricked.
-		 */
-		if (line.indexOf("|") >= 0)
+		try {
+			contNormalizedRanges.put(name, new NormalizedRange(min, max, logScale, intValuesOnly));
+		} catch(IllegalArgumentException e)
 		{
-			type = LineType.CONDITIONAL;
-		} else if(line.trim().substring(0, 1).equals("{"))
-		{
-			type = LineType.FORBIDDEN;
-		} else if(line.indexOf("[") < 0)
-		{
-			type = LineType.OTHER;
-			if(line.trim().equals("Conditionals:")) return;
-			if(line.trim().equals("Forbidden:")) return;
-			
-			throw new IllegalArgumentException("Cannot parse the following line:" + line);
-		} else if (line.indexOf("[") != line.lastIndexOf("["))
-		{
-			type = LineType.CONTINUOUS;
-		} else if(line.trim().indexOf("{") > 1 && line.trim().indexOf("}") > 1 )
-		{
-			type = LineType.CATEGORICAL;
-		} else
-		{
-			throw new IllegalArgumentException("Syntax error parsing line " + line + " probably malformed");
+			throw new IllegalArgumentException(e.getMessage() + "; error occured while parsing line: " +line);
 		}
-		
-		switch(type)
-		{
-			case CONDITIONAL:
-				parseConditionalLine(line);
-				break;
-			case CATEGORICAL:
-				parseCategoricalLine(line);
-				break;
-			case CONTINUOUS:
-				parseContinuousLine(line);
-				break;
-			case FORBIDDEN:
-				forbiddenLines.add(line);
-				break;
-			default:
-				throw new IllegalStateException("Not sure how I can be parsing some other type, ");
-		}
-		
-		
 	}
 	
-	private void parseForbiddenLine(String line) {
+	/**
+	 * parse conditional lines in AClib 2.0 format
+	 * param | conditional_1 [operator] conditional_2 [operator] ...
+	 * where [operator] is && or ||
+	 * and conditionals are either
+	 * param_x [==, !=, <, >] value
+	 * or
+	 * param_x in {value_1, value_2, ...}
+	 * 
+	 * no parentheses between the conditionals (makes parsing a lot easier)
+	 * 
+	 * Assumptions:
+	 *   (i) parameters are only once in the head of a condition
+	 *   (ii) conditions come after parameter definition
+	 * 
+	 * @param line line with conditional (as described above)
+	 */
+	private void parseConditional(String line){
 		
-		String originalLine = line;
+		String param_name = getName(line);
 		
+		String conditions = line.substring(line.indexOf("|") + 1);
+		
+		// since we don't support parantheses, the conditionals are parsed as CNF 
+		// and represented as two nested arrays
+		
+		// disjunction are less important than conjunctions -> split first the disjunctions
+		String[] disjunctions = conditions.split("\\|\\|");
+		
+		ArrayList<ArrayList<Conditional>> conditionals = new ArrayList<ArrayList<Conditional>>();
+		
+		Integer param_id = paramKeyIndexMap.get(param_name);
+		if (param_id == null) {
+			throw new IllegalArgumentException("Conditioned parameter "+param_name+" not defined.");
+		}
+		
+		if (nameConditionsMap.get(param_id) != null){
+			throw new IllegalArgumentException("Each parameter can only be once in the head of a condition:" + param_name + " on line: " + line);
+		}
+		nameConditionsMap.put(param_id, conditionals);
+		
+		for(String dis : disjunctions){
+			//split the conjunctions
+			String[] conjunctions = dis.split("&&");
+			
+			//save triple for each conditional: (ID) parent, (ID / or float) values, type   
+			
+			ArrayList<Conditional> conj_conds = new ArrayList<Conditional>();
+			conditionals.add(conj_conds);
+			
+			for(String con: conjunctions){
+				String parent = ConditionalOperator.getParent(con);
+				ConditionalOperator op = ConditionalOperator.getOperatorFromConditionalClause(con);
+				String[] value = ConditionalOperator.getValues(con);
+				
+				
+				
+				
+				if (!this.paramKeyIndexMap.keySet().contains(parent)) {
+					throw new IllegalArgumentException("Unknown dependent parameter: " + parent	+ ", specified on conditional line: " + line);
+				}
+				
+				List<Double> values_mapped = new ArrayList<Double>();
+				for (String v : value) {
+					Double vmapped; 
+					if (paramTypes.get(parent) == ParameterType.CATEGORICAL || paramTypes.get(parent) == ParameterType.ORDINAL) { 
+						Integer mapped_value = this.categoricalValueMap.get(parent).get(v);
+						if (mapped_value == null) {
+							throw new IllegalArgumentException("Illegal value (" + v + ") specified for parent (" + (parent)+ ") specified on conditional line: " + line);
+						}
+						vmapped = (double) mapped_value;
+					} else {
+						try {
+							vmapped = Double.parseDouble(v);
+						} catch (NumberFormatException e){
+							throw new IllegalArgumentException(parent + " is a of type i or o but is compared a non-double value in conditionals.");
+						}
+					}
+					values_mapped.add(vmapped);
+				}
+				
+				int parent_id = paramKeyIndexMap.get(parent); 
+				
+				double[] value_array = new double[values_mapped.size()];
+				int i = 0;
+				for (double v : values_mapped) {
+					value_array[i] = v;
+					i++;
+				}
+				
+				Conditional cond_tuple = new Conditional(parent_id, value_array, op);
+				
+				conj_conds.add(cond_tuple);
+				
+				//remember all other parameter that it has conditions on
+				if (parameterDependencies.get(param_name) == null){
+					HashSet<String> deps = new HashSet<String>();
+					deps.add(parent);
+					parameterDependencies.put(param_name, deps);
+				} else {
+					parameterDependencies.get(param_name).add(parent);
+				}
+			}
+			
+		} 
+	}
+	
+	/**
+	 * computes the order in which the parameter should be checked whether they are active
+	 */
+	private void computeCheckActiveOrder(){
+		Set<String> params_left = new HashSet<String>(authorativeParameterNameOrder);
+		boolean changed = true;
+		while(!params_left.isEmpty() && changed){
+			changed = false;
+			Set<String> to_remove = new HashSet<String>();
+			for (String p: params_left){
+				boolean ok = true;
+				if (parameterDependencies.get(p) != null) {
+					for(String d: parameterDependencies.get(p)){
+						if (!activeCheckOrder.contains(paramKeyIndexMap.get(d))) {
+							ok = false;
+							break;
+						}
+					}
+				}
+				if (ok) {
+					activeCheckOrder.add(paramKeyIndexMap.get(p));
+					activeCheckOrderString.add(p);
+					to_remove.add(p);
+					changed = true;
+				}
+			}
+			params_left.removeAll(to_remove);
+		}
+		if (!params_left.isEmpty()) {
+			throw new IllegalArgumentException("Could not parse hierarchy of parameters. Probably cycles in there. ("+ Arrays.toString(params_left.toArray())+")");
+		}
+	}
+	
+	/**
+	 * transforms <nameConditionsMap> into <nameConditionsMapParentsArray>, <nameConditionsMapParentsValues>, <nameConditionsMapOp>
+	 * and <activeCheckOrder> into <activeCheckOrderArray>
+	 */
+	private void transformConditionals2FastRFStructure(){
+		nameConditionsMapParentsArray = new HashMap<Integer, int[][]>();
+		nameConditionsMapParentsValues = new HashMap<Integer, double[][][]>();
+		nameConditionsMapOp = new HashMap<Integer, int[][]>();
+		for (int p_idx: nameConditionsMap.keySet()) {
+			int[][] parent_id = new int[nameConditionsMap.get(p_idx).size()][];
+			double[][][] values = new double[nameConditionsMap.get(p_idx).size()][][];
+			int[][] op = new int[nameConditionsMap.get(p_idx).size()][];
+			
+			int i = 0;
+			for (List<Conditional> clause: nameConditionsMap.get(p_idx)){
+				int j = 0;
+				int[] parent_id_in = new int[clause.size()];
+				double[][] values_in = new double[clause.size()][];
+				int[] op_in = new int[clause.size()];
+				for (Conditional cond: clause){
+					parent_id_in[j] = cond.parent_ID;
+					String parent_name = authorativeParameterNameOrder.get(cond.parent_ID);
+					Boolean normalize = this.getParameterTypes().get(parent_name).isNormalized();
+					//contNormalizedRanges: name-> normalizer
+					if (normalize){
+						//continuous parameters have to be normalized to range [0,1]
+						int z = 0;
+						values_in[j] = new double[cond.values.length];
+						for (Double d : cond.values){
+							//System.out.println(parent_name);
+							//System.out.println(contNormalizedRanges.get(parent_name));
+							//System.out.println(contNormalizedRanges.get(parent_name).normalizeValue(d));
+							try 
+							{
+								values_in[j][z] = contNormalizedRanges.get(parent_name).normalizeValue(d);
+							} catch(IllegalArgumentException e)
+							{
+								throw new IllegalArgumentException("Error parsing conditional statement with variable " + parent_name + " : " + e.getMessage() + ".");
+							}
+							z++;
+						}
+					}
+					else {
+						//categorical and ordinal values are already encoded as integer
+						values_in[j] = cond.values;	
+					}
+					
+					if(( cond.op.equals(ConditionalOperator.LE) || cond.op.equals(ConditionalOperator.GR) ))
+					{
+						if(this.getParameterTypes().get(parent_name) == ParameterType.CATEGORICAL)
+						{
+							throw new IllegalArgumentException("You cannot use the > or < in a conditional clause with categorical parameter:" + parent_name);
+						}
+					}
+					
+					op_in[j] = cond.op.getOperatorCode();
+					j++;
+				}
+				parent_id[i] = parent_id_in;
+				values[i] = values_in;
+				op[i] = op_in;
+				i++;
+			}
+			nameConditionsMapParentsArray.put(p_idx, parent_id);
+			nameConditionsMapParentsValues.put(p_idx, values);
+			nameConditionsMapOp.put(p_idx, op);
+		}
+	} 
+	
+	
+	
+	private final Pattern classicForbidden = Pattern.compile("^\\s*\\{((\\s*\\S+\\s*=\\s*\\S+\\s*,?\\s*)+)\\}\\s*$");
+	private final Pattern generalForbidden = Pattern.compile("^\\s*\\{\\s*([^\\{\\}]+)\\s*\\}\\s*$");
+
+	
+	/**
+	 * Stores our assignment from an ordinal and categorical to a constant
+	 */
+	protected Map<String, Double> forbiddenParameterConstants;
+	
+	/**
+	 * Stores our assignment from an ordinal and categorical to a constant, but only for things that aren't doubles.
+	 */
+	protected Map<String, Double> forbiddenOrdinalAndCategoricalVariableValues;
+	
+	private boolean parseForbiddenLines(List<String> lines) {
+		
+		boolean newForbiddenStatements = false;
+		for(String line : lines)
+		{
+			
+			String originalLine = line;
+			
+			if(line.indexOf("#") >= 0)
+			{
+				line = line.substring(0, line.indexOf("#"));
+			}
+			
+			
+			Matcher classicForbiddenStatementMatcher = classicForbidden.matcher(line);
+			Matcher generalForbiddenMatcher = generalForbidden.matcher(line);
+			if(classicForbiddenStatementMatcher.matches())
+			{
+				String values = classicForbiddenStatementMatcher.group(1);
+				String[] nameValuePairs = values.split(",");
+				
+				List<double[]> forbiddenIndexValuePairs = new ArrayList<double[]>();
+						
+				for(String nameValuePair : nameValuePairs)
+				{
+					String[] nvPairArr = nameValuePair.split("=");
+					if(nvPairArr.length != 2)
+					{
+						throw new IllegalArgumentException("Line specifying forbidden parameters contained an name value pair that could not be parsed: "+ Arrays.toString(nvPairArr) + " in line: " + originalLine);
+					}
+					
+					String name = nvPairArr[0].trim();
+					Integer indexIntoValueArrays = paramKeyIndexMap.get(name);
+					
+					if(indexIntoValueArrays == null)
+					{
+						throw new IllegalArgumentException("Unknown parameter " + name + " in line: " + originalLine);
+					}
+					
+					String value = nvPairArr[1].trim();
+					
+					
+					
+					
+					switch(paramTypes.get(name))
+					{
+					case CATEGORICAL:
+						{
+							Integer valueIndex = categoricalValueMap.get(name).get(value);
+							
+							if(valueIndex == null)
+							{
+								throw new IllegalArgumentException("Invalid parameter value " + value + " for parameter " + name + " in line: " + line);
+								
+							}
+							
+							double[] nvPairArrayForm = new double[2];
+							nvPairArrayForm[0] = indexIntoValueArrays;
+							nvPairArrayForm[1] = valueIndex; 
+							
+							forbiddenIndexValuePairs.add(nvPairArrayForm);
+						}
+						break;
+					case ORDINAL:
+					{
+						value = String.valueOf(this.categoricalValueMap.get(name).get(value));
+					}
+					case REAL:
+					case INTEGER:
+						{
+							
+							
+							double[] nvPairArrayForm = new double[2];
+							nvPairArrayForm[0] = indexIntoValueArrays;
+							nvPairArrayForm[1] = this.getNormalizedRangeMap().get(name).normalizeValue(Double.valueOf(value));
+							
+							forbiddenIndexValuePairs.add(nvPairArrayForm);
+						}
+						break;
+					default:
+						throw new IllegalStateException("Unknown Parameter Type:" + paramTypes.get(name));
+					}
+					
+	
+				}
+				
+				
+				forbiddenParameterValuesList.add(forbiddenIndexValuePairs.toArray(new double[0][0]));
+				
+			} else if(generalForbiddenMatcher.find())
+			{
+				newForbiddenStatements = true;
+				
+				ExpressionBuilder eb = new ExpressionBuilder(line);
+				
+				
+				Set<String> parameterNameVariables = new TreeSet<>(this.getParameterNames());
+				
+				
+				Set<String> parameterValuesVariables = new TreeSet<>();
+				
+				
+				Set<String> allParameterValues = new TreeSet<>();
+				Set<Constraint<String>> constraints = new HashSet<>();
+				
+				for(Entry<String, Map<String, Integer>> ent : this.categoricalValueMap.entrySet())
+				{
+					List<String> paramValues = new ArrayList<>(ent.getValue().keySet());
+					allParameterValues.addAll(paramValues);
+					if(this.getParameterTypes().get(ent.getKey()) == ParameterType.ORDINAL)
+					{
+						for(int i=1; i < paramValues.size(); i++)
+						{
+							constraints.add(new Constraint<>(paramValues.get(i-1),paramValues.get(i)));
+						}
+					}
+					
+					
+					for(int i=0; i < paramValues.size(); i++)
+					{
+						try 
+						{
+							Double.valueOf(paramValues.get(i));
+						} catch(RuntimeException e)
+						{
+							parameterValuesVariables.add(paramValues.get(i));
+						}
+					}
+				}
+				
+				Set<String> copyOfParameterNameVariables = new HashSet<>(parameterNameVariables);
+				
+				copyOfParameterNameVariables.removeAll(parameterValuesVariables);
+				
+				
+				if(forbiddenParameterConstants == null)
+				{
+					//The topological sorting is expensive so only do it once.
+					//The logic of the other stuff would have be saved as fields or whatever, so we will do that
+					//for every forbidden statement even though it is redundant.
+					
+					
+					List<String> topologicallySortedValues;
+					try {
+						 topologicallySortedValues = TopologicalSorter.getTopologicalOrder(allParameterValues, constraints);
+					} catch (NoTopologicalOrderAvailableException e) {
+						throw new IllegalArgumentException("Cycle detected in ordinal parameter values:" + e.getMessage());
+					}
+					
+					
+					
+					forbiddenParameterConstants = Collections.unmodifiableMap(getForbiddenParameterConstants(topologicallySortedValues));
+					
+					
+					Map<String, Double> forbiddenParameterConstantVariableValues = new LinkedHashMap<>();
+					
+					for(Entry<String, Double> ent : forbiddenParameterConstants.entrySet())
+					{
+						try 
+						{
+							Double.valueOf(ent.getKey());
+						} catch(RuntimeException e)
+						{
+							forbiddenParameterConstantVariableValues.put(ent.getKey(), ent.getValue());
+						}
+						
+							
+					}
+					
+					this.forbiddenOrdinalAndCategoricalVariableValues = Collections.unmodifiableMap(forbiddenParameterConstantVariableValues);
+				}
+				
+				
+				if(!copyOfParameterNameVariables.equals(parameterNameVariables))
+				{
+					parameterNameVariables.retainAll(parameterValuesVariables);
+					throw new IllegalArgumentException("Detected parameter name that is also a value to another parameter, which is not allowed with advanced forbidden parameters: " + parameterNameVariables );
+				}
+				
+				
+				Set<String> exp4jVariables = new TreeSet<String>();
+				
+				exp4jVariables.addAll(parameterNameVariables);
+				exp4jVariables.addAll(parameterValuesVariables);
+				
+				
+				eb.variables(exp4jVariables);
+				
+				Set<String> illegalVariables = new HashSet<String>();
+				Pattern legalCharacters = Pattern.compile("^[a-zA-Z_][a-zA-Z_0-9]*$");
+				for(String variable : exp4jVariables)
+				{
+					if(!legalCharacters.matcher(variable).find())
+					{
+						illegalVariables.add(variable);
+					}
+				}
+				
+				if(illegalVariables.size() > 0)
+				{
+					throw new IllegalArgumentException("When using Advanced Forbidden Syntax all parameter names and values must start with an letter or underscore, and can only consist of letter, underscores and digits. Illegal names & values are:" + illegalVariables);
+				}
+					
+				//eb.variable(variableName)
+				
+				eb.operator(ForbiddenOperators.operators);
+				
+				bl.add(eb);
+				
+				expressions.put(eb, line);
+				
+			
+			} else
+			{
+				throw new IllegalArgumentException("Unsure how to parse the following line, guess was that it was forbidden, line: " + originalLine);
+			}
+			
+			
+		}
+		
+		forbiddenLines.clear();
+		return newForbiddenStatements;
+		
+		
+		/*
 		if(line.trim().indexOf("{",1) != -1) throw new IllegalArgumentException("Line specifying forbidden parameters contained more than one { in line: " + originalLine);
 		
 		line = line.replace("{", "");
@@ -582,275 +1316,217 @@ public class ParameterConfigurationSpace implements Serializable {
 		line = line.replaceFirst("}","");
 		
 		if(line.trim().indexOf("}") != -1) throw new IllegalArgumentException("Line specifying forbidden parameters contained multiple closing braces \"}\" in line: " + originalLine);
+
+		*/
+		
+		//Remove Comment
+	
 		
 		
 		
 		
-		String[] nameValuePairs = line.split(",");
-		
-		List<int[]> forbiddenIndexValuePairs = new ArrayList<int[]>();
-				
-		for(String nameValuePair : nameValuePairs)
-		{
-			String[] nvPairArr = nameValuePair.split("=");
-			if(nvPairArr.length != 2)
-			{
-				throw new IllegalArgumentException("Line specifying forbidden parameters contained an name value pair that could not be parsed: "+ Arrays.toString(nvPairArr) + " in line: " + originalLine);
-			}
-			
-			String name = nvPairArr[0].trim();
-			Integer indexIntoValueArrays = paramKeyIndexMap.get(name);
-			
-			if(indexIntoValueArrays == null)
-			{
-				throw new IllegalArgumentException("Unknown parameter " + name + " in line: " + originalLine);
-			}
-			
-			String value = nvPairArr[1].trim();
-			
-			if(isContinuous.get(name))
-			{
-				throw new IllegalArgumentException("Forbidden Parameter Declarations can only exclude combinations of categorical parameters " + name + " is continuous; in line: " + line );
-			}
-			
-			Integer valueIndex = categoricalValueMap.get(name).get(value);
-			
-			if(valueIndex == null)
-			{
-				throw new IllegalArgumentException("Invalid parameter value " + value + " for parameter " + name + " in line: " + line);
-				
-			}
-			
-			
-			
-			
-			int[] nvPairArrayForm = new int[2];
-			nvPairArrayForm[0] = indexIntoValueArrays;
-			nvPairArrayForm[1] = valueIndex; 
-			
-			forbiddenIndexValuePairs.add(nvPairArrayForm);
-		}
-		
-		
-		forbiddenParameterValuesList.add(forbiddenIndexValuePairs.toArray(new int[0][0]));
 		
 	}
+	
 	/**
-	 * Continuous Lines consist of:
-	 *   
-	 * <name><w*>[<minValue>,<maxValue>]<w*>[<default>]<*w><i?><l?>#Comment
-	 * where:
-	 * <name> - name of parameter.
-	 * <minValue> - minimum Value in Range
-	 * <maxValue> - maximum Value in Range.
-	 * <default> - default value enclosed in braces.
-	 * <w*> - zero or more whitespace characters
-	 * <i?> - An optional i character that specifies whether or not only integral values are permitted
-	 * <l?> - An optional l character that specifies if the domain should be considered logarithmic (for sampling purposes).
+	 * Converts a list of Strings that are considered sorted by some custom sort order a map from String to Double consistent with that order.
 	 * 
-	 * @param line
+	 * e.g. input: [ -10, 2, a , c , b, 7, 21, apple, orange, 22, banana ]
+	 * 
+	 * A consistent output is (but not necessarily the output of this function)
+	 * 
+	 * [ -10, 2, a , c , b, 7, 21, apple, orange, 22, banana ]
+	 * [ -10, 2, 3 , 4 , 5, 7, 21, 21.33, 21.66 , 22 , 23 ] 
+	 * 
+	 * 
+	 * @param input
+	 * @return
 	 */
-	private void parseContinuousLine(String line) 
-	{
+	private Map<String, Double> getForbiddenParameterConstants(List<String> input) {
 		
-		String name = getName(line);
-		int firstBracket = line.indexOf("[");
-		int secondBracket = line.indexOf("]");
-		String domainValues = line.substring(firstBracket+1, secondBracket);
-		String[] contValues  = domainValues.split(",");
-		if(contValues.length != 2)
-		{
-			throw new IllegalArgumentException ("Expected two parameter values (or one comma between the first brackets) from line \""+ line + "\" but received " + contValues.length);
-		}
 		
-		double min = Double.valueOf(contValues[0]);
-		double max = Double.valueOf(contValues[1]);
+		LinkedHashMap<String, Double> forbiddenExpressionConstants = new LinkedHashMap<>();
 
-		String defaultValue = getDefault(secondBracket, line);
-		
-		paramNames.add(name);
-		isContinuous.put(name, Boolean.TRUE);
-		values.put(name, Collections.<String> emptyList());
-		
-		this.defaultValues.put(name, defaultValue);
-		
-		
-		
-		
-		
-		//This gets the rest of the line after the defaultValue
-		String lineRemaining = line.substring(line.indexOf("]",secondBracket+1)+1);
-		
-		
-		
-		boolean logScale = ((lineRemaining.length() > 0) && (lineRemaining.trim().contains("l")));
-		lineRemaining = lineRemaining.replaceFirst("l", "").trim();
-		
-		boolean intValuesOnly = ((lineRemaining.length() > 0) && (lineRemaining.trim().contains("i")));
-		
-		if(intValuesOnly)
+		//Set this initial value, because it will set the value to zero if there are no numbers.
+		double leastValue = input.size();
+		int inputsBeforeLeastValue=0;
+		for(String val : input)
 		{
+			inputsBeforeLeastValue++;
 			try {
+			leastValue = Double.valueOf(val);
 			
-			if(!isIntegerDouble(Double.valueOf(contValues[0]))) throw new IllegalArgumentException("This parameter is marked as integer, only integer values are permitted for the bounds and default on line:" + line); 
-			if(!isIntegerDouble(Double.valueOf(contValues[1]))) throw new IllegalArgumentException("This parameter is marked as integer, only integer values are permitted for the bounds and default on line:" + line);
-			if(!isIntegerDouble(Double.valueOf(defaultValue))) throw new IllegalArgumentException("This parameter is marked as integer, only integer values are permitted for the bounds and default on line:" + line);
-			} catch(NumberFormatException e)
+			//List is assumed sorted so we can break out of this search when we find the first number
+			break;
+			} catch(RuntimeException e)
 			{
-				throw new IllegalArgumentException("This parameter is marked as integer, only integer values are permitted for the bounds and default on line:" + line);
+				//Doesn't matter
 			}
-		}
-		
-		
-		lineRemaining = lineRemaining.replaceFirst("i", "").trim();		
-		
-		if(lineRemaining.trim().length() != 0)
-		{
-			throw new IllegalArgumentException("Unknown or duplicate modifier(s): " + lineRemaining + " in line: " + line);
-		}
-			
-			
-		try {
-			contNormalizedRanges.put(name, new NormalizedRange(min, max, logScale, intValuesOnly));
-		} catch(IllegalArgumentException e)
-		{
-			throw new IllegalArgumentException(e.getMessage() + "; error occured while parsing line: " +line);
-		}
-
-		
-		//Check for gibberish between ] [  
-		String subString = line.substring(line.indexOf("]") +1, line.indexOf("[", line.indexOf("]"))).trim();
-		
-		
-		if(subString.length() > 0)
-		{
-			throw new IllegalArgumentException("Invalid Characters detected between domain and default value on line : " + line);
-		}
-		
-		
-	}
-
-	/**
-	 * Categorical Lines consist of:
-	 *   
-	 * <name><w*>{<values>}<w*>[<default>]<*w>#Comment
-	 * where:
-	 * <name> - name of parameter.
-	 * <values> - comma seperated list of values (i.e. a,b,c,d...,z)
-	 * <default> - default value enclosed in braces.
-	 * <w*> - zero or more whitespace characters
-	 * 
-	 * 
-	 * @param line
-	 */
-	private void parseCategoricalLine(String line) 
-	{
-		String name = getName(line);
-		List<String> paramValues = getValues(line);
-		String defaultValue = getDefault(0,line);
-		
-		paramNames.add(name);
-		values.put(name, paramValues);
-		
-		//LinkedHashMap just makes it easier to debug
-		//Map is all that is necessary
-		Map<String, Integer> valueMap = new LinkedHashMap<String, Integer>();
-		
-		int lastIndexOf = line.lastIndexOf("]");
-		
-		
-	
-		
-		int i=0;
-		for(String value : paramValues)
-		{
-			valueMap.put(value, i);
-			i++;
 			
 		}
-		categoricalValueMap.put(name, valueMap);
 		
-		defaultValues.put(name, defaultValue);
+		double lastValue = leastValue - inputsBeforeLeastValue;
 		
-		isContinuous.put(name,Boolean.FALSE);
-		
-		String remaining = line.substring(lastIndexOf+1).trim();
-		
-		if(remaining.contains("i")) {
-			throw new IllegalArgumentException("Cannot set categorical value as having integral only values on line " +  line );
-		}
-		
-		if(remaining.contains("l")) {
-			throw new IllegalArgumentException("Cannot set categorical value as being selected with a log distribution" + line );
-		}
-		
-		if(remaining.length() > 0)
+		for(int i=0; i < input.size(); /*Nothing goes here */)
 		{
-			throw new IllegalArgumentException("Extra flags set for categorical value (flags are not permitted on categorical values) on line : " + line);
-		}
-	}
-	
-	
-	/**
-	 * Conditional Lines consist of:
-	 * <name1><w*>|<name2><w+><op><w+>{<values>} #Comment
-	 * <name1> - dependent parameter name
-	 * <name2> - the independent parameter name
-	 * <op> - probably only in at this time.
-	 * <w*> - zero or more whitespace characters.
-	 * <w+> - one or more whitespace characters
-	 * <values> - values 
-	 * 
-	 * Note: <op> only supports in at this time. (and the public interface only assumes in).
-	 * @param line
-	 */
-	private void parseConditionalLine(String line) {
-		String lineToParse = line;
 		
-		String name1 = getName(line);
+			//Find next numeric value
+			
+			boolean nextNumberFound = false;
+			int indexOfNumberFound = 0;
+			double nextNumber = 0;
+			for(int j=i; j < input.size(); j++)
+			{
+				try
+				{
+					nextNumber = Double.valueOf(input.get(j));
+					
+					nextNumberFound = true;
+					
+					
+					indexOfNumberFound = j;
+					break;
+				} catch(RuntimeException e)
+				{
+					//Okay not number
+				}
+			}
 		
-		String name2 = getName(line.substring(line.indexOf("|") + 1));
-		//System.out.println(name1 + " depends on " + name2);
-		
-		
-		if(name1.equals(name2))
-		{
-			throw new IllegalArgumentException("Parameter " + name1 + " cannot be conditional on itself in line: " + line);
-		}
-		lineToParse = lineToParse.replaceFirst(name1,"");
-		lineToParse = lineToParse.replaceFirst("|", "");
-		lineToParse = lineToParse.replaceFirst(name2,"");
-		lineToParse = lineToParse.trim();
-		
-		
+			
+			//No more numbers are found
+			if(nextNumberFound == false)
+			{
 				
-		if (lineToParse.indexOf(" in ") < 0)
-		{
-			throw new IllegalStateException("Unknown or missing operator in line: " + line);
-		}
-		List<String> condValues = getValues(line);
+				
+				for(int j=i; j < input.size(); j++)
+				{
+					//set value to one more than the previous value.
+					forbiddenExpressionConstants.put(input.get(j), (j-i)+1+lastValue);
+				}
+				
+				break;
+			} else
+			{
+				double delta = nextNumber - lastValue;
+				
+				double avgDelta = delta / (indexOfNumberFound - i + 1);
+				
+				
+				double assignedValue = nextNumber - (indexOfNumberFound-i+1)*avgDelta;
+				for(int j=i; j < indexOfNumberFound; j++)
+				{
+					
+					assignedValue += avgDelta;
+					forbiddenExpressionConstants.put(input.get(j), assignedValue);
+				}
+				
+				lastValue = nextNumber;
+				i=indexOfNumberFound+1;
+				
+				forbiddenExpressionConstants.put(input.get(indexOfNumberFound), nextNumber);
+				
+			}
 		
-		Map<String, List<String>> dependencies = dependentValues.get(name1);
-		if( dependencies == null)
-		{
-			dependencies = new HashMap<String,List<String>>();
-			dependentValues.put(name1, dependencies );
 		}
+		
+		
+		//System.out.println(forbiddenExpressionConstants);
+		
+		/*
+		for(Entry<String, Double> ent : forbiddenExpressionConstants.entrySet())
+		{
+			try
+			{
+				double percentDiff = Math.abs(Double.valueOf(ent.getKey()) - ent.getValue()) / Math.abs(Math.max(Double.valueOf(ent.getKey()), ent.getValue()));
+				
+				if (percentDiff > 0.001)
+				{
+					throw new IllegalStateException("Key and Value in Map don't seem to match :" + ent);
+				}
+			}catch(NumberFormatException e)
+			{
+				//continue
+			}
+			
+		}*/
+		return forbiddenExpressionConstants;
+	}
+
+
+	Pattern oldCategoricalFormatMatcher = Pattern.compile("^\\s*(\\S+)\\s*\\{(.+)\\}\\s*\\[\\s*(\\S+)\\s*\\]\\s*$");
+	Pattern oldContinuousFormatMatcher = Pattern.compile("^\\s*(\\S+)\\s*\\[(.+)\\]\\s*\\[\\s*(\\S+)\\s*]\\s*([il]*[il]*)\\s*$");
 	
-		//If multiple lines appear for more than one clause I overwrite the previous value
-		if (dependencies.get(name2) != null)
+	private String transformOldFormat(String s)
+	{
+		String line = s;
+		int commentStart = line.indexOf("#");
+		line = line.trim();
+		if (commentStart >= 0)
 		{
-			
-			throw new IllegalArgumentException("Parameter " + name1 + " already has a previous dependency for " + name2 + " values {" + dependencies.get(name2).toString() + "}. Parameter dependencies respecified in line: " + line);
+			line = line.substring(0, commentStart).trim();
 		}
+		
+		//We are done if we trim away the rest of the line
+		if (line.length() == 0)
+		{
+			return s;
+		}
+		
+		if(line.trim().equals("Conditionals:")) return s;
+		if(line.trim().equals("Forbidden:")) return s;
+		
+		Matcher match = oldCategoricalFormatMatcher.matcher(line);
+		
+		if(match.find())
+		{
+			String name = match.group(1);
+			String values = match.group(2);
+			String defaultValue = match.group(3);
 			
 			
-		dependencies.put(name2, condValues);
+			String newLine =  name + " "+ParameterType.CATEGORICAL.keyword()+" {" +values+"} [" + defaultValue + "]";
+			
+			//System.err.println("Transformation: " + s + "\t ====>" + newLine);
+			return newLine;
+		}
+		
+		
+		match = oldContinuousFormatMatcher.matcher(line);
+		
+		
+		if(match.find())
+		{
+			String name = match.group(1);
+			String range = match.group(2);
+			String defaultValue = match.group(3);
+			String il = match.group(4);
+			
+			boolean integerOnly = false;
+			boolean logTransform = false;
+			
+			
+			
+			if(il.contains("i"))
+			{
+				integerOnly = true;
+			}
+			
+			if(il.contains("l"))
+			{
+				logTransform = true;
+			}
+			
+			String newLine = name + " " + (integerOnly?ParameterType.INTEGER.keyword():ParameterType.REAL.keyword()) + " [" + range + "] " + "[" + defaultValue +"]" + (logTransform?"log":"");
+			
+			//System.err.println("Transformation: " + s + "\t ====>" + newLine);
+			return newLine;
+		}
+		
+		return s;
+		
 		
 		
 	}
-	
-	
 	/**
 	 * Returns the name assuming it starts at the beginning of a line.
 	 * @param line
@@ -896,88 +1572,26 @@ public class ParameterConfigurationSpace implements Serializable {
 			return name;
 		}
 	}
-	
-	
-	/**
-	 *  Returns the default value (takes an offset from where to search)
-	 * @param offset
-	 * @param line
-	 * @return
-	 */
-	private String getDefault(int offset, String line) {
-		String defaultValue = line.substring(line.indexOf("[",offset+1)+1, line.indexOf("]",offset+1)).trim();
-		if (defaultValue.length() == 0)
-		{
-			throw new IllegalArgumentException("Invalid Default Value specified in line: " + line);
-		} else
-		{
-			return defaultValue;
-		}
-	}
-
-
-	/**
-	 * Gets the list of allowable values
-	 * @param line
-	 * @return
-	 */
-	private List<String> getValues(String line) {
-
-		String oLine = line;
-		int start = line.indexOf("{");
-		int end = line.indexOf("}");
-		
-		line = line.substring(start+1,end);
-		line = line.replace(',', '\n');
-		
-		BufferedReader r = new BufferedReader( new StringReader(line));
-		
-		List<String> strings = new LinkedList<String>();
-		
-		String value; 
-		
-		try {
-			while ((value = r.readLine()) != null)
-			{
-				
-					if (value.trim().length() == 0)
-					{
-						throw new IllegalArgumentException("Value cannot be empty (consist only of whitespace) in line: " + oLine);
-					} else
-					{
-						strings.add(value.trim());
-					}
-				
-			}
-		} catch (IOException e) {
-
-			System.err.println("Some random IOException occured?");
-			e.printStackTrace();
-			
-			throw new IllegalStateException("An exception occured while reading values from (" + oLine + ") we mistakenly thought this would never happen, please contact developer", e);
-		}
-		
-		Set<String> set = new HashSet<String>();
-		set.addAll(strings);
-		if(set.size() < strings.size())
-		{
-			throw new IllegalStateException("Duplicate Value detected in line: " +  oLine);
-		}
-		
-		return strings;
-	}
-
-
-	
 
 	public List<String> getParameterNames()
 	{
-		return Collections.unmodifiableList(paramNames);
+		return Collections.unmodifiableList(authorativeParameterNameOrder);
 	}
 	
+	/**
+	 * 
+	 * @deprecated use getParameterTypes() instead
+	 */
 	public Map<String, Boolean> getContinuousMap()
 	{
-		return Collections.unmodifiableMap(isContinuous);
+		Map<String, Boolean> continuousMap = new LinkedHashMap<String, Boolean>(); 
+		
+		
+		for(Entry< String, ParameterType> ent :this.getParameterTypes().entrySet())
+		{
+			continuousMap.put(ent.getKey(), ent.getValue().isNormalized());
+		}
+		return Collections.unmodifiableMap(continuousMap);
 	}
 	
 	/**
@@ -996,15 +1610,6 @@ public class ParameterConfigurationSpace implements Serializable {
 	{
 		return Collections.unmodifiableMap(defaultValues);
 		
-	}
-	
-	/**
-	 * This R/O protection isn't robust
-	 * 
-	 */
-	public Map<String, Map<String, List<String>>> getDependentValuesMap()
-	{
-		return Collections.unmodifiableMap(dependentValues);
 	}
 	
 	/**
@@ -1029,7 +1634,59 @@ public class ParameterConfigurationSpace implements Serializable {
 	{
 		return authorativeParameterNameOrder;
 	}
-	
+
+
+    /**
+     * Returns the parameters that the given parameter directly depends upon to be active.
+     * i.e., there was a direct conditional specified between the two parameters
+     */
+    public Set<String> getImmediateParentParameters(String parameter) {
+    	if (parameterDependencies.containsKey(parameter)) {
+    		return Collections.unmodifiableSet(parameterDependencies.get(parameter));
+    	} else {
+    		return null;
+    	}
+    }
+
+
+    /**
+     * Returns all parameters that the given parameter depends upon to be active.
+     * i.e. the result of {@link #getImmediateParentParameters(String)} on the given parameter,
+     * along with the result of {@link #getImmediateParentParameters(String)} on those parameters, etc.
+     */
+    public Set<String> getAllParentParameters(String parameter) {
+        Set<String> immediate = parameterDependencies.get(parameter);
+        if (immediate == null) {
+            return null;
+        }
+
+        HashSet<String> parents = new HashSet<String>(immediate);
+        HashSet<String> queryParameters = new HashSet<String>(immediate);
+
+        // NOTE: This may result in some parameters getting processed multiple times
+        // in complex conditional hierarchies, but I don't think rearchitecting this code
+        // to use a queue and check membership etc. is worth it.
+        while (!queryParameters.isEmpty()) {
+            Set<String> newParents = new HashSet<String>();
+
+            for (String queryParameter : queryParameters) {
+                Set<String> queryParents = parameterDependencies.get(queryParameter);
+
+                if (queryParents != null) {
+                    newParents.addAll(queryParents);
+                }
+            }
+
+            queryParameters.clear();
+
+            parents.addAll(newParents);
+            queryParameters.addAll(newParents);
+        }
+
+        return parents;
+    }
+
+
 	/**
 	 * Absolute File Name is the basis for the hashCode
 	 */
@@ -1148,7 +1805,7 @@ public class ParameterConfigurationSpace implements Serializable {
 		//fastRand.setSeed(random.nextLong());
 		double[] valueArray = new double[numberOfParameters];
 		
-		for(int j=0; j < 1000000; j++)
+		for(int j=0; j < 1_000_000; j++)
 		{
 			
 			for(int i=0; i < numberOfParameters; i++)
@@ -1246,14 +1903,14 @@ public class ParameterConfigurationSpace implements Serializable {
 	 * You are only guaranteed that the number of actual configurations is HIGHER than this lower bound.
 	 * <b>NOTE:</b> Search Subspaces do NOT lower the size of the bound because you can leave the subspace 
 	 * 
-	 * @return an upper bound on the size of the search space
+	 * @return an lower bound on the size of the search space
 	 */
 	public double getLowerBoundOnSize()
 	{
 		//Default cannot be forbidden so there is at least 1 configuration
 		//We don't need to worry about the edge case
 		double configSpaceSize = 1;
-		if(this.forbiddenParameterValuesList.size() > 0)
+		if(this.forbiddenParameterValuesList.size() > 0 || this.bl.size() > 0)
 		{
 			return 1;
 		}
@@ -1263,7 +1920,8 @@ public class ParameterConfigurationSpace implements Serializable {
 		
 			int catSize = this.categoricalSize[i];
 
-			if(this.condParents[i].length > 0)
+			//if(this.condParents[i].length > 0)
+			if (this.parameterDependencies.get(this.authorativeParameterNameOrder.get(i)) != null)
 			{
 				//Conditionals are ignored
 				continue;
@@ -1308,6 +1966,19 @@ public class ParameterConfigurationSpace implements Serializable {
 		return new ParameterConfiguration(this, valueArray.clone(), categoricalSize, parameterDomainContinuous, paramKeyIndexMap);
 	}
 	
+	public List<ParameterConfiguration> getParameterConfigurationsFromList( List<String> paramStrings, ParameterStringFormat f, Random rand)
+	{
+		List<ParameterConfiguration> parameterConfigurations = new ArrayList<ParameterConfiguration>();
+		
+		for( String paramString: paramStrings)
+		{
+			ParameterConfiguration parameterConfiguration = getParameterConfigurationFromString(paramString, f, rand);
+			parameterConfigurations.add(parameterConfiguration);
+		}
+		
+		return parameterConfigurations;
+	}
+	
 	public ParameterConfiguration getParameterConfigurationFromString( String paramString, ParameterStringFormat f)
 	{
 		return getParameterConfigurationFromString(paramString, f, null);
@@ -1317,6 +1988,7 @@ public class ParameterConfigurationSpace implements Serializable {
 	{
 		try 
 		{
+			
 			
 			ParameterConfiguration config;
 			
@@ -1355,8 +2027,11 @@ public class ParameterConfigurationSpace implements Serializable {
 					for(String param : params)
 					{
 						
+						
 						if(param.trim().equals("")) continue;
 						String[] paramSplit = param.trim().split(" ");
+						
+						
 						if(!paramSplit[1].trim().equals("NaN"))
 						{
 							config.put(paramSplit[0].trim(),paramSplit[1].replaceAll("'","").trim());
@@ -1476,19 +2151,22 @@ public class ParameterConfigurationSpace implements Serializable {
 			
 			
 			/**
-			 * For all inactive parameters, set them to the default value
+			 * For all inactive parameters, set them to the default value if they weren't set.
 			 */
 			Set<String> allParameters = new HashSet<String>(this.getParameterNames());
 			
 			allParameters.removeAll(config.getActiveParameters());
 			for(String inactiveParameter : allParameters)
 			{
-				if(config.get(inactiveParameter) == null)
+				
+				if(namesSpecified.contains(inactiveParameter)) 
 				{
-					config.put(inactiveParameter, defaultConfig.get(inactiveParameter));
+					continue;
 				}
+				
+				config.put(inactiveParameter, defaultConfig.get(inactiveParameter));
 			}
-			
+		
 			
 			Set<String> unSetActiveParameters = new TreeSet<String>(config.getActiveParameters());
 			unSetActiveParameters.removeAll(namesSpecified);
@@ -1520,40 +2198,46 @@ public class ParameterConfigurationSpace implements Serializable {
 		return categoricalSize.clone();
 	}
 
-	public int[][] getCondParentsArray() {
-
-		return condParents.clone();
-	}
-
-	public int[][][] getCondParentValsArray() {
-
-		return condParentVals.clone();
-	}
-	
 
 	/**
-	 * Checks the array representation of a configuration to see if it is forbidden
+	 * Checks the array representation of a configuration to see if it is forbidden by classical parameters
 	 * @param valueArray
 	 * @return <code>true</code> if the valueArray is ultimately forbidden, <code>false</code> otherwise.
 	 */
-	public boolean isForbiddenParameterConfiguration(double[] valueArray) {
+	protected boolean isForbiddenParameterConfigurationByClassicClauses(double[] valueArray) {
 		
 		
 		/*
 		 * Each value is Nx2 where the first is an index into the array, and the second is the 
 		 * index of the categorical value.
 		 */
-		for(int[][] forbiddenParamValues : forbiddenParameterValuesList)
+		
+		for(double[][] forbiddenParamValues : forbiddenParameterValuesList)
 		{
 			
 			boolean match = true;
-			for(int[] forbiddenParamValue : forbiddenParamValues)
+			for(double[] forbiddenParamValue : forbiddenParamValues)
 			{
 				//Value arrays are indexed by 1, and forbidden parameters are 0 indexed
-				if(valueArray[forbiddenParamValue[0]] != forbiddenParamValue[1] + 1)
+				
+				int index = (int) forbiddenParamValue[0];
+
+				if(this.parameterDomainContinuous[index]) 
 				{
-					match = false;
-					break;
+					
+					if(valueArray[index] != forbiddenParamValue[1] )
+					{
+						match = false;
+						break;
+					}
+				} else
+				{
+					
+					if(valueArray[index] != forbiddenParamValue[1] + 1)
+					{
+						match = false;
+						break;
+					}
 				}
 				
 			}
@@ -1587,7 +2271,7 @@ public class ParameterConfigurationSpace implements Serializable {
 	 */
 	public static ParameterConfigurationSpace getSingletonConfigurationSpace()
 	{
-		return new ParameterConfigurationSpace(new StringReader("singleton { singleton } [singleton]"),SINGLETON_ABSOLUTE_NAME);
+		return new ParameterConfigurationSpace(new StringReader("singleton categorical { singleton } [singleton]"),SINGLETON_ABSOLUTE_NAME);
 	}
 	
 	public static ParameterConfigurationSpace getNullConfigurationSpace() {
@@ -1709,6 +2393,78 @@ public class ParameterConfigurationSpace implements Serializable {
 	}
 
 
+	/**
+	 * Returns true if there are new forbidden lines, false otherwise
+	 * @return
+	 */
+	private final boolean newForbiddenLinesPresent;
+	
+	boolean hasNewForbidden() {
+		// TODO Auto-generated method stub
+		return newForbiddenLinesPresent;
+	}
+
+	/**
+	 * Returns a mapping (if there are forbidden statements) of the values of all ordinal and categorical values.
+	 * @return
+	 */
+	public Map<String, Double> getForbiddenOrdinalAndCategoricalValues()
+	{
+		return ((forbiddenParameterConstants == null) ? Collections.<String, Double>emptyMap() : forbiddenParameterConstants);
+	}
+	
+	/**
+	 * Returns a mapping (if there are forbidden statements) of the values of all non-numeric ordinal and categorical values.
+	 * @return
+	 */
+	public Map<String, Double> getForbiddenOrdinalAndCategoricalVariableValues()
+	{
+		return ((this.forbiddenOrdinalAndCategoricalVariableValues == null) ? Collections.<String, Double>emptyMap() : this.forbiddenOrdinalAndCategoricalVariableValues);
+	}
+	
+	
+	private static final class PCSSerializationProxy implements Serializable
+	{
+
+		private final String pcsJSON;
+		
+		private static final long serialVersionUID = 21585218521L;
+		
+		public PCSSerializationProxy(String json)
+		{
+			this.pcsJSON = json;
+		}
+		
+		
+		private final Object readResolve() throws ObjectStreamException
+		{
+			JSONConverter<ParameterConfigurationSpace> json = new JSONConverter<ParameterConfigurationSpace>() {} ;
+			
+			//String jsonText = json.getJSON(pcsJSON);
+			//System.out.println(jsonText);
+
+			return json.getObject(pcsJSON);
+		}
+		
+	}
+	
+
+	
+	private final Object writeReplace() throws ObjectStreamException
+	{
+		JSONConverter<ParameterConfigurationSpace> json = new JSONConverter<ParameterConfigurationSpace>() {} ;
+		
+		String jsonText = json.getJSON(this);
+		
+		return new PCSSerializationProxy(jsonText);
+	}
+	
+	private void readObject(ObjectInputStream in) throws IOException, ClassNotFoundException
+	{
+		throw new InvalidObjectException("This object cannot be deserialized, should have used: " + PCSSerializationProxy.class.getCanonicalName());
+	}
+
+	
 	
 }
 

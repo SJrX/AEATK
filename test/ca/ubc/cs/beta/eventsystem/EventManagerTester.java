@@ -7,6 +7,7 @@ import static org.junit.Assert.*;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.Test;
 
@@ -36,6 +37,16 @@ public class EventManagerTester {
 		});
 		
 	}	
+	
+	@After
+	public void tearDown()
+	{
+		if(!this.eventManager.isShutdown())
+		{
+			this.eventManager.shutdown();
+		}
+	}
+	
 	
 	@Test
 	/**

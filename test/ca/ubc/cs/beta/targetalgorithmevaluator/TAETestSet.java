@@ -26,8 +26,10 @@ import java.util.concurrent.Executors;
 import java.util.concurrent.Semaphore;
 import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.io.output.NullOutputStream;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -89,6 +91,7 @@ import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.functionality.Si
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.functionality.TerminateAllRunsOnFileDeleteTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.functionality.portfolio.PortfolioRunKillingPolicy;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.functionality.portfolio.PortfolioTargetAlgorithmEvaluatorDecorator;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.helpers.CompleteZeroSecondCutoffRunsTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.helpers.KillCaptimeExceedingRunsRunsTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.helpers.OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.helpers.WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator;
@@ -102,6 +105,7 @@ import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.forking
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.resource.forking.ForkingTargetAlgorithmEvaluatorDecoratorPolicyOptions.ForkingPolicy;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.AbortOnCrashTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.AbortOnFirstRunCrashTargetAlgorithmEvaluator;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.CrashedSolutionQualityTransformingTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.ResultOrderCorrectCheckerTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.TimingCheckerTargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.safety.VerifySATTargetAlgorithmEvaluator;
@@ -189,6 +193,15 @@ public class TAETestSet {
 	}
 	
 	
+	@After
+	public void afterTest()
+	{
+		if(tae != null)
+		{
+			tae.notifyShutdown();
+		} 
+		tae = null;
+	}
 	@Test
 	public void testPortfolioTargetAlgorithmEvaluatorDecorator()
 	{
@@ -502,7 +515,7 @@ public class TAETestSet {
 		
 		tae.close();
 		
-		
+		lowPriorityTAE.close();
 		
 	}
 	
@@ -1767,11 +1780,16 @@ public class TAETestSet {
 		b.append(" ");
 		b.append(ParamAliasEchoExecutor.class.getCanonicalName());
 		
+		CommandLineTargetAlgorithmEvaluatorFactory tfact = new CommandLineTargetAlgorithmEvaluatorFactory();
+		
+		CommandLineTargetAlgorithmEvaluatorOptions opts = tfact.getOptionObject();
+		
+		opts.logAllProcessOutput = true;
 		
 		
 		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 500);
 			
-		tae = new AbortOnCrashTargetAlgorithmEvaluator(CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE());
+		tae = new AbortOnCrashTargetAlgorithmEvaluator(tfact.getTargetAlgorithmEvaluator(opts));
 		
 		
 		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(TARGET_RUNS_IN_LOOPS);
@@ -2528,16 +2546,16 @@ public class TAETestSet {
 		ProblemInstanceSeedPair unSatPiThree = new ProblemInstanceSeedPair(unsatPi, 3);
 		ProblemInstanceSeedPair unSatPiFour = new ProblemInstanceSeedPair(unsatPi, 4);
 		
-		AlgorithmRunConfiguration satPiOneRC = new AlgorithmRunConfiguration(satPiOne, 0, ParameterConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(), execConfig);
-		AlgorithmRunConfiguration satPiTwoRC = new AlgorithmRunConfiguration(satPiTwo, 0, ParameterConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
-		AlgorithmRunConfiguration unSatPiOneRC = new AlgorithmRunConfiguration(unSatPiOne, 0, ParameterConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
-		AlgorithmRunConfiguration unSatPiTwoRC = new AlgorithmRunConfiguration(unSatPiTwo, 0, ParameterConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
+		AlgorithmRunConfiguration satPiOneRC = new AlgorithmRunConfiguration(satPiOne, 0.1, ParameterConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(), execConfig);
+		AlgorithmRunConfiguration satPiTwoRC = new AlgorithmRunConfiguration(satPiTwo, 0.1, ParameterConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
+		AlgorithmRunConfiguration unSatPiOneRC = new AlgorithmRunConfiguration(unSatPiOne, 0.1, ParameterConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
+		AlgorithmRunConfiguration unSatPiTwoRC = new AlgorithmRunConfiguration(unSatPiTwo, 0.1, ParameterConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
 		
 		
-		AlgorithmRunConfiguration satPiThreeRC = new AlgorithmRunConfiguration(satPiThree, 0, ParameterConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
-		AlgorithmRunConfiguration satPiFourRC = new AlgorithmRunConfiguration(satPiFour, 0, ParameterConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
-		AlgorithmRunConfiguration unSatPiThreeRC = new AlgorithmRunConfiguration(unSatPiThree, 0, ParameterConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
-		AlgorithmRunConfiguration unSatPiFourRC = new AlgorithmRunConfiguration(unSatPiFour, 0, ParameterConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
+		AlgorithmRunConfiguration satPiThreeRC = new AlgorithmRunConfiguration(satPiThree, 0.1, ParameterConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
+		AlgorithmRunConfiguration satPiFourRC = new AlgorithmRunConfiguration(satPiFour, 0.1, ParameterConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
+		AlgorithmRunConfiguration unSatPiThreeRC = new AlgorithmRunConfiguration(unSatPiThree, 0.1, ParameterConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
+		AlgorithmRunConfiguration unSatPiFourRC = new AlgorithmRunConfiguration(unSatPiFour, 0.1, ParameterConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
 		
 		
 		
@@ -4238,6 +4256,173 @@ public class TAETestSet {
 	}
 	
 	
+	@Test
+	public void testKillingRunDecoratorRunsMarkedAsCrashed()
+	{
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(SleepyParamEchoExecutorWithRealtime.class.getCanonicalName());
+		
+		
+		
+		
+		File paramFile = TestHelper.getTestFile("paramFiles/paramEchoParamFileWithRealTime.txt");
+		
+		ParameterConfigurationSpace configSpace = new ParameterConfigurationSpace(paramFile);
+		
+		
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 2);
+		
+		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
+		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
+		
+		options.cores = 1;
+		options.logAllCallStrings = true;
+		options.logAllProcessOutput = true;
+		options.concurrentExecution = true;
+		options.observerFrequency = 125;
+		
+		
+		tae = fact.getTargetAlgorithmEvaluator( options);	
+		TargetAlgorithmEvaluator cliTAE = tae;
+		tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
+		
+		
+		final int CRASHED_SOLUTION_QUALITY = 2_000_000;
+		try(TargetAlgorithmEvaluator taeUnity = new CrashedSolutionQualityTransformingTargetAlgorithmEvaluatorDecorator(new KillCaptimeExceedingRunsRunsTargetAlgorithmEvaluatorDecorator(tae, 1.1), CRASHED_SOLUTION_QUALITY ))
+		{
+			/**
+			 * Test Synchronous Transformation
+			 */
+			List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(4);
+	
+			for(int i=0; i < 2; i++)
+			{
+				ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
+				
+				System.out.println(config.getFormattedParameterString());
+				config.put("runtime",String.valueOf("0"));
+				if(i == 0)
+				{
+					config.put("realTime", String.valueOf(i*10+0));
+				}
+				
+				if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
+				{
+					//Only want good configurations
+					i--;
+					continue;
+				} else
+				{
+					config.put("solved","SAT");
+					AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1.5, config, execConfig);
+					runConfigs.add(rc);
+				}
+			}
+			
+			long startTime = System.currentTimeMillis();
+			List<AlgorithmRunResult> runs = taeUnity.evaluateRun(runConfigs);
+			long endTime = System.currentTimeMillis();
+			
+			
+			assertEquals(runs.get(0).getRunStatus(), RunStatus.SAT);
+			
+			assertEquals(runs.get(1).getRunStatus(), RunStatus.CRASHED);
+			assertTrue(runs.get(1).getRuntime() > 1.5);
+			assertEquals(runs.get(1).getQuality(), CRASHED_SOLUTION_QUALITY, 1);
+			
+			
+			System.out.println(runs);
+			
+			 runConfigs = new ArrayList<AlgorithmRunConfiguration>(4);
+			
+			for(int i=0; i < 2; i++)
+			{
+				ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
+				
+				System.out.println(config.getFormattedParameterString());
+				config.put("runtime",String.valueOf("0"));
+				if(i == 0)
+				{
+					config.put("realTime", String.valueOf(i*10+0));
+				}
+				
+				if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
+				{
+					//Only want good configurations
+					i--;
+					continue;
+				} else
+				{
+					config.put("solved","SAT");
+					AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 1.5, config, execConfig);
+					runConfigs.add(rc);
+				}
+			}
+			
+			startTime = System.currentTimeMillis();
+			
+			
+			final AtomicReference<List<AlgorithmRunResult>> listRef = new AtomicReference<>();
+			final CountDownLatch latch = new CountDownLatch(1);
+			
+			
+			taeUnity.evaluateRunsAsync(runConfigs, new TargetAlgorithmEvaluatorCallback(){
+
+				@Override
+				public void onSuccess(List<AlgorithmRunResult> runs) {
+					listRef.set(runs);
+					latch.countDown();
+				}
+
+				@Override
+				public void onFailure(RuntimeException e) {
+					e.printStackTrace();
+					latch.countDown();
+				}
+				
+			}
+			);
+			
+			
+			
+			try {
+				latch.await();
+			} catch (InterruptedException e1) {
+			
+				fail("Interrupted while executing test");
+			}
+			
+			
+			System.out.println(listRef.get());
+			runs = listRef.get();
+			assertEquals(runs.get(0).getRunStatus(), RunStatus.SAT);
+			
+			assertEquals(runs.get(1).getRunStatus(), RunStatus.CRASHED);
+			assertTrue(runs.get(1).getRuntime() > 1.5);
+			assertEquals(runs.get(1).getQuality(), CRASHED_SOLUTION_QUALITY, 1);
+			
+			
+			
+			
+			
+			
+			
+			
+			
+			
+		}
+		
+		
+		
+		
+	}
+	
+	
+	
 	
 	public void checkExceptedObserverCount(TargetAlgorithmEvaluator tae, double scale, List<AlgorithmRunConfiguration> runConfigs, double runtime, double observerFrequency)
 	{
@@ -4817,6 +5002,8 @@ public class TAETestSet {
 	
 	
 	
+	
+	
 	@Test
 	public void testProcessGroupKilled()
 	{
@@ -5144,6 +5331,199 @@ public class TAETestSet {
 			fail("Um what?");
 		}
 		
+		
+	}
+	
+	
+	static class TestClass
+	{
+		public static void main(String[] args)
+		{
+			System.out.println("WHAT");
+		}
+	}
+	
+	
+	/**
+	 * Bug #2115
+	 * 
+	 * Walltime is incorrect when wrapper doesn't output anything.
+	 */
+	@Test
+	public void testIncorrectWallTimeOnNoWrapperOutput()
+	{
+		
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(TestClass.class.getCanonicalName());
+		
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false,3000);
+		
+		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
+		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
+		
+		options.logAllCallStrings = true;
+		options.logAllProcessOutput = true;
+		options.concurrentExecution = true;
+		options.observerFrequency = 2000;
+		options.cores = 16;
+		
+		tae = fact.getTargetAlgorithmEvaluator( options);	
+	
+	
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(4);
+		for(int i=0; i < 1; i++)
+		{
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
+
+			config.put("runtime", "0");
+			if(config.get("solved").equals("ABORT") || config.get("solved").equals("INVALID"))
+			{
+				i--;
+				continue;
+			}
+			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"),1), 0, config, execConfig);
+			runConfigs.add(rc);
+
+		}
+		
+		StopWatch watch = new AutoStartStopWatch();
+		
+		List<AlgorithmRunResult> results = tae.evaluateRun(runConfigs);
+		
+		for(AlgorithmRunResult run : results)
+		{
+			System.out.println(run.getResultLine() + "===>" + run.getWallclockExecutionTime());
+		}
+		System.out.println(watch.stop());
+		
+		try
+		{
+			assertTrue("Run should report less time than we measured.", results.get(0).getWallclockExecutionTime() < watch.time() / 1000.0 );
+		} finally
+		{
+			tae.notifyShutdown();
+		}
+		
+		
+	
+	}
+	
+	@Test
+	/**
+	 * Related to bug #2116
+	 * 
+	 * The TAE gets a run with zero seconds cutoff time, users may not expect this.
+	 * 
+	 */
+	public void testZeroSecondsCallNotSentToTAE()
+	{
+
+		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
+		
+		
+		StringBuilder b = new StringBuilder();
+		b.append("java -cp ");
+		b.append(System.getProperty("java.class.path"));
+		b.append(" ");
+		b.append(SleepyParamEchoExecutor.class.getCanonicalName());
+		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false,3000);
+		
+		CommandLineTargetAlgorithmEvaluatorFactory fact = new CommandLineTargetAlgorithmEvaluatorFactory();
+		CommandLineTargetAlgorithmEvaluatorOptions options = fact.getOptionObject();
+		
+		options.logAllCallStrings = true;
+		options.logAllProcessOutput = true;
+		options.concurrentExecution = true;
+		options.observerFrequency = 2000;
+		options.cores = 16;
+		
+		tae = fact.getTargetAlgorithmEvaluator( options);	
+	
+		
+		tae = new BoundedTargetAlgorithmEvaluator(tae,2);
+		tae = new CompleteZeroSecondCutoffRunsTargetAlgorithmEvaluatorDecorator(tae);
+		
+		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(4);
+		for(int i=0; i < 40; i++)
+		{
+			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
+
+			config.put("runtime", "0");
+			if(config.get("solved").equals("ABORT") || config.get("solved").equals("INVALID"))
+			{
+				i--;
+				continue;
+			}
+			AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"),1), 0, config, execConfig);
+			runConfigs.add(rc);
+
+		}
+
+		ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
+		config.put("solved","SAT");
+		AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"),1), 3000, config, execConfig);
+		runConfigs.set(5, rc);
+		
+		config = configSpace.getRandomParameterConfiguration(r);
+		config.put("solved","SAT");
+		rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"),1), 3000, config, execConfig);
+		runConfigs.set(7, rc);
+		
+		config = configSpace.getRandomParameterConfiguration(r);
+		config.put("solved","SAT");
+		rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"),1), 3000, config, execConfig);
+		runConfigs.set(11, rc);
+		
+		config = configSpace.getRandomParameterConfiguration(r);
+		config.put("solved","SAT");
+		rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"),1), 3000, config, execConfig);
+		runConfigs.set(12, rc);
+		
+		
+		
+		
+		
+		
+		
+		
+		TargetAlgorithmEvaluatorRunObserver obs = new TargetAlgorithmEvaluatorRunObserver()
+		{
+
+			@Override
+			public void currentStatus(List<? extends AlgorithmRunResult> runs) {
+				for(AlgorithmRunResult run : runs)
+				{
+					System.out.println(run.getResultLine());
+				}
+
+				
+			}
+			
+		};
+		
+		StopWatch watch = new AutoStartStopWatch();
+		
+		List<AlgorithmRunResult> results = tae.evaluateRun(runConfigs, obs);
+		
+		
+		for(AlgorithmRunResult run : results)
+		{
+			System.out.println(run.getResultLine());
+		}
+		System.out.println(watch.stop());
+		
+		try
+		{
+			assertTrue("Expected time to execute runs was less than 15 seconds", watch.time() < 15000);
+		} finally
+		{
+			tae.notifyShutdown();
+		}
 		
 	}
 	

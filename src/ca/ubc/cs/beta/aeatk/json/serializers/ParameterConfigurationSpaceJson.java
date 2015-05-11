@@ -332,7 +332,6 @@ public class ParameterConfigurationSpaceJson
 			
 
 			boolean firstWrite = (map.putIfAbsent(value,idMap.incrementAndGet()) == null);
-					
 			Integer id = map.get(value);		
 			jgen.writeStartObject();
 			jgen.writeObjectField(PCS_ID,id);

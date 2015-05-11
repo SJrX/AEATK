@@ -55,6 +55,7 @@ public class ParamAliasEchoExecutor {
 			System.out.println("Result for ParamILS: " + result + "," + runtime + "," + runlength + "," + quality + "," + resultSeed + "\n");
 		} catch(RuntimeException e)
 		{
+			e.printStackTrace();
 			System.out.println("Result for ParamILS: CRASHED, 0.000, 0, 0," + args[4] + "\n");
 		}
 		

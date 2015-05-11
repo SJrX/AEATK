@@ -1,0 +1,15 @@
+#Multi Dependency  Param
+# i.e. E depends on all of the values
+
+a categorical { 1,2,3,4,5,6,7,8 } [1]
+b categorical { 1,2,3,4,5,6,7,8 } [1]
+c categorical { 1,2,3,4,5,6,7,8 } [1]
+e categorical { 1,2,3,4,5,6,7,8 } [1] #Out of order to make sure we can declare them out of order for conditionals
+d categorical { 1,2,3,4,5,6,7,8 } [1]
+
+#Conditionals:
+
+e | d in { 2 , 3 , 4 , 5 , 6} && c in { 1 , 2 , 3 , 4 } &&  b in { 1, 2,8 } &&  a in { 2 }
+
+#e should be active if a=2, b =0, c =1 d = 2
+

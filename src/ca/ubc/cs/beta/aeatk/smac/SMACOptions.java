@@ -2,6 +2,7 @@ package ca.ubc.cs.beta.aeatk.smac;
 
 import java.io.File;
 import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collection;
 import java.util.HashSet;
 import java.util.List;
@@ -120,6 +121,14 @@ public class SMACOptions extends AbstractOptions {
 	@Parameter(names={"--intensification-percentage","--intensificationPercentage","--frac_rawruntime"}, description="percent of time to spend intensifying versus model learning", validateWith=ZeroOneHalfOpenRightDouble.class)
 	public double intensificationPercentage = 0.50;
 	
+	@UsageTextField(level=OptionLevel.INTERMEDIATE)
+	@Parameter(names={"--initial-challengers","--initialChallengers"}, description="Can be specified multiple times. Every item is one additional initial challenger which will be used to challenge the incumbent prior to starting the actual optimization method. For the syntax, please see --initialIncumbent.")
+	public List<String> initialChallengers = new ArrayList<String>();
+	
+	@UsageTextField(level=OptionLevel.ADVANCED)
+	@Parameter(names={"--initial-challengers-intensification-time","--initialChallengersIntensificationTime"}, description="Time to spend on intensify for the initial challengers.")
+	public int initialChallengersIntensificationTime = Integer.MAX_VALUE;
+	
 	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names={"--iterativeCappingBreakOnFirstCompletion"}, description="In Phase 2 of the initialization phase, we will abort the first time something completes and not look at anything else with the same kappa limits")
 	public boolean iterativeCappingBreakOnFirstCompletion = false;
@@ -149,6 +158,10 @@ public class SMACOptions extends AbstractOptions {
 	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names={"--num-ei-random","--numEIRandomConfigs","--numberOfRandomConfigsInEI","--numRandomConfigsInEI","--numberOfEIRandomConfigs"} , description="number of random configurations to evaluate during EI search", validateWith=NonNegativeInteger.class)
 	public int numberOfRandomConfigsInEI = 10000;
+	
+	@UsageTextField(level=OptionLevel.ADVANCED)
+	@Parameter(names={"--num-ls-random","--num-local-search-random"}, description="Number of configurations ", validateWith=NonNegativeInteger.class)
+	public int numberOfRandomConfigsUsedForLocalSearch = 0;
 	
 	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names={"--num-pca","--numPCA"}, description="number of principal components features to use when building the model", validateWith=FixedPositiveInteger.class)
@@ -219,7 +232,7 @@ public class SMACOptions extends AbstractOptions {
 	public Integer validationCores = null;
 
 	@UsageTextField(level=OptionLevel.ADVANCED)
-	@Parameter(names={"--shared-model-mode","--share-model-mode","--shared-run-data","--share-run-data"}, description="If true the run data will be written to a JSON file and other files matching a specific format will be read in periodically")
+	@Parameter(names={"--shared-model-mode","--share-model-mode","--shared-run-data","--share-run-data"}, description="If true the run data will be read from other runs in the output dir periodically (the runs need have a specific filename)")
 	public boolean shareModelMode = false;
 	
 	
@@ -227,9 +240,29 @@ public class SMACOptions extends AbstractOptions {
 	@Parameter(names={"--shared-model-mode-frequency","--share-model-mode-frequency","--shared-run-data-frequency","--share-run-data-frequency"}, description="How often to poll for new run data (in seconds) ", validateWith=FixedPositiveInteger.class)
 	public int shareRunDataFrequency = 300;
 
+	
 	@UsageTextField(level=OptionLevel.DEVELOPER)
 	@Parameter(names={"--shared-model-mode-tae"}, description="If true and shared model mode is enabled, then we will also try and share run data at the TAE level")
 	public boolean shareModeModeTAE = true;
+
+	public enum SharedModelModeDefaultHandling{
+		USE_ALL,
+		SKIP_FIRST_TWO,
+		IGNORE_ALL
+	}
+	@UsageTextField(level=OptionLevel.ADVANCED)
+	@Parameter(names={"--shared-model-mode-write-data","--write-json-data"}, description="If true we will write run data to a JSON file")
+	public boolean writeRunData = true;
+	
+	
+	
+	@UsageTextField(level=OptionLevel.DEVELOPER)
+	@Parameter(names={"--shared-model-mode-default-handling"}, description="If set to USE_ALL then all runs of the default configuration will be used, If set to SKIP_FIRST_TWO then then first two runs (presumably the default) will not be read, If set to IGNORE_ALL then we will always ignore runs with the default configuration")
+	public SharedModelModeDefaultHandling defaultHandler = SharedModelModeDefaultHandling.USE_ALL;
+
+	@UsageTextField(level=OptionLevel.DEVELOPER)
+	@Parameter(names={"--shared-model-mode-asymetric"}, description="If set to true, then (based on the order of the file names) we will only read from runs that are transitively 2N and 2N+1 from our ID. So for instance if there were 16 runs, 0-15, runs 8-15 would be independent. Run 4 would read from 8,9. Run 5 would read from 10,11. Run 2 would read from 4,5,8,9,10,11, etc...")
+	public boolean sharedModeModeAssymetricMode = false;
 
 	
 	/**

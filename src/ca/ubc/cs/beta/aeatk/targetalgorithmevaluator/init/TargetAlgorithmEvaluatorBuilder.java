@@ -25,6 +25,7 @@ import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.functionality.Ou
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.functionality.TerminateAllRunsOnFileDeleteTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.functionality.transform.TransformTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.helpers.CallObserverBeforeCompletionTargetAlgorithmEvaluatorDecorator;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.helpers.CompleteZeroSecondCutoffRunsTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.helpers.KillCaptimeExceedingRunsRunsTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.helpers.OutstandingRunLoggingTargetAlgorithmEvaluatorDecorator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.helpers.RetryCrashedRunsTargetAlgorithmEvaluatorDecorator;
@@ -293,6 +294,11 @@ public class TargetAlgorithmEvaluatorBuilder {
 			tae = new FileCacheTargetAlgorithmEvaluatorDecorator(tae, new File(options.fileCacheSource), new File(options.fileCacheOutput), numRun, options.fileCacheCrashOnMiss);
 		}
 		
+		if(options.filterZeroCutoffRuns)
+		{
+			log.trace("[TAE] Filtering out runs that are for zero seconds");
+			tae = new CompleteZeroSecondCutoffRunsTargetAlgorithmEvaluatorDecorator(tae);
+		}
 		
 		
 		//==== Run Hash Code Verification should generally be one of the last

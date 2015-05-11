@@ -3,25 +3,42 @@ package ca.ubc.cs.beta.aeatk.parameterconfigurationspace;
 import java.io.PrintWriter;
 import java.io.Serializable;
 import java.io.StringWriter;
+import java.util.AbstractCollection;
+import java.util.AbstractMap;
+import java.util.AbstractSet;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.Collection;
 import java.util.Collections;
+import java.util.ConcurrentModificationException;
+import java.util.HashMap;
+import java.util.HashSet;
+import java.util.Iterator;
 import java.util.LinkedHashMap;
 import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
+import java.util.NoSuchElementException;
 import java.util.Random;
 import java.util.Set;
 import java.util.TreeSet;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.exceptions.ParameterConfigurationLockedException;
 import ca.ubc.cs.beta.aeatk.json.serializers.ParameterConfigurationSpaceJson;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace.Conditional;
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace.ParameterType;
 
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
+import de.congrace.exp4j.Calculable;
 import net.jcip.annotations.NotThreadSafe;
+import net.objecthunter.exp4j.Expression;
+import net.objecthunter.exp4j.ExpressionBuilder;
+import net.objecthunter.exp4j.ValidationResult;
+import net.objecthunter.exp4j.operator.Operator;
 
 
 /**
@@ -109,7 +126,13 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 	 * Value array used in comparisons with equal() and hashCode()
 	 * (All Inactive Parameters are hidden)
 	 */
-	private final double[] valueArrayForComparsion; 
+	private final double[] valueArrayForComparsion;
+
+	
+	/**
+	 * If set to true, the configuration can no longer be modified.
+	 */
+	private volatile boolean locked = false; 
 
 	/**
 	 * Default Constructor 
@@ -153,11 +176,20 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 		this.paramKeyToValueArrayIndexMap = oConfig.paramKeyToValueArrayIndexMap;
 		
 		this.activeParams = oConfig.activeParams.clone();
-		this.activeParameters = oConfig.activeParameters;
+		//this.activeParametersSet = oConfig.activeParametersSet;
 		this.valueArrayForComparsion = oConfig.valueArrayForComparsion.clone();
 		this.lastHash = oConfig.lastHash;
 		
+		//DO NOT CHANGE THIS TO BE TRUE, as new configurations should be mutable.
+		this.locked = false;
+		
 	}
+	
+	
+	
+	
+	
+	
 	
 	@Override
 	public int size() {
@@ -178,7 +210,16 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 
 
 	public boolean containsValue(Object value) {
-		return getRealMap().containsValue(value);
+		for(String s : this.values())
+		{
+			if(s.equals(value))
+			{
+				return true;
+			}
+		} 
+		
+		return false;
+		
 	}
 
 	
@@ -192,8 +233,6 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 			return null;
 		}
 		
-		
-		
 		double value = valueArray[index];
 		
 		if(Double.isNaN(value))
@@ -206,7 +245,15 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 			NormalizedRange range = configSpace.getNormalizedRangeMap().get(key);
 			if(range.isIntegerOnly())
 			{
-				return String.valueOf((long) Math.round(range.unnormalizeValue(value)));
+				long intValue = ((long) Math.round(range.unnormalizeValue(value)));
+				if(configSpace.getParameterTypes().get(key) == ParameterType.ORDINAL)
+				{
+					return configSpace.getValuesMap().get(key).get( (int) intValue);
+				} else
+				{
+					return String.valueOf(intValue);
+				}
+				
 			} else
 			{
 				return String.valueOf(range.unnormalizeValue(value));
@@ -227,6 +274,16 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 
 
 	/**
+	 * Returns a copy of the parameter setting, this copy will be mutable.
+	 * @return
+	 */
+	public ParameterConfiguration copy()
+	{
+		return new ParameterConfiguration(this);
+	}
+	
+	
+	/**
 	 * Replaces a value in the Map
 	 * 
 	 * <b>NOTE:</b> This operation can be slow and could be sped up if the parser file had a Map<String, Integer> mapping Strings to there integer equivilants.
@@ -239,10 +296,26 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 	 */
 	public String put(String key, String newValue) 
 	{
+		
+		if(this.locked)
+		{
+			
+			if(get(key).equals(newValue))
+			{
+				return newValue;
+			} else
+			{
+				throw new ParameterConfigurationLockedException("This parameter setting has been locked (via the lock() method), this prevents any further changes to this instance. You should use the copy() method to obtain a new instance that is still modifiable. Unfortunately defensive copying was leaking too much memory.");
+			}
+			
+		}
+		
+		
+		
 		//Now th
 		isDirty = true;
 		
-		builtMap = null;
+		//builtMap = null;
 		
 		
 		
@@ -267,6 +340,16 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 		}
 		else if(parameterDomainContinuous[index])
 		{
+			
+			if(configSpace.getParameterTypes().get(key) == ParameterType.ORDINAL)
+			{
+				newValue = String.valueOf(configSpace.getCategoricalValueMap().get(key).get(newValue));
+				if(newValue == null)
+				{
+					throw new IllegalArgumentException("Value is not legal for this parameter: " + key + " Value:" + newValue);
+				}
+			}
+			
 			valueArray[index] = configSpace.getNormalizedRangeMap().get(key).normalizeValue(Double.valueOf(newValue));
 			
 		} else
@@ -295,18 +378,21 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 			
 		}
 		
-	
-		
+		/*
+		 * After three years I don't think we need these tests anymore :)
+		 * 
+		 *
 		if(parameterDomainContinuous[index] && newValue != null)
 		{
+			
 			double d1 = Double.valueOf(get(key));
 			double d2 = Double.valueOf(newValue);
 			
 			if(Math.abs(d1/d2 - 1) >  Math.pow(10, -12))
 			{
-				System.out.println("Warning got the following value back from map " + get(key) + " put " + newValue + " in");
+				throw new IllegalStateException("Not Sure Why this happened: " + get(key) + " vs. " + newValue);
 			}
-				//throw new IllegalStateException("Not Sure Why this happened: " + get(key) + " vs. " + newValue);
+				
 		} else
 		{
 			if(get(key) == null)
@@ -320,6 +406,7 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 				throw new IllegalStateException("Not Sure Why this happened: " + get(key) + " vs. " + newValue);
 			}
 		}
+		*/
 		return oldValue;
 	}
 
@@ -374,19 +461,23 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 
 
 	public Collection<String> values() {
-		return getRealMap().values();
+		
+		if(isDirty) cleanUp();
+		return new ValueSetCollection();
+		//return getRealMap().values();
 	}
 
 
 	/**
 	 * A real map view of this configuration, it is nulled out when the map is made dirty.
 	 */
-	private volatile Map<String, String> builtMap = null;
+	//private volatile Map<String, String> builtMap = null;
 	
 	/**
 	 * Retrieves a real map view (one that has all methods supported) 
 	 * @return
 	 */
+	/*
 	private Map<String, String> getRealMap()
 	{
 		
@@ -402,11 +493,13 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 		
 		
 		return builtMap;
-	}
+	}*/
 
 	
 	public Set<java.util.Map.Entry<String, String>> entrySet() {
-		return getRealMap().entrySet();
+		
+		if(isDirty) cleanUp();
+		return new ParameterConfigurationEntrySet();
 	}
 	
 	/**
@@ -474,7 +567,7 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 		}
 	}
 	
-	boolean hashSet = false;
+	volatile boolean hashSet = false;
 	int lastHash = 0;
 	
 	@Override
@@ -495,8 +588,6 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 			}
 			
 			lastHash = Arrays.hashCode(values);
-			//lastHash = Hash.hashCode(values); 
-			
 			
 			hashSet = true;
 		}
@@ -743,8 +834,9 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 	 */
 	public List<ParameterConfiguration> getNeighbourhood(Random rand, int numNumericalNeighbours)
 	{
-		List<ParameterConfiguration> neighbours = new ArrayList<ParameterConfiguration>(numberOfNeighboursExcludingForbidden(numNumericalNeighbours));
 		Set<String> activeParams = getActiveParameters();
+		List<ParameterConfiguration> neighbours = new ArrayList<ParameterConfiguration>(numberOfNeighboursExcludingForbidden(numNumericalNeighbours, activeParams));
+		
 		/*
 		 * i is the number of parameters
 		 * j is the number of neighbours
@@ -753,20 +845,34 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 		{
 			double[] newValueArray = valueArray.clone();
 			
+			int failuresForParameter = 0;
 			for(int j=1; j <= numberOfNeighboursForParameter(i,activeParams.contains(configSpace.getParameterNamesInAuthorativeOrder().get(i)),numNumericalNeighbours); j++)
 			{
 				newValueArray[i] = getNeighbourForParameter(i,j,rand);
+			
 				
-				if(configSpace.isForbiddenParameterConfiguration(newValueArray)) continue;
+				ParameterConfiguration config = new ParameterConfiguration(configSpace, newValueArray.clone(), categoricalSize, parameterDomainContinuous, paramKeyToValueArrayIndexMap);
 				
-				neighbours.add(new ParameterConfiguration(configSpace, newValueArray.clone(), categoricalSize, parameterDomainContinuous, paramKeyToValueArrayIndexMap));
+				if(config.isForbiddenParameterConfiguration()) 
+				{	
+					
+					failuresForParameter++;
+					if(failuresForParameter < 100 && this.parameterDomainContinuous[i])
+					{
+						j--;
+					} 
+					continue;
+				
+				}
+				
+				neighbours.add(config);
 			}
 		}
 		
 		
-		if(neighbours.size() > numberOfNeighboursExcludingForbidden(numNumericalNeighbours))
+		if(neighbours.size() > numberOfNeighboursExcludingForbidden(numNumericalNeighbours, activeParams))
 		{
-			throw new IllegalStateException("Expected " + numberOfNeighboursExcludingForbidden(numNumericalNeighbours) + " neighbours (should be greater than or equal to) but got " + neighbours.size());
+			throw new IllegalStateException("Expected " + numberOfNeighboursExcludingForbidden(numNumericalNeighbours, activeParams) + " neighbours (should be greater than or equal to) but got " + neighbours.size());
 		}
 		return neighbours;
 		
@@ -812,11 +918,11 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 	 * Returns the number of neighbours for this configuration
 	 * @return number of neighbours that this configuration has
 	 */
-	private int numberOfNeighboursExcludingForbidden(int numNumericalNeighbours)
+	private int numberOfNeighboursExcludingForbidden(int numNumericalNeighbours,Set<String> activeParams)
 	{
 		int neighbours = 0;
 		
-		Set<String> activeParams = getActiveParameters();
+		 
 		
 		for(int i=0; i < configSpace.getParameterNamesInAuthorativeOrder().size(); i++)
 		{
@@ -872,6 +978,10 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 				
 				if(randValue >= 0 && randValue <= 1)
 				{
+					
+					NormalizedRange nr = configSpace.normalizedRangesByIndex[valueArrayIndex]; 
+					randValue = nr.normalizeValue(nr.unnormalizeValue(randValue));
+					
 					return randValue;
 				}
 			}
@@ -896,7 +1006,7 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 		}
 	}
 	
-	private volatile Set<String> activeParameters;
+	//private volatile Set<String> activeParametersSet;
 	
 	/**
 	 * Recomputes the active parameters and valueArrayForComparision and marks configuration clean again
@@ -931,9 +1041,14 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 			}
 		}
 		myID = idPool.incrementAndGet();
-		activeParameters = Collections.unmodifiableSet(activeParams);
+		//activeParametersSet = Collections.unmodifiableSet(activeParams);
 		isDirty = false;
 		
+		
+		if(!activeParams.equals(getActiveParameters()))
+		{
+			throw new IllegalStateException("Expected our internal set representation to match the array set implementation" + activeParams + " vs " + getActiveParameters());
+		}
 	}
 	
 	
@@ -948,102 +1063,90 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 			cleanUp();
 		}
 		
-		return activeParameters;
+		return new ActiveParametersSet();
 		
 		
 	}
 	
+	/**
+	 * Since the ConfigSpace already now an order of parameters to check active status, 
+	 * we simply iterate over it and check the conditions
+	 * @return
+	 */
 	private Set<String> _getActiveParameters()
 	{
-		
-		
-		boolean activeSetChanged = false;
 		Set<String> activeParams= new TreeSet<String>();
-		
-		/*
-		 * This code is will loop in worse case ~(n^2) times, the data structures may not be very 
-		 * good either, so gut feeling is probably Omega(n^3) in worse case.
-		 * 
-		 *  This algorithm basically does the following:
-		 *  1) Adds all independent clauses to the active set
-		 *  2) For every dependent value:
-		 *  	- checks if each dependee parameter is active
-		 *  	- if all dependee parameters have an acceptible value, adds it to the active set.
-		 *  3) Terminates when there are no changes to the active set. (controlled by the changed flag) 
-		 */
-		do {
-			/*
-			 * Loop through every parameter to see if it should be added to the activeParams set.
-			 */
-			activeSetChanged = false;
-			List<String> paramNames = this.configSpace.getParameterNames();
+		Map<Integer, ArrayList<ArrayList<Conditional>>> conds = configSpace.getNameConditionsMap();
+		List<String> param_names = configSpace.getParameterNamesInAuthorativeOrder();
+		for(String param : configSpace.getActiveCheckOrderString()){
 			
-			for(String candidateParam : paramNames)
-			{	
-				
-				if(activeParams.contains(candidateParam))
-				{ 
-					//We already know the Param is active
-					continue;
-				}
-				
-				
-				/*
-				 * Check if this parameter is conditional (if not add it to the activeParam set), if it is check if it's conditions are all satisified. 
-				 */	
-				Map<String,List<String>> dependentOn;
-				if(( dependentOn = configSpace.getDependentValuesMap().get(candidateParam)) != null)
-				{
-					//System.out.print(" is dependent ");
-					
-					
-					boolean dependentValuesSatified = true; 
-					for(String dependentParamName : dependentOn.keySet())
-					{
-						if(activeParams.contains(dependentParamName))
-						{
-							if(dependentOn.get(dependentParamName).contains(get(dependentParamName)))
-							{	
-								//System.out.print("[+]:" +  dependentParamName +  " is " + params.get(dependentParamName)); 
-							} else
-							{	
-								//System.out.print("[-]:" + dependentParamName +  " is " + params.get(dependentParamName));
-								dependentValuesSatified = false;
-								break;
-							}
-								
-						} else
-						{
-							dependentValuesSatified = false;
-							break;		
-						}
-					}
-					
-					if(dependentValuesSatified == true)
-					{
-						
-						activeSetChanged = true;
-						activeParams.add(candidateParam);
-					} else
-					{
-						
-					}
-					
-					
-					
-				} else
-				{ //This Parameter is not dependent
-					if(activeParams.add(candidateParam))
-					{
-						activeSetChanged = true;
-						
-					}
-				}				
+			Integer param_id = configSpace.getParamKeyIndexMap().get(param);
+			
+			//if no conditions on this parameter, it is always active
+			if (!conds.containsKey(param_id)) {
+				activeParams.add(param);
+				continue;
 			}
-
 			
-		} while(activeSetChanged == true);
-		
+			ArrayList<ArrayList<Conditional>> clauses = conds.get(param_id);
+			
+			//only one of the clauses has to be true
+			for (ArrayList<Conditional> clause : clauses){
+				boolean all_satisfied = true;
+				// all conditions in a clause have to be satisfied
+				for (Conditional cond: clause){
+					Integer parent_id = cond.parent_ID;
+					String parent_name = param_names.get(parent_id);
+					String parent_value_string = get(parent_name);
+					double encodedParentPresentValue;
+
+					// check whether parent is active; if not, child is also not active
+					if (! activeParams.contains(parent_name)){
+						all_satisfied = false;
+						break;
+					}
+					
+					//translate value
+					
+					String tmpParentValueString = parent_value_string;
+					switch(configSpace.getParameterTypes().get(parent_name))
+					{
+					
+					case ORDINAL:
+						tmpParentValueString =  String.valueOf(configSpace.getCategoricalValueMap().get(parent_name).get(parent_value_string));
+						
+					case INTEGER:
+					case REAL:
+						encodedParentPresentValue = Double.parseDouble(tmpParentValueString);
+						
+						break;
+					case CATEGORICAL:
+						
+						encodedParentPresentValue = (double) configSpace.getCategoricalValueMap().get(parent_name).get(parent_value_string);
+					
+						break;
+					default:
+						throw new IllegalStateException("Unknown Type");
+					}
+					
+
+					// check condition
+					
+					
+					boolean satisfied = cond.op.conditionalClauseMatch(encodedParentPresentValue, cond.values);
+					
+					all_satisfied = all_satisfied & satisfied;
+				
+					if (!all_satisfied){ //if one condition is not satisfied, the complete clause is falsified; no further check necessary
+						break;
+					}
+				}
+				if (all_satisfied) {
+					activeParams.add(param);
+					break;
+				}
+			}
+		}
 		
 		return activeParams;
 	}
@@ -1087,7 +1190,133 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 	 */
 	public boolean isForbiddenParameterConfiguration()
 	{
-		return configSpace.isForbiddenParameterConfiguration(valueArray);
+		
+		if(configSpace.isForbiddenParameterConfigurationByClassicClauses(valueArray))
+		{
+			return true;
+		}
+		
+		if(!configSpace.hasNewForbidden())
+		{
+			return false;
+		} else
+		{
+			/*for(ExpressionBuilder eb : configSpace.bl)
+			{
+				Expression calc = eb.build();
+				*/
+			
+			
+			
+			List<Expression> expressions = configSpace.tlExpressions.get();
+			if(expressions == null)
+			{
+				expressions = new ArrayList<Expression>();
+				
+				
+				for(ExpressionBuilder builder : configSpace.bl)
+				{
+					Expression exp = null;
+					
+					
+					
+					 
+					StringBuilder errorMessage = new StringBuilder(" Besides the operator and functions listed on http://www.objecthunter.net/exp4j/, the following are supported: ");
+					
+					List<String> operators = new ArrayList<>();
+					for(Operator o : ForbiddenOperators.operators)
+					{
+						operators.add(o.getSymbol());
+					}
+					errorMessage.append(operators);
+					try
+					{
+						  exp = builder.build();
+					} catch(IllegalArgumentException e)
+					{
+						
+						throw new IllegalArgumentException("The following forbidden line seems to be invalid: " + configSpace.expressions.get(builder) + "." + errorMessage, e);
+					}
+					
+					for(Entry<String, Double> ent : configSpace.forbiddenOrdinalAndCategoricalVariableValues.entrySet())
+					{
+						exp.setVariable(ent.getKey(), Double.valueOf(ent.getValue()));
+					}
+					ValidationResult res = exp.validate(false);
+					if(!res.isValid())
+					{
+						throw new IllegalArgumentException("The following forbidden line seems to be invalid: " + configSpace.expressions.get(builder) + " exp4j says:" + res.getErrors() + "." + ( configSpace.expressions.get(builder).indexOf(',') >= 0 ? " Guess: Is the , suppose to be an &&?":"")  + errorMessage );
+					}
+					
+					expressions.add(exp);
+				}
+				
+				configSpace.tlExpressions.set(expressions);
+			}
+			
+			
+		
+			//List<Expression> expressions = configSpace.cl;
+			
+			for(Expression calc : expressions)
+			{
+				
+				
+				int i=0; 
+				
+				//synchronized(calc)
+				{
+				
+					for(String name : configSpace.getParameterNamesInAuthorativeOrder())
+					{
+						if(configSpace.getNormalizedRangeMap().get(name) != null )
+						{
+							//variables.put(name, configSpace.getNormalizedRangeMap().get(name).unnormalizeValue(this.valueArray[i]));
+							
+							double d = configSpace.getNormalizedRangeMap().get(name).unnormalizeValue(this.valueArray[i]);
+							if(configSpace.getParameterTypes().get(name) == ParameterType.ORDINAL || configSpace.getParameterTypes().get(name) == ParameterType.CATEGORICAL)
+							{
+								String value = configSpace.getValuesMap().get(name).get((int) d);
+								
+								calc.setVariable(name, Double.valueOf(configSpace.forbiddenParameterConstants.get(value)));
+							} else
+							{
+								calc.setVariable(name, d);
+							}
+							
+						} else
+						{
+							//variables.put(name, Double.valueOf(this.get(name)));
+							
+						
+								
+								
+							calc.setVariable(name,Double.valueOf(configSpace.forbiddenParameterConstants.get(this.get(name))));
+						}
+						i++;
+					}
+					
+					try 
+					{
+						if (calc.evaluate() == 0)
+						{
+							continue;
+						} else
+						{
+							return true;
+						}
+					} catch(RuntimeException e)
+					{
+						throw new IllegalArgumentException("Error occured evaluating configuration for forbiddenness",e);
+					}
+				} 
+				
+			}
+			
+			return false;
+		}
+		
+
 	}
 
 
@@ -1121,10 +1350,222 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 
 
 
+	/**
+	 * @return
+	 */
+	public boolean isLocked()
+	{
+		return locked;
+	}
 	
+	/**
+	 * When invoked the parameter configuration becomes immutable.
+	 */
+	public void lock()
+	{
+		locked = true;
+	}
 
 
+	private class ValueSetCollection extends AbstractCollection<String>
+	{
+
+		@Override
+		public int size() {
+			return ParameterConfiguration.this.size();
+		}
+
+		@Override
+		public Iterator<String> iterator() {
+			return new Iterator<String>()
+			{
+
+				private int i=0;
+				final int creationID = ParameterConfiguration.this.myID;
+				
+				
+				@Override
+				public boolean hasNext() {
+					if(isDirty || creationID != ParameterConfiguration.this.myID) throw new ConcurrentModificationException("Detected change to the parameter settings");
+					return (i < size());
+				}
+
+				@Override
+				public String next() {
+					if(isDirty || creationID != ParameterConfiguration.this.myID) throw new ConcurrentModificationException("Detected change to the parameter settings");
+					if( i >= size() )
+					{
+						throw new NoSuchElementException();
+					}
+					return get(configSpace.getParameterNamesInAuthorativeOrder().get(i++));
+					
+				}
+
+				@Override
+				public void remove() {
+					throw new UnsupportedOperationException();
+				}
+				
+			};
+			
+		}
 
 	
+		
+		
+	}
+	
+	
+	private class ParameterConfigurationEntrySet extends AbstractSet<java.util.Map.Entry<String, String>>
+	{
 
+		@Override
+		public int size() {
+			return ParameterConfiguration.this.size();
+		}
+
+	
+		@Override
+		public Iterator<java.util.Map.Entry<String, String>> iterator() {
+			
+			
+			return new Iterator<Entry<String, String>>()
+			{
+
+				final int creationID = ParameterConfiguration.this.myID;
+				
+				
+				private int i=0; 
+				@Override
+				public boolean hasNext() {
+					
+					if(isDirty || creationID != ParameterConfiguration.this.myID) throw new ConcurrentModificationException("Detected change to the parameter settings");
+					return (i < size());
+				}
+
+				@Override
+				public java.util.Map.Entry<String, String> next() {
+					
+					if(isDirty || creationID != ParameterConfiguration.this.myID) throw new ConcurrentModificationException("Detected change to the parameter settings");
+					String key = ParameterConfiguration.this.configSpace.getParameterNamesInAuthorativeOrder().get(i);
+					i++;
+					return new AbstractMap.SimpleImmutableEntry<String, String>(key, ParameterConfiguration.this.get(key));
+				}
+
+				@Override
+				public void remove() {
+					throw new UnsupportedOperationException();
+					
+				}
+				
+			};
+		}
+	}
+
+	private final class ActiveParametersSet extends AbstractSet<String>
+	{
+
+		
+		@Override
+		public Iterator<String> iterator() {
+
+			
+			int firstIndex = activeParams.length;
+			 
+			
+			for(int i=0; i < activeParams.length; i++)
+			{
+				if(activeParams[i])
+				{
+					firstIndex = i;
+					break;
+				}
+			}
+			
+			
+			final int firstRealIndex = firstIndex;
+			
+			
+			return new Iterator<String>()
+			{
+			
+				int i=firstRealIndex;
+				
+				final int creationID = ParameterConfiguration.this.myID;
+				
+				
+				@Override
+				public boolean hasNext() {
+					
+					if(isDirty || creationID != ParameterConfiguration.this.myID) throw new ConcurrentModificationException("Detected change to the parameter settings");
+					
+					
+					return (i < valueArray.length);
+				}
+
+				@Override
+				public String next() {
+					
+					if(isDirty || creationID != ParameterConfiguration.this.myID) throw new ConcurrentModificationException("Detected change to the parameter settings");
+					
+					String result = configSpace.getParameterNamesInAuthorativeOrder().get(i);
+					
+					
+					
+					i=-i;
+					for(int j=-i+1; j < activeParams.length; j++)
+					{
+						if(activeParams[j])
+						{
+							i=j;
+							break;
+						}
+					}
+					
+					if (i <= 0)
+					{
+						i = valueArray.length;
+					}
+					return result;
+					
+				}
+
+				@Override
+				public void remove() {
+					throw new UnsupportedOperationException();
+				}
+			};
+					
+			
+		}
+
+		private volatile int size = -1;
+		@Override
+		public int size() {
+			if(size == -1)
+			{
+				 size = 0;
+				for(String ent : this)
+				{
+					size++;
+				}
+			
+			}
+			
+			return size;
+		}
+		
+		@Override
+		public boolean contains(Object o)
+		{
+			Integer index = configSpace.getParamKeyIndexMap().get(o);
+			
+			if(index == null)
+			{
+				return false;
+			}
+			
+			return activeParams[index];
+		}
+	}
 }

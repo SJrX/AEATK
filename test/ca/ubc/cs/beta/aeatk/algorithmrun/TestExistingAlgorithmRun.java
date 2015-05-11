@@ -34,5 +34,6 @@ public class TestExistingAlgorithmRun {
 		run = new ExistingAlgorithmRunResult(execConfig, rc, RunStatus.SAT, 10, 10, 10, 2, "Test,Two", 0);
 		
 		assertEquals("Test;Two",run.getAdditionalRunData());
+		
 	}
 }

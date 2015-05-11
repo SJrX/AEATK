@@ -42,7 +42,7 @@ public class CrashedSolutionQualityTransformingTargetAlgorithmEvaluatorDecorator
 				{
 					log.warn("Detected CRASHED run. The Solution Quality of CRASHED runs will be transformed to the MAX(quality, {}), to disable this use --transform-crashed-quality false to change the value use --transform-crashed-quality-value", crashedSolutionQualityValue);
 				}
-				run = new ExistingAlgorithmRunResult(run.getAlgorithmRunConfiguration(), run.getRunStatus(), run.getRuntime(),run.getRunLength(), crashedSolutionQualityValue,run.getResultSeed(), run.getAdditionalRunData(), run.getWallclockExecutionTime());
+				run = new ExistingAlgorithmRunResult(run.getAlgorithmRunConfiguration(), run.getRunStatus(), run.getRuntime(),run.getRunLength(), Math.max(crashedSolutionQualityValue, run.getQuality()),run.getResultSeed(), run.getAdditionalRunData(), run.getWallclockExecutionTime());
 			}
 			
 		}

@@ -8,6 +8,7 @@ import java.io.File;
 import java.io.StringReader;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
@@ -37,6 +38,7 @@ import com.beust.jcommander.internal.Lists;
 
 import ec.util.MersenneTwister;
 import ec.util.MersenneTwisterFast;
+
 
 @SuppressWarnings({"unused", "deprecation","unchecked"})
 public class ParamConfigurationTest {
@@ -528,11 +530,14 @@ public class ParamConfigurationTest {
 		
 		double[] valueArray = config.toValueArray();
 		
+		System.out.println(Arrays.toString(valueArray));
+		System.out.println(config.getParameterConfigurationSpace().getParameterNamesInAuthorativeOrder());
 		assertDEquals(valueArray[0], 3);
 		assertDEquals(valueArray[1], 2);
-		assertDEquals(valueArray[3], 2);
+		
 		assertDEquals(valueArray[2], 2);
 		
+		assertDEquals(valueArray[3], 2);
 
 		/*
 		SurrogateExecutorParams config = getConfig("-Pa=3 -Pb=2 -Pd=2 -Pc=2 -f " + STANDARD_MATRIX_FILE + " -d --inst /ubc/cs/project/arrow/projects/Sat_Data/bench/SW-verification/HSAT/hsat_vc3492.cnf --seed 1234 ");
@@ -1728,6 +1733,26 @@ public class ParamConfigurationTest {
 			assertEquals("Parameter Configurations should be equal", configuration, restoredConfiguration);
 		}
 		
+	}
+	
+	@Test
+	public void testGeneration()
+	{
+		String pcsFile ="solved { SAT, UNSAT, TIMEOUT, CRASHED, ABORT, INVALID } [SAT]\n"+
+						"runtime [0,1000] [0]\n"+
+						"walltime [0,2000] [1]\n"+
+						"runlength [0,1000000][0]\n"+
+						"quality [0, 1000000] [0]\n"+
+						"seed [ -1,4294967295][1]i";
+		
+		ParameterConfigurationSpace configSpace = ParamFileHelper.getParamFileFromString(pcsFile);
+		
+		for(int i=0; i < 1000; i++)
+		{
+			configSpace.getParameterConfigurationFromString(configSpace.getRandomParameterConfiguration(rand).getFormattedParameterString(), ParameterStringFormat.NODB_SYNTAX);
+			
+			
+		}
 	}
 	
 	@After
