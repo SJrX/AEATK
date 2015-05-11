@@ -160,7 +160,7 @@ public class SMACOptions extends AbstractOptions {
 	public int numberOfRandomConfigsInEI = 10000;
 	
 	@UsageTextField(level=OptionLevel.ADVANCED)
-	@Parameter(names={"--num-ls-random","--num-local-search-random"}, description="Number of configurations ", validateWith=NonNegativeInteger.class)
+	@Parameter(names={"--num-ls-random","--num-local-search-random"}, description="Number of random configurations that will be used as potential starting points for local search", validateWith=NonNegativeInteger.class)
 	public int numberOfRandomConfigsUsedForLocalSearch = 0;
 	
 	@UsageTextField(level=OptionLevel.ADVANCED)
