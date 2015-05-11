@@ -163,9 +163,6 @@ public class SMACOptions extends AbstractOptions {
 	@Parameter(names={"--num-ls-random","--num-local-search-random"}, description="Number of configurations ", validateWith=NonNegativeInteger.class)
 	public int numberOfRandomConfigsUsedForLocalSearch = 0;
 	
-	
-	
-	
 	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names={"--num-pca","--numPCA"}, description="number of principal components features to use when building the model", validateWith=FixedPositiveInteger.class)
 	public int numPCA = 7;

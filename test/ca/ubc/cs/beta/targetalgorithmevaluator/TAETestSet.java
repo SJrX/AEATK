@@ -29,6 +29,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
 import org.apache.commons.io.output.NullOutputStream;
+import org.junit.After;
 import org.junit.AfterClass;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -192,6 +193,15 @@ public class TAETestSet {
 	}
 	
 	
+	@After
+	public void afterTest()
+	{
+		if(tae != null)
+		{
+			tae.notifyShutdown();
+		} 
+		tae = null;
+	}
 	@Test
 	public void testPortfolioTargetAlgorithmEvaluatorDecorator()
 	{
@@ -505,7 +515,7 @@ public class TAETestSet {
 		
 		tae.close();
 		
-		
+		lowPriorityTAE.close();
 		
 	}
 	
@@ -2536,16 +2546,16 @@ public class TAETestSet {
 		ProblemInstanceSeedPair unSatPiThree = new ProblemInstanceSeedPair(unsatPi, 3);
 		ProblemInstanceSeedPair unSatPiFour = new ProblemInstanceSeedPair(unsatPi, 4);
 		
-		AlgorithmRunConfiguration satPiOneRC = new AlgorithmRunConfiguration(satPiOne, 0, ParameterConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(), execConfig);
-		AlgorithmRunConfiguration satPiTwoRC = new AlgorithmRunConfiguration(satPiTwo, 0, ParameterConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
-		AlgorithmRunConfiguration unSatPiOneRC = new AlgorithmRunConfiguration(unSatPiOne, 0, ParameterConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
-		AlgorithmRunConfiguration unSatPiTwoRC = new AlgorithmRunConfiguration(unSatPiTwo, 0, ParameterConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
+		AlgorithmRunConfiguration satPiOneRC = new AlgorithmRunConfiguration(satPiOne, 0.1, ParameterConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(), execConfig);
+		AlgorithmRunConfiguration satPiTwoRC = new AlgorithmRunConfiguration(satPiTwo, 0.1, ParameterConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
+		AlgorithmRunConfiguration unSatPiOneRC = new AlgorithmRunConfiguration(unSatPiOne, 0.1, ParameterConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
+		AlgorithmRunConfiguration unSatPiTwoRC = new AlgorithmRunConfiguration(unSatPiTwo, 0.1, ParameterConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
 		
 		
-		AlgorithmRunConfiguration satPiThreeRC = new AlgorithmRunConfiguration(satPiThree, 0, ParameterConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
-		AlgorithmRunConfiguration satPiFourRC = new AlgorithmRunConfiguration(satPiFour, 0, ParameterConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
-		AlgorithmRunConfiguration unSatPiThreeRC = new AlgorithmRunConfiguration(unSatPiThree, 0, ParameterConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
-		AlgorithmRunConfiguration unSatPiFourRC = new AlgorithmRunConfiguration(unSatPiFour, 0, ParameterConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
+		AlgorithmRunConfiguration satPiThreeRC = new AlgorithmRunConfiguration(satPiThree, 0.1, ParameterConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
+		AlgorithmRunConfiguration satPiFourRC = new AlgorithmRunConfiguration(satPiFour, 0.1, ParameterConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
+		AlgorithmRunConfiguration unSatPiThreeRC = new AlgorithmRunConfiguration(unSatPiThree, 0.1, ParameterConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
+		AlgorithmRunConfiguration unSatPiFourRC = new AlgorithmRunConfiguration(unSatPiFour, 0.1, ParameterConfigurationSpace.getSingletonConfigurationSpace().getDefaultConfiguration(),execConfig);
 		
 		
 		

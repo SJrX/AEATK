@@ -12,6 +12,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
 import org.junit.Test;
@@ -98,6 +99,12 @@ public class DynamicCappingTestSet {
 		
 	}
 	
+	@After
+	public void afterTest()
+	{
+		tae.notifyShutdown();
+	}
+	
 	
 	public void assertDEquals(String d1, double d2, double delta)
 	{
@@ -134,103 +141,110 @@ public class DynamicCappingTestSet {
 		b.append(TrueSleepyParamEchoExecutor.class.getCanonicalName());
 		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
 		
-		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE();
-		tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
-		
-		assertTrue(tae.areRunsObservable());
-		
-		
-		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(1);
-		for(int i=0; i < 1; i++)
-		{
-			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
-			config.put("runtime", "100");
-			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
-			{
-				//Only want good configurations
-				i--;
-				continue;
-			} else
-			{
-				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config,execConfig);
-				runConfigs.add(rc);
-			}
-		}
-		
-		System.out.println("Performing " + runConfigs.size() + " runs");
-		
-		//StringWriter sw = new StringWriter();
-		//ByteArrayOutputStream bout = new ByteArrayOutputStream();
-		
-		//PrintStream out = System.out;
-		//System.setOut(new PrintStream(bout));
-		final AtomicBoolean evaluateDone = new AtomicBoolean(false);
-		final AtomicBoolean failure = new AtomicBoolean(false);
-		TargetAlgorithmEvaluatorRunObserver obs = new TargetAlgorithmEvaluatorRunObserver()
+		TargetAlgorithmEvaluator tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE();
+		try
 		{
 			
-			@Override
-			public void currentStatus(List<? extends AlgorithmRunResult> runs) {
-				
-				if(evaluateDone.get())
+			tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
+			
+			assertTrue(tae.areRunsObservable());
+			
+			
+			List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(1);
+			for(int i=0; i < 1; i++)
+			{
+				ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
+				config.put("runtime", "100");
+				if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
 				{
-					failure.set(true);
+					//Only want good configurations
+					i--;
+					continue;
+				} else
+				{
+					AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config,execConfig);
+					runConfigs.add(rc);
 				}
-				double runtimeSum = 0.0;
-				double walltimeSum = 0.0;
-				for(AlgorithmRunResult run : runs)
-				{
-					runtimeSum += run.getRuntime();
-					walltimeSum += run.getWallclockExecutionTime();
-				}
+			}
+			
+			System.out.println("Performing " + runConfigs.size() + " runs");
+			
+			//StringWriter sw = new StringWriter();
+			//ByteArrayOutputStream bout = new ByteArrayOutputStream();
+			
+			//PrintStream out = System.out;
+			//System.setOut(new PrintStream(bout));
+			final AtomicBoolean evaluateDone = new AtomicBoolean(false);
+			final AtomicBoolean failure = new AtomicBoolean(false);
+			TargetAlgorithmEvaluatorRunObserver obs = new TargetAlgorithmEvaluatorRunObserver()
+			{
 				
-				System.out.println(runtimeSum + ","+ walltimeSum);
-				if(runtimeSum > 3)
-				{
-					System.out.println("Trying to kill");
+				@Override
+				public void currentStatus(List<? extends AlgorithmRunResult> runs) {
+					
+					if(evaluateDone.get())
+					{
+						failure.set(true);
+					}
+					double runtimeSum = 0.0;
+					double walltimeSum = 0.0;
 					for(AlgorithmRunResult run : runs)
 					{
-						run.kill();
+						runtimeSum += run.getRuntime();
+						walltimeSum += run.getWallclockExecutionTime();
 					}
+					
+					System.out.println(runtimeSum + ","+ walltimeSum);
+					if(runtimeSum > 3)
+					{
+						System.out.println("Trying to kill");
+						for(AlgorithmRunResult run : runs)
+						{
+							run.kill();
+						}
+					}
+					
+					//System.out.println("CALLBACK");
 				}
 				
-				//System.out.println("CALLBACK");
-			}
+			};
 			
-		};
-		
-		long startTime  = System.currentTimeMillis();
-		List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs,obs);
-		evaluateDone.set(true);
-		long endTime = System.currentTimeMillis();
-		//System.setOut(out);
-		//System.out.println(bout.toString());
-		
-		for(AlgorithmRunResult run : runs)
-		{
-			System.out.println(run.getResultLine());
+			long startTime  = System.currentTimeMillis();
+			List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs,obs);
+			evaluateDone.set(true);
+			long endTime = System.currentTimeMillis();
+			//System.setOut(out);
+			//System.out.println(bout.toString());
 			
-			ParameterConfiguration config  = run.getAlgorithmRunConfiguration().getParameterConfiguration();
-			
-			if(run.getRunStatus().isSuccessfulAndCensored())
+			for(AlgorithmRunResult run : runs)
 			{
-				continue;
+				System.out.println(run.getResultLine());
+				
+				ParameterConfiguration config  = run.getAlgorithmRunConfiguration().getParameterConfiguration();
+				
+				if(run.getRunStatus().isSuccessfulAndCensored())
+				{
+					continue;
+				}
+				assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
+				assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
+				assertDEquals(config.get("quality"), run.getQuality(), 0.1);
+				assertDEquals(config.get("seed"), run.getResultSeed(), 0.1);
+				assertEquals(config.get("solved"), run.getRunStatus().name());
+				//This executor should not have any additional run data
+				assertEquals("",run.getAdditionalRunData());
+				
+	
 			}
-			assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
-			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
-			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
-			assertDEquals(config.get("seed"), run.getResultSeed(), 0.1);
-			assertEquals(config.get("solved"), run.getRunStatus().name());
-			//This executor should not have any additional run data
-			assertEquals("",run.getAdditionalRunData());
 			
-
+			tae.notifyShutdown();
+			assertFalse("Callback fired after evaluateRun was done ", failure.get());
+			
+			assertTrue("Should have taken less than five seconds to run, it took " + (endTime - startTime)/1000.0 + " seconds", (endTime - startTime) < (long) 6000);
+		} finally
+		{
+			tae.notifyShutdown();
 		}
-		
-		tae.notifyShutdown();
-		assertFalse("Callback fired after evaluateRun was done ", failure.get());
-		
-		assertTrue("Should have taken less than five seconds to run, it took " + (endTime - startTime)/1000.0 + " seconds", (endTime - startTime) < (long) 6000);
 		
 	}
 	
@@ -252,111 +266,117 @@ public class DynamicCappingTestSet {
 		b.append(TrueSleepyParamEchoExecutor.class.getCanonicalName());
 		execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
 		
-		tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE();	
-		tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
-		
-		assertTrue(tae.areRunsObservable());
-		
-		
-		final List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(10);
-		for(int i=0; i < 10; i++)
+		TargetAlgorithmEvaluator tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE();
+		try 
 		{
-			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
-			config.put("runtime", ""+(i+1));
-			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
-			{
-				//Only want good configurations
-				i--;
-				continue;
-			} else
-			{
-				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config,execConfig);
-				runConfigs.add(rc);
-			}
-		}
-		
-		System.out.println("Performing " + runConfigs.size() + " runs");
-		
-
-		final AtomicReference<String> failed = new AtomicReference<String>();
-		
-		TargetAlgorithmEvaluatorRunObserver obs = new TargetAlgorithmEvaluatorRunObserver()
-		{
+			tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
 			
-			@Override
-			public void currentStatus(List<? extends AlgorithmRunResult> runs) {
-				
-				if(runs.size() != runConfigs.size())
+			assertTrue(tae.areRunsObservable());
+			
+			
+			final List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(10);
+			for(int i=0; i < 10; i++)
+			{
+				ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
+				config.put("runtime", ""+(i+1));
+				if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
 				{
-					failed.set("Expected that runConfigs.size(): " + runConfigs.size() + " is always equal to runs.size():" + runs.size());
-					for(AlgorithmRunResult run : runs)
-					{
-						run.kill();
-					}
+					//Only want good configurations
+					i--;
+					continue;
+				} else
+				{
+					AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config,execConfig);
+					runConfigs.add(rc);
 				}
+			}
+			
+			System.out.println("Performing " + runConfigs.size() + " runs");
+			
+	
+			final AtomicReference<String> failed = new AtomicReference<String>();
+			
+			TargetAlgorithmEvaluatorRunObserver obs = new TargetAlgorithmEvaluatorRunObserver()
+			{
 				
-				double runtimeSum = 0.0; 
-				for(AlgorithmRunResult run : runs)
-				{
-					runtimeSum += run.getRuntime();
-				}
-				
-				//System.out.println(runtimeSum);
-				if(runtimeSum > 3.5)
-				{
-					System.out.flush();
-					System.out.println("Issuing kill order on " + runtimeSum);
-				
-					for(AlgorithmRunResult run : runs)
-					{
-						System.out.println(run);
-					}
-					System.out.flush();
-					for(AlgorithmRunResult run : runs)
-					{
+				@Override
+				public void currentStatus(List<? extends AlgorithmRunResult> runs) {
 					
-						run.kill();
+					if(runs.size() != runConfigs.size())
+					{
+						failed.set("Expected that runConfigs.size(): " + runConfigs.size() + " is always equal to runs.size():" + runs.size());
+						for(AlgorithmRunResult run : runs)
+						{
+							run.kill();
+						}
+					}
+					
+					double runtimeSum = 0.0; 
+					for(AlgorithmRunResult run : runs)
+					{
+						runtimeSum += run.getRuntime();
+					}
+					
+					//System.out.println(runtimeSum);
+					if(runtimeSum > 3.5)
+					{
+						System.out.flush();
+						System.out.println("Issuing kill order on " + runtimeSum);
+					
+						for(AlgorithmRunResult run : runs)
+						{
+							System.out.println(run);
+						}
+						System.out.flush();
+						for(AlgorithmRunResult run : runs)
+						{
+						
+							run.kill();
+						}
 					}
 				}
-			}
+				
+			};
 			
-		};
-		
-		if(failed.get() != null)
-		{
-			fail(failed.get());
-		}
-		
-		long startTime  = System.currentTimeMillis();
-		List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs,obs);
-		long endTime = System.currentTimeMillis();
-		//System.setOut(out);
-		//System.out.println(bout.toString());
-		
-		for(AlgorithmRunResult run : runs)
-		{
-			System.out.println(run.getResultLine());
-			
-			ParameterConfiguration config  = run.getAlgorithmRunConfiguration().getParameterConfiguration();
-			
-			if(run.getRunStatus().isSuccessfulAndCensored())
+			if(failed.get() != null)
 			{
-				continue;
+				fail(failed.get());
 			}
-			assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
-			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
-			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
-			assertDEquals(config.get("seed"), run.getResultSeed(), 0.1);
-			assertEquals(config.get("solved"), run.getRunStatus().name());
-			//This executor should not have any additional run data
-			assertEquals("",run.getAdditionalRunData());
 			
-
+			long startTime  = System.currentTimeMillis();
+			List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs,obs);
+			long endTime = System.currentTimeMillis();
+			//System.setOut(out);
+			//System.out.println(bout.toString());
+			
+			for(AlgorithmRunResult run : runs)
+			{
+				System.out.println(run.getResultLine());
+				
+				ParameterConfiguration config  = run.getAlgorithmRunConfiguration().getParameterConfiguration();
+				
+				if(run.getRunStatus().isSuccessfulAndCensored())
+				{
+					continue;
+				}
+				assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
+				assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
+				assertDEquals(config.get("quality"), run.getQuality(), 0.1);
+				assertDEquals(config.get("seed"), run.getResultSeed(), 0.1);
+				assertEquals(config.get("solved"), run.getRunStatus().name());
+				//This executor should not have any additional run data
+				assertEquals("",run.getAdditionalRunData());
+				
+	
+			}
+			
+			
+			
+			assertTrue("Should have taken less than ten seconds to run, it took " + (endTime - startTime)/1000.0 + " seconds", (endTime - startTime) < (long) 10000);
+		} finally
+		{
+			tae.notifyShutdown();
 		}
-		
-		tae.notifyShutdown();
-		
-		assertTrue("Should have taken less than ten seconds to run, it took " + (endTime - startTime)/1000.0 + " seconds", (endTime - startTime) < (long) 10000);
 	}
 	
 
@@ -379,119 +399,121 @@ public class DynamicCappingTestSet {
 		CommandLineTargetAlgorithmEvaluatorOptions opt = fact.getOptionObject();
 		opt.logAllCallStrings = true;
 		opt.cores = 4;
-		tae = fact.getTargetAlgorithmEvaluator( opt);
+		TargetAlgorithmEvaluator tae = fact.getTargetAlgorithmEvaluator( opt);
 		
-		tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
-		
-		assertTrue(tae.areRunsObservable());
-		
-		List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(10);
-		for(int i=0; i < 10; i++)
+		try 
 		{
-			ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
+			tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
 			
-			config.put("runtime", ""+(i+1));
-			if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
-			{
-				//Only want good configurations
-				i--;
-				continue;
-			} else
-			{
-				AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config,execConfig);
-				runConfigs.add(rc);
-			}
-		}
-		
-		System.out.println("Performing " + runConfigs.size() + " runs");
-		
-		//StringWriter sw = new StringWriter();
-		//ByteArrayOutputStream bout = new ByteArrayOutputStream();
-		
-		//PrintStream out = System.out;
-		//System.setOut(new PrintStream(bout));
-		
-		TargetAlgorithmEvaluatorRunObserver obs = new TargetAlgorithmEvaluatorRunObserver()
-		{
+			assertTrue(tae.areRunsObservable());
 			
-			private final AtomicBoolean shown = new AtomicBoolean(false);
-			@Override
-			public void currentStatus(List<? extends AlgorithmRunResult> runs) {
+			List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(10);
+			for(int i=0; i < 10; i++)
+			{
+				ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
 				
-				//System.out.println(runs.get(0).getWallclockExecutionTime());
-				double runtimeSum = 0.0; 
-				double walltimeSum = 0.0;
-				for(AlgorithmRunResult run : runs)
+				config.put("runtime", ""+(i+1));
+				if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
 				{
-					runtimeSum += run.getRuntime();
-					walltimeSum += run.getWallclockExecutionTime();
+					//Only want good configurations
+					i--;
+					continue;
+				} else
+				{
+					AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config,execConfig);
+					runConfigs.add(rc);
 				}
-				
-				//System.out.println(runtimeSum);
+			}
 			
+			System.out.println("Performing " + runConfigs.size() + " runs");
+			
+			//StringWriter sw = new StringWriter();
+			//ByteArrayOutputStream bout = new ByteArrayOutputStream();
+			
+			//PrintStream out = System.out;
+			//System.setOut(new PrintStream(bout));
+			
+			TargetAlgorithmEvaluatorRunObserver obs = new TargetAlgorithmEvaluatorRunObserver()
+			{
 				
-				if(runtimeSum > 8)
-				{
-					if(!shown.getAndSet(true))
-					{
-						for(AlgorithmRunResult run : runs)
-						{
-							System.out.println(run.toString());
-						}
-					}
+				private final AtomicBoolean shown = new AtomicBoolean(false);
+				@Override
+				public void currentStatus(List<? extends AlgorithmRunResult> runs) {
+					
+					//System.out.println(runs.get(0).getWallclockExecutionTime());
+					double runtimeSum = 0.0; 
+					double walltimeSum = 0.0;
 					for(AlgorithmRunResult run : runs)
 					{
-						run.kill();
+						runtimeSum += run.getRuntime();
+						walltimeSum += run.getWallclockExecutionTime();
 					}
+					
+					//System.out.println(runtimeSum);
+				
+					
+					if(runtimeSum > 8)
+					{
+						if(!shown.getAndSet(true))
+						{
+							for(AlgorithmRunResult run : runs)
+							{
+								System.out.println(run.toString());
+							}
+						}
+						for(AlgorithmRunResult run : runs)
+						{
+							run.kill();
+						}
+					}
+					
 				}
 				
-			}
+			};
 			
-		};
-		
-		long startTime  = System.currentTimeMillis();
-		List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs,obs);
-		long endTime = System.currentTimeMillis();
-		//System.setOut(out);
-		//System.out.println(bout.toString());
-		
-		long runtimeSum = 0;
-		long wallclockTime = 0;
-		for(AlgorithmRunResult run : runs)
-		{
-			System.out.println("Result: " + run);
+			long startTime  = System.currentTimeMillis();
+			List<AlgorithmRunResult> runs = tae.evaluateRun(runConfigs,obs);
+			long endTime = System.currentTimeMillis();
+			//System.setOut(out);
+			//System.out.println(bout.toString());
 			
-			ParameterConfiguration config  = run.getAlgorithmRunConfiguration().getParameterConfiguration();
-			
-			runtimeSum+= run.getRuntime();
-			wallclockTime += run.getWallclockExecutionTime();
-			
-			if(run.getRunStatus().isSuccessfulAndCensored())
+			long runtimeSum = 0;
+			long wallclockTime = 0;
+			for(AlgorithmRunResult run : runs)
 			{
+				System.out.println("Result: " + run);
 				
-				assertEquals(RunStatus.KILLED, run.getRunStatus());
-				continue;
+				ParameterConfiguration config  = run.getAlgorithmRunConfiguration().getParameterConfiguration();
+				
+				runtimeSum+= run.getRuntime();
+				wallclockTime += run.getWallclockExecutionTime();
+				
+				if(run.getRunStatus().isSuccessfulAndCensored())
+				{
+					
+					assertEquals(RunStatus.KILLED, run.getRunStatus());
+					continue;
+				}
+				assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
+				assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
+				assertDEquals(config.get("quality"), run.getQuality(), 0.1);
+				assertDEquals(config.get("seed"), run.getResultSeed(), 0.1);
+				assertEquals(config.get("solved"), run.getRunStatus().name());
+				//This executor should not have any additional run data
+				assertEquals("",run.getAdditionalRunData());
+				
+	
 			}
-			assertDEquals(config.get("runtime"), run.getRuntime(), 0.1);
-			assertDEquals(config.get("runlength"), run.getRunLength(), 0.1);
-			assertDEquals(config.get("quality"), run.getQuality(), 0.1);
-			assertDEquals(config.get("seed"), run.getResultSeed(), 0.1);
-			assertEquals(config.get("solved"), run.getRunStatus().name());
-			//This executor should not have any additional run data
-			assertEquals("",run.getAdditionalRunData());
 			
-
+			assertTrue("Runtime should be greater than 5 seconds", runtimeSum > 5);
+			
+			assertTrue("Wallclocktime should be greater than 5 seconds", wallclockTime > 5);
+		
+			assertTrue("Should have taken less than five seconds to run, it took " + (endTime - startTime)/1000.0 + " seconds", (endTime - startTime) < (long) 6000);
+		} finally
+		{
+			tae.notifyShutdown();
 		}
-		
-		assertTrue("Runtime should be greater than 5 seconds", runtimeSum > 5);
-		
-		assertTrue("Wallclocktime should be greater than 5 seconds", wallclockTime > 5);
-		
-		
-		
-		tae.notifyShutdown();
-		
-		assertTrue("Should have taken less than five seconds to run, it took " + (endTime - startTime)/1000.0 + " seconds", (endTime - startTime) < (long) 6000);
 	}
 	
 	
@@ -515,7 +537,9 @@ public class DynamicCappingTestSet {
 			b.append(TrueSleepyParamEchoExecutor.class.getCanonicalName());
 			execConfig = new AlgorithmExecutionConfiguration(b.toString(), System.getProperty("user.dir"), configSpace, false, false, 0.01);
 			
-			tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(50);	
+			TargetAlgorithmEvaluator tae = CommandLineTargetAlgorithmEvaluatorFactory.getCLITAE(50);
+			
+			try {
 			tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
 			
 			assertTrue(tae.areRunsObservable());
@@ -574,8 +598,11 @@ public class DynamicCappingTestSet {
 				Thread.currentThread();
 			}
 			
-			tae.notifyShutdown();
+			
 			assertFalse("Callback fired after evaluateRun was done ", failure.get());
+			} finally {
+				tae.notifyShutdown();
+			}
 
 		}
 		
@@ -605,87 +632,92 @@ public class DynamicCappingTestSet {
 			CommandLineTargetAlgorithmEvaluatorOptions opt = fact.getOptionObject();
 			opt.cores = 1;
 			opt.observerFrequency = 50;
-			tae = fact.getTargetAlgorithmEvaluator( opt);
-			
+			TargetAlgorithmEvaluator tae = fact.getTargetAlgorithmEvaluator( opt);
+			try { 
 				
-			tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
-			
-			assertTrue(tae.areRunsObservable());
-			
-			
-			List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(1);
-			for(int i=0; i < 1; i++)
-			{
-				ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
-				config.put("runtime", "1");
-				if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
-				{
-					//Only want good configurations
-					i--;
-					continue;
-				} else
-				{
-					AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config,execConfig);
-					runConfigs.add(rc);
-				}
-			}
-			
-			System.out.println("Performing " + runConfigs.size() + " runs");
-			
-			
-			final AtomicBoolean evaluateDone = new AtomicBoolean(false);
-			final AtomicBoolean failure = new AtomicBoolean(false);
-			TargetAlgorithmEvaluatorRunObserver obs = new TargetAlgorithmEvaluatorRunObserver()
-			{
+				tae = new WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator(tae);
 				
-				@Override
-				public void currentStatus(List<? extends AlgorithmRunResult> runs) {
-					
-					if(evaluateDone.get())
+				assertTrue(tae.areRunsObservable());
+				
+				
+				List<AlgorithmRunConfiguration> runConfigs = new ArrayList<AlgorithmRunConfiguration>(1);
+				for(int i=0; i < 1; i++)
+				{
+					ParameterConfiguration config = configSpace.getRandomParameterConfiguration(r);
+					config.put("runtime", "1");
+					if(config.get("solved").equals("INVALID") || config.get("solved").equals("ABORT") || config.get("solved").equals("CRASHED") || config.get("solved").equals("TIMEOUT"))
 					{
-						failure.set(true);
-						System.out.println("Failed");
+						//Only want good configurations
+						i--;
+						continue;
+					} else
+					{
+						AlgorithmRunConfiguration rc = new AlgorithmRunConfiguration(new ProblemInstanceSeedPair(new ProblemInstance("TestInstance"), Long.valueOf(config.get("seed"))), 3000, config,execConfig);
+						runConfigs.add(rc);
 					}
-					
-					//System.out.println("Callback: " + runs.get(0).getRuntime());
 				}
 				
-			};
-			
-			long startTime  = System.currentTimeMillis();
-			
-			
-			
-			
-			TargetAlgorithmEvaluatorCallback asyncCallback = new TargetAlgorithmEvaluatorCallback()
-			{
-
-				@Override
-				public void onSuccess(List<AlgorithmRunResult> runs) {
-					System.out.println("Done");
-					evaluateDone.set(true);
-				}
-
-				@Override
-				public void onFailure(RuntimeException t) {
-					t.printStackTrace();
+				System.out.println("Performing " + runConfigs.size() + " runs");
+				
+				
+				final AtomicBoolean evaluateDone = new AtomicBoolean(false);
+				final AtomicBoolean failure = new AtomicBoolean(false);
+				TargetAlgorithmEvaluatorRunObserver obs = new TargetAlgorithmEvaluatorRunObserver()
+				{
 					
-					try {
-						Thread.sleep(10000);
-					} catch (InterruptedException e) {
-						Thread.currentThread().interrupt();
-					}
-				}
-			};
-			
-			WaitableTAECallback taeCallback = new WaitableTAECallback(asyncCallback);
-			
-			tae.evaluateRunsAsync(runConfigs,taeCallback, obs);
-			
-			taeCallback.waitForCompletion();
+					@Override
+					public void currentStatus(List<? extends AlgorithmRunResult> runs) {
 						
-			tae.notifyShutdown();
-			assertFalse("Callback fired after evaluateRun was done ", failure.get());
+						if(evaluateDone.get())
+						{
+							failure.set(true);
+							System.out.println("Failed");
+						}
+						
+						//System.out.println("Callback: " + runs.get(0).getRuntime());
+					}
+					
+				};
+				
+				long startTime  = System.currentTimeMillis();
+				
+				
+				
+				
+				TargetAlgorithmEvaluatorCallback asyncCallback = new TargetAlgorithmEvaluatorCallback()
+				{
+	
+					@Override
+					public void onSuccess(List<AlgorithmRunResult> runs) {
+						System.out.println("Done");
+						evaluateDone.set(true);
+					}
+	
+					@Override
+					public void onFailure(RuntimeException t) {
+						t.printStackTrace();
+						
+						try {
+							Thread.sleep(10000);
+						} catch (InterruptedException e) {
+							Thread.currentThread().interrupt();
+						}
+					}
+				};
+				
+				WaitableTAECallback taeCallback = new WaitableTAECallback(asyncCallback);
+				
+				tae.evaluateRunsAsync(runConfigs,taeCallback, obs);
+				
+				taeCallback.waitForCompletion();
+				
+			
+				assertFalse("Callback fired after evaluateRun was done ", failure.get());
+			
+			} finally
+			{
+				tae.notifyShutdown();
+			}		
 
 		}
 		

@@ -111,7 +111,6 @@ public class RunHistoryTester {
 	@Test
 	public void testRunHistorySavingToFileFeatures()
 	{
-		
 	
 		Random rand = pool.getRandom(DebugUtil.getCurrentMethodName());
 		
@@ -219,7 +218,7 @@ public class RunHistoryTester {
 			
 			
 			try {
-				Thread.sleep(2000);
+				Thread.sleep(4096);
 			} catch (InterruptedException e) {
 				// TODO Auto-generated catch block
 				e.printStackTrace();
