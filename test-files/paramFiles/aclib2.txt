@@ -1,0 +1,33 @@
+# params
+
+#categorical
+cat categorical {a,b,d,c}[d]
+cat2 categorical {2.0,3.0,6.0,8.0}[8.0]
+
+#ordinal
+ord ordinal {x,y,z}[z]
+
+#integer
+
+int integer [1,10][3]
+
+#real
+
+rea real [1.0,2.0][1.3]
+realog real [1.0,2.0][1.3] log
+
+# conditionals
+
+realog | cat == a || cat != a 
+rea | int == 1 || int > 5 
+int | ord > y && cat == a  || ord < y && cat in {a,b,c}
+ord | cat in {a,b,d} 
+
+
+# forbidden
+
+{cat=a, cat2=2.0} 
+
+
+
+

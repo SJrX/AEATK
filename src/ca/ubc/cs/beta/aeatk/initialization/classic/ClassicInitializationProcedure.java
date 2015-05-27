@@ -44,6 +44,7 @@ public class ClassicInitializationProcedure implements InitializationProcedure {
 	{
 		this.runHistory =runHistory;
 		this.initialIncumbent = initialIncumbent;
+		this.initialIncumbent.lock();
 		this.tae = tae;
 		this.opts = opts;
 		this.instances = instances;

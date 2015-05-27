@@ -59,7 +59,10 @@ public class LeakingMemoryTargetAlgorithmEvaluator extends AbstractTargetAlgorit
 	{
 		totalLeaked += size * memoryToLeak;
 		leakedMemory.add(new byte[size * memoryToLeak]);
-		log.warn("Leaking >= {} bytes of memory, total leaked: {} MB",size * memoryToLeak, totalLeaked/1024/1024);
+		if(leakedMemory.size () < 5 || Math.random() > 0.999)
+		{
+			log.warn("Leaking >= {} bytes of memory, total leaked: {} MB",size * memoryToLeak, totalLeaked/1024/1024);
+		}
 	}
 	
 

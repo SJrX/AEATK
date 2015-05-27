@@ -1,5 +1,8 @@
 package ca.ubc.cs.beta.aeatk.example.tae;
 
+import java.io.ByteArrayOutputStream;
+import java.io.IOException;
+import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
 import java.util.Map;
@@ -26,6 +29,12 @@ import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRun
 
 import com.beust.jcommander.JCommander;
 import com.beust.jcommander.ParameterException;
+import com.fasterxml.jackson.core.JsonFactory;
+import com.fasterxml.jackson.core.JsonGenerator;
+import com.fasterxml.jackson.core.Version;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.SerializationFeature;
+import com.fasterxml.jackson.databind.module.SimpleModule;
 
 import ec.util.MersenneTwister;
 
@@ -181,6 +190,11 @@ public class TargetAlgorithmEvaluatorRunner
 				//It is also IMMUTABLE
 				AlgorithmRunConfiguration runConfig = new AlgorithmRunConfiguration(pisp, execConfig.getAlgorithmMaximumCutoffTime(), config,execConfig);
 				
+				if(mainOptions.printJSON)
+				{
+					//This is an advanced debug functionality, skip over this line. It just prints a JSON representation of a run.
+					printJSON(runConfig);
+				}
 				processRunConfig(runConfig, tae, mainOptions.killTime);
 				
 				
@@ -210,6 +224,11 @@ public class TargetAlgorithmEvaluatorRunner
 
 	
 	
+	
+
+
+
+
 	/**
 	 * Encapsulated method for evaluating a run
 	 * 
@@ -296,5 +315,46 @@ public class TargetAlgorithmEvaluatorRunner
 		}
 	}
 
+	
+	/**
+	 * Logs a run in JSON Format, this is useful for debugging the json-exec command.
+	 * @param runConfig
+	 */
+	private static void printJSON(AlgorithmRunConfiguration runConfig) {
+		ArrayList<AlgorithmRunConfiguration> rcs = new ArrayList<>();
+		rcs.add(runConfig);
+
+		ObjectMapper map = new ObjectMapper();
+		JsonFactory factory = new JsonFactory();
+		ByteArrayOutputStream bout = new ByteArrayOutputStream();
+		
+		
+		JsonGenerator g;
+		try {
+			SimpleModule sModule = new SimpleModule("MyModule", new Version(1, 0, 0, null));
+			map.configure(SerializationFeature.INDENT_OUTPUT, true);
+			  
+			map.registerModule(sModule);
+			factory.setCodec(map);
+			
+			
+			g = factory.createGenerator(bout);
+			
+			
+		
+			g.writeObject(rcs);
+			g.flush();
+			
+			log.info("----====[JSON Representation of Run Configuration]====-----:\n\n{}\n\n",bout.toString("UTF-8"));
+			
+		} catch (IOException e) {
+			log.error("Unexpected Exception: ", e);
+		}
+		
+
+	
+		
+		
+	}
 			
 }

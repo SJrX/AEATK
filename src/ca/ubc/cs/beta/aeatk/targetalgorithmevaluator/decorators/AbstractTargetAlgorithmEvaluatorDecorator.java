@@ -121,6 +121,11 @@ public abstract class AbstractTargetAlgorithmEvaluatorDecorator implements	Targe
 		
 		try {
 			postDecorateeNotifyShutdown();
+			
+			if(first != null)
+			{
+				throw first;
+			}
 		} catch(RuntimeException e)
 		{
 			if(first != null)

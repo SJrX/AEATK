@@ -6,11 +6,15 @@ import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.ObjectOutputStream;
+
+import java.util.Map;
+
+import java.util.Arrays;
+
 import java.util.HashSet;
 import java.util.Iterator;
 import java.util.Set;
 import java.util.TreeSet;
-
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -30,7 +34,7 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 	private final double[][] pcaVec;
 	private final double[] pcaCoeff;
 	private final int[] sub;
-	private final int[] constantColumns;
+	private final int[] constantColumnsAt10toMinus6;
 	private final double[] means;
 	private final double[] stdDevs;
 	private final double[][] pcaFeatures;
@@ -135,14 +139,14 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 		
 		this.prePCAInstanceFeatures = ArrayMathOps.copy(instanceFeatures);
 		
-		instanceFeatures = ArrayMathOps.copy(instanceFeatures);
+		double[][] instanceFeaturesGreaterThan10toMinus6 = ArrayMathOps.copy(instanceFeatures);
 		
 		MessyMathHelperClass pca = new MessyMathHelperClass();
 		double[][] usedInstanceFeatures = new double[usedInstancesIdxs.length][];
 		
 		for(int i=0; i < usedInstanceFeatures.length; i++)
 		{
-			usedInstanceFeatures[i] = instanceFeatures[usedInstancesIdxs[i]];
+			usedInstanceFeatures[i] = instanceFeaturesGreaterThan10toMinus6[usedInstancesIdxs[i]];
 		}
 		
 		/****
@@ -151,14 +155,14 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 		**/
 		
 		
-		int[] constFeatures = pca.constantColumnsWithMissingValues(usedInstanceFeatures);
-		instanceFeatures = pca.removeColumns(instanceFeatures, constFeatures);
+		int[] constFeaturesAt10toMinus6 = pca.constantColumnsWithMissingValues(usedInstanceFeatures);
+		instanceFeaturesGreaterThan10toMinus6 = pca.copyMatrixAndRemoveColumns(instanceFeaturesGreaterThan10toMinus6, constFeaturesAt10toMinus6);
 	
-		constantColumns = constFeatures;
+		constantColumnsAt10toMinus6 = constFeaturesAt10toMinus6;
 		
-		log.trace("Discarding {} constant inputs of {} in total.", constFeatures.length, prePCAInstanceFeatures[0].length);
+		log.trace("Discarding {} constant inputs of {} in total.", constFeaturesAt10toMinus6.length, prePCAInstanceFeatures[0].length);
 	
-		double[][] instanceFeaturesT = pca.transpose(instanceFeatures);
+		double[][] instanceFeaturesT = pca.transpose(instanceFeaturesGreaterThan10toMinus6);
 		
 		
 		double[] firstStdDev = pca.getRowStdDev(instanceFeaturesT);
@@ -183,17 +187,17 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 			stdDevs = new double[0];
 			pcaCoeff = new double[0];
 			pcaVec = new double[0][];
-			pcaFeatures = new double[instanceFeatures.length][1];
+			pcaFeatures = new double[instanceFeaturesGreaterThan10toMinus6.length][1];
 			emptyFeatures = true;
 			return;
-		} else if (instanceFeatures[0].length < numPCA)
+		} else if (instanceFeaturesGreaterThan10toMinus6[0].length < numPCA)
 		{
 			sub = new int[0];
 			means = new double[0];
 			stdDevs = new double[0];
 			pcaCoeff = new double[0];
 			pcaVec = new double[0][];
-			pcaFeatures = instanceFeatures;
+			pcaFeatures = instanceFeaturesGreaterThan10toMinus6;
 			emptyFeatures = false;
 			return;
 		} else
@@ -202,22 +206,36 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 			sub = mySub;
 		}
 		
-		instanceFeatures = pca.keepColumns(instanceFeatures, sub);
-		instanceFeaturesT = pca.transpose(instanceFeatures);
+		double[][] instanceFeaturesGreaterThan10toMinus5 = pca.copyMatrixAndKeepColumns(instanceFeaturesGreaterThan10toMinus6, sub);
+		instanceFeaturesT = pca.transpose(instanceFeaturesGreaterThan10toMinus5);
 		means = pca.getRowMeans(instanceFeaturesT);
 		stdDevs = pca.getRowStdDev(instanceFeaturesT);
 		
-		pca.perColumnOperation(instanceFeatures, means, Operation.SUBTRACT);
-		pca.perColumnOperation(instanceFeatures, stdDevs, Operation.DIVIDE);
+		pca.perColumnOperation(instanceFeaturesGreaterThan10toMinus5, means, Operation.SUBTRACT);
+		pca.perColumnOperation(instanceFeaturesGreaterThan10toMinus5, stdDevs, Operation.DIVIDE);
 		
-		pcaCoeff = pca.getPCACoeff(instanceFeatures, numPCA);
-		pcaVec = pca.getPCA(instanceFeatures, numPCA);
+		pcaCoeff = pca.getPCACoeff(instanceFeaturesGreaterThan10toMinus5, numPCA);
+		pcaVec = pca.getPCA(instanceFeaturesGreaterThan10toMinus5, numPCA);
 		
 		
 		//double[][] pcaVecT = pca.transpose(pcaVec);
 //		pcaFeatures = pca.matrixMultiply(instanceFeatures, pcaVec);
 
-		pcaFeatures = applyTransformation(prePCAInstanceFeatures,emptyFeatures, constantColumns, sub, means, stdDevs, pcaVec);
+/*
+		System.out.print("Constant Columns:" + constantColumnsAt10toMinus6.length + ":");
+		System.out.println(Arrays.toString(constantColumnsAt10toMinus6));
+		
+		System.out.print("Sub:" + sub.length + ":");
+		System.out.println(Arrays.toString(sub));
+		
+		System.out.print("Means:" + means.length + ":");
+		System.out.println(Arrays.toString(means));
+		
+		System.out.print("Pre-PCA:" + prePCAInstanceFeatures[0].length + ":");
+		System.out.println(Arrays.toString(prePCAInstanceFeatures[0]) + ":");
+	*/	
+		
+		pcaFeatures = applyTransformation(prePCAInstanceFeatures,emptyFeatures, constantColumnsAt10toMinus6, sub, means, stdDevs, pcaVec);
 		/*
 		if(RoundingMode.ROUND_NUMBERS_FOR_MATLAB_SYNC)
 		{
@@ -236,13 +254,13 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 		}
 		
 		MessyMathHelperClass pca = new MessyMathHelperClass();
-		double[][] result = pca.removeColumns(instanceFeatures, constantColumns);
+		double[][] result = pca.copyMatrixAndRemoveColumns(instanceFeatures, constantColumns);
 		
 		if (sub.length == 0){
 			return result;
 		} 
 
-		pca.keepColumns(result, sub);
+		result = pca.copyMatrixAndKeepColumns(result, sub);
 		pca.perColumnOperation(result, means, Operation.SUBTRACT);
 		pca.perColumnOperation(result, stdDevs, Operation.DIVIDE);
 		return pca.matrixMultiply(result, pcaVec);
@@ -309,16 +327,35 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 	}
 	
 	@Override
+	public Map<Integer, int[][]> getNameConditionsMapParentsArray() {
+		return configSpace.getNameConditionsMapParentsArray();
+	}; 
+	
+	@Override
+	public Map<Integer, double[][][]> getNameConditionsMapParentsValues() {
+		return configSpace.getNameConditionsMapParentsValues();
+	}
+	
+	@Override
+	public Map<Integer, int[][]> getNameConditionsMapOp() {
+		return configSpace.getNameConditionsMapOp();
+	}
+	
+	/*
+	@Override
 	public int[][] getCondParents()
 	{
 		return configSpace.getCondParentsArray();
 	}
+	*/
 
+	/*
 	@Override
 	public int[][][] getCondParentVals()
 	{
 		return configSpace.getCondParentValsArray();
 	}
+	*/
 
 	@Override
 	public double transformResponseValue(double d) {
@@ -351,7 +388,7 @@ public class PCAModelDataSanitizer extends AbstractSanitizedModelData {
 
 	@Override
 	public int[] getConstantColumns() {
-		return constantColumns;
+		return constantColumnsAt10toMinus6;
 	}
 	
 	@Override

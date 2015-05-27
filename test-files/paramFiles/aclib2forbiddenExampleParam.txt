@@ -1,0 +1,6 @@
+#Forbidden
+a categorical { v1 , v2 , v3 } [v2]
+b categorical { w1 , w2 , w3 } [w3]
+
+#Forbidden:
+{a=v2, b=w2}

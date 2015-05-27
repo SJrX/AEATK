@@ -45,6 +45,7 @@ import ca.ubc.cs.beta.aeatk.objectives.RunObjective;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
+import ca.ubc.cs.beta.aeatk.smac.SMACOptions.SharedModelModeDefaultHandling;
 
 public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 
@@ -72,16 +73,28 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 
 	private final ConcurrentMap<File, Integer> importedRuns = new ConcurrentSkipListMap<>();
 	
+	private final SharedModelModeDefaultHandling srdh;
+	private final boolean writeData;
+	private final boolean assymetricMode;
 	/**
 	 * Actually read the data in 
 	 */
 	private final boolean readData;
-
+	
+	
 	public FileSharingRunHistoryDecorator(RunHistory runHistory, File directory, final int outputID, List<ProblemInstance> pis, int MSecondsBetweenUpdates, final boolean readData)
+	{
+		
+		this(runHistory, directory, outputID, pis, MSecondsBetweenUpdates, readData, false, SharedModelModeDefaultHandling.USE_ALL, true);
+	}
+	public FileSharingRunHistoryDecorator(RunHistory runHistory, File directory, final int outputID, List<ProblemInstance> pis, int MSecondsBetweenUpdates, final boolean readData, boolean sharedModeModeAssymetricMode, SharedModelModeDefaultHandling defaultHandler, boolean writeRunData)
 	{
 		this.runHistory = runHistory;
 		this.outputDir = directory;
 		this.readData = readData;
+		this.srdh = defaultHandler;
+		this.writeData = writeRunData;
+		this.assymetricMode = sharedModeModeAssymetricMode;
 		
 		if(MSecondsBetweenUpdates < 0)
 		{
@@ -91,7 +104,21 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 		this.MSBetweenUpdates = MSecondsBetweenUpdates;
 		
 		sharedFileName = new File(directory + File.separator + JSON_FILE_PREFIX+outputID + JSON_FILE_SUFFIX).getAbsolutePath();
-		final File f = new File(sharedFileName);
+		
+		String filename = sharedFileName;
+		
+		if(!writeData)
+		{
+			try {
+				//This is really a hacky way to deal with not writing a file (creating a temp file)
+				File tmp =File.createTempFile("DummyFile", "AEATK");
+				tmp.deleteOnExit();
+				filename = tmp.getAbsolutePath();
+			} catch (IOException e) {
+				throw new IllegalStateException("Couldn't create temp file");
+			}
+		}
+		final File f = new File(filename);
 		
 		try {
 			
@@ -108,8 +135,11 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 			map.registerModule(sModule);
 			
 			List<ProblemInstance> myPis = new ArrayList<>(pis);
-			g.writeObject(myPis);
-			g.flush();
+			if(writeData)
+			{
+				g.writeObject(myPis);
+				g.flush();
+			}
 			this.pis = Collections.unmodifiableList(myPis);
 			//map.writeValue(fout, pis);
 		} catch (IOException e) {
@@ -145,7 +175,7 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 					if(readData)
 					{
 						log.info("At shutdown: {} had {} runs added to it", f, locallyAddedRuns.get());
-						log.info("At shutdown: we retrieved atleast {} runs and added them to our current data set {}",  total, addedRunsStr  );
+						log.info("At shutdown: we retrieved atleast {} runs and added them to our current data set {} which now has {} runs ({} local)",  total, addedRunsStr , FileSharingRunHistoryDecorator.this.getAlgorithmRunDataIncludingRedundant().size() , locallyAddedRuns.get() );
 					} else
 					{
 						log.debug("At shutdown: {} had {} runs added to it", f, locallyAddedRuns.get());
@@ -188,13 +218,15 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 
 				
 				try {
+					if(writeData)
+					{
+						g.writeObject(run);
+						g.flush();
+					}
 					
-					g.writeObject(run);
 					
 					
 					locallyAddedRuns.incrementAndGet();
-					g.flush();
-					
 					
 					//map.writeValue(fout, run);
 					//fout.flush();
@@ -256,6 +288,48 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 					}
 				});
 				
+				
+				
+				if(this.assymetricMode)
+				{
+					
+					
+					Set<File> allFiles = new TreeSet<File>();
+					allFiles.addAll(Arrays.asList(matchingFiles));
+					
+					File me = new File(sharedFileName);
+					allFiles.add(me);
+					
+					List<File> filesInOrder = new ArrayList<File>(allFiles);
+					
+					//Set<File>
+					int startingFile = filesInOrder.indexOf(me);
+					
+					
+					
+					//Don't really read these files, it's just short hand
+					Set<File> myFilesToReadSet = new TreeSet<File>();
+					myFilesToReadSet.add(me);
+					for(int i=startingFile; i < filesInOrder.size(); i++)
+					{
+						if(myFilesToReadSet.contains(filesInOrder.get(i)))
+						{
+							if(2*i < filesInOrder.size())
+							{
+								myFilesToReadSet.add(filesInOrder.get(2*i));
+							}
+							
+							if(2*i+1 <filesInOrder.size())
+							{
+								myFilesToReadSet.add(filesInOrder.get(2*i+1));
+							}
+						}
+					}
+					
+					myFilesToReadSet.remove(me);
+					ArrayList<File> myFilesToRead = new ArrayList<File>(myFilesToReadSet);
+					matchingFiles = myFilesToRead.toArray(new File[0]);
+				}
 				Set<String> newReads = new TreeSet<String>();
 				
 				for(File match : matchingFiles)
@@ -271,7 +345,10 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 			
 				}
 				
-				log.info("Detected new source(s) of run data which we will read from : {}", newReads);
+				if(newReads.size() > 0)
+				{
+					log.info("Detected new source(s) of run data which we will read from : {}", newReads);
+				}
 			} finally
 			{
 				lastUpdateTime = System.currentTimeMillis();
@@ -358,7 +435,31 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 					
 					try {
 						newValue++; //Always count this, if it's a duplicate it counts as a success.
-						runHistory.append(run);
+						if(run.getParameterConfiguration().equals(run.getParameterConfiguration().getParameterConfigurationSpace().getDefaultConfiguration()))
+						{
+							switch(this.srdh)
+							{
+								case IGNORE_ALL:
+									//System.err.println("Ignoring Run");
+									break;
+								case SKIP_FIRST_TWO:
+									if(newValue <= 2)
+									{
+										//System.err.println("Ignoring Run: #" + newValue);
+										break;
+									}
+								case USE_ALL:
+									runHistory.append(run);
+									break;
+								default:
+									throw new IllegalStateException("Not sure how to deal with this");
+							}
+							
+							
+						} else
+						{
+							runHistory.append(run);
+						}
 					} catch (DuplicateRunException e) {
 						//Doesn't matter here
 					}

@@ -1,5 +1,7 @@
 package ca.ubc.cs.beta.aeatk.model.data;
 
+import java.util.Map;
+
 /**
  * Abstract Sanitized Model Data 
  * 
@@ -87,7 +89,28 @@ public abstract class AbstractSanitizedModelData implements SanitizedModelData{
 		if(this.smd == null) throw new UnsupportedOperationException("No Wrapped Object and no default implementation");
 		return smd.getCategoricalSize();
 	}
+	
+	@Override
+	public Map<Integer, int[][]> getNameConditionsMapParentsArray() {
+		if(this.smd == null) throw new UnsupportedOperationException("No Wrapped Object and no default implementation");
+		return smd.getNameConditionsMapParentsArray();
+	}; 
+	
+	@Override
+	public Map<Integer, double[][][]> getNameConditionsMapParentsValues() {
 
+		if(this.smd == null) throw new UnsupportedOperationException("No Wrapped Object and no default implementation");
+		return smd.getNameConditionsMapParentsValues();
+	}
+	
+	@Override
+	public Map<Integer, int[][]> getNameConditionsMapOp() {
+
+		if(this.smd == null) throw new UnsupportedOperationException("No Wrapped Object and no default implementation");
+		return smd.getNameConditionsMapOp();
+	}
+	
+	/*
 	@Override
 	public int[][] getCondParents() {
 
@@ -102,6 +125,7 @@ public abstract class AbstractSanitizedModelData implements SanitizedModelData{
 		if(this.smd == null) throw new UnsupportedOperationException("No Wrapped Object and no default implementation");
 		return smd.getCondParentVals();
 	}
+	*/
 
 	@Override
 	public double transformResponseValue(double d)

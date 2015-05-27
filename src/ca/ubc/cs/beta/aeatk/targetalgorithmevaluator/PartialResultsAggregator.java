@@ -5,6 +5,7 @@ import java.util.Collection;
 import java.util.Collections;
 import java.util.HashMap;
 import java.util.HashSet;
+import java.util.LinkedHashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Set;
@@ -61,7 +62,7 @@ public class PartialResultsAggregator {
 	{
 		runConfigurations = Collections.unmodifiableList(new ArrayList<>(initalRunConfigurations));
 		
-		outstandingRunConfigurationSet = new HashSet<>(runConfigurations);
+		outstandingRunConfigurationSet = new LinkedHashSet<>(runConfigurations);
 		
 		if(runConfigurations.size() != outstandingRunConfigurationSet.size())
 		{
@@ -97,6 +98,9 @@ public class PartialResultsAggregator {
 		return Collections.unmodifiableSet(outstandingRunConfigurationSet);
 	}
 	
+	public synchronized List<AlgorithmRunConfiguration> getOutstandingRunConfigurationsAsList() {
+		return Collections.unmodifiableList(new ArrayList<AlgorithmRunConfiguration>(outstandingRunConfigurationSet));
+	}
 	
 	public synchronized boolean isCompleted()
 	{
@@ -144,6 +148,7 @@ public class PartialResultsAggregator {
 	public synchronized boolean updateCompletedRun(AlgorithmRunResult result)
 	{
 		outstandingRunConfigurationSet.remove(result.getAlgorithmRunConfiguration());
+		_updateMap(result, observerRunStatus);
 		return _updateMap(result, completedRunsMap);
 	}
 	
@@ -154,6 +159,7 @@ public class PartialResultsAggregator {
 			outstandingRunConfigurationSet.remove(run.getAlgorithmRunConfiguration());
 		}
 		
+		_updateMap(results, observerRunStatus);
 		return _updateMap(results, completedRunsMap);
 	}
 	
@@ -180,20 +186,8 @@ public class PartialResultsAggregator {
 	{
 		for(AlgorithmRunResult run : results)
 		{
-			if(observerRunStatus.containsKey(run.getAlgorithmRunConfiguration())) //This map always has a key for every run.
-			{
-				if(this.nonAuthorativekillHandlerMap.get(run.getAlgorithmRunConfiguration()).isKilled() && !run.isRunCompleted())
-				{
-					run.kill();
-				}
-				
-				map.put(run.getAlgorithmRunConfiguration(), run);
-			} else
-			{
-				throw new IllegalStateException("Attempted to add a run that we didn't request:" + run + " requests: " + this.runConfigurations);
-			}
 			
-			
+			_updateMap(run, map);
 		}
 		
 		return isCompleted();

@@ -1,0 +1,2 @@
+# should not be parsed by the new format parser (type is missing)
+param {1,2,3}[2]

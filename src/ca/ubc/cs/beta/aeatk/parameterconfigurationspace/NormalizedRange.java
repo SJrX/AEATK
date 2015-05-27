@@ -109,7 +109,23 @@ public class NormalizedRange implements Serializable
 		
 		if (x < minNormalizedValue || x > maxNormalizedValue)
 		{
-			throw new IllegalArgumentException("Value is outside of domain [" + minNormalizedValue + "," + maxNormalizedValue + "]");
+			
+			double a = minNormalizedValue;
+			
+			double b = maxNormalizedValue;
+			if(intValuesOnly)
+			{
+				a = Math.round(a+0.5);
+				b = Math.round(b-0.5);
+			}
+			
+			if(normalizeToLog)
+			{
+				throw new IllegalArgumentException("Value " + Math.pow(10,x) + " is outside of domain [" + Math.pow(10,a) + "," + Math.pow(10,b) + "]");
+			} else
+			{
+				throw new IllegalArgumentException("Value " + x + " is outside of domain [" + a + "," + b + "]");
+			}
 		}
 		
 		return (x - minNormalizedValue) / (maxNormalizedValue - minNormalizedValue);

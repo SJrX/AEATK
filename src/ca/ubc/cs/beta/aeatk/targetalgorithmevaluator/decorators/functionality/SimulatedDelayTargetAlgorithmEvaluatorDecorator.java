@@ -26,6 +26,8 @@ import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunningAlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.algorithmrunresult.kill.KillHandler;
 import ca.ubc.cs.beta.aeatk.algorithmrunresult.kill.StatusVariableKillHandler;
 import ca.ubc.cs.beta.aeatk.concurrent.threadfactory.SequentiallyNamedThreadFactory;
+import ca.ubc.cs.beta.aeatk.misc.watch.AutoStartStopWatch;
+import ca.ubc.cs.beta.aeatk.misc.watch.StopWatch;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluator;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorCallback;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorRunObserver;
@@ -153,7 +155,7 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 			log.trace("Scheduling runs synchronously for configs {}", configIDs);
 			
 			final List<AlgorithmRunResult> runsFromWrappedTAE = Collections.unmodifiableList(tae.evaluateRun(runConfigs, null));
-			double timeToSleep = Double.NEGATIVE_INFINITY;
+			double timeToSleepInSeconds = Double.NEGATIVE_INFINITY;
 			//Stores a mapping of Run Config objects to Algorithm Run Objects
 			//The kill handlers may modify these.
 			final LinkedHashMap<AlgorithmRunConfiguration, AlgorithmRunResult> runConfigToAlgorithmRunMap = new LinkedHashMap<AlgorithmRunConfiguration, AlgorithmRunResult>();
@@ -162,10 +164,10 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 			AlgorithmRunResult mostExpensiveRun = null;
 			for(AlgorithmRunResult run : runsFromWrappedTAE)
 			{
-				double oldTimeToSleep = timeToSleep;
-				timeToSleep = Math.max(timeToSleep, Math.max(run.getRuntime(), run.getWallclockExecutionTime()));
+				double oldTimeToSleep = timeToSleepInSeconds;
+				timeToSleepInSeconds = Math.max(timeToSleepInSeconds, Math.max(run.getRuntime(), run.getWallclockExecutionTime()));
 				
-				if(oldTimeToSleep != timeToSleep)
+				if(oldTimeToSleep != timeToSleepInSeconds)
 				{
 					mostExpensiveRun = run;
 				}
@@ -174,14 +176,17 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 				
 			}
 			
-			double oRigTimeToSleep = timeToSleep;
-			timeToSleep = timeToSleep / this.timeScalingFactor;
+			double oRigTimeToSleep = timeToSleepInSeconds;
+			timeToSleepInSeconds = timeToSleepInSeconds / this.timeScalingFactor;
 			
-			Object[] args = {  oRigTimeToSleep, timeScalingFactor, timeToSleep,  configIDs, getNicelyFormattedWakeUpTime(timeToSleep), threadsWaiting.get()}; 
-			log.trace("Simulating {} elapsed with time scaling factor {} for a total of {} seconds of running for configs ({}) . Wake-up estimated in/at: {}  ( ~({}) threads currently waiting )", args);
+			Object[] args = {  oRigTimeToSleep, timeScalingFactor, timeToSleepInSeconds,  configIDs, getNicelyFormattedWakeUpTime(timeToSleepInSeconds), threadsWaiting.get()}; 
+			log.debug("Simulating {} seconds elapsed with time scaling factor {} for a total of {} seconds of running for configs ({}) . Wake-up estimated in/at: {}  ( ~({}) threads currently waiting )", args);
 			
+			 
+			StopWatch sleepTimeWatch = new AutoStartStopWatch();
 			sleepAndNotifyObservers(timeSim, startTimeInMS,  oRigTimeToSleep, obs, runsFromWrappedTAE, runConfigs, runConfigToKillHandlerMap, runConfigToAlgorithmRunMap);
-			
+			Object[] args2 = {  oRigTimeToSleep, timeScalingFactor, timeToSleepInSeconds,  configIDs, sleepTimeWatch.stop()/ 1000.0};
+			log.debug("Done simulating {} seconds elapsed with time scaling factor {} for a total of {} seconds of running for configs ({}). Total sleep time : {} seconds", args2);
 			if(obs == null)
 			{ 
 				//None of the runResultsChanged so we can return them unmodified
@@ -207,7 +212,7 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 					
 					if(newRun.equals(mostExpensiveRun))
 					{
-						newRun = new ExistingAlgorithmRunResult(newRun.getAlgorithmRunConfiguration(), newRun.getRunStatus(), newRun.getRuntime(), newRun.getRunLength(),newRun.getQuality(),newRun.getResultSeed(), newRun.getAdditionalRunData(), timeToSleep);
+						newRun = new ExistingAlgorithmRunResult(newRun.getAlgorithmRunConfiguration(), newRun.getRunStatus(), newRun.getRuntime(), newRun.getRunLength(),newRun.getQuality(),newRun.getResultSeed(), newRun.getAdditionalRunData(), timeToSleepInSeconds);
 					}
 					completedRuns.add(newRun);
 					
@@ -225,7 +230,7 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 	private void sleepAndNotifyObservers(TimeSimulator timeSimulator, long startTimeInMs, double maxRuntime, TargetAlgorithmEvaluatorRunObserver observer, List<AlgorithmRunResult> runsFromWrappedTAE, List<AlgorithmRunConfiguration> runConfigs, final LinkedHashMap<AlgorithmRunConfiguration, KillHandler> khs, final LinkedHashMap<AlgorithmRunConfiguration, AlgorithmRunResult> runResults)
 	{
 		
-		long sleepTimeInMS = (long) maxRuntime * 1000;
+		long sleepTimeInMS = (long) (maxRuntime * 1000);
 		do {
 			long waitTimeRemainingMs;
 			
@@ -235,11 +240,25 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 				updateRunsAndNotifyObserver(startTimeInMs, currentTimeInMs, maxRuntime, observer, runsFromWrappedTAE, runConfigs, khs, runResults);
 			}	
 			
+			
+			
 			//In case the observers took significant amounts of time, we get the time again
 			currentTimeInMs = timeSimulator.time();
 			waitTimeRemainingMs =  startTimeInMs - currentTimeInMs +  sleepTimeInMS; 
 		
-			if(waitTimeRemainingMs <= 0)
+			boolean allKilled = true;
+			for(AlgorithmRunConfiguration rc : runConfigs)
+			{
+				
+				if(!runResults.get(rc).getRunStatus().equals(RunStatus.KILLED))
+				{
+					allKilled = false;
+					break;
+				}
+						
+			}
+			
+			if(waitTimeRemainingMs <= 0 || allKilled)
 			{
 				break;
 			} else
@@ -291,7 +310,8 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 			} else if(killHandlers.get(rc).isKilled())
 			{
 				//We should kill this run
-				runConfigToAlgorithmRunMap.put(rc, new ExistingAlgorithmRunResult( rc, RunStatus.KILLED, currentRuntime, 0, 0, rc.getProblemInstanceSeedPair().getSeed(),currentRuntime));
+				//log.warn("We should kill this run");
+				runConfigToAlgorithmRunMap.put(rc, new ExistingAlgorithmRunResult( rc, RunStatus.KILLED, currentRuntime, 0, 0, rc.getProblemInstanceSeedPair().getSeed(),"Killed by " + getClass().getSimpleName(), currentRuntime));
 			} else
 			{
 				//Update the run
@@ -314,6 +334,7 @@ public class SimulatedDelayTargetAlgorithmEvaluatorDecorator extends
 	
 	private String getNicelyFormattedWakeUpTime(double timeToSleep)
 	{
+		
 		long time = System.currentTimeMillis()  + (long) (timeToSleep * 1000);
 		Date d = new Date(time);
 

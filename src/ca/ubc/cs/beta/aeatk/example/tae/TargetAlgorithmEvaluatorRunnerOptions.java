@@ -16,6 +16,7 @@ import ca.ubc.cs.beta.aeatk.logging.ConsoleOnlyLoggingOptions;
 import ca.ubc.cs.beta.aeatk.logging.LoggingOptions;
 import ca.ubc.cs.beta.aeatk.misc.file.HomeFileUtils;
 import ca.ubc.cs.beta.aeatk.misc.jcommander.validator.LongGreaterThanNegativeTwoValidator;
+import ca.ubc.cs.beta.aeatk.misc.options.OptionLevel;
 import ca.ubc.cs.beta.aeatk.misc.options.UsageTextField;
 import ca.ubc.cs.beta.aeatk.options.AbstractOptions;
 import ca.ubc.cs.beta.aeatk.options.scenario.ScenarioOptions;
@@ -90,6 +91,9 @@ public class TargetAlgorithmEvaluatorRunnerOptions extends AbstractOptions {
 	@Parameter(names="--config-seed", description="Seed to use if we generate a RANDOM configuration")
 	public int configSeed = 0;
 	
+	@UsageTextField(level=OptionLevel.ADVANCED)
+	@Parameter(names="--print-json", description="If true will print the JSON representation of a run")
+	public boolean printJSON = false;
 	/**
 	 * This is a dynamic parameter
 	 */

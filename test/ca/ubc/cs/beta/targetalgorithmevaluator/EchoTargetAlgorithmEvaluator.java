@@ -23,7 +23,7 @@ import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.exceptions.TargetAlgorithmA
  */
 public class EchoTargetAlgorithmEvaluator  extends AbstractSyncTargetAlgorithmEvaluator  implements TargetAlgorithmEvaluator{
 
-	private final boolean quickEval;
+	
 	
 	public EchoTargetAlgorithmEvaluator()
 	{
@@ -31,7 +31,7 @@ public class EchoTargetAlgorithmEvaluator  extends AbstractSyncTargetAlgorithmEv
 	}
 	
 	public EchoTargetAlgorithmEvaluator( EchoTargetAlgorithmEvaluatorOptions options) {
-		this.quickEval = options.quickEval;		
+		super();
 	}
     
 	
@@ -64,18 +64,6 @@ public class EchoTargetAlgorithmEvaluator  extends AbstractSyncTargetAlgorithmEv
 			sb.append(config.get("seed"));
 			
 			
-			if(!this.quickEval)
-			{
-				
-				double sleep = Double.valueOf(config.get("runtime"));
-				
-				try {
-					Thread.sleep( (long) (sleep*1000));
-				} catch (InterruptedException e) {
-					Thread.currentThread().interrupt();
-				}
-				
-			}
 			
 			results.add(ExistingAlgorithmRunResult.getRunFromString(rc, sb.toString(),wallClockTime));
 			

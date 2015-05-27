@@ -172,12 +172,25 @@ public class RunGroupOptions extends AbstractOptions {
 		
 		File f = new File(dir.getAbsolutePath() + File.separator + line);
 		
-		dir.deleteOnExit();
+		if(line.contains(File.separator))
+		{
+			throw new ParameterException("runGroupName ("+line+")cannot contain a " + File.separator);
+		}
+			
 		try {
-			if(!(f.exists() || f.mkdirs()))
+			
+			try {
+				if(!(f.exists() || f.mkdirs()))
+				{
+					throw new ParameterException("Could not create directory based on runGroupName original value " + this.runGroupName + " ===> " + line + ". Please check that the substitution obeys file system rules");
+				}
+			} finally
 			{
-				throw new ParameterException("Could not create directory based on runGroupName original value " + this.runGroupName + " ===> " + line + ". Please check that the substitution obeys file system rules");
+				f.delete();
+				f.getParentFile().delete();
 			}
+			
+						
 			
 		} catch(ParameterException e)
 		{
@@ -222,6 +235,7 @@ public class RunGroupOptions extends AbstractOptions {
 	        throw new IOException("Could not create temp directory: " + temp.getAbsolutePath());
 	    }
 
+	    
 	    return (temp);
 	}
 	

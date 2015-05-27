@@ -65,7 +65,17 @@ public class AlgorithmRunConfiguration implements Serializable{
 		
 		this.pisp = pisp;
 		this.cutoffTime = cutoffTime;
-		this.params = config;
+		if(config.isLocked())
+		{
+			this.params = config;
+		} else
+		{
+			this.params = config.copy();
+			this.params.lock();
+		}
+		
+		
+		
 		
 		this.cutoffLessThanMax = cutoffTime < execConfig.getAlgorithmMaximumCutoffTime();
 		this.algorithmExecutionConfiguration = execConfig;
@@ -101,12 +111,12 @@ public class AlgorithmRunConfiguration implements Serializable{
 	}
 
 	/**
-	 * Returns a COPY of the Param Configuration to be run
-	 * @return a copy of the param configuration to be run
+	 * Returns an immutable instance of the parameter configuration
+	 * @return an immutable instance of the parameter configuration
 	 */
 	public ParameterConfiguration getParameterConfiguration()
 	{
-		return new ParameterConfiguration(params);
+		return params;
 	}
 	
 	/**

@@ -76,7 +76,7 @@ public class WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator extends
 			if(run.getRuntime() == 0 && run.getWallclockExecutionTime() > startAt)
 			{
 		
-				return new WalltimeAsRuntimeAlgorithmRun(run);
+				return new WalltimeAsRuntimeAlgorithmRun(run, wallclockMultScaleFactor);
 			}
 		}
 		return run;
@@ -136,7 +136,7 @@ public class WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator extends
 					if(run.getRuntime() == 0 && run.getWallclockExecutionTime() > startAt)
 					{
 				
-						myRuns.add(new WalltimeAsRuntimeAlgorithmRun(run));
+						myRuns.add(new WalltimeAsRuntimeAlgorithmRun(run, wallclockMultScaleFactor));
 						
 					} else
 					{
@@ -156,7 +156,8 @@ public class WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator extends
 		
 	}
 	
-	private class WalltimeAsRuntimeAlgorithmRun implements AlgorithmRunResult
+	
+	private static class WalltimeAsRuntimeAlgorithmRun implements AlgorithmRunResult
 	{
 		/**
 		 * 
@@ -164,14 +165,18 @@ public class WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator extends
 		private static final long serialVersionUID = 9082975671200245863L;
 		
 		AlgorithmRunResult wrappedRun;
-		AlgorithmRunResult wrappedKillableRun;  
-		public WalltimeAsRuntimeAlgorithmRun(AlgorithmRunResult r)
+		AlgorithmRunResult wrappedKillableRun;
+
+		private final double wallclockMultScaleFactor;  
+	
+		public WalltimeAsRuntimeAlgorithmRun(AlgorithmRunResult r, double wallClockMultScaleFactor)
 		{
 			if(r instanceof AlgorithmRunResult)
 			{
 				wrappedKillableRun = (AlgorithmRunResult) r;
 			}
 			this.wrappedRun = r;
+			this.wallclockMultScaleFactor = wallClockMultScaleFactor;
 		}
 
 		@Override

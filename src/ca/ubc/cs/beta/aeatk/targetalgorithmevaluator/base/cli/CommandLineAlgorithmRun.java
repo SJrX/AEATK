@@ -54,7 +54,7 @@ import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.exceptions.TargetAlgorithmA
 
 /**
  * Executes a Target Algorithm Run via Command Line Execution
- * @author sjr
+ * @author Steve Ramage <seramage@cs.ubc.ca>
  *
  */
 public class CommandLineAlgorithmRun implements Callable<AlgorithmRunResult>{
@@ -260,17 +260,14 @@ public class CommandLineAlgorithmRun implements Callable<AlgorithmRunResult>{
 	{
 		
 		Thread.currentThread().setName("CLI TAE (Master Thread - TBD)");
-		if(runConfig.getCutoffTime() <= 0 || killHandler.isKilled())
+		if(killHandler.isKilled())
 		{
 			
-			log.trace("Cap time is less than or equal to zero for {} setting run as timeout", runConfig);
+			log.trace("Run has already been toggled as killed {}", runConfig);
 			
 			RunStatus rr = RunStatus.KILLED;
-			if(runConfig.getCutoffTime() <= 0)
-			{
-				rr = RunStatus.TIMEOUT;
-			}
-				AlgorithmRunResult run = new ExistingAlgorithmRunResult(runConfig, rr, 0, 0, 0, runConfig.getProblemInstanceSeedPair().getSeed(), "",0);
+			
+			AlgorithmRunResult run = new ExistingAlgorithmRunResult(runConfig, rr, 0, 0, 0, runConfig.getProblemInstanceSeedPair().getSeed(), "",0);
 			try {
 				runObserver.currentStatus(Collections.singletonList((AlgorithmRunResult) run));
 			} catch(RuntimeException t)
@@ -586,7 +583,7 @@ public class CommandLineAlgorithmRun implements Callable<AlgorithmRunResult>{
 						} else
 						{
 							double currentTime = Math.max(0,currentRuntime.get());
-							completedAlgorithmRun = new ExistingAlgorithmRunResult(runConfig, RunStatus.CRASHED, currentTime, 0,0, runConfig.getProblemInstanceSeedPair().getSeed(), "ERROR: Wrapper did not output anything that matched the expected output (\"Result of algorithm run:...\"). Please try executing the wrapper directly", this.getCurrentWallClockTime() );
+							completedAlgorithmRun = new ExistingAlgorithmRunResult(runConfig, RunStatus.CRASHED, currentTime, 0,0, runConfig.getProblemInstanceSeedPair().getSeed(), "ERROR: Wrapper did not output anything that matched the expected output (\"Result of algorithm run:...\"). Please try executing the wrapper directly", this.getCurrentWallClockTime() / 1000.0);
 						}
 					}
 					

@@ -218,6 +218,11 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
 	@Parameter(names={"--transform-crashed-quality-value"}, description="The minimum quality value that a CRASHED run can have")
 	public double transformCrashedQualityValue = Math.pow(10, 9);
 	
+	@UsageTextField(level=OptionLevel.ADVANCED)
+	@Parameter(names="--filter-zero-cutoff-runs", description="If true runs that are requested with 0 cutoff will be internally completed as TIMEOUT.")
+	public boolean filterZeroCutoffRuns = true;
+	
+	
     
 	/**
 	 * Checks if the problem instances are compatible with the verify sat option
