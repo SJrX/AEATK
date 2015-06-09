@@ -34,7 +34,7 @@ public class SMACRandomForestHelper {
 	/*
 	 * Parameter File Generator
 	 */
-		//	public RegtreeBuildParams(boolean doBootstrapping, int splitMin, double ratioFeatures, int[] catDomainSizes)
+	//	public RegtreeBuildParams(boolean doBootstrapping, int splitMin, double ratioFeatures, int[] catDomainSizes)
 	
 	
 	/*
