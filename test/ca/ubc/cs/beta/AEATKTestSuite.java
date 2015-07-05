@@ -1,5 +1,7 @@
 package ca.ubc.cs.beta;
 
+import ca.ubc.cs.beta.aeatk.initialization.classic.ClassicInitializationProcedure;
+import ca.ubc.cs.beta.initializationProcedure.ClassicInitializationProcedureTester;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
@@ -30,6 +32,7 @@ import ca.ubc.cs.beta.json.JSONTester;
 	JSONTester.class,
 	TestExistingAlgorithmRun.class,
 	AcquisitionFunctionTester.class,
+	ClassicInitializationProcedureTester.class,
 	EventManagerTester.class,
 	DynamicCappingTestSet.class,
 	ForbiddenOperatorsTest.class,
@@ -46,6 +49,7 @@ import ca.ubc.cs.beta.json.JSONTester;
 	RunObjectiveTester.class,
 	CPUTimeTest.class,
 	CachingTAETestSet.class
+
 })
 
 public class AEATKTestSuite {

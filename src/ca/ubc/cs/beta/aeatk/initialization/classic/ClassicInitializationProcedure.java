@@ -70,8 +70,9 @@ public class ClassicInitializationProcedure implements InitializationProcedure {
 		
 		
 		int N= opts.initialIncumbentRuns;
-		
-		N = Math.min(N, instances.size());
+
+
+		N = Math.min(N, insc.getInitialInstanceSeedCount());
 		N = Math.min(N, maxIncumbentRuns);
 		log.debug("Scheduling default configuration for {} runs",N);
 		for(int i=0; i <N; i++)

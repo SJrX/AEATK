@@ -291,7 +291,29 @@ public class TargetAlgorithmEvaluatorBuilder {
 		if(options.filecache)
 		{
 			log.trace("[TAE] Using a file cache for algorithm runs");
-			tae = new FileCacheTargetAlgorithmEvaluatorDecorator(tae, new File(options.fileCacheSource), new File(options.fileCacheOutput), numRun, options.fileCacheCrashOnMiss);
+
+			File fileSourceCache = new File(options.fileCacheSource);
+
+			File fileOutputCache = new File(options.fileCacheOutput);
+			if(!fileSourceCache.exists() || !fileSourceCache.isDirectory())
+			{
+				if(!fileSourceCache.mkdirs())
+				{
+					throw new ParameterException("Could not create file cache source directory: " + fileSourceCache.getAbsolutePath());
+				}
+			}
+
+			if(!fileOutputCache.exists() || !fileOutputCache.isDirectory())
+			{
+				if(!fileOutputCache.mkdirs())
+				{
+					throw new ParameterException("Could not create file cache output directory: " + fileOutputCache.getAbsolutePath());
+				}
+			}
+
+
+
+			tae = new FileCacheTargetAlgorithmEvaluatorDecorator(tae, fileSourceCache, fileOutputCache, numRun, options.fileCacheCrashOnMiss);
 		}
 		
 		if(options.filterZeroCutoffRuns)

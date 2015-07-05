@@ -149,10 +149,8 @@ public class SeedableRandomPool implements Serializable {
 		if(random == null)
 		{
 			Integer seed = getSeed(name);
-			
 			random = fact.getRandom(seed);
-			randomMap.put(name, fact.getRandom(seed));
-			 
+			randomMap.put(name, random);
 		}
 		
 		return random;
