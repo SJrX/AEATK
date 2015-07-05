@@ -197,19 +197,18 @@ public class TargetAlgorithmEvaluatorOptions extends AbstractOptions {
     @Parameter(names={"--file-cache"}, description="If true runs will be either written or read from the specified input and output files. If directories are specified, then input will be from all files in the directory, and output will be to a new random file in the directory. Note: This cache is static, we do not re-read from the cache over time")
     public boolean filecache;
 
-    @UsageTextField(level=OptionLevel.ADVANCED)
+    @UsageTextField(level=OptionLevel.ADVANCED, defaultValues = "Current Directory/runcache/")
     @Parameter(names={"--file-cache-source"}, description="Where to read files from")
-    public String fileCacheSource;
+    public String fileCacheSource = new File("./runcache/").getAbsolutePath();
 
-    @UsageTextField(level=OptionLevel.ADVANCED)
+    @UsageTextField(level=OptionLevel.ADVANCED, defaultValues = "Current Directory/runcache/")
     @Parameter(names={"--file-cache-output"}, description="Where to write files from")
-    public String fileCacheOutput;
+    public String fileCacheOutput = new File("./runcache/").getAbsolutePath();
 
     @UsageTextField(level=OptionLevel.DEVELOPER)
     @Parameter(names={"--file-cache-crash-on-cache-miss","--file-cache-crash-on-miss"}, description="Application will crash on cache miss, this is for debugging")
     public boolean fileCacheCrashOnMiss;
-    
-    
+
     @UsageTextField(level=OptionLevel.ADVANCED)
     @Parameter(names={"--transform-crashed-quality"}, description="If true we will transform the solution quality reported to the MAX(quality, --transform-crashed-quality-value).")
     public boolean transformCrashedQuality = true;
