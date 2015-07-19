@@ -32,16 +32,9 @@ public class TrajectoryFileParser {
 	private static ConcurrentSkipListMap<Double, TrajectoryFileEntry> parseSMACTrajectoryFile(ConfigCSVFileHelper configs, ParameterConfigurationSpace configSpace,boolean useTunerTimeAsWallTime)
 	{
 		ConcurrentSkipListMap<Double,  TrajectoryFileEntry> skipList = new ConcurrentSkipListMap<Double, TrajectoryFileEntry>();
-		
-		boolean detailed = false;
-		if(configs.getDataKeyByIndex(5).trim().equals("Full Configuration"))
-		{
-			detailed = true;
-		}
-		
+
 		ParameterConfiguration defaultConfiguration = configSpace.getDefaultConfiguration();
-		
-		
+
 		for(int i=0; i < configs.getNumberOfDataRows(); i++)
 		{		
 			String time = configs.getStringDataValue(i, 0).replaceAll("\"", "");
@@ -52,11 +45,24 @@ public class TrajectoryFileParser {
 			{
 				dataRow[j] = dataRow[j].replaceAll("\"", "");
 			}
+
 			StringBuilder sb = new StringBuilder();
-			
+
 			for(int j=5; j < dataRow.length; j++)
 			{
-				sb.append(dataRow[j]).append(",");
+				if(dataRow[j].contains("="))
+				{
+					// Ugh something has broken horribly in all these formats
+					// We need this because for some reason the CSV Reader isn't picking up the quotations correctly.
+					// This file format is dying thankfully so we can just hack it.
+					// It was expected that a cell like " " oteh=4 , uoetnh=5, " would be treated as one but right now it isn't. So we need to stop cells afterward
+					// From being read in. e.g. "a=43,b=5","53.2" we need to make sure that "53.2" is not part of the thing we parse.
+					sb.append(dataRow[j]).append(",");
+				} else
+				{
+					break;
+				}
+
 			}
 			
 			double tunerTime = Double.valueOf(dataRow[0]);
