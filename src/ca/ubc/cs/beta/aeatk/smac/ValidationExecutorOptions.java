@@ -74,7 +74,7 @@ public class ValidationExecutorOptions extends AbstractOptions {
 	@Parameter(names={"--validation-tunertime","--tunerTime"}, description="Tuner Time when Validation occured (when specifying the configuration this is simply reported in the output file, when using a trajectory file we use the incumbent at this time, if you set this to -1 we use the tuner time from the scenario file or 0 if reading configuration from command line)")
 	public double tunerTime = -1; 
 	
-	@Parameter(names={"--use-scenario-outdir","--useScenarioOutDir"}, description="Use the scenarios output directory", hidden=true)
+	@Parameter(names={"--use-scenario-outdir","--useScenarioOutDir"}, description="Use the scenarios output directory")
 	public boolean useScenarioOutDir = false;
 
 	@Parameter(names={"--empirical-performance","--empiricalPerformance"}, description="Estimated performance of configuration on training set (-1 means use the trajectory file value or 0 if not trajectory file)")
