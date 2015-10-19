@@ -679,7 +679,7 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 			case FIXED_WIDTH_ARRAY_STRING_SYNTAX:
 				StringWriter sWriter = new StringWriter();
 				PrintWriter pWriter = new PrintWriter(sWriter);
-				
+
 				for(int i=0; i < valueArray.length; i++)
 				{
 					pWriter.format("%20s", valueArray[i]);
@@ -711,8 +711,8 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 		}
 		
 	}
-	
-	
+
+
 	/**
 	 * Stores information about the various string formats we support
 	 * <p>
@@ -790,7 +790,7 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 		private final boolean hideInactive;
 		
 		
-		private ParameterStringFormat(String preKey, String keyValSeperator, String valDelimeter, String glue, boolean hideInactive)
+		ParameterStringFormat(String preKey, String keyValSeperator, String valDelimeter, String glue, boolean hideInactive)
 		{
 			this.preKey = preKey;
 			this.keyValSeperator = keyValSeperator;
@@ -835,7 +835,7 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 	public List<ParameterConfiguration> getNeighbourhood(Random rand, int numNumericalNeighbours)
 	{
 		Set<String> activeParams = getActiveParameters();
-		List<ParameterConfiguration> neighbours = new ArrayList<ParameterConfiguration>(numberOfNeighboursExcludingForbidden(numNumericalNeighbours, activeParams));
+		List<ParameterConfiguration> neighbours = new ArrayList<>(numberOfNeighboursExcludingForbidden(numNumericalNeighbours, activeParams));
 		
 		/*
 		 * i is the number of parameters
@@ -910,7 +910,7 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 			}
 		}
 		
-		return (differences == 1) ? true : false;
+		return (differences == 1);
 	}
 	
 	
@@ -921,12 +921,9 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 	private int numberOfNeighboursExcludingForbidden(int numNumericalNeighbours,Set<String> activeParams)
 	{
 		int neighbours = 0;
-		
-		 
-		
+
 		for(int i=0; i < configSpace.getParameterNamesInAuthorativeOrder().size(); i++)
 		{
-			
 			neighbours += numberOfNeighboursForParameter(i, activeParams.contains(configSpace.getParameterNamesInAuthorativeOrder().get(i)), numNumericalNeighbours);
 		}
 		return neighbours;
@@ -941,7 +938,7 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 	 */
 	private int numberOfNeighboursForParameter(int valueArrayIndex, boolean isParameterActive, int neighboursForNumericalParameters)
 	{
-		if(isParameterActive == false) return 0;
+		if(!isParameterActive) return 0;
 		
 		if(configSpace.searchSubspaceActive[valueArrayIndex]) return 0;
 		

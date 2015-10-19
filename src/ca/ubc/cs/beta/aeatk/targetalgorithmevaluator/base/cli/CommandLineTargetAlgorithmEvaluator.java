@@ -3,14 +3,14 @@ package ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.List;
-import java.util.concurrent.ArrayBlockingQueue;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Executors;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.callformatselector.AclibCallFormat;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.callformatselector.AutoDetectingCallFormat;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.callformatselector.CallFormatSelector;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.callformatselector.LegacyCallFormat;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -34,9 +34,6 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractAsyncTargetAlgo
 	
 	private final Logger log = LoggerFactory.getLogger(getClass());
 
-	
-	private final int observerFrequency;
-	
 	private final CommandLineTargetAlgorithmEvaluatorOptions options;
 	
 	private final BlockingQueue<Integer> executionIDs; 
@@ -44,25 +41,28 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractAsyncTargetAlgo
 	private final ExecutorService asyncExecService;
 	
 	private final ExecutorService commandLineAlgorithmRunExecutorService;
+
+
+
 	private final ExecutorService observerExecutorService = Executors.newCachedThreadPool(new SequentiallyNamedThreadFactory("CLI TAE Observer Threads", true));
 	
 	private final ExecutorService callbackExecutorService = Executors.newCachedThreadPool(new SequentiallyNamedThreadFactory("CLI TAE Callback Threads", true));
-	
-	
+
 	private final Semaphore asyncExecutions;
-	
-	private final AtomicBoolean shutdown = new AtomicBoolean(false);
-	
+
+	private final ConcurrentMap<AlgorithmExecutionConfiguration, CallFormatSelector> callFormatSelectorConcurrentMap = new ConcurrentHashMap<>();
+
+	private final CallFormatSelector defaultCallFormatSelector;
+
 	
 	/**
 	 * Constructs CommandLineTargetAlgorithmEvaluator
-	 * @param execConfig 			execution configuration of the target algorithm
 	 * @param options	<code>true</code> if we should execute algorithms concurrently, <code>false</code> otherwise
 	 */
 	CommandLineTargetAlgorithmEvaluator(CommandLineTargetAlgorithmEvaluatorOptions options)
 	{
-		
-		this.observerFrequency = options.observerFrequency;
+
+		int observerFrequency = options.observerFrequency;
 		if(observerFrequency < 50) throw new ParameterException("Observer Frequency can't be less than 50 ms");
 		
 		this.options = options;
@@ -71,7 +71,7 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractAsyncTargetAlgo
 		this.asyncExecService = Executors.newFixedThreadPool(options.cores, new SequentiallyNamedThreadFactory("CLI TAE Asynchronous Request Processing"));
 		
 		this.commandLineAlgorithmRunExecutorService = Executors.newFixedThreadPool(options.cores,new SequentiallyNamedThreadFactory("CLI TAE Master Dispatch Thread", true));
-		
+
 		
 		this.asyncExecutions = new Semaphore(options.cores,true);
 		
@@ -84,7 +84,22 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractAsyncTargetAlgo
 		
 		for(int i = 0; i < options.cores ; i++)
 		{
-			executionIDs.add(Integer.valueOf(i));
+			executionIDs.add(i);
+		}
+
+		switch(options.callFormat)
+		{
+			case ACLIB:
+				defaultCallFormatSelector = AclibCallFormat.getInstance();
+				break;
+			case LEGACY:
+				defaultCallFormatSelector = LegacyCallFormat.getInstance();
+				break;
+			case TRY_LEGACY_FIRST:
+				defaultCallFormatSelector = AutoDetectingCallFormat.getInstance();
+				break;
+			default:
+				throw new IllegalStateException("Unknown call format: " + options.callFormat);
 		}
 	}
 	
@@ -117,20 +132,19 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractAsyncTargetAlgo
 	
 				@Override
 				public void run() {
-					
-	
-					ConcurrentAlgorithmRunner runner =null;
+
+					ConcurrentAlgorithmRunner runner;
 					
 					List<AlgorithmRunResult> runs = null;
 					
-					try 
+					try
 					{
 						try {
 							runner = getAlgorithmRunner(runConfigs,runStatusObserver);
 							runs =  runner.run(commandLineAlgorithmRunExecutorService);
 						} finally
 						{
-							asyncExecutions.release();	
+							asyncExecutions.release();
 						}
 					} catch(RuntimeException e)
 					{
@@ -168,11 +182,12 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractAsyncTargetAlgo
 							} catch(Throwable e)
 							{
 								taeCallback.onFailure(new IllegalStateException("Unexpected Throwable:", e));
-								
+
 								if(e instanceof Error)
 								{
 									throw e;
 								}
+
 							}
 							
 						}
@@ -210,7 +225,7 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractAsyncTargetAlgo
 		{
 			cores = 1;
 		}
-		return new ConcurrentAlgorithmRunner(runConfigs, cores, obs, options,executionIDs, this.observerExecutorService);
+		return new ConcurrentAlgorithmRunner(runConfigs, cores, obs, options,executionIDs, this.observerExecutorService, this.callFormatSelectorConcurrentMap, defaultCallFormatSelector);
 	}
 
 	
@@ -282,8 +297,6 @@ public class CommandLineTargetAlgorithmEvaluator extends AbstractAsyncTargetAlgo
 			this.commandLineAlgorithmRunExecutorService.shutdownNow();
 			this.observerExecutorService.shutdownNow();
 			this.callbackExecutorService.shutdownNow();
-			return;
-			
 		}
 	}
 

@@ -3,18 +3,13 @@ package ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.algorithmrunner;
 import java.util.ArrayList;
 import java.util.Arrays;
 import java.util.List;
+import java.util.Map;
 import java.util.Map.Entry;
-import java.util.concurrent.BlockingQueue;
-import java.util.concurrent.Callable;
-import java.util.concurrent.ConcurrentHashMap;
-import java.util.concurrent.CountDownLatch;
-import java.util.concurrent.ExecutionException;
-import java.util.concurrent.ExecutorService;
-import java.util.concurrent.Future;
-import java.util.concurrent.Semaphore;
-import java.util.concurrent.TimeUnit;
+import java.util.concurrent.*;
 import java.util.concurrent.atomic.AtomicBoolean;
 
+import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
+import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.callformatselector.CallFormatSelector;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -81,7 +76,7 @@ public class ConcurrentAlgorithmRunner {
 	 * @param executionIDs 
 	 */
 
-	public ConcurrentAlgorithmRunner(final List<AlgorithmRunConfiguration> runConfigs, final int numberOfConcurrentExecutions, final TargetAlgorithmEvaluatorRunObserver obs, final CommandLineTargetAlgorithmEvaluatorOptions options, final BlockingQueue<Integer> executionIDs, final ExecutorService execService) {
+	public ConcurrentAlgorithmRunner(final List<AlgorithmRunConfiguration> runConfigs, final int numberOfConcurrentExecutions, final TargetAlgorithmEvaluatorRunObserver obs, final CommandLineTargetAlgorithmEvaluatorOptions options, final BlockingQueue<Integer> executionIDs, final ExecutorService execService, ConcurrentMap<AlgorithmExecutionConfiguration, CallFormatSelector> callFormatSelectorMap, CallFormatSelector defaultSelector) {
 		if(runConfigs == null)
 		{
 			throw new IllegalArgumentException("Arguments cannot be null");
@@ -104,7 +99,7 @@ public class ConcurrentAlgorithmRunner {
 			KillHandler killH = new StatusVariableKillHandler();
 			
 			runConfigToPositionInListMap.put(rc, i);
-			runConfigToLatestUpdatedRunMap.put(rc, new RunningAlgorithmRunResult( rc, 0,0,0, rc.getProblemInstanceSeedPair().getSeed(), 0, killH));
+			runConfigToLatestUpdatedRunMap.put(rc, new RunningAlgorithmRunResult(rc, 0, 0, 0, rc.getProblemInstanceSeedPair().getSeed(), 0, killH));
 			
 			TargetAlgorithmEvaluatorRunObserver individualRunObserver = new TargetAlgorithmEvaluatorRunObserver()
 			{
@@ -135,7 +130,9 @@ public class ConcurrentAlgorithmRunner {
 				}
 			};
 
-			final Callable<AlgorithmRunResult> run = new CommandLineAlgorithmRun( rc,individualRunObserver, killH, options, executionIDs); 
+
+			callFormatSelectorMap.putIfAbsent(rc.getAlgorithmExecutionConfiguration(), defaultSelector);
+			final Callable<AlgorithmRunResult> run = new CommandLineAlgorithmRun( rc,individualRunObserver, killH, options, executionIDs, callFormatSelectorMap);
 			runs.add(run);
 			i++;
 		}

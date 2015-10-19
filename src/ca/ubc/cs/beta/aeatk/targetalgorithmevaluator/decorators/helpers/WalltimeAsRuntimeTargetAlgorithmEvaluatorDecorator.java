@@ -3,14 +3,12 @@ package ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.decorators.helpers;
 import java.util.List;
 import java.util.ArrayList;
 
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.*;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
-import ca.ubc.cs.beta.aeatk.algorithmrunresult.AbstractAlgorithmRunResult;
-import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
-import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunStatus;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
@@ -224,6 +222,14 @@ public class WalltimeAsRuntimeTargetAlgorithmEvaluatorDecorator extends
 			return wrappedRun.isRunCompleted();
 		}
 
+		@Override
+		public double getCost() { return wrappedRun.getCost(); }
+
+		@Override
+		public Satisfiability getSatisfiability() { return wrappedRun.getSatisfiability(); }
+
+		@Override
+		public RunExecutionStatus getRunExecutionStatus() { return wrappedRun.getRunExecutionStatus();	}
 		
 		@Override
 		public String rawResultLine() {

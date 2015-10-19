@@ -10,7 +10,10 @@ import java.util.HashSet;
  * <p>
  * <b>Note:</b> All aliases should be specified in upper case in the enum 
  * declaration.
- * 
+ *
+ * @deprecated {@link RunExecutionStatus} replaces this enumeration, as the current enumeration mixes satisfiability and execution results. See replacing class for a translation between this and the other enum.
+ *
+ *
  * @see ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult
  *
  */
@@ -94,8 +97,9 @@ public enum RunStatus {
 	 * Maps known synonyms of a RunResult for lookup by String
 	 */
 	private final Set<String> resultKey = new HashSet<String>();
-	
-	
+	private Satisfiability satisfiability;
+
+
 	private RunStatus(boolean decided, int resultCode, boolean permittedByWrappers, boolean completeButCensored)
 	{
 		this.decided = decided;
@@ -218,5 +222,41 @@ public enum RunStatus {
 	public boolean isSuccessfulAndCensored()
 	{
 		return successfulAndCensored;
+	}
+
+	public RunExecutionStatus getRunExecutionStatus()
+	{
+		switch(this)
+		{
+			case SAT:
+			case UNSAT:
+				return RunExecutionStatus.SUCCESS;
+			case TIMEOUT:
+				return RunExecutionStatus.TIMEOUT;
+			case CRASHED:
+				return RunExecutionStatus.CRASHED;
+			case ABORT:
+				return RunExecutionStatus.ABORT;
+			case RUNNING:
+				return RunExecutionStatus.RUNNING;
+			case KILLED:
+				return RunExecutionStatus.KILLED;
+
+		}
+		throw new IllegalStateException("Unhandled type" + this);
+	}
+
+
+	public Satisfiability getSatisfiability() {
+
+		switch(this)
+		{
+			case SAT:
+				return Satisfiability.SATISFIABILE;
+			case UNSAT:
+				return Satisfiability.UNSATISFIABLE;
+			default:
+				return Satisfiability.UNKNOWN;
+		}
 	}
 }

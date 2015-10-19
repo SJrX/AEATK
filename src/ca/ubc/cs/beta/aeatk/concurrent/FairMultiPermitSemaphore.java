@@ -9,11 +9,8 @@ import net.jcip.annotations.ThreadSafe;
 /**
  * This basically allows multiple permits to be grabbed at the same time,
  * and to get all available permits without blocking, but block if none are available.
- * 
- * 
- * 
- * @author Steve Ramage <seramage@cs.ubc.ca>
  *
+ * @author Steve Ramage <seramage@cs.ubc.ca>
  */
 @ThreadSafe
 public class FairMultiPermitSemaphore {
@@ -37,7 +34,7 @@ public class FairMultiPermitSemaphore {
 	/***
 	 * Gets up to N Permits
 	 * <p>
-	 * Implementation Note: We only want one thread at a time aquiring permits, so they are all blocked
+	 * Implementation Note: We only want one thread at a time acquiring permits, so they are all blocked
 	 * outside of this method. Then we want to ensure that nothing touches our permits and semaphore data structure
 	 * so we mutexLock that. The loop is overkill at this point (as this method is synchronized) but it's a compare and swap on the values to make sure it didn't change.
 	 *  

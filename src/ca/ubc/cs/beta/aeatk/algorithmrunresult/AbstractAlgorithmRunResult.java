@@ -1,5 +1,6 @@
 package ca.ubc.cs.beta.aeatk.algorithmrunresult;
 
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.factory.AlgorithmRunResultFactory;
 import com.fasterxml.jackson.databind.annotation.JsonSerialize;
 
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
@@ -9,6 +10,10 @@ import ca.ubc.cs.beta.aeatk.json.serializers.AlgorithmRunResultJson;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
+
+import java.util.Collections;
+import java.util.Map;
+import java.util.TreeMap;
 
 /**
  * This class represents a single run of the target algorithm given by the AlgorithmExecutionConfig object and the RunConfig object
@@ -26,185 +31,34 @@ public abstract class AbstractAlgorithmRunResult implements AlgorithmRunResult
 	private static final long serialVersionUID = -1860615761848618478L;
 	
 	protected final AlgorithmRunConfiguration runConfig;
-	//protected final AlgorithmExecutionConfig execConfig;
-	
-	/*
-	 * Values reported by the target algorithm
-	 */
-	private final RunStatus acResult;
-	
+
+	private final RunExecutionStatus runExecutionStatus;
+
+	private final Satisfiability satisfiability;
+
 	private final double runtime;
 	private final double runLength;
 	private final double quality;
-	 
-	
-	/**
-	 * Raw result line reported by the target algorithm (potentially useful if the result line is corrupt)
-	 */
-	private final String rawResultLine;
 		
 	/**
 	 * true if the result has been set,
 	 * if this is false most methods will throw an IllegalStateException
 	 */
-	
-	//private final boolean resultSet;
-	/**
-	 * True if the run was well formed
-	 * Note: We may deprecate this in favor of using CRASHED
-	 */
-	//private final boolean runResultWellFormed;
-	
+
 	/**
 	 * Wallclock Time to return
 	 */
 	private final double wallClockTime;
 	
-	/**
-	 * Watch that can be used to time algorithm runs 
-	 */
-	//private	final StopWatch wallClockTimer = new StopWatch();
-	
+
 	/**
 	 * Stores additional run data
 	 */
 	private final String additionalRunData;
-	
-	
-	//private static final Logger log = LoggerFactory.getLogger(AbstractAlgorithmRun.class);
-	
-	/**
-	 * Sets the values for this Algorithm Run
-	 * @param acResult					The result of the Run
-	 * @param runtime					Reported runtime of the run
-	 * @param runLength					Reported runlength of the run
-	 * @param quality					Reported quality of the run
-	 * @param resultSeed				Reported seed of the run
-	 * @param rawResultLine				The Raw result line we got
-	 * @param additionalRunData			Additional Run Data
-	 *
-	protected synchronized void setResult(RunResult acResult, double runtime, double runLength, double quality, long resultSeed, String rawResultLine, String additionalRunData)
-	{
-		this.setResult(acResult, runtime, runLength, quality, resultSeed, rawResultLine, true, additionalRunData);
-	}
-	
-	/**
-	 * Marks this run as aborted
-	 * @param rawResultLine  the raw output that might be relevant to this abort
-	 *
-	protected void setAbortResult(String rawResultLine)
-	{
-		this.setResult(RunResult.ABORT, runConfig.getCutoffTime(), 0, 0, runConfig.getProblemInstanceSeedPair().getSeed(), rawResultLine, "");
-	}
-	
-	/**
-	 * Marks this run as aborted
-	 * @param rawResultLine  the raw output that might be relevant to this crash
-	 *
-	protected void setCrashResult(String rawResultLine)
-	{
-		this.setResult(RunResult.CRASHED, runConfig.getCutoffTime(), 0, 0, runConfig.getProblemInstanceSeedPair().getSeed(), rawResultLine,rawResultLine);
-	}
-	
-	/*
-	protected void startWallclockTimer()
-	{
-		wallClockTimer.start();
-	}
-	
-	protected void stopWallclockTimer()
-	{
-		this.wallClockTime = wallClockTimer.stop() / 1000.0;
-	}
-	
-	protected long getCurrentWallClockTime()
-	{
-		return this.wallClockTimer.time();
-	}
-	*/
-	/**
-	 * Sets the values for this Algorithm Run
-	 * @param acResult					RunResult for this run
-	 * @param runtime					runtime measured
-	 * @param runLength					runlength measured
-	 * @param quality					quality measured
-	 * @param resultSeed				resultSeed 
-	 * @param rawResultLine				raw result line
-	 * @param runResultWellFormed		whether this run has well formed output
-	 * @param additionalRunData			additional run data from this run
-	 *
-	protected synchronized void setResult(RunResult acResult, double runtime, double runLength, double quality, long resultSeed , String rawResultLine, boolean runResultWellFormed, String additionalRunData)
-	{
-		if(Double.isNaN(runtime) || runtime < 0)
-		{
-			throw new IllegalWrapperOutputException("Runtime is NaN or negative", rawResultLine);
-		}
-			
-		if ( Double.isNaN(runLength) || ((runLength < 0) && (runLength != -1.0)))
-		{
-			throw new IllegalWrapperOutputException("RunLength (" + runLength + ") is NaN or negative (and not -1)", rawResultLine);
-		}
-		
-		if(Double.isNaN(quality))
-		{
-			throw new IllegalWrapperOutputException("Quality needs to be a number", rawResultLine);
-		}
-		
-		if(acResult == null)
-		{
-			throw new IllegalStateException("Run Result cannot be null");
-		}
-		this.acResult = acResult;
-		this.runtime = Math.min(runtime, Double.MAX_VALUE);
-		this.runLength = Math.min(runLength, Double.MAX_VALUE);
-		this.quality = quality;
-		
-		if(this.saveRawResultLine())
-		{
-			this.rawResultLine = rawResultLine;
-		}
-		
-		this.runResultWellFormed = runResultWellFormed;
 
-	
-		
-		if(this.additionalRunData == null)
-		{
-			throw new IllegalArgumentException("Additional Run Data cannot be NULL");
-		} else
-		{
-			this.additionalRunData = additionalRunData.replace("\n","\\n").replace(',', ';');
-		}
-		
-		this.resultSet = true;
-		if(!(this instanceof KillableAlgorithmRun))
-		{
-			
-			if(this.acResult.equals(RunResult.RUNNING))
-			{
-				throw new IllegalStateException("Only " + KillableAlgorithmRun.class.getSimpleName() + " may be set as " + RunResult.RUNNING);
-			}
-		}
-		
-		
-	}*/
-	
-	
-	/**
-	 * Default Constructor
-	 * @param execConfig		execution configuration of the object
-	 * @param runConfig			run configuration we are executing
-	 *
-	public AbstractAlgorithmRun( RunConfig runConfig)
-	{
-		if(runConfig == null)
-		{
-			throw new IllegalArgumentException("Arguments cannot be null");
-		}
-		
-		this.runConfig = runConfig;
 
-	}*/
+    private final Map<String, Object> resultMap;
+
 	/**
 	 * Sets the values for this Algorithm Run
 	 * @param acResult					The result of the Run
@@ -219,43 +73,8 @@ public abstract class AbstractAlgorithmRunResult implements AlgorithmRunResult
 	{
 		this(rc, acResult, runtime, runLength, quality, resultSeed, rawResultLine, true, additionalRunData,wallClockTime);
 	}
-	
-	/**
-	 * Marks this run as aborted
-	 * @param rawResultLine  the raw output that might be relevant to this abort
-	 */
-	/*
-	protected void setAbortResult(String rawResultLine)
-	{
-		this.setResult(RunResult.ABORT, runConfig.getCutoffTime(), 0, 0, runConfig.getProblemInstanceSeedPair().getSeed(), rawResultLine, "");
-	}
-	
-	/**
-	 * Marks this run as aborted
-	 * @param rawResultLine  the raw output that might be relevant to this crash
-	 */
-	/*
-	protected static AlgorithmRun setCrashResult(String rawResultLine)
-	{
-		this.setResult(RunResult.CRASHED, runConfig.getCutoffTime(), 0, 0, runConfig.getProblemInstanceSeedPair().getSeed(), rawResultLine,rawResultLine);
-	}
-	
-	/*
-	protected void startWallclockTimer()
-	{
-		wallClockTimer.start();
-	}
-	
-	protected void stopWallclockTimer()
-	{
-		this.wallClockTime = wallClockTimer.stop() / 1000.0;
-	}
-	
-	protected long getCurrentWallClockTime()
-	{
-		return this.wallClockTimer.time();
-	}
-	*/
+
+
 	/**
 	 * Sets the values for this Algorithm Run
 	 * @param acResult					RunResult for this run
@@ -267,29 +86,60 @@ public abstract class AbstractAlgorithmRunResult implements AlgorithmRunResult
 	 * @param runResultWellFormed		whether this run has well formed output
 	 * @param additionalRunData			additional run data from this run
 	 */
-	public AbstractAlgorithmRunResult(AlgorithmRunConfiguration runConfig, RunStatus acResult, double runtime, double runLength, double quality, long resultSeed , String rawResultLine, boolean runResultWellFormed, String additionalRunData, double wallClockTime)
+	public AbstractAlgorithmRunResult(AlgorithmRunConfiguration runConfig, Map<String, Object> resultMap, double wallClockTime)
 	{
-		
+
+		double runtime;
+
+
+		if(resultMap.containsKey(AlgorithmRunResultFactory.RUNTIME_KEY))
+		{
+			runtime =  (double) resultMap.get(AlgorithmRunResultFactory.RUNTIME_KEY);
+		} else
+		{
+			runtime = wallClockTime;
+		}
+
 		if(Double.isNaN(runtime) || runtime < 0)
 		{
-			throw new IllegalWrapperOutputException("Runtime is NaN or negative", rawResultLine);
+			throw new IllegalWrapperOutputException("Runtime is NaN or negative", resultMap);
+		}
+
+		double runLength = 0;
+
+		if(resultMap.containsKey(AlgorithmRunResultFactory.RUNLENGTH_KEY))
+		{
+			runLength = (double) resultMap.get(AlgorithmRunResultFactory.RUNLENGTH_KEY);
 		}
 			
 		if ( Double.isNaN(runLength) || ((runLength < 0) && (runLength != -1.0)))
 		{
-			throw new IllegalWrapperOutputException("RunLength (" + runLength + ") is NaN or negative (and not -1)", rawResultLine);
+			throw new IllegalWrapperOutputException("RunLength (" + runLength + ") is NaN or negative (and not -1)", resultMap);
 		}
-		
+
+		double cost = 0;
+
+        if(resultMap.containsKey(AlgorithmRunResultFactory.COST_KEY))
+        {
+            cost = (double) resultMap.get(AlgorithmRunResultFactory.COST_KEY);
+        }
+
+        double quality = cost;
+
 		if(Double.isNaN(quality))
 		{
-			throw new IllegalWrapperOutputException("Quality needs to be a number", rawResultLine);
+			throw new IllegalWrapperOutputException("Cost needs to be a number", resultMap);
 		}
-		
-		if(acResult == null)
+
+        this.runExecutionStatus = RunExecutionStatus.valueOf(String.valueOf(resultMap.get(AlgorithmRunResultFactory.STATUS_KEY)));
+
+		if(runExecutionStatus == null)
 		{
-			throw new IllegalStateException("Run Result cannot be null");
+			throw new IllegalWrapperOutputException("Run Result cannot be null", resultMap);
 		}
-		
+
+
+        this.satisfiability = Satisfiability.fromString( (String) resultMap.get(AlgorithmRunResultFactory.SATISFIABILITY_KEY));
 		if(runConfig == null)
 		{
 			throw new IllegalArgumentException("No RunConfig specified");
@@ -298,27 +148,17 @@ public abstract class AbstractAlgorithmRunResult implements AlgorithmRunResult
 		
 		if(wallClockTime < 0 )
 		{
-			throw new IllegalArgumentException("Wallclock time must be greater than or equal to zero");
+			throw new IllegalArgumentException("WallClock time must be greater than or equal to zero");
 		}
+
 		this.runConfig = runConfig;
-				
-		this.acResult = acResult;
+
 		this.runtime = Math.min(runtime, Double.MAX_VALUE);
 		this.runLength = Math.min(runLength, Double.MAX_VALUE);
 		this.quality = quality;
-		
-		if(this.saveRawResultLine())
-		{
-			this.rawResultLine = rawResultLine;
-		} else
-		{
-			this.rawResultLine = "";
-		}
-		
-		//this.runResultWellFormed = runResultWellFormed;
 
-	
-		
+        String additionalRunData = (String) resultMap.get(AlgorithmRunResultFactory.ADDITIONAL_RUN_DATA_KEY);
+
 		if(additionalRunData == null)
 		{
 			this.additionalRunData ="";
@@ -328,10 +168,85 @@ public abstract class AbstractAlgorithmRunResult implements AlgorithmRunResult
 		}
 		
 		this.wallClockTime = wallClockTime;
-		//this.resultSet = true;
-		
-		
+
+        Map<String, Object> myMap = new TreeMap<>(AlgorithmRunResultKeyComparator.getInstance());
+        myMap.putAll(resultMap);
+        this.resultMap = Collections.unmodifiableMap(myMap);
 	}
+
+	/**
+	 * Sets the values for this Algorithm Run
+	 * @param acResult					RunResult for this run
+	 * @param runtime					runtime measured
+	 * @param runLength					runlength measured
+	 * @param quality					quality measured
+	 * @param resultSeed				resultSeed
+	 * @param rawResultLine				raw result line
+	 * @param runResultWellFormed		whether this run has well formed output
+	 * @param additionalRunData			additional run data from this run
+	 */
+	public AbstractAlgorithmRunResult(AlgorithmRunConfiguration runConfig, RunStatus acResult, double runtime, double runLength, double quality, long resultSeed , String rawResultLine, boolean runResultWellFormed, String additionalRunData, double wallClockTime)
+	{
+
+		if(Double.isNaN(runtime) || runtime < 0)
+		{
+			throw new IllegalWrapperOutputException("Runtime is NaN or negative", rawResultLine);
+		}
+
+		if ( Double.isNaN(runLength) || ((runLength < 0) && (runLength != -1.0)))
+		{
+			throw new IllegalWrapperOutputException("RunLength (" + runLength + ") is NaN or negative (and not -1)", rawResultLine);
+		}
+
+		if(Double.isNaN(quality))
+		{
+			throw new IllegalWrapperOutputException("Quality needs to be a number", rawResultLine);
+		}
+
+		if(acResult == null)
+		{
+			throw new IllegalStateException("Run Result cannot be null");
+		}
+
+		if(runConfig == null)
+		{
+			throw new IllegalArgumentException("No RunConfig specified");
+		}
+
+
+		if(wallClockTime < 0 )
+		{
+			throw new IllegalArgumentException("Wallclock time must be greater than or equal to zero");
+		}
+		this.runConfig = runConfig;
+
+		this.runtime = Math.min(runtime, Double.MAX_VALUE);
+		this.runLength = Math.min(runLength, Double.MAX_VALUE);
+		this.quality = quality;
+
+		if(additionalRunData == null)
+		{
+			this.additionalRunData ="";
+		} else
+		{
+			this.additionalRunData = additionalRunData.replace("\n","\\n").replace(',', ';');
+		}
+
+
+        this.runExecutionStatus = acResult.getRunExecutionStatus();
+        this.satisfiability = acResult.getSatisfiability();
+		this.wallClockTime = wallClockTime;
+
+        Map<String, Object> resultMap = new TreeMap<>(new AlgorithmRunResultKeyComparator());
+
+        resultMap.put(AlgorithmRunResultFactory.RUNTIME_KEY,runtime);
+        resultMap.put(AlgorithmRunResultFactory.COST_KEY, quality);
+        resultMap.put(AlgorithmRunResultFactory.STATUS_KEY, runExecutionStatus.toString());
+        resultMap.put(AlgorithmRunResultFactory.SATISFIABILITY_KEY, runExecutionStatus.toString());
+
+        this.resultMap = Collections.unmodifiableMap(resultMap);
+	}
+
 	
 	@Override
 	public final AlgorithmRunConfiguration getAlgorithmRunConfiguration()
@@ -339,11 +254,46 @@ public abstract class AbstractAlgorithmRunResult implements AlgorithmRunResult
 		return runConfig;
 	}
 	
-	
+
+    @Override
+    public final Satisfiability getSatisfiability()
+    {
+        return this.satisfiability;
+    }
+
+    @Override
+    public final RunExecutionStatus getRunExecutionStatus()
+    {
+        return this.runExecutionStatus;
+    }
+
 	@Override
 	public final RunStatus getRunStatus() {
 		
-		return acResult;
+		switch(this.getRunExecutionStatus())
+        {
+            case CRASHED:
+                return RunStatus.CRASHED;
+            case KILLED:
+                return RunStatus.KILLED;
+            case TIMEOUT:
+                return RunStatus.TIMEOUT;
+            case ABORT:
+                return RunStatus.ABORT;
+            case RUNNING:
+                return RunStatus.RUNNING;
+            case SUCCESS:
+                switch(getSatisfiability())
+                {
+                    case SATISFIABILE:
+                    case UNKNOWN:
+                        return RunStatus.SAT;
+                    case UNSATISFIABLE:
+                        return RunStatus.UNSAT;
+                }
+        }
+
+        throw new IllegalStateException("Should not have been able to get here, unexpected RunExecutionStatus " + getRunExecutionStatus() + " or satisfiability: " + getSatisfiability());
 	}
 
 	@Override
@@ -363,6 +313,12 @@ public abstract class AbstractAlgorithmRunResult implements AlgorithmRunResult
 
 		return quality;
 	}
+
+    @Override
+    public final double getCost()
+    {
+        return quality;
+    }
 
 	@Override
 	public final long getResultSeed() {
@@ -392,22 +348,14 @@ public abstract class AbstractAlgorithmRunResult implements AlgorithmRunResult
 
 	@Override
 	public final boolean isRunCompleted() {
-		return !acResult.equals(RunStatus.RUNNING);
+		return !runExecutionStatus.equals(RunExecutionStatus.RUNNING);
 	}
 
 	
 	@Override
 	public final String rawResultLine()
 	{
-		
-		if(saveRawResultLine())
-		{
-			return rawResultLine;
-		} else
-		{
-			return "[Raw Result Line Not Saved]";
-		}
-		
+        return "[Raw Result Line Not Saved]";
 	}
 	
 	@Override
@@ -447,19 +395,7 @@ public abstract class AbstractAlgorithmRunResult implements AlgorithmRunResult
 		return run.getAlgorithmRunConfiguration().toString() + " ==> <" + run.getResultLine()+ "> W:(" + run.getWallclockExecutionTime() + ")";
 		
 	}
-	
-	/**
-	 * Sets the wallclock time for this target algorithm
-	 * @param time time in seconds that the algorithm executed
-	 */
-	/*
-	protected void setWallclockExecutionTime(double time)
-	{
-		if(time < 0) throw new IllegalArgumentException("Time must be positive");
-		this.wallClockTime = time;
-	}
-	*/
-	
+
 	@Override
 	public double getWallclockExecutionTime() {
 		return wallClockTime;
@@ -476,13 +412,6 @@ public abstract class AbstractAlgorithmRunResult implements AlgorithmRunResult
 	{
 		return ((getRunStatus().equals(RunStatus.TIMEOUT) && getAlgorithmRunConfiguration().hasCutoffLessThanMax()) ||  (getRunStatus().equals(RunStatus.KILLED) && getRuntime() < getAlgorithmRunConfiguration().getCutoffTime()));
 	}
-	
-
-	private boolean saveRawResultLine()
-	{
-		return false;
-	}
-	
 
 	@Override
 	public ParameterConfiguration getParameterConfiguration() {
@@ -512,5 +441,4 @@ public abstract class AbstractAlgorithmRunResult implements AlgorithmRunResult
 	
 	
 
-	
 }

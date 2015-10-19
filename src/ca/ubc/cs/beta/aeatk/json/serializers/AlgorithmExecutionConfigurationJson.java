@@ -1,18 +1,14 @@
 package ca.ubc.cs.beta.aeatk.json.serializers;
 
 import java.io.IOException;
-import java.util.Collections;
-import java.util.IdentityHashMap;
-import java.util.Iterator;
-import java.util.Map;
-import java.util.TreeMap;
+import java.util.*;
 import java.util.Map.Entry;
-import java.util.WeakHashMap;
 import java.util.concurrent.ConcurrentHashMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
+import ca.ubc.cs.beta.aeatk.misc.string.SplitQuotedString;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfigurationSpace;
 
 import com.fasterxml.jackson.core.JsonGenerator;
@@ -37,6 +33,8 @@ public class AlgorithmExecutionConfigurationJson  {
 	public static final String ALGO_EXEC_DIR = "algo-exec-dir";
 
 	public static final String ALGO_EXEC = "algo-exec";
+
+	public static final String ALGO_EXEC_AND_ARGS = "algo-exec-and-args";
 
 	public static final String ALGO_CUTOFF_TIME = "algo-cutoff";
 	
@@ -71,7 +69,8 @@ public class AlgorithmExecutionConfigurationJson  {
 				jp.nextToken();
 			}
 			
-		
+
+			List<String> algoExecAndArgs = new ArrayList<String>();
 			String algo = null;
 			String algoDir = null;
 			double cutoffTime = Double.NEGATIVE_INFINITY;
@@ -97,7 +96,16 @@ public class AlgorithmExecutionConfigurationJson  {
 				switch(jp.getCurrentName())
 				{
 					case ALGO_EXEC:
-						algo = jp.getValueAsString();
+						algoExecAndArgs.addAll(Arrays.asList(SplitQuotedString.splitQuotedString(jp.getValueAsString())));
+						break;
+
+					case ALGO_EXEC_AND_ARGS:
+					{
+						Iterator<String> i = jp.getCodec().readValues(jp, String.class);
+						while(i.hasNext()) {
+							algoExecAndArgs.add(i.next());
+						}
+					}
 						break;
 					case ALGO_EXEC_DIR:
 						algoDir = jp.getValueAsString();
@@ -139,7 +147,7 @@ public class AlgorithmExecutionConfigurationJson  {
 				return cache.get(execConfig_id);
 			} else
 			{
-				AlgorithmExecutionConfiguration execConfig = new AlgorithmExecutionConfiguration(algo, algoDir, pcs, deterministic, cutoffTime, taeContext);
+				AlgorithmExecutionConfiguration execConfig = new AlgorithmExecutionConfiguration(algoExecAndArgs, algoDir, pcs, deterministic, cutoffTime, taeContext);
 				
 				if(execConfig_id > 0)
 				{
@@ -182,6 +190,13 @@ public class AlgorithmExecutionConfigurationJson  {
 			if(firstWrite)
 			{
 				jgen.writeObjectField(ALGO_EXEC, value.getAlgorithmExecutable());
+				jgen.writeArrayFieldStart(ALGO_EXEC_AND_ARGS);
+				for(String s :value.getExecutableAndArguments())
+				{
+					jgen.writeString(s);
+				}
+
+				jgen.writeEndArray();
 				jgen.writeObjectField(ALGO_EXEC_DIR, value.getAlgorithmExecutionDirectory());
 				jgen.writeObjectField(PCS_FILE, value.getParameterConfigurationSpace());
 				jgen.writeObjectField(ALGO_CUTOFF_TIME, value.getAlgorithmMaximumCutoffTime());

@@ -14,6 +14,7 @@ import ca.ubc.cs.beta.aeatk.misc.jcommander.validator.ZeroInfinityOpenInterval;
 import ca.ubc.cs.beta.aeatk.misc.options.OptionLevel;
 import ca.ubc.cs.beta.aeatk.misc.options.Semantics;
 import ca.ubc.cs.beta.aeatk.misc.options.UsageTextField;
+import ca.ubc.cs.beta.aeatk.misc.string.SplitQuotedString;
 import ca.ubc.cs.beta.aeatk.options.AbstractOptions;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParamConfigurationSpaceOptions;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.TargetAlgorithmEvaluatorOptions;
@@ -52,9 +53,15 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 			
 		}
 	}
-	@Parameter(names={"--algo-exec","--algoExec", "--algo"}, description="command string to execute algorithm with", required=true)
+
+	@Parameter(names={"--algo-executable", "--executable"}, description="The executable or binary to execute")
+	public String algoExecutable;
+
+	@Parameter(names={"--algo-arg", "--arg"}, description="An argument to be passed to the executable before any specified by the configurator/meta-algorithm. This argument may be specified more than once and each argument will be passed in turn.")
+	public List<String> algoArgs;
+
+	@Parameter(names={"--algo-exec","--algoExec", "--algo"}, description="command string to execute algorithm with")
 	public String algoExec;
-	
 	
 	@UsageTextField(defaultValues = "current working directory", level=OptionLevel.INTERMEDIATE)
 	@Parameter(names={"--algo-exec-dir","--exec-dir","--execDir","--execdir"}, description="working directory to execute algorithm in", required=false)
@@ -134,7 +141,18 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 		{
 			dirToSearch.addAll(inputDirs);
 		}
-		
+
+
+		if(this.algoExecutable == null && this.algoExec == null)
+		{
+			throw new ParameterException("You must specify exactly one of --algo-executable (executable in scenario files) or --algo-exec . The latter method is deprecated.");
+		}
+
+		if(this.algoExecutable != null && this.algoExec != null)
+		{
+			throw new ParameterException("You specified BOTH the --algo-executable (executable in scenario files) and --algo-exec. Only one of these options can be set, and the latter method is deprecated.");
+		}
+
 
 		File execDir = new File(algoExecDir);
 		if(checkExecDir)
@@ -155,7 +173,22 @@ public class AlgorithmExecutionOptions extends AbstractOptions {
 			
 			dirToSearch.add(execDir.getAbsolutePath());
 		}
+
+
+
+
+		if(this.algoExec != null)
+		{
+			return new AlgorithmExecutionConfiguration(algoExec, execDir.getAbsolutePath(), paramFileDelegate.getParamConfigurationSpace(dirToSearch),  deterministic, this.cutoffTime,this.additionalContext );
+		} else
+		{
+			ArrayList<String> executableAndArguments = new ArrayList<String>();
+
+			executableAndArguments.add(this.algoExecutable);
+			executableAndArguments.addAll(this.algoArgs);
+			return new AlgorithmExecutionConfiguration(executableAndArguments,execDir.getAbsolutePath(),paramFileDelegate.getParamConfigurationSpace(dirToSearch),deterministic,this.cutoffTime, this.additionalContext);
+		}
 		
-		return new AlgorithmExecutionConfiguration(algoExec, execDir.getAbsolutePath(), paramFileDelegate.getParamConfigurationSpace(dirToSearch),  deterministic, this.cutoffTime,this.additionalContext );
+
 	}
 }

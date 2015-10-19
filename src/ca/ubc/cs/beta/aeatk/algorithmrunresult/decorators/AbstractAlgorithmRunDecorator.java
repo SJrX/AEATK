@@ -3,7 +3,9 @@ package ca.ubc.cs.beta.aeatk.algorithmrunresult.decorators;
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunExecutionStatus;
 import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunStatus;
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.Satisfiability;
 import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.ParameterConfiguration;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstance;
 import ca.ubc.cs.beta.aeatk.probleminstance.ProblemInstanceSeedPair;
@@ -69,7 +71,14 @@ public class AbstractAlgorithmRunDecorator implements AlgorithmRunResult {
 		return wrappedRun.getResultLine();
 	}
 
-	
+	@Override
+	public double getCost() { return wrappedRun.getCost(); }
+
+	@Override
+	public Satisfiability getSatisfiability() {	return wrappedRun.getSatisfiability(); }
+
+	@Override
+	public RunExecutionStatus getRunExecutionStatus() { return wrappedRun.getRunExecutionStatus();}
 
 	@Override
 	public boolean isRunCompleted() {

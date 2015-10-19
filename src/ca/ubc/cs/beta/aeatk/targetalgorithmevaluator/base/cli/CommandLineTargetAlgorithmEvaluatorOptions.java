@@ -104,9 +104,17 @@ public class CommandLineTargetAlgorithmEvaluatorOptions extends AbstractOptions 
 	@Parameter(names={"--cli-default-file"}, description="file that contains default settings for CLI Target Algorithm Evaluator (it is recommended that you use this file to set the kill commands)")
 	@ParameterFile(ignoreFileNotExists = true) 
 	public File smacDefaults = HomeFileUtils.getHomeFile(".aeatk" + File.separator  + "cli-tae.opt");
-	
-	
-	
+
+	public enum CallFormat
+	{
+		ACLIB,
+		LEGACY,
+		TRY_LEGACY_FIRST;
+	}
+
+	@UsageTextField(level=OptionLevel.ADVANCED)
+	@Parameter(names={"--cli-call-format"}, description="Whether to use new ACLib wrapper input / output specification or the old ParamILS version")
+	public CallFormat callFormat = CallFormat.TRY_LEGACY_FIRST;
 	
 	
 	

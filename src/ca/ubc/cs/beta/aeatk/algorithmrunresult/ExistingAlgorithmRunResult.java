@@ -6,6 +6,9 @@ import org.slf4j.LoggerFactory;
 import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.targetalgorithmevaluator.base.cli.CommandLineAlgorithmRun;
+
+import java.util.Map;
+
 /**
  * Class that is used to take an existing algorithm run (from for instance a string), and create an AlgorithmRun object
  * @author Steve Ramage<seramage@cs.ubc.ca>
@@ -18,7 +21,14 @@ public class ExistingAlgorithmRunResult extends AbstractAlgorithmRunResult {
 	 */
 	private static final long serialVersionUID = 2L;
 	private static transient Logger log = LoggerFactory.getLogger(ExistingAlgorithmRunResult.class);
-	
+
+
+	public ExistingAlgorithmRunResult(AlgorithmRunConfiguration runConfig, Map<String, Object> resultMap, double wallClockTime)
+	{
+		super(runConfig,resultMap,wallClockTime);
+	}
+
+
 	/**
 	 * 
 	 * @param runConfig			run configuration we are executing
@@ -30,6 +40,7 @@ public class ExistingAlgorithmRunResult extends AbstractAlgorithmRunResult {
 	 * @param additionalRunData	The Additional Run Data
 	 * @param wallclockTime		Wallclock time to report
 	 */
+	@Deprecated
 	public ExistingAlgorithmRunResult(AlgorithmRunConfiguration runConfig, RunStatus runResult, double runtime, double runLength, double quality, long resultSeed, String additionalRunData, double wallclockTime)
 	{
 		super( runConfig,runResult, runtime, runLength, quality, resultSeed, "<Existing Run>", additionalRunData, wallclockTime);
@@ -45,7 +56,7 @@ public class ExistingAlgorithmRunResult extends AbstractAlgorithmRunResult {
 	 * @param resultSeed 		The Reported seed
 	 * @param wallclockTime		Wallclock time to report
 	 */
-
+	@Deprecated
 	public ExistingAlgorithmRunResult( AlgorithmRunConfiguration runConfig, RunStatus runResult, double runtime, double runLength, double quality, long resultSeed,  double wallclockTime)
 	{
 		super(runConfig,runResult, runtime, runLength, quality, resultSeed, "<Existing Run>", "", wallclockTime);
@@ -64,7 +75,7 @@ public class ExistingAlgorithmRunResult extends AbstractAlgorithmRunResult {
 	 * @param seed 				The Reported seed
 	 * @param additionalRunData	The Additional Run Data
 	 */
-
+	@Deprecated
 	public ExistingAlgorithmRunResult( AlgorithmRunConfiguration runConfig, RunStatus runResult, double runtime, double runlength, double quality, long seed, String additionalRunData)
 	{
 		this( runConfig, runResult, runtime,runlength, quality, seed, additionalRunData, 0.0);
@@ -79,7 +90,9 @@ public class ExistingAlgorithmRunResult extends AbstractAlgorithmRunResult {
 	 * @param runlength			The Run Length
 	 * @param quality			The Run Quality
 	 * @param seed 				The Reported seed
+	 *
 	 */
+	@Deprecated
 	public ExistingAlgorithmRunResult( AlgorithmRunConfiguration runConfig, RunStatus runStatus, double runtime, double runlength, double quality, long seed)
 	{
 		this( runConfig, runStatus, runtime,runlength, quality, seed, "", 0.0);

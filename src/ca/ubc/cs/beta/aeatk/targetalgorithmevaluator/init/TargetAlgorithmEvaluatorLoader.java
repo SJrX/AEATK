@@ -33,8 +33,9 @@ public class TargetAlgorithmEvaluatorLoader {
 			+" \n In this file should list every implementation of that interface" 
 			+" \n\n>>>>HOW TO FIX THIS ERROR:<<<<\n"
 			+ "\n 1) If you are using Eclipse see this page (note it's spi-0.2.4 not 0.2.1.jar): https://code.google.com/p/spi/wiki/EclipseSettings"
-			+ "\n  OR \n 2) If you are using Ant/Maven ensure that the spi-0.2.4.jar is on the classpath, and annotation processing is enabled."
-			+ "\n  OR \n 3) A worse option is to make this file manually, for most cases you simply need to have the following line: " + CommandLineTargetAlgorithmEvaluatorFactory.class.getCanonicalName() 
+			+ "\n  OR \n 2) If you are using IntelliJ add the spi-0.2.4.jar as an annotation processor: https://www.jetbrains.com/idea/help/configuring-annotation-processing.html"
+			+ "\n  OR \n 3) If you are using Ant/Maven ensure that the spi-0.2.4.jar is on the classpath, and annotation processing is enabled."
+			+ "\n  OR \n 4) A worse option is to make this file manually, for most cases you simply need to have the following line: " + CommandLineTargetAlgorithmEvaluatorFactory.class.getCanonicalName()
 			+ "\n\n For information on what SPI is see: http://docs.oracle.com/javase/tutorial/ext/basics/spi.html#register-service-providers"
 			+ "\n You may also want to look at the AEATK Manual / Developer Reference for more information"
 			+ "\n NOTE: I will attempt to fallback to using the CLI TAE only\n NOTE: Sleeping for 4 seconds\n";

@@ -51,9 +51,22 @@ public interface AlgorithmRunResult extends Serializable {
 	 *  If the status is RUNNING then isRunComplete() should return <code>false</code> otherwise it should return </code>true</code>
 	 *  
 	 * @return RunResult for run
-	 * @throws IllegalStateException if the run has not completed
+	 * @deprecated  Replaced by {@link #getRunExecutionStatus()} and {@link #getSatisfiability()}
+ 	 * @throws IllegalStateException if the run has not completed
 	 */
 	public RunStatus getRunStatus();
+
+	/**
+	 * Retrieve the Run Execution Status
+	 *
+	 * @return the execution status for a run
+	 */
+	public RunExecutionStatus getRunExecutionStatus();
+
+	/**
+	 * @return whether the instance was satisfiable or not (if the algorithm did not report it, this will return {@link Satisfiability#UNKNOWN}
+	 */
+	public Satisfiability getSatisfiability();
 
 	/**
 	 * Get reported runtime of run 
@@ -66,7 +79,8 @@ public interface AlgorithmRunResult extends Serializable {
 	/**
 	 * Get the reported run length
 	 * 
-	 * @return double for the runlength ( >= 0 && < Infinity) || -1 
+	 * @return double for the runlength ( >= 0 && < Infinity) || -1
+	 * @deprecated This field is not used anywhere to the best of my knowledge.
 	 * @throws IllegalStateException if the run has not completed
 	 */
 	public double getRunLength();
@@ -75,9 +89,16 @@ public interface AlgorithmRunResult extends Serializable {
 	 * Get the reported quality 
 	 * 
 	 * @return double for the quality ( > -Infinity && < +Infinity)
+	 * @deprecated Replaced by {@link #getCost()} (terminology change, methods should have identical semantics)
 	 * @throws IllegalStateException if the run has not completed
 	 */
 	public double getQuality();
+
+	/**
+	 *
+	 * @return double for cost ( > 0)
+	 */
+	public double getCost();
 
 	/**
 	 * Get the seed that was returned
@@ -123,27 +144,7 @@ public interface AlgorithmRunResult extends Serializable {
 	 * 
 	 */
 	public String getAdditionalRunData(); 
-	
-	/**
-	 * Runs this AlgorithmRun
-	 * 
-	 * Subsequent calls to this should be noop, and are not error conditions.
-	 * 
-	 * If this method successfully returns it's guaranteed that isRunCompleted() is true
-	 */
-	//public void run();
-	
-	/**
-	 * Runs this Algorithm Run
-	 * 
-	 * Subsequent calls to this should be a noop, and are not error conditions
-	 * 
-	 * If this method successfully returns it's guaranteed that isRunCompleted is true
-	 * 
-	 * @return null (always)
-	 */
-	//public Object call();
-	
+
 
 	/**
 	 * Returns true if the run is complete
