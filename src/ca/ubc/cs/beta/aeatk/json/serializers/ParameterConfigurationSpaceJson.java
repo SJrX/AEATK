@@ -135,11 +135,7 @@ public class ParameterConfigurationSpaceJson
 					
 				}
 			}
-			
-			
-			
-				
-				
+
 				if(cache.get(pc_id) != null)
 				{
 					return cache.get(pc_id); 

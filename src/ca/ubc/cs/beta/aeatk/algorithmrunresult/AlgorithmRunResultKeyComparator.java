@@ -2,6 +2,7 @@ package ca.ubc.cs.beta.aeatk.algorithmrunresult;
 
 import ca.ubc.cs.beta.aeatk.algorithmrunresult.factory.AlgorithmRunResultFactory;
 
+import java.io.Serializable;
 import java.util.Comparator;
 
 /**
@@ -10,7 +11,7 @@ import java.util.Comparator;
  *
  * Created by Steve Ramage <seramage@cs.ubc.ca> on 10/18/15
  */
-public class AlgorithmRunResultKeyComparator implements Comparator<String> {
+public class AlgorithmRunResultKeyComparator implements Comparator<String>, Serializable {
 
     @Override
     public int compare(String firstArg, String secondArg) {
@@ -20,16 +21,7 @@ public class AlgorithmRunResultKeyComparator implements Comparator<String> {
 
         if(first || second)
         {
-            if (first && second)
-            {
-                return 0;
-            } else if (first)
-            {
-                return -1;
-            } else
-            {
-                return 1;
-            }
+            return getComparisonFirstTrueMeansFirst(first, second);
         }
 
         first = firstArg.equals(AlgorithmRunResultFactory.RUNTIME_KEY);
@@ -37,16 +29,7 @@ public class AlgorithmRunResultKeyComparator implements Comparator<String> {
 
         if(first || second)
         {
-            if (first && second)
-            {
-                return 0;
-            } else if (first)
-            {
-                return -1;
-            } else
-            {
-                return 1;
-            }
+            return getComparisonFirstTrueMeansFirst(first, second);
         }
 
         first = firstArg.equals(AlgorithmRunResultFactory.COST_KEY);
@@ -54,16 +37,7 @@ public class AlgorithmRunResultKeyComparator implements Comparator<String> {
 
         if(first || second)
         {
-            if (first && second)
-            {
-                return 0;
-            } else if (first)
-            {
-                return -1;
-            } else
-            {
-                return 1;
-            }
+            return getComparisonFirstTrueMeansFirst(first, second);
         }
 
 
@@ -72,16 +46,7 @@ public class AlgorithmRunResultKeyComparator implements Comparator<String> {
 
         if(first || second)
         {
-            if (first && second)
-            {
-                return 0;
-            } else if (first)
-            {
-                return 1;
-            } else
-            {
-                return -1;
-            }
+            return getComparisonFirstTrueMeansLast(first, second);
         }
 
         first = firstArg.startsWith("__");
@@ -89,20 +54,37 @@ public class AlgorithmRunResultKeyComparator implements Comparator<String> {
 
         if(first || second)
         {
-            if (first && second)
-            {
-                return 0;
-            } else if (first)
-            {
-                return 1;
-            } else
-            {
-                return -1;
-            }
+            return getComparisonFirstTrueMeansLast(first, second);
         }
 
 
         return firstArg.compareTo(secondArg);
+    }
+
+    private int getComparisonFirstTrueMeansLast(boolean first, boolean second) {
+        if (first && second)
+        {
+            return 0;
+        } else if (first)
+        {
+            return 1;
+        } else
+        {
+            return -1;
+        }
+    }
+
+    private int getComparisonFirstTrueMeansFirst(boolean first, boolean second) {
+        if (first && second)
+        {
+            return 0;
+        } else if (first)
+        {
+            return -1;
+        } else
+        {
+            return 1;
+        }
     }
 
 

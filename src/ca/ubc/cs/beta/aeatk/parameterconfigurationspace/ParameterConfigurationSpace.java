@@ -843,11 +843,7 @@ public class ParameterConfigurationSpace implements Serializable {
 				throw new IllegalArgumentException("This parameter is marked as integer, only integer values are permitted for the bounds and default on line:" + line);
 			}
 		}
-		
-		
-		
-		
-	
+
 		
 		try {
 			contNormalizedRanges.put(name, new NormalizedRange(min, max, logScale, intValuesOnly));

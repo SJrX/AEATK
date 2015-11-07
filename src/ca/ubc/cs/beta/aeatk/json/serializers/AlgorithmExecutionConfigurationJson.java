@@ -92,19 +92,19 @@ public class AlgorithmExecutionConfigurationJson  {
 					continue;
 				}
 				
-				//System.out.println(jp.getCurrentName() + "=>" + jp.getCurrentToken());
+
 				switch(jp.getCurrentName())
 				{
 					case ALGO_EXEC:
-						algoExecAndArgs.addAll(Arrays.asList(SplitQuotedString.splitQuotedString(jp.getValueAsString())));
-						break;
+						if(algoExecAndArgs.isEmpty()) {
+							algoExecAndArgs.addAll(Arrays.asList(SplitQuotedString.splitQuotedString(jp.getValueAsString())));
+							break;
+						}
 
 					case ALGO_EXEC_AND_ARGS:
 					{
-						Iterator<String> i = jp.getCodec().readValues(jp, String.class);
-						while(i.hasNext()) {
-							algoExecAndArgs.add(i.next());
-						}
+						algoExecAndArgs.clear();
+						algoExecAndArgs.addAll(Arrays.asList(jp.getCodec().readValue(jp,String[].class)));
 					}
 						break;
 					case ALGO_EXEC_DIR:

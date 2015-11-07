@@ -43,6 +43,7 @@ public class CommandLineTargetAlgorithmEvaluatorFactory extends AbstractTargetAl
 		CommandLineTargetAlgorithmEvaluatorOptions opts = new CommandLineTargetAlgorithmEvaluatorOptions();
 		opts.logAllCallStrings = true;
 		opts.logAllProcessOutput = true;
+		opts.callFormat = CommandLineTargetAlgorithmEvaluatorOptions.CallFormat.LEGACY;
 		
 		return new CommandLineTargetAlgorithmEvaluator( opts );
 	}
