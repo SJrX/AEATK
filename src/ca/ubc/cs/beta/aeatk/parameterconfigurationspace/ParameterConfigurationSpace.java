@@ -911,10 +911,7 @@ public class ParameterConfigurationSpace implements Serializable {
 				String parent = ConditionalOperator.getParent(con);
 				ConditionalOperator op = ConditionalOperator.getOperatorFromConditionalClause(con);
 				String[] value = ConditionalOperator.getValues(con);
-				
-				
-				
-				
+
 				if (!this.paramKeyIndexMap.keySet().contains(parent)) {
 					throw new IllegalArgumentException("Unknown dependent parameter: " + parent	+ ", specified on conditional line: " + line);
 				}
