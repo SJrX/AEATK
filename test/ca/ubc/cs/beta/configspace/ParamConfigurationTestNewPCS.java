@@ -30,6 +30,7 @@ import java.util.concurrent.atomic.AtomicInteger;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.exceptions.InvalidParameterTypeDetectedException;
 import org.junit.After;
 import org.junit.Before;
 import org.junit.BeforeClass;
@@ -93,7 +94,57 @@ public class ParamConfigurationTestNewPCS {
 		//System.out.flush();
 		
 		assertTrue(Math.abs(d1 - d2) < EPSILON);
-	}	
+	}
+
+	@Test
+	public void testEmptyForbiddenPCSFile()
+	{
+
+		String s = "a {b,c,d} [b]\n{}\n";
+		ParameterConfigurationSpace cs = ParamFileHelper.getParamFileFromString(s);
+
+		assertEquals("Space should have size 3", 3,(int) cs.getLowerBoundOnSize());
+
+		s = "a integer [0,9] [1]\nb integer [0,9] [1]\n{ }\n";
+		cs = ParamFileHelper.getParamFileFromString(s);
+
+		assertEquals("Space should have size 10", 100,(int) cs.getLowerBoundOnSize());
+
+		// Checking that an empty clause doesn't trip the Advanced Forbidden Syntax variable names restrictions
+		String s2 = "a-x integer [0,10] [1]\nb-b integer [0,10] [1]\n {}";
+		ParamFileHelper.getParamFileFromString(s2);
+	}
+
+	@Test
+	public void testNiceWarningOnIntTypePCSFile()
+	{
+		String s = "a-x int [0,10] [1]\n";
+		try {
+			ParamFileHelper.getParamFileFromString(s);
+		} catch(InvalidParameterTypeDetectedException e)
+		{
+			// Good case
+		}
+
+
+		s = "a-x cat {0,10} [10]\n";
+		try {
+			ParamFileHelper.getParamFileFromString(s);
+		} catch(InvalidParameterTypeDetectedException e)
+		{
+			// Good case
+		}
+
+		s = "a-x ord {0,10   } [10]\n";
+		try {
+			ParamFileHelper.getParamFileFromString(s);
+		} catch(InvalidParameterTypeDetectedException e)
+		{
+			// Good case
+		}
+
+
+	}
 	
 	@Test
 	public void testAClibFormat() {

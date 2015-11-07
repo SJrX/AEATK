@@ -29,6 +29,7 @@ import java.util.TreeSet;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
+import ca.ubc.cs.beta.aeatk.parameterconfigurationspace.exceptions.InvalidParameterTypeDetectedException;
 import com.fasterxml.jackson.annotation.JsonIdentityInfo;
 import com.fasterxml.jackson.annotation.ObjectIdGenerators;
 import com.fasterxml.jackson.databind.annotation.JsonDeserialize;
@@ -120,18 +121,21 @@ public class ParameterConfigurationSpace implements Serializable {
 			return keyword;
 		}
 		
-		public static ParameterType getParameterTypeFromKeyword(String keyword)
+		public static ParameterType getParameterTypeFromKeyword(String keyword, String line)
 		{
-			
+
+			StringBuilder sb = new StringBuilder("{");
 			for(ParameterType type : ParameterType.values())
 			{
 				if(type.keyword().equals(keyword))
 				{
 					return type;
 				}
+				sb.append(type.keyword()).append(", ");
 			} 
-			
-			throw new IllegalArgumentException("Unknown Parameter Type: " + keyword + " allowed types are: " + Arrays.toString(ParameterType.values()));
+
+			sb.setCharAt(sb.length() - 2 , '}');
+			throw new InvalidParameterTypeDetectedException("Unknown Parameter Type: [" + keyword + "] allowed types are: " + sb.toString().trim());
 		}
 	}
 	
@@ -316,9 +320,9 @@ public class ParameterConfigurationSpace implements Serializable {
 	}
 	
 	private final String pcsFile;
-	
-	private final Pattern catOrdPattern = Pattern.compile("^\\s*(?<name>\\p{Graph}+)\\s*(?<type>"+ParameterType.CATEGORICAL.keyword()+"|"+ParameterType.ORDINAL.keyword()+"+)\\s*\\{(?<values>.*)\\}\\s*\\[(?<default>\\p{Graph}+)\\]\\s*$");
-	private final Pattern intReaPattern = Pattern.compile("^\\s*(?<name>\\p{Graph}+)\\s*(?<type>"+ParameterType.INTEGER.keyword()+"|"+ParameterType.REAL.keyword()+")\\s*\\[\\s*(?<min>\\p{Graph}+)\\s*,\\s*(?<max>\\p{Graph}+)\\s*\\]\\s*\\[(?<default>\\p{Graph}+)\\]\\s*(?<log>(log)?)\\s*$");
+
+	private final Pattern catOrdPattern = Pattern.compile("^\\s*(?<name>\\p{Graph}+)\\s*(?<type>"+ParameterType.CATEGORICAL.keyword()+"|"+ParameterType.ORDINAL.keyword()+"|ord|cat)\\s*\\{(?<values>.*)\\}\\s*\\[(?<default>\\p{Graph}+)\\]\\s*$");
+	private final Pattern intReaPattern = Pattern.compile("^\\s*(?<name>\\p{Graph}+)\\s*(?<type>"+ParameterType.INTEGER.keyword()+"|"+ParameterType.REAL.keyword()+"|int)\\s*\\[\\s*(?<min>\\p{Graph}+)\\s*,\\s*(?<max>\\p{Graph}+)\\s*\\]\\s*\\[(?<default>\\p{Graph}+)\\]\\s*(?<log>(log)?)\\s*$");
 	
 	private final Map<String, String> searchSubspace;
 	
@@ -397,9 +401,6 @@ public class ParameterConfigurationSpace implements Serializable {
 	 */
 	public ParameterConfigurationSpace(Reader file, String absoluteFileName, Map<String, String> searchSubspace)
 	{
-		//TODO: remove stderr outputs - use only errors
-		//TODO: maybe try to parse each line independently with the old or new format
-		
 		/*
 		 * Parse File and create configuration space
 		 */
@@ -419,7 +420,6 @@ public class ParameterConfigurationSpace implements Serializable {
 				String line;
 				while((line = inputData.readLine()) != null)
 				{ try {
-					//System.out.println(line);
 					pcs.append(line + "\n");
 					parseAClibLine(transformOldFormat(line));
 					} catch(RuntimeException e)
@@ -431,11 +431,7 @@ public class ParameterConfigurationSpace implements Serializable {
 			} 
 			
 			pcsFile = pcs.toString();
-			
-			
-			
-		} catch (FileNotFoundException e) {
-			throw new IllegalStateException(e);
+
 		} catch (IOException e) {
 			throw new IllegalStateException(e);
 		}
@@ -647,9 +643,9 @@ public class ParameterConfigurationSpace implements Serializable {
 		// categorical or ordinal parameters
 		Matcher catOrdMatcher = catOrdPattern.matcher(line);
 		Matcher intReaMatcher = intReaPattern.matcher(line);
-		
+		Matcher forbiddenMatcher = generalForbidden.matcher(line);
+
 		if (catOrdMatcher.find()){
-			//System.out.println("CatMatch");
 			String name = catOrdMatcher.group("name");
 			String type = catOrdMatcher.group("type");
 			List<String> paramValues = Arrays.asList(catOrdMatcher.group("values").split(","));
@@ -704,7 +700,7 @@ public class ParameterConfigurationSpace implements Serializable {
 			}
 			
 			
-			ParameterType encodedType = ParameterType.getParameterTypeFromKeyword(type);
+			ParameterType encodedType = ParameterType.getParameterTypeFromKeyword(type, line);
 			
 			paramTypes.put(name, encodedType);
 			
@@ -758,7 +754,7 @@ public class ParameterConfigurationSpace implements Serializable {
 			
 			authorativeParameterNameOrder.add(name);
 			
-			ParameterType encodedType = ParameterType.getParameterTypeFromKeyword(type);
+			ParameterType encodedType = ParameterType.getParameterTypeFromKeyword(type, line);
 			
 			paramTypes.put(name, encodedType);
 			
@@ -793,10 +789,15 @@ public class ParameterConfigurationSpace implements Serializable {
 			createNumericParameter(line, intValuesOnly, logScale, name, type, min, max, defaultValue);
 
 			return;
-		} else if(generalForbidden.matcher(line).find())
+		} else if(forbiddenMatcher.find())
 		{
-			//System.out.println("Adding line: " + line);
-			forbiddenLines.add(line);
+			//This checks the content of the forbidden line
+			if(forbiddenMatcher.group(1).trim().length() > 0)
+			{
+				// If it is empty we won't actually count it
+				forbiddenLines.add(line);
+			}
+
 			return;
 		} else if (line.indexOf("|") >= 0) {
 			
@@ -1025,9 +1026,6 @@ public class ParameterConfigurationSpace implements Serializable {
 						int z = 0;
 						values_in[j] = new double[cond.values.length];
 						for (Double d : cond.values){
-							//System.out.println(parent_name);
-							//System.out.println(contNormalizedRanges.get(parent_name));
-							//System.out.println(contNormalizedRanges.get(parent_name).normalizeValue(d));
 							try 
 							{
 								values_in[j][z] = contNormalizedRanges.get(parent_name).normalizeValue(d);
@@ -1063,12 +1061,10 @@ public class ParameterConfigurationSpace implements Serializable {
 			nameConditionsMapParentsValues.put(p_idx, values);
 			nameConditionsMapOp.put(p_idx, op);
 		}
-	} 
-	
-	
+	}
 	
 	private final Pattern classicForbidden = Pattern.compile("^\\s*\\{((\\s*\\S+\\s*=\\s*\\S+\\s*,?\\s*)+)\\}\\s*$");
-	private final Pattern generalForbidden = Pattern.compile("^\\s*\\{\\s*([^\\{\\}]+)\\s*\\}\\s*$");
+	private final Pattern generalForbidden = Pattern.compile("^\\s*\\{\\s*([^\\{\\}]*)\\s*\\}\\s*$");
 
 	
 	/**
@@ -1086,14 +1082,12 @@ public class ParameterConfigurationSpace implements Serializable {
 		boolean newForbiddenStatements = false;
 		for(String line : lines)
 		{
-			
 			String originalLine = line;
 			
-			if(line.indexOf("#") >= 0)
+			if(line.contains("#"))
 			{
 				line = line.substring(0, line.indexOf("#"));
 			}
-			
 			
 			Matcher classicForbiddenStatementMatcher = classicForbidden.matcher(line);
 			Matcher generalForbiddenMatcher = generalForbidden.matcher(line);
@@ -1428,27 +1422,7 @@ public class ParameterConfigurationSpace implements Serializable {
 			}
 		
 		}
-		
-		
-		//System.out.println(forbiddenExpressionConstants);
-		
-		/*
-		for(Entry<String, Double> ent : forbiddenExpressionConstants.entrySet())
-		{
-			try
-			{
-				double percentDiff = Math.abs(Double.valueOf(ent.getKey()) - ent.getValue()) / Math.abs(Math.max(Double.valueOf(ent.getKey()), ent.getValue()));
-				
-				if (percentDiff > 0.001)
-				{
-					throw new IllegalStateException("Key and Value in Map don't seem to match :" + ent);
-				}
-			}catch(NumberFormatException e)
-			{
-				//continue
-			}
-			
-		}*/
+
 		return forbiddenExpressionConstants;
 	}
 
@@ -2439,9 +2413,7 @@ public class ParameterConfigurationSpace implements Serializable {
 		private final Object readResolve() throws ObjectStreamException
 		{
 			JSONConverter<ParameterConfigurationSpace> json = new JSONConverter<ParameterConfigurationSpace>() {} ;
-			
-			//String jsonText = json.getJSON(pcsJSON);
-			//System.out.println(jsonText);
+
 
 			return json.getObject(pcsJSON);
 		}

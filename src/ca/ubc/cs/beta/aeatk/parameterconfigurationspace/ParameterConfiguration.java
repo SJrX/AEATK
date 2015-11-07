@@ -1283,11 +1283,7 @@ public class ParameterConfiguration implements Map<String, String>, Serializable
 							
 						} else
 						{
-							//variables.put(name, Double.valueOf(this.get(name)));
-							
-						
-								
-								
+
 							calc.setVariable(name,Double.valueOf(configSpace.forbiddenParameterConstants.get(this.get(name))));
 						}
 						i++;
