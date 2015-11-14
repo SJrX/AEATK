@@ -28,6 +28,7 @@ import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.concurrent.atomic.AtomicInteger;
 import java.util.concurrent.atomic.AtomicReference;
 
+import ca.ubc.cs.beta.aeatk.algorithmrunresult.RunExecutionStatus;
 import org.apache.commons.io.output.NullOutputStream;
 import org.junit.After;
 import org.junit.AfterClass;
@@ -523,7 +524,7 @@ public class TAETestSet {
 	@Test
 	public void testIPCClient()
 	{
-		
+
 		Random r = pool.getRandom(DebugUtil.getCurrentMethodName());
 		StringBuilder b = new StringBuilder();
 		b.append("java -cp ");
@@ -3084,7 +3085,8 @@ public class TAETestSet {
 		
 		tae = fact.getTargetAlgorithmEvaluator( options);		
 		tae = new BoundedTargetAlgorithmEvaluator(tae,100);
-		
+
+		final StringBuffer sb = new StringBuffer();
 
 		final AtomicInteger obsCount = new AtomicInteger(0);
 		TargetAlgorithmEvaluatorRunObserver tObs = new TargetAlgorithmEvaluatorRunObserver()
@@ -3092,8 +3094,20 @@ public class TAETestSet {
 
 			@Override
 			public void currentStatus(List<? extends AlgorithmRunResult> runs) {
-				obsCount.incrementAndGet();
-				
+
+
+				for(int i=runs.size()-1; i >= 0; i-- )
+				{
+					if(!runs.get(i).getRunExecutionStatus().equals(RunExecutionStatus.SUCCESS))
+					{
+						//We only want to count runs that occur during execution (since it must post a final run with everything done).
+						// We also loop backwards because we generally expect the last run that completes will be the last one.
+						// so if we want to check if they are all done the last is O(1) instead of an O(n) check.
+						obsCount.incrementAndGet();
+						return;
+					}
+				}
+
 			}
 			
 		};
@@ -3103,11 +3117,12 @@ public class TAETestSet {
 		
 		stopWatch.stop();
 		System.out.println(obsCount.get() + " vs " + stopWatch.time() / 1000.0);
-		
+
+		System.out.println(sb.toString());
 		long msPerObs = stopWatch.time() / obsCount.get();
 		
 		
-		assertTrue("Expected milli-seconds per observation to be greater than set 250 got: " + msPerObs ,msPerObs>=250 );
+		assertTrue("Expected milli-seconds per observation to be greater than set 250 got: " + msPerObs ,msPerObs>=options.observerFrequency );
 		//obsCount.get() / stopWatch.time() 
 		
 	
@@ -4927,7 +4942,7 @@ public class TAETestSet {
 		options.logAllProcessOutput = true;
 		options.concurrentExecution = true;
 		options.observerFrequency = 2000;
-		
+		options.callFormat = CommandLineTargetAlgorithmEvaluatorOptions.CallFormat.LEGACY;
 		
 		tae = fact.getTargetAlgorithmEvaluator( options);	
 		TargetAlgorithmEvaluator cliTAE = tae;

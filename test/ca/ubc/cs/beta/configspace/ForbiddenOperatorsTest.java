@@ -503,6 +503,6 @@ public class ForbiddenOperatorsTest {
 		double resultTwo = d2.get();
 		
 		execService.shutdown();
-		assertNotEquals("These result should not be equal", resultOne , resultTwo);
+		assertFalse("These result should not be equal", resultOne != resultTwo);
 	}
 }
