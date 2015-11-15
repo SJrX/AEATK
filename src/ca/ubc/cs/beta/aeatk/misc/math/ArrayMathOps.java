@@ -8,7 +8,7 @@ import java.util.Random;
 import org.apache.commons.math.stat.StatUtils;
 
 import ca.ubc.cs.beta.aeatk.random.RandomUtil;
-import ca.ubc.cs.beta.models.fastrf.utils.Hash;
+
 
 /**
  * Utility class with Math operations on arrays
@@ -242,31 +242,7 @@ public class ArrayMathOps {
 		
 		return transpose;
 	}
-	
-	/**
-	 * Computes a hash code of the matrix in a way that is compatible with MATLAB
-	 * 
-	 * If nothing seems to be using this method and it seems to have outlived it's usefulness please feel free to delete it.
-	 *
-	 * @param matrix  double[][] to compute the hash code of 
-	 * @return hashCode
-	 */
-	public static int matlabHashCode(double[][] matrix)
-	{
-		String s = Arrays.deepToString(matrix);
-		if(s.length() > 250)
-		{
-			s = s.substring(0,249)+ "...";
-		}
-	
-		//System.out.println("HASH=>" + s);
-		return Math.abs(Hash.hash(matrix)) % 32462867;  //Some prime around 2^25 (to prevent overflows in computation)
-		
-		
-		
-		
-	}
-	
+
 	/**
 	 * Permutes a list of objects
 	 * @param list list of objects to randomly permute
