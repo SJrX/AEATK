@@ -1,7 +1,10 @@
 package ca.ubc.cs.beta;
 
 import ca.ubc.cs.beta.aeatk.initialization.classic.ClassicInitializationProcedure;
+
 import ca.ubc.cs.beta.initializationProcedure.ClassicInitializationProcedureTester;
+import ca.ubc.cs.beta.models.fastrf.RegtreeFitTestCategoricalDomain;
+import ca.ubc.cs.beta.models.fastrf.RegtreeFitTestContinuousDomain;
 import org.junit.runner.RunWith;
 import org.junit.runners.Suite;
 
@@ -14,6 +17,7 @@ import ca.ubc.cs.beta.configspace.RandomConfigurationTest;
 import ca.ubc.cs.beta.eventsystem.EventManagerTester;
 import ca.ubc.cs.beta.misc.CPUTimeTest;
 import ca.ubc.cs.beta.objectives.RunObjectiveTester;
+import ca.ubc.cs.beta.model.ModelBuilderHelperTester;
 import ca.ubc.cs.beta.probleminstance.BuggyFeatureFilesTester;
 import ca.ubc.cs.beta.probleminstance.ProblemInstanceHelperTester;
 import ca.ubc.cs.beta.runhistory.RunHistoryTester;
@@ -38,6 +42,7 @@ import ca.ubc.cs.beta.json.JSONTester;
 	ForbiddenOperatorsTest.class,
 	ParamConfigurationTest.class,
 	ParamConfigurationTestNewPCS.class,
+	ModelBuilderHelperTester.class,
 	RandomConfigurationTest.class,
 	ProblemInstanceHelperTester.class,
 	AlgoExecutionInstanceSpecificInfoTest.class,
@@ -48,7 +53,9 @@ import ca.ubc.cs.beta.json.JSONTester;
 	RetryCrashedTAETester.class,
 	RunObjectiveTester.class,
 	CPUTimeTest.class,
-	CachingTAETestSet.class
+	CachingTAETestSet.class,
+	RegtreeFitTestContinuousDomain.class,
+	RegtreeFitTestCategoricalDomain.class,
 
 })
 

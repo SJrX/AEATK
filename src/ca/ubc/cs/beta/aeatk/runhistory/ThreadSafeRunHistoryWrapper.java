@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.exceptions.DuplicateRunException;
@@ -504,7 +505,40 @@ public class ThreadSafeRunHistoryWrapper implements ThreadSafeRunHistory {
 		}
 	}
 
+	/**
+	 * @return Intra-Instance objective we are optimizing
+	 */
+	public OverallObjective getIntraInstanceObjective()
+	{
+		//No lock needed as this is final and set in the constructor
+		return this.runHistory.getIntraInstanceObjective();
+	}
 
+	/**
+	 * @return Inter-Instance objective we are optimizing
+	 */
+	public OverallObjective getInterInstanceObjective()
+	{
+		//No lock needed as this is final and set in the constructor
+		return this.runHistory.getInterInstanceObjective();
+	}
+
+
+	/**
+	 * @return AlgorithmExecutionConfiguration for all runs
+	 * @throws IllegalStateException if no run has been logged.
+	 */
+	public AlgorithmExecutionConfiguration getAlgorithmExecutionConfiguration()
+	{
+
+		lockRead();
+		try {
+			return this.runHistory.getAlgorithmExecutionConfiguration();
+		} finally
+		{
+			unlockRead();
+		}
+	}
 	
 
 	

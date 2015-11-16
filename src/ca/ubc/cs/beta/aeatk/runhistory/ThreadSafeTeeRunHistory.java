@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -284,6 +285,33 @@ public class ThreadSafeTeeRunHistory implements ThreadSafeRunHistory {
 			AlgorithmRunConfiguration runConfig) {
 		return rh.getAlgorithmRunResultForAlgorithmRunConfiguration(runConfig);
 	}
-	
-	
+
+	/**
+	 * @return Intra-Instance objective we are optimizing
+	 */
+	public OverallObjective getIntraInstanceObjective()
+	{
+		return rh.getIntraInstanceObjective();
+	}
+
+	/**
+	 * @return Inter-Instance objective we are optimizing
+	 */
+	public OverallObjective getInterInstanceObjective()
+	{
+		return rh.getInterInstanceObjective();
+	}
+
+
+	/**
+	 * @return AlgorithmExecutionConfiguration for all runs
+	 * @throws IllegalStateException if no run has been logged.
+	 */
+	public AlgorithmExecutionConfiguration getAlgorithmExecutionConfiguration()
+	{
+			return rh.getAlgorithmExecutionConfiguration();
+	}
+
+
+
 }

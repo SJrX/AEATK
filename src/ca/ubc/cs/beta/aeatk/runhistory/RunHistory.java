@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.exceptions.DuplicateRunException;
@@ -41,8 +42,26 @@ public interface RunHistory {
 	/**
 	 * Get the Overall objective we are optimizing
 	 * @return OverallObjective we are optimizing over
+	 * @deprecated Use {@link RunHistory#getIntraInstanceObjective()} and {@link RunHistory#getInterInstanceObjective()}
 	 */
 	public OverallObjective getOverallObjective();
+
+	/**
+	 * @return Intra-Instance objective we are optimizing
+     */
+	public OverallObjective getIntraInstanceObjective();
+
+	/**
+	 * @return Inter-Instance objective we are optimizing
+	 */
+	public OverallObjective getInterInstanceObjective();
+
+	/**
+	 * @return AlgorithmExecutionConfiguration for all runs
+	 * @throws IllegalStateException if no run has been logged.
+	 */
+	public AlgorithmExecutionConfiguration getAlgorithmExecutionConfiguration();
+
 
 	/**
 	 * Increment the iteration we are storing runs with

@@ -397,8 +397,6 @@ public class ParameterConfigurationSpace implements Serializable {
 	 */
 	public ParameterConfigurationSpace(Reader file, String absoluteFileName, Map<String, String> searchSubspace)
 	{
-		//TODO: remove stderr outputs - use only errors
-		//TODO: maybe try to parse each line independently with the old or new format
 		
 		/*
 		 * Parse File and create configuration space
@@ -499,18 +497,7 @@ public class ParameterConfigurationSpace implements Serializable {
 		{
 			throw new IllegalArgumentException("Default parameter setting cannot be a forbidden parameter setting:" + this.getDefaultConfiguration().getFormattedParameterString());
 		}
-	
-		/*
-		for(String forbiddenLine : forbiddenLines )
-		{
-			parseForbiddenLine(forbiddenLine);
-			
-		}
-		forbiddenLines.clear();
-		*/
-		
-		
-	
+
 		this.searchSubspaceValues = new double[this.defaultConfigurationValueArray.length];
 		this.searchSubspaceActive = new boolean[this.defaultConfigurationValueArray.length];
 
@@ -614,14 +601,14 @@ public class ParameterConfigurationSpace implements Serializable {
 		return absoluteFileName;
 	}
 	
+
+	private static final Pattern allowedParameterValuesRegex = Pattern.compile("^\\p{Graph}+$");
+
 	/**
 	 * Parses a line from the pcs file with the AClib 2.0 format spec,
 	 * populating the relevant data structures
 	 * @param line line of the pcs file
 	 */
-	
-	private static final Pattern allowedParameterValuesRegex = Pattern.compile("^\\p{Graph}+$");
-	
 	private void parseAClibLine(String line){
 		
 	
@@ -711,27 +698,16 @@ public class ParameterConfigurationSpace implements Serializable {
 			switch(encodedType)
 			{
 			case CATEGORICAL:
-				
-			
-				
-				
 				break;
 				
 			case ORDINAL:
-				
-				
 				boolean intValuesOnly = true;
-				
 				boolean logScale = false;
-				
 				double min = 0;
-				
 				double max = paramValuesSet.size()-1;
-				
 
 				createNumericParameter(line, intValuesOnly, logScale, name, type, min, max, String.valueOf(valueMap.get(defaultValue)));
-				
-				
+
 				
 				break;
 					
@@ -910,9 +886,9 @@ public class ParameterConfigurationSpace implements Serializable {
 				String parent = ConditionalOperator.getParent(con);
 				ConditionalOperator op = ConditionalOperator.getOperatorFromConditionalClause(con);
 				String[] value = ConditionalOperator.getValues(con);
-				
-				
-				
+
+
+
 				
 				if (!this.paramKeyIndexMap.keySet().contains(parent)) {
 					throw new IllegalArgumentException("Unknown dependent parameter: " + parent	+ ", specified on conditional line: " + line);
@@ -1025,9 +1001,6 @@ public class ParameterConfigurationSpace implements Serializable {
 						int z = 0;
 						values_in[j] = new double[cond.values.length];
 						for (Double d : cond.values){
-							//System.out.println(parent_name);
-							//System.out.println(contNormalizedRanges.get(parent_name));
-							//System.out.println(contNormalizedRanges.get(parent_name).normalizeValue(d));
 							try 
 							{
 								values_in[j][z] = contNormalizedRanges.get(parent_name).normalizeValue(d);
@@ -1039,8 +1012,14 @@ public class ParameterConfigurationSpace implements Serializable {
 						}
 					}
 					else {
-						//categorical and ordinal values are already encoded as integer
-						values_in[j] = cond.values;	
+
+						//Categorical values are stored 1-indexed.
+						values_in[j] = new double[cond.values.length];
+
+						for(int m=0; m < values_in[j].length; m++)
+						{
+							values_in[j][m] = cond.values[m]+1;
+						}
 					}
 					
 					if(( cond.op.equals(ConditionalOperator.LE) || cond.op.equals(ConditionalOperator.GR) ))

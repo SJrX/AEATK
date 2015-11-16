@@ -22,6 +22,7 @@ import java.util.concurrent.ConcurrentMap;
 import java.util.concurrent.ConcurrentSkipListMap;
 import java.util.concurrent.atomic.AtomicInteger;
 
+import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
 
@@ -938,8 +939,37 @@ public class FileSharingRunHistoryDecorator implements ThreadSafeRunHistory {
 	}
 
 
-	
+	/**
+	 * @return Intra-Instance objective we are optimizing
+	 */
+	public OverallObjective getIntraInstanceObjective()
+	{
+		//No lock needed as this should always be a thread safe call
+		return runHistory.getIntraInstanceObjective();
+	}
 
-	
+	/**
+	 * @return Inter-Instance objective we are optimizing
+	 */
+	public OverallObjective getInterInstanceObjective()
+	{
+		//No lock needed as this should always be a thread safe call
+		return runHistory.getInterInstanceObjective();
+	}
+
+
+	/**
+	 * @return AlgorithmExecutionConfiguration for all runs
+	 * @throws IllegalStateException if no run has been logged.
+	 */
+	public AlgorithmExecutionConfiguration getAlgorithmExecutionConfiguration()
+	{
+		//No lock needed as this should always be a thread safe call
+		return runHistory.getAlgorithmExecutionConfiguration();
+	}
+
+
+
+
 
 }

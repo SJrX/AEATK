@@ -910,4 +910,38 @@ public class NewRunHistory implements RunHistory {
 		return this.algorithmRunConfigurationResultMap.get(runConfig);
 	}
 
+	/**
+	 * @return Intra-Instance objective we are optimizing
+	 */
+	public OverallObjective getIntraInstanceObjective()
+	{
+		return perInstanceObjectiveFunction;
+	}
+
+	/**
+	 * @return Inter-Instance objective we are optimizing
+	 */
+	public OverallObjective getInterInstanceObjective()
+	{
+		return aggregateInstanceObjectiveFunction;
+	}
+
+
+	/**
+	 * @return AlgorithmExecutionConfiguration for all runs
+	 * @throws IllegalStateException if no run has been logged.
+	 */
+	public AlgorithmExecutionConfiguration getAlgorithmExecutionConfiguration()
+	{
+		if(this.firstExecConfig != null)
+		{
+			return this.firstExecConfig;
+		} else
+		{
+			throw new IllegalStateException("No runs have been logged");
+		}
+	}
+
+
+
 }

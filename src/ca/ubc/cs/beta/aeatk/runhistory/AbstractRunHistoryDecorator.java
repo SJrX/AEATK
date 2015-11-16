@@ -5,6 +5,7 @@ import java.util.List;
 import java.util.Map;
 import java.util.Set;
 
+import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrunconfiguration.AlgorithmRunConfiguration;
 import ca.ubc.cs.beta.aeatk.algorithmrunresult.AlgorithmRunResult;
 import ca.ubc.cs.beta.aeatk.exceptions.DuplicateRunException;
@@ -219,5 +220,31 @@ public abstract class AbstractRunHistoryDecorator implements RunHistory {
 	{
 		return rh.getAlgorithmRunResultForAlgorithmRunConfiguration(runConfig);
 	}
-	
+
+	/**
+	 * @return Intra-Instance objective we are optimizing
+	 */
+	public OverallObjective getIntraInstanceObjective()
+	{
+		return rh.getIntraInstanceObjective();
+	}
+
+	/**
+	 * @return Inter-Instance objective we are optimizing
+	 */
+	public OverallObjective getInterInstanceObjective()
+	{
+		return rh.getInterInstanceObjective();
+	}
+
+
+	/**
+	 * @return AlgorithmExecutionConfiguration for all runs
+	 * @throws IllegalStateException if no run has been logged.
+	 */
+	public AlgorithmExecutionConfiguration getAlgorithmExecutionConfiguration()
+	{
+		return rh.getAlgorithmExecutionConfiguration();
+	}
+
 }
