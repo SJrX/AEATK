@@ -27,9 +27,9 @@ public class RandomForestOptions extends AbstractOptions{
 	@Parameter(names = {"--rf-full-tree-bootstrap","--fullTreeBootstrap"}, description = "bootstrap all data points into trees")
 	public boolean fullTreeBootstrap = false;
 	
-	@UsageTextField(level=OptionLevel.ADVANCED)
+	@UsageTextField(level=OptionLevel.ADVANCED, defaultValues = "false")
 	@Parameter(names={"--rf-ignore-conditionality","--ignoreConditionality"}, description="ignore conditionality for building the model")
-	public boolean ignoreConditionality = false;
+	public Boolean ignoreConditionality = null;
 	
 	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names={"--rf-impute-mean","--imputeMean"}, description="impute the mean value for the all censored data points")

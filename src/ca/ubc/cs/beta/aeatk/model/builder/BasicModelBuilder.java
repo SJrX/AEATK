@@ -57,8 +57,6 @@ public class BasicModelBuilder implements ModelBuilder{
 		/**
 		 * N x 2 array of response values
 		 */
-		
-	
 		int[][] theta_inst_idxs = smd.getThetaInstIdxs();
 		
 		
@@ -68,41 +66,9 @@ public class BasicModelBuilder implements ModelBuilder{
 			theta_inst_idxs[i][1]--;
 		}
 		RegtreeBuildParams buildParams = SMACRandomForestHelper.getRandomForestBuildParams(rfConfig, features[0].length, categoricalSize, nameConditionsMapParentsArray, nameConditionsMapParentsValues, nameConditionsMapOp, rand);
-		
-		
-		
-	
-		
+
 		log.trace("Building Random Forest with {} data points ", responseValues.length);
-		/*
-		if(log.isTraceEnabled())
-		{
-			log.trace("Building Random Forest with Parameters: {}", buildParams);
-			StringWriter sWriter = new StringWriter();
-			PrintWriter out = new PrintWriter(sWriter);
-			
-			
-			out.println("==== Theta Inst & Response Values ====");
-			for(int i=0; i < responseValues.length; i++)
-			{
-				out.format("%4d : %8s  %8f %n", i, Arrays.toString(theta_inst_idxs[i]), smd.getResponseValues()[i]);
-			}
-			 
-			out.println("==== Theta Matrix ====");
-			for(int i=0; i < configs.length; i++)
-			{
-				out.format("%4d : %s %n", i, Arrays.toString(configs[i]));
-			}
-			out.println("==== Features Matrix ====");
-			for(int i=0; i < features.length; i++)
-			{
-				out.format("%4d : %s %n", i, Arrays.toString(features[i]));
-			}
-			
-			log.trace("Build  Information \n {}", sWriter.toString());
-		}	
-		*/
-		
+
 		StopWatch sw = new StopWatch();
 		if(rfConfig.fullTreeBootstrap)
 		{

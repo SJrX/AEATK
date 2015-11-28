@@ -73,9 +73,9 @@ public class SMACRandomForestHelper {
 	System.arraycopy(categoricalSize, 0, buildParams.catDomainSizes, 0, categoricalSize.length);
 	
 	
-	if(rfOptions.ignoreConditionality)
+	if(rfOptions.ignoreConditionality != null && Boolean.valueOf(rfOptions.ignoreConditionality))
 	{
-		//TODO: Make this a ModelDataSanitizer
+
 		buildParams.nameConditionsMapOp = null;
 		buildParams.nameConditionsMapParentsArray = null;
 		buildParams.nameConditionsMapParentsValues = null;
