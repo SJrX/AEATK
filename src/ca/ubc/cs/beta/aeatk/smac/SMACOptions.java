@@ -152,6 +152,10 @@ public class SMACOptions extends AbstractOptions {
 	public File modelHashCodeFile;
 	
 	@UsageTextField(level=OptionLevel.ADVANCED)
+	@Parameter(names={"--allow-sideways-moves-in-ls-for-ei","--allow-sideways-moves", "--allowSidewaysMoves"}, description="If true, the local search for optimizing the acquisition function will take moves that don't worsen more than a small epsilon (if false, the LS requires at least a small epsilon improvement)")
+	public boolean allowSidewaysMoves = true;
+
+	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names={"--num-challengers","--numChallengers","--numberOfChallengers"}, description="number of challengers needed for local search", validateWith=FixedPositiveInteger.class)
 	public int numberOfChallengers = 10;
 	
