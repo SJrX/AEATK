@@ -45,7 +45,7 @@ public class TerminationCriteriaOptions extends AbstractOptions {
 	
 	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names={"--max-norun-challenge-limit","--maxConsecutiveFailedChallengeIncumbent"}, description="if the parameter space is too small we may get to a point where we can make no new runs, detecting this condition is prohibitively expensive, and this heuristic controls the number of times we need to try a challenger and get no new runs before we give up")
-	public int challengeIncumbentAttempts = 1000;
+	public int challengeIncumbentAttempts = 100000;
 
 	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names={"--terminate-on-delete"}, description="Terminate the procedure if this file is deleted")
