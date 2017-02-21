@@ -66,7 +66,7 @@ public class NoRunsForManyChallengesEvent extends AbstractTerminationCondition i
 	public String getTerminationReason() {
 		if(haveToStop())
 		{
-			return "too many challenges have been attempted without a successful run (" +  attemptedChallengesSinceLastRun +  ") has been reached.";
+			return "too many challenges (" +  attemptedChallengesSinceLastRun +  ") have been attempted without a successful run -- configuration space may be exhausted.";
 		} else
 		{
 			return "";
