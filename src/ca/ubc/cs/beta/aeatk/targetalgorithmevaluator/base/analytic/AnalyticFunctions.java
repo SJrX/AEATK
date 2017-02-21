@@ -8,7 +8,8 @@ public enum AnalyticFunctions {
 	ADD("xN = 0, for all N, y = 0"),
 	CAMELBACK( "(x0,x1) = (-0.0898, 0.7126) & (0,0898, -0.7126), xN , N > 2 are all ignored,y=3.9684 (because it is shifted by 5)"),
 	BRANINS("(x0,x1) = (-pi, 12.275) & (pi , 2.275) & (9,42478, 2.475), xN, N > 2 are all ignored, y = 0.397887"),
-	SINEPLUSONE("x in { 3*pi/2 + 2*pi*n}, n in Z");
+	SINEPLUSONE("x in { 3*pi/2 + 2*pi*n}, n in Z"),
+	LEADING_ONES("the leading ones function");
 	
 	double BRANIN_A=1;
 	double BRANIN_B=5.1/(4*Math.PI*Math.PI);
@@ -74,6 +75,18 @@ public enum AnalyticFunctions {
 			
 		case SINEPLUSONE:
 			return Math.sin(xVals[0])+1;
+			
+		case LEADING_ONES:
+			{
+				int count = 0;
+				for (int i = 0; i < xVals.length; i++) {
+					if (xVals[i] == 1){
+						count++;
+					} else break;
+				}
+				return -count;
+			}
+			
 		default:
 			throw new IllegalStateException(this+" not implemented currently");
 		}
