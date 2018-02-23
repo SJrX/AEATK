@@ -12,6 +12,6 @@ package ca.ubc.cs.beta.aeatk.initialization;
 public enum InitializationMode {
 	CLASSIC,
 	ITERATIVE_CAPPING,
-	UNBIASED_TABLE
-	
+	UNBIASED_TABLE,
+	DOUBLE_RACING	
 }

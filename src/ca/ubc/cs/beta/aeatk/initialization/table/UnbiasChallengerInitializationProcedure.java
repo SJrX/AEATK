@@ -104,7 +104,7 @@ public class UnbiasChallengerInitializationProcedure implements InitializationPr
 		
 		if(maxIncumbentRuns < numberOfRunsPerChallenger)
 		{
-			throw new ParameterException("Number of runs per challenger is less than the number permitted:" + maxIncumbentRuns);
+			throw new ParameterException("Number of runs per challenger is more than the number permitted:" + maxIncumbentRuns);
 		}
 		
 		if(!insc.allInstancesHaveSameNumberOfSeeds())
@@ -560,7 +560,7 @@ outOfInitialization:
 
 
 	/**
-	 * Returns a set of problem instance seed pairs. The most frequently occurring instance should only occur at most once more than the least frequently occuring.
+	 * Returns a set of problem instance seed pairs. The most frequently occurring instance should only occur at most once more than the least frequently occurring.
 	 * @param rand
 	 * @return List of problem instance seed pairs
 	 */

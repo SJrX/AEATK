@@ -104,7 +104,7 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 		{
 			throw new ParameterException("Number of Challengers must be greater than 1, use CLASSIC initialization ");
 		}
-		log.error("TAE Notify and Events need to be handled");
+		log.warn("TAE Notify and Events need to be handled");
 		log.debug("Using Doubling Capping Initialization");
 		ParameterConfiguration incumbent = this.initialIncumbent;
 		log.trace("Configuration Set as initial Incumbent: {}", incumbent);
@@ -210,7 +210,7 @@ public class DoublingCappingInitializationProcedure implements InitializationPro
 			}
 		}
 	
-		log.trace("Doubling capping has generated {} runs to do", runsToDo);
+		log.trace("Doubling capping has generated {} runs to do", runsToDo.size());
 
 		
 
@@ -496,7 +496,7 @@ topOfLoop:
 								{
 									incumbentSolved.set(true);
 									completedRuns++;
-									log.trace("Run completed need {} more", numberOfChallengers - completedRuns);
+									log.trace("Run completed; need {} more", numberOfChallengers - completedRuns);
 									runs.addToList(run.getRunStatus(), run);
 								} else
 								{
