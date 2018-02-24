@@ -12,6 +12,7 @@ import ca.ubc.cs.beta.aeatk.algorithmexecutionconfiguration.AlgorithmExecutionCo
 import ca.ubc.cs.beta.aeatk.help.HelpOptions;
 import ca.ubc.cs.beta.aeatk.initialization.InitializationMode;
 import ca.ubc.cs.beta.aeatk.initialization.classic.ClassicInitializationProcedureOptions;
+import ca.ubc.cs.beta.aeatk.initialization.doubleracing.DoubleRacingInitializationProcedureOptions;
 import ca.ubc.cs.beta.aeatk.initialization.doublingcapping.DoublingCappingInitializationProcedureOptions;
 import ca.ubc.cs.beta.aeatk.initialization.table.UnbiasChallengerInitializationProcedureOptions;
 import ca.ubc.cs.beta.aeatk.logging.ComplexLoggingOptions;
@@ -78,6 +79,9 @@ public class SMACOptions extends AbstractOptions {
 	
 	@ParametersDelegate
 	public UnbiasChallengerInitializationProcedureOptions ucip = new UnbiasChallengerInitializationProcedureOptions();
+	
+	@ParametersDelegate
+	public DoubleRacingInitializationProcedureOptions draceModeOpts = new DoubleRacingInitializationProcedureOptions();
 	
 	@UsageTextField(level=OptionLevel.INTERMEDIATE)
 	@Parameter(names={"--deterministic-instance-ordering","--deterministicInstanceOrdering"}, description="If true, instances will be selected from the instance list file in the specified order")
@@ -155,6 +159,10 @@ public class SMACOptions extends AbstractOptions {
 	@Parameter(names={"--allow-sideways-moves-in-ls-for-ei","--allow-sideways-moves", "--allowSidewaysMoves"}, description="If true, the local search for optimizing the acquisition function will take moves that don't worsen more than a small epsilon (if false, the LS requires at least a small epsilon improvement)")
 	public boolean allowSidewaysMoves = true;
 
+	@UsageTextField(level=OptionLevel.ADVANCED)
+	@Parameter(names={"--num-ls-steps-if-sideways"}, description="number of LS steps until termination if we accept sideways moves", validateWith=FixedPositiveInteger.class)
+	public int numberOfLsStepsIfSideways = 10;	
+	
 	@UsageTextField(level=OptionLevel.ADVANCED)
 	@Parameter(names={"--num-challengers","--numChallengers","--numberOfChallengers"}, description="number of challengers needed for local search", validateWith=FixedPositiveInteger.class)
 	public int numberOfChallengers = 10;
